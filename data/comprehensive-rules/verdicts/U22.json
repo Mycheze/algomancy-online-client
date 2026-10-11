@@ -378,7 +378,7 @@
   },
   {
     "key": "formats.constructed.draw-phase.one-step",
-    "textHash": "8435ed6481b6312c",
+    "textHash": "de02c5921e7e1cb3",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U22-r4",
@@ -2632,7 +2632,7 @@
   },
   {
     "key": "formats.general.digital-scope",
-    "textHash": "0b3dfa5e8344cec0",
+    "textHash": "fc136281aa9a1c8c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -3871,7 +3871,7 @@
   },
   {
     "key": "formats.teams.team-text",
-    "textHash": "ffea7ea85e9f9799",
+    "textHash": "2b2f2fbda82935bc",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U22-r2",

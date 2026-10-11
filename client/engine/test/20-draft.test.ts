@@ -146,7 +146,7 @@ test('legalActions during the draft step: only commits — the no-op plus every 
 
 /** every card in the game outside entities/erased: deck + packs + hands + bins */
 function cardCount(h: Harness): number {
-  // R296: the recycle pile is a zone cards really live in, so a conservation
+  // CR 400.1: the recycle pile is a zone cards really live in, so a conservation
   // count that omits it reports every recycled card as destroyed. It was this
   // assertion that caught the omission, which is exactly what it is for.
   return h.state.sharedDeck.length
@@ -185,7 +185,7 @@ test('turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 
   playTurn(h); // turn 3 → 4: refresh (players+1 = 3 turns per cycle)
   assert.equal(h.state.turn, 4);
   assert.ok(h.log.some(l => l.includes('recycled; everyone is dealt')), 'turn 4 refreshes the packs');
-  // R296: old pack cards went PAST THE MARK — into the shared recycle pile —
+  // CR 408.2a: old pack cards went PAST THE MARK — into the shared recycle pile —
   // rather than onto the bottom of the live deck. The claim this makes is the
   // one that matters either way: no card is lost in the refresh.
   for (const c of packsBefore.flat()) {
@@ -313,7 +313,7 @@ test('"nobody drafts it again" (turn 3) is true: the leftovers are recycled', ()
       assert.ok(!h.state.packs.flat().includes(card),
         `${card} was left on the final look but turned up in a pack — the banner would be lying`);
       assert.ok((h.state.sharedRecycled ?? []).includes(card),
-        `${card} should be past the mark after the recycle (R296)`);
+        `${card} should be past the mark after the recycle (CR 408.2)`);
     }
   }
 });

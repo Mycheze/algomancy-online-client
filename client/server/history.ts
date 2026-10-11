@@ -29,7 +29,7 @@ import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/cus
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
 interface SavedRoom extends GameRecord {
-  /** R290: who conceded, on which turn — stamped by rooms.ts when a concede
+  /** CR D8.5: who conceded, on which turn — stamped by rooms.ts when a concede
    * decided the game. Absent on every other game. See RecordedGame.concession. */
   concession?: Concession;
   /** account id per seat, written by rooms.ts once accounts existed */
@@ -43,7 +43,7 @@ interface SavedRoom extends GameRecord {
   /** BL-02: the matchmaker made this room, so it moves ratings. Absent on
    * every room made from a code — see RecordedGame.rated. */
   rated?: boolean;
-  /** R298: a single card duel — the cards are `decks[seat][0]` */
+  /** CR D8.2: a single card duel — the cards are `decks[seat][0]` */
   single?: boolean;
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
@@ -119,7 +119,7 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // quietly un-rate a game whose file predates a field. Omitted when false
     // so no existing history row grows one.
     ...(raw.rated ?? previous?.rated ? { rated: true } : {}),
-    // R290: the concession stamp, same "best source first" shape and the same
+    // CR D8.5: the concession stamp, same "best source first" shape and the same
     // reason — a re-import must not turn a walkover back into a full loss.
     // Omitted when there is none, so no existing row grows a field.
     ...((): { concession?: Concession } => {
@@ -131,7 +131,7 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // lineage records and the trio history all skip it). The rules only: the
     // deal stays in the room file, where the summary above read it.
     ...(raw.custom ? { custom: sanitizeCustomRules(raw.custom.rules) ?? { ...STANDARD_RULES, bans: [] } as CustomRules } : {}),
-    // R298: a single card duel, tagged with its two cards — read off the saved
+    // CR D8.2: a single card duel, tagged with its two cards — read off the saved
     // decks through the same helper the live room uses, so they cannot disagree.
     // A single-card file whose decks are unreadable is still TAGGED (with no
     // cards the ladder can read), never recorded as an ordinary constructed game.
@@ -160,11 +160,11 @@ export function recordLiveGame(room: {
   /** BL-02: same idea — a matchmade game recorded live must be rated without
    * waiting for its file to be re-read at the next boot. */
   rated?: boolean;
-  /** R290: and the concession stamp, for the same reason. */
+  /** CR D8.5: and the concession stamp, for the same reason. */
   concession?: Concession;
   /** BL-43: the custom rules and their deal, so the summary deals the game that was played */
   custom?: { rules: unknown; deal: unknown };
-  /** R298: a single card duel */
+  /** CR D8.2: a single card duel */
   single?: true;
 }): ImportedRow {
   const row = importGame(
@@ -173,7 +173,7 @@ export function recordLiveGame(room: {
       actions: room.actions, decks: room.decks, users: room.users,
       // constructed: which saved deck each seat brought (collection.ts)
       deckIds: room.deckIds,
-      // R216: carried so the replay inside summarizeGame deals the same board
+      // CR D8.4: carried so the replay inside summarizeGame deals the same board
       // the game was played on. (A scenario room is normally filtered out
       // before it gets here — see the guard in syncGamesDir and main.ts's
       // recordFinishedGame — but a record that reaches the fold must still
@@ -185,11 +185,11 @@ export function recordLiveGame(room: {
       matchMs: room.matchMs,
       // BL-02: stamped by the matchmaker at room creation — see Room.rated
       rated: room.rated,
-      // R290: stamped by applyToRoom when the concede landed — see Room.concession
+      // CR D8.5: stamped by applyToRoom when the concede landed — see Room.concession
       concession: room.concession,
       // BL-43: the deal this game was dealt from, and the rules it was chosen as
       ...(room.custom ? { custom: room.custom } : {}),
-      // R298: the tag, so a live-recorded duel reaches the card ladder at once
+      // CR D8.2e: the tag, so a live-recorded duel reaches the card ladder at once
       ...(room.single ? { single: true } : {}),
     } as SavedRoom,
     room.code,
@@ -229,12 +229,12 @@ export interface SyncReport {
 export function matchLengths(games: readonly RecordedGame[]): {
   n: number; total: number; mean: number; median: number; longest: number;
 } {
-  // R290: a game conceded on turn 1 or 2 is not a full game, and "how long
+  // CR D8.5: a game conceded on turn 1 or 2 is not a full game, and "how long
   // does a game take here" is a question about full games — a minute-long
   // walkover folded into the mean is the same class of lie as a 0. The
   // fast-game exclusion the owner asked for, applied to the one length stat.
   // BL-43: and a custom-rules game says nothing about how long a game here takes
-  // R298: nor does thirty copies of one card
+  // CR D8.2e: nor does thirty copies of one card
   const ms = games.filter(g => concessionWeight(g) === 'normal' && !g.custom && !g.single)
     .map(g => g.matchMs).filter((m): m is number => typeof m === 'number' && m > 0)
     .sort((a, b) => a - b);
@@ -281,7 +281,7 @@ export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport 
       report.skipped++;
       continue;
     }
-    // R216: a scenario room is a TEST FIXTURE, not a game. It has a dealt
+    // CR D8.4: a scenario room is a TEST FIXTURE, not a game. It has a dealt
     // board, a scripted opponent and a purpose, and folding it into somebody's
     // win/loss record would make the tester quietly rewrite the stats it is
     // supposed to be checking. Skipped here, at the one place every saved file

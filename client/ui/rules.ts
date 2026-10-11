@@ -257,7 +257,7 @@ const attributeEntry = (e: GlossEntry): RulesEntry => {
     : manual ? `Algomancy Manual, p.${manual.page}`
     : library ? `${library.card} (${library.library})`
     : 'no card prints a reminder for this attribute';
-  // `rule` is the repository's complete statement (ui/glossary.ts, R248); the
+  // `rule` is the repository's complete statement (ui/glossary.ts, CR D6.11); the
   // pinned card panel stopped printing it on 2026-09-20 — one sentence per
   // term there — and the reference is where it lives now.
   return { title: e.term, body, source, ...(e.alt ? { alt: e.alt } : {}), ...(e.rule ? { detail: e.rule } : {}) };

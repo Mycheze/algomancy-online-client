@@ -1,4 +1,4 @@
-/* R257 / CT-129 + CT-130 — THE CARD BROWSER SHOWS THE RULES THE CARD NAMES.
+/* CR D6.11c / CT-129 + CT-130 — THE CARD BROWSER SHOWS THE RULES THE CARD NAMES.
  *
  * Bena, answering Q7 of docs/questions-round31.md, about Brough:
  *
@@ -19,7 +19,7 @@
  *     inspector, which scans the text (`ui/main.ts` -> `glossaryHits`), drew
  *     "Balanced, Augment". Two glossary paths, and the browser had the wrong
  *     one.
- *   · {Rot} is a PLAYER counter (R38), not an attribute, so no card can EVER
+ *   · {Rot} is a PLAYER counter (CR 112.13), not an attribute, so no card can EVER
  *     carry it on a type line. Fifteen cards talk about rot; the browser
  *     explained it on none of them. Ten glossary rows in total — Rot, Cache,
  *     Glimpse, Trash, Battle, Haste, Once, Recycle, Shard, Prismite — were
@@ -49,7 +49,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
-import '../../engine/src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
+import '../../engine/src/index.ts';   // the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495
 import { GLOSSARY, KEYWORDS, glossaryHits, matcherFor, type GlossEntry } from '../glossary.ts';
 import { allRows, rowFor, type CardRow } from '../cardindex.ts';
 import { glossaryFor } from '../cardpanel.ts';
@@ -114,8 +114,8 @@ const typeLineTerms = (r: CardRow): Set<string> => new Set(GLOSSARY
   .filter(g => r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()))
   .map(g => g.term));
 
-test('R257: the panel is a UNION — the text scan is added to the type line, never swapped for it', () => {
-  // WHY THIS EXISTS. The obvious reading of R257 is "the text path covers
+test('CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it', () => {
+  // WHY THIS EXISTS. The obvious reading of CR D6.11c is "the text path covers
   // everything, so drop the type-line filter" — and it does not.
   // `mechanicsOf()` sets its flags off BOOLEANS on the printed row, and a
   // boolean does not have to put its word in the text box: {Prophecy} and
@@ -247,7 +247,7 @@ test('CT-130: rot is explained on every card that mentions it', () => {
   const bad = subjects.filter(r => !panelTerms(r).has('Rot')).map(r => r.name);
   assert.deepEqual(bad.slice(0, 12), [],
     `${bad.length} cards talk about rot and the browser never says what rot is. Rot is a counter `
-    + 'on the PLAYER (R38), so it can never appear on a type line — which is precisely why the '
+    + 'on the PLAYER (CR 112.13), so it can never appear on a type line — which is precisely why the '
     + 'type-line filter drew it zero times.');
 });
 
@@ -256,7 +256,7 @@ test('CT-130: rot is explained on every card that mentions it', () => {
  * ════════════════════════════════════════════════════════════════════════ */
 
 test('POSITIVE CONTROL: the filter that shipped fails every check in this file', () => {
-  // the exact line as it stood before R257, rebuilt here rather than
+  // the exact line as it stood before the browser-reach rule (CR D6.11c), rebuilt here rather than
   // re-enabled in the source. If the checks above cannot see this, they are
   // decoration.
   const asItShipped = (r: CardRow): Set<string> => new Set(GLOSSARY

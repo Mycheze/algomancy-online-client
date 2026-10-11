@@ -1,4 +1,4 @@
-/* R157 §4, §5 and §11 — the column power gate, the {Swift}{Sluggish} trigger
+/* The owner's answers §4, §5 and §11 (CR 608.9a, 608.2c, 802.3b) — the column power gate, the {Swift}{Sluggish} trigger
  * gate, and {Deadly}'s (absent) damage cap.
  *
  * §4, verbatim (Bena, 2026-08-25): "Only if the other unit in the column has a
@@ -28,7 +28,7 @@
  * enough to kill a unit."
  *   → the engine was ALREADY RIGHT and nothing was changed for it. {Deadly}'s
  *     1 is a FLOOR on the pass-along SHARE (`victimShare` / `poolToKill`),
- *     never a ceiling on what is dealt; R114's leftover puts the whole rest
+ *     never a ceiling on what is dealt; CR 608.6d's leftover puts the whole rest
  *     back on the back-most living unit. These two tests pin that so nobody
  *     "fixes" the floor into a cap.
  *
@@ -56,7 +56,7 @@ function settleCombat(h: Harness): void {
       continue;
     }
     if (h.state.phase !== 'battle') break;
-    // R295: a damage step split by {Swift}/{Sluggish} offers priority at each
+    // CR 608.3b: a damage step split by {Swift}/{Sluggish} offers priority at each
     // sub-step boundary. Passing through it is what lets the LATER sub-steps
     // run at all — without this the helper returned with half the damage of
     // the battle undealt, which is exactly how report #165's engine behaved.
@@ -68,7 +68,7 @@ function settleCombat(h: Harness): void {
   if (guard <= 0) throw new Error('settleCombat did not terminate');
 }
 
-/** shrink `id` to 0 power, keeping its toughness — the R157 §4 anchor */
+/** shrink `id` to 0 power, keeping its toughness — the CR 608.9a anchor */
 function toZeroPower(h: Harness, id: EntityId): void {
   const e = new E(h.state);
   const u = ent(h, id)!;
@@ -77,13 +77,13 @@ function toZeroPower(h: Harness, id: EntityId): void {
 }
 
 /**
- * Both R157 §4 boards, run to the end of the damage steps.
+ * Both CR 608.9a boards, run to the end of the damage steps.
  *
  * `together`: the 0-power anchor shares a column with a 1-power ally, so the
  * COLUMN has power and the column deals combat damage — the trigger MUST fire.
  * `apart`:    the anchor stands alone in a 0-power column while a SECOND
  * column of the same player connects for 1. Both columns are normal, so both
- * strike in the same sub-step and R117's gate lets the anchor through; the
+ * strike in the same sub-step and CR 608.9a's gate lets the anchor through; the
  * aggregated per-seat `lifeLost` is the ONLY thing it can be hearing, and the
  * power gate is the only thing that stops it. That is the whole point of
  * running the negative this way rather than with a silent 0-power board: a
@@ -97,16 +97,16 @@ function attackWith(h: Harness, A: Seat, D: Seat, anchor: EntityId, ally: Entity
     columns: shape === 'together' ? [[anchor, ally]] : [[anchor], [ally]],
   });
   assert.equal(h.q.combatSubStepOf(ent(h, anchor)!), 'normal',
-    'nothing here is Swift or Sluggish — R117 is satisfied either way');
+    'nothing here is Swift or Sluggish — CR 608.9a is satisfied either way');
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   settleCombat(h);
 }
 
-/* ── R157 §4: Zephyrzoa (face channel) ─────────────────────────────────── */
+/* ── CR 608.9a: Zephyrzoa (face channel) ─────────────────────────────────── */
 
-test('R157 §4 — Zephyrzoa: a 0-power anchor in a POWERED column still fires', () => {
+test('CR 608.9a — Zephyrzoa: a 0-power anchor in a POWERED column still fires', () => {
   const h = new Harness(5340);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -126,7 +126,7 @@ test('R157 §4 — Zephyrzoa: a 0-power anchor in a POWERED column still fires',
   finishBattle(h);
 });
 
-test('R157 §4 — Zephyrzoa: alone in a 0-POWER column it hears nothing', () => {
+test('CR 608.9a — Zephyrzoa: alone in a 0-POWER column it hears nothing', () => {
   const h = new Harness(5341);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -145,9 +145,9 @@ test('R157 §4 — Zephyrzoa: alone in a 0-POWER column it hears nothing', () =>
   finishBattle(h);
 });
 
-/* ── R157 §4: Vroot (units + face channels) ────────────────────────────── */
+/* ── CR 608.9a: Vroot (units + face channels) ────────────────────────────── */
 
-test('R157 §4 — Vroot: a 0-power anchor in a POWERED column still pays out', () => {
+test('CR 608.9a — Vroot: a 0-power anchor in a POWERED column still pays out', () => {
   const h = new Harness(5342);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -164,7 +164,7 @@ test('R157 §4 — Vroot: a 0-power anchor in a POWERED column still pays out', 
   finishBattle(h);
 });
 
-test('R157 §4 — Vroot: alone in a 0-POWER column it pays out nothing', () => {
+test('§4 — Vroot: alone in a 0-POWER column it pays out nothing', () => {
   const h = new Harness(5343);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -180,9 +180,9 @@ test('R157 §4 — Vroot: alone in a 0-POWER column it pays out nothing', () => 
   finishBattle(h);
 });
 
-/* ── R157 §4: Eldritch Dreamtender (face channel; had NO power gate) ────── */
+/* ── CR 608.9a: Eldritch Dreamtender (face channel; had NO power gate) ────── */
 
-test('R157 §4 — Eldritch Dreamtender: a 0-power anchor in a POWERED column still fires', () => {
+test('CR 608.9a — Eldritch Dreamtender: a 0-power anchor in a POWERED column still fires', () => {
   const h = new Harness(5344);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -194,12 +194,12 @@ test('R157 §4 — Eldritch Dreamtender: a 0-power anchor in a POWERED column st
   attackWith(h, A, D, dt, ally, 'together');
 
   assert.equal(h.state.players[D]!.life, life0 - 1);
-  assert.equal(ent(h, dt), undefined, 'R73: the sacrifice is a cast cost, paid on the way to the stack');
+  assert.equal(ent(h, dt), undefined, 'engine (F-U04-5; CR 111.8 makes it part of the effect): the sacrifice is a cast cost, paid on the way to the stack');
   assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
   finishBattle(h);
 });
 
-test('R157 §4 — Eldritch Dreamtender: alone in a 0-POWER column it survives', () => {
+test('CR 608.9a — Eldritch Dreamtender: alone in a 0-POWER column it survives', () => {
   const h = new Harness(5345);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -216,9 +216,9 @@ test('R157 §4 — Eldritch Dreamtender: alone in a 0-POWER column it survives',
   finishBattle(h);
 });
 
-/* ── R157 §4: Blightmound (all three channels; read its OWN power) ──────── */
+/* ── CR 608.9a: Blightmound (all three channels; read its OWN power) ──────── */
 
-test('R157 §4 — Blightmound: a 0-power anchor in a POWERED column still rots', () => {
+test('CR 608.9a — Blightmound: a 0-power anchor in a POWERED column still rots', () => {
   const h = new Harness(5346);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -231,13 +231,13 @@ test('R157 §4 — Blightmound: a 0-power anchor in a POWERED column still rots'
 
   // THE FIX: this card gated on `effStats(self)[0] <= 0` — its OWN power — so
   // a 0-power Blightmound in a column that plainly deals combat damage stayed
-  // silent. R157 §4: "the other thing in the column can still contribute to
+  // silent. The owner's §4 (CR 608.9a): "the other thing in the column can still contribute to
   // the shared column power."
   assert.equal(h.q.rot(D), rot0 + 1, 'the COLUMN dealt combat damage, so the rot lands');
   finishBattle(h);
 });
 
-test('R157 §4 — Blightmound: alone in a 0-POWER column it rots nobody', () => {
+test('CR 608.9a — Blightmound: alone in a 0-POWER column it rots nobody', () => {
   const h = new Harness(5347);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -254,9 +254,9 @@ test('R157 §4 — Blightmound: alone in a 0-POWER column it rots nobody', () =>
   finishBattle(h);
 });
 
-/* ── R157 §5: a {Swift}{Sluggish} column triggers in BOTH sub-steps ─────── */
+/* ── CR 608.9a: a {Swift}{Sluggish} column triggers in BOTH sub-steps ─────── */
 
-test('R157 §5 — a {Swift}{Sluggish} column strikes twice, and its triggers fire twice', () => {
+test('§5 — a {Swift}{Sluggish} column strikes twice, and its triggers fire twice', () => {
   const h = new Harness(5348);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -269,7 +269,7 @@ test('R157 §5 — a {Swift}{Sluggish} column strikes twice, and its triggers fi
   // (E.colAttrs), so the whole column carries the pair.
   h.do({ type: 'declareAttack', seat: A, columns: [[rw, v]] });
   assert.deepEqual(h.q.combatSubStepsOf(ent(h, v)!), ['Swift', 'Sluggish'],
-    'R157 §5: "both apply" — the column is scheduled in TWO sub-steps');
+    '§5, "both apply" (CR 608.2c): the column is scheduled in TWO sub-steps');
   assert.equal(h.q.combatSubStepOf(ent(h, v)!), 'Swift',
     'the singular form is documented-lossy and still answers the first');
 
@@ -289,9 +289,9 @@ test('R157 §5 — a {Swift}{Sluggish} column strikes twice, and its triggers fi
   finishBattle(h);
 });
 
-/* ── R157 §11: {Deadly} changes lethality, not amount ───────────────────── */
+/* ── CR 802.3b: {Deadly} changes lethality, not amount ───────────────────── */
 
-test('R157 §11 — a 10-power {Deadly} column deals all 10 to a 1/1 blocker', () => {
+test('CR 802.3b — a 10-power {Deadly} column deals all 10 to a 1/1 blocker', () => {
   const h = new Harness(5349);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -308,17 +308,17 @@ test('R157 §11 — a 10-power {Deadly} column deals all 10 to a 1/1 blocker', (
   settleCombat(h);
 
   // "A 10/10 deadly unit still deals 10 damage to something." {Deadly}'s 1 is
-  // a floor on the pass-along SHARE, and R114 lands the whole leftover back on
+  // a floor on the pass-along SHARE, and CR 608.6d lands the whole leftover back on
   // the back-most living unit — so nothing is lost and nothing is capped.
   assert.ok(h.log.some(l => l.includes('Unit Token takes 10')),
     `all 10 landed; log was ${JSON.stringify(h.log.filter(l => l.includes('takes')))}`);
-  assert.equal(ent(h, blk), undefined, 'and any amount from a Deadly source is lethal (R21)');
+  assert.equal(ent(h, blk), undefined, 'and any amount from a Deadly source is lethal (CR 802.3a)');
   assert.equal(h.state.players[D]!.life, life0,
     'a blocked, non-Piercing column spills nothing to the face');
   finishBattle(h);
 });
 
-test('R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce', () => {
+test('CR 802.3b — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce', () => {
   const h = new Harness(5350);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -338,7 +338,7 @@ test('R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 p
   pass(h); pass(h);
   settleCombat(h);
 
-  // RAQ "[Solved] Oorblak vs Piercing", and R157 §11 for the amount: the
+  // RAQ "[Solved] Oorblak vs Piercing", and CR 802.3b for the amount: the
   // source's whole 10 is dealt — 1 spent on the {Deadly} floor, 9 pierced. A
   // cap of any kind at the source would show up here as missing life loss.
   assert.equal(h.state.players[D]!.life, life0 - 9, '10 dealt: 1 to the body, 9 to the face');
@@ -348,31 +348,31 @@ test('R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 p
 
 /* ── CT-145: THE SUB-STEP GATE ITSELF ─────────────────────────────────────
  *
- * `E.strikesInCurrentSubStep` is the gate R117 and R157 §5 are written on, and
+ * `E.strikesInCurrentSubStep` is the gate CR 608.9a and 608.2c are written on, and
  * CT-145 measured that replacing its body with `return true` leaves the whole
  * suite green — 25 failures either way, the same 25 titles. ⚠ THE BEHAVIOUR IS
- * CORRECT; the gate is REDUNDANT, not wrong. R195 gave the aggregated
+ * CORRECT; the gate is REDUNDANT, not wrong. A later fix gave the aggregated
  * `lifeLost` a per-column breakdown, so `faceDamageDealtBy` answers "is this my
  * damage" and, on the way, "is this my sub-step". Either mechanism alone holds
- * R117 on today's boards, so no behavioural test can tell them apart.
+ * CR 608.9a on today's boards, so no behavioural test can tell them apart.
  *
  * WHICH IS THE SPEC: they answer DIFFERENT questions and only look
  * interchangeable because every card in the pool asks both at once.
  *   · `strikesInCurrentSubStep` — WHEN. Does my column strike in the sub-step
  *     that is running? Read from `when()`, at event time, before `damageStep`
- *     advances. It is what R117 and R157 §5 are written on, and R157 §5's
+ *     advances. It is what CR 608.9a and CR 608.2c are written on, and the owner's
  *     {Swift}{Sluggish} answer ("both apply") is a statement about it.
- *   · `faceDamageDealtBy` (R195) — WHOSE. Which of this seat's columns did the
+ *   · `faceDamageDealtBy` (CR 608.9a) — WHOSE. Which of this seat's columns did the
  *     damage the aggregated per-seat `lifeLost` event reports?
  * The gate stays as the timing spec. What was missing was any test that asks
- * it a question it can get WRONG — every existing one asks it a question R195
+ * it a question it can get WRONG — every existing one asks it a question `faceDamageDealtBy`
  * also answers. This is that test, and it is deliberately white-box: a gate
  * whose redundancy makes it behaviourally untestable is guarded directly or
  * not at all.
  *
  * Seed 5360.
  */
-test('CT-145 R117: the sub-step gate DISCRIMINATES — the question no behavioural test can ask it', () => {
+test('CT-145 CR 608.9a: the sub-step gate DISCRIMINATES — the question no behavioural test can ask it', () => {
   const h = new Harness(5360);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -402,18 +402,18 @@ test('CT-145 R117: the sub-step gate DISCRIMINATES — the question no behaviour
       assert.equal(e.strikesInCurrentSubStep(probe.entities[id]!), step === mine,
         `${name}'s column strikes in the ${mine} sub-step, and the running sub-step is `
         + `${step} — the gate must say ${step === mine}. A gate that cannot say NO is not a `
-        + 'gate, and R195\'s per-column attribution will hide that from every behavioural test');
+        + 'gate, and CR 608.9a\'s per-column attribution will hide that from every behavioural test');
     }
   }
 
   // …and the two states that are not a striking sub-step at all. ⚠ THE SECOND
-  // IS THE R261 WORLD: the trigger queue is held to the after-combat step, so
+  // IS THE CR 608.9b WORLD: the trigger queue is held to the after-combat step, so
   // `damageStep` is null by the time any of these triggers RUNS. That is why
   // the engine comment says this gate is `when()`-only — asked from `run()` it
   // returns false for everything, which is the silent failure it would cause.
   for (const [label, mutate] of [
     ['the after-combat step', (s: GameState) => { s.battle!.damageStep = 'after'; }],
-    ['no damage step at all (R261: where a trigger RUNS)',
+    ['no damage step at all (CR 608.9b: where a trigger RUNS)',
       (s: GameState) => { delete s.battle!.damageStep; }],
   ] as const) {
     const probe = structuredClone(h.state);

@@ -25,7 +25,7 @@ The pure library, fuzz-tested, hotseat/solo in browser (grown out of the since-r
   triggers/events, modifiers + 6-layer projection, combat with formations, state-based actions,
   `legalActions`, decision-point model, seeded RNG + action log.
 - **Mods (augment/graft) done properly** — the #1 de-risk item; in the first 20 cards.
-- Fuzz harness + per-card tests. `digital-rules.md` rulings log starts here.
+- Fuzz harness + per-card tests. The rulings log (`digital-rules.md`, the ruling register, since retired) starts here.
 - **Exit criterion: fuzzer plays 1M games without crash/illegal state; 20 cards fully correct.**
 
 ## M2 — Online enforced client, 1v1 constructed — 3-6 weeks
@@ -106,7 +106,7 @@ side panel (net mode), compact opponent hand, bins as card scans, +N/+N
 counter badges, dormant resources greyed + a "you still have activations"
 confirm, clamped context menus, game-element-only recycle menu, stack card
 art, and a "Pass all" priority button that disarms when the stack grows.
-(⚠ That single button is **history**, not the current client: R251 — 2026-08-29,
+(⚠ That single button is **history**, not the current client: the standing-pass ruling (now CR D2.2) — 2026-08-29,
 report #123 — split it into three promises with different scopes, and the one
 described here became **Pass through stack**.)
 
@@ -119,7 +119,7 @@ Sandstone Defender, Dreadspawn Horror, Malformed Monstrosity, Towering
 Colossus all fully live; `augmentable: true` flags statics-only augments);
 **combat sub-step trigger drain** (`battle.damageStep` + `pumpCombatDamage()`,
 resumable via settle like the turn-end pattern): triggers fired by a damage
-sub-step resolve immediately — special actions, no priority (R3) — before the
+sub-step resolve immediately — special actions, no priority (a reading since replaced, CR 608.9b) — before the
 next sub-step, so Flowstone Arcanite's Swift counters land before normal
 damage. UI: battle sub-step in the phase track, table orientation (your units
 below the vs-line), base-vs-effective P/T (colored live stats + printed base
@@ -129,14 +129,13 @@ Suite 289 / 0 fail; 1000-game fuzz clean on the new combat pump.
 
 **Playtest round 3 (second live game, 2026-08-18):** Engine — absent
 counterattackers now exist NOWHERE (no statics radiation, no token
-enumeration — R32; the live Towering Colossus case); Tidelurker's 2/2 arrives
-at HOME (R28 ⚠ — created units default to the controller's region; global
-default still to confirm — **R28 was WITHDRAWN on 2026-08-23 by R115: a created
+enumeration — CR 610.2, 610.2a; the live Towering Colossus case); Tidelurker's 2/2 arrives
+at HOME (then the default for created units — **withdrawn on 2026-08-23 (CR 601.5): a created
 unit arrives where its SOURCE is, so Tidelurker's 2/2 now stays in the battle
 region and cannot block the counterattack**); Tiderunner Initiate's open-spot prompt broadened
-(behind a survivor / emptied column / a NEW attacker column — R29); Recall's
-unconditional 2 life documented as R30; combat sub-step trigger timing is
-R31; seenHand (Bripp looks are remembered until the owner's draft merge);
+(behind a survivor / emptied column / a NEW attacker column — CR 602.7); Recall's
+unconditional 2 life documented as a ruling (now CR 801.7e); combat sub-step trigger timing got a ruling
+(since replaced; now CR 608.9); seenHand (Bripp looks are remembered until the owner's draft merge);
 DecisionOption.card (hand/deck/bin picks carry the card for real scans).
 Twin Flame's engine was CORRECT — the UI's 'targets' decisions rendered no
 button for non-board options, so "No more targets" was unreachable.
@@ -176,20 +175,20 @@ cost-modifier layers (Rook, The Silent, Dispatch Courier, Worldbender).
 
 ## First three concrete steps
 1. ~~Answer the doc-05 questions~~ **Done 2026-07-16** — rulings live in
-   [digital-rules.md](digital-rules.md) (R1 still provisional).
+   the ruling register, since retired (the trigger-conditions ruling still provisional).
 2. ~~Grow `prototype/` toward M1 in TypeScript~~ **Done 2026-07-16** — `engine/` is the
    pure reducer (apply + legalActions + seeded RNG + action-log replay), with real regions,
    the 1v1 counterattack rule, Swift/Sluggish sub-steps, Electric pathing, **proper graft
-   composition**, 22 scripted cards, R1-R12 encoded as tests (R10 todo: no Unaware card
+   composition**, 22 scripted cards, the twelve first rulings encoded as tests (Unaware ruling todo: no Unaware card
    yet), the prototype's suite ported, a fuzzer (2000 games clean, 100% terminate,
    replay-deterministic), and the hotseat UI rebuilt on top (`ui/index.html`).
-   New provisional rulings R13-R16 (engine calls) await Bena's confirmation.
+   New provisional engine calls (since settled) await Bena's confirmation.
 3. ~~Set up the card-scripting pipeline early~~ **Done 2026-07-16** — `scripts/gen-card.mjs`:
    validates names against the oracle JSON, grows `scripts/pool.mjs`, re-extracts
    printed.json, and emits a TODO-marked DSL skeleton + test stub per card. Proven by
-   scripting the mechanics-batch-2 ten (pool now 34): stat layer 4 (Tough/Balanced, R19),
-   Deadly (R21), Sneaky (R20), Feeble, the planning haste step (R18), damage triggers,
-   Robot/Wisp unit tokens, and Ambush (R22 — Good Whale's parked mode included).
+   scripting the mechanics-batch-2 ten (pool now 34): stat layer 4 (Tough/Balanced, CR 802.1j),
+   Deadly (CR 802.3), Sneaky (CR 802.14), Feeble, the planning haste step (CR 504), damage triggers,
+   Robot/Wisp unit tokens, and Ambush (CR 803.6 — Good Whale's parked mode included).
 
 ### M1 remaining
 - 1M-game fuzz run on the server — **ready to go, not yet run** (a 2026-07-16 attempt
@@ -198,6 +197,6 @@ cost-modifier layers (Rook, The Silent, Dispatch Courier, Worldbender).
   `~/node-v22`. Measured: ~24 games/s on 10 nice'd workers → ~12 h for 1M. Kick off with
   `setsid nohup nice -n 19 ~/node-v22/bin/node test/fuzz-parallel.ts 1000000 10 > fuzz-1M.log 2>&1 &`
   in `~/Documents/Algomancy/client/engine`. Laptop: 12.7 games/s on 7 workers.
-- R7 voluntary over-assignment + a card that makes it observable.
-- Stat layers 5-6 when the first Inverted/Unaware card lands (R10 is a `todo` test).
-- Bena to confirm/overturn provisional rulings R13-R16, R18-R22.
+- CR 608.6c voluntary over-assignment + a card that makes it observable.
+- Stat layers 5-6 when the first Inverted/Unaware card lands (the Unaware ruling is a `todo` test).
+- Bena to confirm/overturn the provisional rulings of the time.

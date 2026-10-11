@@ -132,7 +132,7 @@ test('§2 a placed unit leaves the tray for the column clicked, and comes back',
   join(s, 0);
   ui.click({ act: 'unit', id: String(u) });
   let html = ui.click({ act: 'slot', ci: '2', row: '1' });
-  assert.deepEqual(column(html, 2), [u], 'it stands in column 3 (its back slot, R304) — no column slid left');
+  assert.deepEqual(column(html, 2), [u], 'it stands in column 3 (its back slot) — no column slid left');
   assert.equal(idsIn(divWith(html, 'class="stagerow"')).includes(u!), false, 'the tray gave it up');
   assert.equal(slots(html).length, 7, 'every other slot is still drawn');
   html = ui.click({ act: 'unit', id: String(u) });

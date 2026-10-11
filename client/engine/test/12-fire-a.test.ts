@@ -1,14 +1,14 @@
 /* Per-card tests for batch-fire-a (project rule: a test for every card).
  * Covers a stack sweeper (Flame Shield), mid-resolution sacrifice choices
  * (Immolate, Bloodwind Revenant, General Smof, Ghord, Infernal Cultivator —
- * the R6 choose model), bin recall (Delver of Mysteries), retargeting with a
+ * the CR 704.1a choose model), bin recall (Delver of Mysteries), retargeting with a
  * payment out (Gravitational Correction), end-of-turn triggers (Harbinger of
  * Immolation, Infernal Wispweaver), formation token creation (Hooba-Lin), a
  * trigger-approximated aura (Animated Spark), a haste body plus a bin-resident
- * recall trigger (Cinder Scuttler, R51)
+ * recall trigger (Cinder Scuttler, CR 400.5)
  * and the Manual p.18 AFFINITY BONUS that the [element] Resource faces reprint
  * as reminder text — including the seven-element conformance sweep that keeps
- * that rule out of card definitions (R116, R54). States are
+ * that rule out of card definitions (CR 106.7c). States are
  * built explicitly (give/spawn/giveResources) so parallel card registration
  * can't shift assertions. Seeds: 1200-1299.
  */
@@ -36,7 +36,7 @@ function spawnToken(h: Harness, seat: Seat, p: number, t: number): EntityId {
 // ── Abyssal Evocation ────────────────────────────────────────────────────
 
 test('Abyssal Evocation: in this battle, you may play spells from your bin', () => {
-  // R96. The whole card. Before round 17 it resolved to an info line and went
+  // CR 405.9. The whole card. Before round 17 it resolved to an info line and went
   // to the bin, so a bin-recursion deck built on it had no recursion.
   const h = new Harness(1200);
   toDeployment(h);
@@ -61,7 +61,7 @@ test('Abyssal Evocation: in this battle, you may play spells from your bin', () 
 });
 
 test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, never re-binned', () => {
-  // R69 names this card for the mechanism: "Reminder text on both cards that
+  // The Unstable ruling (now CR 803.8c) names this card for the mechanism: "Reminder text on both cards that
   // GRANT it (Abyssal Evocation, Spell Excavation): '(If they would enter a
   // bin, erase them instead.)' — a bin replacement, in as many words. … Only
   // the destination changes." `dischargeItem` is the single choke point for
@@ -86,7 +86,7 @@ test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, neve
     'the Arc left the BIN as it was played (index 0)');
   pick(h, { unit: victim });
   pass(h); pass(h);                                  // resolve it
-  // 7, not the Arc's printed 6: R104 made Conduit of Pain live, and the
+  // 7, not the Arc's printed 6: the replacement-layer ruling (now CR 708.5) made Conduit of Pain live, and the
   // attacker above is one — "[Augment] If an allied source would deal
   // noncombat damage, it deals that much damage plus 1 instead". The bin-play
   // path is what this test is about; the extra point is the replacement layer
@@ -95,12 +95,12 @@ test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, neve
   assert.ok(!h.state.players[A]!.bin.includes('Luminous Arc'),
     '"if they would enter a bin, erase them instead" — it did NOT come back');
   assert.ok((h.state.players[A]!.erased ?? []).includes('Luminous Arc'),
-    'R65: the erase reaches the public erased pile');
+    'CR 407.1: the erase reaches the public erased pile');
   finishBattle(h);
 });
 
 test('Abyssal Evocation: the permission is this REGION\'s battle, and lapses at the next one', () => {
-  // R14: "'this battle' = this region's battle". The permission is a
+  // CR 505.6: "'this battle' = this region's battle". The permission is a
   // region-keyed battleCounter, which is exactly why round 1's grant cannot
   // leak into round 2 — and why it needed no cleanup code of its own.
   const h = new Harness(1241);
@@ -139,8 +139,8 @@ test('Abyssal Evocation: without the permission the action is refused, not just 
 });
 
 test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {
-  // Shipped RESTRICTIVE, and this test is what says so out loud. R42/R45
-  // answered the analogous CACHE question that way — "normal TIMING applies —
+  // Shipped RESTRICTIVE, and this test is what says so out loud. CR 403.3d
+  // settles the analogous CACHE question that way — "normal TIMING applies —
   // the card is played 'as if it were in your hand' … (Caleb 2025-12-28)" —
   // and `playAtTiming` enforces it for free, so a bin full of DEPLOY-timing
   // spells is inert under this card. If the owner rules the other way, this
@@ -171,7 +171,7 @@ test('Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, and "until reg
   // The "edge, noted for review" in Spell Excavation's own comment: a spell
   // unit played this way spawns a body, and the body's later bin entry was not
   // tracked as unstable. StackItem.unstable → Entity.unstable closes it, and
-  // the R11 step-3 sweep clears the stamp at regroup for free.
+  // the CR 506.2 step-3 sweep clears the stamp at regroup for free.
   const h = new Harness(1244);
   toDeployment(h);
   const A = h.state.initiative;
@@ -210,7 +210,7 @@ test('Animated Spark: each nontoken spell played in battle gives your units +1/+
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[spark], [ally]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
-  pick(h, { unit: ally });                           // cast cost (R35): sacrifice the ally NOW
+  pick(h, { unit: ally });                           // cast cost (CR 702.4): sacrifice the ally NOW
   // STATIC: the bonus is live the moment the spell is PLAYED (ledger bump) —
   // no trigger, no stack round-trip
   assert.deepEqual(effStats(h, spark), [1, 1], 'Spark itself +1/+0');
@@ -232,7 +232,7 @@ test('Bloodwind Revenant: unblocked combat damage to opponent → may sacrifice 
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
   const handBefore = h.state.players[A]!.hand.length;
   pass(h); pass(h);                                  // → combat damage
-  // R261: was "trigger resolves at once (R3 sub-step drain)". The trigger now
+  // CR 608.9b: was "trigger resolves at once (R3 sub-step drain)". The trigger now
   // goes on the stack in the after-combat window; one round of priority there
   // resolves it and raises the same payOrDecline. Nothing else about the
   // question — its seat, its options, its outcome — moved.
@@ -269,17 +269,17 @@ test('Cinder Scuttler: playable in the haste step as a 2/1', () => {
   giveResources(h, p, 'fire', 1);                    // r / 1
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone && !h.state.hasteDone[p], 'haste step engaged (R18)');
+  assert.ok(h.state.hasteDone && !h.state.hasteDone[p], 'haste step engaged (CR 504)');
   h.do({ type: 'playCard', seat: p, handIndex: idx });
   const scut = unitsOf(h, p).find(u => u.card === 'Cinder Scuttler');
   assert.ok(scut, 'spawned during the haste step');
   assert.deepEqual(effStats(h, scut!.id), [2, 1], '2/1');
   h.do({ type: 'doneHaste', seat: p });
-  h.do({ type: 'doneHaste', seat: 1 - p });          // R228: both seats close it
+  h.do({ type: 'doneHaste', seat: 1 - p });          // CR 504.5a: both seats close it
   assert.equal(h.state.phase, 'battle', 'battle follows the haste step');
 });
 
-test('Cinder Scuttler: recalled from the bin on combat damage to an opponent (R51)', () => {
+test('Cinder Scuttler: recalled from the bin on combat damage to an opponent (CR 400.5)', () => {
   const h = new Harness(1213);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -294,7 +294,7 @@ test('Cinder Scuttler: recalled from the bin on combat damage to an opponent (R5
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });   // unblocked → D takes 7
   pass(h); pass(h);
-  resolveAfterCombat(h);   // R261: the R51 bin recall waits for the after-combat stack
+  resolveAfterCombat(h);   // CR 608.9b: the CR 400.5 bin recall waits for the after-combat stack
   assert.ok(h.state.players[D]!.life < 30, 'D took combat damage');
   assert.ok(!h.state.players[A]!.bin.includes('Cinder Scuttler'), "it left the DEALER's bin");
   assert.equal(scutsA(), beforeA + 1, "and is in the dealer's hand");
@@ -302,11 +302,11 @@ test('Cinder Scuttler: recalled from the bin on combat damage to an opponent (R5
     "the VICTIM's copy stays put — they dealt nothing");
   assert.equal(scutsD(), beforeD, 'and none reached their hand');
   assert.ok(!h.events.some(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Cinder Scuttler'),
-    'leaving a bin is not trashing (R40)');
+    'leaving a bin is not trashing (CR 801.2)');
   finishBattle(h);
 });
 
-test('Cinder Scuttler: one firing per bin, not per copy (R51)', () => {
+test('Cinder Scuttler: one firing per bin, not per copy (CR 400.5a)', () => {
   const h = new Harness(1214);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -319,9 +319,9 @@ test('Cinder Scuttler: one firing per bin, not per copy (R51)', () => {
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
-  resolveAfterCombat(h);   // R261: the R51 bin recall waits for the after-combat stack
+  resolveAfterCombat(h);   // CR 608.9b: the CR 400.5 bin recall waits for the after-combat stack
   assert.equal(scuts(), before + 1,
-    'three copies in the bin, ONE recall — the text is a standing permission (R51)');
+    'three copies in the bin, ONE recall — the text is a standing permission (CR 400.5a)');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Cinder Scuttler').length, 2,
     'the other two stay in the bin');
   finishBattle(h);
@@ -343,13 +343,13 @@ test('Conduit of Pain: plays as a 2/1; augments (donating nothing yet)', () => {
 });
 
 test('Conduit of Pain: an allied source deals its noncombat damage plus one', () => {
-  // R104. The AMOUNT family: nothing is substituted and nothing is redirected,
+  // CR 708.5. The AMOUNT family: nothing is substituted and nothing is redirected,
   // the number is simply bigger by the time it lands. Luminous Arc prints 6.
   const h = new Harness(1250);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const victim = spawnToken(h, D, 1, 30);
-  // R12: the Conduit radiates in ITS OWN region, so it has to be in the battle
+  // CR 601.1d: the Conduit radiates in ITS OWN region, so it has to be in the battle
   // — it is the attacker here, exactly as a burn deck would play it.
   const atk = spawn(h, A, 'Conduit of Pain');
   giveResources(h, A, 'fire', 6);
@@ -444,7 +444,7 @@ test('Delver of Mysteries: recalls a chosen spell from the bin, then spawns 2/2'
   giveResources(h, p, 'fire', 4);                    // rr / 4
   const immolatesBefore = h.state.players[p]!.hand.filter(n => n === 'Immolate').length;
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Delver of Mysteries') });
-  // R67: the bin card is a CAST-TIME target, declared before the Delver is on
+  // CR 110.1a: the bin card is a CAST-TIME target, declared before the Delver is on
   // the stack — not a mid-resolution pick
   assert.equal(h.state.decision?.kind, 'targets', 'cast-time bin target');
   assert.equal(h.state.decision!.options.length, 1, 'only the SPELL is offered, not the unit');
@@ -480,7 +480,7 @@ test('Emberflame Enlightener: a Powerful column deals double combat damage', () 
   const h = new Harness(1218);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  const ee = spawn(h, A, 'Emberflame Enlightener');   // 0/5 — attacks along to carry the aura (R12)
+  const ee = spawn(h, A, 'Emberflame Enlightener');   // 0/5 — attacks along to carry the aura (CR 601.1d)
   const tok = spawn(h, A, 'Unit Token');              // 1/1
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok, ee]] });
@@ -488,7 +488,7 @@ test('Emberflame Enlightener: a Powerful column deals double combat damage', () 
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 28, 'the 1-power column output is DOUBLED (Powerful units)');
-  // (The spells half is live too as of round 17 — R94, tested below on its own
+  // (The spells half is live too as of round 17 — CR 802.10d, tested below on its own
   // channel. This test is the UNITS half and stays a combat-damage test.)
 });
 
@@ -512,12 +512,12 @@ test('Emberflame Enlightener: the units aura is DONATED too (mod-carried static)
 });
 
 test('Emberflame Enlightener: your SPELLS gain {Powerful} too — a spell effect deals double', () => {
-  // R94, and the half the owner's spell deck was built around. The units half
+  // CR 802.10d, and the half the owner's spell deck was built around. The units half
   // is a StaticMod; this one cannot be, because StaticMod.affects is typed
   // over an Entity and a resolving spell is a StackItem. It is an
   // `effectAttrs` mod — CostMod's sibling — whose grant lands in
   // EffectCtx.grantedAttrs, which dealEffectDamage has unioned into the
-  // source's attributes since R79.
+  // source's attributes since virus donation onto spells (CR 721.4b) was built.
   const h = new Harness(1233);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -583,26 +583,25 @@ test('Emberflame Enlightener: the SPELLS aura is DONATED too (mod-carried effect
   finishBattle(h);
 });
 
-test('Emberflame Enlightener: "your spells" INCLUDES your spell tokens (R157 §13)', () => {
+test('Emberflame Enlightener: "your spells" INCLUDES your spell tokens (CR 300.5a)', () => {
   // RULED, and this title said "⚠ OPEN" for three days after it was answered.
-  // R157 §13, the owner, 2026-08-25: **"Yes. Tokens are spells."** — recorded
-  // there as *Already correct*, naming this exact card. The engine was right
+  // The owner, 2026-08-25 (now CR 302.3): **"Yes. Tokens are spells."** — recorded
+  // in that ruling as *Already correct*, naming this exact card. The engine was right
   // and this test was pinning the right behaviour; only the title and the
   // paragraph below were stale, which is its own small lesson: a test that
   // announces an open question in its NAME keeps announcing it long after the
   // question closes, because nothing links a test title to a ruling. Found by
   // the round-29 reconciliation of the owner's answer sheet against the repo.
   //
-  // The reasoning, kept because it is why the answer went this way: R59 carved
+  // The reasoning, kept because it is why the answer went this way: an earlier ruling carved
   // spell TOKENS out of `costMods` on the grounds that "a spell token is cast
   // from play, not played" — but that carve-out exists because Tranquility's
   // text says "to PLAY", and Emberflame has no play verb in it at all. So
   // "your spells" includes them, which is the difference between an Emberflame
-  // deck doubling its Fireballs and not. R305 (owner, 2026-09-28) then took
-  // the carve-out away as well: casting a spell token IS playing a spell, so
+  // deck doubling its Fireballs and not. The owner (2026-09-28, now CR 702.7a) then removed the carve-out as well: casting a spell token IS playing a spell, so
   // Tranquility taxes one too. Emberflame's answer did not move.
   //
-  // `dsl.isSpellEffect` decides it, and since R305 it is `isPlayedSpellKind`,
+  // `dsl.isSpellEffect` decides it, and since then it is `isPlayedSpellKind`,
   // the one predicate for the printed noun "spell" — so this card and the
   // "spells cost more to play" cards cannot disagree about a token.
   const h = new Harness(1236);
@@ -705,9 +704,9 @@ test('Envoy of Lightning: plays as a 3/2, and is still applicable as an augment'
 });
 
 test('Envoy of Lightning: your single-target spell effects are Electric', () => {
-  // R94. Luminous Arc ("I deal 6 damage to target unit") is a plain spell with
+  // CR 802.17i. Luminous Arc ("I deal 6 damage to target unit") is a plain spell with
   // no printed attributes; under the Envoy it becomes {Electric}, so its
-  // excess past lethal walks to an adjacent unit (R4).
+  // excess past lethal walks to an adjacent unit (CR 802.17).
   const h = new Harness(1230);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -721,7 +720,7 @@ test('Envoy of Lightning: your single-target spell effects are Electric', () => 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: front });
   pass(h); pass(h);                                   // resolve
-  pick(h, back);                                      // R317: the jump is the controller's choice
+  pick(h, back);                                      // CR 802.17: the jump is the controller's choice
   assert.ok(!ent(h, front), '1/1 dies to the first point');
   assert.equal(ent(h, back)!.damage, 5,
     'the other 5 followed the Electric path to the only adjacent unit');
@@ -783,12 +782,12 @@ test('Envoy of Lightning: one declared target on the SAME spell is Electric (the
   pick(h, { unit: front });
   pick(h, { doneTargets: true });                     // "up to two" — stop at one
   pass(h); pass(h);
-  // R4: two units are adjacent to the dead 1/1 (its column-mate and the
+  // CR 802.17: two units are adjacent to the dead 1/1 (its column-mate and the
   // neighbouring column's front), so the Electric excess asks its controller
   // which way to go — an electricPath decision existing AT ALL is the proof
   // that the spell resolved as {Electric}.
   assert.equal(h.state.decision?.kind, 'electricPath', 'Electric: the 1 excess needs a path');
-  assert.equal(h.state.decision!.seat, D, "the Electric SOURCE's controller chooses (R4)");
+  assert.equal(h.state.decision!.seat, D, "the Electric SOURCE's controller chooses (CR 802.17)");
   pick(h, back);
   assert.ok(!ent(h, front), 'the 1/1 dies to the first point');
   assert.equal(ent(h, back)!.damage, 1, 'and the 1 excess walked the chosen way');
@@ -821,7 +820,7 @@ test('Fire Resource: registered with its printed face', () => {
  * Resource card. So the sweep below is the guard rail: "implementing" the
  * three faces would route a SEVEN-element rule through three card definitions
  * and silently drop the bonus for the other four. That is why these are
- * declared in 71-card-ledger's NOT_A_GAP rather than implemented. R116, R54.
+ * declared in 71-card-ledger's NOT_A_GAP rather than implemented. CR 106.7c.
  */
 
 test('Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time', () => {
@@ -903,12 +902,12 @@ test('CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven
     + 'apply.ts::maybeGrantShard. printed.json has Resource faces for only fire, '
     + 'water and earth — so if this failed for wood/metal/light/dark, the likely '
     + 'cause is that the rule was moved onto those three card definitions. Put it '
-    + 'back in maybeGrantShard; see R116 and 71-card-ledger\'s NOT_A_GAP.');
+    + 'back in maybeGrantShard; see CR 106.7c and 71-card-ledger\'s NOT_A_GAP.');
 });
 
 test('CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have', () => {
-  // maybeGrantShard's two early returns, pinned. R17: prismites give no
-  // affinity; R54: nor do shards. Neither is an "elemental resource" in the
+  // maybeGrantShard's two early returns, pinned. CR 105.5: prismites give no
+  // affinity; CR 106.9: nor do shards. Neither is an "elemental resource" in the
   // p.18 sense, so neither can reach three affinity of anything.
   for (const kind of ['prismite', 'shard'] as const) {
     const h = new Harness(1258);
@@ -941,7 +940,7 @@ test('Flame Shield: negates the rest of the stack; a Fireball per nontoken spell
   const fires = tokensOf(h, D).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 1, 'one nontoken spell negated → one Fireball');
   assert.equal(fires[0]!.x, 1, 'Fireball 1');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Arc is off the stack already');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Arc is off the stack already');
   assert.ok(ent(h, whale), 'target survives');
   assert.equal(ent(h, whale)!.damage, 0, 'no damage dealt');
   assert.ok(h.state.players[A]!.bin.includes('Luminous Arc'), 'negated spell → bin');
@@ -987,7 +986,7 @@ test('Ghord: sacrificing a unit makes each present opponent sacrifice a nontoken
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ghord], [fodder]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
-  pick(h, { unit: fodder });                         // cast cost (R35): sacrificed NOW → Ghord triggers
+  pick(h, { unit: fodder });                         // cast cost (CR 702.4): sacrificed NOW → Ghord triggers
   assert.ok(h.state.players[A]!.bin.includes('Conduit of Pain'), 'sacrificed → bin');
   pass(h); pass(h);                                  // Ghord's trigger (above Immolate) resolves
   assert.equal(h.state.decision?.seat, D, 'the opponent picks their sacrifice');
@@ -1017,11 +1016,11 @@ test('Gravitational Correction: retargets the effect unless its controller pays 
   pick(h, { unit: whale });
   const arcId = h.state.stack.find(i => i.card === 'Luminous Arc')!.id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Gravitational Correction') });
-  pick(h, 2);                                        // X = 2, chosen and paid AT CAST (R35)
+  pick(h, 2);                                        // X = 2, chosen and paid AT CAST (CR 107.2a)
   pick(h, { stack: arcId });
   pass(h); pass(h);                                  // resolve the Correction
   assert.equal(h.state.decision?.kind, 'payOrDecline');
-  assert.equal(h.state.decision!.seat, A, "the EFFECT's controller decides (R6)");
+  assert.equal(h.state.decision!.seat, A, "the EFFECT's controller decides (CR 702.5a)");
   assert.ok(h.state.decision!.options.some(o => o.value === true), 'pay [2] is affordable & offered');
   pick(h, false);                                    // decline → retarget
   assert.equal(h.state.decision?.seat, D, "the Correction's controller picks the new target");
@@ -1048,7 +1047,7 @@ test('Harbinger of Immolation: end of turn → Fireball X, X = 1 + your spell to
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // → end of turn
   const fires = tokensOf(h, p).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 3, 'the two originals plus the new one');
-  assert.ok(fires.some(t => t.x === 3), 'X = 1 + 2 controlled tokens = 3 (R1: live at resolution)');
+  assert.ok(fires.some(t => t.x === 3), 'X = 1 + 2 controlled tokens = 3 (CR 109.3b: live at resolution)');
 });
 
 // The [Augment] half (rooms ZQPC + SAAY: "my fireball was erased during
@@ -1158,7 +1157,7 @@ test('Hooba-Lin: augmented host attacking creates a 1/1 in its formation column'
   toNextBattle(h, p);
   h.do({ type: 'declareAttack', seat: p, columns: [[host]] });
   pass(h); pass(h);                                  // resolve the attack trigger
-  // R75: the controller now chooses the slot — either end of the line, or the
+  // CR 602.6a: the controller now chooses the slot — either end of the line, or the
   // back slot of the one-unit column. This used to be auto-picked.
   const dec = h.state.decision!;
   assert.equal(dec.seat, p, 'the effect\'s controller picks');
@@ -1186,7 +1185,7 @@ test('Immolate: sacrifice a unit to draw a card', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
   const handBefore = h.state.players[A]!.hand.length;
-  pick(h, { unit: atk });                            // cast cost (R35): paid BEFORE the stack push
+  pick(h, { unit: atk });                            // cast cost (CR 702.4): paid BEFORE the stack push
   assert.ok(!ent(h, atk), 'unit sacrificed at cast');
   assert.ok(h.state.players[A]!.bin.includes('Conduit of Pain'), 'sacrifice → bin');
   pass(h); pass(h);                                  // resolve → draw
@@ -1205,7 +1204,7 @@ test('Infernal Cultivator: [once] sacrifice X units → X Fireball 1; once per t
   const f1 = spawn(h, p, 'Conduit of Pain');
   const f2 = spawn(h, p, 'Conduit of Pain');
   h.do({ type: 'activateAbility', seat: p, entityId: cult, abilityIndex: 0, via: 'augment' });
-  // R196: "Sacrifice X units" is a real cast COST now, so the picks are the
+  // CR 705.3b: "Sacrifice X units" is a real cast COST now, so the picks are the
   // cost collector's, made in the cast window before the item is respondable
   pick(h, { unit: f1 });                             // first sacrifice
   pick(h, { unit: f2 });                             // second
@@ -1217,7 +1216,7 @@ test('Infernal Cultivator: [once] sacrifice X units → X Fireball 1; once per t
   assert.ok(fires.every(t => t.x === 1), 'each is a Fireball 1');
   assert.ok(ent(h, cult), 'Cultivator itself was not picked');
   assert.throws(() => h.do({ type: 'activateAbility', seat: p, entityId: cult, abilityIndex: 0, via: 'augment' }),
-    /already used/, '[once]: bounded per turn (R9)');
+    /already used/, '[once]: bounded per turn (CR 109.9)');
 });
 
 // ── Infernal Wispweaver ──────────────────────────────────────────────────
@@ -1251,10 +1250,10 @@ test('Infernal Wispweaver: your Wisps in its region gain +2/+1 (live static)', (
 });
 
 test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', () => {
-  // R62 UNPARKED: the playtest report was "I have infernal wispweaver, but my
+  // The suppression layer (CR 712.1a) UNPARKED: the playtest report was "I have infernal wispweaver, but my
   // wisps sacrificed themselves anyway!!!".
   //
-  // ⚠ REWRITTEN BY R269 (owner report, 2026-08-30). This used to assert
+  // ⚠ REWRITTEN after an owner report (2026-08-30; now CR 712.4). This used to assert
   // `abilitiesSuppressed(myWisp)` — the whole ability LAYER off — because the
   // weaver carried the blanket flag on the argument that the Wisp has exactly
   // one ability. The owner: *"it should just be their sacrificing ability that
@@ -1273,7 +1272,7 @@ test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', () =
   assert.ok(!e.abilityIsSuppressed(ent(h, theirs)!, sacrifice),
     "the enemy's Wisp is untouched");
   assert.ok(!e.abilitiesSuppressed(ent(h, mine)!),
-    'and the LAYER is still on — R269: the weaver names one clause, not the layer, so a Wisp '
+    'and the LAYER is still on — CR 712.4: the weaver names one clause, not the layer, so a Wisp '
     + 'that has been given a second ability keeps it');
   assert.ok(e.ownAttrs(ent(h, mine)!).has('Feeble'),
     'the attribute layer is untouched too — {Feeble} is printed and stays');
@@ -1303,7 +1302,7 @@ test('Infernal Wispweaver: the suppression ends the instant the weaver does', ()
   const weaver = spawn(h, A, 'Infernal Wispweaver');
   const wisp = spawn(h, A, 'Wisp');
   const e = new E(h.state);
-  const sacrifice = getCard('Wisp').abilities![0]!;   // R269: per-ability now
+  const sacrifice = getCard('Wisp').abilities![0]!;   // CR 712.4: per-ability now
   assert.ok(e.abilityIsSuppressed(ent(h, wisp)!, sacrifice));
   e.destroy(ent(h, weaver)!, 'dies'); e.settle();
   assert.ok(!new E(h.state).abilityIsSuppressed(ent(h, wisp)!, sacrifice),

@@ -42,7 +42,7 @@
   },
   {
     "key": "combat.damage.amount.counting",
-    "textHash": "1e2bdb9e3e65836e",
+    "textHash": "43bf7ed47c996a1e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
@@ -148,7 +148,7 @@
   },
   {
     "key": "combat.damage.amount.zero-power",
-    "textHash": "2ee8059db6a6cb3c",
+    "textHash": "b17c1675a87ce50a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -259,7 +259,7 @@
   },
   {
     "key": "combat.damage.assignment.chooser",
-    "textHash": "057a775e513f6243",
+    "textHash": "9d05a46853442344",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -330,7 +330,7 @@
   },
   {
     "key": "combat.damage.assignment.dealt-in-full",
-    "textHash": "2bd1c41e859e0db2",
+    "textHash": "1ad26190f3afcc25",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -393,7 +393,7 @@
   },
   {
     "key": "combat.damage.assignment.lethal-defined",
-    "textHash": "1b36adfd1ea18448",
+    "textHash": "ab228460757d49ad",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -513,7 +513,7 @@
   },
   {
     "key": "combat.damage.assignment.lethal-first",
-    "textHash": "e70bd55d4c30d35e",
+    "textHash": "98755f04bc86b0ea",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
@@ -565,7 +565,7 @@
   },
   {
     "key": "combat.damage.assignment.lone-unit",
-    "textHash": "69060ea9e579c7ef",
+    "textHash": "a5914875d6c01e30",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -618,7 +618,7 @@
   },
   {
     "key": "combat.damage.assignment.overkill",
-    "textHash": "f76e946372796cf6",
+    "textHash": "44ca47c435a6c08e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -813,7 +813,7 @@
   },
   {
     "key": "combat.damage.dealing.deaths",
-    "textHash": "8883754126f7b740",
+    "textHash": "d1740e843855959f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1225,7 +1225,7 @@
   },
   {
     "key": "combat.damage.pairing.attackers-gone",
-    "textHash": "6f8ab5a5a493b6cd",
+    "textHash": "d5e336a798ccbb40",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1320,7 +1320,7 @@
   },
   {
     "key": "combat.damage.pairing.late-blocker",
-    "textHash": "3ba73964f3bff60d",
+    "textHash": "0c6c09a90e11c776",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1368,7 +1368,7 @@
   },
   {
     "key": "combat.damage.pairing.side-block",
-    "textHash": "620cae764dabfebc",
+    "textHash": "b53a5d3b60cd6227",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1430,7 +1430,7 @@
   },
   {
     "key": "combat.damage.pairing.stays-blocked",
-    "textHash": "397b9472ee2c08f6",
+    "textHash": "237f32f8feb91173",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1722,7 +1722,7 @@
   },
   {
     "key": "combat.damage.player.replaced-still-dealt",
-    "textHash": "f337e7642c17adea",
+    "textHash": "00e17ef63805a6aa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1825,7 +1825,7 @@
   },
   {
     "key": "combat.damage.split.boundary-window",
-    "textHash": "8dab32ab7771f69b",
+    "textHash": "ddd480542a62f570",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1893,7 +1893,7 @@
   },
   {
     "key": "combat.damage.split.empty-substep",
-    "textHash": "ce9b4bae093e4669",
+    "textHash": "8e242cfccfba86f9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1953,7 +1953,7 @@
   },
   {
     "key": "combat.damage.split.schedule-fixed",
-    "textHash": "332c4e9340a87d8d",
+    "textHash": "de9fee7435f4e9d0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1996,7 +1996,7 @@
   },
   {
     "key": "combat.damage.split.state-between",
-    "textHash": "a3d148e42bbde9e5",
+    "textHash": "ff4f9c75538a31b0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2070,7 +2070,7 @@
   },
   {
     "key": "combat.damage.split.unsplit",
-    "textHash": "41cc6c8895fd90d8",
+    "textHash": "5fbd34b4338b43f7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2282,7 +2282,7 @@
   },
   {
     "key": "combat.damage.substeps.pure",
-    "textHash": "253463c8afb5e08f",
+    "textHash": "5e987419227b0a2a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2339,7 +2339,7 @@
   },
   {
     "key": "combat.damage.substeps.schedule",
-    "textHash": "6cafcf5e56a1d0a1",
+    "textHash": "55afbd6278deb60d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2387,7 +2387,7 @@
   },
   {
     "key": "combat.damage.substeps.struck-mark",
-    "textHash": "3133f3158e066f86",
+    "textHash": "5ae958835a9e66cc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2461,7 +2461,7 @@
   },
   {
     "key": "combat.damage.substeps.swift-and-sluggish",
-    "textHash": "ec3857bc6bc8b791",
+    "textHash": "c8aad5cfba702052",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -2540,7 +2540,7 @@
   },
   {
     "key": "combat.damage.triggers",
-    "textHash": "f0ce00ea16a96381",
+    "textHash": "177e723c5ff9f505",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
@@ -2649,7 +2649,7 @@
   },
   {
     "key": "combat.damage.triggers.my-column",
-    "textHash": "b027daa13b74834f",
+    "textHash": "24e2a4e2940cdd0b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2713,7 +2713,7 @@
   },
   {
     "key": "combat.damage.triggers.split",
-    "textHash": "17c3acea936b5552",
+    "textHash": "d0a3772f3e9726c3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2772,7 +2772,7 @@
   },
   {
     "key": "combat.damage.triggers.tax",
-    "textHash": "e829284653c4fec8",
+    "textHash": "3f0db4f42e002a2a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2820,7 +2820,7 @@
   },
   {
     "key": "combat.damage.triggers.unsplit",
-    "textHash": "1cd5b4b5c27b1e42",
+    "textHash": "b94aa4d085450aba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",

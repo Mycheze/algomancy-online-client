@@ -129,22 +129,22 @@ test('below 3 affinity no shard; shards give mana but never affinity', () => {
   assert.ok(h.q.openMana(0) >= 5, 'shards are mana like any resource');
 });
 
-test('R132: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it"', () => {
+test('CR 106.8: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it"', () => {
   // ⚠ THIS TEST HAS NOW BEEN INVERTED TWICE, which is worth reading before
   // touching it a third time.
   //
   //  · originally: the exchange granted the shard.
-  //  · 2026-08-23 (R116): inverted to "grants NO shard", on the reading that
+  //  · 2026-08-23 (an exchange ruling, since reversed): inverted to "grants NO shard", on the reading that
   //    an exchange is a later mutation of an already-activated resource —
   //    "an exchange is not an activation".
-  //  · 2026-08-24 (R132): inverted BACK by the owner, from playtest ANBB
+  //  · 2026-08-24 (now CR 106.8c): inverted BACK by the owner, from playtest ANBB
   //    report #92, and this time the card's own printed text is the argument:
   //
   //      "Erase me: Create a non-prismite resource, THEN ACTIVATE IT. Do this
   //       only during the mana step. (This does not use one of your
   //       activations for turn.)"
   //
-  // R116 never quoted that line. It reasoned from the engine's `exchange`
+  // That ruling never quoted that line. It reasoned from the engine's `exchange`
   // MODEL — which mutates a resource in place — rather than from the card,
   // which erases the prismite, creates a resource and activates it. The
   // engine had already disagreed with itself: doExchangePrismite fires a
@@ -163,14 +163,14 @@ test('R132: spending a Prismite into your 3rd element copy DOES grant the shard 
   h.do({ type: 'exchangePrismite', seat: 0, index: idx, element: 'water' });
   assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 1,
     'the p.18 affinity bonus is owed — the prismite\'s own text ends "then activate it"');
-  // the exchange itself still WORKS exactly as R17 says
+  // the exchange itself still WORKS exactly as CR 106.8a says
   assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'water').length, 3,
     'the prismite really became a water resource');
   assert.equal(h.state.players[0]!.resources[idx]!.state, 'open', 'keeping its state');
   assert.equal(h.q.affinity(0, 'water'), 3, 'and it counts for affinity like any water');
 });
 
-test('R132: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three', () => {
+test('CR 106.8: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three', () => {
   const h = new Harness(2107);
   giveResources(h, 0, 'water', 1, 'open');
   giveResources(h, 0, 'prismite', 1, 'open');
@@ -181,7 +181,7 @@ test('R132: a Prismite spent into your SECOND copy pays nothing — the p.18 bar
   assert.equal(h.q.affinity(0, 'water'), 2);
 });
 
-test('R132: the ANBB position — a third element reached BY PRISMITE pays, exactly as a plain activation does', () => {
+test('CR 106.8: the ANBB position — a third element reached BY PRISMITE pays, exactly as a plain activation does', () => {
   // The reported game (playtest #92, room ANBB, 2026-08-24). Ben built his
   // third dark affinity out of prismites and was paid nothing, while the
   // opponent's third fire came from an ordinary activation and paid. Two
@@ -218,7 +218,7 @@ test('a fwe draft game refuses wood/metal resources and never offers them', () =
   const els = new Set(legalActions(h.state, 0)
     .filter(a => a.type === 'recycleForResource')
     .map(a => (a as { element: string }).element));
-  // R299: plus a Prismite and a Shard, which every game offers whatever its elements
+  // CR 106.6a: plus a Prismite and a Shard, which every game offers whatever its elements
   assert.deepEqual([...els].sort(), ['earth', 'fire', 'prismite', 'shard', 'water']);
   // shared games still offer every element (7 since Light & Dark)
   const shared = new Harness(2107);
@@ -253,7 +253,7 @@ test('both seats deploy at once: NIT may act and finish before IT', () => {
   assert.equal(h.state.turn, turn + 1, 'both done → next turn');
 });
 
-// ── Swift trigger timing (R117, superseded in its ordering half by R261) ──
+// ── Swift trigger timing (the column-trigger ruling, superseded in its ordering half, then restored for split steps) ──
 
 /* ⚠ THIS TEST USED TO PIN THE OPPOSITE, AND ITS OLD TITLE SAID SO:
  *
@@ -266,33 +266,32 @@ test('both seats deploy at once: NIT may act and finish before IT', () => {
  *     assert.ok(h.state.entities[ally], 'the buffed 2/2 survived the 1/1 blocker');
  *     assert.ok(!h.state.entities[blocker], 'the blocker died to the buffed 2 power');
  *
- * R261 (owner, 2026-08-30) superseded exactly that sentence and nothing else.
+ * The 2026-08-30 owner ruling superseded exactly that sentence and nothing else.
  * Its own text named this card: *"Flowstone Arcanite's Swift-step counters
  * therefore do not save an ally from the normal sub-step any more."*
  *
- * ── AND R295 (owner, 2026-09-16) PUT IT BACK ─────────────────────────
+ * ── AND THE OWNER (2026-09-16) PUT IT BACK (CR 608.3b) ─────────────────────────
  *
- * R261 dropped the condition its own source quote carried — *"if there are no
+ * The 2026-08-30 implementation dropped the condition its own source quote carried — *"if there are no
  * units in combat with sluggish or [swift], there will be no triggers during
  * the damage step"* — and made the hold unconditional. This board is nothing
  * BUT a Swift unit, so it was the condition's clearest case and it went the
  * wrong way for a fortnight, until playtest report #165 (room KAWJ) caught the
  * same bug wearing a Sluggish Adversary of the Deep.
  *
- * ⚠ THIS IS NOT A REVERT, and the difference is the whole of what R261 was
- * worth. The 2026-08-24 behaviour resolved the trigger INSIDE the sub-step:
+ * ⚠ THIS IS NOT A REVERT, and the difference is the whole of what the after-combat hold was worth. The 2026-08-24 behaviour resolved the trigger INSIDE the sub-step:
  * built, aimed and resolved to completion, never on the stack, never
- * respondable, never taxed. R295 resolves it at the sub-step BOUNDARY, on the
+ * respondable, never taxed. CR 608.9c resolves it at the sub-step BOUNDARY, on the
  * stack, in an open priority window where either seat may answer it. The ally
  * gets its counter before normal damage again — and D got a window in which to
- * stop it. The outcome came back; the machinery R261 built is what carries it.
+ * stop it. The outcome came back; the machinery built for the after-combat hold is what carries it.
  *
- * WHAT SURVIVED BOTH RULINGS: R117's GATE. The trigger fires in the sub-step
+ * WHAT SURVIVED BOTH RULINGS: CR 608.9a's GATE. The trigger fires in the sub-step
  * the Arcanite's own column strikes in — the Swift one — because
  * `strikesInCurrentSubStep` is asked from `when()`, at event time, while
  * `b.damageStep` still reads 'Swift'. Three rulings have now moved when it
  * RESOLVES and none has moved when it FIRES. */
-test('Flowstone Arcanite (R295): the Swift-step counters land at the boundary, in time to save the ally', () => {
+test('Flowstone Arcanite (CR 802.4e): the Swift-step counters land at the boundary, in time to save the ally', () => {
   const h = new Harness(2110);
   const A: Seat = 0, D: Seat = 1;
   h.state.initiative = A;
@@ -310,8 +309,8 @@ test('Flowstone Arcanite (R295): the Swift-step counters land at the boundary, i
   h.do({ type: 'passPriority', seat: h.state.priority! });
   h.do({ type: 'passPriority', seat: h.state.priority! });   // → combat damage
 
-  // ── half one: it FIRED inside the Swift sub-step (R117's gate, intact) ──
-  // R295: the span is cut at the BOUNDARY window rather than at after-combat,
+  // ── half one: it FIRED inside the Swift sub-step (CR 608.9a's gate, intact) ──
+  // CR 608.9c: the span is cut at the BOUNDARY window rather than at after-combat,
   // because the boundary is now where this batch stops being held
   const damage = h.events.slice(mark);
   const cut = damage.findIndex(
@@ -320,13 +319,13 @@ test('Flowstone Arcanite (R295): the Swift-step counters land at the boundary, i
   const fired = damage.slice(0, cut).filter(
     ev => ev.type === 'triggered' && /Flowstone Arcanite/.test(ev.msg));
   assert.equal(fired.length, 1,
-    'exactly one Arcanite trigger, announced inside the damage step — the R117 gate still '
+    'exactly one Arcanite trigger, announced inside the damage step — the CR 608.9a gate still '
     + 'reads the live sub-step from when(), so the Swift column fires once and not per sub-step');
 
-  // ── half two: it is ON THE STACK at the boundary, respondable (R261's
-  //    machinery), and the normal sub-step has NOT run yet (R295) ──
+  // ── half two: it is ON THE STACK at the boundary, respondable (CR 608.9c's
+  //    machinery), and the normal sub-step has NOT run yet (CR 608.3b) ──
   assert.equal(h.state.battle!.step, 'damageWindow',
-    'R295: {Swift} split the step, so this is the boundary window and not the after-step');
+    'CR 802.4e: {Swift} split the step, so this is the boundary window and not the after-step');
   assert.equal(h.state.battle!.pendingSub, 'normal', 'the normal sub-step is still to come');
   assert.ok(h.state.stack.some(it => /Flowstone Arcanite/.test(it.label)),
     'the counters are ON THE STACK — a positive control, because every board assertion here '
@@ -347,7 +346,7 @@ test('Flowstone Arcanite (R295): the Swift-step counters land at the boundary, i
 
 // ── multi-target casts ────────────────────────────────────────────────
 
-// ⚠ THIS FIXTURE MOVED (R126, 2026-08-24). It used to be one test driving
+// ⚠ THIS FIXTURE MOVED (2026-08-24; see CR 110.1c). It used to be one test driving
 // Twin Flame, which was the pool's only `count: 2, min: 1` spec — and it was
 // that only because it printed "up to two target units" and failed to say so
 // in code. With `min: 0` where it belongs, NO card has count >= 2 with a min
@@ -385,7 +384,7 @@ test('multi-target validation: no duplicate targets, and no done below the minim
   assert.ok(mine, 'the ally fixture is used');
 });
 
-test('R126: an "up to" spell may decline every target — Twin Flame declares none', () => {
+test('CR 110.1c: an "up to" spell may decline every target — Twin Flame declares none', () => {
   const h = new Harness(2112);
   const A: Seat = 0, D: Seat = 1;
   h.state.initiative = A;

@@ -1,4 +1,4 @@
-/* 400 — R321/R322 IN THE CLIENT: side-blocks are built on the board, and a
+/* 400 — CR 606.4, 607.2 IN THE CLIENT: side-blocks are built on the board, and a
  * blocker put in after blocks is placed by clicking the column it blocks.
  *
  * The RAQ ("What is blocked?"): a defender may block where no attacker is,
@@ -12,7 +12,7 @@
  *     the engine takes it, and the builder opens the next side column
  * §3  committed, the side-block's column says "no attacker", not "gone"
  * §4  the in-progress side-blocks survive the line re-keying under them
- * §5  a blocking spot (R322) is drawn in the column it blocks
+ * §5  a blocking spot (CR 607.2) is drawn in the column it blocks
  * §6  a number key reaches the side-block column
  */
 import { test } from 'node:test';

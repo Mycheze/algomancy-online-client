@@ -2,8 +2,8 @@
   {
     "id": "F-U13-1",
     "rule": "combat.counterattack.round-two.may-decline",
-    "title": "R36 (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite",
-    "summary": "R36 says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and R36's heading carries no reversal mark, so the register still presents R36 as current. Register fix: write the reversing ruling (or mark R36) and point R36's heading at it.",
+    "title": "The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite",
+    "summary": "The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading carries no reversal mark, so the register still presents the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as current. Register fix: write the reversing ruling (or mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)) and point the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading at it.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",

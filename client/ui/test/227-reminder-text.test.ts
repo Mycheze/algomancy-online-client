@@ -1,4 +1,4 @@
-/* R248 / report #118 — THE REMINDER A PLAYER READS.
+/* CR D6.11 / report #118 — THE REMINDER A PLAYER READS.
  *
  * Bena, room YFUE, 2026-08-28: *"the reminders in the 'Rules' page and under
  * units is too verbose and includes R references, which aren't known outside
@@ -10,7 +10,7 @@
  *
  *   · ui/cardpanel.ts printed the `ruling` FIELD — "R13, R103, R114, printed"
  *     — under every pinned card in the browser.
- *   · the rows really are edited, {Piercing} deliberately so (R13/R103/R114
+ *   · the rows really are edited, {Piercing} deliberately so (CR 802.16f, 802.16j
  *     generalise the attribute off the combat column onto all damage).
  *   · AND the {Haste} row carried "(R224)" and "(R236)" IN ITS OWN PROSE.
  *     That is the one the report actually names, because {Haste} is a
@@ -24,7 +24,7 @@
  * modules that could leak the field rather than listing the ones anybody
  * remembered.
  *
- * The other half of R248 (the printed reminder is shown verbatim, and the
+ * The other half of CR D6.11 (the printed reminder is shown verbatim, and the
  * generalisation is preserved rather than deleted) lives in
  * 177-glossary-conformance §7, next to the checks it has to stay honest with.
  * What is here instead is the INDEPENDENT DERIVATION: 177 reads types.ts's
@@ -39,18 +39,24 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
-import '../../engine/src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
+import '../../engine/src/index.ts';   // the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
   type GlossEntry,
 } from '../glossary.ts';
 import { allRows } from '../cardindex.ts';
 import { cardPanelHtml, glossaryFor } from '../cardpanel.ts';
+import { CR_LEDGER } from '../../engine/scripts/paths.mjs';
 
 const UI = fileURLToPath(new URL('../', import.meta.url));
 
-/** an R-number as a reader would see one: R13, R224, and not "R" alone */
-const R_NUMBER = /\bR\d+\b/;
+/** a rule citation as a reader would see one: a retired `R13`, a `CR 608.2b`, or a
+ * comprehensive-rules KEY (`attr.piercing.excess`) — the glossary's `cites` field holds
+ * keys since the 2026-10 migration, so a key on a panel is that field leaking. The key
+ * prefixes are read off the ledger, never listed here. */
+const KEY_HEADS = [...new Set((JSON.parse(readFileSync(CR_LEDGER, 'utf8')) as { entries: { key: string }[] })
+  .entries.map(e => e.key.split('.')[0]!))];
+const R_NUMBER = new RegExp(`\\bR\\d+\\b|\\bCR (?:\\d{3}|D\\d)|\\b(?:${KEY_HEADS.join('|')})\\.[a-z0-9-]+(?:\\.[a-z0-9-]+)*`);
 
 /* ════════════════════════════════════════════════════════════════════════
  * 1. NO PLAYER-FACING STRING CARRIES AN R-NUMBER
@@ -75,7 +81,7 @@ const leaks = (rows: readonly GlossEntry[]): string[] =>
     .filter(f => R_NUMBER.test(f.value))
     .map(f => `{${e.term}}.${f.field}: ${R_NUMBER.exec(f.value)![0]} in "${f.value}"`));
 
-test('R248: no string a renderer can reach off a glossary row carries an R-number', () => {
+test('CR D6.11: no string a renderer can reach off a glossary row carries an R-number', () => {
   assert.deepEqual(leaks(GLOSSARY), [],
     'an R-number means nothing outside this repository (report #118). Citations belong in '
     + '`ruling`, which no renderer prints and 177 still resolves.');
@@ -87,7 +93,7 @@ test('R248: no string a renderer can reach off a glossary row carries an R-numbe
 });
 
 test('POSITIVE CONTROL: the R-number sweep names the row and the field it found', () => {
-  // the real bug, restored: the {Haste} row as it read before R248.
+  // the real bug, restored: the {Haste} row as it read before the report #118 fix.
   const haste = GLOSSARY.find(e => e.term === 'Haste');
   assert.ok(haste, 'the glossary has lost its Haste row');
   const broken: GlossEntry = {
@@ -95,7 +101,7 @@ test('POSITIVE CONTROL: the R-number sweep names the row and the field it found'
     text: 'The step ALWAYS happens (R224), whether or not anybody can act in it.',
   };
   const found = leaks([broken]);
-  assert.equal(found.length, 1, `nothing fired on the pre-R248 Haste row: ${JSON.stringify(found)}`);
+  assert.equal(found.length, 1, `nothing fired on the pre-#118 Haste row: ${JSON.stringify(found)}`);
   assert.match(found[0]!, /\{Haste\}\.text: R224/);
   // and a number hidden in a field nobody thought about — the sweep is over
   // the object, so a new prose field is covered the day it is added
@@ -142,10 +148,11 @@ const glossaryConsumers = (): { file: string; src: string }[] =>
   uiSources().filter(f => f.file !== 'glossary.ts' && /from '\.\/glossary\.ts'/.test(f.src));
 
 /** a member access on the citations array, in any of the spellings that have
- * actually shipped: `g.ruling`, `e.ruling?.length`, `{ ruling }` destructuring */
-const RENDERS_CITATIONS = /\.ruling\b|[{,]\s*ruling\s*[,}]/;
+ * actually shipped (`g.ruling`, `e.ruling?.length`, `{ ruling }` destructuring —
+ * the field was `ruling` until the 2026-10 migration renamed it `cites`) */
+const RENDERS_CITATIONS = /\.(?:ruling|cites)\b|[{,]\s*(?:ruling|cites)\s*[,}]/;
 
-test('R248: no module that imports the glossary touches its citation field', () => {
+test('CR D6.11: no module that imports the glossary touches its citation field', () => {
   const consumers = glossaryConsumers();
   assert.ok(consumers.length >= 3,
     `only found ${consumers.length} ui modules importing the glossary — the directory scan is `
@@ -175,7 +182,8 @@ test('POSITIVE CONTROL: the citation-render scan fires on the line that shipped'
   }
   // and it does not fire on the citations being DECLARED, which is the whole
   // reason the field exists
-  assert.equal(RENDERS_CITATIONS.test("{ term: 'Flying', ruling: ['printed'], text: '…' }"), false);
+  assert.equal(RENDERS_CITATIONS.test("{ term: 'Flying', cites: ['printed'], text: '…' }"), false);
+  assert.ok(RENDERS_CITATIONS.test('${e.cites.join(", ")}'), 'the renamed field is watched too');
 });
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -187,12 +195,12 @@ test('POSITIVE CONTROL: the citation-render scan fires on the line that shipped'
  * red on the report without anybody having worked out WHY the number was
  * getting through. */
 
-test('R248: rendering every card in the pool leaks no R-number', () => {
+test('CR D6.11: rendering every card in the pool leaks no R-number', () => {
   const rows = allRows();
   assert.ok(rows.length > 450, `only ${rows.length} rows — the index is not loading`);
   let withGlossary = 0;
   const bad: string[] = [];
-  // R257: DERIVED, not a floor somebody typed. `owed` is every card this
+  // CR D6.11c: DERIVED, not a floor somebody typed. `owed` is every card this
   // panel has a reason to explain something on — read off the card, not off a
   // memory of how many there were. The number it used to carry (`> 200`
   // against a then-current 373) was slack enough that the panel could have
@@ -231,10 +239,11 @@ test('POSITIVE CONTROL: the rendered sweep catches a citation put back on the pa
   const e = GLOSSARY.find(g => g.term === 'Piercing');
   assert.ok(e, 'the glossary has lost its Piercing row');
   const asItShipped = `<div><b>${e.term}</b> — ${e.text} `
-    + `<span class="dim">${(e.ruling ?? []).join(', ')}</span></div>`;
+    + `<span class="dim">${(e.cites ?? []).join(', ')}</span></div>`;
   const hit = R_NUMBER.exec(asItShipped);
   assert.ok(hit, 'the sweep cannot see the very markup report #118 is about');
-  assert.equal(hit[0], 'R13', `{Piercing} cites ${(e.ruling ?? []).join(', ')}`);
+  assert.equal(hit[0], (e.cites ?? []).find(c => c.includes('.')), `{Piercing} cites ${(e.cites ?? []).join(', ')}`);
+  assert.ok(KEY_HEADS.length >= 5 && R_NUMBER.test('see CR 608.2b') && R_NUMBER.test('(R224)'), 'the leak pattern lost a spelling');
 });
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -258,7 +267,7 @@ function remindersViaRegistry(): Map<string, Set<string>> {
   }
   assert.ok(attrs.size > 20, `only ${attrs.size} attributes in the registry — the scrape is broken`);
   const out = new Map<string, Set<string>>();
-  // R267: the pool writes reminders TWO ways, and this channel has to know both
+  // CR D6.11: the pool writes reminders TWO ways, and this channel has to know both
   // or it will disagree with the JSON channel for a reason that is not about
   // the pool. (A) the span names the attribute. (B) the keyword is printed as
   // the ability and the span explains it without repeating the word — "Glimpse
@@ -297,7 +306,7 @@ function remindersViaRegistry(): Map<string, Set<string>> {
   return out;
 }
 
-test('R248: the registry agrees with the glossary about which attributes the game explains', () => {
+test('CR D6.11: the registry agrees with the glossary about which attributes the game explains', () => {
   const viaRegistry = remindersViaRegistry();
   assert.ok(viaRegistry.size >= 12,
     `only ${viaRegistry.size} attributes carry a printed reminder — the registry scrape is broken`);
@@ -315,7 +324,7 @@ test('R248: the registry agrees with the glossary about which attributes the gam
     + 'reading the card instead of ui/glossary.ts.');
 });
 
-test('R248: an attribute never has two different printed reminders to choose between', () => {
+test('CR D6.11: an attribute never has two different printed reminders to choose between', () => {
   // `asShown` takes the first bucket entry. That is only safe while there is
   // exactly one — otherwise which reminder a player sees depends on the order
   // of keys in a generated JSON file, which is not a rules decision anybody
@@ -328,12 +337,12 @@ test('R248: an attribute never has two different printed reminders to choose bet
     + 'deliberately — do not let printed.json key order pick it.');
 });
 
-test('R248/R252: a row no channel reminds a player about keeps its full authored rule', () => {
+test('CR D6.11: a row no channel reminds a player about keeps its full authored rule', () => {
   // the failure this whole design is guarding against: shortening a row to a
-  // reminder that does not exist would leave a player with nothing, and R184
-  // was decided by reading one of these.
+  // reminder that does not exist would leave a player with nothing, and the Reaping
+  // ruling was decided by reading one of these.
   //
-  // ⚠ DERIVED, not enumerated — and it was a list of fourteen until R252.
+  // ⚠ DERIVED, not enumerated — and it was a list of fourteen until report #119.
   // Report #119 added the Algomancy Manual as a second source, which supplied
   // sentences for {Burst}, {Virus} and {Ambush}; a written-down list would have
   // had to be edited to stay true, and an edit to a list like this is
@@ -342,12 +351,12 @@ test('R248/R252: a row no channel reminds a player about keeps its full authored
   // the sweep from those fourteen to every silent row in the table.
   const authored = new Map(AUTHORED_GLOSSARY.map(e => [e.term, e.text]));
   const silent = GLOSSARY.filter(e => !PRINTED_REMINDERS.has(e.term)
-    && !MANUAL_REMINDERS.has(e.term) && !LIBRARY_REMINDERS.has(e.term));   // R267
+    && !MANUAL_REMINDERS.has(e.term) && !LIBRARY_REMINDERS.has(e.term));   // CR D6.11
 
-  // not vacuous, and the rows R206/CT-80 is actually about are in it by name:
+  // not vacuous, and the rows CT-80 is actually about are in it by name:
   // for these the glossary row is the repo's ONLY statement of the rule.
   //
-  // ⚠ R267 — AND THIS LIST IS THE ENUMERATED HALF OF A CHECK WHOSE COMMENT
+  // ⚠ CR D6.11 — AND THIS LIST IS THE ENUMERATED HALF OF A CHECK WHOSE COMMENT
   // ABOVE BOASTS OF BEING DERIVED. {Unstable} was in it, and was wrong: two
   // cards print a reminder for it and always did. The derived half was fine;
   // the hand-typed positive control is what went stale. It went stale in the
@@ -372,14 +381,14 @@ test('R248/R252: a row no channel reminds a player about keeps its full authored
   }
 });
 
-test('R248: Piercing shows the sentence the card prints and keeps the one it does not', () => {
+test('CR D6.11: Piercing shows the sentence the card prints and keeps the one it does not', () => {
   // the report's own example, end to end. The printed reminder is what a
-  // player reads; R13/R103/R114's generalisation off the combat column — a
+  // player reads; the generalisation off the combat column (CR 802.16f, 802.16j) — a
   // piercing BLOCKER, non-combat damage — is what the repo still states.
   const e = GLOSSARY.find(g => g.term === 'Piercing');
   assert.ok(e, 'the glossary has lost its Piercing row');
   assert.equal(e.text, "Excess damage from piercing sources is dealt to the recipient's controller.");
   assert.equal(e.printedOn, 'Protective Adaptations');
-  assert.match(e.rule ?? '', /non-combat damage/i, 'R103 generalised piercing off the column');
-  assert.match(e.rule ?? '', /blocker/i, 'R114: a piercing blocker pierces into the attacking player');
+  assert.match(e.rule ?? '', /non-combat damage/i, 'CR 802.16j: piercing reaches non-combat damage too');
+  assert.match(e.rule ?? '', /blocker/i, 'CR 802.16f: a piercing blocker pierces into the attacking player');
 });

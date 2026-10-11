@@ -1,4 +1,4 @@
-/* R169 / CT-45 + CT-47 — A REPLAY THAT MISREPORTS IS A TOOL THAT MANUFACTURES
+/* CT-45 + CT-47 — A REPLAY THAT MISREPORTS IS A TOOL THAT MANUFACTURES
  * WRONG CONCLUSIONS, AND A CONTRACT COMMENT THAT LIES IS THE SAME THING.
  *
  * This repo settles playtest bug reports by replaying saved games. So the
@@ -49,7 +49,7 @@ import { analyze, reportLines, type RoomFile } from '../replay-room.ts';
  * fuzz log drifts the moment anything upstream of it changes and this file
  * must not go quietly un-red when it does — if none of them still works the
  * helper says so out loud rather than skipping. */
-// Re-found twice on 2026-09-19, when R299 added two recycle options (Prismite,
+// Re-found twice on 2026-09-19, when two recycle options were added (Prismite,
 // then Shard) and every fuzz walk drifted each time (the set before was 13, 28,
 // 30, 50, 1, 11, 27, 53). ⚠ Reaching an ordering answer is not enough: §1's
 // cascade test needs the corrupted answer to WEDGE the rest of the log, and
@@ -102,7 +102,7 @@ function refuse(state: GameState, action: Action): IllegalAction {
 
 /* ═══ §1 DIVERGENCE, NOT A SKIP COUNT ════════════════════════════════ */
 
-test('R169/CT-45: a log whose decision answer can no longer be accepted names the FIRST diverging action, not a skip count', () => {
+test('CT-45: a log whose decision answer can no longer be accepted names the FIRST diverging action, not a skip count', () => {
   const log = orderingLog();
   const asked = log.actions[log.at]!;
   assert.ok(asked.type === 'decide' && Array.isArray(asked.choice) && asked.choice.length >= 2,
@@ -131,7 +131,7 @@ test('R169/CT-45: a log whose decision answer can no longer be accepted names th
     'and states that the other refusals are not findings');
 });
 
-test('R169/CT-45: the report says the remainder is CASCADE, and proves the wedge rather than guessing it', () => {
+test('CT-45: the report says the remainder is CASCADE, and proves the wedge rather than guessing it', () => {
   const log = orderingLog();
   const bad = structuredClone(log.actions);
   (bad[log.at] as { choice: unknown }).choice = 0;
@@ -167,7 +167,7 @@ test('R169/CT-45: the report says the remainder is CASCADE, and proves the wedge
     'the word "skipped" is gone entirely — it is what made 14 cascades read as 14 hiccups');
 });
 
-test('R169/CT-45 (negative control): the same log UNCORRUPTED replays clean and is reported FAITHFUL', () => {
+test('CT-45 (negative control): the same log UNCORRUPTED replays clean and is reported FAITHFUL', () => {
   const log = orderingLog();
   const raw = fileOf(log.actions, log.seed);
   const an = analyze(raw);
@@ -182,7 +182,7 @@ test('R169/CT-45 (negative control): the same log UNCORRUPTED replays clean and 
 
 /* ═══ §2 THE ENGINE'S HALF — refuse, never coerce ════════════════════ */
 
-test('R169: a scalar answer to an orderTriggers question is refused as UNANSWERABLE, not coerced into an ordering', () => {
+test('a scalar answer to an orderTriggers question is refused as UNANSWERABLE, not coerced into an ordering', () => {
   const log = orderingLog();
   const s = stateBefore(log);
   const dec = s.decision!;
@@ -207,7 +207,7 @@ test('R169: a scalar answer to an orderTriggers question is refused as UNANSWERA
     'and the seat is not recorded as having ordered anything');
 });
 
-test('R169: an ordering answer of the WRONG LENGTH is unanswerable too — that is queue drift, not a typo', () => {
+test('an ordering answer of the WRONG LENGTH is unanswerable too — that is queue drift, not a typo', () => {
   const log = orderingLog();
   const s = stateBefore(log);
   const dec = s.decision!;
@@ -221,7 +221,7 @@ test('R169: an ordering answer of the WRONG LENGTH is unanswerable too — that 
   assert.equal(long.unanswerable, true, 'a too-LONG answer is the same failure');
 });
 
-test('R169: a right-length ordering answer with junk indices is an ordinary retryable refusal, NOT unanswerable', () => {
+test('a right-length ordering answer with junk indices is an ordinary retryable refusal, NOT unanswerable', () => {
   const log = orderingLog();
   const s = stateBefore(log);
   const dec = s.decision!;
@@ -241,7 +241,7 @@ test('R169: a right-length ordering answer with junk indices is an ordinary retr
 
 /* ═══ §3 CT-47 — the contract, and its ONE named exception ═══════════ */
 
-const HALTS = 'R169 CT47 Halt';
+const HALTS = 'CT47 Halt';
 registerSynthetic({
   name: HALTS, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -276,7 +276,7 @@ function withWraiths(seat: Seat, n: number): Harness {
   return h;
 }
 
-test('R169/CT-47: legalActions offers an action apply() refuses — the ONE exception its contract now names', () => {
+test('CT-47: legalActions offers an action apply() refuses — the ONE exception its contract now names', () => {
   const h = withWraiths(1, 3);
   assert.equal(h.state.decision!.seat, 1, 'seat 1 holds the open question');
 
@@ -296,7 +296,7 @@ test('R169/CT-47: legalActions offers an action apply() refuses — the ONE exce
     + '"legalActions lied"');
 });
 
-test('R169/CT-47: the fuzzer refuses to widen that exception past what R154 actually promises', () => {
+test('CT-47: the fuzzer refuses to widen that exception past what CR D2.1d actually promises', () => {
   const h = withWraiths(1, 3);
   const mine: Action = { type: 'playCard', seat: 0, handIndex: 0 };
 
@@ -306,7 +306,7 @@ test('R169/CT-47: the fuzzer refuses to widen that exception past what R154 actu
   assert.equal(isContractException(h.state, mine, new Error('boom')), false,
     'and so is a crash');
 
-  // a `disturbs` flag on the ASKING seat's own action is not the R154 case at
+  // a `disturbs` flag on the ASKING seat's own action is not the CR D2.1d case at
   // all: that seat is blocked by its own question, and swallowing it would hide
   // a real freeze
   const own = new IllegalAction('mislabelled'); own.disturbs = true;
@@ -322,17 +322,17 @@ test('R169/CT-47: the fuzzer refuses to widen that exception past what R154 actu
     /NO decision standing/);
 });
 
-test('R169/CT-47: the fuzzer counts the exception rather than swallowing it, so its use stays visible', () => {
+test('CT-47: the fuzzer counts the exception rather than swallowing it, so its use stays visible', () => {
   // The count is the guard against the failure mode CT-47 warns about — a
   // fuzzer that tolerates a whole class of refusal silently is one that will
-  // hide the next real one. MEASURED, not assumed: as of R169 random play
+  // hide the next real one. MEASURED, not assumed: as of the CT-47 fix, random play
   // reaches this window only rarely and disturbs nothing in it, so the honest
   // assertion is that the counter exists and reads zero, not that it fires.
   const r = fuzzGame(13, 2500);
   assert.equal(typeof r.disturbed, 'number',
     'every fuzz game reports how often the exception fired');
   assert.equal(r.disturbed, 0,
-    'and today it never does — random play barely enters R154\'s window. If this '
+    'and today it never does — random play barely enters CR D2.1b\'s window. If this '
     + 'ever goes red the exception has started firing for real, and that is worth '
     + 'a look rather than a silent tolerance');
 });

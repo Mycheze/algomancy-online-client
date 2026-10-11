@@ -120,7 +120,7 @@ function checkClicks(state: GameState, subs: Subject[], where: string): void {
       assert.ok(ui.has({ btn: 'boardpickback' }), `${where}: ${key}: and the bar asks which`);
       ui.click({ btn: 'boardpickback' });
     } else if (dec.options[idx[0]!]!.confirm) {
-      assert.ok(ui.has({ btn: 'allyconfirm' }), `${where}: ${key}: R288 asks before a likely misclick`);
+      assert.ok(ui.has({ btn: 'allyconfirm' }), `${where}: ${key}: CR D2.8 asks before a likely misclick`);
       ui.click({ btn: 'allycancel' });
     } else {
       assert.deepEqual(sent.map(a => (a as { choice: unknown }).choice), [idx[0]],

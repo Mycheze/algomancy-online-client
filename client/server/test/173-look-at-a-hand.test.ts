@@ -1,4 +1,4 @@
-/* R197b — "LOOK AT" IS A PRIVATE LOOK. THREE CARDS PUT THE WHOLE HAND IN THE
+/* CR 402.2a — "LOOK AT" IS A PRIVATE LOOK. THREE CARDS PUT THE WHOLE HAND IN THE
  * SHARED LOG.
  *
  * ── THE CLASS
@@ -13,8 +13,7 @@
  *   Hand Peeper
  *
  * Four of them build a log line naming the whole hand. Only Divine Foresight
- * tagged it `privateTo` (R125's literal-reading audit, batch-light-a:239-247,
- * whose comment names the class outright). Thought Extraction, Eldritch
+ * tagged it `privateTo` (the literal-reading audit, batch-light-a:239-247, whose comment names the class outright). Thought Extraction, Eldritch
  * Dreamtender and Bripp carried the IDENTICAL line, untagged. `redactLog`
  * gates on `visibleToSeat`, `visibleToSeat` gates on `data.privateTo`, and an
  * untagged line goes to every seat.
@@ -37,7 +36,7 @@
  * §1's self-target tests drive. All four are tagged uniformly anyway:
  * `Seat = number` and `players: PlayerState[]` are N-player in the engine's
  * own types, and a `who === ctx.controller ? private : public` test is a
- * denylist of exactly the shape R196 argues against.
+ * denylist, a shape that rots.
  *
  * ── WHY THE ENGINE SUITE COULD NOT SEE IT
  *
@@ -55,7 +54,7 @@
  * suffices alone) and Bioremediation (prints "REVEALS their hand", and its
  * untagged line is CORRECT).
  *
- * §3 is the class guard, and it matters more than the three fixes. R196 makes
+ * §3 is the class guard, and it matters more than the three fixes. This file makes
  * the argument: a per-card fix for a class is this repo's most expensive
  * recurring failure. §3 derives the card list from PRINTED TEXT via
  * `allCardNames()` and sweeps all of `src/` for `.ev(` calls that interpolate
@@ -114,7 +113,7 @@ function assertPrivateLook(
 /* "Look at target player's hand and discard a card from it. You gain 1 rot."
  * — Thought Extraction, dd/1 {Battle} Blight Spell. */
 
-test("R197b §1 Thought Extraction: \"Look at target player's hand\" — the hand reaches the LOOKER alone", () => {
+test("CR 402.2a Thought Extraction: \"Look at target player's hand\" — the hand reaches the LOOKER alone", () => {
   const h = new Harness(17301);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -147,7 +146,7 @@ test("R197b §1 Thought Extraction: \"Look at target player's hand\" — the han
   finishBattle(h);
 });
 
-test('R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to', () => {
+test('CR 402.2a Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to', () => {
   const h = new Harness(17302);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -177,7 +176,7 @@ test('R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the 
  * If you do, look at that player's hand and discard a card from it."
  * — Eldritch Dreamtender, m/1 1/1 {Evasive}. */
 
-test("R197b §1 Eldritch Dreamtender: \"look at that player's hand\" — the damaged player's hand is not published", () => {
+test("CR 402.2a Eldritch Dreamtender: \"look at that player's hand\" — the damaged player's hand is not published", () => {
   const h = new Harness(17303);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -187,8 +186,8 @@ test("R197b §1 Eldritch Dreamtender: \"look at that player's hand\" — the dam
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
-  pass(h); pass(h);                                           // combat damage → the trigger (R31)
-  pass(h); pass(h);   // R261: it is stacked in the after-combat window; this resolves it
+  pass(h); pass(h);                                           // combat damage → the trigger (CR 608.9)
+  pass(h); pass(h);   // CR 608.9b: it is stacked in the after-combat window; this resolves it
   assert.equal(h.state.decision!.seat, A, 'fixture: the attacker is being asked for the discard');
   pick(h, 0);                                                 // discard 'Good Whale'
 
@@ -213,7 +212,7 @@ test("R197b §1 Eldritch Dreamtender: \"look at that player's hand\" — the dam
  * recycle that card. If you do, that player draws a card."
  * — Bripp, bb/3 4/2 {Battle} {Feeble} Spell Unit. */
 
-test("R197b §1 Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either", () => {
+test("CR D6.5b Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either", () => {
   const h = new Harness(17304);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -252,7 +251,7 @@ test("R197b §1 Bripp: \"Look at target player's hand\" — and the card it recy
     + 'shared log, and nothing Bripp prints says "reveal"');
   assert.ok(logFor(h, D).some(l => /Bripp recycles a card from .*; they draw\./.test(l)),
     'what the table gets instead: a card moved, and who drew — never which card');
-  // R296: the recycled card goes past the MARK, into the recycle pile — which
+  // CR 408.2: the recycled card goes past the MARK, into the recycle pile — which
   // `viewFor` serves as card backs exactly as it serves a deck, and for a
   // sharper reason: a pile is cards players put there themselves.
   assert.equal(h.q.recycleOf(D).at(-1), 'Good Whale',
@@ -260,7 +259,7 @@ test("R197b §1 Bripp: \"Look at target player's hand\" — and the card it recy
   finishBattle(h);
 });
 
-test('R197b §1 Bripp: aimed at YOUR OWN hand, both the hand and the recycled card leaked to the opponent', () => {
+test('CR 408.3 Bripp: aimed at YOUR OWN hand, both the hand and the recycled card leaked to the opponent', () => {
   const h = new Harness(17305);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -294,7 +293,7 @@ test('R197b §1 Bripp: aimed at YOUR OWN hand, both the hand and the recycled ca
   assert.ok(logFor(h, D).some(l => l.includes('draws 1')),
     "E.draw's own public line still completes the public story");
   assert.equal(h.q.recycleOf(A).at(-1), 'Good Whale',
-    'fixture: it really is in the recycle pile, which viewFor hides (R296)');
+    'fixture: it really is in the recycle pile, which viewFor hides (CR 408.2c)');
   finishBattle(h);
 });
 
@@ -307,7 +306,7 @@ test('R197b §1 Bripp: aimed at YOUR OWN hand, both the hand and the recycled ca
  * private mechanism suffices ALONE — the naming line is a convenience, and a
  * convenience is exactly what must not be public. */
 
-test('R197b §2 control — Hand Peeper: the same printed verb with NO naming line at all, and it still works', () => {
+test('CR 402.2a control — Hand Peeper: the same printed verb with NO naming line at all, and it still works', () => {
   const h = new Harness(17306);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -336,7 +335,7 @@ test('R197b §2 control — Hand Peeper: the same printed verb with NO naming li
  * untagged line is CORRECT. This is the control a future over-application of
  * `privateTo` reddens against. */
 
-test('R197b §2 control — Bioremediation: a printed REVEAL is public, and its untagged line must stay untagged', () => {
+test('CR 402.2a control — Bioremediation: a printed REVEAL is public, and its untagged line must stay untagged', () => {
   const h = new Harness(17307);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -354,7 +353,7 @@ test('R197b §2 control — Bioremediation: a printed REVEAL is public, and its 
   const naming = only(h, 'Bioremediation reveals');
   assert.equal(naming.data?.['privateTo'], undefined,
     'REVEALS is the other printed verb: the table is entitled to this line, and tagging '
-    + 'it privateTo would be over-applying R197b to the card it does not cover');
+    + 'it privateTo would be over-applying CR D6.5a to the card it does not cover');
   for (const s of [A, D]) {
     assert.equal(visibleToSeat(naming, s), true, `a public reveal reaches seat ${s}`);
     assert.ok(logFor(h, s).some(l => l.includes('Shard Sprite')),
@@ -381,7 +380,7 @@ test('R197b §2 control — Bioremediation: a printed REVEAL is public, and its 
  * local like `${name}` (Bripp's recycle line — no `hand` token survives there,
  * and it is §1's job, not this one's), and (b) a hand published through a
  * helper that takes the names as an argument. (a) is not statically
- * expressible; the runtime invariant that covers it is R196 §2. (b) has no
+ * expressible; the runtime invariant that covers it is CR D6.5. (b) has no
  * instance in the pool today and would need this sweep widened the day it
  * does. Neither hole is a reason to skip the part that IS expressible.
  */
@@ -427,11 +426,11 @@ const namesHand = (call: EvCall): boolean =>
 
 const tagged = (call: EvCall): boolean => /\bprivateTo\b/.test(call.code);
 
-/* ⚠ A SWEEP THAT CANNOT FAIL IS WORSE THAN NO SWEEP (R176 / 149-strip-code:
+/* ⚠ A SWEEP THAT CANNOT FAIL IS WORSE THAN NO SWEEP (149-strip-code:
  * `stripCode` has gone blind twice and every sweep resting on it stayed green
  * while it was). So the matcher is asked the question directly, on planted
  * source, before anything is trusted to it. */
-test('R197b §3: the hand-naming sweep is not blind — it flags a planted leak and ignores the near misses', () => {
+test('CR D6.5a: the hand-naming sweep is not blind — it flags a planted leak and ignores the near misses', () => {
   const one = (src: string): EvCall => {
     const cs = evCalls(src, 'planted');
     assert.equal(cs.length, 1, `fixture: expected one .ev( in ${JSON.stringify(src)}, got ${cs.length}`);
@@ -465,7 +464,7 @@ test('R197b §3: the hand-naming sweep is not blind — it flags a planted leak 
     + 'the opener stripCode has no way to know it is prose (measured: it does not)');
 });
 
-test('R197b §3 class guard: a card that PRINTS "look at …hand" and logs the hand must tag it privateTo', () => {
+test('CR D6.5a class guard: a card that PRINTS "look at …hand" and logs the hand must tag it privateTo', () => {
   const printedOf = (n: string): string => getCard(n).text ?? '';
   // derived from the registry, never hand-typed — `allCardNames()` and not
   // printed.json, because printed.json alone misses `registerSynthetic` cards.
@@ -501,7 +500,7 @@ test('R197b §3 class guard: a card that PRINTS "look at …hand" and logs the h
       }
       if (REVEALERS.includes(owner) && tagged(call)) {
         offenders.push(`${call.where}: ${owner} prints "reveals their hand" — a PUBLIC reveal — so `
-          + 'this line belongs to the table. Tagging it privateTo over-applies R197b.');
+          + 'this line belongs to the table. Tagging it privateTo over-applies CR D6.5a.');
       }
       if (!LOOKERS.includes(owner) && !REVEALERS.includes(owner)) {
         offenders.push(`${call.where}: ${owner} logs a hand's CONTENTS but its printed text says `
@@ -511,7 +510,7 @@ test('R197b §3 class guard: a card that PRINTS "look at …hand" and logs the h
     }
   }
   assert.deepEqual(offenders, [],
-    'the "look at" / "reveals" partition broke. R196: a per-card fix for a class is this '
+    'the "look at" / "reveals" partition broke. A per-card fix for a class is this '
     + "repo's most expensive recurring failure — fix the class.");
 
   // and the guard really did look at the cards it claims to cover
@@ -573,7 +572,7 @@ test('§4a CT-174(b) Eldritch Dreamtender: the card they are MADE to discard is 
   // arithmetic and not a set difference.
   h.state.players[D]!.hand = ['Shard Sprite', 'Good Whale', 'Shard Sprite'];
   pass(h); pass(h);                                           // combat damage → the trigger
-  pass(h); pass(h);                                           // R261: resolved in the after-combat window
+  pass(h); pass(h);                                           // CR 608.9b: resolved in the after-combat window
 
   assert.ok(provisional(h, A),
     'while the discard is still being ASKED the snapshot is not finished — a list settled '
@@ -717,7 +716,7 @@ test('§4e CT-174(b) census: every look-at-a-hand site in the pool is drilled ab
       '"Each opponent discards a [unit or spell] if able. OTHERWISE, they reveal their '
       + 'hand." — the reveal is in the `!able.length` branch, i.e. the branch reached only '
       + 'when that opponent CANNOT discard, and it `continue`s straight past the discard. '
-      + 'The discarding branch never calls revealHandTo at all (R284/batch-metal-c), so no '
+      + 'The discarding branch never calls revealHandTo at all (batch-metal-c), so no '
       + 'card can leave a hand this card has snapshotted.',
   };
   /** the sites §4a-§4d drive, each through the real card */

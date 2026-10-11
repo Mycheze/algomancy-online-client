@@ -36,7 +36,7 @@
  * second, redundant spelling carried so a client can POINT at an option, and
  * nothing may read it to resolve one. `server/rooms.ts` `referenceKey` keys
  * every saved game's `decide` on kind + option count + chosen label, and the
- * R200 forensic stack replays off the same. Re-keying would break
+ * forensic replay stack replays off the same. Re-keying would break
  * `143-replay-divergence` for exactly the games we most want to re-examine.
  * §4 pins that the click and the bar's button send the identical action.
  *
@@ -47,7 +47,7 @@
  *       re-deriving the grid. Both grids, because they are indexed
  *       differently and that difference is the one thing a reader gets wrong.
  *   §2  `gridSeatOf` — whose grid a question is about, derived from the
- *       question rather than from `Decision.seat`, which R225 can make a
+ *       question rather than from `Decision.seat`, which CR 602.6e can make a
  *       different seat entirely.
  *   §3  THE CLIENT, end to end through `test/ui-driver.ts`: the targets are
  *       really on screen, and clicking one really sends the decision.
@@ -107,7 +107,7 @@ function attackerAsk(seed: number): { h: Harness; A: Seat; D: Seat } {
 /**
  * DEFENDER'S GRID: Hooba-Bot's trigger is "when I attack OR BLOCK", so the
  * same question can be asked about the BLOCKING grid — which is keyed to the
- * attacking columns it blocks (R72) and therefore indexed differently. This
+ * attacking columns it blocks (CR 603.1) and therefore indexed differently. This
  * fixture exists because that difference is the whole of `attackColumnOf`, and
  * a test that only ever saw the attacker would pass with it deleted.
  */
@@ -147,7 +147,7 @@ function checkAgainstEngine(h: Harness, seat: Seat, why: string): number {
     const anchor = spotAnchor(s, seat, slot.spot);
     assert.ok(anchor, `${why}: "${slot.label}" resolves to somewhere on screen`);
     if (slot.block !== undefined) {
-      // R322: a blocking spot in front of an UNBLOCKED attacker names the
+      // CR 607.2: a blocking spot in front of an UNBLOCKED attacker names the
       // attack column itself, and its blocking half holds nothing yet
       assert.deepEqual(anchor, { kind: 'col', ci: slot.block }, `${why}: "${slot.label}"`);
       assert.equal(b.blocks[slot.block], undefined, `${why}: "${slot.label}" is in front of an unblocked column`);
@@ -180,7 +180,7 @@ test('§1b the BLOCKING grid is COMPACTED, and the anchor un-compacts it', () =>
   const b = h.state.battle!;
   assert.equal(b.blocks[0], undefined, 'attack column 0 is unblocked — that is what compacts the grid');
   const all = new E(h.state).formationSlots(D);
-  // R322: the unblocked attack column also gets a spot that would block it —
+  // CR 607.2: the unblocked attack column also gets a spot that would block it —
   // it names the ATTACK column directly, so it is not part of the compaction
   assert.deepEqual(all.filter(s => s.spot.kind === 'block').map(s => s.spot), [{ kind: 'block', column: 0 }],
     'one spot in front of the unblocked attacker');
@@ -217,7 +217,7 @@ test('§1c a spot the board has moved out from under resolves to nothing, not to
 test('§2 gridSeatOf reads the grid off the OFFER, and agrees with the engine on both sides', () => {
   const atk = attackerAsk(21503);
   assert.equal(gridSeatOf(atk.h.state, atk.h.state.decision!), atk.h.state.battle!.attacker,
-    'an offer containing an end spot is the attacking grid — only it can widen (R72)');
+    'an offer containing an end spot is the attacking grid — only it can widen (CR 602.6c)');
   done(atk.h);
 
   const def = defenderAsk(21504);
@@ -230,7 +230,7 @@ test('§2 gridSeatOf reads the grid off the OFFER, and agrees with the engine on
 });
 
 test('§2b the derivation is not Decision.seat wearing a disguise', () => {
-  // R225: the slots come from the grid the SOURCE ENTITY stands in, which is
+  // CR 602.6e: the slots come from the grid the SOURCE ENTITY stands in, which is
   // not always the asked seat's own. So the two are DIFFERENT questions, and
   // this pins that `gridSeatOf` answers the second one. Hooba-Bot's host is
   // the defender's, and the defender is asked — but the check that matters is
@@ -295,13 +295,13 @@ test('§3d the BLOCKING question draws on the blocking half, at the right column
   const { h, D } = defenderAsk(21509);
   const html = ui.join(h.state as GameState, D, legalActions(h.state, D) as Action[]);
   assert.equal(dropTargets(html), 3,
-    'two blocking columns, one back slot each, and (R322) one spot blocking the unblocked attacker — no ends');
+    'two blocking columns, one back slot each, and (CR 607.2) one spot blocking the unblocked attacker — no ends');
   // the panel draws attack column `ci` as one `.col`, so the targets have to be
   // in the SECOND and THIRD ones — the columns actually being blocked
   const cols = html.split('<div class="col"').slice(1);
   assert.ok(cols.length >= 3, 'all three attacking columns are drawn');
   assert.equal(dropTargets(cols[0]!), 1,
-    'under the UNBLOCKED attacker, only R322\'s spot that would block it — the compaction did not put a back slot there');
+    'under the UNBLOCKED attacker, only CR 607.2\'s spot that would block it — the compaction did not put a back slot there');
   assert.equal(dropTargets(cols[1]!), 1);
   assert.equal(dropTargets(cols[2]!), 1);
   done(h);

@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: THE LESSON DEAL.
+/* CR D8.1 — LEARN TO PLAY: THE LESSON DEAL.
  *
  * The tutorial is one continuous game between a learner and the Tutorial Bot,
  * and none of the three real modes can deal it: 'shared' has one communal deck,

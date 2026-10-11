@@ -135,7 +135,7 @@
   },
   {
     "key": "effects.casting.costs.mid-resolution",
-    "textHash": "ce357f6fae2e5bf6",
+    "textHash": "19683bed29cd1c00",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -301,7 +301,7 @@
   },
   {
     "key": "effects.casting.costs.unpayable",
-    "textHash": "a95d41fba0a27d16",
+    "textHash": "4b76db70e2b9ba6f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -351,7 +351,7 @@
   },
   {
     "key": "effects.casting.other-zones",
-    "textHash": "c7215e0603a5977c",
+    "textHash": "f2cb8c0054756a47",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -663,7 +663,7 @@
   },
   {
     "key": "effects.casting.procedure.as-you-play",
-    "textHash": "97494343f59908a2",
+    "textHash": "b76149f4131d63ad",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -744,7 +744,7 @@
   },
   {
     "key": "effects.casting.procedure.modes",
-    "textHash": "b121927311909ce7",
+    "textHash": "c81f06e512d6e1c6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1246,7 +1246,7 @@
   },
   {
     "key": "effects.casting.spell-tokens.taxed",
-    "textHash": "2c0f9bab2d8355cb",
+    "textHash": "52dd420721cd2501",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1467,7 +1467,7 @@
   },
   {
     "key": "effects.casting.x.free",
-    "textHash": "78c5d03fc29ffaee",
+    "textHash": "ea9d557df1eea2cb",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -1633,7 +1633,7 @@
   },
   {
     "key": "effects.general.effect",
-    "textHash": "73e715b327cc8989",
+    "textHash": "d1a43fbe0a273430",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1900,7 +1900,7 @@
   },
   {
     "key": "effects.playing.applying.no-play-triggers",
-    "textHash": "95ef7c9741dbcb96",
+    "textHash": "e99aa6ae19664188",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1950,7 +1950,7 @@
   },
   {
     "key": "effects.playing.applying.tides",
-    "textHash": "20884c9ecea87505",
+    "textHash": "419b7646fabfee92",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2130,7 +2130,7 @@
   },
   {
     "key": "effects.playing.mid-resolution.zone",
-    "textHash": "3d7130def88e4e35",
+    "textHash": "2c1ea2c7ecd527a1",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
@@ -2469,7 +2469,7 @@
   },
   {
     "key": "effects.playing.what-is-played.token-not-card",
-    "textHash": "bcded00fc9cc1f74",
+    "textHash": "c25dd54f3931fb20",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2518,7 +2518,7 @@
   },
   {
     "key": "effects.priority.deployment",
-    "textHash": "4d12d1d705a3396d",
+    "textHash": "40b3025c28233260",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
@@ -2916,7 +2916,7 @@
   },
   {
     "key": "effects.priority.simultaneous",
-    "textHash": "a2e676b3709c803c",
+    "textHash": "dd8ab6d7ee0b2223",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2970,7 +2970,7 @@
   },
   {
     "key": "effects.priority.simultaneous.burst",
-    "textHash": "56ebf2fa42a89b85",
+    "textHash": "8d500e5f1572d31c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -3686,7 +3686,7 @@
   },
   {
     "key": "effects.resolution.fizzle.never-had-target",
-    "textHash": "2d8b2ea5ba845d3b",
+    "textHash": "a30ef0811b83160a",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -3769,7 +3769,7 @@
   },
   {
     "key": "effects.resolution.fizzle.partial",
-    "textHash": "c7c2f40ee61d43db",
+    "textHash": "5bb8bf31e686cb64",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
@@ -3848,7 +3848,7 @@
   },
   {
     "key": "effects.resolution.fizzle.untargeted",
-    "textHash": "41a97e87bd21b954",
+    "textHash": "558082a599e04b00",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -3939,7 +3939,7 @@
   },
   {
     "key": "effects.resolution.fizzle.whole",
-    "textHash": "fcf5d8db5014cdfc",
+    "textHash": "82bd2c7805354016",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
@@ -3986,7 +3986,7 @@
   },
   {
     "key": "effects.resolution.negation",
-    "textHash": "e285a78adc0ef460",
+    "textHash": "996649dad61db123",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4025,7 +4025,7 @@
   },
   {
     "key": "effects.resolution.negation.destination",
-    "textHash": "acf0c2372ba6514d",
+    "textHash": "f1b5d3ad0c4868eb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4083,7 +4083,7 @@
   },
   {
     "key": "effects.resolution.negation.no-arrival",
-    "textHash": "b47f34dd37fe7e24",
+    "textHash": "feb0bbd86bdf59a5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",

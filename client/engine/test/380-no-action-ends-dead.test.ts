@@ -1,4 +1,4 @@
-/* R313 — no action ends with a dead unit standing.
+/* CR 713.3 — no action ends with a dead unit standing.
  *
  * Report #197 (room SGSZ, action 98): Dreadspawn Horror ("[Augment] I gain
  * -1/-1 for each card in your hand") went to 2/0 on the turn's draw and stood
@@ -19,7 +19,7 @@ function dreadspawnWithHand(hand: number): { h: Harness; id: number } {
   return { h, id };
 }
 
-test('R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip', () => {
+test('CR 503.5: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip', () => {
   const { h, id } = dreadspawnWithHand(3);
   assert.deepEqual(effStats(h, id), [4, 2], '7/5 with three cards in hand');
   toDeployment(h);
@@ -33,7 +33,7 @@ test('R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at 
   assert.ok(h.log.some(l => /Dreadspawn Horror dies/.test(l)));
 });
 
-test('R313: a planning action that does not settle still ends with the dead unit gone', () => {
+test('CR 713.3: a planning action that does not settle still ends with the dead unit gone', () => {
   // The backstop is general, not a turn-flip patch: make the unit lethal behind
   // the reducer's back, then take an action (activating a resource) whose own
   // handler never reaches settle().
@@ -45,7 +45,7 @@ test('R313: a planning action that does not settle still ends with the dead unit
   assert.equal(ent(h, id), undefined, 'the action ended with a 2/0 unit standing');
 });
 
-test('R313: an action with nothing lethal on the board runs no extra safe point', () => {
+test('an action with nothing lethal on the board runs no extra safe point', () => {
   const { h, id } = dreadspawnWithHand(2);   // 5/3
   giveResources(h, 0, 'water', 1, 'dormant');
   const before = h.log.length;
@@ -79,7 +79,7 @@ function flipTurn(h: Harness): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
 }
 
-test('R313 constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2', () => {
+test('CR 503.5b constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2', () => {
   const { h, id } = constructedDreadspawn(1);
   assert.deepEqual(effStats(h, id), [6, 4]);
   flipTurn(h);
@@ -90,7 +90,7 @@ test('R313 constructed: drawing 4 does not kill before the 2 go back — 1 card 
   assert.deepEqual(effStats(h, id), [4, 2]);
 });
 
-test('R313 constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed', () => {
+test('CR 503.5b constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed', () => {
   const { h, id } = constructedDreadspawn(3);
   flipTurn(h);
   assert.ok(ent(h, id), 'still mid draw phase');
@@ -110,7 +110,7 @@ function draftAll(h: Harness): void {
   }
 }
 
-test('R313 draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives', () => {
+test('CR 503.5a draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives', () => {
   const h = new Harness(4244, undefined, 'draft');
   draftAll(h);
   h.state.players[0]!.hand = h.state.players[0]!.hand.slice(0, 1);

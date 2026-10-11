@@ -1,4 +1,4 @@
-/* R216 — THE SCENARIO LIBRARY CANNOT ROT SILENTLY, AND THE FORENSIC STACK
+/* CR D8.4 — THE SCENARIO LIBRARY CANNOT ROT SILENTLY, AND THE FORENSIC STACK
  * STILL WORKS ON A SCENARIO ROOM.
  *
  * `docs/14-scenario-tester.md` §9 names scenario rot as one of the four ways
@@ -22,7 +22,7 @@
  * table has to keep moving.
  *
  * §3 is the forensic stack. The scenario id is in the room file beside `seed`
- * precisely so that `replay-room.ts`, the R200 divergence diff and the stats
+ * precisely so that `replay-room.ts`, the replay divergence diff and the stats
  * fold keep working — and `replay-probe.ts`, which cannot, has to say so
  * rather than answer wrong.
  */
@@ -33,7 +33,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Action, CardName, Element, GameState, Seat } from '../../engine/src/types.ts';
 import { apply, legalActions } from '../../engine/src/apply.ts';
-// R201 / docs/13 §5: `allCardNames()` is complete only once `src/apply.ts` has
+// docs/13 §5 (see 164-sweep-sight): `allCardNames()` is complete only once `src/apply.ts` has
 // been imported — one of the three synthetics is registered there, and eight
 // pool-wide sweeps could see 494 of 495 cards because of it. The `apply` import
 // above is what makes this list whole, and it is load-bearing rather than
@@ -58,7 +58,7 @@ const REGISTERED = new Set<string>(allCardNames());
 
 /* ══ §0 · NO BATCH SILENTLY EATS ANOTHER ═════════════════════════════ */
 
-test('R218 §0: no two scenario batches share an id', () => {
+test('§0: no two scenario batches share an id', () => {
   // SCENARIOS is `Object.assign({}, CORE, ...BATCHES)`, so a duplicate key does
   // not collide — the later spread just WINS, and the earlier author's scenario
   // vanishes with nothing said. Four people authored into this keyspace in
@@ -125,7 +125,7 @@ test('§1 every scenario deals, and lands where it declares it lands', () => {
     assert.equal(state.decision, null, `'${id}' opens with an unanswered decision`);
     assert.equal(state.winner, null, `'${id}' opens on a decided game`);
     // the board it claims is the board it has
-    // R218 — a prologue MAY spend a hand card, and some clauses cannot be
+    // a prologue MAY spend a hand card (see 14-scenario-tester.md), and some clauses cannot be
     // reached without it: a non-{Virus} [Augment] only ever attaches as a
     // DEPLOYMENT action, so a scenario about its donated text has to play it
     // before the owner takes over. When it does, the scenario declares what is
@@ -257,7 +257,7 @@ function playSlice(): { actions: Action[]; state: GameState } {
   return { actions, state: s };
 }
 
-test('§3 replay-room.ts replays a scenario room to the same board (the R200 diff still works)', () => {
+test('§3 replay-room.ts replays a scenario room to the same board (the replay diff still works)', () => {
   const played = playSlice();
   const file: RoomFile = {
     seed: SEED, mode: 'shared', els: ELS, names: NAMES,

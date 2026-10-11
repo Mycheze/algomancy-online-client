@@ -1,11 +1,11 @@
 /**
- * R125's BUG SHAPE, GENERALISED — the two attribute channels.
+ * THE ROTSPORE BUG SHAPE (CR 707.7), GENERALISED — the two attribute channels.
  *
  * Rotspore Herald printed "Everything is {deadly}" and was implemented as
  * ONE `statics` mod filtered to `t.kind === 'unit'`. Half its sentence was
  * therefore dead, and nothing in the suite could see it, because the half
  * that DID work worked. The owner ruled it literal on 2026-08-24 ("all the
- * cards in Algomancy are pretty literal") and it became R125.
+ * cards in Algomancy are pretty literal") and it became a ruling (now CR 707.7).
  *
  * THE STRUCTURAL FACT BEHIND IT, which outlives that one card:
  * `dealEffectDamageAll` reads a damage source's attributes two different
@@ -40,7 +40,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight). registry.ts registers
 // only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
@@ -69,7 +69,7 @@ function sourceScopedAttrs(): Set<string> {
   for (const name of allCardNames()) {
     for (const a of getCard(name).attrs ?? []) known.add(a);
     for (const a of getCard(name).augmentAttrs ?? []) known.add(a);
-    for (const m of radiantList(name, 'statics')) for (const a of m.attrs ?? []) known.add(a);   // R268
+    for (const m of radiantList(name, 'statics')) for (const a of m.attrs ?? []) known.add(a);   // CR 721.1
   }
   const out = new Set<string>();
   for (const c of printedCards()) {
@@ -95,7 +95,7 @@ const EXEMPT: Record<string, string> = {
     + 'ever be the source that needs it.',
 };
 
-test('a card granting a SOURCE-scoped attribute reaches the spell channel too (R125)', () => {
+test('a card granting a SOURCE-scoped attribute reaches the spell channel too (CR 707.7)', () => {
   const scoped = sourceScopedAttrs();
   // sanity on the derivation itself: if the reminder-text scrape silently
   // stopped working, every assertion below would pass vacuously.
@@ -108,8 +108,8 @@ test('a card granting a SOURCE-scoped attribute reaches the spell channel too (R
 
   const gaps: string[] = [];
   for (const name of allCardNames()) {
-    const viaStatics = new Set(radiantList(name, 'statics').flatMap(m => m.attrs ?? []));   // R268
-    const viaEffect = new Set(radiantList(name, 'effectAttrs').flatMap(m => m.attrs ?? []));   // R268
+    const viaStatics = new Set(radiantList(name, 'statics').flatMap(m => m.attrs ?? []));   // CR 721.1
+    const viaEffect = new Set(radiantList(name, 'effectAttrs').flatMap(m => m.attrs ?? []));   // CR 721.1
     for (const a of viaStatics) {
       if (!scoped.has(a) || viaEffect.has(a) || EXEMPT[name]) continue;
       gaps.push(`${name} grants {${a}} through 'statics' only`);
@@ -119,7 +119,7 @@ test('a card granting a SOURCE-scoped attribute reaches the spell channel too (R
     'These cards grant an attribute the pool describes as belonging to a SOURCE, but '
     + 'only through the `statics` channel — which a resolving SPELL never passes '
     + 'through, because it has no entity to hang statics on. Half the printed sentence '
-    + 'is therefore dead, exactly as Rotspore Herald\'s was before R125. Either add an '
+    + 'is therefore dead, exactly as Rotspore Herald\'s was before the literal-Everything fix. Either add an '
     + '`effectAttrs` mod granting the same attribute, or add the card to EXEMPT with '
     + 'the reason its grant can never land on a spell.');
 });
@@ -130,7 +130,7 @@ test('every attribute-channel exemption is still doing a job — none outlives i
   for (const name of Object.keys(EXEMPT)) {
     const def = getCard(name);
     if (!def) { stale.push(`${name}: no longer a registered card`); continue; }
-    const viaStatics = radiantList(name, 'statics').flatMap(m => m.attrs ?? []);   // R268
+    const viaStatics = radiantList(name, 'statics').flatMap(m => m.attrs ?? []);   // CR 721.1
     if (!viaStatics.some(a => scoped.has(a))) {
       stale.push(`${name}: no longer grants any source-scoped attribute through statics`);
     }
@@ -141,7 +141,7 @@ test('every attribute-channel exemption is still doing a job — none outlives i
     + 'Delete the row.');
 });
 
-// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+// ── POOL SIGHT ─────────────────────────────────────────────────── (see 180-pool-sight)
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
 // card entry point and it registers 494 of the 495 cards: two of the three
@@ -153,7 +153,7 @@ test('every attribute-channel exemption is still doing a job — none outlives i
 // The floor is what stops that being reintroduced by an import change nobody
 // reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
 // floor for the whole suite and the guard that catches a ninth sweep.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496,
     `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `

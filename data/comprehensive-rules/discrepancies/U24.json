@@ -22,50 +22,50 @@
     "kind": "c-owner-call-only",
     "rule": "annexd.reveal.public-zones.deck-elements",
     "tier": 3,
-    "summary": "R99 ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.",
+    "summary": "The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.",
     "sides": [
       {
-        "source": "R99",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
       },
       {
-        "source": "R99",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "It decides whether `deckElements` belongs in both players' views or only the owner's."
       }
     ],
-    "resolution": "An owner-only presentation call with no printed or designer source. R99 names it as the owner's open question: is a constructed deck's element identity public at game start? The client shows it to both players, and the rule states that default at low confidence, for sign-off."
+    "resolution": "An owner-only presentation call with no printed or designer source. The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) names it as the owner's open question: is a constructed deck's element identity public at game start? The client shows it to both players, and the rule states that default at low confidence, for sign-off."
   },
   {
     "id": "D-U24-3",
     "kind": "c-owner-call-only",
     "rule": "annexd.reveal.resolving",
     "tier": 3,
-    "summary": "R78 left one presentation call open: the log line \"X resolves.\" is written when resolution STARTS, so it is in the log while the controller is still choosing. R78 asks the owner to rule.",
+    "summary": "The owner ruling of 2026-08-22 (“An item stays on the stack…”) left one presentation call open: the log line \"X resolves.\" is written when resolution STARTS, so it is in the log while the controller is still choosing. The owner ruling of 2026-08-22 (“An item stays on the stack…”) asks the owner to rule.",
     "sides": [
       {
-        "source": "R78",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "### ⚠ \"X resolves.\" still logs at the START of resolution — Bena to rule"
       },
       {
-        "source": "R78",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "follow — and the event is log-only (nothing dispatches on it), so moving it is"
       }
     ],
-    "resolution": "An owner-only presentation call. R78 leaves \"X resolves.\" logged when resolution starts, and asks the owner to rule. No rule states it (annexd.reveal.resolving covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved."
+    "resolution": "An owner-only presentation call. The owner ruling of 2026-08-22 (“An item stays on the stack…”) leaves \"X resolves.\" logged when resolution starts, and asks the owner to rule. No rule states it (annexd.reveal.resolving covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved."
   },
   {
     "id": "D-U24-4",
     "kind": "c-owner-call-only",
     "rule": "annexd.display.live-values.token-x",
     "tier": 4,
-    "summary": "R151 substitutes a token's live X into its text box but leaves the card's \"modified\" badge off, and says the badge question is the owner's to decide.",
+    "summary": "The owner ruling of 2026-08-25 (“a token prints the X it…”) substitutes a token's live X into its text box but leaves the card's \"modified\" badge off, and says the badge question is the owner's to decide.",
     "sides": [
       {
-        "source": "R151",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "`CardTextBox.modified` stays **false** for a specialised token. It is the flag"
       },
       {
-        "source": "R151",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "call and not something R151 should have made on the side."
       }
     ],
@@ -76,7 +76,7 @@
     "kind": "f-register-chain-wrong",
     "rule": "annexd.confirm.not-only-log",
     "tier": 2,
-    "summary": "R266 still says that nineteen costly announcements remain log-only and that choosing a surface for them is a later product call. R276 made that call (a shared toast tier) and gave them a surface. R266 carries no mark saying so.",
+    "summary": "The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still says that nineteen costly announcements remain log-only and that choosing a surface for them is a later product call. The owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) made that call (a shared toast tier) and gave them a surface. The owner ruling of 2026-08-30 (“nothing may exist only in the…”) carries no mark saying so.",
     "seeAlso": [
       {
         "id": "D-U24-9",
@@ -85,55 +85,55 @@
     ],
     "sides": [
       {
-        "source": "R276",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "CT-142 asked which log-only announcements deserve a surface and refused to guess,"
       },
       {
-        "source": "R276",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "**shared toast tier** — one notice channel they all use, a brief toast near the"
       },
       {
-        "source": "R266",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
       },
       {
-        "source": "R266",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
       }
     ],
-    "resolution": "Mark R266's closing count as answered by R276 in the register (\"its log-only count answered by R276\"); CT-236 tracks the stale sentence. The rules follow R276 (annexd.confirm.not-only-log.toast). annexd.confirm.not-only-log states R266's standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence."
+    "resolution": "Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register (\"its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)\"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (annexd.confirm.not-only-log.toast). annexd.confirm.not-only-log states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U24-6",
     "kind": "g-other",
     "rule": "annexd.confirm.never-refuse.ally",
     "tier": 4,
-    "summary": "Three rulings this unit's sections need are classified to U23, not U24, so they were not in this unit's pack: R288 (the misclicked-ally question, D7), R236 (haste readiness hidden while the step is open, D6) and R194 (the confirm before a pass reaches Regroup, D7, quoted here through R266). They were read from digital-rules.md. U23 may state the same facts under D2-D5.",
+    "summary": "Three rulings this unit's sections need are classified to U23, not U24, so they were not in this unit's pack: The owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) (the misclicked-ally question, D7), the owner ruling of 2026-08-28 (“the haste step readies itself, and…”) (haste readiness hidden while the step is open, D6) and the owner ruling of 2026-08-26 (“a warning is not worth a…”) (the confirm before a pass reaches Regroup, D7, quoted here through the owner ruling of 2026-08-30 (“nothing may exist only in the…”)). They were read from digital-rules.md. U23 may state the same facts under D2-D5.",
     "sides": [
       {
-        "source": "R288",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
       },
       {
-        "source": "R236",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "who is ready stops being public while it is open"
       }
     ],
-    "resolution": "At assembly, keep one statement of each fact: the D7 confirmation rules here, and whichever unit's haste-readiness rule reads better. Classification could add U24 to R288 and R236."
+    "resolution": "At assembly, keep one statement of each fact: the D7 confirmation rules here, and whichever unit's haste-readiness rule reads better. Classification could add U24 to the owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) and the owner ruling of 2026-08-28 (“the haste step readies itself, and…”)."
   },
   {
     "id": "D-U24-7",
     "kind": "g-other",
     "rule": "annexd.display.menus",
     "tier": 4,
-    "summary": "Some of this unit's digital rulings are about how the client is built or tested, not about a convention a player or judge meets. They are not drafted as rules: R192 (which click opens the cache panel), R205 (the test driver's DOM model), R230 and R272 parts a-b (hover tooltips and image sizing), R255 (arrowhead placement), R274 (a join error on the connecting screen), R206 and R281 (how the glossary is audited), and R209 sections 2 to 6 (how guards derive their lists). Their game halves, where they have one, belong to other units.",
+    "summary": "Some of this unit's digital rulings are about how the client is built or tested, not about a convention a player or judge meets. They are not drafted as rules: The owner ruling of 2026-08-26 (“a cache thumb's first click, and…”) (which click opens the cache panel), the owner ruling of 2026-08-26 (“a checker that cannot see a…”) (the test driver's DOM model), the owner ruling of 2026-08-28 (“the hover tooltip cancelled itself: a…”) and the owner ruling of 2026-08-30 (“A repaint may not throw away…”) parts a-b (hover tooltips and image sizing), the owner ruling of 2026-08-29 (“an arrow points at the middle…”) (arrowhead placement), the owner ruling of 2026-08-30 (“A refusal the player earns before…”) (a join error on the connecting screen), the owner ruling of 2026-08-26 (“the glossary is a rules document…”) and the owner ruling of 2026-08-30 (“a document validated against the code…”) (how the glossary is audited), and the owner ruling of 2026-08-26 (“a clause that delivers nothing must…”) sections 2 to 6 (how guards derive their lists). Their game halves, where they have one, belong to other units.",
     "sides": [
       {
-        "source": "R205",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "> **A fake that answers a question about the DOM must model the part of the DOM"
       },
       {
-        "source": "R230",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "the hover tooltip cancelled itself: a scroll hides it only if it could have MOVED the card"
       }
     ],
@@ -144,14 +144,14 @@
     "kind": "g-other",
     "rule": "annexd.display.live-values.x-not-forecast",
     "tier": 4,
-    "summary": "R246 was asked for \"all cards with an X in them\" and makes a board-read X public on the stack as a forecast, but records that eighteen cards whose X is read from the board at resolution have no forecast and show nothing. The rule therefore states the forecast only for cards that declare one, and states the gap separately.",
+    "summary": "The owner ruling of 2026-08-29 (“A FORECAST IS NOT A COMMITMENT…”) was asked for \"all cards with an X in them\" and makes a board-read X public on the stack as a forecast, but records that eighteen cards whose X is read from the board at resolution have no forecast and show nothing. The rule therefore states the forecast only for cards that declare one, and states the gap separately.",
     "sides": [
       {
-        "source": "R246",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "The owner's quantifier — \"all cards with an X in them\" — is 45 cards. Four"
       },
       {
-        "source": "R246",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "cards are left: their X is read from the board at resolution and only a card"
       }
     ],
@@ -162,17 +162,17 @@
     "kind": "g-other",
     "rule": "annexd.confirm.say-so",
     "tier": 4,
-    "summary": "Sources silent on whether a clause that does nothing, outside R209's class (a per-seat promise over an empty collection), must be announced when another clause of the same effect speaks. R209 also records that the whole-pool sweep can only convict a wholly silent run, so half-silent effects are guarded only member by member.",
+    "summary": "Sources silent on whether a clause that does nothing, outside the owner ruling of 2026-08-26 (“a clause that delivers nothing must…”)’s class (a per-seat promise over an empty collection), must be announced when another clause of the same effect speaks. The owner ruling of 2026-08-26 (“a clause that delivers nothing must…”) also records that the whole-pool sweep can only convict a wholly silent run, so half-silent effects are guarded only member by member.",
     "sides": [
       {
-        "source": "R209",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "> **A printed clause that promises a per-seat outcome and then resolves over an"
       },
       {
-        "source": "R209",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "not a gap to widen; it is a limit to write down, and to cover somewhere else."
       }
     ],
-    "resolution": "The rule states R187 for a whole effect and R209 for its stated class only, and does not generalise to every clause."
+    "resolution": "The rule states the owner ruling of 2026-08-26 (“\"each opponent\" in a region that…”) for a whole effect and the owner ruling of 2026-08-26 (“a clause that delivers nothing must…”) for its stated class only, and does not generalise to every clause."
   }
 ]

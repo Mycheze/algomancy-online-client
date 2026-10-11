@@ -1,4 +1,4 @@
-/* R311 — the KEMX shape: a cached {Virus} in a battle priority window.
+/* CR 723.2a — the KEMX shape: a cached {Virus} in a battle priority window.
  *
  * Report #195 (game KEMX, action 105, 2026-10-04): the owner held priority in
  * the after-combat window with Gember's Mirage Walker in the battle and a
@@ -9,9 +9,9 @@
  * 369-cache-is-the-hand is the whole-pool sweep that keeps the offer honest
  * for every card and mode. This file plays the KEMX move to the end: the
  * cached Virus goes onto an ENEMY unit and onto a SPELL on the stack, pays
- * its mana while ignoring its affinity (R303 — the seat has no dark at all),
- * says so in the log, and lands as a mod. Plus the two siblings R311 opened in
- * the same window: a fulfilled prophecy's Virus is free, and a cached Ambush
+ * its mana while ignoring its affinity (CR 801.9g — the seat has no dark at all),
+ * says so in the log, and lands as a mod. Plus its two siblings in
+ * the same window (CR 723.2a, 803.6i): a fulfilled prophecy's Virus is free, and a cached Ambush
  * ambushes.
  *
  * Seeds: 3700-3709.
@@ -28,7 +28,7 @@ const FILLER = 'The Foretold';
 /** A attacks D with one vanilla unit, then casts Arc Lightning at D, so D
  * holds priority with an enemy unit in the battle and a spell on the stack.
  * D's mana is all FIRE: not one dark pip, so any Virus D lands from the cache
- * is landing on the R303 affinity waiver and nothing else. */
+ * is landing on the CR 801.9g affinity waiver and nothing else. */
 function kemxWindow(seed: number): { h: Harness; A: Seat; D: Seat; atk: number; ally: number; spell: StackItem } {
   const h = new Harness(seed);
   for (const p of h.state.players) p.hand.length = 0;
@@ -58,7 +58,7 @@ function glimpse(h: Harness, seat: Seat, name: string): void {
 const cacheVirus = (h: Harness, D: Seat): Action[] =>
   h.legal(D).filter(a => a.type === 'augment' && a.from === 'cache');
 
-test('R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity', () => {
+test('CR 723.2a: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity', () => {
   const { h, A, D, atk } = kemxWindow(3700);
   glimpse(h, D, VIRUS);
   assert.ok(!h.q.canPayCard(D, VIRUS, { purpose: 'mod' }), 'from hand it would be unaffordable: no dark at all');
@@ -80,11 +80,11 @@ test('R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ign
   assert.equal(host.controller, A, 'still the enemy unit — a Virus goes onto anyone');
 });
 
-test('R311: a glimpsed Virus in the cache goes onto a spell on the stack', () => {
+test('CR 723.2a: a glimpsed Virus in the cache goes onto a spell on the stack', () => {
   const { h, D, spell } = kemxWindow(3701);
   glimpse(h, D, VIRUS);
   const opt = cacheVirus(h, D).find(a => a.type === 'augment' && a.hostStack === spell.id);
-  assert.ok(opt, 'the cache offers the Virus onto Arc Lightning on the stack (R79)');
+  assert.ok(opt, 'the cache offers the Virus onto Arc Lightning on the stack (CR 723.4)');
   const mana = h.q.openMana(D);
   h.do(opt!);
   assert.equal(h.q.openMana(D), mana - 1);
@@ -95,7 +95,7 @@ test('R311: a glimpsed Virus in the cache goes onto a spell on the stack', () =>
     'the spell now carries it');
 });
 
-test('R311: a Virus whose prophecy is fulfilled augments in battle for FREE', () => {
+test('CR 723.2a: a Virus whose prophecy is fulfilled augments in battle for FREE', () => {
   const { h, D, atk } = kemxWindow(3702);
   withE(h, e => { e.cacheCard(D, VIRUS, 'effect', { prophecy: 'One Turn Passes' }).prophecy!.fulfilled = true; });
   assert.equal(h.q.cachePermission(D, 0), 'prophecy');
@@ -107,7 +107,7 @@ test('R311: a Virus whose prophecy is fulfilled augments in battle for FREE', ()
   assert.ok(h.log.includes(`${VIRUS} augments for FREE — its prophecy is fulfilled.`));
 });
 
-test('R311: an EXPIRED glimpse is still nothing in battle', () => {
+test('CR 723.2a: an EXPIRED glimpse is still nothing in battle', () => {
   const { h, D, atk } = kemxWindow(3703);
   (h.state.players[D]!.cache ??= []).push({ card: VIRUS, uid: 37_030, playableUntilTurn: h.state.turn - 1 });
   assert.equal(h.q.cachePermission(D, 0), null);
@@ -115,7 +115,7 @@ test('R311: an EXPIRED glimpse is still nothing in battle', () => {
   assert.throws(() => h.do({ type: 'augment', seat: D, from: 'cache', index: 0, hostId: atk }), /no permission/);
 });
 
-test('R311: a glimpsed Ambush card ambushes out of the cache, paying the ambush mana ignoring affinity', () => {
+test('CR 803.6i: a glimpsed Ambush card ambushes out of the cache, paying the ambush mana ignoring affinity', () => {
   const { h, D, ally } = kemxWindow(3704);
   glimpse(h, D, 'Lurking Slimebeast');              // Ambush [3 b] — D has no water
   const opt = h.legal(D).find(a => a.type === 'playCached' && a.mode === 'ambush');
@@ -124,7 +124,7 @@ test('R311: a glimpsed Ambush card ambushes out of the cache, paying the ambush 
   h.do(opt!);
   assert.equal(h.q.openMana(D), mana - 3, 'the ambush line\'s [3] is paid');
   assert.ok(h.log.some(l => l.includes('Lurking Slimebeast ambushes out of') && l.endsWith('ignoring affinity.')));
-  pick(h, { unit: ally });                           // R67: the ally to recall is chosen at cast
+  pick(h, { unit: ally });                           // CR 110.1a: the ally to recall is chosen at cast
   const item = h.state.stack[h.state.stack.length - 1]!;
   assert.equal(item.kind, 'ambush');
   assert.equal(item.from, 'cache', 'the item knows where the card came from');

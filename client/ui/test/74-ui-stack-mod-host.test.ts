@@ -1,10 +1,10 @@
-/* R79 in the CLIENT: a spell on the stack is a mod HOST, and the player has
+/* CR 723.4 in the CLIENT: a spell on the stack is a mod HOST, and the player has
  * to be able to click it.
  *
  * The report (Bena, 2026-08-22): "Did Caleb rule that you could mod Chitin
  * Shredder onto spells that are on the stack? The engine isn't letting me mod
  * it onto a Fireball." The engine was letting him — `legalActions` has offered
- * `{ type: 'augment', …, hostStack }` since R79 landed. The CLIENT never read
+ * `{ type: 'augment', …, hostStack }` since the stack-host ruling (now CR 723.4) landed. The CLIENT never read
  * the field: the glow behind a mod placement was a `Set<EntityId>`, hosts were
  * matched by entity id, and a `StackItem` is not an `Entity`. Every affordance
  * downstream said "unit" in so many words — the bin banner promised "a unit",
@@ -51,7 +51,7 @@ function virusWindow(seed: number): { h: Harness; A: Seat; D: Seat; virus: numbe
   giveResources(h, A, 'earth', 2);                   // Chitin Shredder ee/2
   pass(h);                                           // A declines the first window
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
-  pick(h, { player: A });                            // R67: aimed as it is cast
+  pick(h, { player: A });                            // CR 702.3c: aimed as it is cast
   const virus = give(h, A, 'Chitin Shredder');
   assert.equal(h.state.priority, A, 'A holds the response window');
   return { h, A, D, virus, atk };
@@ -59,7 +59,7 @@ function virusWindow(seed: number): { h: Harness; A: Seat; D: Seat; virus: numbe
 
 /* ── the judgement: which hosts, of which kind ─────────────────────────── */
 
-test('R79: modHosts splits the engine’s offer into units AND spells on the stack', () => {
+test('CR 723.4a: modHosts splits the engine’s offer into units AND spells on the stack', () => {
   const { h, A, virus, atk } = virusWindow(7300);
   const spell = onStack(h, 'Arc Lightning')!;
   const legal = legalActions(h.state, A);
@@ -74,7 +74,7 @@ test('R79: modHosts splits the engine’s offer into units AND spells on the sta
   assert.equal(modHostCount(hosts), hosts.units.size + hosts.stack.size);
 });
 
-test('R79: every glowing stack host is an action the engine accepts', () => {
+test('CR 723.4: every glowing stack host is an action the engine accepts', () => {
   // the affordance is driven off `legal`, so the round trip has to close: a
   // card the client lit up must take the click without an IllegalAction.
   const { h, A, virus } = virusWindow(7301);
@@ -91,7 +91,7 @@ test('R79: every glowing stack host is an action the engine accepts', () => {
   }
 });
 
-test('R79: the client never invents a host — a virus item is not one', () => {
+test('CR 723.4e: the client never invents a host — a virus item is not one', () => {
   // STACK_VIRUS_HOSTS is {spell, spellUnit, spellToken}: a trigger, an ability,
   // an ambusher and another virus are all excluded, each for its own reason.
   // The client does not restate that list; it reads what was offered. So the
@@ -109,7 +109,7 @@ test('R79: the client never invents a host — a virus item is not one', () => {
   assert.equal(hosts.stack.has(virusItem.id), false, 'the virus in flight is not');
 });
 
-test('R79: a graft has no stack form at all', () => {
+test('CR 722.2: a graft has no stack form at all', () => {
   const { h, A, virus } = virusWindow(7303);
   const hosts = modHosts(legalActions(h.state, A), { from: 'hand', index: virus, mode: 'graft' });
   assert.equal(hosts.stack.size, 0, 'nothing on the stack is a graft host');

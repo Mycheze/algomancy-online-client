@@ -1,11 +1,11 @@
-/* R78 — an item stays visible until it has ACTUALLY resolved.
- * R79 — a Virus may be augmented onto a SPELL on the stack.
+/* CR D6.3 — an item stays visible until it has ACTUALLY resolved.
+ * CR 723.4 — a Virus may be augmented onto a SPELL on the stack.
  *
- * Playtest round 13. R78: "It would make more sense if there was a different
+ * Playtest round 13, on the resolving state (CR D6.3): "It would make more sense if there was a different
  * state before resolution like 'Opponent is resolving [effect]' and leave the
  * effect on the stack until it's ACTUALLY resolved … Right now, having it
  * leave the stack while the player is choosing things looks wrong."
- * R79: "being able to augment viruses onto spells that are on the stack …
+ * On stack viruses (CR 723.4): "being able to augment viruses onto spells that are on the stack …
  * put the powerful guy onto a giant fireball you're casting to have it deal
  * double damage." Seeds 6700-6799.
  */
@@ -63,9 +63,9 @@ function walk(seed: number, steps: number): { state: GameState; actions: Action[
   return { state, actions };
 }
 
-// ── R78: the resolving state ────────────────────────────────────────────
+// ── CR D6.3: the resolving state ────────────────────────────────────────────
 
-test('R78: an item that suspends mid-resolution is off the stack but flagged as RESOLVING', () => {
+test('CR D6.3: an item that suspends mid-resolution is off the stack but flagged as RESOLVING', () => {
   const { h, D } = attackWindow(6700);
   giveResources(h, D, 'water', 3);                   // Premonition b/1 → Glimpse 3
   pass(h);                                           // A declines
@@ -88,7 +88,7 @@ test('R78: an item that suspends mid-resolution is off the stack but flagged as 
   assert.equal(h.state.players[D]!.cache!.length, 1, 'and its effect is on the board');
 });
 
-test('R78: a resolving item cannot be responded to, negated or targeted', () => {
+test('CR D6.3: a resolving item cannot be responded to, negated or targeted', () => {
   const { h, A, D } = attackWindow(6701);
   giveResources(h, D, 'water', 3);
   giveResources(h, A, 'wood', 2);                    // Hush Mush gg/2, "negate target effect"
@@ -100,9 +100,9 @@ test('R78: a resolving item cannot be responded to, negated or targeted', () => 
   // while it is merely WAITING, it is answerable by both routes
   const waiting = onStack(h, 'Premonition')!;
   assert.ok(new E(h.state).targetCandidates({ what: 'stackEffect', prompt: '' }, h.state.battle!.region)
-    .some(t => 'stack' in t && t.stack === waiting.id), 'R60: a waiting item is a legal "target effect"');
+    .some(t => 'stack' in t && t.stack === waiting.id), 'CR 700.1: a waiting item is a legal "target effect"');
   assert.ok(legalActions(h.state, A).some(a => a.type === 'augment' && a.hostStack === waiting.id),
-    'R79: and a legal virus host');
+    'CR 723.4d: and a legal virus host');
 
   pass(h); pass(h);                                  // now it is RESOLVING
   assert.ok(h.state.resolving);
@@ -110,7 +110,7 @@ test('R78: a resolving item cannot be responded to, negated or targeted', () => 
 
   // 1. nothing is offered to the opponent at all — the decision owns the game
   assert.deepEqual(legalActions(h.state, A), [], 'no response window while it resolves');
-  // 2. it is not a "target effect" (R60) — targetCandidates reads s.stack only
+  // 2. it is not a "target effect" — targetCandidates reads s.stack only
   assert.deepEqual(
     new E(h.state).targetCandidates({ what: 'stackEffect', prompt: '' }, h.state.battle!.region)
       .filter(t => 'stack' in t && t.stack === id), [], 'not a legal target');
@@ -126,7 +126,7 @@ test('R78: a resolving item cannot be responded to, negated or targeted', () => 
   }
 });
 
-test('R78: the flag survives the suspension rollback as ONE object, and the game still replays', () => {
+test('the flag survives the suspension rollback as ONE object, and the game still replays', () => {
   const { h, D } = attackWindow(6702);
   giveResources(h, D, 'water', 3);
   pass(h);
@@ -141,7 +141,7 @@ test('R78: the flag survives the suspension rollback as ONE object, and the game
   assert.equal(h.state.resolving ?? null, null);
 });
 
-test('R78: replay(seed, actions) is still bit-identical', () => {
+test('replay(seed, actions) is still bit-identical', () => {
   for (const seed of [6705, 6706, 6707, 6708]) {
     const { state, actions } = walk(seed, 400);
     let st: GameState = createGame(seed).state;
@@ -150,8 +150,8 @@ test('R78: replay(seed, actions) is still bit-identical', () => {
   }
 });
 
-test('R78: every exit clears it — a fizzle, and a battle played to its end', () => {
-  // a spell whose only target dies before it resolves fizzles (R5) — the exit
+test('CR D6.3: every exit clears it — a fizzle, and a battle played to its end', () => {
+  // a spell whose only target dies before it resolves fizzles (CR 704.6) — the exit
   // that never reaches resolveParts at all
   const { h, A, D } = attackWindow(6703);
   giveResources(h, D, 'fire', 2);
@@ -167,7 +167,7 @@ test('R78: every exit clears it — a fizzle, and a battle played to its end', (
   assert.equal(h.state.stack.length, 0);
 });
 
-test('R78: fuzzed play never strands a resolving item outside a pending decision', () => {
+test('CR D6.3: fuzzed play never strands a resolving item outside a pending decision', () => {
   // The stuck-state guard: `resolving` may be non-null ONLY while a decision
   // is open. Anything else is an item that has left the stack and will never
   // come back — this codebase has just had two of those.
@@ -200,7 +200,7 @@ test('R78: fuzzed play never strands a resolving item outside a pending decision
   assert.equal(state.resolving ?? null, null, 'and the game did not end holding one');
 });
 
-test('R78: a NESTED resolution that suspends does not strand the outer marker (fuzz seed 693)', () => {
+test('a NESTED resolution that suspends does not strand the outer marker (fuzz seed 693)', () => {
   // The fuzzer's find. A battle resolution ended the battle; settle() then
   // resolved a Wraith's startOfDeployment trigger INLINE, and that trigger
   // suspended on its own choice. The throw abandons the outer resolution
@@ -210,9 +210,9 @@ test('R78: a NESTED resolution that suspends does not strand the outer marker (f
   fuzzGame(693);
 });
 
-// ── R79: viruses onto spells on the stack ───────────────────────────────
+// ── CR 723.4: viruses onto spells on the stack ───────────────────────────────
 
-test('R79: the powerful guy on a giant fireball — Chitin Shredder doubles Arc Lightning', () => {
+test('CR 723.4: the powerful guy on a giant fireball — Chitin Shredder doubles Arc Lightning', () => {
   const { h, A, D } = attackWindow(6710);
   giveResources(h, D, 'fire', 4);                    // Arc Lightning rr/4
   giveResources(h, D, 'earth', 2);                   // Chitin Shredder ee/2
@@ -234,7 +234,7 @@ test('R79: the powerful guy on a giant fireball — Chitin Shredder doubles Arc 
   assert.equal(before - h.state.players[A]!.life, 12, '6 damage, doubled by {Powerful}');
 });
 
-test('R79: you can hit an ENEMY spell, and a virus on a unit still works unchanged', () => {
+test('CR 723.4: you can hit an ENEMY spell, and a virus on a unit still works unchanged', () => {
   const { h, A, D } = attackWindow(6711);
   giveResources(h, D, 'fire', 4);
   giveResources(h, A, 'earth', 2);
@@ -248,13 +248,13 @@ test('R79: you can hit an ENEMY spell, and a virus on a unit still works unchang
   pass(h); pass(h);
   pass(h); pass(h);
   assert.equal(before - h.state.players[A]!.life, 12, 'A doubled the spell aimed at A');
-  // R65: each card reaches ITS OWN owner's erased pile
+  // CR 723.4b: both are erased, each card to ITS OWN owner's erased pile
   assert.equal(count(erasedOf(h, D), 'Arc Lightning'), 1, "the spell is D's");
   assert.equal(count(erasedOf(h, A), 'Chitin Shredder'), 1, "the virus is A's");
   assert.equal(count(erasedOf(h, D), 'Chitin Shredder'), 0);
 });
 
-test('R79 ⚠: a spell that carried a virus is Unstable — it is ERASED, never binned', () => {
+test('CR 723.4b ⚠: a spell that carried a virus is Unstable — it is ERASED, never binned', () => {
   const { h, A, D } = attackWindow(6712);
   giveResources(h, D, 'fire', 4);
   giveResources(h, D, 'earth', 2);
@@ -270,7 +270,7 @@ test('R79 ⚠: a spell that carried a virus is Unstable — it is ERASED, never 
   assert.deepEqual(erasedOf(h, D).slice(-2).sort(), ['Arc Lightning', 'Chitin Shredder']);
 });
 
-test('R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it (Manual p.34)', () => {
+test('CR 723.4b: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it (Manual p.34)', () => {
   // 1. the virus item is negated before it ever attaches → it is binned
   const { h, A, D } = attackWindow(6713);
   giveResources(h, D, 'fire', 4);
@@ -301,11 +301,11 @@ test('R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it
   g.h.do({ type: 'playCard', seat: g.A, handIndex: give(g.h, g.A, 'Hush Mush') });
   pick(g.h, { stack: onStack(g.h, 'Arc Lightning')!.id });
   pass(g.h); pass(g.h);
-  assert.equal(count(binOf(g.h, g.D), 'Arc Lightning'), 0, 'Unstable beats the negation bin (R69)');
+  assert.equal(count(binOf(g.h, g.D), 'Arc Lightning'), 0, 'Unstable beats the negation bin (CR 406.4)');
   assert.deepEqual(erasedOf(g.h, g.D).slice(-2).sort(), ['Arc Lightning', 'Chitin Shredder']);
 });
 
-test('R79: a virus whose host leaves the stack first fizzles to the bin', () => {
+test('CR 723.3a: a virus whose host leaves the stack first fizzles to the bin', () => {
   const { h, A, D } = attackWindow(6715);
   giveResources(h, D, 'fire', 4);
   giveResources(h, D, 'earth', 2);
@@ -320,12 +320,12 @@ test('R79: a virus whose host leaves the stack first fizzles to the bin', () => 
   pick(h, { stack: onStack(h, 'Arc Lightning')!.id });
   pass(h); pass(h);                                  // Hush Mush negates the host
   assert.equal(onStack(h, 'Arc Lightning'), undefined);
-  assert.equal(count(binOf(h, D), 'Arc Lightning'), 1, 'a negated spell with no virus is binned (R68)');
+  assert.equal(count(binOf(h, D), 'Arc Lightning'), 1, 'a negated spell with no virus is binned (CR 704.4a)');
   drain(h);                                          // the virus fizzles
   assert.equal(count(binOf(h, D), 'Chitin Shredder'), 1, 'Manual p.34: an invalid target bins the virus');
 });
 
-test('R79: only SPELLS are legal hosts — not abilities, not units mid-cast', () => {
+test('CR 723.4e: only SPELLS are legal hosts — not abilities, not units mid-cast', () => {
   const { h, A } = attackWindow(6716);
   giveResources(h, A, 'earth', 4);
   const virus = give(h, A, 'Chitin Shredder');
@@ -354,7 +354,7 @@ test('R79: only SPELLS are legal hosts — not abilities, not units mid-cast', (
   }), IllegalAction, 'one host, not two');
 });
 
-test('R79: a spell UNIT carries its virus into play as an augment mod', () => {
+test('CR 723.4c: a spell UNIT carries its virus into play as an augment mod', () => {
   const { h, A, D } = attackWindow(6718);
   giveResources(h, D, 'wood', 2);                    // Hush Mush gg/2 — a {Battle} SPELL UNIT
   giveResources(h, D, 'earth', 2);
@@ -374,7 +374,7 @@ test('R79: a spell UNIT carries its virus into play as an augment mod', () => {
   assert.equal(count(erasedOf(h, D), 'Hush Mush'), 0);
 });
 
-test('R79: legalActions offers exactly the spells on the stack as virus hosts', () => {
+test('CR 723.4a: legalActions offers exactly the spells on the stack as virus hosts', () => {
   const { h, A, D } = attackWindow(6719);
   giveResources(h, D, 'fire', 4);
   giveResources(h, A, 'earth', 2);
@@ -393,7 +393,7 @@ test('R79: legalActions offers exactly the spells on the stack as virus hosts', 
   assert.equal(h.state.stack.length, 0);
 });
 
-test('R79: a spell TOKEN is a legal host too (Caleb 2025-03-06 names them)', () => {
+test('CR 723.4a: a spell TOKEN is a legal host too (Caleb 2025-03-06 names them)', () => {
   const { h, A, D } = attackWindow(6720);
   giveResources(h, D, 'earth', 2);
   // a Fireball 3 in D's hands: "{Battle} {Burst} Spell Token — Deal X damage"
@@ -408,7 +408,7 @@ test('R79: a spell TOKEN is a legal host too (Caleb 2025-03-06 names them)', () 
   pass(h); pass(h);                                  // the virus attaches
   pass(h); pass(h);                                  // the token resolves
   assert.equal(before - h.state.players[A]!.life, 6, '3 damage, doubled by {Powerful}');
-  // a token has no card to bin either way (R40); the virus is erased with it
+  // a token has no card to bin either way (CR 704.2b); the virus is erased with it
   assert.equal(count(binOf(h, D), 'Chitin Shredder'), 0);
   assert.equal(count(erasedOf(h, D), 'Chitin Shredder'), 1);
 });

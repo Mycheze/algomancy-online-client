@@ -1,4 +1,4 @@
-/* R290 — the weight of a conceded game (run: node test-concession.ts).
+/* CR D8.5 — the weight of a conceded game (run: node test-concession.ts).
  *
  * All in-process, like test-elo.ts: a weight is a pure function of a stamped
  * row, and everything downstream of it — the rating fold, the profile fold,

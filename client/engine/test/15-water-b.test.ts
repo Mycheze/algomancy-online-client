@@ -50,7 +50,7 @@ test('Pull Under: deletes the target; it and its mods land in YOUR bin (not eras
   finishBattle(h);
 });
 
-test('Pull Under: a MODDED victim and its mods are trashed by the CASTER (R40 — the bin they enter is his)', () => {
+test('Pull Under: a MODDED victim and its mods are trashed by the CASTER (CR 801.2e — the bin they enter is his)', () => {
   const h = new Harness(1550);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -100,8 +100,8 @@ test('Pull Under: deleting YOUR OWN unmodded unit trashes it in your name, exact
   finishBattle(h);
 });
 
-test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (R40, binTo)', () => {
-  // R40: the trasher is the owner of the bin the card enters, and Pull Under
+test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (CR 801.2e, binTo)', () => {
+  // CR 801.2e: the trasher is the owner of the bin the card enters, and Pull Under
   // puts it in the CASTER's bin — so the event must name A, not D.
   //
   // This used to be a KNOWN GAP: destroy() pushed the card into the OWNER's
@@ -131,12 +131,12 @@ test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly onc
   const trashes = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Good Whale');
   assert.equal(trashes.length, 1, 'exactly one trash event — never doubled up to paper over the attribution');
   assert.equal(trashes[0]!.data!['seat'], A,
-    "trashed by the CASTER — R40: the trasher is the owner of the bin it entered");
+    "trashed by the CASTER — CR 801.2e: the trasher is the owner of the bin it entered");
   assert.equal(trashes[0]!.data!['from'], 'play');
   finishBattle(h);
 });
 
-test('Pull Under: a TOKEN victim enters the CASTER bin untrashed (R306), then is erased (R69)', () => {
+test('Pull Under: a TOKEN victim enters the CASTER bin untrashed (CR 801.2d), then is erased (CR 410.5a)', () => {
   const h = new Harness(1553);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -150,22 +150,22 @@ test('Pull Under: a TOKEN victim enters the CASTER bin untrashed (R306), then is
   pick(h, { unit: tok });
   pass(h); pass(h);
   assert.ok(!ent(h, tok), 'the token is gone');
-  // R69: a token does enter a bin — `binTo` sends it to the CASTER's — and the
-  // state-based sweep erases it from there. R306: it is NOT trashed there (a
+  // CR 410.5a: a token does enter a bin — `binTo` sends it to the CASTER's — and the
+  // state-based sweep erases it from there. CR 801.2d: it is NOT trashed there (a
   // token is not a card); this used to pin exactly one trash, by the caster.
   const trash = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Unit Token');
-  assert.equal(trash.length, 0, 'no trash: a token is not a card (R306)');
+  assert.equal(trash.length, 0, 'no trash: a token is not a card (CR 801.2d)');
   const sweep = h.events.filter(ev => ev.type === 'erased' && ev.data?.['card'] === 'Unit Token');
   assert.equal(sweep.length, 1, 'one sweep');
   assert.equal(sweep[0]!.data?.['seat'], A, "out of the CASTER's bin — the one binTo sent it to");
-  assert.equal(sweep[0]!.data?.['from'], 'bin', 'it really did enter that bin (R69)');
+  assert.equal(sweep[0]!.data?.['from'], 'bin', 'it really did enter that bin (CR 410.5a)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), "the sweep emptied the caster's bin again");
   assert.ok(!h.state.players[D]!.bin.includes('Unit Token'), "and it never touched the owner's");
-  assert.ok(h.q.erased(A).includes('Unit Token'), 'the erased pile records it (R65)');
+  assert.ok(h.q.erased(A).includes('Unit Token'), 'the erased pile records it (CR 407.3)');
   finishBattle(h);
 });
 
-test('Recall: each player recalls a unit and loses 2 life (region-scoped, R25)', () => {
+test('Recall: each player recalls a unit and loses 2 life (region-scoped, CR 601.4d)', () => {
   const h = new Harness(1501);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -205,12 +205,12 @@ test('Rider of the Tides: a card entering a hand during battle → +2/+2 until r
   assert.deepEqual(effStats(h, rider), [2, 2], 'temp change gone at regroup');
 });
 
-// R69, extended to the hand 2026-08-22 — and Caleb was asked this about THIS
+// A recalled token visits the hand (CR 410.5b, settled 2026-08-22) — and Caleb was asked this about THIS
 // CARD: "does recalling a spell token trigger Rider of the Tides?" → "Oh dang
 // yeah it should also trigger it." (2025-04-24). The token enters the hand,
 // fires the trigger, and is erased by the state-based sweep before the trigger
 // resolves.
-test('Rider of the Tides: recalling a TOKEN triggers it too (R69, the hand window)', () => {
+test('Rider of the Tides: recalling a TOKEN triggers it too (CR 304.10, the hand window)', () => {
   const h = new Harness(1523);
   toDeployment(h);
   const A = h.state.initiative;
@@ -229,7 +229,7 @@ test('Rider of the Tides: recalling a TOKEN triggers it too (R69, the hand windo
   finishBattle(h);
 });
 
-// The mirror: a CACHED unit is not a card entering a hand, and R70's `to`
+// The mirror: a CACHED unit is not a card entering a hand, and CR 714.9's `to`
 // keeps them apart (the old card-TYPE proxy read a cache as a hand).
 test('Rider of the Tides: a unit going to the CACHE is not a card entering a hand', () => {
   const h = new Harness(1524);
@@ -275,13 +275,13 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);   // combat: unblocked, D loses 2 → the trigger asks for its target
   const dec = h.state.decision!;
-  assert.equal(dec.kind, 'targets', 'R67: a declared target, not a mid-resolution pick');
+  assert.equal(dec.kind, 'targets', 'CR 110.1a: a declared target, not a mid-resolution pick');
   assert.equal(dec.seat, A, 'the ability controller picks');
   // only the DAMAGED player's bin is offered — the restriction reads the event
   assert.ok(dec.options.every(o => /No more targets|Player 1's bin/.test(o.label)),
     `only that player's bin: [${dec.options.map(o => o.label)}]`);
   decide(h, l => l.startsWith('Jelly'));
-  // R261: the target question above is unmoved (it is asked on the way to the
+  // CR 608.9b, 608.9: the target question above is unmoved (it is asked on the way to the
   // stack), but the trigger now RESOLVES in the after-combat window.
   resolveAfterCombat(h);
   assert.ok(h.state.players[A]!.hand.includes('Jelly'), "picked card → my hand");
@@ -290,7 +290,7 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   finishBattle(h);
 });
 
-test('Seabed Shellcaster: SECOND nontoken spell this battle → each player recalls a unit (R14, [Switch1])', () => {
+test('Seabed Shellcaster: SECOND nontoken spell this battle → each player recalls a unit (CR 505.6, [Switch1])', () => {
   const h = new Harness(1504);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -352,7 +352,7 @@ test('Soul Siphon: no life lost yet → X = 0, resolves cleanly, no unit', () =>
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
-  decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: A }));   // R67: at cast
+  decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: A }));   // CR 110.3c: at cast
   pass(h); pass(h);                                        // then it resolves
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Unit Token'), 'X = 0 → no unit created');
   assert.ok(h.state.players[D]!.bin.includes('Soul Siphon'), 'spell → bin');
@@ -374,7 +374,7 @@ test('Soul Siphon: X = life the target player lost THIS battle (engine lifeLost 
   assert.equal(h.state.players[D]!.life, 23);
   pass(h);                                                 // afterWindow: A passes → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
-  decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: D }));   // R67: at cast
+  decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: D }));   // CR 110.3c: at cast
   pass(h); pass(h);                                        // X = life D lost this battle
   const made = unitsOf(h, D).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1, 'a unit was created');
@@ -415,16 +415,16 @@ test('Spell Excavation: GRANTS the bin play until regroup; playing it costs mana
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
-  decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
+  decide(h, l => l.startsWith('Luminous Arc'));            // CR 110.1a: declared at cast
   pass(h); pass(h);                                        // the Excavation resolves
-  // R197: what resolved is a PERMISSION, not the play. The Arc is still in
+  // CR 405.9: what resolved is a PERMISSION, not the play. The Arc is still in
   // the bin, unpaid for, and the seat picks its own moment before regroup.
   assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'), 'still in the bin — the grant is the effect');
   assert.ok(ent(h, atk), 'and nothing has been dealt yet');
   const bi = h.state.players[D]!.bin.indexOf('Luminous Arc');
   if (h.state.priority !== D) pass(h);                     // the window comes back round
   h.do({ type: 'playFromBin', seat: D, binIndex: bi });
-  // and it is a REAL cast now: a stack item with a declared target (R64/R67),
+  // and it is a REAL cast now: a stack item with a declared target (CR 110.1a),
   // where the inline play used to pick for you and resolve unrespondably
   pick(h, { unit: atk });
   pass(h); pass(h);
@@ -435,17 +435,17 @@ test('Spell Excavation: GRANTS the bin play until regroup; playing it costs mana
   finishBattle(h);
 });
 
-// ── R152: "erased" has to mean a PILE, not a sentence ─────────────────
+// ── CR 407.1: "erased" has to mean a PILE, not a sentence ─────────────────
 //
 // Spell Excavation lifts the card out of the bin (`removeFromBin(…, 'played')`)
-// and then announced the erase with `g.ev('info', …)`. E.ev() files the R65
-// public erased pile only for a `type === 'erased'` event with a numeric
+// and then announced the erase with `g.ev('info', …)`. E.ev() files the
+// public erased pile (CR 407.1) only for a `type === 'erased'` event with a numeric
 // `seat`, so an 'info' left the card out of the bin and on NO PILE AT ALL —
 // gone from the game with nowhere to look for it, which is the exact
-// complaint R65 was opened to answer ("there's currently no way to view
+// complaint the erased pile was built to answer ("there's currently no way to view
 // erased cards"). The log line was already right; only the event type was not,
 // which is why the test above passed all along and this one is needed.
-test('R152: the spell Spell Excavation played reaches the public ERASED pile (R65)', () => {
+test('CR 407.1: the spell Spell Excavation played reaches the public ERASED pile', () => {
   const h = new Harness(1592);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -457,9 +457,9 @@ test('R152: the spell Spell Excavation played reaches the public ERASED pile (R6
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
-  decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
+  decide(h, l => l.startsWith('Luminous Arc'));            // CR 110.1a: declared at cast
   pass(h); pass(h);
-  // R197: the grant resolved; taking it up is a real play from the bin, and
+  // CR 405.9: the grant resolved; taking it up is a real play from the bin, and
   // the {Unstable} stamp E.dischargeItem reads is what files the erase
   if (h.state.priority !== D) pass(h);
   h.do({ type: 'playFromBin', seat: D, binIndex: h.state.players[D]!.bin.indexOf('Luminous Arc') });
@@ -484,7 +484,7 @@ test('Surly Stalker: attacking ALONE doubles it until regroup; with company it d
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[st]] });
   pass(h); pass(h);                                        // resolve the trigger
-  assert.deepEqual(effStats(h, st), [8, 8], '4/4 doubled (amount live at resolution, R1)');
+  assert.deepEqual(effStats(h, st), [8, 8], '4/4 doubled (amount live at resolution, CR 109.3b)');
   finishBattle(h);
   assert.deepEqual(effStats(h, st), [4, 4], 'back to printed after regroup');
 
@@ -514,7 +514,7 @@ test('Tempest Wrangler: {Alluring} 1/3; type-line [Augment] donates Alluring to 
   assert.ok(ownAttrs(h, host).has('Alluring'), 'type-line [Augment] donates Alluring');
 });
 
-test('Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immediately (R18)', () => {
+test('Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immediately (CR 504.3)', () => {
   const h = new Harness(1511);
   give(h, 0, 'Tidal Menace');
   giveResources(h, 0, 'water', 3);                         // b / 3
@@ -540,7 +540,7 @@ test('Tidal Reversion: recalls one unit per player (no life loss)', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tidal Reversion') });
-  // R67: both targets are declared at cast, one per player
+  // CR 110.1a: both targets are declared at cast, one per player
   pick(h, { unit: wh });
   notOffered(h, { unit: wh }, 'already chosen');
   pick(h, { unit: dr });
@@ -569,7 +569,7 @@ test('Tidelurker: a player dealt combat damage → create a 2/2 ([Switch1])', ()
   assert.ok(ent(h, tl), 'Tidelurker still in play');
 });
 
-// R29 (retimed 2026-08-22, playtest UFAB): the spot is chosen AT CAST and
+// CR 602.7 (retimed 2026-08-22, playtest UFAB): the spot is chosen AT CAST and
 // taken atomically with the spawn. It used to be a trigger on the card's own
 // `spawned` event, which meant a window in which the unit stood in the region
 // outside the line and could be answered there.
@@ -614,14 +614,14 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
   assert.ok(!dec2.options.some(o => o.label.startsWith('Good Whale')),
     'Good Whale [6] exceeds the remaining budget of 5');
   decide(h, l => l.startsWith('Curio Drifter'));           // cost 1
-  // R198: both free plays are real plays, so both are on the stack and each is
+  // CR 703.5: both free plays are real plays, so both are on the stack and each is
   // drained through its own priority window (the second pick resolves first).
   assert.deepEqual(h.state.stack.map(i => i.card), ['Tidal Menace', 'Curio Drifter'],
     'the two free plays are respondable before they land');
   pass(h); pass(h); pass(h); pass(h);
   assert.ok(unitsOf(h, D).some(u => u.card === 'Tidal Menace'), 'played free');
   assert.ok(unitsOf(h, D).some(u => u.card === 'Curio Drifter'), 'played free');
-  // R296: the untouched remainder stays the LIVE deck; the six Tides revealed
+  // CR 801.10: the untouched remainder stays the LIVE deck; the six Tides revealed
   // and did not play are recycled — past the mark, in revealed order. This
   // used to be one array, because both halves lived in `sharedDeck`.
   assert.deepEqual(h.state.sharedDeck, ['Rune Channeler', 'Rune Channeler'],
@@ -634,16 +634,16 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
   finishBattle(h);
 });
 
-// ── R146: what Tides of the Cosmos does with the card it played ───────
+// ── CR 405.4a, 406.4a: what Tides of the Cosmos does with the card it played ───────
 //
 // Two halves of one line. (a) the card goes through E.toBin, not a raw
 // `bin.push` — and the `from` is 'stack', i.e. NOT a trash, because the spell
 // was played and it RESOLVED; `playInline` skips the stack for engine reasons
-// only, and R40's own sentence is "a spell going to the bin after resolving
+// only, and the trash ruling's own sentence (now CR 801.2b) is "a spell going to the bin after resolving
 // does not trash". (b) a spell that prints "Erase me." said so as it resolved,
 // and that request now survives the inline play instead of being swallowed.
 
-test('R146: Tides plays "Erase me." (Suspend) for free → the ERASED pile, never a bin', () => {
+test('CR 406.4a: Tides plays "Erase me." (Suspend) for free → the ERASED pile, never a bin', () => {
   const h = new Harness(1590);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -661,8 +661,8 @@ test('R146: Tides plays "Erase me." (Suspend) for free → the ERASED pile, neve
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
   pass(h); pass(h);                                        // resolve → pick #1
   decide(h, l => l.startsWith('Suspend'));
-  // R198: Suspend's "target player" is DECLARED with the play (it goes on the
-  // stack, so R67 applies to it like any other cast) — and then the second
+  // CR 702.3c: Suspend's "target player" is DECLARED with the play (it goes on the
+  // stack, so CR 110.1a applies to it like any other cast) — and then the second
   // Tides pick, which we decline
   while (h.state.decision) {
     const dec = h.state.decision;
@@ -670,20 +670,20 @@ test('R146: Tides plays "Erase me." (Suspend) for free → the ERASED pile, neve
     h.do({ type: 'decide', seat: dec.seat, choice: i === -1 ? 0 : i });
   }
   assert.ok(h.state.stack.some(i => i.card === 'Suspend'), 'the free play is respondable');
-  pass(h); pass(h);                                        // R198: its own window
+  pass(h); pass(h);                                        // CR 703.5: its own window
   assert.ok(h.log.some(l => l.includes("life total can't change")),
     'the spell really resolved (its first sentence happened)');
   assert.ok(!h.state.players[D]!.bin.includes('Suspend'),
     '"Erase me." is not swallowed by the free play — no bin entry');
   assert.ok(new E(h.state).erased(D).includes('Suspend'),
-    'it reaches the public erased pile (R65), like the stack route');
-  // R40 never enters into it: nothing was binned, so nothing can be trashed
+    'it reaches the public erased pile (CR 407.1), like the stack route');
+  // CR 801.2 never enters into it: nothing was binned, so nothing can be trashed
   assert.equal(h.events.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Suspend').length, 0,
     'an erase never touches a bin, so it is not a trash');
   finishBattle(h);
 });
 
-test('R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash', () => {
+test('CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash', () => {
   const h = new Harness(1591);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -706,19 +706,19 @@ test('R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a 
     const i = dec.options.findIndex(o => o.label === 'Done');
     h.do({ type: 'decide', seat: dec.seat, choice: i === -1 ? 0 : i });
   }
-  pass(h); pass(h);                                        // R198: the free play's own window
+  pass(h); pass(h);                                        // CR 703.5: the free play's own window
   assert.ok(h.state.players[D]!.bin.includes('Burn the Blight'), 'the played spell → bin');
   assert.ok(!new E(h.state).erased(D).includes('Burn the Blight'), 'and not erased');
-  // ⚠ THE PINNED ANSWER (R146a). The card left the DECK and is NOT a trash: it
-  // was PLAYED and it RESOLVED, which is the side of R40's line that "comes
+  // ⚠ THE PINNED ANSWER (CR 801.2b). The card left the DECK and is NOT a trash: it
+  // was PLAYED and it RESOLVED, which is the side of CR 801.2b's line that "comes
   // from the stack" is shorthand for. Reading it the other way would make the
   // same spell trash when Tides played it and not trash when it was cast from
-  // hand. R198 makes the shorthand literal — the card really does come off the
+  // hand. A free play going on the stack (CR 701.4) makes the shorthand literal — the card really does come off the
   // stack now, and `E.dischargeItem` gives the same answer this card used to
   // give itself, which is what makes this assertion a control on the move.
   assert.equal(
     h.events.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Burn the Blight').length, 0,
-    'a free play that RESOLVED is not a trash (R40, R146a)');
+    'a free play that RESOLVED is not a trash (CR 801.2b)');
   finishBattle(h);
 });
 
@@ -783,7 +783,7 @@ test('Water Resource: activating your 3rd water pays the p.18 affinity Shard, ev
   // apply.ts::maybeGrantShard and fires for all seven elements — see the
   // conformance sweep in 12-fire-a, which is what stops anyone from "fixing"
   // this by moving the rule onto the three printed Resource faces (there are
-  // no wood/metal/light/dark faces to move it to). R116, R54.
+  // no wood/metal/light/dark faces to move it to). CR 106.7c.
   const h = new Harness(1554);
   giveResources(h, 0, 'water', 2, 'open');
   giveResources(h, 0, 'water', 1, 'dormant');
@@ -794,7 +794,7 @@ test('Water Resource: activating your 3rd water pays the p.18 affinity Shard, ev
   h.do({ type: 'activateResource', seat: 0, index: dormant() });
   assert.equal(shards().length, 1, 'at [b][b][b], a Shard');
   assert.equal(shards()[0]!.state, 'dormant', '"(It spawns dormant.)"');
-  assert.equal(h.q.affinity(0, 'water'), 3, 'R54: the Shard adds no water affinity of its own');
+  assert.equal(h.q.affinity(0, 'water'), 3, 'CR 106.9: the Shard adds no water affinity of its own');
 
   giveResources(h, 0, 'water', 1, 'dormant');
   h.do({ type: 'activateResource', seat: 0, index: dormant() });

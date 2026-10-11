@@ -4,18 +4,19 @@
  * The document is generated, so the gate does not read it for meaning: it
  * proves that what is committed is what the scripts produce, and that every
  * record passes the mechanical half of the anti-hallucination contract
- * (scripts/cr/check.mjs). Six parts over the committed state:
+ * (scripts/cr/check.mjs). Five parts over the committed state:
  *
  *  (1) re-rendering gives the committed files, byte for byte, and the ledger
  *      needs no new number;
  *  (2) the ledger is append-only against the last commit (`git show HEAD:`);
  *  (3) check.mjs finds no problems;
- *  (4) every supersession candidate is decided, or held as an `uncertain`
- *      row (both quotes, for the owner) — only that count is pinned;
- *  (5) every ruling is classified, so a new ruling turns this red, and the
- *      reviewed state is mechanically sound: every edge quote verbatim, every
- *      status agreeing with its edges, every source assigned exactly once;
+ *  (5) the reviewed source state is mechanically sound: every RAQ claim,
+ *      thread and printed page assigned exactly once, every keyword reminder
+ *      verbatim;
  *  (6) the stale count (sources changed since drafting) is pinned.
+ * (Part (4), the supersession candidates, went with the R-ruling register in
+ * the 2026-10 CR-only migration: an owner call now lives in the record it
+ * settles, as `sources.owner`, so there is no register to keep in step.)
  *
  * Each part passes on an empty rules/ dir, and that would prove nothing on its
  * own: §8 and §9 run the same checks over a small fixture with one defect
@@ -50,12 +51,9 @@ import {
   roundsIn, sameAsVerified, shuffleRank, stamp, type Mutant, type RoundFiles,
 } from '../scripts/cr/harness.mjs';
 
-/* ── the pins (4)–(6). Each must EQUAL the measured count: a rise is new
- *    unreviewed work (a new ruling, a new candidate, a changed source) and a
- *    fall means lower the pin, so the number only ever ratchets down. ── */
-/** supersession.json's `uncertain` rows: questions the register review could
- *  not settle, held undecided for the owner. Resolving one lowers this */
-const EXPECTED_UNCERTAIN = 0;
+/* ── the pin (6). It must EQUAL the measured count: a rise is new unreviewed
+ *    work (a changed source) and a fall means lower the pin, so the number
+ *    only ever ratchets down. ── */
 /** rules whose cited sources changed since they were drafted */
 const EXPECTED_STALE = 0;
 
@@ -108,52 +106,9 @@ test('(3) check.mjs finds no problems in the committed records', () => {
   assert.deepEqual(lines, [], `${lines.length} problem(s):\n${lines.slice(0, 40).join('\n')}`);
 });
 
-/* the reviewed state's own shape, beyond what check.mjs reads */
-type Quoted = { quote: string; quoteFrom: string };
-type Edge = { from: string; to: string; relation?: string; scope?: string | null; decision: string } & Partial<Quoted>;
-type Uncertain = { from: string; to: string; kind: string; question: string; quotes: Quoted[] };
-type ClsRow = { status: string; scope: string; units: string[]; staleWarning?: Quoted; uncertain?: string[] };
-const SUP = (INPUTS?.supersession ?? { edges: [] }) as unknown as { edges: Edge[]; uncertain?: Uncertain[] };
-const CLS = (INPUTS?.classification ?? {}) as unknown as Record<string, ClsRow>;
-
-test('(4) every supersession candidate is decided, or held as an uncertain row (only those pinned)', () => {
-  const r = result();
-  const held = new Set((SUP.uncertain ?? []).map((u) => `${u.from}>${u.to}`));
-  const loose = r.undecided.map((u) => `${u.from}>${u.to}`).filter((k) => !held.has(k));
-  assert.deepEqual(loose, [], `supersession candidates with no decision in supersession.json: ${loose.slice(0, 10).join(', ')}`);
-  pinned('uncertain supersession rows', (SUP.uncertain ?? []).length, EXPECTED_UNCERTAIN,
-    (SUP.uncertain ?? []).map((u) => `${u.from}>${u.to}`).join(', '));
-});
-
-test('(5) every ruling is classified, and the reviewed state is mechanically sound', () => {
-  const r = result();
-  assert.deepEqual(r.unclassified, [], `rulings with no row in classification.json: ${r.unclassified.join(', ')}`);
+test('(5) the reviewed source state is mechanically sound', () => {
   const bad: string[] = [];
-  const text = new Map(EX.rulings.map((x) => [x.id, norm(`${x.heading ?? ''} \n ${x.body ?? ''}`)]));
-  const verbatim = (where: string, q: Partial<Quoted> | undefined) => {
-    if (!q?.quote || !q.quoteFrom) { bad.push(`${where}: no quote`); return; }
-    const raq = /^RAQ (\d+#\d+)$/.exec(q.quoteFrom);
-    const c = raq ? EX.raq.flatMap((t) => t.claims).find((x) => x.id === raq[1]) : null;
-    const t = raq ? (c ? norm(`${c.claim} \n ${c.source}`) : undefined) : text.get(q.quoteFrom);
-    if (t === undefined) bad.push(`${where}: ${q.quoteFrom} does not exist`);
-    else if (!t.includes(norm(q.quote))) bad.push(`${where}: not verbatim in ${q.quoteFrom}: "${q.quote.slice(0, 80)}"`);
-  };
-  const SUPERSEDING = (e: Edge) => e.decision === 'accepted' && !['extends', 'cites', 'confirms', 'applies'].includes(e.relation ?? '');
-  for (const e of SUP.edges) if (e.decision === 'accepted') verbatim(`edge ${e.from}>${e.to}`, e);
-  for (const u of SUP.uncertain ?? []) {
-    if (u.quotes.length < 2) bad.push(`uncertain ${u.from}>${u.to}: needs both sides' quotes`);
-    u.quotes.forEach((q, i) => verbatim(`uncertain ${u.from}>${u.to} quotes[${i}]`, q));
-  }
   const units = new Set((JSON.parse(readFileSync(CR_UNITS, 'utf8')) as { units: { id: string }[] }).units.map((u) => u.id));
-  for (const [id, c] of Object.entries(CLS)) {
-    const es = SUP.edges.filter((e) => e.to === id && SUPERSEDING(e));
-    const want = !es.length ? ['current'] : es.some((e) => !e.scope) ? ['superseded', 'withdrawn', 'absorbed'] : ['partly-superseded', 'narrowed'];
-    if (!want.includes(c.status)) bad.push(`${id}: status ${c.status}, but its accepted edges make it ${want.join('|')}`);
-    for (const u of c.units) if (!units.has(u)) bad.push(`${id}: unit ${u} is not in units.json`);
-    if (c.staleWarning) verbatim(`${id} staleWarning`, c.staleWarning);
-    for (const k of c.uncertain ?? []) if (!(SUP.uncertain ?? []).some((u) => `${u.from}>${u.to}` === k)) bad.push(`${id}: uncertain ${k} has no row in supersession.json`);
-  }
-  for (const u of SUP.uncertain ?? []) if (!CLS[u.to]?.uncertain?.includes(`${u.from}>${u.to}`)) bad.push(`uncertain ${u.from}>${u.to}: ${u.to}'s classification row does not flag it`);
   // every RAQ claim and thread and every printed page has exactly one row
   const SRC = JSON.parse(readFileSync(CR_SOURCE_CLASSIFICATION, 'utf8')) as {
     raqClaims: Record<string, { units: string[] }>; raqThreads: Record<string, { open: boolean }>;
@@ -176,9 +131,13 @@ test('(5) every ruling is classified, and the reviewed state is mechanically sou
   assert.deepEqual(bad, [], `${bad.length} problem(s) in the reviewed state:\n${bad.slice(0, 30).join('\n')}`);
 });
 
-test('(6) the stale count is pinned', () => {
+test('(6) the stale count is pinned', (t) => {
   const r = result();
-  pinned('stale rules', r.stale.length, EXPECTED_STALE, r.stale.slice(0, 10).map((s) => `${s.where}: ${s.msg}`).join('; '));
+  // a verified span that quotes only a COMMENT demonstrated no code; its words moving is
+  // listed, not pinned (the 2026-10 migration reworded comments that cited the retired register)
+  const code = r.stale.filter((s) => s.kind !== 'verdict-comment');
+  for (const s of r.stale.filter((x) => x.kind === 'verdict-comment')) t.diagnostic(`comment span moved: ${s.where}`);
+  pinned('stale rules', code.length, EXPECTED_STALE, code.slice(0, 10).map((s) => `${s.where}: ${s.msg}`).join('; '));
 });
 
 /* ── §7 the ledger ─────────────────────────────────────────────────────── */
@@ -266,28 +225,14 @@ test('§7f the ledger is written deterministically, sorted in document order', (
 
 /* ── §8 / §9: a fixture, clean, then with one defect planted per check ─── */
 
-// Ruling ids are built, never written: test 184 reads every R-number spelled
-// under client/ as a citation of the register.
+// A retired-register id is built, never written: test 184 fails on every
+// R-number spelled under client/ outside its allowlist.
 const R = (n: number) => `R${n}`;
 const REPO_FILE = 'client/engine/scripts/cr/schema.mjs';
 const REPO_LINE = 'export const BASES';
 
 function fixtureExtract(): Extract {
-  const ruling = (n: number, body: string) => ({
-    n, suffix: '', id: R(n), title: `Ruling ${n}`, glyphs: '', heading: `## ${R(n)} Ruling ${n}`, line: n, body,
-    bodyHash: `h${n}`, dates: [], testsCited: [], rulingsCited: [], manualRefs: [], raqTitleRefs: [],
-  });
   return {
-    rulings: [
-      ruling(1, 'Each column deals its combat damage as one source.'),
-      ruling(2, 'Swift columns strike twice.'),
-      ruling(3, 'A column with Swift and Sluggish strikes in both sub-steps.'),
-      ruling(4, 'Damage is assigned by the dealer. There is no window between sub-steps.'),
-    ],
-    supersessionCandidates: [
-      { from: R(3), to: R(2), verb: 'reverses', where: 'heading', ctx: '', host: R(3) },
-      { from: R(3), to: R(4), verb: 'narrows', where: 'body', ctx: '', host: R(3) },
-    ],
     raq: [{
       threadId: '111', title: '[Solved] Front and back', status: 'reviewed', note: null,
       claims: [{ id: '111#0', claim: 'You can deal all damage to the front unit.', source: 'calebgannon: "yes"', status: 'covered', guards: [], ticket: null, note: null, textHash: 'c0' }],
@@ -330,24 +275,35 @@ function fixtureInputs(): CrInputs {
         { ref: 'Manual p.23', quote: 'Unblocked units deal combat damage to the defend-' },
       ],
       designer: [], ours: [{ ref: 'glossary: Swift', quote: 'Swift units deal combat damage first.' }],
-      rulings: [R(1)], history: [{ ruling: R(2), relation: 'reversed' }],
+      owner: [{ quote: 'Each column deals its combat damage as one source.', adopted: '2026-08-18', from: '' }],
       engine: ['engine.ts:assignCombatDamage'], tests: ['02-combat.test.ts'],
     },
-    basis: 'mixed', confidence: 'high', sourceHashes: { [R(1)]: 'h1' },
+    basis: 'mixed', scope: 'game', confidence: 'high', sourceHashes: {},
   };
   const B: RuleRecord = {
     key: 'combat.damage.choice', parent: 'combat.damage.overview', order: 1,
     text: 'The dealing player may assign all of a column\'s damage to the front unit.',
     examples: [{ text: 'Example: the recipient\'s choice is never asked.', test: "02-combat.test.ts::the recipient's choice" }],
     see: [],
-    sources: { printed: [], designer: [{ ref: 'RAQ 111#0', quote: 'deal all damage to the front unit' }], ours: [], rulings: [], history: [], engine: [], tests: [] },
-    basis: 'designer', confidence: 'high', engineDiffers: ['F-1'], sourceHashes: { 'RAQ 111#0': 'c0' },
+    sources: { printed: [], designer: [{ ref: 'RAQ 111#0', quote: 'deal all damage to the front unit' }], ours: [], owner: [], engine: [], tests: [] },
+    basis: 'designer', scope: 'game', confidence: 'high', engineDiffers: ['F-1'], sourceHashes: { 'RAQ 111#0': 'c0' },
   };
   const C: RuleRecord = {
     key: 'attr.deadly', parent: '802', order: 3, text: 'Deadly is an attribute.',
     examples: [], see: [],
-    sources: { printed: [{ ref: 'card: Rime Wraith', quote: 'Sluggish units deal combat damage last.' }], rulings: [{ ref: `${R(4)} its first sentence`, quote: 'Damage is assigned by the dealer.' }] },
-    basis: 'mixed', confidence: 'medium', sourceHashes: { [R(4)]: 'h4' },
+    sources: { printed: [{ ref: 'card: Rime Wraith', quote: 'Sluggish units deal combat damage last.' }], owner: [{ quote: 'Damage is assigned by the dealer.', adopted: '2026-08-21', from: 'questions-round27 Q2' }] },
+    basis: 'mixed', scope: 'game', confidence: 'medium', sourceHashes: {},
+  };
+  const O: RuleRecord = {
+    key: 'combat.damage.client', parent: '608', order: 2,
+    text: 'Both players see the damage split at once. The client shows it as one animation.',
+    examples: [], see: [], sources: { owner: [{ quote: 'show the split as one animation', adopted: '2026-09-02', from: 'comment c-17' }] },
+    basis: 'owner', scope: 'game', digitalClause: 'The client shows it as one animation.', confidence: 'medium', sourceHashes: {},
+  };
+  const DD: RuleRecord = {
+    key: 'annexd.general.pace', parent: 'D1', order: 1, text: 'Each animation lasts at least one frame.',
+    examples: [], see: [], sources: { owner: [{ quote: 'no animation shorter than a frame', adopted: '2026-09-03', from: '' }] },
+    basis: 'owner', scope: 'digital', confidence: 'medium', sourceHashes: {},
   };
   const G: RuleRecord = {
     key: 'glossary.column', term: 'Column', text: 'The units of a formation one behind another.', examples: [], see: ['608'],
@@ -364,7 +320,7 @@ function fixtureInputs(): CrInputs {
   const GO = gloss('Skirmish', '608', [], { obsolete: true, usedBy: [{ ref: 'Manual p.23', quote: 'Unblocked units deal combat damage' }] });
   const inputs: CrInputs = {
     outline: structuredClone(OUTLINE), frontMatter: '## Introduction\n\nEdition {{EDITION}}, {{EFFECTIVE}}, {{ENGINE_COMMIT}}.\n',
-    records: [A, B, C], glossary: [G, GF, GD, GS, GO], fileOf: new Map(),
+    records: [A, B, C, O, DD], glossary: [G, GF, GD, GS, GO], fileOf: new Map(),
     ledger: emptyLedger(),
     verdicts: [{
       key: 'combat.damage.overview', textHash: recordHash(A), verdict: 'confirmed', round: 1, verifier: 'fixture',
@@ -374,7 +330,7 @@ function fixtureInputs(): CrInputs {
     discrepancies: [{
       id: 'D608-1', kind: 'a-sources-disagree', rule: 'combat.damage.choice', tier: 1,
       summary: 'Print reads as forced; the designer makes it elective.',
-      sides: [{ source: 'Manual p.23', quote: 'processes happen simultaneously' }, { source: 'RAQ 111#0', quote: 'deal all damage' }],
+      sides: [{ source: 'Manual p.23', quote: 'processes happen simultaneously' }, { source: 'RAQ 111#0', quote: 'deal all damage' }, { source: 'owner ruling, adopted 2026-08-18', quote: 'one source per column' }],
       resolution: 'Follow the designer.',
       question: {
         topic: 'Combat damage', ask: 'Who splits a column\'s damage?',
@@ -386,11 +342,6 @@ function fixtureInputs(): CrInputs {
       },
     }],
     findings: [{ id: 'F-1', title: 'The engine asks the recipient', summary: 'It asks the wrong player.', evidence: [{ file: REPO_FILE, quote: REPO_LINE }], rule: 'combat.damage.choice' }],
-    classification: { [R(1)]: { scope: 'game', sections: ['608'] }, [R(2)]: { scope: 'game' }, [R(3)]: { scope: 'game' }, [R(4)]: { scope: 'process', reason: 'tooling' } },
-    supersession: { edges: [
-      { from: R(3), to: R(2), relation: 'reverses', scope: null, decision: 'accepted' },
-      { from: R(3), to: R(4), relation: 'narrows', scope: 'its second sentence', decision: 'accepted' },
-    ] },
   };
   inputs.ledger = render(inputs, fixtureExtract()).ledger; // "committed": every key already numbered
   return inputs;
@@ -400,8 +351,6 @@ test('§8 the clean fixture passes every check — so each planted failure below
   const r = check(fixtureInputs(), fixtureExtract());
   assert.deepEqual(r.problems.map((p) => `${p.code} ${p.where}: ${p.msg}`), []);
   assert.deepEqual(r.stale, []);
-  assert.deepEqual(r.undecided, []);
-  assert.deepEqual(r.unclassified, []);
 });
 
 type Plant = { name: string; code: string; plant: (i: CrInputs, x: Extract) => void };
@@ -417,12 +366,19 @@ const PLANTS: Plant[] = [
   { name: 'a printed quote is not in its page', code: 'quote-not-verbatim', plant: (i) => { A(i).sources.printed![0]!.quote = 'processes happen at once'; } },
   { name: 'a card quote is not on the card', code: 'quote-not-verbatim', plant: (i) => { rec(i, 'attr.deadly').sources.printed![0]!.quote = 'Sluggish units deal combat damage first.'; } },
   { name: 'a designer quote is not in the RAQ claim', code: 'quote-not-verbatim', plant: (i) => { B(i).sources.designer![0]!.quote = 'deal all damage to the back unit'; } },
-  { name: 'a ruling quote is not in the ruling body', code: 'quote-not-verbatim', plant: (i) => { (rec(i, 'attr.deadly').sources.rulings![0] as { quote: string }).quote = 'Damage is assigned by the recipient.'; } },
+  { name: 'an owner call quoted over two lines', code: 'schema', plant: (i) => { rec(i, 'attr.deadly').sources.owner![0]!.quote = 'Damage is assigned\nby the dealer.'; } },
+  { name: 'an owner call with no adoption date', code: 'schema', plant: (i) => { rec(i, 'attr.deadly').sources.owner![0]!.adopted = 'August'; } },
+  { name: 'an owner call with no from', code: 'schema', plant: (i) => { delete (rec(i, 'attr.deadly').sources.owner![0] as { from?: string }).from; } },
   { name: 'an ours quote is not in the glossary', code: 'quote-not-verbatim', plant: (i) => { A(i).sources.ours![0]!.quote = 'Swift units deal combat damage last.'; } },
   { name: 'a printed page that does not exist', code: 'source-missing', plant: (i) => { A(i).sources.printed![0]!.ref = 'Manual p.99'; } },
-  { name: 'a cited ruling that does not exist', code: 'ruling-missing', plant: (i) => { A(i).sources.rulings = [R(999)]; } },
-  { name: 'a superseded ruling cited as current', code: 'ruling-superseded', plant: (i) => { A(i).sources.rulings = [R(1), R(2)]; A(i).sourceHashes[R(2)] = 'h2'; } },
-  { name: 'a partly superseded ruling cited bare', code: 'ruling-scope-required', plant: (i) => { rec(i, 'attr.deadly').sources.rulings = [R(4)]; } },
+  { name: 'the retired sources.rulings field', code: 'schema', plant: (i) => { (A(i).sources as Record<string, unknown>)['rulings'] = [R(1)]; } },
+  { name: 'a source hash for a retired ruling', code: 'schema', plant: (i) => { A(i).sourceHashes[R(1)] = 'h1'; } },
+  { name: 'an owner call rule with no owner words', code: 'basis-inconsistent', plant: (i) => { rec(i, 'combat.damage.client').sources.owner = []; } },
+  { name: 'a rule with no scope', code: 'schema', plant: (i) => { delete B(i).scope; } },
+  { name: 'a scope that is neither game nor digital', code: 'schema', plant: (i) => { B(i).scope = 'mixed'; } },
+  { name: 'an Annex D rule that is not digital', code: 'schema', plant: (i) => { rec(i, 'annexd.general.pace').scope = 'game'; } },
+  { name: 'a digital clause that is not in the text', code: 'schema', plant: (i) => { rec(i, 'combat.damage.client').digitalClause = 'The client shows it twice.'; } },
+  { name: 'a digital clause on a digital rule', code: 'schema', plant: (i) => { rec(i, 'annexd.general.pace').digitalClause = 'Each animation'; } },
   { name: 'a RAQ claim that does not exist', code: 'raq-missing', plant: (i) => { B(i).sources.designer![0]!.ref = 'RAQ 111#9'; } },
   { name: 'an engine symbol that does not exist', code: 'engine-symbol-missing', plant: (i) => { A(i).sources.engine = ['engine.ts:assignCombatDamageTwice']; } },
   { name: 'an example bound to no test title', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::no such title'; } },
@@ -434,15 +390,14 @@ const PLANTS: Plant[] = [
   { name: 'a see that resolves to no number', code: 'see-unresolved', plant: (i) => { A(i).see = ['608.99']; } },
   { name: 'engineDiffers names a finding that does not exist', code: 'finding-missing', plant: (i) => { B(i).engineDiffers = ['F-9']; } },
   { name: 'a discrepancy quote that is not verbatim', code: 'discrepancy-quote-not-verbatim', plant: (i) => { i.discrepancies[0]!.sides[1]!.quote = 'deal no damage'; } },
-  { name: 'a cited ruling with no source hash', code: 'source-hash-missing', plant: (i) => { delete A(i).sourceHashes[R(1)]; } },
+  { name: 'a quoted RAQ claim with no source hash', code: 'source-hash-missing', plant: (i) => { delete B(i).sourceHashes['RAQ 111#0']; } },
   { name: 'a record the ledger has not numbered', code: 'unnumbered', plant: (i) => { i.records.push({ ...structuredClone(B(i)), key: 'combat.damage.new', engineDiffers: [] }); } },
   { name: 'a ledger key with no record, not tombstoned', code: 'ledger-orphan', plant: (i) => { i.records = i.records.filter((r) => r.key !== 'combat.damage.choice'); i.discrepancies = []; i.findings = []; A(i).see = ['802.3']; } },
   { name: 'a record whose num disagrees with the ledger', code: 'num-mismatch', plant: (i) => { A(i).num = '608.7'; } },
   { name: 'two records with one key', code: 'duplicate-key', plant: (i) => { i.glossary.push({ ...structuredClone(rec(i, 'glossary.column')) }); } },
   { name: 'a verdict for no record', code: 'verdict-orphan', plant: (i) => { i.verdicts[0]!.key = 'no.such.rule'; } },
   { name: 'a verdict span given as an absolute path', code: 'verdict-span-path', plant: (i) => { i.verdicts[0]!.quote_spans[0]!.file = `/tmp/${REPO_FILE}`; } },
-  { name: 'a classification row for no ruling', code: 'classification-orphan', plant: (i) => { i.classification![R(77777)] = { scope: 'game' }; } },
-  { name: 'a supersession row naming no ruling', code: 'supersession-unresolved', plant: (i) => { i.supersession!.edges.push({ from: R(88888), to: R(1), relation: 'reverses', scope: null, decision: 'rejected' }); } },
+  { name: 'a discrepancy side citing a retired ruling id', code: 'schema', plant: (i) => { i.discrepancies[0]!.sides[2]!.source = R(1); } },
   { name: 'the outline moves a numbered section', code: 'ledger', plant: (i) => { i.outline.chapters[0].sections[0].num = '609'; } },
   { name: 'a record filling a slot under the wrong parent', code: 'slot-parent-mismatch', plant: (i) => { rec(i, 'attr.deadly').parent = '608'; } },
   { name: 'two units chose one discrepancy id', code: 'duplicate-id', plant: (i) => { i.discrepancies.push(structuredClone(i.discrepancies[0]!)); } },
@@ -475,29 +430,58 @@ for (const p of PLANTS) {
   });
 }
 
-test('§8 the scoped citation of a partly superseded ruling is allowed; the apostrophe title resolves', () => {
+test('§8 an owner call absorbed from the retired register is checked against it, verbatim', () => {
   const i = fixtureInputs(), x = fixtureExtract();
-  // positive controls, so the two plants above cannot pass by rejecting everything
-  assert.equal(String(rec(i, 'attr.deadly').sources.rulings![0] && (rec(i, 'attr.deadly').sources.rulings![0] as { ref: string }).ref), `${R(4)} its first sentence`);
+  const c = rec(i, 'attr.deadly');
+  c.sources.owner![0]!.from = 'questions-round27 Q2; register@abc1234';
+  const registers = { abc1234: `## ${R(4)} Damage\n\nDamage is assigned by the dealer. There is no window.` };
+  assert.deepEqual(check(i, x, { registers }).problems, [], 'a verbatim register quote must pass');
+  c.sources.owner![0]!.quote = 'Damage is assigned by the recipient.';
+  assert.deepEqual(check(i, x, { registers }).problems.map((p) => p.code), ['owner-quote-not-in-register'], 'a quote the register never said must fail by name');
+  // a clone without the archived commit cannot check it: a notice, never a silent pass or a false failure
+  const r = check(i, x, { registers: {} });
+  assert.deepEqual([r.problems, r.notices.length], [[], 1]);
+  // and the editions say where the words come from
+  const md = render(i, x).files.doc;
+  assert.match(md, /Owner ruling, adopted 2026-08-21 \(quoted from the retired ruling register\)/);
+  assert.match(render(i, x).files.html, /<span class="sk">Owner ruling<\/span> adopted 2026-08-21 — quoted from the retired ruling register \(questions-round27 Q2\)/);
+});
+
+test('§8 an owner call is its own evidence; the apostrophe title resolves', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  // positive controls, so the plants above cannot pass by rejecting everything: an owner-basis
+  // rule with no verdict and no other source checks clean, its quote being what the owner said
+  const o = rec(i, 'combat.damage.client');
+  assert.equal(o.basis, 'owner');
+  assert.equal(i.verdicts.find((v) => v.key === o.key), undefined);
   assert.equal(B(i).examples[0]!.test, "02-combat.test.ts::the recipient's choice");
   assert.deepEqual(check(i, x).problems, []);
 });
 
-test('§8 the counted checks fire: stale, undecided, unclassified', () => {
+test('§8 the counted checks fire: a changed claim, evidence and a span that left their files', () => {
   const i = fixtureInputs(), x = fixtureExtract();
-  x.rulings[0]!.bodyHash = 'changed';
-  x.raq[0]!.claims[0]!.textHash = 'changed too';
-  x.supersessionCandidates.push({ from: R(4), to: R(1), verb: 'amends', where: 'body', ctx: '', host: R(4) });
-  delete i.classification![R(4)];
+  x.raq[0]!.claims[0]!.textHash = 'changed';
   i.findings[0]!.evidence[0]!.quote = 'this line was fixed away';
   i.verdicts[0]!.quote_spans[0]!.text = 'nor is this one here';
   const r = check(i, x);
   assert.deepEqual(r.problems, []);
   assert.deepEqual(r.stale.map((s) => `${s.kind} ${s.where}`).sort(), [
-    'finding-evidence F-1', 'source combat.damage.choice', 'source combat.damage.overview', 'verdict-span combat.damage.overview',
+    'finding-evidence F-1', 'source combat.damage.choice', 'verdict-span combat.damage.overview',
   ]);
-  assert.deepEqual(r.undecided, [{ from: R(4), to: R(1) }]);
-  assert.deepEqual(r.unclassified, [R(4)]);
+});
+
+test('§8 a span whose only change is its rule citation still holds; one whose words changed does not', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  // the real line in schema.mjs reads `export const BASES = [...]`; quote it as the
+  // migration found it, with a retired citation the rewrite turned into a CR number
+  i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE} (${R(9)})`;
+  assert.deepEqual(check(i, x).stale, [], 'a citation-only difference made the span stale');
+  i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE}S (CR 608.1)`;
+  assert.deepEqual(check(i, x).stale.map((s) => s.kind), ['verdict-span'], 'a changed word must still be stale');
+  // a span in the retired register is history: neither a problem nor stale, even though the file is gone
+  i.verdicts[0]!.quote_spans[0]!.file = 'client/docs/digital-rules.md';
+  const r = check(i, x);
+  assert.deepEqual([r.problems, r.stale], [[], []], 'a frozen span quoting the retired register must not fail the gate');
 });
 
 test('§8 a demonstrated rule: an Annex D rule may rest on client/ui or client/server source; a game rule may not', () => {
@@ -515,8 +499,8 @@ test('§8 a demonstrated rule: an Annex D rule may rest on client/ui or client/s
     const b = B(i); b.basis = 'engine'; b.sources.designer = []; b.sourceHashes = {};
     const d: RuleRecord = {
       key: D_KEY, parent: 'D1', order: 1, text: 'The hand-over at the end of a recap pauses longer than a frame.',
-      examples: [], see: [], sources: { printed: [], designer: [], ours: [], rulings: [], history: [], engine: [], tests: [] },
-      basis: 'engine', confidence: 'high', sourceHashes: {},
+      examples: [], see: [], sources: { printed: [], designer: [], ours: [], owner: [], engine: [], tests: [] },
+      basis: 'engine', scope: 'digital', confidence: 'high', sourceHashes: {},
     };
     i.records.push(d);
     i.ledger = render(i, x).ledger;
@@ -557,10 +541,17 @@ test('§9 the fixture renders: numbers, slots in Attr order, tombstones, see lin
   assert.doesNotMatch(md, /non-normative/);
   assert.match(md, /Edition Fixture edition, 2026-10-10, abc1234\./);
   assert.match(md, /\| Mixed \| 2 \|/);
-  assert.ok(md.includes(`Process rulings, excluded\n\n- ${R(4)}: tooling`));
+  // an owner call: its adoption date in the provenance line, never a ruling number
+  assert.match(md, /<sub>Basis: Owner call · adopted 2026-09-02 · /);
+  assert.match(md, /<sub>Basis: Mixed · [^\n]*· Owner call · adopted 2026-08-21 · /);
+  assert.doesNotMatch(md, /Rulings: |Replaces: /);
+  // scope: a game rule's client-only clause is tagged where it stands; Annex D is digital by its place
+  assert.match(md, /The client shows it as one animation\. \*\(Digital client\)\*/);
+  assert.doesNotMatch(out.files.annexD, /Digital client\)/);
+  assert.match(md, /### Digital-client rules in the main document\n\nNone\./);
   // HTML: anchors, chips, folded provenance, links
   const html = out.files.html;
-  for (const re of [/id="r608\.1a"/, /class="chip b-designer"/, /class="chip v-confirmed"/, /<details class="prov"><summary>Sources and verification/, /<a href="#r802\.3">802\.3<\/a>/, /class="differs">engine differs, see <a href="#F-1">F-1<\/a>/, /id="D608-1"/]) {
+  for (const re of [/id="r608\.1a"/, /class="chip s-digital">Digital client</, /<span class="sk">Owner call<\/span> adopted 2026-09-02 \(comment c-17\)/, /class="chip b-designer"/, /class="chip v-confirmed"/, /<details class="prov"><summary>Sources and verification/, /<a href="#r802\.3">802\.3<\/a>/, /class="differs">engine differs, see <a href="#F-1">F-1<\/a>/, /id="D608-1"/]) {
     assert.match(html, re);
   }
   // plain text: ASCII tokens, no Markdown marks
@@ -917,15 +908,16 @@ test('§10 a promoted CR example keeps the verdict; any other example change unv
   assert.ok(!sameAsVerified(rec([{ text: 'A Sluggish column strikes.', test: null }]), ver), 'example text changed');
 });
 
-test('§10 stamp fills the hashes of the cited current rulings and quoted claims, keeps what is there, drops the uncited', () => {
+test('§10 stamp fills the hashes of the quoted claims, keeps what is there, drops the uncited; an owner call needs none', () => {
   const x = fixtureExtract();
-  const r: RuleRecord = { ...structuredClone(fixtureInputs().records[0]!), sourceHashes: { [R(1)]: 'as drafted', [R(3)]: 'no longer cited' } };
-  r.sources.rulings = [R(1), `${R(4)} its first sentence`];
+  const r: RuleRecord = { ...structuredClone(fixtureInputs().records[0]!), sourceHashes: { 'RAQ 111#0': 'as drafted', 'RAQ 222#1': 'no longer cited' } };
   r.sources.designer = [{ ref: 'RAQ 111#0', quote: 'q' }];
   const out = stamp([r], x);
-  assert.deepEqual(out.records[0]!.sourceHashes, { [R(1)]: 'as drafted', [R(4)]: 'h4', 'RAQ 111#0': 'c0' });
-  assert.deepEqual([out.filled, out.dropped], [2, 1]);
-  assert.deepEqual(stamp([r], x, { refresh: true }).records[0]!.sourceHashes[R(1)], 'h1');
+  assert.deepEqual(out.records[0]!.sourceHashes, { 'RAQ 111#0': 'as drafted' }, 'the owner quote got a hash, or the drafted one moved');
+  assert.deepEqual([out.filled, out.dropped], [0, 1]);
+  assert.deepEqual(stamp([r], x, { refresh: true }).records[0]!.sourceHashes['RAQ 111#0'], 'c0');
+  const fresh = stamp([{ ...structuredClone(r), sourceHashes: {} }], x);
+  assert.deepEqual([fresh.records[0]!.sourceHashes, fresh.filled], [{ 'RAQ 111#0': 'c0' }, 1]);
 });
 
 test('§10 an untested rule is marked in all three editions; unit-scoped finding ids validate', () => {

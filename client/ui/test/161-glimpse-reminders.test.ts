@@ -1,5 +1,5 @@
 /**
- * R190 — the reminder text a player actually READS about Glimpse.
+ * CR 801.9 — the reminder text a player actually READS about Glimpse.
  *
  * Playtest report #106 (GYSR, action 154): *"The reminder text for Glimpsing is
  * wrong — it does not mention that the other cards not chosen are recycled."*
@@ -15,7 +15,7 @@
  * What the player was reading is `ui/glossary.ts`'s **Glimpse** entry, which
  * the card inspector prints under every card whose text mentions Glimpse
  * ("all referenced keywords should have their reminder text right there to
- * see", Bena 2026-08-20). That entry still described R45 as it read BEFORE the
+ * see", Bena 2026-08-20). That entry still described the glimpse rule as it read before its
  * 2026-08-19 correction — "cache them", all N, no recycle — so the panel
  * contradicted itself: the printed box said "cache one … Recycle the rest" and
  * the reminder directly beneath it said the opposite. §2 pins the entry to what
@@ -40,7 +40,7 @@ import { GLOSSARY, glossaryHits } from '../glossary.ts';
 /* ── §1 · the printed reminders — per card, all five ───────────────────── */
 
 /**
- * ⚠ DERIVED FROM PRINTED TEXT, NOT TYPED — CT-81(a) / R209.
+ * ⚠ DERIVED FROM PRINTED TEXT, NOT TYPED — CT-81(a).
  *
  * This list used to be the FIVE names CARD-TODO #73 happened to report, and it
  * drives all three of this file's loops, so those five WERE the file's whole
@@ -70,13 +70,13 @@ import { GLOSSARY, glossaryHits } from '../glossary.ts';
  *
  * `recycles` is computed from the parsed N, not declared: N > 1 (or X, which
  * is only ever ≥ 1 and reads as "the rest" on the card) leaves cards over to
- * recycle, N = 1 does not. That asymmetry is R45's own reading — "the N=1
+ * recycle, N = 1 does not. That asymmetry is the glimpse ruling's own reading (now CR 801.9b) — "the N=1
  * cards read 'reveal the top card and cache it' only because the two readings
  * coincide there" — so it is asserted rather than papered over.
  *
  * `reminder` is whether the card prints the parenthetical at all. Five of the
  * eleven do not, and for those the GLOSSARY row §2 checks is the only reminder
- * their reader ever gets — which is precisely why R190's glossary fix needs
+ * their reader ever gets — which is precisely why the Glimpse glossary fix needs
  * them in scope.
  */
 interface GlimpseCard { name: string; n: number | 'X'; recycles: boolean; reminder: boolean }
@@ -97,7 +97,7 @@ const GLIMPSE_CARDS: GlimpseCard[] = allCardNames()
     };
   });
 
-/** the pool this file's derivation ran against. R209: `allCardNames()` returns
+/** the pool this file's derivation ran against. `allCardNames()` returns
  * 495 (492 printed + 3 synthetics) only when `src/apply.ts` has been imported —
  * `registerSynthetic` is called at registry.ts:384, registry.ts:433 AND
  * apply.ts:1830 — and this file imports the registry only, so it sees 494. It
@@ -108,7 +108,7 @@ const GLIMPSE_CARDS: GlimpseCard[] = allCardNames()
 const POOL = allCardNames().length;
 
 test('§1 the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here', () => {
-  // R297: registry.ts registers Training Construct too, so registry-only is 495
+  // CR D8.1b: registry.ts registers Training Construct too, so registry-only is 495
   assert.equal(POOL, 495,
     `this file imports src/cards/registry.ts only, which registers 495 cards. Seeing ${POOL} `
     + 'means the pool moved (a card was added) or an import changed — if it is 496, apply.ts '
@@ -158,7 +158,7 @@ for (const { name, recycles, reminder } of GLIMPSE_CARDS) {
     const printed = getCard(name).text ?? '';
     assert.match(printed, /Glimpse/i, `${name} should print a Glimpse reminder at all`);
     if (!reminder) {
-      // R209/CT-81(a): five of the eleven print the keyword bare. There is no
+      // CT-81(a): five of the eleven print the keyword bare. There is no
       // parenthetical to check, and that is the POINT — §2 below is the whole
       // of what these cards' readers get, so they must be in this file's scope.
       assert.doesNotMatch(printed, /\{i\}\(/,
@@ -168,7 +168,7 @@ for (const { name, recycles, reminder } of GLIMPSE_CARDS) {
     }
     if (recycles) {
       assert.match(printed, /cache one/i,
-        `${name} should print "cache one" — R45 as corrected 2026-08-19`);
+        `${name} should print "cache one" — the glimpse rule as corrected 2026-08-19 (CR 801.9)`);
       assert.match(printed, /Recycle the rest/i,
         `${name}'s printed text is where report #106 said the omission was. It is NOT there:\n`
         + `  ${printed}\n`
@@ -177,7 +177,7 @@ for (const { name, recycles, reminder } of GLIMPSE_CARDS) {
     } else {
       assert.doesNotMatch(printed, /Recycle the rest/i,
         `${name} is Glimpse 1: one card is revealed and cached, so nothing is left over`);
-      assert.match(printed, /cache it/i, 'the N=1 reading, R45');
+      assert.match(printed, /cache it/i, 'the N=1 reading, CR 801.9b');
     }
   });
 }
@@ -185,7 +185,7 @@ for (const { name, recycles, reminder } of GLIMPSE_CARDS) {
 test('§1 every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse', () => {
   // one assertion over the group, so a single card quietly drifting out of the
   // family is visible next to the others rather than only in its own test.
-  // R209: the group is DERIVED (N>1 and a printed reminder), so a new card that
+  // The group is DERIVED (N>1 and a printed reminder), so a new card that
   // arrives in it appears here without anyone remembering to add it.
   const said = GLIMPSE_CARDS.filter(c => c.recycles && c.reminder).map(c => {
     const t = getCard(c.name).text ?? '';
@@ -222,16 +222,16 @@ const glimpseEntry = (): { term: string; text: string; rule?: string } => {
 };
 
 test('§2 the Glimpse glossary reminder names the recycle, and the full rule survives beside it', () => {
-  // ⚠ CONVERTED BY R267, AND THE OLD EXPECTATIONS ARE KEPT HERE BECAUSE THEY
+  // ⚠ CONVERTED BY THE GAME'S-WORDS RULE (CR D6.11), AND THE OLD EXPECTATIONS ARE KEPT HERE BECAUSE THEY
   // ARE STILL THE RULE — they moved, they were not dropped:
   //
   //     assert.match(text, /recycled to the bottom of your deck/i);
   //     assert.match(text, /\bONE\b/);
   //
   // Both were written against our AUTHORED sentence, when that was the only
-  // {Glimpse} reminder the repo had. R267 found that four cards print one, so
+  // {Glimpse} reminder the repo had. An audit under CR D6.11 found that four cards print one, so
   // `text` is now the game's own words and the authored sentence moved WHOLE
-  // into `rule` (R248 §2) — where the browser still renders it underneath.
+  // into `rule` (CR D6.11) — where the browser still renders it underneath.
   // So the two assertions are made against the half that still carries each
   // claim, which is stricter than before: previously nothing checked `rule`.
   //
@@ -245,21 +245,21 @@ test('§2 the Glimpse glossary reminder names the recycle, and the full rule sur
   assert.match(text, /recycle the rest/i,
     'report #106: "it does not mention that the other cards not chosen are recycled". '
     + 'The game says "Recycle the rest." and that is what a player now reads.');
-  assert.ok(rule, 'the authored rule must survive on `rule` — R248 §2, and 177 §7 agrees');
-  // R296 CHANGED WHERE, AND THE CLAIM IS STILL "WHERE". This read
+  assert.ok(rule, 'the authored rule must survive on `rule` — CR D6.11, and 177 §7 agrees');
+  // THE RECYCLE MARK (CR 408.2) CHANGED WHERE, AND THE CLAIM IS STILL "WHERE". This read
   // /recycled to the bottom of your deck/ until the mark existed; the printed
   // reminder says only "Recycle the rest", so wherever a recycled card
   // actually goes, the authored half is the only place a player can read it.
   assert.match(rule!, /recycle pile|past the mark/i,
     'WHERE they go is not in the printed reminder, so the repo statement of it must not be lost');
   assert.match(rule!, /\bONE\b/,
-    'R45 as corrected 2026-08-19 caches exactly one, not all N');
+    'the glimpse rule as corrected 2026-08-19 (CR 801.9) caches exactly one, not all N');
   assert.doesNotMatch(text, /cache them/i,
     'the pre-correction wording ("cache them", all N) is what shipped in report #106');
 });
 
-test('§2 the Glimpse reminder keeps the three limits R45 puts on the cached card', () => {
-  // ⚠ CONVERTED BY R267. All three were asserted on `text` when `text` WAS our
+test('§2 the Glimpse reminder keeps the three limits CR 801.9e and 801.9f put on the cached card', () => {
+  // ⚠ CONVERTED UNDER CR D6.11. All three were asserted on `text` when `text` WAS our
   // authored sentence:
   //
   //     assert.match(text, /ignoring affinity/i);
@@ -267,11 +267,11 @@ test('§2 the Glimpse reminder keeps the three limits R45 puts on the cached car
   //     assert.match(text, /timing/i);
   //
   // The game's printed reminder states one of the three and not the other two —
-  // which is exactly the case R248 §2 built `rule` for, and exactly why
+  // which is exactly the case the reminder ruling (CR D6.11) built `rule` for, and exactly why
   // shortening what a player reads may never be the same edit as deleting a
   // rule. Each limit is now asserted on whichever half actually carries it, so
   // NONE of them can be lost; before this, two of them were only ever checked
-  // on a string that R267 was free to replace.
+  // on a string that the reminder-channel work was free to replace.
   const { text, rule } = glimpseEntry();
   assert.ok(rule, 'the authored rule must survive on `rule`');
   assert.match(text, /ignoring affinity/i,
@@ -305,12 +305,12 @@ for (const { name } of GLIMPSE_CARDS) {
     const hits = glossaryHits([c.type, c.text], { skip: c.attrs });
     const glimpse = hits.find(h => h.term === 'Glimpse');
     assert.ok(glimpse, `${name} says Glimpse, so the panel must explain Glimpse`);
-    // R267: was /recycled to the bottom of your deck/i, against our authored
+    // CR D6.11: was /recycled to the bottom of your deck/i, against our authored
     // sentence. The panel now shows the game's own words, which say "Recycle
     // the rest." — report #106's substance, in the game's phrasing. Where they
     // go is on `rule`, checked above and rendered beneath by the browser.
     assert.match(glimpse.text, /recycle the rest/i);
-    // R296: "the bottom of your deck" became "past the mark, into the recycle
+    // Since the recycle mark (CR 408.2), "the bottom of your deck" became "past the mark, into the recycle
     // pile". The claim is unchanged — where they go is on `rule`.
     assert.match(glimpse.rule ?? '', /recycle pile|past the mark/i,
       'the authored rule must still be reachable beside the printed reminder');

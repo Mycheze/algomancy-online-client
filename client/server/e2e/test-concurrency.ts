@@ -1,4 +1,4 @@
-/* R150+R154 / CT-32+CT-44 — ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER
+/* CR D2.1b / CT-32+CT-44 — ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER
  * SEAT'S DEPLOYMENT. (run: node test-concurrency.ts — no sockets, no port.)
  *
  * Playtest #98 (SMVJ, action 238): *"Rashi's start of combat (doing all her
@@ -12,7 +12,7 @@
  * HISTORY, because the two halves of this fix are a year apart in reasoning
  * and the second one corrects the first:
  *
- *  R150 (CT-32) put BOTH halves in the server, on the belief that the engine
+ *  The first fix (CT-32) put BOTH halves in the server, on the belief that the engine
  *  had to stay a single pure reducer with a global decision gate:
  *      legalForSeat    what a seat is OFFERED   (a shadow with decision nulled)
  *      arrivalVerdict  what happens to what they SEND (parked, not refused)
@@ -20,10 +20,10 @@
  *  engine suite is written on — frozen exactly as before, because they call
  *  `apply()` directly. That is CARD-TODO #44.
  *
- *  R154 moved the RULE into the engine (`decisionBlocks` in apply.ts) and left
+ *  The second fix (CT-44; the rule is CR D2.1b) moved the RULE into the engine (`decisionBlocks` in apply.ts) and left
  *  the server holding only what a rule cannot do: a QUEUE. §0 and §3 are the
  *  two halves of that split, and §3's scenario had to change — the case the
- *  queue still exists for is not the one R150 wrote it around.
+ *  queue still exists for is not the one the first fix wrote it around.
  *
  * Everything asserted here is a pure function or a room driven in-process, so
  * none of it needs a whole game played over a socket to reach — which is this
@@ -31,12 +31,12 @@
  *
  * Two real scenarios, and the difference between them is the whole point:
  *   ASKS  seat 1 plays Floral Singularity — a cast-time 'cast' suspension,
- *         structurally what R144's start-of-deployment Wraith pile creates
+ *         structurally what CR 706.12's start-of-deployment Wraith pile creates
  *         (verified: that pile raises a 'cast'/electricPath suspension too).
- *         NOTHING is rewound when it is answered, so R154 lets the other seat
+ *         NOTHING is rewound when it is answered, so CR D2.1b lets the other seat
  *         act straight through it.
- *   HALTS seat 1 plays 'R154 Halt' — a resolution that stops HALFWAY, i.e. a
- *         'resolve' suspension carrying an R85 `snapshot` of the whole
+ *   HALTS seat 1 plays 'Deploy Halt' — a resolution that stops HALFWAY, i.e. a
+ *         'resolve' suspension carrying a rollback `snapshot` of the whole
  *         GameState. Answering it does `this.s = snapshot`, so anything the
  *         OTHER seat landed meanwhile is erased. That one is still gated, and
  *         is the reason the deferral queue is not redundant.
@@ -76,10 +76,10 @@ function actOn(room: Room, a: Action): void {
 
 /** a room parked in turn-1 deployment, both seats still to act.
  *
- * ⚠ R228: the haste step is ALWAYS offered now, so both seats have to decline
+ * ⚠ CR 504.5: the haste step is ALWAYS offered now, so both seats have to decline
  * it to reach deployment. Nothing closes it for them — an automatic
  * `doneHaste` would announce that the seat holds no haste play, which is
- * exactly the side channel R224 deleted — so this walks through it the way
+ * exactly the side channel the always-offer-the-step ruling deleted — so this walks through it the way
  * `engine/test/util.ts::skipHasteStep` does. The assertion right below every
  * call ("both seats are inside the hidden simultaneous DEPLOYMENT segment")
  * is what keeps this honest: if the walk ever stopped short, the sections
@@ -105,13 +105,13 @@ function seat1Asks(room: Room): void {
   actOn(room, { type: 'playCard', seat: 1, handIndex: room.state.players[1]!.hand.length - 1 });
 }
 
-/* A deployment resolution that stops HALFWAY — the shape R154 still gates.
+/* A deployment resolution that stops HALFWAY — the shape CR D2.1c still gates.
  * A suspension throws past `endResolving`, so the marker survives it; no
  * printed deployment card does that today, so this is the same synthetic
- * test-view-snapshot.ts already registers for R85: a deploy spell that does
+ * test-view-snapshot.ts already registers for the rollback snapshot: a deploy spell that does
  * something and THEN asks. Registered at module scope so §3, §4 and §6 all
  * reach it. */
-const HALTS = 'R154 Halt';
+const HALTS = 'Deploy Halt';
 registerSynthetic({
   name: HALTS, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -137,9 +137,8 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 
 // ══ 0. THE DIAGNOSIS, AND THE INVARIANT THAT REPLACED IT ══════════════
 //
-// R150 asserted the two engine lines that blocked, BY NAME, so the diagnosis
-// was recorded as a live test rather than a comment. R154 fixed those very
-// lines, so what is recorded here now is the pair of properties they were
+// The first fix asserted the two engine lines that blocked, BY NAME, so the diagnosis
+// was recorded as a live test rather than a comment. The seat-aware gate fixed those very lines, so what is recorded here now is the pair of properties they were
 // replaced BY — same two places, same names, opposite verdicts. Deleting the
 // section would have thrown away the only executable record of what the bug
 // actually was.
@@ -186,7 +185,7 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
   }
   ok(refused === '',
     `FIX, half two: and dispatch() accepts it${refused ? ` — but it said "${refused}"` : ''}. `
-    + 'Offering an action the reducer then refuses is the exact half-fix R150 warned about, '
+    + 'Offering an action the reducer then refuses is the exact half-fix to avoid, '
     + 'so the two must be asserted together, here, in this order.');
 
   // …and the OTHER two places the same two lines still say what they always did
@@ -247,8 +246,8 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 //
 // ⚠ CT-44's own fix text said: *"Then the server's compensation becomes
 // redundant and should be deleted in the same change."* IT IS NOT, and this
-// section is why — the mechanism is neither a lock nor a race but R85's
-// rollback.
+// section is why — the mechanism is neither a lock nor a race but the
+// rollback on resume.
 //
 // A 'resolve' suspension carries `snapshot: GameState`, taken at the effect
 // PART BOUNDARY, and `E.resumeResolve` does `this.s = snapshot`, carrying
@@ -258,7 +257,7 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 // A freeze traded for lost state is the worse trade, so the engine keeps
 // refusing here, and the queue is what turns that refusal into a delay.
 //
-// R150's original §3 drove this with a CAST suspension, which R154 now lets
+// The original §3 drove this with a CAST suspension, which CR D2.1b now lets
 // through outright; the scenario had to move to the shape that still needs it.
 {
   console.log('\n[§3 the one case the engine still refuses — parked, then landed]');
@@ -269,7 +268,7 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
     && !!(room.state.suspension as { snapshot?: unknown }).snapshot,
     'seat 1 is suspended MID-RESOLUTION, on a suspension carrying a whole-GameState snapshot');
   ok(decisionBlocks(room.state, 0),
-    'THE VERDICT: the engine still blocks seat 0 here — R85 would rewind anything they did');
+    'THE VERDICT: the engine still blocks seat 0 here — answering would rewind anything they did (CR D2.1c)');
   const nActions = room.actions.length;
 
   const mine: Action = { type: 'doneDeploying', seat: 0 };
@@ -303,8 +302,8 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 
 // ══ 3b. …AND WHAT IT IS NO LONGER FOR ═════════════════════════════════
 //
-// The narrowing is the user-visible half of R154: against a twelve-trigger
-// pile, R150 had the other player's every click queue up and land in a burst
+// The narrowing is the user-visible half of the seat-aware gate: against a twelve-trigger
+// pile, the first fix had the other player's every click queue up and land in a burst
 // thirty seconds later, which is still #98's complaint one layer along.
 {
   console.log('\n[§3b the cast-time case no longer waits at all]');
@@ -336,7 +335,7 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
   ok(arrivalVerdict(room.state, { type: 'decide', seat: 1, choice: 0 }, room.segKey, 0) === 'apply',
     'a decide is NEVER parked: it is the very thing that closes the decision');
   ok(arrivalVerdict(room.state, { type: 'concede', seat: 0 }, room.segKey, 0) === 'apply',
-    'and a concede is never parked either (R65: it must always be reachable)');
+    'and a concede is never parked either (CR 104.4a: it must always be reachable)');
 }
 
 // ══ 4b. THE SECOND DOOR ONTO THE QUEUE ════════════════════════════════
@@ -399,9 +398,9 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 
 // ══ 6. `s.resolving` IS STILL A BATTLE-PHASE PUBLICATION ══════════════
 //
-// R78's `E.beginResolving` sets `s.resolving` only in the battle phase, and
+// `E.beginResolving` sets `s.resolving` only in the battle phase (CR D6.3, D6.3a), and
 // `viewFor` does NOT redact the field — the two together are what stops a
-// hidden simultaneous segment from announcing "I am mid-something". R150 makes
+// hidden simultaneous segment from announcing "I am mid-something". CR D2.1b makes
 // the OTHER seat's screen live during exactly that window, so this property is
 // now load-bearing in a way it was not before, and gets its own guard.
 //
@@ -423,7 +422,7 @@ const types = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
   ok(viewFor(room.state, 0, room.segSnapshot).resolving === null,
     'and so seat 0\'s view carries nothing about it either');
 
-  // …and R150's own un-gating must not become the leak the gate prevents
+  // …and the first fix's own un-gating must not become the leak the gate prevents
   ok(legalForSeat(room.state, 0, room.segKey).some(a => a.type === 'doneDeploying'),
     'while seat 0 goes on deploying, none the wiser');
 }

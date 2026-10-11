@@ -15,7 +15,7 @@ import { give, giveResources, spawn, toDeployment, toNextBattle, unitsOf } from 
 import { SRC_DIR, ENGINE_SRC, setSrc, runSrc, board, eventsFrom } from './card-todo-helpers.ts';
 import type { TodoEntry } from './card-todo.ts';
 
-/** CT-254 / R347: Bloomcaster played from hand makes a 1/1 for its own play (wrong since R347) */
+/** CT-254 / CR 701.1e: Bloomcaster played from hand makes a 1/1 for its own play (wrong under CR 701.1e) */
 function bloomcasterHearsItself(): boolean {
   const h = new Harness(71401);
   toDeployment(h);
@@ -26,7 +26,7 @@ function bloomcasterHearsItself(): boolean {
   return unitsOf(h, p).filter(u => u.card === 'Unit Token').length > 0;
 }
 
-/** CT-277 / R347: a Stalwart Sentinel that Wake the Dead plays out of a bin
+/** CT-277 / CR 701.1e: a Stalwart Sentinel that Wake the Dead plays out of a bin
  *  takes its own two +1/+1 counters (true while broken) */
 function sentinelHearsItself(): boolean {
   const h = new Harness(71402);
@@ -76,7 +76,7 @@ export const CLOSED: TodoEntry[] = [
     fix:
       "Announce it: g.ev('info', `Abduct: ${u.card} is already yours — nothing happens.`). "
       + 'Then answer the SEPARATE question of whether "gain control of target unit" should '
-      + 'be offering allied units at all (R64 has the ownership kinds for it — '
+      + 'be offering allied units at all (CR 110.3 has the ownership kinds for it — '
       + "`what: 'enemyUnit'`, or a `restrict` — but changing the legal target set is a "
       + 'rules call, not a logging fix, so it needs the owner.)',
     proof: () => eventsFrom('Abduct', 8101, (g, A) => ({
@@ -114,7 +114,7 @@ export const CLOSED: TodoEntry[] = [
       'Emit a line naming the effect and how many of its targets moved, matching '
       + "Gravitational Correction's wording so the two read the same in the log.",
     proof: () => {
-      // The success path is the write-back. It was `picks.push`; R307 moved the
+      // The success path is the write-back. It was `picks.push`; the retarget-legality fix moved the
       // loop into helpers.ts and the write-back is `commitRetargets(` now. A
       // missing marker reads as "still broken" on purpose — the old
       // indexOf(-1) quietly sliced the last character and proved nothing.
@@ -184,7 +184,7 @@ export const CLOSED: TodoEntry[] = [
       + 'a virus-donated {Piercing} a dead donation, which contradicts the ruling that '
       + 'authorises the donation in the first place: "you can only do this with '
       + 'attributes — mostly Deadly, Piercing, and Powerful are impacted by this" '
-      + '(Caleb 2025-03-06, quoted at R79).',
+      + '(Caleb 2025-03-06, quoted in the retired ruling register).',
     evidence:
       'Measured directly: Ruinbringer (8/9 {Piercing}) dealing 5 effect damage to a 7/2 '
       + 'left both life totals at 30, exactly as a vanilla 3/3 did. Also already written '
@@ -211,7 +211,7 @@ export const CLOSED: TodoEntry[] = [
     },
     // FIXED 2026-08-23. `dealEffectDamageAll` now plans the excess in the same
     // batch as an ordinary player recipient, so it is one resolution with one
-    // R80 `total` and nothing reaches the stack in between — which is what "not
+    // CR 112.8 `total` and nothing reaches the stack in between — which is what "not
     // as a trigger, just as part of resolution" required. The lethal arithmetic
     // moved into a single `poolToKill` closure shared with {Electric} and
     // shaped on `combatSubStep`'s `assign`, so the combat and non-combat paths
@@ -236,7 +236,7 @@ export const CLOSED: TodoEntry[] = [
     title: '{Unaware} is not implemented anywhere in the engine',
     detail:
       'Three cards print {Unaware} and the engine contains not a single reference to the '
-      + 'string. R10 settled what it means ("everything counts as interacting") and stat '
+      + 'string. The first Unaware ruling settled what it means ("everything counts as interacting") and stat '
       + 'layer 6 was reserved for it; the layer was never built. The three cards are '
       + 'therefore plain vanilla bodies in play.',
     evidence:
@@ -265,7 +265,7 @@ export const CLOSED: TodoEntry[] = [
       + 'This is ALSO Caleb\u2019s reading — "any Unaware units (or Spells like Haboob) will '
       + 'only look at BASE STAT PRINTED on cards" — so the "we diverge from the designer" '
       + 'note the first pass wrote was an artefact of the bad question and is gone. '
-      + '⚠ OPEN EDGE, named rather than silently decided: R10 lists TARGETING as an '
+      + '⚠ OPEN EDGE, named rather than silently decided: the first Unaware ruling lists TARGETING as an '
       + 'interaction and the operational statement does not. Targeting is not collapsed; '
       + 'extending it would touch ~33 card-side effStats calls and needs its own ruling. '
       + 'THE LESSON, which is the reusable part: a ruling compressed into multiple choice '
@@ -287,15 +287,16 @@ export const CLOSED: TodoEntry[] = [
     // all, so nothing would kill it. `sweepCollapsedDeaths` runs over the
     // exchange's participants and never globally — outside an interaction a
     // Robot 20 is a 20/20 and stays one.
-    // The collapse survives {Pure} on purpose: R61 switches off the ATTRIBUTE
-    // layer for an exchange, and this is a STAT layer.
+    // The collapse survives {Pure} on purpose: the Pure ruling switches off the ATTRIBUTE
+    // layer for an exchange, and this is a STAT layer. CR 802.25f now says Unaware does
+    // not apply under Pure (engine differs, F-U19-2; CT-260).
     guards: [
       '92-unaware.test.ts::Bubb blocking a Robot token would kill it',
       '92-unaware.test.ts::Bubb would also survive 100 -1/-1 counters just fine',
       '92-unaware.test.ts::Haboob kills anything that has 1 defense printed at the card level',
       '92-unaware.test.ts::a +1/+1 counter on Bubb leaves it a 5/6',
       '92-unaware.test.ts::NEGATIVE CONTROL',
-      '05-rulings.test.ts::R10',
+      '05-rulings.test.ts::CR 802.9:',
     ],
     status: 'done',
   },
@@ -379,7 +380,7 @@ export const CLOSED: TodoEntry[] = [
       + '81-card-drill.test.ts is the primary net now, playing every card through the real '
       + 'action path in three board states, deterministically, with no exemptions left in '
       + 'its silence sweep. 65 keeps the two guarantees the drill CANNOT make: it reaches '
-      + 'abilities, graft compositions, donated [Augment] text and granted text (R63) that '
+      + 'abilities, graft compositions, donated [Augment] text and granted text (CR 109.8) that '
       + 'a "put it in hand and cast it" driver never touches. '
       + 'What was actually wrong here was not the reach, it was that the reach was '
       + 'INVISIBLE: 65\'s floor counted EffectDefs, and one shared helper def can be owned '
@@ -413,9 +414,9 @@ export const CLOSED: TodoEntry[] = [
       + 'cannot miss that the list of broken cards is longer than the items above. '
       + 'THE USEFUL FINDING, 2026-08-23: the ledger is not 28 independent problems. Twelve '
       + 'of its entries were parked on FOUR engine seams, and building those four closed '
-      + 'them together — Oorblak on Piercing excess (R103), Suspend / Nullbringer / Conduit '
+      + 'them together — Oorblak on Piercing excess (CR 802.16p), Suspend / Nullbringer / Conduit '
       + 'of Pain / Counter Thief / Cosmic Conspirator / Automaton of Abundance on the '
-      + 'replacement layer (R104), Bubb / Trashling / Haboob on stat layer 6, and Suspend '
+      + 'replacement layer (CR 708.1), Bubb / Trashling / Haboob on stat layer 6, and Suspend '
       + 'again plus Temporal Rift on self-erase. Read the ledger by MISSING PRIMITIVE, not '
       + 'by card, and it is a much shorter list than it looks.',
     evidence: 'card-ledger.ts, kept honest by 71-card-ledger.test.ts.',
@@ -431,10 +432,10 @@ export const CLOSED: TodoEntry[] = [
       + '83-card-todo.test.ts prints the ledger length beside the todo counts.',
     // DONE 2026-08-24: the ledger is EMPTY. The last six cards came off in one
     // round, worked exactly as this entry prescribed — by PRIMITIVE, not by
-    // card: R121 (ability tax + pay-to-trigger gate → Crevice Lurker), R122
-    // (imposed sacrifice cast cost → Vengeance), R123 (bin-anchored play
+    // card: CR 111.10f, 111.10g (ability tax + pay-to-trigger gate → Crevice Lurker), CR 111.10d
+    // (imposed sacrifice cast cost → Vengeance), CR 504.7, 405.9 (bin-anchored play
     // permission + erase-funded grant → Writhing Host, and the play-from-bin
-    // action → Trench Stalker whole), R124 ('leftBin' choke point → Rotling),
+    // action → Trench Stalker whole), CR 405.7 ('leftBin' choke point → Rotling),
     // plus Worldbender via replaceCardStep (report #87). The sweep stays armed:
     // its dead-shape assertion fails the day a new card ships with a dead half
     // and no entry, and the canary is synthetic now (T71 Canary), so an empty
@@ -484,7 +485,7 @@ export const CLOSED: TodoEntry[] = [
     // in 09-attrs — exactly the "needs no more than a body check" close
     // condition this entry set. The audit also closed the real holes it
     // found: Recyclable Sentinel's death-branch payout (104), Rotspore
-    // Herald on effect damage (107), ten R37/token-gate/bin-play negatives
+    // Herald on effect damage (107), ten CR 701.2a/token-gate/bin-play negatives
     // (105), and Wraith's start-of-deployment shrink (101, via #23). The
     // floor is 8 (just above 1), so the next card added without a test of
     // its own still trips the census.
@@ -521,7 +522,7 @@ export const CLOSED: TodoEntry[] = [
       + 'only to paper over this.',
     evidence: 'playtest-ledger.ts #60, still `live`. Restated by the owner as #75.',
     fix:
-      'BUILT 2026-08-23 as R104, in TWO families rather than one, because Caleb settled '
+      'BUILT 2026-08-23 in TWO families rather than one, because Caleb settled '
       + 'that they compose differently. (a) `AmountMod` — continuous, SUMMED, modelled '
       + 'line for line on `CostMod`: "a replacement only happens once … The replacement '
       + 'just takes what would be 1 and makes it 2", so two modifiers both apply and none '
@@ -553,7 +554,7 @@ export const CLOSED: TodoEntry[] = [
       'Containment Protocol cannot negate any of the seven, because none of them declares '
       + 'a triggered or activated ability any more — check with '
       + "`getCard(n).abilities` / `.augmentText` filtered on type. `docs/digital-rules.md` "
-      + 'R104 records the layer; `88-replacement-conformance` fails if a declared hook is '
+      + 'recorded the layer (now CR 708); `88-replacement-conformance` fails if a declared hook is '
       + 'never read in engine.ts.',
     guards: [
       '87-replacement-layer.test.ts::Containment Protocol on the stack cannot negate a life-gain replacement',
@@ -581,7 +582,7 @@ export const CLOSED: TodoEntry[] = [
       + 'half, because choosing a target is a public, respondable act. By that test '
       + 'Automaton of Abundance, Cosmic Conspirator, Nullbringer, Counter Thief, Flux '
       + 'Resonator, Proliferating Slime and Conduit of Pain all print "instead" with no '
-      + 'target and must never reach the stack; R102 (Beyond, Codex Incarnate) is correctly '
+      + 'target and must never reach the stack; CR 109.5a (Beyond, Codex Incarnate) is correctly '
       + 'NOT an exception, because it prints "target unit".',
     evidence: 'playtest-ledger.ts #75 — the sharpest statement of #60, and its acceptance criterion.',
     fix:
@@ -596,7 +597,7 @@ export const CLOSED: TodoEntry[] = [
       + "owner's \"as\", a verb-anchored `deal|deals|dealt … as` that catches Blightsea "
       + 'Polyp and cannot match "as if it was in your hand". 11 cards flagged, 10 of which '
       + 'must never reach the stack and 1 of which must (Beyond, Codex Incarnate — it '
-      + 'prints "target unit", so R102 is right and the sweep asserts the INVERSE for it).',
+      + 'prints "target unit", so CR 109.5a is right and the sweep asserts the INVERSE for it).',
     // Two exemptions, both self-invalidating: Skittering Blight is exempt only
     // from the "whole text is a replacement" shortcut, because it prints "When
     // I spawn, gain a rot." as a separate sentence — the test fails if its text
@@ -610,7 +611,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '88-replacement-conformance.test.ts::a replacement that names NO target is built out of the replacement layer',
       '88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement declares NO ability at all',
-      '88-replacement-conformance.test.ts::a replacement that DOES name a target still uses the stack (R102 stays R102)',
+      '88-replacement-conformance.test.ts::a replacement that DOES name a target still uses the stack (the targeted shape stays)',
       '88-replacement-conformance.test.ts::every exemption is still needed',
       '88-replacement-conformance.test.ts::the classifier finds the replacement clauses, and only those',
     ],
@@ -632,7 +633,7 @@ export const CLOSED: TodoEntry[] = [
       + 'so the per-spawn trigger never asks per kind.',
     evidence: 'playtest-ledger.ts #64. Blocked on CT-10.',
     fix:
-      'FIXED 2026-08-23 by R104, and it did fall out of the layer — TWO defects, both of '
+      'FIXED 2026-08-23 by the replacement layer, and it did fall out of the layer — TWO defects, both of '
       + 'which a trigger patch would have missed. Biotoxicity creates three SPELL tokens '
       + 'and `E.createSpellToken` fired no dispatchable event at all, so the old `spawned` '
       + 'trigger heard nothing; and a per-spawn trigger could not have asked per token in '
@@ -726,8 +727,8 @@ export const CLOSED: TodoEntry[] = [
     // still reproduces the game exactly, which is the log's actual contract.
     // The only alternative is the refusal the owner just rejected.
     // The floor is `segmentFloor`, which lifts over a leading run of `decide`s
-    // when the segment opened mid-suspension — debt (R39) and start-of-
-    // deployment rot (R38) are paid inside the barrier action and were already
+    // when the segment opened mid-suspension — debt (CR 502.4) and start-of-
+    // deployment rot (CR 112.13c) are paid inside the barrier action and were already
     // below it, but a start-of-phase trigger that ASKS something leaves its
     // `decide` at the segment start and must not be undone.
     severity: 'minor',
@@ -753,7 +754,7 @@ export const CLOSED: TodoEntry[] = [
       + 'oracle (base, then columns in order, then counterattackers, then riders) and '
       + 'returns `{ why, offenders, keep, required }`. Every judgement is a question put '
       + 'to the engine, so no block rule is restated client-side and what survives is '
-      + 'legal by construction. R84\'s compulsory duty comes back as `required`, not as an '
+      + 'legal by construction. CR 606.2e\'s compulsory duty comes back as `required`, not as an '
       + 'offender. Which blocks are LEGAL did not change. '
       + '(b) `declareBuiltBlocks` cleared the plan immediately after `act()`. That is '
       + 'correct in hotseat, where the refusal is synchronous, and WRONG over a socket, '
@@ -793,7 +794,7 @@ export const CLOSED: TodoEntry[] = [
       + 'implement it are Spore of Regenesis (erasing as a cost) and Zephyrzoa (in its '
       + '[Augment] box). '
       + 'This is not cosmetic. The erased pile is the zone cards leave the game through '
-      + '(R65), so a spell that should erase itself instead lands in the bin, stays '
+      + '(CR 407.1), so a spell that should erase itself instead lands in the bin, stays '
       + 'recurrable, and keeps counting toward every "cards in your bin" effect and every '
       + '"erase X cards from your bin" cost. Collect Remains is the worst of them, being '
       + 'itself a bin-recursion spell that is supposed to remove itself from the game.',
@@ -819,17 +820,17 @@ export const CLOSED: TodoEntry[] = [
       return dead.length === 4;
     },
     // FIXED 2026-08-23. `StackItem.eraseSelf` + `EffectCtx.eraseSelf()`, read by
-    // a new branch in `dischargeItem` — the same choke point R79's Unstable
+    // a new branch in `dischargeItem` — the same choke point CR 723.4b's Unstable
     // erase already goes through, so the two cannot double-log or double-push
     // to the public pile. The flag is state on the ITEM rather than a closure
     // variable, which is what makes it survive a mid-part suspension being
-    // serialised and replayed (R85); a save/load round-trip test proves it.
+    // serialised and replayed; a save/load round-trip test proves it.
     //
     // Two rulings came out of the work, both pinned:
     //  · A NEGATED self-erase spell is BINNED, not erased. "Erase me." is a
-    //    sentence OF THE EFFECT, and R68 says a negated effect does nothing.
+    //    sentence OF THE EFFECT, and CR 406.4b says a negated effect does nothing.
     //    The contrast one branch up proves it is a decision and not an
-    //    accident: R79's {Unstable} IS erased on negation, because Unstable is
+    //    accident: CR 723.4b's {Unstable} IS erased on negation, because Unstable is
     //    a stamp on the object (a virus rode it) rather than an instruction.
     //    A FIZZLED one is binned for the same reason.
     //  · Skybreaker is not in this class at all — there "Erase me" is an
@@ -866,7 +867,7 @@ export const CLOSED: TodoEntry[] = [
       + 'Measured 2026-08-23: an empty batch emits ZERO events. That is the same defect '
       + 'CARD-TODO #3 fixed on three cards, one level down — and it is the level that '
       + 'matters, because every "I deal N damage to each opponent / each enemy unit" card '
-      + 'builds a hit list and hands it over. With no opponent in the region (R25) or no '
+      + 'builds a hit list and hands it over. With no opponent in the region (CR 601.4d) or no '
       + 'enemy unit on the board the list is empty, the card resolves, the mana is spent '
       + 'and the log is blank. Three carriers were patched card-side during the #3 sweep '
       + '(Flzzz, Restitution, Vroot); the rest of the pool is not, and patching them one '
@@ -880,7 +881,7 @@ export const CLOSED: TodoEntry[] = [
       + '`ctx.sourceName` — one line covers every carrier at once and no card needs to '
       + 'know. Watch the two shapes that are NOT this bug and must stay silent: a batch '
       + 'whose hits were all `n <= 0` (a card that computed zero damage on purpose), and '
-      + 'a fully PREVENTED batch, which R98 says was never dealt and which already logs '
+      + 'a fully PREVENTED batch, which CR 112.11 says was never dealt and which already logs '
       + 'the prevention itself.',
     proof: () => eventsFrom('Immolate', 8116, () => ({ targets: [] })) >= 0 && (() => {
       const { h, A } = board(8116, 'Tidal Menace', 'The Foretold');
@@ -899,7 +900,7 @@ export const CLOSED: TodoEntry[] = [
     // the CARD owns that explanation — Siphon Life already says "X = 0"). A
     // fully prevented batch structurally cannot reach it either: prevention
     // runs after `!order.length`, in the `received` loop, so its `order` is
-    // never empty, and R98 logs the prevention itself.
+    // never empty, and the prevention step logs itself.
     // Four real carriers were covered without a single card edit: Meteor
     // Shower, Roving Quillback, Infernal Grovekeeper, Channel Through.
     guards: [
@@ -926,8 +927,8 @@ export const CLOSED: TodoEntry[] = [
       + 'goes to the CASTER’s bin, it counts toward the caster’s "cards in your bin" '
       + 'effects for the rest of the game, and the original owner can never recur it. '
       + 'The engine tracks owner and controller separately everywhere else and says so '
-      + 'out loud at R65 ("each card reaches ITS OWN owner’s erased pile — a virus on '
-      + 'an enemy spell is the enemy’s card"), so this is a missing parameter rather '
+      + 'out loud in the erased-pile ruling ("each card reaches ITS OWN owner’s erased pile — a virus on '
+      + 'an enemy spell is the enemy’s card"; CR 102.5), so this is a missing parameter rather '
       + 'than a deliberate reading. The card’s own header already calls it an '
       + 'approximation; the ledger does not carry it.',
     evidence:
@@ -939,7 +940,7 @@ export const CLOSED: TodoEntry[] = [
       'Give `spawnUnit` an `owner` option defaulting to `seat`, and pass the picked '
       + 'card’s real owner from Wake the Dead. Then check the neighbours: '
       + 'batch-dark-c already passes an explicit `owner`, batch-hybrids-ld-a spawns for '
-      + '`opp` and for `m.controller`. A control-change is R8 and is NOT this — R8 moves '
+      + '`opp` and for `m.controller`. A control-change (CR 711.1) is NOT this — it moves '
       + 'the unit, it does not renationalise the card.',
     // ⚠ THE FIRST VERSION OF THIS PROOF WAS A SOURCE-TEXT PROXY (it matched
     // `g.spawnUnit(seat,`) and it stayed TRUE after the bug was fixed, because
@@ -1039,7 +1040,7 @@ export const CLOSED: TodoEntry[] = [
     proof: () => !ENGINE_SRC.includes('settleBudgetRefund'),
     // FIXED 2026-08-23 to the owner's ruling. `EffectCtx.refundBudget?.()`
     // raises `EffectPart.refunded`; `E.settleBudgetRefund` pays it out AFTER
-    // the part finishes, so a suspension throws past it and R85's replay starts
+    // the part finishes, so a suspension throws past it and the resume's replay starts
     // with the flag clear — idempotent, and a run that succeeds never raises it.
     // The reservation stays at composition time because it is also the
     // re-entrancy guard.
@@ -1069,10 +1070,10 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'Printed (Spellbind, the pool\'s only {Modular} card): "(You can apply mods to a '
       + 'modular card from your hand and/or bin as it is played. You still pay their '
-      + 'costs.)" The WINDOW is built and works — `E.collectModular` asks inside R35\'s '
+      + 'costs.)" The WINDOW is built and works — `E.collectModular` asks inside CR 724.3\'s '
       + 'cast-time collection, offers hand and bin, charges each mod as an additional cast '
       + 'cost, rides the mods on the stack item where both players can see them, adds each '
-      + 'one\'s effect as an extra part, and bins them with the spell (R40). '
+      + 'one\'s effect as an extra part, and bins them with the spell. '
       + 'What it offers is the problem: `if (!isGraftable(name) …) return;` — 137 of 494 '
       + 'cards, GRAFTS ONLY. The Manual defines two ways to apply a mod and this is one of '
       + 'them: an AUGMENT needs the [Augment] symbol on the mod ("There is no restriction '
@@ -1081,9 +1082,9 @@ export const CLOSED: TodoEntry[] = [
       + 'it outright — a Modular card "can arrive already carrying augments/grafts". '
       + 'The engine\'s own comment justifies the exclusion: "it is the only kind of mod '
       + 'that means anything on a spell — a spell has no body for an augment to grant '
-      + 'attributes to." That is contradicted by R79 IN THE SAME FILE: a virus augmenting '
+      + 'attributes to." That is contradicted IN THE SAME FILE by the virus channel (CR 721.4b): a virus augmenting '
       + 'a spell donates its type-line [Augment] attributes into `ctx.grantedAttrs`, and '
-      + '`dealEffectDamageAll` reads them (R103 added {Piercing} to that list). An augment '
+      + '`dealEffectDamageAll` reads them (the list includes {Piercing}: CR 802.16j). An augment '
       + 'on a spell demonstrably does something.',
     evidence:
       'Measured 2026-08-23. Graftable cards and type-line-[Augment]-attribute cards are '
@@ -1127,7 +1128,7 @@ export const CLOSED: TodoEntry[] = [
       + 'the bin, they are generally only able to be applied once" — and the one-shot mod '
       + 'is the PRICE OF THE FLASHBACK rather than a harsh edge case. Before this, a mod '
       + 'applied through the {Modular} window was binned and reusable while a virus '
-      + 'applied to the same spell through R79\'s window was erased: the same act with '
+      + 'applied to the same spell through CR 723.4\'s window was erased: the same act with '
       + 'opposite outcomes, which stops being defensible the moment anything can be '
       + 'applied.',
     proof: () => {
@@ -1139,7 +1140,7 @@ export const CLOSED: TodoEntry[] = [
       // the bug is present while the offer is graft-only
       return body.includes('isGraftable(name)') && !/augmentAttrs|isAugment|augmentText/.test(body);
     },
-    // FIXED 2026-08-23 as R105. The menu is now `canPayCard(seat, name,
+    // FIXED 2026-08-23 (now CR 724.2). The menu is now `canPayCard(seat, name,
     // { purpose: 'mod' })` and nothing else — verified end to end: with a
     // graftable card, a non-virus type-line augment, a virus and an
     // [Augment]-text card in hand, all four are offered. (An earlier probe that
@@ -1152,7 +1153,7 @@ export const CLOSED: TodoEntry[] = [
     //    an invented graft key throws in `effectByKey`, so this was the crash
     //    the widening would otherwise have caused;
     //  · `E.stackModAttrs`, unioning the mods' type-line attributes into
-    //    `grantedAttrs` beside R79's virus channel. Kept a SEPARATE method so
+    //    `grantedAttrs` beside CR 723.4's virus channel. Kept a SEPARATE method so
     //    the virus channel keeps meaning what its name says.
     // And the owner's second ruling: a modded carrier is {Unstable}, so the
     // spell and its mods are ERASED, never binned. Verified: a graft card
@@ -1182,7 +1183,7 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'RE-ANSWERED, AND THE FIRST ANSWER WAS WRONG. The question was whether a fizzle is '
       + '"the ability did nothing" (refund, consistent with CARD-TODO #18) or "the ability '
-      + 'happened and missed" (spend, consistent with the way R86 already treats a fizzle '
+      + 'happened and missed" (spend, consistent with the way CR 704.6 already treats a fizzle '
       + 'as a real resolution that produced nothing). Both readings are defensible and the '
       + 'engine originally answered by accident. '
       + 'It was first closed on the REFUND reading, and shipped that way for part of a '
@@ -1200,7 +1201,7 @@ export const CLOSED: TodoEntry[] = [
       + 'it without the owner; re-answered by the designer on the same day.',
     fix:
       'RULED (designer, 2026-08-23), superseding the same day\'s first answer: a FIZZLE '
-      + 'SPENDS THE USE. Written up as R113, which draws the line for the whole family — '
+      + 'SPENDS THE USE. Written up as a ruling (now CR 109.9a), which draws the line for the whole family — '
       + 'a bounded use is spent by being USED (activated, or put on the stack), and only '
       + 'a decline, or an offer that could not be made at all, keeps it. '
       + 'The fizzle branch\'s `refundPart` loop is deleted; `E.refundPart` stays, because '
@@ -1224,7 +1225,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     title: 'A [once] on a ZONE trigger is reserved on a throwaway ghost, so it bounds nothing',
     detail:
-      'R51 dispatches a trigger to a card sitting in a ZONE (a bin, the hand) through '
+      'A trigger on a card sitting in a ZONE (a bin, the hand; CR 400.5) is dispatched through '
       + '`E.standIn`, which builds a detached `Entity` with `id: -1` and a fresh '
       + '`budgets: {}`. `composeParts` writes the bounded reservation onto that object — '
       + 'which is never in `s.entities` and is thrown away the moment the trigger is '
@@ -1245,14 +1246,14 @@ export const CLOSED: TodoEntry[] = [
       + '`bounded` and zone-dispatched, so the day someone prints one the suite fails and '
       + 'names this entry. Doing it properly means giving a zone trigger a real budget '
       + 'holder — per (seat, card name) rather than per entity, since there is no entity — '
-      + 'which is a design decision about what "per card" (R9) means for a card that is '
+      + 'which is a design decision about what "per card" (CR 109.9m) means for a card that is '
       + 'not in play, and should not be guessed at while nothing needs it.',
     proof: null,
     verify:
       'Census: no ability with `bounded: true` also declares a `zone`. When one appears, '
       + 'this stops being latent.',
     // DONE 2026-08-24 by the entry's own "cheapest honest fix": the census is
-    // a test now. SAME DAY, the PROPER fix landed too — R124 (Rotling's
+    // a test now. SAME DAY, the PROPER fix landed too — the bin-exit choke point (Rotling's
     // 'leftBin' trigger is bounded AND zone-dispatched) built the real budget
     // holder this entry specified: `GameState.zoneBudgets`, per seat × card
     // name, written by composeParts' stand-in branch for zone-dispatched
@@ -1439,7 +1440,7 @@ export const CLOSED: TodoEntry[] = [
     area: 'engine',
     severity: 'major',
     cards: ['Flux Resonator'],
-    title: 'Spawn-with-counters bypasses the R104 amount layer, so Flux Resonator never sees a Robot spawn',
+    title: 'Spawn-with-counters bypasses the CR 708.1 amount layer, so Flux Resonator never sees a Robot spawn',
     detail:
       'The Robot token prints "I spawn with X +1/+1 counters on me", and Caleb has ruled Flux '
       + 'Resonator applies to that placement (2025-03-21: tokens created under it enter with a '
@@ -1480,13 +1481,13 @@ export const CLOSED: TodoEntry[] = [
     area: 'engine',
     severity: 'major',
     cards: ['Rotling', 'Writhing Host'],
-    title: "Two bin removals bypassed the R124 'leftBin' choke point (mods-from-bin; the R123 grantor erase)",
+    title: "Two bin removals bypassed the CR 405.7 'leftBin' choke point (mods-from-bin; the CR 504.7 grantor erase)",
     detail:
-      "R124 claims E.removeFromBin is the ONE way a card leaves a bin, firing 'leftBin' "
+      "The bin-exit choke point (CR 405.7) claims E.removeFromBin is the ONE way a card leaves a bin, firing 'leftBin' "
       + '{seat, card, reason} once per card. Two sites still spliced bins directly: '
       + "(a) apply.ts zoneTake — a mod (augment or graft) applied `from: 'bin'` ran "
       + "`e.player(seat)[from].splice(index, 1)`, so no 'leftBin' fired for the applied card; "
-      + '(b) the R123 erase-funded haste play — the Writhing Host grantor was spliced out of '
+      + '(b) the CR 504.7 erase-funded haste play — the Writhing Host grantor was spliced out of '
       + "the bin directly before the 'erased' announce. No reachable card misbehaved: Rotling, "
       + "the only 'leftBin' listener, has no augment/graft symbol and cannot leave a bin via "
       + 'either path. But the invariant and its doc were FALSE, and any future leftBin '
@@ -1497,10 +1498,10 @@ export const CLOSED: TodoEntry[] = [
       + 'apply.ts zoneTake bin branch and the binErase block in playAtTiming (haste branch).',
     fix:
       "Route both through the choke point: zoneTake's bin branch calls "
-      + "e.removeFromBin(seat, index, 'modded') — a new reason verb, added to the R124 verb "
-      + 'list in types.ts and docs/digital-rules.md — and the R123 grantor leaves via '
+      + "e.removeFromBin(seat, index, 'modded') — a new reason verb, added to the CR 405.7 verb "
+      + 'list in types.ts and docs/digital-rules.md — and the CR 504.7 grantor leaves via '
       + "e.removeFromBin(seat, binErase.index, 'erased'), KEEPING the site's own 'erased' "
-      + 'announce (the R65 hook on that announce is what feeds the public erased pile, once). '
+      + 'announce (the CR 407.1 hook on that announce is what feeds the public erased pile, once). '
       + 'Plus a static conformance sweep in 90-coverage-census so the NEXT direct splice '
       + 'fails a test instead of waiting to be re-found.',
     proof: null,
@@ -1514,9 +1515,9 @@ export const CLOSED: TodoEntry[] = [
     // 'leftBin' events; the Writhing Host test sees zero; the static sweep
     // counts two splices instead of one), then restored.
     guards: [
-      "04-mods.test.ts::graft from the bin goes through the R124 choke point",
-      "04-mods.test.ts::augment from the bin goes through the R124 choke point",
-      '42-dark-b.test.ts::the grantor leaves through the R124 choke point',
+      "04-mods.test.ts::graft from the bin goes through the CR 405.7 choke point",
+      "04-mods.test.ts::augment from the bin goes through the CR 405.7 choke point",
+      '42-dark-b.test.ts::the grantor leaves through the CR 405.7 choke point',
       '90-coverage-census.test.ts::the only direct bin splice in src is inside removeFromBin',
     ],
     status: 'done',
@@ -1526,9 +1527,9 @@ export const CLOSED: TodoEntry[] = [
     area: 'engine',
     severity: 'major',
     cards: ['Cthyrian Rector', 'Murkdrop Distiller', 'Biomass Devourer'],
-    title: "A 'trashed' responder finds its card by lastIndexOf(name), not by R131's binNth",
+    title: "A 'trashed' responder finds its card by lastIndexOf(name), not by CR 405.6's binNth",
     detail:
-      'R131 put `binNth` on the trashed event precisely because a bin holds bare card NAMES, so '
+      '`binNth` is on the trashed event precisely because a bin holds bare card NAMES, so '
       + 'identity there is (name, nth occurrence) — "copies of one card are genuinely '
       + 'indistinguishable". The cards that RESPOND to a trash never read it. They re-find the '
       + 'card with `g.player(seat).bin.lastIndexOf(name)`, which answers "the last copy of that '
@@ -1550,7 +1551,7 @@ export const CLOSED: TodoEntry[] = [
       + 'because every modded unit death now opens the same window. Deliberately left unfixed in '
       + 'R137 so a reversible ruling and an unrelated pre-existing bug did not land in one commit.',
     fix:
-      "Pass R131's binNth through to the responders and index with it instead of searching by "
+      "Pass CR 405.6's binNth through to the responders and index with it instead of searching by "
       + 'name: the trashed event already carries {seat, card, binNth}, so a responder wants '
       + '`bin[binNth] === name ? binNth : -1` and must treat the mismatch as "gone" rather than '
       + 'falling back to a search. Classify all ~13 lastIndexOf sites first and fix only those '
@@ -1566,7 +1567,7 @@ export const CLOSED: TodoEntry[] = [
       //     FUNCTIONS, so it silently answered false and the suite reported the
       //     bug fixed while the code was untouched. Read `run.toString()`.
       //  2. toString() KEEPS COMMENTS, so a comment merely *mentioning*
-      //     lastIndexOf held this true after the code stopped using it. R140's
+      //     lastIndexOf held this true after the code stopped using it. CR 405.6's
       //     own census sweep hit the identical trap on the same day. Strip
       //     comments and strings first: measure CODE, never prose.
       const at = (getCard('Cthyrian Rector').augmentText ?? []) as Array<
@@ -1578,12 +1579,12 @@ export const CLOSED: TodoEntry[] = [
     },
     status: 'done',
     guards: [
-      '43-dark-c.test.ts::R140: the Rector does NOT recall an innocent older copy',
-      '43-dark-c.test.ts::R140: the Distiller does NOT cache an innocent older copy',
-      '43-dark-c.test.ts::R140: eraseFromZone can be told WHICH bin slot to take',
-      '26-metal-a.test.ts::R140: Biomass Devourer does NOT erase an innocent older copy',
-      '26-metal-a.test.ts::R140: a stolen unit dies',
-      '90-coverage-census.test.ts::R140: no card responding to a bin-index event re-finds its card by lastIndexOf',
+      '43-dark-c.test.ts::CR 405.6: the Rector does NOT recall an innocent older copy',
+      '43-dark-c.test.ts::CR 405.6: the Distiller does NOT cache an innocent older copy',
+      '43-dark-c.test.ts::CR 405.6: eraseFromZone can be told WHICH bin slot to take',
+      '26-metal-a.test.ts::CR 405.6: Biomass Devourer does NOT erase an innocent older copy',
+      '26-metal-a.test.ts::CR 405.6: a stolen unit dies',
+      '90-coverage-census.test.ts::CR 405.6: no card responding to a bin-index event re-finds its card by lastIndexOf',
     ],
   },
   // ── the SMVJ batch (2026-08-24 afternoon, reports #94-#102) ───────────
@@ -1607,7 +1608,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Play a battle with auto-yield on and a multi-item stack; the items should appear one '
       + 'at a time at a readable rate rather than all at once.',
-    // CLOSED by R150. ui/pace.ts, clock injected, PACE_MS the single named knob — the engine
+    // CLOSED by the pacing fix. ui/pace.ts, clock injected, PACE_MS the single named knob — the engine
     // never learns about wall-clock time, so replay-room.ts and the suite stay deterministic.
     // ⚠ THE LESSON OF THE ROUND, recorded because it nearly shipped: the decisions WERE lifted
     // into a pure module and 14 tests passed, and the pacing was still WRONG — it spaced from
@@ -1637,7 +1638,7 @@ export const CLOSED: TodoEntry[] = [
       + 'src/cards/sets/batch-wood-a.ts (card definition at ~line 506) against the printed text.',
     fix:
       'Spawn the body already under the negated effect\'s controller instead of handing it over. '
-      + 'R107 (owner != controller on spawnUnit) is exactly this primitive and already exists, so '
+      + 'CR 102.5 (owner != controller on spawnUnit) is exactly this primitive and already exists, so '
       + 'this should DELETE the triggered ability and the HUSH_KEY battleCounters handoff rather '
       + 'than add machinery. Check the header note in batch-wood-a.ts about two Hush Mushes in one '
       + 'battle before removing the ledger key.',
@@ -1648,8 +1649,8 @@ export const CLOSED: TodoEntry[] = [
     },
     status: 'done',
     guards: [
-      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
-      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::CR 303.10 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::CR 303.10 #96: the CASTER',
       '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
       '23-wood-a.test.ts::whose target has already left the stack fizzles',
     ],
@@ -1674,8 +1675,8 @@ export const CLOSED: TodoEntry[] = [
       + 'gain a counter, and the body must appear on the opponent\'s side without a handover step.',
     status: 'done',
     guards: [
-      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
-      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::CR 303.10 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::CR 303.10 #96: the CASTER',
       '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
       '23-wood-a.test.ts::whose target has already left the stack fizzles',
     ],
@@ -1694,10 +1695,10 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'During battle, dormant resources must be visually distinct from (or absent beside) '
       + 'active ones; during planning they appear as they do today.',
-    // CLOSED by R151. ui/resources.ts::resourceRow returns a DOM-free view model with a
+    // CLOSED. ui/resources.ts::resourceRow returns a DOM-free view model with a
     // discrete `emphasis` per resource, so the muting is asserted rather than being a CSS
     // colour nobody can test. `spendable`/`active` are read from E.openMana and E.affinity —
-    // NOT re-derived in the UI — so a future rules change cannot desync the two (R132 just
+    // NOT re-derived in the UI — so a future rules change cannot desync the two (the Prismite-exchange ruling, now CR 106.8c, just
     // moved this surface once already).
     guards: [
       '127-token-x-and-dormant.test.ts::dormant resources are muted in battle and deployment, normal in planning',
@@ -1720,13 +1721,12 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'While the opponent resolves start-of-combat triggers, you can still place and confirm '
       + 'deployment moves without waiting.',
-    // CLOSED by R150 — and the diagnosis reversed my brief, which said to suspect the
+    // CLOSED by the concurrency fix — and the diagnosis reversed my brief, which said to suspect the
     // presentation layer. It is the RULES layer: apply.ts's global `if (e.s.decision && …)`
     // gate refuses every non-decide action from EITHER seat, and legalActions returns [] to
     // the seat that does not own the decision. The client's "Waiting for X…" bar was a
     // faithful drawing of an empty legal list — un-gating the UI alone would have turned a
-    // frozen screen into a screen full of refusals. Reachable only since R144 put
-    // start-of-deployment triggers on the stack. CT-28 and CT-32 do NOT share a root cause.
+    // frozen screen into a screen full of refusals. Reachable only since start-of-deployment triggers went on the stack. CT-28 and CT-32 do NOT share a root cause.
     // Fixed at the server (legalForSeat + a deferral queue) because the engine gate is CORRECT
     // in battle, where priority is sequential. ⚠ That makes it a COMPENSATION, not the real
     // fix: hotseat still freezes, because Harness goes through apply() directly. Carried as
@@ -1745,7 +1745,7 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'The value is known when the token is created, but the box shows the generic printed text, '
       + 'so the player must remember what it was made for. Owner: a Poison 5 should read "Put 5 '
-      + '-1/-1 counters on target unit". NOT the markup class (R134/R141/R142) — nothing is failing '
+      + '-1/-1 counters on target unit". NOT the markup class — nothing is failing '
       + 'to be consumed here; this is a live per-instance VALUE that should be substituted in.',
     evidence: 'Owner report #99, room SMVJ, action 264.',
     fix:
@@ -1756,12 +1756,12 @@ export const CLOSED: TodoEntry[] = [
       + 'Poison.',
     proof: null,
     verify: 'Create a Poison with X=5; its text box reads "5", not "X".',
-    // CLOSED by R151, and the reason it is a RENDER-TIME substitution rather than a stamp at
+    // CLOSED (now CR D6.9a), and the reason it is a RENDER-TIME substitution rather than a stamp at
     // creation is Robot: "if the number of counters changes, so does the X value", so a Robot 3
     // that gains a counter IS a Robot 4 and a frozen X starts lying immediately. X comes from
     // Entity.x for a spell token and from live COUNTERS for a unit token. Reminder text ({i}…)
     // is carved out — substituting there gives Robot "so does the 3 value", a broken sentence.
-    // Census first, per R141: the pool spells it X, X/X, +X/+X, -X/-X and [x] (a cost PIP), and
+    // Census first, as the bare-digit cost bug taught: the pool spells it X, X/X, +X/+X, -X/-X and [x] (a cost PIP), and
     // only the bare X moves. 4 of the 6 token cards carry one; the sweep pins that census.
     guards: [
       '127-token-x-and-dormant.test.ts::a Poison created with X=5 says',
@@ -1773,21 +1773,21 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 34, area: 'client', severity: 'major', reportId: 100,
-    title: 'The R120 elective damage-split UI is confusing',
+    title: 'The CR 608.6a elective damage-split UI is confusing',
     detail:
-      'The mechanic is right — R120 made the combat damage split ELECTIVE because "never decide '
+      'The mechanic is right — the combat damage split is ELECTIVE (CR 608.6a, D1.2) because "never decide '
       + 'for the player" — but the affordance is not. Owner: "terrible and confusing".',
     evidence: 'Owner report #100, room SMVJ, action 290.',
     fix:
       'The owner names it exactly: a per-unit up/down ticker, constrained so the assignments '
-      + 'always sum to the damage available. ⚠ REUSE, do not rewrite: R139/BL-25 just built this '
+      + 'always sum to the damage available. ⚠ REUSE, do not rewrite: BL-25 (CR D7.2) just built this '
       + 'shape for counter removal — a stepper with a max asked of the engine, clamped, an "All" '
       + 'that sets without submitting — lifted into ui/inspect.ts precisely so it is testable. A '
       + 'second independent stepper implementation is how the two drift apart.',
     proof: null,
     verify: 'Assign combat damage across several blockers with steppers; the total is forced to '
       + 'match the damage available and nothing submits until you confirm.',
-    // CLOSED by R149 — but NOT in the shape the report asked for, and that matters. The engine
+    // CLOSED (now CR D7.2e) — but NOT in the shape the report asked for, and that matters. The engine
     // (E.electionWalk) asks ONE victim at a time, front to back; each decision is a single
     // scalar and the last living victim is auto-filled. So no decision ever carries N victims,
     // the sum is forced by construction upstream of any client, and an over-allocation is not
@@ -1825,11 +1825,11 @@ export const CLOSED: TodoEntry[] = [
     verify: 'Owner ruling required before implementation.',
     status: 'done',
     guards: [
-      '37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves',
-      '37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
+      '37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves',
+      '37-attrs-wight.test.ts::CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
       '37-attrs-wight.test.ts::does not pre-validate against a limit an earlier trigger will consume',
       '37-attrs-wight.test.ts::a subject is not a target',
-      '37-attrs-wight.test.ts::R12 — a shared deployment stack does not let a Wraith reach across regions',
+      '37-attrs-wight.test.ts::CR 706.3c, 601.1b: a shared deployment stack does not let a Wraith reach across regions',
       '67-resolving-and-stack-viruses.test.ts::a NESTED resolution that suspends does not strand the outer marker',
     ],
   },
@@ -1861,13 +1861,13 @@ export const CLOSED: TodoEntry[] = [
       + 'survives, while X/X and +1/+1 are untouched and {Battle}/{Virus}/{Haste} still show.',
     status: 'done',
     guards: [
-      '122-cardtext-markup.test.ts::R142: the /[…] box drops the slash and the brackets',
-      '122-cardtext-markup.test.ts::R142: {i1} does not eat the space beside the word',
-      '122-cardtext-markup.test.ts::R142: no card in the pool renders engine markup to a player',
-      '122-cardtext-markup.test.ts::R142: no printed card carries a hyphenation artifact',
+      '122-cardtext-markup.test.ts::the /[…] box drops the slash and the brackets',
+      '122-cardtext-markup.test.ts::{i1} does not eat the space beside the word',
+      '122-cardtext-markup.test.ts::no card in the pool renders engine markup to a player',
+      '122-cardtext-markup.test.ts::no printed card carries a hyphenation artifact',
     ],
   },
-  // ── found by R143's pool sweep (2026-08-24), not by a report ──────────
+  // ── found by the Hush Mush round's pool sweep (2026-08-24), not by a report ──────────
   {
     id: 37,
     area: 'card',
@@ -1880,21 +1880,21 @@ export const CLOSED: TodoEntry[] = [
       + 'trigger claims them, so the body enters play as a plain Borrower of Forms and only '
       + 'afterwards becomes the thing it copied. Anything watching the spawn sees the wrong body. '
       + 'Nectar Ridge Oracle — "when an ally with greater defense than power spawns", which is '
-      + "R1's own worked example — reads the pre-copy stats, and the player is asked a spurious "
+      + "the trigger-conditions ruling's own worked example (CR 109.3a) — reads the pre-copy stats, and the player is asked a spurious "
       + 'trigger-ordering question that should not exist.',
     evidence:
       'Found 2026-08-24 by the R143 agent sweeping every giveControl / cross-seat spawn / '
       + 'opts.owner site in the pool after fixing Hush Mush. batch-metal-a.ts:477.',
     fix:
-      'The same shape R143 used: carry the answer on the spell\'s own StackItem and apply it AS '
+      'The same shape the Hush Mush fix (CR 303.10) used: carry the answer on the spell\'s own StackItem and apply it AS '
       + 'the body spawns, rather than parking it on a shared region ledger for a follow-up '
-      + 'trigger to claim. R143 added `ctx.spawnUnder(seat)` for the controller; this wants the '
-      + 'equivalent for the copied face/stats. Deletes the trigger and the ledger, as R143 did.',
+      + 'trigger to claim. That fix added `ctx.spawnUnder(seat)` for the controller; this wants the '
+      + 'equivalent for the copied face/stats. Deletes the trigger and the ledger, as that fix did.',
     proof: () => {
       // TRUE while becoming the copy is still a separate triggered ability on
       // the body's own spawn — which is the whole defect: a trigger cannot run
       // before the event that raised it, so the body has to enter as itself
-      // first. R147 deleted it; `abilities` is now empty.
+      // first. The Borrower fix (now CR 303.11) deleted it; `abilities` is now empty.
       const abil = (getCard('Borrower of Forms').abilities ?? []) as Array<{ type?: string }>;
       return abil.some(a => a.type === 'triggered');
     },
@@ -1907,10 +1907,10 @@ export const CLOSED: TodoEntry[] = [
       // no apostrophe in the needle: the title scanner reads the SOURCE, so an
       // escaped `\'` in a test name is a backslash the needle would have to match
       '26-metal-a.test.ts::watcher sees the COPIED body, not Borrower of Forms',
-      '26-metal-a.test.ts::R147: becoming the copy is NOT a trigger',
-      '26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant',
-      '26-metal-a.test.ts::R147 (negative control): a Borrower whose target is gone',
-      '26-metal-a.test.ts::R147: two Borrowers of Forms in ONE region',
+      '26-metal-a.test.ts::CR 303.11: becoming the copy is NOT a trigger',
+      '26-metal-a.test.ts::CR 303.11: the body wears the borrowed IDENTITY from the instant',
+      '26-metal-a.test.ts::CR 303.11 (negative control): a Borrower whose target is gone',
+      '26-metal-a.test.ts::CR 303.11: two Borrowers of Forms in ONE region',
     ],
   },
   {
@@ -1930,11 +1930,11 @@ export const CLOSED: TodoEntry[] = [
       + 'not yet observed at a table.',
     evidence: "Found 2026-08-24 by the R143 agent's sweep of every control-change site in the pool.",
     fix:
-      'Route all three through E.giveControl. Then pin the invariant the way R124 pinned the bin '
+      'Route all three through E.giveControl. Then pin the invariant the way the bin-exit sweep pinned the bin '
       + 'choke point: a STATIC sweep in 90-coverage-census asserting that the only assignment to '
       + '`.controller` on a unit in src/cards/ is inside giveControl itself, so the next bypass '
       + 'fails a test instead of waiting to be swept up.',
-    // FIXED 2026-08-25 (R148). All three route through E.giveControl now, and
+    // FIXED 2026-08-25. All three route through E.giveControl now, and
     // the sweep is a test. TWO corrections to the entry above, from reading the
     // three call sites rather than trusting the description:
     //
@@ -1962,7 +1962,7 @@ export const CLOSED: TodoEntry[] = [
       '24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker',
       '24-wood-b.test.ts::Organic Exchange hands over MODDED units',
       '26-metal-a.test.ts::Download steals a MODDED unit token',
-      '90-coverage-census.test.ts::R148 stays solved',
+      '90-coverage-census.test.ts::stays solved: no',
     ],
     status: 'done',
   },
@@ -1978,10 +1978,10 @@ export const CLOSED: TodoEntry[] = [
       + 'rather than a surprise.',
     evidence: "Found 2026-08-24 by the R143 agent's control-change sweep.",
     fix:
-      "Emit a real typed event from giveControl (both seats' listeners, region-scoped per R12) "
+      "Emit a real typed event from giveControl (both seats' listeners, region-scoped per CR 601.1d) "
       + 'and add it to the event vocabulary that 84-card-semantics reads. Do it WITH the first '
       + 'card that needs it, not before — an event nothing listens to is untested surface.',
-    // DONE 2026-08-25 (R148), and the "do it with the first card that needs
+    // DONE 2026-08-25, and the "do it with the first card that needs
     // it" instruction was deliberately overruled rather than ignored. Its
     // objection was that the event would be untested surface. CT-38 removed
     // that objection in the same commit: three real printed cards now route a
@@ -2003,11 +2003,11 @@ export const CLOSED: TodoEntry[] = [
       '24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker',
       '24-wood-b.test.ts::Organic Exchange hands over MODDED units',
       '26-metal-a.test.ts::Download steals a MODDED unit token',
-      '24-wood-b.test.ts::an UNMODDED control change behaves exactly as it did before R148',
+      '24-wood-b.test.ts::an UNMODDED control change behaves exactly as it did before the control-change choke point',
     ],
     status: 'done',
   },
-  // ── found by the R146 sweep of bin entries written by CARD code ───────
+  // ── found by the sweep of bin entries written by CARD code ───────
   {
     id: 40,
     area: 'card',
@@ -2019,8 +2019,8 @@ export const CLOSED: TodoEntry[] = [
       + 'less." The exchange sends the outgoing body to its owner\'s bin FROM PLAY, and '
       + '`exchangeInPlace` pushed the card and trashed it and stopped. On the AUGMENT line — the '
       + 'line the card is printed for — `self` is the HOST WEARING Hooba-Mon, so it carries a mod '
-      + 'and is {Unstable} by derivation (R69/R79). R137/R145: an Unstable card leaving an active '
-      + 'zone into a bin is binned, trashed there, and then SWEPT into the erased pile. This one '
+      + 'and is {Unstable} by derivation (CR 803.8e, 720.7). In the engine an Unstable card leaving an active '
+      + 'zone into a bin is binned, trashed there, and then SWEPT into the erased pile (CR 405.5 erases it instead; CT-246). This one '
       + 'stayed in the bin instead — fully recurrable, and still counting toward every "cards in '
       + 'your bin" effect and every "erase X from your bin" cost. It was the only bin entry in '
       + 'card code that disagreed with E.destroy about the same disposal.',
@@ -2028,10 +2028,10 @@ export const CLOSED: TodoEntry[] = [
       'Found 2026-08-25 by the R146 audit of every site in src/cards/ that writes to a bin '
       + 'without going through E.toBin or E.destroy. Two sites; this was one of them.',
     fix:
-      'FIXED 2026-08-25 (R146). `exchangeInPlace` asks `g.isUnstable(self)` BEFORE deleting the '
+      'FIXED 2026-08-25. `exchangeInPlace` asks `g.isUnstable(self)` BEFORE deleting the '
       + "host's mods (isUnstable derives from `self.mods`), then follows destroy()'s statement "
       + 'order exactly: push, `noteTrashed`, and — when Unstable — `eraseFromZone(..., "bin", '
-      + '{ index })` naming the slot it just pushed (R140, never a name search). A TOKEN host is '
+      + '{ index })` naming the slot it just pushed (CR 405.6, never a name search). A TOKEN host is '
       + 'unchanged: no card, so nothing to bin, trash or erase.',
     proof: null,
     verify:
@@ -2064,13 +2064,13 @@ export const CLOSED: TodoEntry[] = [
       'Found 2026-08-25 by the R146 audit of bin writes in src/cards/, which turned up the raw '
       + 'push and then the swallowed eraseSelf one line above it.',
     fix:
-      'FIXED 2026-08-25 (R146). `InlinePlay` carries an `eraseSelf` flag: playInline records the '
+      'FIXED 2026-08-25. `InlinePlay` carries an `eraseSelf` flag: playInline records the '
       + 'request and the CALLER, which is what decides where the card goes, honours it — the same '
       + 'split `StackItem.eraseSelf`/`dischargeItem` uses. Tides erases instead of binning when it '
       + 'is set, and otherwise goes through `E.toBin(..., "stack")`. The other three call sites '
       + 'were checked: Hooba-Pon and Insidious Invitation only reach their disposal on a FIZZLE, '
       + 'where the effect never ran and the flag cannot be set, and Spell Excavation never bins '
-      + 'what it played (R96).',
+      + 'what it played (CR 704.2c).',
     proof: null,
     verify:
       'Stack Suspend on top of the deck and cast Tides of the Cosmos; take Suspend as a free play. '
@@ -2088,7 +2088,7 @@ export const CLOSED: TodoEntry[] = [
     cards: ['Aberrant Statweaver', 'Oorblak'],
     title: 'Printed {Unstable} was invisible to every STACK exit — the bin-entry twin of CT-26',
     detail:
-      'R145 (owner, 2026-08-25): "in play and the stack are active zones (which is relevant for '
+      'The owner\'s active-zone ruling (2026-08-25; now CR 400.2): "in play and the stack are active zones (which is relevant for '
       + 'cards that have unstable). When Statweaver, which has Unstable naturally, gets negated '
       + 'from the stack, it should be erased." Report #89 gave printed {Unstable} a carrier and '
       + 'taught E.isUnstable to read it — but only for the IN-PLAY half. The stack had no '
@@ -2111,12 +2111,12 @@ export const CLOSED: TodoEntry[] = [
       + 'Virus and negated, and the same item fizzling when its host died.',
     fix:
       'A stack twin of isUnstable — `E.itemIsUnstable(item)` — unioning the three ways in '
-      + '(augments; the R96/R105 stamp; the PRINTED face, read only for the NEGATE_BINS kinds, '
+      + '(augments; the CR 803.8c, 724.5 stamp; the PRINTED face, read only for the NEGATE_BINS kinds, '
       + "because a triggered ability's `card` names its still-in-play SOURCE). negate() and "
       + 'dischargeItem() both read it instead of recomputing it, and the two virus-fizzle sites '
       + 'route through dischargeItem so all three stack exits share one predicate. Plus a static '
       + 'sweep in 90-coverage-census: every `.bin.push(` in src/ must be inside toBin, destroy '
-      + 'or the leavePlay mods line — the bin-ENTRY twin of CT-26/R124\'s bin-EXIT sweep. '
+      + 'or the leavePlay mods line — the bin-ENTRY twin of CT-26\'s bin-EXIT sweep. '
       + '⚠ That sweep carries a dated two-line exemption for batch-dark-b.ts:437 and '
       + 'batch-water-b.ts:572, which are owned by a different agent in the same round; when '
       + 'those land the exemption entries must be DELETED (the sweep fails on a stale one). '
@@ -2124,7 +2124,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify:
       'node --test test/125-active-zone.test.ts — four positives (Statweaver and Oorblak '
-      + 'negated; Statweaver fizzling when its host dies; a modded ordinary spell, the R79 '
+      + 'negated; Statweaver fizzling when its host dies; a modded ordinary spell, the CR 723.4b '
       + 'regression pin) and six negatives (a non-Unstable virus negated still bins; discard, '
       + 'mill and cache still bin AND trash; a recall still reaches the hand; a modded unit\'s '
       + 'column-mate does not inherit the erase), plus a whole-pool census that printed '
@@ -2133,7 +2133,7 @@ export const CLOSED: TodoEntry[] = [
     // DONE 2026-08-25 in the same change that found it. Red-checked: reverting
     // engine.ts wholesale reds tests 1-3 (the two negations land in a bin; the
     // fizzle logs "→ bin") and leaves 4-11 green, which is the point — 4 is the
-    // R79 case that already worked. Reverting ONLY the two fizzle sites reds
+    // CR 723.4b case that already worked. Reverting ONLY the two fizzle sites reds
     // test 3 alone, so each half is independently pinned.
     guards: [
       '125-active-zone.test.ts::Aberrant Statweaver negated off the stack is ERASED, not binned',
@@ -2152,14 +2152,14 @@ export const CLOSED: TodoEntry[] = [
     cards: ['Hooba-Mon'],
     title: "destroy()'s disposal tail is hand-copied into card code, and the bin sweep can be aliased around",
     detail:
-      'Two halves of one problem, both surfaced by R152 landing on top of R145. '
+      'Two halves of one problem, both surfaced by the exchange repair landing on top of the active-zone ruling (now CR 400.2a). '
       + '(a) `exchangeInPlace` (batch-dark-b.ts) is a FOURTH hand-copy of the sequence '
       + '`E.destroy` runs when something leaves play for a bin: push the body and its nontoken '
-      + 'mods, fire the despawn, trash each one anchored (R70), then sweep highest-index-first '
-      + 'if the body is {Unstable} (R137/R145). It is correct today and fully pinned — but it is '
+      + 'mods, fire the despawn, trash each one anchored (CR 714.9), then sweep highest-index-first '
+      + 'if the body is {Unstable} (an engine route; CR 405.5 erases instead, CT-246). It is correct today and fully pinned — but it is '
       + 'PROSE COPIED INTO A CARD FILE, and every previous copy of this sequence drifted. It '
       + 'cannot use E.toBin, which is the sanctioned choke point, because toBin takes neither '
-      + "R70's `anchor` nor reports the SLOT index R140's sweep needs. "
+      + "the leave-play `anchor` (CR 714.9) nor reports the SLOT index CR 405.6's sweep needs. "
       + '(b) 90-coverage-census\'s bin-ENTRY sweep matches `<expr>.bin.push(` textually, so '
       + 'aliasing the bin to a local steps around it — `const mb = g.player(m.owner).bin; '
       + 'mb.push(m.card);` is invisible to it, and exchangeInPlace contains exactly that shape '
@@ -2181,11 +2181,11 @@ export const CLOSED: TodoEntry[] = [
       'Reverting the primitive in exchangeInPlace must redden 42-dark-b\'s despawn, mod-trash '
       + 'and erased-pile assertions; adding a NEW aliased bin push anywhere in src/cards/ must '
       + 'redden the census sweep.',
-    // DONE 2026-08-25 as R153. (a) `E.disposeToBin(u, mods, announce, opts)`
+    // DONE 2026-08-25 (now CR 410.7). (a) `E.disposeToBin(u, mods, announce, opts)`
     // owns the whole tail — push nontoken mods (own owner's bin, slot
     // recorded) -> push body (slot recorded) -> `announce` -> trash body then
-    // each mod anchored (R70) -> Unstable sweep DESCENDING / else token sweep
-    // -> token-mod bulk 'erased' (R65) -> delete mod entities last. destroy()
+    // each mod anchored (CR 714.9) -> Unstable sweep DESCENDING / else token sweep
+    // -> token-mod bulk 'erased' (CR 407.3a) -> delete mod entities last. destroy()
     // and exchangeInPlace are each one call now. `announce` is a callback and
     // not two half-primitives on purpose: the event must land after every push
     // and before every trash, and a two-call API lets a caller slip something
@@ -2193,25 +2193,25 @@ export const CLOSED: TodoEntry[] = [
     //   leavePlay/afterDespawn were deliberately NOT folded in — they run the
     // mods half only (body goes to a hand or cache: no body push, no body
     // slot, no Unstable sweep, no token-mod line), so a "no body" mode would
-    // branch all eight ordering constraints to save four lines. The R137
+    // branch all eight ordering constraints to save four lines. The CR 410.4d
     // property the split must preserve is asserted directly instead: the same
     // mod driven through a death and through an exchange, deepEqual'd.
     // (b) BOTH bin sweeps follow one level of aliasing now, so
     // `const mb = g.player(m.owner).bin; mb.push(m.card)` is visible; both run
     // through stripCode, so a comment naming `.bin.push(` cannot false-alarm.
     // BIN_PUSH_EXEMPT is `{}` and the stale-entry assert keeps it that way.
-    // The R124 exit sweep had NO live bypass hiding behind its alias hole.
+    // The bin-exit sweep had NO live bypass hiding behind its alias hole.
     //   ⚠ Verified independently, not taken on report: planting
     // `const aliasProbe = …bin; aliasProbe.push('Bubb')` in batch-water-b.ts
     // reddens the sweep by name (`batch-water-b.ts:390 (not in engine.ts)`) —
     // neither old regex matched that shape. Reverted after.
     guards: [
-      '129-disposal-tail.test.ts::R153 conformance: BOTH destroy() and Hooba-Mon',
-      '129-disposal-tail.test.ts::R153 conformance: neither call site keeps a second copy of the tail',
-      '129-disposal-tail.test.ts::R153 (iii): an Unstable body is swept with its mods',
+      '129-disposal-tail.test.ts::CR 410.7 conformance: BOTH destroy() and Hooba-Mon',
+      '129-disposal-tail.test.ts::CR 410.7 conformance: neither call site keeps a second copy of the tail',
+      '129-disposal-tail.test.ts::CR 410.7 (iii): an Unstable body is swept with its mods',
       '129-disposal-tail.test.ts::a nontoken mod is binned and trashed the same whether its host dies or is exchanged',
       '90-coverage-census.test.ts::every bin ENTRY goes through',
-      '42-dark-b.test.ts::R146: Hooba-Mon exchanges a MODDED host',
+      '42-dark-b.test.ts::engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host',
     ],
     status: 'done',
   },
@@ -2221,13 +2221,13 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     title: "apply.ts's pending-decision gate is not seat-aware, so hotseat still freezes",
     detail:
-      'R150 fixed report #98 (one player\'s triggers freezing the other\'s simultaneous '
+      'A server fix (CT-32) closed report #98 (one player\'s triggers freezing the other\'s simultaneous '
       + 'deployment) at the SERVER layer, with `legalForSeat` and a deferral queue in rooms.ts. '
       + 'The cause is one layer down and untouched: `apply.ts`\'s global gate refuses every '
       + 'non-decide action while any decision is pending, from either seat, and `legalActions` '
       + 'opens by handing the non-owning seat an empty list. That gate is CORRECT during battle, '
       + 'where priority is sequential; it is wrong during a hidden simultaneous segment, which is '
-      + 'the only place R144 can now raise one seat\'s trigger decision while the other is still '
+      + 'the only place the stacked start-of-deployment triggers (CR 507.4a) can now raise one seat\'s trigger decision while the other is still '
       + 'deploying. Because the fix lives in the server, anything going through `apply()` '
       + 'directly still freezes — which is hotseat, and the Harness the whole test suite uses.',
     evidence:
@@ -2245,7 +2245,7 @@ export const CLOSED: TodoEntry[] = [
     verify:
       'A Harness (hotseat) driven into deployment with one seat suspended on a trigger decision '
       + 'must still offer the other seat its deploy actions. Today it offers none.',
-    // DONE 2026-08-25 as R154. `decisionBlocks(state, seat)` in apply.ts is the
+    // DONE 2026-08-25 (the seat-aware decision gate). `decisionBlocks(state, seat)` in apply.ts is the
     // one rule both named lines now route through: another seat's decision
     // stops you only where the engine cannot PROVE it is none of your business
     // — outside a hidden simultaneous segment, or where answering it would
@@ -2254,7 +2254,7 @@ export const CLOSED: TodoEntry[] = [
     // ⚠ THIS ENTRY'S OWN `fix` TEXT WAS WRONG and is left above unedited as the
     // record. It said the server compensation "becomes redundant and should be
     // deleted in the same change". It is NOT redundant, for a reason neither I
-    // nor the entry had: a 'resolve' suspension carries an R85 WHOLE-GameState
+    // nor the entry had: a 'resolve' suspension carries a WHOLE-GameState
     // snapshot, and E.resumeResolve does `this.s = snap`, carrying forward only
     // actionCount, decisionHigh and the seat names. Measured with that case
     // deliberately un-gated:
@@ -2283,11 +2283,11 @@ export const CLOSED: TodoEntry[] = [
     // correct. ANBB is 15 skips before and after, byte-identical; SMVJ 209
     // likewise. Filed as CT-45.
     guards: [
-      '130-seat-aware-gate.test.ts::R154 §1: every kind of action seat 0 had is still theirs',
-      '130-seat-aware-gate.test.ts::R154 §2: seat 0 may not overwrite seat 1',
-      '130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat',
-      '130-seat-aware-gate.test.ts::R154 §4: in BATTLE the gate refuses the non-owning seat',
-      '130-seat-aware-gate.test.ts::R154 §5: apply() never mutates its input',
+      '130-seat-aware-gate.test.ts::CR D2.1b: every kind of action seat 0 had is still theirs',
+      '130-seat-aware-gate.test.ts::CR D2.1d: seat 0 may not overwrite seat 1',
+      '130-seat-aware-gate.test.ts::CR D2.1c: a mid-resolution suspension still blocks the other seat',
+      '130-seat-aware-gate.test.ts::CR D2.1a: in BATTLE the gate refuses the non-owning seat',
+      '130-seat-aware-gate.test.ts::CR D2.1d: apply() never mutates its input',
       'server/e2e/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question',
     ],
     status: 'done',
@@ -2331,7 +2331,7 @@ export const CLOSED: TodoEntry[] = [
       + 'skipped" with no indication that 14 of the 15 are one cascade. It closes when the tool '
       + 'names action 125 as the divergence point.',
     closed:
-      'R169. Both halves. replay-room.ts leads with the DIVERGENCE POINT (index, type, seat, '
+      'Both halves. replay-room.ts leads with the DIVERGENCE POINT (index, type, seat, '
       + 'the engine\'s own reason), says in words that everything after it is cascade, and '
       + 'PROVES the wedge structurally rather than guessing — a run of consecutive refusals '
       + 'whose standing decision is byte-for-byte the one standing at the divergence, so '
@@ -2364,11 +2364,11 @@ export const CLOSED: TodoEntry[] = [
     id: 46,
     area: 'client',
     severity: 'major',
-    title: "R154 un-froze the engine for hotseat, and the hotseat UI is still gated one layer above it",
+    title: "The seat-aware decision gate un-froze the engine for hotseat, and the hotseat UI is still gated one layer above it",
     detail:
       'ui/main.ts ~2600 opens `if (s.decision) return decisionBarHtml(s.decision, err);` — the '
       + "PENDING decision's bar is returned whenever ANY decision is open, whoever owns it, and "
-      + 'the affordances gate the same way (~1495). So after R154 the engine permits the other '
+      + 'the affordances gate the same way (~1495). So once the gate became seat-aware the engine permits the other '
       + "seat's deployment in hotseat and the screen still will not offer it.",
     evidence:
       'Reported by the R154 agent as out of scope. R154\'s reach deliberately stops at apply(); '
@@ -2384,7 +2384,7 @@ export const CLOSED: TodoEntry[] = [
       'A hotseat game with one seat suspended on a trigger decision must offer the other seat '
       + 'its deployment affordances on screen, not merely accept them from apply().',
     closed:
-      'R170. FOUR independent gates in ui/main.ts all read a bare !!s.decision — the pre-R154 '
+      'Closed. FOUR independent gates in ui/main.ts all read a bare !!s.decision — the pre-seat-aware '
       + 'reading — and all four now ask one predicate, decisionFreezes(seat). promptHtml split '
       + 'into promptHtml + phaseBarHtml so hotseat shows the question on top and the free '
       + 'seat\'s own bar under it. Online is a no-op BY CONSTRUCTION: server/view.ts nulls a '
@@ -2416,7 +2416,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     title: "legalActions can now offer an action apply() refuses, and the fuzzer assumes it cannot",
     detail:
-      'R154\'s disturbance check throws IllegalAction when an action turns out to have moved '
+      'CR D2.1d\'s disturbance check throws IllegalAction when an action turns out to have moved '
       + "state the other seat's open question will read. Whether a play suspends is not "
       + 'predictable in advance, so `legalActions` cannot exclude it up front. That is a real, '
       + 'deliberate crack in its documented contract — "Every action returned is legal" '
@@ -2437,14 +2437,14 @@ export const CLOSED: TodoEntry[] = [
       'The contract comment at the head of legalActions matches what apply() will actually '
       + 'accept, and the fuzzer names this exception rather than tripping over it.',
     closed:
-      'R169. The contract comment now names the R154 disturbance exception instead of claiming '
+      'The contract comment now names the CR D2.1d disturbance exception instead of claiming '
       + 'something the code no longer does, and test/fuzz.ts names it too via an exported '
       + 'isContractException() — recognised by the `disturbs` FLAG, never by a message; CHECKED '
       + '(a disturbs refusal with no question standing, or on the asking seat\'s own action, '
       + 'throws louder than an unflagged one); and COUNTED via FuzzResult.disturbed, so its use '
       + 'stays visible rather than being swallowed. '
       + '⚠ HONEST LIMIT, stated rather than papered over: disturbed is 0 across 180 fuzz games. '
-      + 'Random play enters R154\'s window only 39 times in 60 games and is offered 16 '
+      + 'Random play enters CR D2.1b\'s window only 39 times in 60 games and is offered 16 '
       + 'free-seat actions there, disturbing none. The exception is REAL — a hand-built test '
       + 'shows legalActions offering an action apply() refuses — but the fuzzer does not '
       + 'currently explore it, so the guard pins the counter at zero rather than asserting it '
@@ -2452,7 +2452,7 @@ export const CLOSED: TodoEntry[] = [
       + 'will hide the next real one; this at least makes the class countable.',
     guards: [
       '143-replay-divergence.test.ts::legalActions offers an action apply() refuses — the ONE exception its contract now names',
-      '143-replay-divergence.test.ts::the fuzzer refuses to widen that exception past what R154 actually promises',
+      '143-replay-divergence.test.ts::the fuzzer refuses to widen that exception past what CR D2.1d actually promises',
       '143-replay-divergence.test.ts::the fuzzer counts the exception rather than swallowing it',
     ],
     status: 'done',
@@ -2461,10 +2461,10 @@ export const CLOSED: TodoEntry[] = [
     id: 48,
     area: 'coverage',
     severity: 'major',
-    title: 'R104 has a conformance sweep for its replacement half and none for its STATIC half',
+    title: 'The replacement layer has a conformance sweep for its replacement half and none for its STATIC half',
     detail:
       '88-replacement-conformance.test.ts classifies cards printing "would … instead" and is the '
-      + 'class guard that closed reports #60/#75. R104\'s own text also covers "and static '
+      + 'class guard that closed reports #60/#75. The replacement-layer ruling\'s own text also covers "and static '
       + 'effects" — and 88 never checks a static. So the class guard people believe exists for '
       + 'the static half does not.',
     evidence:
@@ -2484,7 +2484,7 @@ export const CLOSED: TodoEntry[] = [
       'A card printing continuous text but implemented as a triggered ability must fail a named '
       + 'sweep. Today only the "would…instead" family is swept.',
     closed:
-      'R168. 142-static-conformance.test.ts, built in 88\'s shape and derived from '
+      'Closed (now CR 707.3). 142-static-conformance.test.ts, built in 88\'s shape and derived from '
       + 'printed.json rather than a hardcoded list: 45 of 494 cards print a continuous-shaped '
       + 'clause (46 clauses; the inventory guessed ~41), and 36 of those print nothing else, '
       + 'so they may declare no stack-reaching channel at all. Every exemption carries its '
@@ -2509,7 +2509,7 @@ export const CLOSED: TodoEntry[] = [
       '142-static-conformance.test.ts::the classifier accounts for every sentence in the pool',
       '142-static-conformance.test.ts::every behaviour key in the pool is classified',
       '142-static-conformance.test.ts::every exemption is still needed',
-      '142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC',
+      '142-static-conformance.test.ts::CR 721.1e: Aetherflux Golem is a STATIC',
     ],
     status: 'done',
   },
@@ -2560,7 +2560,7 @@ export const CLOSED: TodoEntry[] = [
       + 'unchecked count is small AND the remainder are clauses no fixture can reach, named '
       + 'individually rather than counted.',
     progress:
-      'STAGES 1-4 ALL DONE (R171 stages 1-2, R180 stages 3-4). The printed number moved from '
+      'STAGES 1-4 ALL DONE. The printed number moved from '
       + '98/316 gated promises observed to 264/316 — 218 never-observed down to 52. '
       + 'augment 152 needs an [Augment] HOST: 129 observed, was 0. '
       + 'trigger 110 needs a fixture firing the EVENT: 86 observed, was 56 — and the window is '
@@ -2602,7 +2602,7 @@ export const CLOSED: TodoEntry[] = [
       + 'TOP-UP — nextBeat holds die/despawn until two battles finish, the top-up ran once per '
       + 'WINDOW while a whole combat damage step happens inside one apply, and a traced game hit '
       + 'gameover at step 55 with battlesSeen=1, one short of the gate, 29 of 31 fixtures fired. '
-      + '⚠ A CARD TAUGHT THE AGENT A RULE: a bounded [Switch1] spends its one use per turn (R9) '
+      + '⚠ A CARD TAUGHT THE AGENT A RULE: a bounded [Switch1] spends its one use per turn (CR 109.9a) '
       + 'when the trigger is QUEUED, not when the payload finds work. Boreal Wanderer heard a home '
       + 'spawn while at home, queued into a region holding only itself, said no opponent is present, '
       + 'and was spent. Pinning ALL SEVEN beats that way was MEASURED AND WAS A NET LOSS — it '
@@ -2610,8 +2610,8 @@ export const CLOSED: TodoEntry[] = [
       + 'WHAT A BLIND CHECKER WOULD PRINT, measured BOTH ways: pin always TRUE -> beats act at '
       + 'subject.region, which at home IS home, and every clause in the family tests the battle region '
       + 'explicitly, so coverage FALLS; pin always FALSE -> the six go dark and the per-gate floors '
-      + 'catch it. R199 ADDS NO EVIDENCE CHANNEL AT ALL — attribution is still ownResolution and '
-      + 'the continuous-layer read is still staticBite, both R180’s, both untouched. Only WHEN and '
+      + 'catch it. THIS ROUND ADDS NO EVIDENCE CHANNEL AT ALL — attribution is still ownResolution and '
+      + 'the continuous-layer read is still staticBite, both from stages 3-4, both untouched. Only WHEN and '
       + 'WHERE the world acts changed. And the first number measured WENT DOWN (227/316) before the '
       + 'life top-up was raised. Every beat now records home=/at=/battle=: at === battle is the pin '
       + 'and proves nothing; **at !== home is the fact that cannot be faked.** '
@@ -2624,7 +2624,7 @@ export const CLOSED: TodoEntry[] = [
       + 'unreachable. '
       + 'PRIOR ROUND (26): '
       + 'THE 52 THAT REMAIN are named individually with their missing precondition, which is what '
-      + 'this entry says closes it. Biggest family is REGION (R12, 6 cards): a clause scoped to '
+      + 'this entry says closes it. Biggest family is REGION (6 cards, CR 601.1d): a clause scoped to '
       + 'its event\'s region cannot be reached by a fixture fired at a battle window while the '
       + 'card stands at home. AN ATTACKING POSITION WITH THE CARD ACTUALLY IN THE BATTLE is the '
       + 'next thing worth building. Then BOARD 26, CHOICE 5, VOCAB 3, EXTRACT 2.',
@@ -2643,7 +2643,7 @@ export const CLOSED: TodoEntry[] = [
       + 'partition derived on every run. THE RESIDUAL 37 GATED CLAIMS SPREAD OVER 36 CARDS are '
       + 'named individually in UNREACHED with the precondition each lacks: BOARD 25 · CHOICE 5 · '
       + 'VOCAB 3 · EXTRACT 2 · REGION 1. **BOARD 25 is not engineering work** — it means the drill '
-      + 'cannot construct the situation, which is exactly what the scenario tester (docs/14, R217\'s '
+      + 'cannot construct the situation, which is exactly what the scenario tester (docs/14, and its '
       + 'queue) exists to hand to a human. So the residual is not parked, it is QUEUED SOMEWHERE '
       + 'ELSE, and keeping this ticket open would double-count it. ⚠ WHY THIS IS CLOSED AND NOT '
       + 'WORKED FURTHER, which is the honest part. docs/13 §3 already reached the conclusion: the '
@@ -2662,7 +2662,7 @@ export const CLOSED: TodoEntry[] = [
       + '278/316 and "38 across 37" and an EVENTLESS bucket that no longer exists — inside the very '
       + 'section whose warning box says "the tally the suite prints has been right every single '
       + 'time. Quote it; do not re-derive it." Nobody re-derived it. It was copied once and never '
-      + 're-read, and R219 moved a claim underneath it. That is a failure mode docs/13 §5 does not '
+      + 're-read, and a later fix moved a claim underneath it. That is a failure mode docs/13 §5 does not '
       + 'yet list: a CORRECT instrument, printing CORRECTLY, into a document nobody re-read.',
     status: 'done',
   },
@@ -2674,7 +2674,7 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'A three-agent sweep of all 30 files in src/cards/sets/ (457 cards) on 2026-08-25 '
       + 'inventoried every place the engine knowingly diverges from printed text. The '
-      + 'R157 ruling round fixed some; the rest are catalogued in '
+      + 'owner\'s 2026-08-25 ruling round fixed some; the rest are catalogued in '
       + 'docs/16-divergence-inventory.md §2, grouped by what a fix needs. '
       + 'Biggest single item: SPELL COPY never touches the stack — Earthbound Replicator and '
       + "Maelstrom Charger call the copied spell's `run` in place, so the copy is "
@@ -2707,7 +2707,7 @@ export const CLOSED: TodoEntry[] = [
       + 'behaviour. The inventory itself closes when §2 is empty.',
     guards: [
       '166-face-damage-attribution.test.ts::a combat \'lifeLost\' names the columns that dealt it',
-      '167-variable-ability-costs.test.ts::R196',
+      '167-variable-ability-costs.test.ts::CR 705.3b',
       '169-mid-resolution-window.test.ts::the deferral gate: only a live battle priority window defers a mid-resolution play',
       '168-three-card-divergences.test.ts::Prediction Prophet: "predict your life total" is UNCAPPED',
       '168-three-card-divergences.test.ts::Spell Excavation: the window SURVIVES to regroup',
@@ -2715,39 +2715,39 @@ export const CLOSED: TodoEntry[] = [
     ],
     closed:
       '**§2 IS EMPTY** (2026-08-26). The last five rows closed in one round: PER-COLUMN FACE '
-      + 'DAMAGE (R195), VARIABLE-COST ACTIVATED ABILITIES (R196), RESPONSE WINDOW '
-      + 'MID-RESOLUTION (R198), PREDICTION CAP + UNTIL-REGROUP PLAY WINDOW (R197), and '
+      + 'DAMAGE (CR 608.9a), VARIABLE-COST ACTIVATED ABILITIES (CR 111.7), RESPONSE WINDOW '
+      + 'MID-RESOLUTION (CR 703.5), PREDICTION CAP + UNTIL-REGROUP PLAY WINDOW, and '
       + 'MULTIPLAYER ATTRIBUTION — which was **measured UNREACHABLE and nothing was built**: '
       + 'createGame makes exactly 2 players, other(seat) is the literal 1 - seat, and combat '
       + 'iterates [initiative, nit]. No third seat is representable. '
       + '⚠⚠ EVERY ONE OF THE FIVE CORRECTED ITS OWN ROW, and the pattern is worth more than the '
       + 'fixes: face damage said 6 cards and is 9 (**Flowstone Arcanite\'s own comment named all '
-      + 'three missing ones** while the row did not) and cited an R159 that DOES NOT EXIST; '
+      + 'three missing ones** while the row did not) and cited a ruling number that DOES NOT EXIST; '
       + 'variable-cost was half wrong about when two of six are paid AND its prescribed fix was '
       + 'wrong (the engine already had the machinery, so two cards closed with no new engine code '
       + 'at all); the response window was called "structurally the hardest item here" and was '
-      + 'buildable safely, because the safe shape is the R164 one (defer the play to the stack) '
+      + 'buildable safely, because the safe shape is the spell-copy shape (defer the play to the stack) '
       + 'not the row\'s implied one (suspend mid-resolution) — apply.ts was never touched; and '
-      + 'Spell Excavation was worse than described, a silent TIMING WAIVER that R157 §12 forbids. '
+      + 'Spell Excavation was worse than described, a silent TIMING WAIVER that CR 702.2a forbids. '
       + '⚠ FOUR ROWS OF §2a WERE ALREADY FIXED IN ROUND 26 AND STILL READ AS OPEN in the table '
       + '(REAPING, MOVE-A-MOD, ROT/DEBT REMOVAL, FORMATION AS A TARGET, plus HAND-ENTRY). A '
       + 'closure recorded only in a header block is a closure the table still contradicts — the '
       + 'stale-PARKED-note failure one level up. Recorded in the inventory\'s round-27 block. '
-      + '⚠ R198 AND R197 COLLIDED ON SPELL EXCAVATION and the later one wins: R198 taught the '
-      + 'inline play to push a StackItem; R197 removed the call site, because "you MAY play it '
-      + 'until regroup" is a GRANT. R198\'s test was REWRITTEN rather than deleted — every claim '
+      + '⚠ THE MID-RESOLUTION WINDOW FIX AND THE UNTIL-REGROUP FIX COLLIDED ON SPELL EXCAVATION and the later one wins: the mid-resolution fix taught the '
+      + 'inline play to push a StackItem; the until-regroup fix removed the call site, because "you MAY play it '
+      + 'until regroup" is a GRANT. The mid-resolution fix\'s test was REWRITTEN rather than deleted — every claim '
       + 'it made is still true, only the route to the window changed. '
-      + '⚠ WHAT THIS TICKET COULD NOT SEE: two hidden-information leaks (R202, R197b), neither a '
+      + '⚠ WHAT THIS TICKET COULD NOT SEE: two hidden-information leaks (the handEntered and look-at-a-hand leaks; CR D6.5), neither a '
       + 'divergence from PRINTED TEXT and so outside this inventory\'s whole question. The sweep '
       + 'that built this file could not have found them.',
     status: 'done',
     progress:
-      'ROUND 26 (2026-08-25) closed twelve rows. §2a SPELL-COPY (R164 — the biggest single '
-      + 'item). §2b SPAWN-COUNTERS and PLAY-VS-PUT-INTO-PLAY (R165), DOUBLING OVERSHOOTS, '
-      + 'ORIGON both halves, SURVIVE-DAMAGE, KEEP-THIS-TARGET (R166), DESPAWN ON RECALL (R167), '
-      + 'STATIC-VS-TRIGGER (R168), MODULE-LEVEL LATCH and MID-BATTLE FORMATION JOIN (R172). '
-      + '§2c: both erase copies routed through the choke point (R172) and both stack lookups '
-      + 'reversed (R166). §3 cleared — 18 comments, plus 147-comment-conformance so the shapes '
+      'ROUND 26 (2026-08-25) closed twelve rows. §2a SPELL-COPY (CR 710.8 — the biggest single '
+      + 'item). §2b SPAWN-COUNTERS and PLAY-VS-PUT-INTO-PLAY (CR 301.8, 701.3), DOUBLING OVERSHOOTS, '
+      + 'ORIGON both halves, SURVIVE-DAMAGE, KEEP-THIS-TARGET (all settled 2026-08-25), DESPAWN ON RECALL (CR 721.1f), '
+      + 'STATIC-VS-TRIGGER (CR 707.3), MODULE-LEVEL LATCH and MID-BATTLE FORMATION JOIN (CR 711.3). '
+      + '§2c: both erase copies routed through the choke point and both stack lookups '
+      + 'reversed. §3 cleared — 18 comments, plus 147-comment-conformance so the shapes '
       + 'cannot rot again. '
       + 'STILL OPEN in §2a: HAND-ENTRY (⚠ the site count is wrong in BOTH the inventory and the '
       + 'card comment — it is 18 sites across 11 files, not 14 and not ~9; a fix scoped to '
@@ -2779,7 +2779,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'blocker',
     title: 'Only the first ~15% of most saved games replays at all, and the tail is not evidence',
     detail:
-      'This repo settles playtest reports by replaying saved games. R169 rewrote '
+      'This repo settles playtest reports by replaying saved games. CT-45 and CT-47 rewrote '
       + 'replay-room.ts to report a DIVERGENCE POINT instead of a skip count, and the '
       + 'reframing is alarming: a log that read as "375 actions, 166 replayed, 209 refused" '
       + 'is not 209 problems, it is ONE divergence at action [121] and 208 lines of cascade — '
@@ -2817,12 +2817,12 @@ export const CLOSED: TodoEntry[] = [
       'DIAGNOSED IN FULL (2026-08-25). This entry asked for each divergence to be explained, and '
       + 'all six now are. ALL SIX ARE DELIBERATE, RECORDED RULES CHANGES. **No regressions. No '
       + 'restart corruption.** The logs are TRUE RECORDS; only the reader moved. '
-      + 'WEHH [56] <- R97/report #74, a granted-haste play now opens the haste step · '
+      + 'WEHH [56] <- report #74, a granted-haste play now opens the haste step · '
       + 'XVUR [51] <- report #87, Worldbender replaces the draw step · '
-      + 'VEAV [113] <- report #81/R57, modal modes moved from resolution to the cast seam · '
-      + 'SMVJ [121] <- R143, Hush Mush enters as the OPPONENT\'s unit so the handover trigger is '
+      + 'VEAV [113] <- report #81 (CR 702.5), modal modes moved from resolution to the cast seam · '
+      + 'SMVJ [121] <- Hush Mush now enters (CR 303.10) as the OPPONENT\'s unit so the handover trigger is '
       + 'gone · UZRG [154] <- negation leaves the stack, so two logged passes are superfluous · '
-      + 'ANBB [125] <- R137, an Unstable death bins first, so Dropslime\'s trashed-trigger now '
+      + 'ANBB [125] <- the engine\'s Unstable-death route (CT-246), an Unstable death bins first, so Dropslime\'s trashed-trigger now '
       + 'exists and must be ORDERED against Thoughtripper\'s. '
       + '⚠ THE REPORTED DIVERGENCE POINT IS WRONG IN ALL SIX CASES — late by 1, 1, 1, 1, 3 and '
       + 'SIX actions. XVUR\'s advertised [51] is six actions and a whole turn boundary after the '
@@ -2838,7 +2838,7 @@ export const CLOSED: TodoEntry[] = [
       + 'session, and every round from here adds another dead prefix. '
       + 'Two things were fixed on the way: replay-room.ts no longer SUBSTITUTES one seat\'s deck '
       + 'for the other\'s when a deck fails validation, and no longer guesses a draft trio when '
-      + '`els` is absent (R186). GAXG and HDGG have no recorded trio at all and are permanently '
+      + '`els` is absent. GAXG and HDGG have no recorded trio at all and are permanently '
       + 'unreplayable — they are not evidence about anything. '
       + 'THE REMAINING WORK IS CT-66: version the logs.',
     guards: [
@@ -2885,7 +2885,7 @@ export const CLOSED: TodoEntry[] = [
       'A battle-timed spell in hand during deployment must not be drawn the same way as a '
       + 'castable deploy card. Drive it through test/ui-driver.ts.',
     closed:
-      'R183. The ring now answers THREE questions instead of one: does anything work (the ring '
+      'Closed (now CR D6.14). The ring now answers THREE questions instead of one: does anything work (the ring '
       + 'exists — unchanged, nothing that used to glow stopped), can I CAST it (plain green '
       + 'yes · amber dashed = only the named verbs · doubled edge = more than one, the click '
       + 'will ask), and WHICH verbs (a chip: graft / augment / recycle / cast+augment). '
@@ -2943,7 +2943,7 @@ export const CLOSED: TodoEntry[] = [
       '77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup',
     ],
     closed:
-      'R194 (2026-08-26). ROUTE (2) — announce at Regroup — and the entry\'s steer to prefer it '
+      'Closed (2026-08-26; now CR D2.6a). ROUTE (2) — announce at Regroup — and the entry\'s steer to prefer it '
       + '"if route (1) changes battle timing" turned out to be decidable by MEASUREMENT rather '
       + 'than judgement. Route (1) is not timing-neutral on two independent grounds: a declined '
       + 'attack fights no combat, so there is no after-combat step for a window to belong to; '
@@ -3007,7 +3007,7 @@ export const CLOSED: TodoEntry[] = [
       'A `fixed` entry whose report describes a visible symptom, cited only to a guard that '
       + 'builds its own fixture, fails a named test.',
     closed:
-      'R182 BUILT THE CLASSIFIER, MEASURED IT, AND REFUSED TO SHIP THE SCREEN — and the refusal '
+      'THE CONFORMANCE REWORK BUILT THE CLASSIFIER, MEASURED IT, AND REFUSED TO SHIP THE SCREEN — and the refusal '
       + 'is the finding. Applied to the ten entries this ticket rests on, the shape rule does not '
       + 'separate them: the four KNOWN-BLIND classify #43 pure, #45 pure, #53 pure, #18 harness; '
       + 'the six KNOWN-GOOD classify #22 pure, #26 pure, #82 pure, #94 pure, #100 pure, #77 '
@@ -3025,7 +3025,7 @@ export const CLOSED: TodoEntry[] = [
       + 'much weaker rule that IS sound — an entry closed against nothing but pure tests must at '
       + 'least carry a `note`. That catches 2 of the 4, flags #36 and #38, and both are REAL '
       + 'gaps in the record rather than false positives. The pure-only population is 7 of 96. '
-      + '⚠ THE CLASSIFIER WENT BLIND TWICE WHILE BEING BUILT, in exactly R176\'s two ways: '
+      + '⚠ THE CLASSIFIER WENT BLIND TWICE WHILE BEING BUILT, in exactly stripCode\'s two ways: '
       + 'brace-matching RAW source ran one small test\'s body 24,660 characters past its closing '
       + 'brace (an apostrophe in a comment), crediting a pure test with driving a Harness; and '
       + '`function f(x): { a: T } { … }` handed back the RETURN TYPE as the body. Both are pinned '
@@ -3048,9 +3048,9 @@ export const CLOSED: TodoEntry[] = [
     area: 'card',
     severity: 'major',
     cards: ['Earthbound Replicator', 'Maelstrom Charger'],
-    title: 'Two RAQ-settled facts about the copy cards that R164 did not reach',
+    title: 'Two RAQ-settled facts about the copy cards that the spell-copy fix did not reach',
     detail:
-      'R164 made a spell copy a real StackItem. Two things the designer RAQ states plainly are '
+      'The spell-copy fix made a spell copy a real StackItem. Two things the designer RAQ states plainly are '
       + 'still wrong, and both are now easier to fix than before. '
       + '(a) **Earthbound Replicator checks "targeting me" at RESOLUTION, not at event time.** '
       + 'Its `when` does not test targeting at all — it fires on every nontoken spellPlayed and '
@@ -3058,7 +3058,7 @@ export const CLOSED: TodoEntry[] = [
       + 'Correction retarget resolving in between WRONGLY PRODUCES A COPY, and retargeting away '
       + 'wrongly cancels one that was owed. '
       + '(b) **Maelstrom Charger is built as an ordinary triggered ability**, so it reaches the '
-      + 'stack, can be negated BEFORE the copy is ever made, and R121\'s pay-to-trigger gate '
+      + 'stack, can be negated BEFORE the copy is ever made, and CR 111.10g\'s pay-to-trigger gate '
       + '(Crevice Lurker) can tax it.',
     evidence:
       'Both from `[Solved]` threads in `data/rulings/exports/`, quoted verbatim and verified in place '
@@ -3071,7 +3071,7 @@ export const CLOSED: TodoEntry[] = [
       + '(a) was found by the R166 agent while working on Origon; (b) by the R164 agent as it '
       + 'landed the copy primitive.',
     fix:
-      '(a) is small: move the `targetsMe` test into `when` (R1), so the question is asked at the '
+      '(a) is small: move the `targetsMe` test into `when` (CR 109.3a), so the question is asked at the '
       + 'moment the spell is played. (b) needs a seam that does not exist — a cost-shaped, '
       + 'non-stack, as-you-play decision. The RAQ says it works "kinda like cost (but is still '
       + 'optional due to *may*)". Do (a) first; it is a live wrong answer, and (b) is a shape '
@@ -3082,8 +3082,8 @@ export const CLOSED: TodoEntry[] = [
       + 'Gravitational Correction, let it resolve: no copy. And a negate aimed at Maelstrom '
       + "Charger's ability finds nothing on the stack to hit.",
     closed:
-      'R178, both halves, and the owner chose the full seam over the narrow fix. '
-      + '(a) Earthbound Replicator now asks the targeting question in `when` (R1). '
+      'Fixed (now CR 706.9), both halves, and the owner chose the full seam over the narrow fix. '
+      + '(a) Earthbound Replicator now asks the targeting question in `when` (CR 109.3a). '
       + '⚠ THE BRIEF SAID "move the targetsMe test into when" and that was not achievable as '
       + 'stated — and the reason is load-bearing: **commitItem fires spellPlayed BEFORE '
       + 'pushItem**, so a `when` has no stack to consult. That is exactly why the card was '
@@ -3099,7 +3099,7 @@ export const CLOSED: TodoEntry[] = [
       + 'it is not on the stack (the stack is literally empty while the question is open); and '
       + 'the copy lands above the original. Multi-Charger none/one/two works, and Ancient One '
       + 'projecting the face works because it is a BEHAVIOR_CHANNELS member. '
-      + '⚠ WHY NOT pendingCosts/CostMod.sacrifice (R122), which I suggested: R122\'s own doc '
+      + '⚠ WHY NOT pendingCosts/CostMod.sacrifice (CR 111.10d), which I suggested: the imposed-cost rule (CR 111.10d) '
       + 'says an unpayable count gates castability exactly as unaffordable mana does — a cost '
       + 'is MANDATORY once declared, and this is a *may*. Making that collector opt-out-able '
       + 'would give every real cost a door it must not have. '
@@ -3120,11 +3120,11 @@ export const CLOSED: TodoEntry[] = [
     area: 'engine',
     severity: 'minor',
     cards: ['Earthbound Replicator'],
-    title: 'A third bottom-up `.find()` on the stack survives R166',
+    title: 'A third bottom-up `.find()` on the stack survives the Origon fix',
     detail:
-      'R166 fixed Origon and Hexbane Shiitake, which located a spell on the stack with '
+      'An earlier fix corrected Origon and Hexbane Shiitake, which located a spell on the stack with '
       + '`.find()` — a BOTTOM-UP scan, so with two same-card same-seat items they acted on the '
-      + 'older one. Earthbound Replicator (`batch-hybrids-wm-a.ts`) still does it. R164 made the '
+      + 'older one. Earthbound Replicator (`batch-hybrids-wm-a.ts`) still does it. Spell copies on the stack (CR 710.8) made the '
       + 'case commoner rather than rarer: a copy and its original are two items with the same '
       + 'card and the same controller by construction.',
     evidence:
@@ -3133,15 +3133,15 @@ export const CLOSED: TodoEntry[] = [
       + 'correct precedent is in the repo: `[...g.s.stack].reverse().find(...)`. '
       + '⚠ NOT `g.s.stack.reverse()` — that reverses in place.',
     fix:
-      'One line, plus a test with two genuine same-card spells on the stack (not a copy — R164 '
+      'One line, plus a test with two genuine same-card spells on the stack (not a copy — CR 706.13 '
       + "already excludes those, so a copy fixture cannot prove the ordering).",
     proof: null,
     verify: 'With two copies of one card on the stack from the same seat, the card acts on the TOP one.',
     closed:
-      'R178, and better than the ticket asked. With the item id on the spellPlayed payload the '
+      'Fixed (now CR 706.13), and better than the ticket asked. With the item id on the spellPlayed payload the '
       + 'lookup is an IDENTITY match, not `[...stack].reverse().find(...)`. '
       + '⚠ STILL OPEN ELSEWHERE, and now cheaply: Origon (batch-hybrids-fwe.ts) and Hexbane '
-      + 'Shiitake (batch-wood-a.ts) both listen to spellPlayed and still carry R166\'s reverse '
+      + 'Shiitake (batch-wood-a.ts) both listen to spellPlayed and still carry the old reverse '
       + 'scan plus a paragraph of comment explaining why it happens to work. Both can become '
       + 'identity lookups and lose the paragraph. Carried as CT-69.',
     guards: [
@@ -3173,7 +3173,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: '`npm run check` typechecks the server, and passes.',
     closed:
-      'R181. `server/` had no tsconfig AT ALL, and the root `check` line READ as three projects '
+      '`server/` had no tsconfig AT ALL, and the root `check` line READ as three projects '
       + 'being checked while its middle leg ran `node --test` — and node TYPE-STRIPS, it does '
       + 'not type-check. The compiler had never been pointed at the server. '
       + '⚠ THE DEFECT IT WAS HIDING is the reason this was worth doing. `ActivateVia` has '
@@ -3205,8 +3205,8 @@ export const CLOSED: TodoEntry[] = [
     title: 'Dead helpers in card files survive because tsconfig has no noUnusedLocals',
     detail:
       'Four zero-call-site helpers were found in `src/cards/sets/`: `batch-light-a::payLife` and '
-      + '`batch-dark-c::formationSlot` (both deleted by R174), plus `batch-metal-a::tokensInRegion` '
-      + 'and `helpers.ts::lifeGainedIn`, which the R174 agent did not own. `payLife` additionally '
+      + '`batch-dark-c::formationSlot` (both deleted by the park-note audit), plus `batch-metal-a::tokensInRegion` '
+      + 'and `helpers.ts::lifeGainedIn`, which the park-note audit agent did not own. `payLife` additionally '
       + 'carried a doc comment asserting a behaviour ("pay n life as a COST at resolution") that '
       + 'all three life-cost cards had moved away from — so a dead function was also the file\'s '
       + 'most confident wrong statement about how those cards work.',
@@ -3249,12 +3249,12 @@ export const CLOSED: TodoEntry[] = [
     severity: 'major',
     title: '65-effect-conformance is a knife edge that any behaviour change trips',
     detail:
-      'The R166 agent had to edit three card files it did not own — Adversary of the Deep, '
+      'The agent for that round had to edit three card files it did not own — Adversary of the Deep, '
       + 'Aethercap Siphoner, Flux Constructor — because its behaviour changes moved '
       + "`65-effect-conformance`'s 140-game FUZZ DRIVE onto three pre-existing bare `return`s "
       + 'that nothing had reached before. It reported: **"this will recur every round".** It is '
       + 'right, and it already recurred once — Earthbound Replicator\'s own comment records the '
-      + 'same thing happening under R84.',
+      + 'same thing happening.',
     evidence:
       'The assertion is correct and worth keeping (a silent `return` is the single most '
       + 'productive bug shape this repo has found). The problem is the DRIVE: which branches a '
@@ -3272,11 +3272,11 @@ export const CLOSED: TodoEntry[] = [
     verify:
       'A behaviour change in one card file does not redden 65-effect-conformance in another.',
     closed:
-      'R182 took option (1): the 140-game FUZZ drive is replaced by a DETERMINISTIC pass over '
+      'The conformance rework took option (1): the 140-game FUZZ drive is replaced by a DETERMINISTIC pass over '
       + 'every EffectDef in the registry, in two fixed board states, with the context built '
       + "from the engine's own machinery (targets from targetCandidates + specForSlot + "
       + 'resolveTargetRef; a triggered ability\'s event accepted only if that ability\'s own '
-      + '`when` returns true, asked on a CLONE because R172\'s Ancient One mutates in `when`). '
+      + '`when` returns true, asked on a CLONE because the Ancient One mutates in `when`). '
       + 'Reach is an EQUALITY now, not a floor, so the test can no longer be satisfied by a '
       + 'drive that quietly stops reaching things. '
       + 'REACH MEASURED BOTH WAYS, which is what the ticket demanded: fuzz 280/431 defs, '
@@ -3284,15 +3284,15 @@ export const CLOSED: TodoEntry[] = [
       + '76/84 token-makers, ~2s. Strictly better on every axis, so no bad trade was made '
       + 'silently. '
       + 'AND IT FOUND SIXTEEN SILENT BRANCHES the fuzz never reached, FIFTEEN OF ONE SHAPE: '
-      + 'R25\'s "each opponent" loop over a region that holds nobody else runs zero times and '
+      + 'CR 601.4d\'s "each opponent" loop over a region that holds nobody else runs zero times and '
       + 'says nothing (Bloated Manablub, Blightmound, Linked Extinction, Void Memory — whose '
-      + 'own comment CITES R25 and still does not announce it — Growing Plague, Malicious '
+      + 'own comment CITES CR 601.4d and still does not announce it — Growing Plague, Malicious '
       + 'Hardware, Pestilent Mycelion, Rotwall, Verdant Necrophage, and their graft halves). '
       + 'All are in SILENT_KNOWN with reasons and a self-invalidating test, so a fix cannot '
       + 'land without the entry coming off. Carried as CT-70. '
       + 'Three effects are named residue the rig cannot furnish (Ancient One needs a formation '
       + 'column, Riftwalker a battle grid holding both, Roving Quillback a blocked column), '
-      + 'and the R104 replacement path is stated as a coverage loss the fuzz occasionally had '
+      + 'and the replacement-layer path is stated as a coverage loss the fuzz occasionally had '
       + '— named individually rather than counted, which is what the ticket asked for.',
     guards: [
       '65-effect-conformance.test.ts::drive every effect in the registry',
@@ -3325,17 +3325,17 @@ export const CLOSED: TodoEntry[] = [
       + '— "the column connects" is at least as defensible and makes every mid-combat removal '
       + 'considerably stronger. The current behaviour is pinned in `145-erase-routes.test.ts` '
       + 'test (viii) with a comment saying explicitly that it is the pre-existing rule and not '
-      + "R172's doing, so flipping it later touches one assertion.",
+      + "the erase-and-steal ruling's doing, so flipping it later touches one assertion.",
     proof: null,
     verify: 'The answer is written down as a ruling, whichever way it goes.',
     closed:
-      'R185 — the owner ruled it and NO BEHAVIOUR CHANGED: the column stays blocked. Removing a '
+      'The blocked-column ruling (now CR 606.3a) — the owner ruled it and NO BEHAVIOUR CHANGED: the column stays blocked. Removing a '
       + 'blocker mid-combat does not un-declare the block; in his framing removal "protected '
       + 'nothing but still cost them a card". The alternative was put to him explicitly (killing '
       + 'or stealing a blocker becomes a way to push damage through, making every mid-combat '
       + 'removal much stronger) and declined. '
       + 'What changed is that it is a RULE with a test under it, on all FOUR routes a blocker '
-      + 'can leave — dies, recalled, erased, stolen (Download, R172) — where only the death '
+      + 'can leave — dies, recalled, erased, stolen (Download, CR 711.3) — where only the death '
       + 'route had ever been tested. '
       + '⚠ AND THE DEATH-ROUTE TEST DID NOT GUARD THIS RULE. 02-combat\'s "blocked column stays '
       + 'blocked" uses Good Whale, which is {Piercing}, and Piercing carries through a '
@@ -3388,7 +3388,7 @@ export const CLOSED: TodoEntry[] = [
       'With a playable cached card, it appears at the right of the hand AND in the cache row, '
       + 'and clicking either plays it. With an unplayable one, it appears only in the cache.',
     closed:
-      'R183, additive exactly as the owner asked — `regionCacheHtml` and the cache dialog are '
+      'The hand-ring ruling (now CR D6.14 and D6.14a), additive exactly as the owner asked — `regionCacheHtml` and the cache dialog are '
       + 'untouched. The group carries the EXPIRY chip (this turn / free), not the price, '
       + 'because a glimpse stamp dies silently at end of turn and forgetting it is the actual '
       + 'loss he described. It reuses the cache row\'s own data-act/data-p/data-i so '
@@ -3429,10 +3429,10 @@ export const CLOSED: TodoEntry[] = [
       'Give the thumbs the same `data-act="cache" data-p data-i` the dialog entries use. '
       + '⚠ THERE IS A REAL TRADE-OFF, so decide it rather than defaulting: if a thumb plays the '
       + 'card directly, the one-click route to INSPECTING a cached card goes away, and the cache '
-      + 'is public (R41) precisely so both players can look at it. A middle answer — thumb plays '
+      + 'is public (CR D6.6) precisely so both players can look at it. A middle answer — thumb plays '
       + 'only when the card is playable right now, and opens the dialog otherwise — matches what '
-      + 'R183 just did in the hand strip and is probably right. '
-      + 'Much of the pressure is already off: R183 put the playable subset beside the hand with '
+      + 'the hand-ring round just did in the hand strip (CR D6.14a) and is probably right. '
+      + 'Much of the pressure is already off: the hand-ring round put the playable subset beside the hand with '
       + 'a real one-click handler, so this is now a consistency fix rather than a reachability '
       + 'one.',
     proof: null,
@@ -3445,12 +3445,12 @@ export const CLOSED: TodoEntry[] = [
       '163-cache-affordance-and-badges.test.ts::with two live entries the thumb plays the one it was drawn for',
     ],
     closed:
-      'R192 (2026-08-26). THE DECISION, as this entry\'s verify line required it to be written '
+      'The cache-thumb ruling (now CR D6.16), 2026-08-26. THE DECISION, as this entry\'s verify line required it to be written '
       + 'down: a thumb plays on the first click WHEN AND ONLY WHEN the entry is playable right '
       + 'now; every other thumb, and every other pixel of the panel, still opens the dialog. '
       + 'It uses literally the same predicate as the hand-side strip '
       + '(playableCachedIndexes(legalFor(p))), so the two surfaces cannot disagree about which '
-      + 'entry is live. R41 inspection is barely touched — the label, the summary line and every '
+      + 'entry is live. Public-cache inspection (CR D6.6) is barely touched — the label, the summary line and every '
       + 'unplayable thumb still open the zone in one click, and right-click still inspects any '
       + 'thumb. Augment/graft-only entries and decision-target candidates deliberately keep the '
       + 'dialog route. '
@@ -3487,7 +3487,7 @@ export const CLOSED: TodoEntry[] = [
       + 'the CAUSE here is in the code under test rather than in the test, which makes it worse: '
       + 'the next person writing a badge assertion will hit it too.',
     fix:
-      "One line: `[...].filter(Boolean).join(' ')`. The R183 agent deliberately left it alone "
+      "One line: `[...].filter(Boolean).join(' ')`. The hand-ring round's agent deliberately left it alone "
       + 'because it churns expected markup in other agents\' test files mid-round. Do it when '
       + 'the tree is quiet, then grep `test/` for badge-class assertions and check none of them '
       + 'was passing only because of the extra spaces — that is the real work, and it is the '
@@ -3500,13 +3500,13 @@ export const CLOSED: TodoEntry[] = [
       '163-cache-affordance-and-badges.test.ts::a badge chip class has single spaces and no trailing space',
     ],
     closed:
-      'R192 (2026-08-26). One line, as the entry said: the chip class is now '
+      'Closed 2026-08-26 in the cache-thumb round. One line, as the entry said: the chip class is now '
       + "['badge', mod, ctr, cls].filter(Boolean).join(' '). "
       + 'THE TAIL — which is why this was filed rather than done — came back CLEAN, and it was '
       + 'MEASURED rather than assumed. All 57 `badge` mentions in engine/test/ were '
       + 'cross-checked against the 12 cls values the UI actually emits. Exactly FOUR assert '
       + 'against a badge CLASS ATTRIBUTE, all in 155-hand-affordances (lines 189/220/241/386), '
-      + 'and all four already carry R183\'s [^"]* workaround — so all four match the SAME set of '
+      + 'and all four already carry the hand-ring round\'s [^"]* workaround — so all four match the SAME set of '
       + 'chips before and after. **None was lying and none needed repair**; 155 is 10/10 green '
       + 'under both shapes of the emitter. Everything else asserts on Badge OBJECTS or '
       + 'packBadgeLine\'s pure output, never on a class string. No test repaired, none renamed. '
@@ -3564,7 +3564,7 @@ export const CLOSED: TodoEntry[] = [
       'server/e2e/test-forensics.ts::and its first stamp starts where the unstamped log ENDS',
     ],
     closed:
-      'R200 (2026-08-26). All four parts. `Room.versions` is a LEDGER, one VersionStamp per '
+      '2026-08-26. All four parts. `Room.versions` is a LEDGER, one VersionStamp per '
       + 'engine naming the action index it took over at — stamped in resetSegment (every fresh '
       + 'log passes through it) and appended by restoreRooms on any commit change for a live '
       + 'room WHETHER OR NOT ANYTHING WAS LOST, because the loss-free rules change is the case '
@@ -3573,7 +3573,7 @@ export const CLOSED: TodoEntry[] = [
       + '(own verdict, own exit code) instead of throwing. '
       + '⚠⚠ FOUR CORRECTIONS TO MY BRIEF, and the third is the one to remember: '
       + '(1) "make the tool report the FIRST divergence and the cascade as a cascade — the '
-      + 'highest-value line you can add" was ALREADY DONE by R169/CT-45 at the base commit. '
+      + 'highest-value line you can add" was ALREADY DONE by CT-45 at the base commit (see 143-replay-divergence). '
       + '(2) "late by up to SIX actions" understated it badly: measured against dbe6f84, SMVJ is '
       + '1 action late and ANBB is **93** — first refusal [125], boards actually part at [32]. '
       + '(3) THE FIRST DIFFERENCE IS NOT THE FINDING EITHER, which nobody had said: two engines '
@@ -3585,7 +3585,7 @@ export const CLOSED: TodoEntry[] = [
       + 'HEAD, but dbe6f84 refuses 142 of its actions, so that is demonstrably not its engine — '
       + 'and GYSR does not say what recorded it, so nothing can tell us whether HEAD\'s clean '
       + 'replay is the game that was played. That is the whole argument for this ticket. '
-      + 'HONEST LIMIT, stated in R200: versioning only helps FROM HERE FORWARD. Unit tests stay '
+      + 'HONEST LIMIT, stated (see replay-room.ts): versioning only helps FROM HERE FORWARD. Unit tests stay '
       + 'the right answer for everything recorded before the field existed. '
       + 'DEPLOY: additive and backward-compatible (sanitizeVersions returns [] for a missing '
       + 'field, guarded); no migration; cost is one restart, and every live room takes one extra '
@@ -3593,11 +3593,11 @@ export const CLOSED: TodoEntry[] = [
       + 'never backdated to 0 — claiming the current commit over an older engine\'s log would '
       + 'send --as-recorded to the wrong rules. '
       + '⚠ THREE OF ITS RED-CHECKS REFUSED TO GO RED AND ALL THREE WERE FIXTURE BUGS, not fix '
-      + 'bugs — including the R186 trap exactly as warned (a fixture with ZERO entities, so '
+      + 'bugs — including the empty-fixture trap exactly as warned (a fixture with ZERO entities, so '
       + 'renumbering mutated an empty map) and an assertion indexing `later[k-1]` at k=0, which '
       + 'passed for every possible input. The third exposed real DEAD CODE: the stamp in '
       + 'createRoom was overwritten one line later by resetSegment. '
-      + 'The collision it flagged with R191 was already resolved — both agents independently '
+      + 'The collision it flagged with the concurrent item-id round was already resolved — both agents independently '
       + 'excluded `kind: \'changed\'` from analyze()\'s declaredIdx.',
     status: 'done',
   },
@@ -3643,7 +3643,7 @@ export const CLOSED: TodoEntry[] = [
       'server/e2e/test-forensics.ts::and no fork invented for a file that simply predates the field',
     ],
     closed:
-      'R191 (2026-08-26). All three. (a) Worldbender\'s line is `info`. (b) afterDespawn takes '
+      'Closed 2026-08-26 in the item-id round. All three. (a) Worldbender\'s line is `info`. (b) afterDespawn takes '
       + 'the despawn event as a PARAMETER; both callers hand over what ev() returned. (c) '
       + '`persist` writes each action\'s reference key (`refs`, additive); a restore compares '
       + 'them (`driftedAgainst`) and records mismatches as kind: \'changed\'. '
@@ -3655,7 +3655,7 @@ export const CLOSED: TodoEntry[] = [
       + 'type and refused to fabricate a listener assertion. '
       + '(b) "now one line further because toHand (R179) runs just before it" is WRONG — toHand '
       + 'runs before the ev(\'despawned\'), not between the ev() and the read, and the engine\'s '
-      + 'own R179 comment says so. The distance never changed and the index is still correct at '
+      + 'own comment says so. The distance never changed and the index is still correct at '
       + 'HEAD. It is LATENT fragility, so the test has to CREATE the future edit. '
       + '(c) "make the changed arm reachable" — it was already reachable; undoActionAt has always '
       + 'produced it. What could not reach it was the RESTORE path specifically. '
@@ -3677,9 +3677,9 @@ export const CLOSED: TodoEntry[] = [
     detail:
       '`147-comment-conformance.test.ts` §4 sweeps for zero-call-site helpers, and two things '
       + 'are wrong with it now. (a) Its `DEAD_EXEMPT` list names `tokensInRegion` and '
-      + '`lifeGainedIn`, **both of which were deleted by R181** — and nothing asserts that an '
+      + '`lifeGainedIn`, **both of which were deleted since** — and nothing asserts that an '
       + 'exemption still matches something, so the list is silently lying. That is the same '
-      + 'failure class as a park note that outlived its cause, which is the very thing R174 '
+      + 'failure class as a park note that outlived its cause, which is the very thing the stale-comment round '
       + 'built that file to prevent. (b) It sweeps only `src/cards/sets`, so dead helper '
       + 'FUNCTIONS in `test/` are outside its reach — `28-metal-c::constructedTurn` and '
       + '`36-cache-prophecy::cacheIdx` were found by `noUnusedLocals` instead, and only because '
@@ -3706,8 +3706,8 @@ export const CLOSED: TodoEntry[] = [
       '164-sweep-sight.test.ts::no sweep in 90-coverage-census is reading an empty population',
     ],
     closed:
-      'R193 + R201 (2026-08-26), and the ticket was the smaller half of what it found. '
-      + 'R193: both stale exemptions dropped, every DEAD_EXEMPT entry now asserted to name a '
+      '2026-08-26, and the ticket was the smaller half of what it found. '
+      + 'Both stale exemptions dropped (see 147-comment-conformance), every DEAD_EXEMPT entry now asserted to name a '
       + 'real declaration, and the scan widened from src/cards/sets to src/ + test/ + scripts/ '
       + '(30 files/231 decls -> 204 files/1392 decls). '
       + '⚠⚠ THE REAL FIND WAS stripCode\'s THIRD BLINDNESS. Its `tpl` state had no notion of '
@@ -3716,9 +3716,9 @@ export const CLOSED: TodoEntry[] = [
       + 'back as CODE. Measured: engine.ts leaked 10 lines; ui/main.ts leaked 368 and BLANKED '
       + '911 lines of real code. A real z.bin.push() planted inside a nested template in '
       + 'src/rng.ts left ALL NINE tests of 90-coverage-census GREEN — a live bypass of the '
-      + 'R124/R145 bin choke point, invisible to every sweep that rests on this helper. '
-      + 'FIXED as R201 (a brace-depth stack); the orchestrator verified the planted bypass now '
-      + 'reddens 90 and that the ui/ exclusion R193 had just been forced to add could come '
+      + 'bin choke point, invisible to every sweep that rests on this helper. '
+      + 'FIXED with a brace-depth stack; the orchestrator verified the planted bypass now '
+      + 'reddens 90 and that the ui/ exclusion the sweep had just been forced to add could come '
       + 'straight back out. NINE of the ten dead helpers it had reported were false positives OF '
       + 'THE BLINDNESS. '
       + '⚠ THE TENTH EXPOSED A SECOND CHECKER DEFECT, found by the orchestrator: the sweep built '
@@ -3728,8 +3728,8 @@ export const CLOSED: TodoEntry[] = [
       + 'dead. `\\b` is also the wrong boundary for `$` regardless. Now an identifier '
       + 'lookaround, red-checked in both directions. '
       + '⚠ MY BRIEF WAS WRONG TWICE and the ticket wrong three times: tsconfig ALREADY has '
-      + 'noUnusedLocals (R181), and §4\'s own doc comment still claimed otherwise; the header\'s '
-      + '"stripCode is blind today in a second place" was stale (R181 fixed it) and R174\'s '
+      + 'noUnusedLocals, and §4\'s own doc comment still claimed otherwise; the header\'s '
+      + '"stripCode is blind today in a second place" was stale (the tooling round fixed it) and the park-note audit\'s '
       + 'repair had become HARMFUL, mangling 40 lines; and widening §4 as the ticket wrote it, '
       + 'without first fixing the `${ … }` blind spot, would have produced a 75%-FALSE-POSITIVE '
       + 'sweep (45 reported, 34 false). '
@@ -3745,9 +3745,9 @@ export const CLOSED: TodoEntry[] = [
     cards: ['Origon', 'Hexbane Shiitake'],
     title: 'Two stack lookups can stop being heuristics now that the event carries the item',
     detail:
-      'R178 put the played item\'s ID on the `spellPlayed` payload, so a card that wants "the '
+      'An earlier round put the played item\'s ID on the `spellPlayed` payload, so a card that wants "the '
       + 'spell that was just played" can match on identity. Origon (`batch-hybrids-fwe.ts`) and '
-      + 'Hexbane Shiitake (`batch-wood-a.ts`) still use R166\'s `[...g.s.stack].reverse().find('
+      + 'Hexbane Shiitake (`batch-wood-a.ts`) still use the old `[...g.s.stack].reverse().find('
       + 'i => i.card === name && i.controller === seat && !i.copy)`, and each carries a paragraph '
       + 'of comment explaining why a reverse scan happens to be right.',
     evidence:
@@ -3756,7 +3756,7 @@ export const CLOSED: TodoEntry[] = [
       + 'correct under all of them. The paragraph of justification is itself the tell.',
     fix:
       'Match on `ev.data.item`. The explanatory comments come out with the scan. '
-      + '⚠ Keep the `!i.copy` reasoning: R164 established that a copy is not PLAYED, so a card '
+      + '⚠ Keep the `!i.copy` reasoning: a copy is not PLAYED (CR 701.5), so a card '
       + 'keying off a play must still not see one — that is a separate question from which item '
       + 'the lookup finds, and switching to an id must not quietly answer it differently.',
     proof: null,
@@ -3767,15 +3767,15 @@ export const CLOSED: TodoEntry[] = [
       '162-item-identity-and-truthful-events.test.ts::no play event ever names a COPY',
     ],
     closed:
-      'R191 (2026-08-26) for BOTH NAMED CARDS. Origon and Hexbane Shiitake match on '
+      'Closed 2026-08-26 (the item-id round; now CR 706.13) for BOTH NAMED CARDS. Origon and Hexbane Shiitake match on '
       + '`ev.data.item`; the paragraphs of justification came out with the reverse scans. '
       + 'THE !i.copy QUESTION WAS VERIFIED RATHER THAN ASSUMED, which this entry required: '
       + '`pushSpellCopy` never routes through `commitItem`, so no spellPlayed event can ever '
       + 'name a copy — the id path excludes copies for a STRONGER reason than the scan did. '
       + '⚠⚠ THE CLASS IS THREE CARDS, NOT TWO, AND THIS ENTRY\'S FIX CANNOT REACH THE THIRD. '
       + 'Void Mandible (batch-light-c.ts:633) prints "When a nontoken card is played during '
-      + 'battle, sacrifice me. If you do, negate THAT EFFECT" — the same pronoun R164/R166 '
-      + 'settled — and carries TWO live defects: a FORWARD .find() while pushItem pushes to the '
+      + 'battle, sacrifice me. If you do, negate THAT EFFECT" — the same pronoun CR 706.13 now '
+      + 'covers — and carries TWO live defects: a FORWARD .find() while pushItem pushes to the '
       + 'end, so with two same-card same-seat plays it negates the OLDER one; and NO !i.copy '
       + 'guard at all, so it can negate a copy where the original never reached the stack. '
       + '"Match on ev.data.item" is IMPOSSIBLE for it: spellPlayed carries item, and '
@@ -3790,7 +3790,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'major',
     title: 'Fifteen effects go silent on the same clause: "each opponent" in a region holding nobody else',
     detail:
-      'R25 scopes an effect to its region, and these read the region\'s `presentSeats` to find '
+      'CR 601.4d scopes an effect to its region, and these read the region\'s `presentSeats` to find '
       + '"each opponent". A HOME region out of battle lists only its owner, so the loop runs zero '
       + 'times and the effect resolves saying NOTHING — the player is told neither what happened '
       + 'nor why it did not. `85-silent-branches` §9 already fixed exactly this for the three the '
@@ -3815,7 +3815,7 @@ export const CLOSED: TodoEntry[] = [
       + '⚠ Do not "fix" these by making the loop run — the region genuinely holds nobody else and '
       + 'the effect genuinely does nothing. The defect is the silence, not the no-op.',
     proof: null,
-    verify: '65-effect-conformance\'s SILENT_KNOWN list is empty for the R25 family.',
+    verify: '65-effect-conformance\'s SILENT_KNOWN list is empty for the CR 601.4d family.',
     guards: [
       '158-silent-region-branches.test.ts::Bloated Manablub',
       '158-silent-region-branches.test.ts::Blightmound',
@@ -3827,15 +3827,15 @@ export const CLOSED: TodoEntry[] = [
       '158-silent-region-branches.test.ts::Rotwall',
       '158-silent-region-branches.test.ts::Verdant Necrophage',
       '158-silent-region-branches.test.ts::Stellarspore Harvester',
-      '158-silent-region-branches.test.ts::the four grafted R25 riders are the same EffectDef object',
+      '158-silent-region-branches.test.ts::the four grafted CR 601.4d riders are the same EffectDef object',
       '65-effect-conformance.test.ts::no effect resolves into silence',
     ],
     closed:
-      'R187 (2026-08-26). Nine EffectDefs got one g.ev(\'info\', ...) guard each, copying the '
+      'CT-70 repair (2026-08-26). Nine EffectDefs got one g.ev(\'info\', ...) guard each, copying the '
       + '85-silent-branches §9 wording verbatim. NO loop was made to run — every card keeps '
       + 'identical board behaviour, which is what this entry asked for. SILENT_KNOWN went from '
       + '14 live entries to ONE (spell:Trench Stalker, `run: () => {}` by construction), so the '
-      + 'R25 family is empty and the entry\'s own verify line is satisfied. '
+      + 'CR 601.4d family is empty and the entry\'s own verify line is satisfied. '
       + '⚠ THIS TICKET\'S OWN COUNT WAS WRONG AND THE AGENT CORRECTED IT: the family is '
       + 'THIRTEEN LABELS OVER NINE EffectDefs, not fifteen effects. Four cards (Bloated '
       + 'Manablub, Blightmound, Linked Extinction, Void Memory) appear TWICE in SILENT_KNOWN '
@@ -3897,7 +3897,7 @@ export const CLOSED: TodoEntry[] = [
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent',
     ],
     closed:
-      'R188 (2026-08-26). THE REPORTED MOMENT IS NOT BROKEN — and the entry\'s own instruction '
+      'The glimpse investigation (2026-08-26). THE REPORTED MOMENT IS NOT BROKEN — and the entry\'s own instruction '
       + '("investigate before touching anything; I could not find the cause by reading") is what '
       + 'produced that answer instead of a fix for an imaginary bug. GYSR replays 306/306; its '
       + 'three glimpses are [54]/[107]/[136], all battle-phase with segmentKey null, and at [107] '
@@ -3942,22 +3942,22 @@ export const CLOSED: TodoEntry[] = [
       + 'staging and this wants less, so the rule is not "stage more" — it is that a batch which '
       + 'is simultaneous in the rules must look simultaneous, and a sequence must look sequential.',
     fix:
-      'ui/flash.ts beats and R150\'s `holdable`. ⚠ Guard the FEEDING, not the stager: #53\'s '
+      'ui/flash.ts beats and CR D5.4b\'s `holdable`. ⚠ Guard the FEEDING, not the stager: #53\'s '
       + 'original guards proved `combatStages` could stage and could not fail if the client '
-      + 'stopped feeding it, which is exactly why R173 had to widen them. Drive it through '
+      + 'stopped feeding it, which is exactly why they had to be widened. Drive it through '
       + 'test/ui-driver.ts.',
     proof: null,
     verify: 'Triggers that reach the stack in one batch appear on screen in one beat.',
     guards: [
-      '160-simultaneous-trigger-beats.test.ts::R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame',
+      '160-simultaneous-trigger-beats.test.ts::CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame',
       '160-simultaneous-trigger-beats.test.ts::a beat explains and never gates',
-      '160-simultaneous-trigger-beats.test.ts::R189 a play and the triggers it caused are TWO beats, and the second is three cards at once',
+      '160-simultaneous-trigger-beats.test.ts::CR D6.7 a play and the triggers it caused are TWO beats, and the second is three cards at once',
       '160-simultaneous-trigger-beats.test.ts::a second batch queues behind the first',
-      '160-simultaneous-trigger-beats.test.ts::R189 flashBatches cuts a real batch where the RULES cut it',
+      '160-simultaneous-trigger-beats.test.ts::CR D6.7 flashBatches cuts a real batch where the RULES cut it',
       '160-simultaneous-trigger-beats.test.ts::positive evidence only',
     ],
     closed:
-      'R189 (2026-08-26), in ui/flash.ts ALONE — nothing in engine/src or ui/main.ts, so no '
+      'The simultaneous-beats ruling (now CR D6.7), 2026-08-26, in ui/flash.ts ALONE — nothing in engine/src or ui/main.ts, so no '
       + 'change to when anything resolves, which is what this entry required. queueFlashes '
       + 'stamped EVERY item of an arriving batch STAGGER_MS after the one before it, '
       + 'unconditionally; it now spaces GROUPS cut where the rules cut them (a trigger leaves the '
@@ -3971,11 +3971,11 @@ export const CLOSED: TodoEntry[] = [
       + 'passPriority ending the battle round with no triggered and no stackFlash in it; the '
       + 'moment is [135] (three death triggers in one sweep). But each of those three stopped on '
       + 'a DECISION of his, so the three flashes arrived in THREE SEPARATE SERVER ROUND-TRIPS '
-      + 'with his answers in between, and no honest pacing rule merges three round-trips. R189 '
+      + 'with his answers in between, and no honest pacing rule merges three round-trips. The fix '
       + 'deliberately gives them a beat each and says so. The general form is real and the corpus '
       + 'supplied it one game over: SMVJ [141] is four death triggers in ONE action and ONE '
       + 'update drawn 280ms apart. SMVJ [94] is the control in the other direction. '
-      + '⚠ MY SEAM WAS RIGHT AND THE PART I POINTED AT WAS NOT: R150\'s holdable and R80\'s '
+      + '⚠ MY SEAM WAS RIGHT AND THE PART I POINTED AT WAS NOT: the holdable gate and the '
       + 'Beat/combatStages are not involved at all; the defect is in queueFlashes, the older '
       + 'docs/11 flash queue.',
     status: 'done',
@@ -3994,11 +3994,11 @@ export const CLOSED: TodoEntry[] = [
       + 'STOPS." That was never checked. Verified 2026-08-26 against BOTH printed.json and '
       + 'AlgomancyCards-OracleText.json: Oracle of Foretelling, Premonition, Celestial Purge and '
       + 'Dematerialize ALL end their reminder with "Recycle the rest." Foretell is Glimpse 1 — '
-      + 'one card revealed, one cached, no "rest" — and correctly says nothing, which is R45\'s '
+      + 'one card revealed, one cached, no "rest" — and correctly says nothing, which is CR 801.9b\'s '
       + 'own N=1 reading. '
       + 'THE OWNER WAS STILL RIGHT ABOUT WHAT HE SAW. The reminder he read is the GLOSSARY row '
       + 'the card inspector prints for every keyword a card mentions '
-      + '(ui/main.ts::glossaryHits -> ui/glossary.ts), and that row still described R45 AS IT '
+      + '(ui/main.ts::glossaryHits -> ui/glossary.ts), and that row still described THE GLIMPSE RULE AS IT '
       + 'READ BEFORE THE 2026-08-19 CORRECTION — "cache them", all N, recycle never mentioned. On '
       + 'those four cards the panel CONTRADICTED ITSELF: printed box said "cache one … Recycle '
       + 'the rest", reminder underneath said the opposite.',
@@ -4021,18 +4021,18 @@ export const CLOSED: TodoEntry[] = [
       '161-glimpse-reminders.test.ts::every printed N=1 reminder says cache-IT and claims no rest',
     ],
     closed:
-      'R190 (2026-08-26). Two rows of ui/glossary.ts reworded off E.glimpse and doRecycle rather '
+      'Fixed 2026-08-26 (report #106). Two rows of ui/glossary.ts reworded off E.glimpse and doRecycle rather '
       + 'than off prose. The SECOND row was not in the report and was worse: `Recycle` read "the '
       + 'card is gone for the rest of the game" — the one thing recycling never does '
       + '(doRecycle calls e.recycleToBottom on the line before it pushes the dormant resource). '
       + 'The agent fixed it rather than filing it, because leaving it would have made the Glimpse '
       + 'fix wrong on screen, and flagged the judgement call. '
-      + 'Also generalised R162\'s TYPE_OVERRIDES into scripts/printed-overrides.mjs: '
+      + 'Also generalised the earlier TYPE_OVERRIDES table into scripts/printed-overrides.mjs: '
       + 'field-general (type | text), each entry carrying card/field/from/to/since/by/why, and '
       + 'applyOverride throws StaleOverrideError so the extractor exits non-zero and writes '
       + 'NOTHING when upstream is corrected. printed.json REGENERATES BYTE-IDENTICAL — no entry '
       + 'was added, because none was needed. '
-      + '⚠ MY BRIEF WAS WRONG TWICE MORE: the fail-loud override table ALREADY EXISTED (R162); '
+      + '⚠ MY BRIEF WAS WRONG TWICE MORE: the fail-loud override table ALREADY EXISTED; '
       + 'this is a generalisation, not a new mechanism. And the upstream error list is THREE type '
       + 'lines plus one missing card, with NO text-field error anywhere in the pool — one of the '
       + 'four (Linked Extinction\'s "Sacrifce") was already FIXED AT SOURCE in 0818074, which '
@@ -4053,8 +4053,8 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     title: 'A loop that commits a collected list says nothing when the list comes back empty',
     detail:
-      'CT-70 repaired the R25 "no opponent in this region" family. While inside Malicious '
-      + 'Hardware the R187 agent found a SECOND silent branch that was on no list at all: an '
+      'CT-70 repaired the CR 601.4d "no opponent in this region" family. While inside Malicious '
+      + 'Hardware the CT-70 agent found a SECOND silent branch that was on no list at all: an '
       + 'opponent IS present, and every one of them has no unit to sacrifice, so `picks` comes '
       + 'back empty, the run completes and emits nothing. Ghord and Molten Tormentor already '
       + 'carry a line for exactly this; Malicious Hardware did not. '
@@ -4077,7 +4077,7 @@ export const CLOSED: TodoEntry[] = [
       + 'for a NEW reason" — the reason string is checked for length (> 40) and nothing else, so '
       + 'a stale reason outlives its truth. '
       + '(b) 85-silent-branches §11 and 158\'s test #12 now make the SAME house-rule claim about '
-      + 'disjoint card lists, so if the R25 family grows again no single file owns it. Merging '
+      + 'disjoint card lists, so if the CR 601.4d family grows again no single file owns it. Merging '
       + '§9\'s three cards (Restitution, Vroot, Flzzz) into 158 puts the whole family in one place.',
     proof: null,
     verify:
@@ -4090,7 +4090,7 @@ export const CLOSED: TodoEntry[] = [
       '158-silent-region-branches.test.ts::every card repaired for CARD-TODO #70 is one the whole-pool sweeps also watch',
     ],
     closed:
-      'R209 (2026-08-26). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
+      'Closed 2026-08-26 under the say-so ruling (now CR D7.3). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
       + 'CT-81\'s own fix said of Dragnol and Shoreline Specter "that is CT-74, and these two are its'
       + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-glimpse-reminders\''
       + 'GLIMPSE_CARDS went from FIVE hardcoded names to ELEVEN computed from printed text, and all'
@@ -4111,7 +4111,7 @@ export const CLOSED: TodoEntry[] = [
       + 'Recall each back two labels with one shared EffectDef object, pinned by an assertion each,'
       + 'which is the double-counting trap CT-70 paid for once already. ⚠ THE TICKET\'S EXEMPLAR WAS'
       + 'ALREADY FIXED: Malicious Hardware carries its empty-picks line at'
-      + 'batch-hybrids-wm-a.ts:761-764, landed by R187 in the same commit that spun CT-74 off. ⚠⚠'
+      + 'batch-hybrids-wm-a.ts:761-764, landed by the CT-70 repair in the same commit that spun CT-74 off. ⚠⚠'
       + 'PART C IS THE DELIVERABLE THAT OUTLASTS THE TWELVE REPAIRS. 65-effect-conformance has a'
       + 'THIRD BOARD, `barren`. Both existing boards gave every present seat a unit, so the empty'
       + 'branch was not rare — IT WAS UNREACHABLE, and the sweep reported clean forever. On its first'
@@ -4121,9 +4121,9 @@ export const CLOSED: TodoEntry[] = [
       + 'NEW reason" reddens where the old `length > 40` check let a stale reason outlive its truth.'
       + 'That repairs the unfalsifiable closure the round-28 audit found in CT-70, whose verify line'
       + '— "SILENT_KNOWN is empty for the R25 family" — was satisfiable while members remained. 85'
-      + '§9\'s three cards (Restitution, Vroot, Flzzz) are merged into 158, so the R25 family has one'
+      + '§9\'s three cards (Restitution, Vroot, Flzzz) are merged into 158, so the CR 601.4d family has one'
       + 'owner. REPORTED, NOT FIXED, CORRECTLY: Luminous Arc and Dreadwave Devourer THROW on'
-      + '`ctx.targets[0]!` with no targets. Unreachable in a real game because R86 fizzles first, and'
+      + '`ctx.targets[0]!` with no targets. Unreachable in a real game because CR 704.6 fizzles first, and'
       + 'the fix is engine-side; 65 now prints them by name every run instead of counting them.'
       + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: removing Shoreline Specter\'s new line reddens 179 and'
       + 'the failure message SHOWS THE OTHER HALF\'S EVENTS — "resolved over an EMPTY collection and'
@@ -4138,7 +4138,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'major',
     title: 'The UI driver cannot see a nested affordance, so a whole class of click bug tests green',
     detail:
-      'Three findings from the R192 agent, all one mechanism. '
+      'Three findings from the cache-thumb round\'s agent, all one mechanism. '
       + '(a) **`data-btn` beats `data-act` regardless of DOM DEPTH.** The document click listener '
       + '(ui/main.ts ~4716) asks `closest(\'[data-btn]\')` first and only then '
       + '`closest(\'[data-act]\')`. So ANY data-act element placed inside a data-btn container is '
@@ -4182,14 +4182,14 @@ export const CLOSED: TodoEntry[] = [
       '176-nested-affordance-and-serialiser.test.ts::shown the swallowed shape, the detector says so',
     ],
     closed:
-      'R205 (2026-08-26). `test/ui-driver.ts` rebuilds a REAL ancestor chain from the rendered '
+      '2026-08-26. `test/ui-driver.ts` rebuilds a REAL ancestor chain from the rendered '
       + 'markup and `closest()` walks it, nearest first. The header comment that asserted the '
       + 'opposite — "this fake has no ancestors, which is true of every affordance in the board '
       + 'markup" — is gone; it was the falsehood that let this survive. '
       + '⚠ THE MEASUREMENT THE TICKET ASKED FOR CAME BACK **ZERO**, and the reason is measured, '
       + 'not lucky: 194 tests across the 13 ui-driver files pass identically before and after. '
       + 'An affordance census computed from the rendered markup shows NO `data-act` anywhere in '
-      + 'the client is currently nested inside a `data-btn` — R192 had already fixed the only '
+      + 'the client is currently nested inside a `data-btn` — the cache-thumb round had already fixed the only '
       + 'instance, correctly. So the blind spot was LATENT, not cashed in: the suite could not '
       + 'have caught the NEXT one. That was proven directly rather than inferred — planting '
       + 'CARD-TODO #64\'s prescribed `data-act="cache"` on the cache thumb gives OLD driver `ok`, '
@@ -4250,7 +4250,7 @@ export const CLOSED: TodoEntry[] = [
       + 'map, which is just another thing to go stale. '
       + 'Minimum viable version: every glossary entry must cite an R-number, and the citation '
       + 'must resolve to a ruling that is not marked superseded/narrowed in digital-rules.md '
-      + '(the repo already marks them — that is how a superseded R108 was caught being cited). '
+      + '(the repo already marks them — that is how a superseded bounded-use ruling was caught being cited). '
       + 'Better version: for the keywords whose behaviour is machine-readable (glimpse, recycle, '
       + 'the attribute set), assert the reminder against what the engine actually does. '
       + '⚠ Check the OTHER rows while building it — two of the handful examined were wrong, '
@@ -4260,17 +4260,17 @@ export const CLOSED: TodoEntry[] = [
       'A glossary row whose ruling has been corrected fails the suite, naming the row and the '
       + 'ruling.',
     guards: [
-      '177-glossary-conformance.test.ts::every glossary row cites a ruling, and every citation RESOLVES and is LIVE',
+      '177-glossary-conformance.test.ts::every glossary row cites a rule, and every citation RESOLVES and is LIVE',
       '177-glossary-conformance.test.ts::printed text wins — no row drops a rules word its own card prints',
       '177-glossary-conformance.test.ts::every attribute with a printed reminder ADMITS it',
-      '177-glossary-conformance.test.ts::the rows resting on NEITHER a ruling NOR printed text, by name',
-      '177-glossary-conformance.test.ts::the staleness detector can tell a retired ruling from a live one',
+      '177-glossary-conformance.test.ts::the rows resting on NEITHER a rule NOR printed text, by name',
+      '177-glossary-conformance.test.ts::the citation check can tell a live rule from a removed one and from none',
       '177-glossary-conformance.test.ts::the printed-reminder scrape finds the pool it is supposed to read',
       '177-glossary-conformance.test.ts::every check above goes RED on a row broken on purpose',
       '177-glossary-conformance.test.ts::and stays GREEN on the rows as they really are',
     ],
     closed:
-      'R206 (2026-08-26). CT-80 (the rows) and CT-76 (the checker) landed together, because splitting them is how the rows get reworded and the checker never arrives. ⚠⚠ THE CLASS IS **15 WRONG ROWS OUT OF 43 — A 35% BASE RATE**. The ticket said four; the orchestrator\'s audit found seven; reading the 26 rows NOBODY had ever examined found eight more: Unstable (omitted the printed type line entirely AND stated the erase unconditionally — R145 scopes it to the ACTIVE ZONES, so from hand/deck/bin/cache it bins normally), Prophecy (\"normal timing still applies\" is flatly false for a banner ending [Haste]), Augment and Graft (neither said WHEN — both are deployment actions — and Graft\'s \"[Switch1] is bounded\" is contradicted by R110\'s multiplier), Haste (canHaste opens the step on FIVE conditions; the row named one), Shard (two callers since R132), Prismite and Recycle (\"any element\" is gated to the game\'s elements). ⚠⚠ **FIVE OF THE FIFTEEN WERE ON CT-80\'S OWN \"CHECKED AND CORRECT, DO NOT RE-AUDIT\" LIST** — Pure, Graft, Haste, Shard, Prismite. That list was not a saving; it was a liability, and it should be read as a warning about protected lists generally rather than re-trusted. THE CHECKER: two derived checks plus six engine pins. The one that matters is PRINTED TEXT WINS — for the 15 attributes carrying a printed reminder, the row may not drop a rules word the card uses, derived from printed.json so a new card extends it for free. Run cold against the OLD table it named {Piercing} and {Electric} and nothing else. Citations must resolve to a LIVE ruling, with retirement read from the header OR the leading blockquote — R10 and R76 are marked only in the blockquote, and R10 is exactly what {Unaware} was still teaching. ⚠ CT-76\'S \"every entry must cite an R-number\" IS NOT ACHIEVABLE and was replaced with something honest: Flying, Evasive, Poisonous, Resonant and Lethal have no ruling and never did. The rule is now \"cite a SOURCE\" — an R-number that resolves and is live, or \'printed\' which must be true of the pool — and the residue with neither is asserted BY NAME (Evasive, Resonant) rather than left implied. ⚠ THE AGENT MEASURED ITS OWN INSTRUMENT and pinned two false-positive classes as negative controls: a fixed-size body window marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\'s marker), and a body-wide match marks R18 retired because it says \"The ⚠ is withdrawn\" about its own warning. Either would have falsely accused the {Haste}, {Once} and {Prismite} rows. Nine mutants run in-suite every run. ⚠ NEITHER TICKET NAMED R103, which is IN THE REGISTER titled \"{Piercing} pierces on NON-COMBAT damage too, into the unit\'s controller\" — the rule WAS written down; only the glossary never heard. Both tickets\' Piercing and Electric line numbers were also wrong (:4088-4119 and :4123-4160, not :3978-3995 and :4021-4045). REPORTED, NOT FIXED (correctly — the engine is another agent\'s territory and a row is not the place to change behaviour): engine.ts:10599-10607 declares its own canHaste/castable() divergence, so the haste step can open with nothing playable or be skipped while a playable card sits in hand. The {Cache} row\'s \"you both see every cached card\" is qualified by R188, which is CT-77\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording reddens two tests and names the card AND the dropped word — \"the PRINTED reminder on Protective Adaptations says ... and the glossary row drops [controller]. Printed text wins — reword the row, not the card.\" Reverted; 15/15.',
+      'Closed by the 2026-08-26 glossary audit. CT-80 (the rows) and CT-76 (the checker) landed together, because splitting them is how the rows get reworded and the checker never arrives. ⚠⚠ THE CLASS IS **15 WRONG ROWS OUT OF 43 — A 35% BASE RATE**. The ticket said four; the orchestrator\'s audit found seven; reading the 26 rows NOBODY had ever examined found eight more: Unstable (omitted the printed type line entirely AND stated the erase unconditionally — CR 803.8a scopes it to the ACTIVE ZONES, so from hand/deck/bin/cache it bins normally), Prophecy (\"normal timing still applies\" is flatly false for a banner ending [Haste]), Augment and Graft (neither said WHEN — both are deployment actions — and Graft\'s \"[Switch1] is bounded\" is contradicted by the graft-repeat multiplier (CR 109.9j)), Haste (canHaste opens the step on FIVE conditions; the row named one), Shard (two callers since the Prismite activation ruling), Prismite and Recycle (\"any element\" is gated to the game\'s elements). ⚠⚠ **FIVE OF THE FIFTEEN WERE ON CT-80\'S OWN \"CHECKED AND CORRECT, DO NOT RE-AUDIT\" LIST** — Pure, Graft, Haste, Shard, Prismite. That list was not a saving; it was a liability, and it should be read as a warning about protected lists generally rather than re-trusted. THE CHECKER: two derived checks plus six engine pins. The one that matters is PRINTED TEXT WINS — for the 15 attributes carrying a printed reminder, the row may not drop a rules word the card uses, derived from printed.json so a new card extends it for free. Run cold against the OLD table it named {Piercing} and {Electric} and nothing else. Citations must resolve to a LIVE ruling, with retirement read from the header OR the leading blockquote — the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly what {Unaware} was still teaching. ⚠ CT-76\'S \"every entry must cite an R-number\" IS NOT ACHIEVABLE and was replaced with something honest: Flying, Evasive, Poisonous, Resonant and Lethal have no ruling and never did. The rule is now \"cite a SOURCE\" — an R-number that resolves and is live, or \'printed\' which must be true of the pool — and the residue with neither is asserted BY NAME (Evasive, Resonant) rather than left implied. ⚠ THE AGENT MEASURED ITS OWN INSTRUMENT and pinned two false-positive classes as negative controls: a fixed-size body window marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\'s marker), and a body-wide match marks a third retired because it says \"The ⚠ is withdrawn\" about its own warning. Either would have falsely accused the {Haste}, {Once} and {Prismite} rows. Nine mutants run in-suite every run. ⚠ NEITHER TICKET NAMED the noncombat-Piercing ruling (now CR 802.16j), which was IN THE REGISTER titled \"{Piercing} pierces on NON-COMBAT damage too, into the unit\'s controller\" — the rule WAS written down; only the glossary never heard. Both tickets\' Piercing and Electric line numbers were also wrong (:4088-4119 and :4123-4160, not :3978-3995 and :4021-4045). REPORTED, NOT FIXED (correctly — the engine is another agent\'s territory and a row is not the place to change behaviour): engine.ts:10599-10607 declares its own canHaste/castable() divergence, so the haste step can open with nothing playable or be skipped while a playable card sits in hand. The {Cache} row\'s \"you both see every cached card\" is qualified by a then-open glimpse ruling, which is CT-77\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording reddens two tests and names the card AND the dropped word — \"the PRINTED reminder on Protective Adaptations says ... and the glossary row drops [controller]. Printed text wins — reword the row, not the card.\" Reverted; 15/15.',
     status: 'done',
   },
   {
@@ -4284,7 +4284,7 @@ export const CLOSED: TodoEntry[] = [
       'THE QUESTION, in one sentence: **is a reveal that happens inside a hidden simultaneous '
       + 'step (deployment, the haste step, the resource step) public IMMEDIATELY, or only at the '
       + 'BARRIER with the rest of that step?** '
-      + 'Every printed Glimpse reminder says REVEAL, and R41 makes the cache public information. '
+      + 'Every printed Glimpse reminder says REVEAL, and CR 403.2 makes the cache public information. '
       + 'But `rooms.ts` parks the opponent\'s copy of every event in a hidden segment in '
       + '`heldEvents` until the barrier, so mid-segment the opponent\'s visible log is EMPTY and '
       + 'at the barrier they receive the whole line at once. '
@@ -4299,7 +4299,7 @@ export const CLOSED: TodoEntry[] = [
       + 'reported moment turned out to be fine (verified in a real browser); this is the case '
       + 'that is genuinely invisible, and it is a DIFFERENT card family from the one he played.',
     fix:
-      '⚠ DO NOT ANSWER THIS ONE IN CODE — ask. R188 already prices both answers: '
+      '⚠ DO NOT ANSWER THIS ONE IN CODE — ask. The glimpse investigation already prices both answers: '
       + '"AT THE BARRIER" closes it as a clarification, costing one comment and one test rename. '
       + '"IMMEDIATELY" needs a new PER-EVENT exemption in heldEvents, which is all-or-nothing per '
       + 'segment today, and forces a second decision about what escapes ALONGSIDE the reveal — '
@@ -4312,18 +4312,18 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'The owner has answered, and digital-rules.md records it.',
     guards: [
-      '203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing',
-      '203-reveal-waits-for-the-barrier.test.ts::R310 §2: the barrier delivers the reveal exactly once',
-      '203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing',
-      '203-reveal-waits-for-the-barrier.test.ts::R310 §4: the seat channel can tell the two seats apart',
+      '203-reveal-waits-for-the-barrier.test.ts::CR D6.2: inside deployment the opponent is sent nothing',
+      '203-reveal-waits-for-the-barrier.test.ts::CR D6.2b: the barrier delivers the reveal exactly once',
+      '203-reveal-waits-for-the-barrier.test.ts::CR D6.1a: a hidden step with no reveal in it leaks nothing',
+      '203-reveal-waits-for-the-barrier.test.ts::§4: the seat channel can tell the two seats apart',
       '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and waits for the barrier',
     ],
     closed:
       '✔ CLOSED 2026-08-28 (round 29). THE OWNER RULED: "Immediately — the card says REVEAL" '
-      + '(R222), which is the standing steer applied and the answer that costs work. Implemented as '
-      + 'R235: the hold is PER-EVENT now — `escapesHold(ev)` in server/rooms.ts, a one-entry set '
+      + '(since reversed: CR D6.2), which is the standing steer applied and the answer that costs work. Implemented, '
+      + 'since reversed, as a per-event hold — `escapesHold(ev)` in server/rooms.ts, a one-entry set '
       + 'containing `glimpsed`, filtered at both heldEvents push sites. ⚠⚠ AND THE TICKET\'S '
-      + 'PRESCRIBED FIX WOULD HAVE MADE THINGS STRICTLY WORSE. This entry, R188 and the brief all '
+      + 'PRESCRIBED FIX WOULD HAVE MADE THINGS STRICTLY WORSE. This entry, the investigation and the brief all '
       + 'said `heldEvents` was the thing withholding the reveal. It is not the only one. '
       + 'MID-SEGMENT, `server/main.ts` sends the actor\'s events ONLY TO THE ACTOR; the hold governs '
       + 'just the RESYNC channel (visibleLog, on join/undo) and the barrier flush. So a '
@@ -4342,13 +4342,13 @@ export const CLOSED: TodoEntry[] = [
       + 'the exemption was NOT widened. E.glimpse writes a whole sentence — "Player 1 glimpses 5: '
       + 'A, B, C, D, E — one is cached…, the rest are recycled." The opponent gets prose naming the '
       + 'glimpser and every card. It does not say WHICH CARD caused it, and that is exactly the '
-      + 'part that should stay hidden. TWO CONSEQUENCES RECORDED RATHER THAN ACTED ON: R41\'s public '
+      + 'part that should stay hidden. TWO CONSEQUENCES RECORDED RATHER THAN ACTED ON: CR 403.2\'s public '
       + 'cache stays barrier-delayed inside a hidden step (the STATE channel is frozen, and only '
       + 'the event channel was exempted), and the barrier does not repeat the reveal. ORCHESTRATOR '
       + 'VERIFIED IN THE DIRECTION THAT MATTERS — THE LEAK. Forcing `escapesHold` to return TRUE '
       + 'for everything reddens EIGHT tests, including §3\'s NEGATIVE control ("a hidden step with '
       + 'no reveal in it leaks nothing") and §4\'s positive control. Restored byte-identical. The '
-      + 'agent separately confirmed the other direction (escapesHold → false, i.e. pre-R235) '
+      + 'agent separately confirmed the other direction (escapesHold → false, i.e. before the exemption) '
       + 'reddens seven while that negative control correctly stays green.',
     status: 'done',
   },
@@ -4376,7 +4376,7 @@ export const CLOSED: TodoEntry[] = [
     fix:
       'A card-sized reveal surface for the non-glimpsing seat — the same scans, briefly, on the '
       + 'opponent\'s screen. '
-      + '⚠ ONE REAL OBSTACLE, reported by the R188 agent: `E.glimpse` leaves NO STRUCTURED RECORD '
+      + '⚠ ONE REAL OBSTACLE, reported by the investigating agent: `E.glimpse` leaves NO STRUCTURED RECORD '
       + 'of a reveal in GameState, only the transient event. So a client that reconnects a second '
       + 'later has nothing to render from, and any card-sized surface has to decide whether the '
       + 'reveal is a moment or a piece of state. That is a design call. '
@@ -4388,7 +4388,7 @@ export const CLOSED: TodoEntry[] = [
     progress:
       '2026-08-28 (round 29): UNBLOCKED. This entry said "Do NOT build this before CT-77 is '
       + 'answered — if a reveal in a hidden segment is public only at the barrier, then WHEN the '
-      + 'surface appears is part of the ruling." CT-77 is now answered and shipped: R222/R235 make '
+      + 'surface appears is part of the ruling." CT-77 is now answered and shipped: the 2026-08-28 rulings (since reversed) make '
       + 'the reveal public IMMEDIATELY, so the surface appears at the moment of the reveal, in '
       + 'every segment. That question is settled and this ticket no longer waits on anything. AND '
       + 'THE PICTURE IS BETTER THAN THIS ENTRY ASSUMED. It says the opponent gets "ONE LINE OF '
@@ -4397,9 +4397,9 @@ export const CLOSED: TodoEntry[] = [
       + 'recycled"), and the names render as inspectable .logcard spans. So the gap is genuinely '
       + 'one of ATTENTION, not of information, which is exactly what the entry argued and is now '
       + 'verified rather than assumed. ⚠ THE ONE REAL OBSTACLE THIS ENTRY NAMES IS STILL REAL AND '
-      + 'R235 DID NOT REMOVE IT: E.glimpse leaves NO STRUCTURED RECORD in GameState, only the '
+      + 'THE EXEMPTION DID NOT REMOVE IT: E.glimpse leaves NO STRUCTURED RECORD in GameState, only the '
       + 'transient event — so a client that reconnects a second later still has nothing to render a '
-      + 'card-sized surface from. R235 exempted the EVENT channel only; R41\'s public cache remains '
+      + 'card-sized surface from. The exemption covered the EVENT channel only; CR 403.2\'s public cache remains '
       + 'barrier-delayed inside a hidden step because the STATE channel is frozen. Whoever builds '
       + 'the surface must still decide whether a reveal is a moment or a piece of state, and that '
       + 'decision is now the whole of this ticket.',
@@ -4424,7 +4424,7 @@ export const CLOSED: TodoEntry[] = [
       + 'so it must never be something to dismiss before you may play. And SILENT — every existing '
       + 'cue is a state change you may have to answer; giving news its own sound is a decision for '
       + 'the sound layer, not something to slip in on the back of a visual fix. '
-      + 'Its dwell scales with R242 tempo (one step per card), because the point of that ruling is '
+      + 'Its dwell scales with CR D5.4 tempo (one step per card), because the point of that ruling is '
       + 'that the client has ONE opinion about how fast a human reads and a reveal is not exempt. '
       + 'VERIFIED BY BREAKING: showing the glimpser their own glimpse reddens §5a; dropping the '
       + 'expiry reddens §5f. ⚠ A THIRD BREAK-TEST FOUND A HOLE IN THE GUARD RATHER THAN THE CODE — '
@@ -4435,7 +4435,7 @@ export const CLOSED: TodoEntry[] = [
   // ── filed 2026-08-26 (round 27, from the class-widening audit) ──────────
   // A read-only agent was asked the owner's question — "for each item, check to
   // see if it's wider reaching than just the initial report" — against all
-  // thirteen open tickets. It found a live information leak (fixed as R202), a
+  // thirteen open tickets. It found a live information leak (fixed; now CR D6.5), a
   // regression in work merged the same hour (fixed), and the entries below. It
   // also RETRACTED two of its own claims on re-verification, which is why the
   // rest can be trusted.
@@ -4447,12 +4447,12 @@ export const CLOSED: TodoEntry[] = [
     title: 'Void Mandible negates the WRONG stack item, and cardPlayed cannot tell it which',
     detail:
       'Prints *"When a nontoken card is played during battle, sacrifice me. If you do, negate '
-      + 'THAT EFFECT"* — the same pronoun R164/R166 settled for Origon and Hexbane Shiitake. It '
+      + 'THAT EFFECT"* — the same pronoun CR 706.13 now covers for Origon and Hexbane Shiitake. It '
       + 'carries TWO live defects at `batch-light-c.ts:633-635`: '
       + '(a) a FORWARD `.find()` scanning from index 0 while `pushItem` pushes to the END, so '
       + 'with two same-card same-seat plays on the stack it negates the OLDER one; '
       + '(b) NO `!i.copy` guard at all, so it can negate a COPY where the original never reached '
-      + 'the stack — which R164 established is not a "played" card.',
+      + 'the stack — which CR 701.5 says is not a "played" card.',
     evidence:
       'Round-27 class audit, exhaustive over every `g.s.stack` access in all 30 set files: the '
       + 'class is THREE cards and CT-69 named two. '
@@ -4461,13 +4461,13 @@ export const CLOSED: TodoEntry[] = [
       + '(engine.ts:7612). **`cardPlayed` does not** (engine.ts:7641-7645) — and Void Mandible '
       + 'listens on `cardPlayed`, because it must see UNITS as well as spells.',
     fix:
-      'Put the played item\'s id on the `cardPlayed` payload the way R178 put it on '
+      'Put the played item\'s id on the `cardPlayed` payload the way it is already on '
       + '`spellPlayed`, then convert the card. ⚠ Check what else reads `cardPlayed` first — it '
-      + 'is the broader of the two events and R129 already had to add it for mid-resolution '
+      + 'is the broader of the two events and the card/token ruling already had to add it for mid-resolution '
       + 'unit plays. '
       + 'Until then the two defects are independently fixable and worth doing anyway: '
-      + '`.reverse().find()` and a `!i.copy` guard, which is exactly the R166 shape the other '
-      + 'two cards had before R191.',
+      + '`.reverse().find()` and a `!i.copy` guard, which is exactly the shape the other '
+      + 'two cards had before the item-id fix.',
     proof: null,
     verify:
       'Void Mandible negates the item the event names, with two identical spells on the stack '
@@ -4479,12 +4479,12 @@ export const CLOSED: TodoEntry[] = [
       '178-played-item-and-erased-mods.test.ts::asPlay',
     ],
     closed:
-      'R207 (2026-08-26). `cardPlayed` now carries `item: item.id` at engine.ts:7984 (the '
-      + 'commitItem emitter), the way R178 put it on `spellPlayed`, and Void Mandible matches on it'
+      'Closed 2026-08-26 (now CR 706.13). `cardPlayed` now carries `item: item.id` at engine.ts:7984 (the '
+      + 'commitItem emitter), the way it is on `spellPlayed`, and Void Mandible matches on it'
       + '(batch-light-c.ts:696) with `!i.copy` and CARD_PLAY_KINDS kept as assertions rather than as'
-      + 'a search — R191\'s shape. ⚠ THREE DEFECTS, NOT TWO. (a) the forward `.find()` and (b) the'
+      + 'a search — the item-id round\'s shape. ⚠ THREE DEFECTS, NOT TWO. (a) the forward `.find()` and (b) the'
       + 'missing `!i.copy` are both real and confirmed at source. (c) IS NEW AND WAS ON NO TICKET:'
-      + '`cardPlayed` has a SECOND emitter — spawnUnit\'s `opts.asPlay` path (engine.ts:2997, R165) —'
+      + '`cardPlayed` has a SECOND emitter — spawnUnit\'s `opts.asPlay` path (engine.ts:2997, CR 301.9) —'
       + 'where there is NO STACK ITEM AT ALL. Wake the Dead is a {Battle} spell, so a unit it raises'
       + 'can share a name with an unrelated item on the stack, and the old (card, controller) scan'
       + 'negated THAT. An absent `item` now means "this play put no effect on the stack", which is'
@@ -4494,9 +4494,9 @@ export const CLOSED: TodoEntry[] = [
       + 'events. Nothing asserts the payload\'s key set and no ui/ source reads the event. No listener'
       + 'is affected. ⚠ THE CLASS WAS ONE CARD AT HEAD, NOT THREE. An exhaustive sweep of all 30 set'
       + 'files found 39 `s.stack` accesses, of which exactly FOUR cards ever ask "which item did the'
-      + 'event name": Earthbound Replicator (fixed R178), Origon and Hexbane Shiitake (both fixed'
-      + 'R191), and Void Mandible. "Three" was the round-27 snapshot of how many were still on scans'
-      + 'when R191 swept. The other 35 accesses are id-by-target-ref or whole-stack sweeps, and'
+      + 'event name": Earthbound Replicator (fixed first), Origon and Hexbane Shiitake (both fixed'
+      + 'in the item-id round), and Void Mandible. "Three" was the round-27 snapshot of how many were still on scans'
+      + 'when the item-id round swept. The other 35 accesses are id-by-target-ref or whole-stack sweeps, and'
       + 'neither defect can touch them. ⚠ AND THE CLASS IS NOW ENDED BY A DERIVED GUARD RATHER THAN A'
       + 'LIST, which is the point: test 9 computes every `s.stack.find/filter/some` keyed on `.card'
       + '===` instead of `.id ===` across src/cards/sets/, with positive, negative and prose'
@@ -4508,7 +4508,7 @@ export const CLOSED: TodoEntry[] = [
       + 'VERIFIED INDEPENDENTLY: reverting the ENGINE half alone (dropping `item: item.id`) reddens'
       + 'exactly three tests — the two-spells case, the copy case, AND the ordinary case. Restored;'
       + '9/9. The nine tests drive the real stack throughout: the Mandible arrives mid-battle as a'
-      + 'real `augment` action under Rook\'s R95 permission, with no hand-built events or items, which'
+      + 'real `augment` action under Rook\'s CR 723.5 permission, with no hand-built events or items, which'
       + 'is the shape docs/13 §5 lists four `fixed` reports for getting wrong.',
     status: 'done',
   },
@@ -4522,12 +4522,12 @@ export const CLOSED: TodoEntry[] = [
       + 'under every card mentioning a keyword, and for attributes with NO printed reminder it '
       + 'is the only statement of the rule that exists. `engine.ts:4222` on {Reaping} says so '
       + 'outright: *"none of the four cards carries a reminder at all. ui/glossary.ts is the '
-      + 'repo\'s own statement of it, AND IT IS WHAT R184 READ."* So a wrong row is a rules bug, '
+      + 'repo\'s own statement of it, AND IT IS WHAT […] READ."* So a wrong row is a rules bug, '
       + 'not a UI nit. '
       + '(a) **Trash** — says *"a NONTOKEN card entering a bin from anywhere but the stack is '
       + 'trashed"*. `E.toBin` has NO token check, and its docstring says why: *"tokens included, '
-      + 'and NOT because a token is a card (R133: it is not), but because trashing is defined by '
-      + 'the destination, not by the object."* R133 records that the only printed "nontoken" '
+      + 'and NOT because a token is a card ([…]: it is not), but because trashing is defined by '
+      + 'the destination, not by the object."* The tokens ruling recorded that the only printed "nontoken" '
       + 'wording came from Void Scavenger, A CARD CUT FROM THE SET. Reach: 14 cards. '
       + '(b) **Piercing** — says *"excess damage from its BLOCKED COLUMN carries through to the '
       + 'DEFENDING PLAYER"*. The engine generalised off the column at engine.ts:3978-3995 '
@@ -4535,12 +4535,12 @@ export const CLOSED: TodoEntry[] = [
       + 'non-combat effect"*. AND THE PRINTED CARDS ARE ALREADY RIGHT — Protective Adaptations '
       + 'and Pernicious Photosynthesis both print *"excess damage from piercing sources is dealt '
       + 'to the RECIPIENT\'S CONTROLLER"*. Exactly the Glimpse shape: card right, glossary behind. '
-      + '(c) **Unaware** — carries R10\'s wording, superseded by R106. Never states the operative '
-      + 'rule (both sides read PRINTED stats), and R10\'s "everything counts as interacting" '
-      + 'included TARGETING, which R106 deliberately does not implement. Reaches Bubb, '
+      + '(c) **Unaware** — carries the first Unaware ruling\'s wording, superseded by the later Unaware ruling. Never states the operative '
+      + 'rule (both sides read PRINTED stats), and the first Unaware ruling\'s "everything counts as interacting" '
+      + 'included TARGETING, which the later Unaware ruling deliberately does not implement. Reaches Bubb, '
       + 'Trashling, Haboob. '
       + '(d) **Virus** — says *"may be augmented during battle onto an ENEMY unit"*. '
-      + '`doAugment`\'s battle branch never checks who controls the host and R157 §26 says so; '
+      + '`doAugment`\'s battle branch never checks who controls the host and CR 723.2 says so; '
       + 'the row also OMITS the real restriction, `from === \'hand\'`. Reach: 64 cards mention '
       + 'Virus. '
       + 'Minor, same family: **Electric** omits the recursion engine.ts:4021-4045 implements and '
@@ -4556,23 +4556,23 @@ export const CLOSED: TodoEntry[] = [
       + 'checked automatically… everything else is on the author."* Seven rows have been pinned '
       + 'one at a time, each AFTER being caught.',
     fix:
-      'Reword each off what the engine does, citing the ruling — the R190 precedent. Then build '
+      'Reword each off what the engine does, citing the ruling — the Glimpse-reminder precedent (report #106). Then build '
       + 'CT-76\'s conformance test, because four wrong rows out of a handful examined is not a '
       + 'base rate that survives being fixed one at a time.',
     proof: null,
     verify: 'Each of the four rows states the rule the engine implements, and cites it.',
     guards: [
-      '177-glossary-conformance.test.ts::every glossary row cites a ruling, and every citation RESOLVES and is LIVE',
+      '177-glossary-conformance.test.ts::every glossary row cites a rule, and every citation RESOLVES and is LIVE',
       '177-glossary-conformance.test.ts::printed text wins — no row drops a rules word its own card prints',
       '177-glossary-conformance.test.ts::every attribute with a printed reminder ADMITS it',
-      '177-glossary-conformance.test.ts::the rows resting on NEITHER a ruling NOR printed text, by name',
-      '177-glossary-conformance.test.ts::the staleness detector can tell a retired ruling from a live one',
+      '177-glossary-conformance.test.ts::the rows resting on NEITHER a rule NOR printed text, by name',
+      '177-glossary-conformance.test.ts::the citation check can tell a live rule from a removed one and from none',
       '177-glossary-conformance.test.ts::the printed-reminder scrape finds the pool it is supposed to read',
       '177-glossary-conformance.test.ts::every check above goes RED on a row broken on purpose',
       '177-glossary-conformance.test.ts::and stays GREEN on the rows as they really are',
     ],
     closed:
-      'R206 (2026-08-26). CT-80 (the rows) and CT-76 (the checker) landed together, because splitting them is how the rows get reworded and the checker never arrives. ⚠⚠ THE CLASS IS **15 WRONG ROWS OUT OF 43 — A 35% BASE RATE**. The ticket said four; the orchestrator\'s audit found seven; reading the 26 rows NOBODY had ever examined found eight more: Unstable (omitted the printed type line entirely AND stated the erase unconditionally — R145 scopes it to the ACTIVE ZONES, so from hand/deck/bin/cache it bins normally), Prophecy (\"normal timing still applies\" is flatly false for a banner ending [Haste]), Augment and Graft (neither said WHEN — both are deployment actions — and Graft\'s \"[Switch1] is bounded\" is contradicted by R110\'s multiplier), Haste (canHaste opens the step on FIVE conditions; the row named one), Shard (two callers since R132), Prismite and Recycle (\"any element\" is gated to the game\'s elements). ⚠⚠ **FIVE OF THE FIFTEEN WERE ON CT-80\'S OWN \"CHECKED AND CORRECT, DO NOT RE-AUDIT\" LIST** — Pure, Graft, Haste, Shard, Prismite. That list was not a saving; it was a liability, and it should be read as a warning about protected lists generally rather than re-trusted. THE CHECKER: two derived checks plus six engine pins. The one that matters is PRINTED TEXT WINS — for the 15 attributes carrying a printed reminder, the row may not drop a rules word the card uses, derived from printed.json so a new card extends it for free. Run cold against the OLD table it named {Piercing} and {Electric} and nothing else. Citations must resolve to a LIVE ruling, with retirement read from the header OR the leading blockquote — R10 and R76 are marked only in the blockquote, and R10 is exactly what {Unaware} was still teaching. ⚠ CT-76\'S \"every entry must cite an R-number\" IS NOT ACHIEVABLE and was replaced with something honest: Flying, Evasive, Poisonous, Resonant and Lethal have no ruling and never did. The rule is now \"cite a SOURCE\" — an R-number that resolves and is live, or \'printed\' which must be true of the pool — and the residue with neither is asserted BY NAME (Evasive, Resonant) rather than left implied. ⚠ THE AGENT MEASURED ITS OWN INSTRUMENT and pinned two false-positive classes as negative controls: a fixed-size body window marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\'s marker), and a body-wide match marks R18 retired because it says \"The ⚠ is withdrawn\" about its own warning. Either would have falsely accused the {Haste}, {Once} and {Prismite} rows. Nine mutants run in-suite every run. ⚠ NEITHER TICKET NAMED R103, which is IN THE REGISTER titled \"{Piercing} pierces on NON-COMBAT damage too, into the unit\'s controller\" — the rule WAS written down; only the glossary never heard. Both tickets\' Piercing and Electric line numbers were also wrong (:4088-4119 and :4123-4160, not :3978-3995 and :4021-4045). REPORTED, NOT FIXED (correctly — the engine is another agent\'s territory and a row is not the place to change behaviour): engine.ts:10599-10607 declares its own canHaste/castable() divergence, so the haste step can open with nothing playable or be skipped while a playable card sits in hand. The {Cache} row\'s \"you both see every cached card\" is qualified by R188, which is CT-77\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording reddens two tests and names the card AND the dropped word — \"the PRINTED reminder on Protective Adaptations says ... and the glossary row drops [controller]. Printed text wins — reword the row, not the card.\" Reverted; 15/15.',
+      'Closed by the 2026-08-26 glossary audit. CT-80 (the rows) and CT-76 (the checker) landed together, because splitting them is how the rows get reworded and the checker never arrives. ⚠⚠ THE CLASS IS **15 WRONG ROWS OUT OF 43 — A 35% BASE RATE**. The ticket said four; the orchestrator\'s audit found seven; reading the 26 rows NOBODY had ever examined found eight more: Unstable (omitted the printed type line entirely AND stated the erase unconditionally — CR 803.8a scopes it to the ACTIVE ZONES, so from hand/deck/bin/cache it bins normally), Prophecy (\"normal timing still applies\" is flatly false for a banner ending [Haste]), Augment and Graft (neither said WHEN — both are deployment actions — and Graft\'s \"[Switch1] is bounded\" is contradicted by the graft-repeat multiplier (CR 109.9j)), Haste (canHaste opens the step on FIVE conditions; the row named one), Shard (two callers since the Prismite activation ruling), Prismite and Recycle (\"any element\" is gated to the game\'s elements). ⚠⚠ **FIVE OF THE FIFTEEN WERE ON CT-80\'S OWN \"CHECKED AND CORRECT, DO NOT RE-AUDIT\" LIST** — Pure, Graft, Haste, Shard, Prismite. That list was not a saving; it was a liability, and it should be read as a warning about protected lists generally rather than re-trusted. THE CHECKER: two derived checks plus six engine pins. The one that matters is PRINTED TEXT WINS — for the 15 attributes carrying a printed reminder, the row may not drop a rules word the card uses, derived from printed.json so a new card extends it for free. Run cold against the OLD table it named {Piercing} and {Electric} and nothing else. Citations must resolve to a LIVE ruling, with retirement read from the header OR the leading blockquote — the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly what {Unaware} was still teaching. ⚠ CT-76\'S \"every entry must cite an R-number\" IS NOT ACHIEVABLE and was replaced with something honest: Flying, Evasive, Poisonous, Resonant and Lethal have no ruling and never did. The rule is now \"cite a SOURCE\" — an R-number that resolves and is live, or \'printed\' which must be true of the pool — and the residue with neither is asserted BY NAME (Evasive, Resonant) rather than left implied. ⚠ THE AGENT MEASURED ITS OWN INSTRUMENT and pinned two false-positive classes as negative controls: a fixed-size body window marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\'s marker), and a body-wide match marks a third retired because it says \"The ⚠ is withdrawn\" about its own warning. Either would have falsely accused the {Haste}, {Once} and {Prismite} rows. Nine mutants run in-suite every run. ⚠ NEITHER TICKET NAMED the noncombat-Piercing ruling (now CR 802.16j), which was IN THE REGISTER titled \"{Piercing} pierces on NON-COMBAT damage too, into the unit\'s controller\" — the rule WAS written down; only the glossary never heard. Both tickets\' Piercing and Electric line numbers were also wrong (:4088-4119 and :4123-4160, not :3978-3995 and :4021-4045). REPORTED, NOT FIXED (correctly — the engine is another agent\'s territory and a row is not the place to change behaviour): engine.ts:10599-10607 declares its own canHaste/castable() divergence, so the haste step can open with nothing playable or be skipped while a playable card sits in hand. The {Cache} row\'s \"you both see every cached card\" is qualified by a then-open glimpse ruling, which is CT-77\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording reddens two tests and names the card AND the dropped word — \"the PRINTED reminder on Protective Adaptations says ... and the glossary row drops [controller]. Printed text wins — reword the row, not the card.\" Reverted; 15/15.',
     status: 'done',
   },
   {
@@ -4588,7 +4588,7 @@ export const CLOSED: TodoEntry[] = [
       + '(`batch-hybrids-ld-c.ts:337`, Glimpse 1, `recycles: false`). The other five — Lifebound '
       + 'Seer (2, true), Seer of Empty Spaces (1, false), Glook (1, false), Maw of Despair '
       + '(2, true), Lilbot (2, true) — glimpse with NO printed reminder, so the glossary row is '
-      + 'the only reminder their readers get, which is precisely why R190\'s glossary fix needs '
+      + 'the only reminder their readers get, which is precisely why the Glimpse glossary fix needs '
       + 'them in scope. '
       + '(b) **CT-70\'s family has two members `SILENT_KNOWN` structurally cannot see.** '
       + '`65-effect-conformance` convicts only an effect emitting NO event at all, so an effect '
@@ -4622,7 +4622,7 @@ export const CLOSED: TodoEntry[] = [
       '179-empty-collection-branches.test.ts::Shoreline Specter — its prompt promises "each opponent loses 2 life"',
     ],
     closed:
-      'R209 (2026-08-26). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
+      'Closed 2026-08-26 under the say-so ruling (now CR D7.3). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
       + 'CT-81\'s own fix said of Dragnol and Shoreline Specter "that is CT-74, and these two are its'
       + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-glimpse-reminders\''
       + 'GLIMPSE_CARDS went from FIVE hardcoded names to ELEVEN computed from printed text, and all'
@@ -4643,7 +4643,7 @@ export const CLOSED: TodoEntry[] = [
       + 'Recall each back two labels with one shared EffectDef object, pinned by an assertion each,'
       + 'which is the double-counting trap CT-70 paid for once already. ⚠ THE TICKET\'S EXEMPLAR WAS'
       + 'ALREADY FIXED: Malicious Hardware carries its empty-picks line at'
-      + 'batch-hybrids-wm-a.ts:761-764, landed by R187 in the same commit that spun CT-74 off. ⚠⚠'
+      + 'batch-hybrids-wm-a.ts:761-764, landed by the CT-70 repair in the same commit that spun CT-74 off. ⚠⚠'
       + 'PART C IS THE DELIVERABLE THAT OUTLASTS THE TWELVE REPAIRS. 65-effect-conformance has a'
       + 'THIRD BOARD, `barren`. Both existing boards gave every present seat a unit, so the empty'
       + 'branch was not rare — IT WAS UNREACHABLE, and the sweep reported clean forever. On its first'
@@ -4653,9 +4653,9 @@ export const CLOSED: TodoEntry[] = [
       + 'NEW reason" reddens where the old `length > 40` check let a stale reason outlive its truth.'
       + 'That repairs the unfalsifiable closure the round-28 audit found in CT-70, whose verify line'
       + '— "SILENT_KNOWN is empty for the R25 family" — was satisfiable while members remained. 85'
-      + '§9\'s three cards (Restitution, Vroot, Flzzz) are merged into 158, so the R25 family has one'
+      + '§9\'s three cards (Restitution, Vroot, Flzzz) are merged into 158, so the CR 601.4d family has one'
       + 'owner. REPORTED, NOT FIXED, CORRECTLY: Luminous Arc and Dreadwave Devourer THROW on'
-      + '`ctx.targets[0]!` with no targets. Unreachable in a real game because R86 fizzles first, and'
+      + '`ctx.targets[0]!` with no targets. Unreachable in a real game because CR 704.6 fizzles first, and'
       + 'the fix is engine-side; 65 now prints them by name every run instead of counting them.'
       + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: removing Shoreline Specter\'s new line reddens 179 and'
       + 'the failure message SHOWS THE OTHER HALF\'S EVENTS — "resolved over an EMPTY collection and'
@@ -4670,7 +4670,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     title: 'The residues: four follow-ups the round\'s own fixes left behind',
     detail:
-      '(a) **CT-55 — four paths reach `endBattleRound`, not one**, and R194 is class-complete by '
+      '(a) **CT-55 — four paths reach `endBattleRound`, not one**, and the token-loss announcement (CR D2.6a) is class-complete by '
       + 'luck rather than by design: `apply.ts:1516` (the ticket\'s decline), `engine.ts:9140` '
       + '(post-afterWindow, legitimate), `engine.ts:10234` (recursive "sent no counterattackers"), '
       + 'and **`batch-hybrids-wm-b.ts:309` — Temporal Rift, a CARD ending the battle '
@@ -4681,13 +4681,13 @@ export const CLOSED: TodoEntry[] = [
       + '`data-btn="binopen"` container whose thumbs carry no handler, while the bin DIALOG\'s '
       + 'entries carry `data-act="bin"` and bin cards are legally playable right now. Identical '
       + 'shape, and CT-64\'s prescribed fix cannot work on it either — see CT-75. '
-      + '(c) **CT-65 residue**: R192 fixed `cardHtml`\'s badge only. Three more multi-slot class '
+      + '(c) **CT-65 residue**: the cache-thumb round fixed `cardHtml`\'s badge only. Three more multi-slot class '
       + 'builders (`main.ts:1261`, `:1483`, `:1767`) and ~23 trailing-space sites remain, '
       + 'including `main.ts:1400` IN THE SAME FUNCTION, where an empty `opts.data` renders '
       + '`class="card"␣␣data-prev=` and defeats any regex spanning the two attributes. No test is '
       + 'CURRENTLY unfalsifiable, but `144-both-seats-decision-gate.test.ts:219` is one CSS class '
       + 'away. '
-      + '(d) **CT-72 residue**: R189 fixed `queueFlashes`. A SECOND serialiser is still live and '
+      + '(d) **CT-72 residue**: the beats fix repaired `queueFlashes`. A SECOND serialiser is still live and '
       + 'unnamed anywhere — `anim.ts:183` staggers EVERY card flight by list index (45ms, capped '
       + '220ms), including triggers that reached `state.stack` together, which fits the owner\'s '
       + 'wording for the battle/deploy routing `queueFlashes` never touches.',
@@ -4697,7 +4697,7 @@ export const CLOSED: TodoEntry[] = [
     fix:
       'Each is small. (a) is a comment and a test, not a code change. (b) rides CT-75, which has '
       + 'to fix the delegator first. (c) is the one-liner CT-65 deferred to a quiet tree, plus '
-      + 'the audit of what it changes. (d) needs the same "positive evidence only" gate R189 '
+      + 'the audit of what it changes. (d) needs the same "positive evidence only" gate the beats fix '
       + 'built, applied one layer down.',
     proof: null,
     verify: 'Each of the four is either fixed or has a named reason it is not.',
@@ -4713,10 +4713,10 @@ export const CLOSED: TodoEntry[] = [
       '176-nested-affordance-and-serialiser.test.ts::POSITIVE EVIDENCE ONLY',
     ],
     closed:
-      'ALL FOUR RESIDUES CLOSED. (b)(c)(d) by R205 with CT-75; (a) by R213. '
+      'ALL FOUR RESIDUES CLOSED. (b)(c)(d) by the nested-affordance round with CT-75; (a) by the four-paths round (now CR D2.6b). '
       + '(a) — the four paths are now DERIVED from source and asserted by file and by REASON, '
       + 'never by line, and the reason that matters is the invariant nobody had written down: '
-      + 'every exit from endBattleRound funnels through startRegroup, which is WHY R194 is '
+      + 'every exit from endBattleRound funnels through startRegroup, which is WHY the token-loss announcement (CR D2.6a) is '
       + 'class-complete. A fifth caller fails the suite and names the file. The real defect was '
       + 'the other half — `passEndsBattlePhase`\'s doc comment enumerated the transitions as if '
       + 'they were all of them, which made a documented invariant FALSE for Temporal Rift. It '
@@ -4746,7 +4746,7 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     title: 'Nine allowlists have no staleness test, and one has zero assertions at all',
     detail:
-      'CT-68 caught DEAD_EXEMPT naming two helpers R181 had deleted — a waiver outliving its '
+      'CT-68 caught DEAD_EXEMPT naming two helpers already deleted — a waiver outliving its '
       + 'reason, in the very file built to prevent that. It is not the only one. The audit counted '
       + '**nine lists with no staleness test**, the worst being **`NOT_A_GAP`** '
       + '(`71-card-ledger.test.ts:368`, 9 entries, ZERO assertions). '
@@ -4757,14 +4757,14 @@ export const CLOSED: TodoEntry[] = [
       + 'has the right mechanism for this (`RETRACTED`, :350); §3 does not use it. '
       + 'And **`export function printedCost`** (`dsl.ts:418`) has zero references tree-wide — '
       + 'exported so noUnusedLocals ignores it, outside src/cards/sets so §4 never saw it — while '
-      + 'carrying an 8-line R64/R157 doc comment that reads as a live description of the rules.',
+      + 'carrying an 8-line doc comment that reads as a live description of the rules.',
     evidence:
       'Round-27 class audit and the R193 agent, independently. The general principle is the one '
       + 'this repo keeps relearning: **an exemption list is a claim about the code, and nothing '
       + 'checks it.** Prefer an ALLOWLIST that fails loudly when its reason expires, and make '
       + 'every entry carry a machine-checkable reason rather than prose.',
     fix:
-      'Give each of the nine a staleness assertion of the shape R193 gave DEAD_EXEMPT: every '
+      'Give each of the nine a staleness assertion of the shape CT-68 gave DEAD_EXEMPT: every '
       + 'entry must still resolve to the thing it exempts. Start with NOT_A_GAP, which asserts '
       + 'nothing today. Then retire POOL_CLAIM_ALLOWLIST[0] and printedCost.',
     proof: null,
@@ -4779,7 +4779,7 @@ export const CLOSED: TodoEntry[] = [
       '153-typecheck-reach.test.ts::SKIP_DIRS',
     ],
     closed:
-      'R210 (2026-08-26). ⚠ THE HEADLINE NUMBER WAS WRONG IN THE TICKET\'S OWN FAVOUR AND THE '
+      'The exemption-staleness round (2026-08-26). ⚠ THE HEADLINE NUMBER WAS WRONG IN THE TICKET\'S OWN FAVOUR AND THE '
       + 'CLOSURE HAS TO SAY SO: 37 waiver tables exist (34 excluding 142\'s three classification'
       + 'maps), and 31 ALREADY CARRIED A STALENESS ASSERTION. Six did not — not nine — and only three'
       + 'of those six were non-empty and genuinely waiving. Over-counting a gap costs the same'
@@ -4800,11 +4800,11 @@ export const CLOSED: TodoEntry[] = [
       + 'than a `*` bullet, and the test refused it; re-based as `verified` with a real check. ⚠'
       + 'SKIP_DIRS BELONGS, AND IS THE MORE DANGEROUS KIND, which is the argument the ticket did not'
       + 'make: a waiver names what it waives, but a SKIPPED DIRECTORY is invisible in both directions'
-      + '— and §1\'s verdict is quantified over the corpus SKIP_DIRS defines. That is R181\'s own'
+      + '— and §1\'s verdict is quantified over the corpus SKIP_DIRS defines. That is the unrun-check'
       + 'failure reproduced inside the file written to prevent it. Now asserted against `git'
       + 'ls-files`. ⚠ ALL THREE OF THE TICKET\'S printedCost CLAIMS WERE WRONG: it is dsl.ts:423 not'
       + ':418 (there is no engine/src/dsl.ts); the doc comment is 9 lines not 8; and "outside'
-      + 'src/cards/sets so §4 never saw it" is FALSE — R193 widened §4, which SAW it, waived it with'
+      + 'src/cards/sets so §4 never saw it" is FALSE — CT-68 widened §4, which SAW it, waived it with'
       + 'a written expiry, and guarded the waiver. So retiring it is a cleanup and the machinery'
       + 'worked as designed. Deleted, waiver removed, DEAD_EXEMPT kept empty-with-guard. STILL OPEN,'
       + 'HANDED BACK: the KNOWN_UNACTIVATED patch (84-card-semantics was another agent\'s territory'
@@ -4859,7 +4859,7 @@ export const CLOSED: TodoEntry[] = [
       '26-metal-a.test.ts::Dreamtender',
     ],
     closed:
-      'R203 (2026-08-26). `test/util.ts::logFor(h, seat)` runs `h.events` through '
+      '2026-08-26. `test/util.ts::logFor(h, seat)` runs `h.events` through '
       + 'server/view.ts::redactLog — the log that seat is ACTUALLY served — and '
       + '174-secrecy-is-seat-aware is the lint that keeps secrecy claims off `h.log`. '
       + 'It is a free function over a Harness, not a method on it, because engine/src must not '
@@ -4925,7 +4925,7 @@ export const CLOSED: TodoEntry[] = [
       'server/e2e/test-postgame.ts::joining a decided game gets the post-game payload, not just a dead board',
     ],
     closed:
-      'R204 (2026-08-26), AND THE TICKET NEEDED RE-SCOPING BEFORE IT COULD BE FIXED. '
+      'The port-flake fix (2026-08-26), AND THE TICKET NEEDED RE-SCOPING BEFORE IT COULD BE FIXED. '
       + '⚠⚠ BOTH PRESCRIBED FIXES WERE ALREADY IN THE TREE — this ticket would have been closed '
       + 'by doing nothing. "Bind port 0 and read back the assigned port": test-util.ts::freePort '
       + 'already did that. "package.json should run the suite SERIALLY and say why": already '
@@ -4973,11 +4973,11 @@ export const CLOSED: TodoEntry[] = [
     title: 'A mod erased as a COST reaches no pile at all, and the drill was reading somebody else\'s event for it',
     detail:
       'Slag Spewer prints *"[Augment][once] [one], Erase one of my mods: I deal 2 damage to any '
-      + 'target."* The erase really happens — R196 moved it into `payCastCost` as a proper '
+      + 'target."* The erase really happens — the activation-cost round (CR 111.2) moved it into `payCastCost` as a proper '
       + '`castCost: { kind: \'eraseMod\' }` — but it is announced with '
       + '`g.ev(\'info\', "... is ERASED off ... — the cost of ...")` (engine.ts:6909). '
-      + '`E.ev()` files the R65 PUBLIC ERASED PILE only for a `type: \'erased\'` event carrying a '
-      + 'numeric `seat`, so the mod is **out of play and on no pile at all** — the one thing R65 '
+      + '`E.ev()` files the CR 407.2 PUBLIC ERASED PILE only for a `type: \'erased\'` event carrying a '
+      + 'numeric `seat`, so the mod is **out of play and on no pile at all** — the one thing the erased pile '
       + 'exists to prevent, since the complaint that opened it was "there is currently no way to '
       + 'view erased cards". Every other erase site emits `erased`: E.eraseFromPlay, Spore of '
       + 'Regenesis\'s cost, both bin-erase sites in batch-metal-a / batch-dark-b.',
@@ -4994,15 +4994,15 @@ export const CLOSED: TodoEntry[] = [
       + 'really happens, and nothing in the game can see it happen. Distinct from VOCAB, which '
       + 'says our vocabulary is too narrow.',
     fix:
-      '⚠ THIS NEEDS A RULING, NOT A GUESS, and the R196 agent deliberately left it rather than '
+      '⚠ THIS NEEDS A RULING, NOT A GUESS, and the agent who made it a cost deliberately left it rather than '
       + 'change behaviour: **does a mod erased as a COST belong on the public erased pile?** '
-      + 'R157 §3 arguably wants it there. Asked as Q3 of the round-27 owner questions. '
+      + 'The exchange ruling arguably wants it there. Asked as Q3 of the round-27 owner questions. '
       + 'If yes it is one line — `\'info\'` -> `\'erased\'` with `{ seat, card }` — and the card '
       + 'stops being EVENTLESS for free. '
-      + 'RELATED AND ALSO UNFIXED (R196 agent): there is **no choke point for erasing a mod off a '
+      + 'RELATED AND ALSO UNFIXED (found by the same agent): there is **no choke point for erasing a mod off a '
       + 'host** at all. Three card-local sites hand-roll `host.mods.splice(...)` + '
       + '`delete s.entities[id]` (batch-hybrids-wm-b.ts:510, batch-hybrids-ld-a.ts:676, and Slag '
-      + 'Spewer\'s, now in payCastCost). R178 built `E.moveMod`; the ERASE sibling does not '
+      + 'Spewer\'s, now in payCastCost). `E.moveMod` exists (CR 720.10); the ERASE sibling does not '
       + 'exist, and this ticket is what a missing choke point looks like from the outside.',
     proof: null,
     verify:
@@ -5011,11 +5011,11 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '178-played-item-and-erased-mods.test.ts::an erase paid as a COST still announces itself with "info" — Q3 is OPEN',
       '178-played-item-and-erased-mods.test.ts::Suppression Field: mods leave host and game, the host lives, and the pile is untouched',
-      '178-played-item-and-erased-mods.test.ts::Return to Nature: the site that already got R65 right still files the public pile',
+      '178-played-item-and-erased-mods.test.ts::Return to Nature: the site that already got CR 407.2 right still files the public pile',
     ],
     closed:
-      'R208 (2026-08-26), THE BUILDABLE HALF ONLY — Q3 REMAINS OPEN AND BEHAVIOUR IS '
-      + 'BYTE-IDENTICAL. `E.eraseMod(mod, { leavesGame? })` now sits beside R178\'s `E.moveMod`:'
+      'Closed 2026-08-26, THE BUILDABLE HALF ONLY — Q3 REMAINS OPEN AND BEHAVIOUR IS '
+      + 'BYTE-IDENTICAL. `E.eraseMod(mod, { leavesGame? })` now sits beside `E.moveMod`:'
       + 'unlink from the host, delete the entity, and EMIT NOTHING — every caller keeps its own'
       + 'announcement, including Slag Spewer\'s plain `info`. That is the whole value of the choke'
       + 'point while the ruling is outstanding: when the owner answers Q3 it is ONE guarded line'
@@ -5023,19 +5023,19 @@ export const CLOSED: TodoEntry[] = [
       + 'exactly which line the `ev(\'erased\', …)` goes on. ⚠ THE TICKET SAID THREE HAND-ROLLED SITES.'
       + 'IT IS FIVE. Two were invisible to the ticket\'s own `mods.splice` grep because they clear the'
       + 'list instead (`t.mods = []`): Suppression Field (batch-metal-c.ts:269) and Return to Nature'
-      + '(batch-earth-b.ts:514). ⚠⚠ SUPPRESSION FIELD IS A SECOND LIVE INSTANCE OF THE SAME R65'
+      + '(batch-earth-b.ts:514). ⚠⚠ SUPPRESSION FIELD IS A SECOND LIVE INSTANCE OF THE SAME CR 407.2'
       + 'DEFECT AND WAS ON NO TICKET: real nontoken mod cards leave the game, the card says "ERASES"'
       + 'in its own log line, and nothing reaches the public pile. It belongs in Q3\'s scope and the'
       + 'owner should be told so before answering. Reclaim the Fallen routes with `leavesGame: false`'
       + 'because the card goes INTO PLAY — it is not an erase at all. ⚠ THE TOKEN HALF OF Q3 IS'
       + 'SELF-CONTRADICTORY TODAY and the owner should settle it in the same breath:'
       + '`disposeToBin`/`eraseUnit` DO file token mods on the erased pile; Ominous Growth does not.'
-      + 'Ominous Growth\'s mods are token mods, so R133 may exempt them — that is a ruling, not a'
+      + 'Ominous Growth\'s mods are token mods, so CR 304.2 may exempt them — that is a ruling, not a'
       + 'guess to make here. ORCHESTRATOR VERIFIED THE RULING IS GENUINELY PINNED OPEN, which is the'
       + 'claim that mattered: making `eraseMod` emit `erased` — i.e. answering Q3 in code without'
       + 'asking — reddens three tests by name (Slag Spewer, Suppression Field, Return to Nature).'
       + 'Restored; 9/9. So the next agent cannot quietly decide this one. STILL OPEN AND NOT CLOSED'
-      + 'BY THIS: whether a mod erased as a COST reaches the R65 public pile. Q3/Q9 of the round-27'
+      + 'BY THIS: whether a mod erased as a COST reaches the public pile (since answered: it does). Q3/Q9 of the round-27'
       + 'owner questions.',
     status: 'done',
   },
@@ -5072,11 +5072,11 @@ export const CLOSED: TodoEntry[] = [
       '181-inconclusive-activation-window.test.ts::a later card emits inside the unclosed window, and it is refused',
       '181-inconclusive-activation-window.test.ts::the borrowed evidence was SCORING evidence, not harmless noise',
       '181-inconclusive-activation-window.test.ts::the inconclusive flag can also say NO',
-      '181-inconclusive-activation-window.test.ts::the pre-R211 behaviour is reachable ONLY from this control',
+      '181-inconclusive-activation-window.test.ts::the pre-fix behaviour is reachable ONLY from this control',
       '84-card-semantics.test.ts::drive every card and check it against its printed promises',
     ],
     closed:
-      'R211 (2026-08-26). The tail is a REFUSAL now, not evidence: an activation still '
+      '2026-08-26. The tail is a REFUSAL now, not evidence: an activation still '
       + 'unresolved when the run ends records `actInconclusive` + a reason, and nothing scores '
       + 'off the span. 84-card-semantics prints an INCONCLUSIVE tally beside UNREACHED with '
       + '`assert.equal(incRuns, 0)` as a floor IN THE HONEST DIRECTION, and the `surprises` '
@@ -5099,7 +5099,7 @@ export const CLOSED: TodoEntry[] = [
       + 'press run cannot reach the tail at all. (2) **`maxSteps` was not the only way in**: the '
       + '`gameover` break sits at the TOP of the loop, before the branch that closes a resolved '
       + 'activation, so a game ending mid-activation reached the identical unbounded tail. That '
-      + 'matters because the drill\'s board is lethal by design (R199 raised the life top-up for '
+      + 'matters because the drill\'s board is lethal by design (CARD-TODO #49 raised the life top-up for '
       + 'exactly this). Both exits are covered and the reason is recorded: `maxSteps` means the '
       + 'drill is too impatient, `gameover` means the board killed somebody first, and only the '
       + 'first is fixable by turning a knob. '
@@ -5109,7 +5109,7 @@ export const CLOSED: TodoEntry[] = [
       + 'evidence — the UNflattering direction, which is why it would never have surfaced as a '
       + 'false positive. 0 occurrences over the same 1296 runs. '
       + 'ORCHESTRATOR VERIFIED: 181 is 4/4, and its opt-in flag for the OLD unbounded tail appears in '
-      + 'exactly two files — drill.ts and 181 itself — which 181 asserts, so the pre-R211 behaviour '
+      + 'exactly two files — drill.ts and 181 itself — which 181 asserts, so the pre-fix behaviour '
       + 'cannot leak back into a scoring path. (That assertion caught this very closure note when '
       + 'it first named the flag verbatim, which is the guard working: it counts FILES, not call '
       + 'sites, and prose is exactly how such a hatch gets quietly re-adopted.)',
@@ -5122,7 +5122,7 @@ export const CLOSED: TodoEntry[] = [
     title:
       'Seventy test-local withE helpers hand-roll Harness.absorb, and sixty-two of them do it wrong ',
     detail:
-      'R203 measured it while building the seat-aware log: 70 test files declare their own local '
+      'Measured while building the seat-aware log: 70 test files declare their own local '
       + '`withE` helper that re-implements what `Harness.absorb()` does, and only 8 of them reproduce'
       + 'the rule absorb states in its own docstring — "a signal-only event is not a log line". Only'
       + '2 keep `logTypes` index-aligned with `log`. So 62 files hold empty strings in `h.log` that a'
@@ -5152,7 +5152,7 @@ export const CLOSED: TodoEntry[] = [
       '197-absorb-is-shared.test.ts::no test source hand-rolls Harness.absorb',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R231. EVERY NUMBER IN THIS TICKET WAS ROUGHLY DOUBLE THE '
+      '✔ CLOSED 2026-08-28 (round 29); see 197-absorb-is-shared. EVERY NUMBER IN THIS TICKET WAS ROUGHLY DOUBLE THE '
       + 'TRUTH, and a THIRD independent count agreed with the second: 35 files not 70, 31 wrong not '
       + '62, 4 correct not 8, 1 keeping logTypes aligned not 2. The method was mechanical rather '
       + 'than name-based — grep `.log.push(` for the population, then extract each enclosing '
@@ -5193,8 +5193,8 @@ export const CLOSED: TodoEntry[] = [
       + 'touched. §2 reddened naming the file, BOTH push lines, and the remediation. Removed it '
       + 'with a targeted edit (never a file restore, per the shared-tree rule); byte-identical to '
       + 'pre-plant and 15/15 green. ⚠ ORCHESTRATOR ERROR CORRECTED: this agent was dispatched with '
-      + 'no reserved R-number and took R229, which was A5\'s. `184-ruling-register` named the '
-      + 'collision. Renumbered to R231.',
+      + 'no reserved R-number and took the one reserved for A5. `184-ruling-register` named the '
+      + 'collision. Renumbered.',
     status: 'done',
   },
   {
@@ -5208,9 +5208,9 @@ export const CLOSED: TodoEntry[] = [
       + '— `Luminous Arc` and `Dreadwave Devourer` do not fizzle, they THROW: "Cannot use \'in\''
       + 'operator to search for \'player\' in undefined" and "... for \'stack\' in undefined". Both'
       + 'dereference `ctx.targets[0]!` unconditionally, and the non-null assertion is exactly the lie'
-      + 'it looks like. R86 fizzles a spell whose target has gone away, so in a real game the throw'
+      + 'it looks like. CR 704.6 fizzles a spell whose target has gone away, so in a real game the throw'
       + 'is unreachable — but "unreachable today" is not "cannot fire", and the same shape on a card'
-      + 'R86 does not cover would be a crash in a live game rather than a caught test error.',
+      + 'CR 704.6 does not cover would be a crash in a live game rather than a caught test error.',
     evidence:
       'Surfaced by the `barren` board R209 added for CT-74; 65 now prints both cards by name on '
       + 'every run rather than folding them into a count. Reported and deliberately not fixed by that'
@@ -5227,11 +5227,11 @@ export const CLOSED: TodoEntry[] = [
       'A spell resolving with no target behaves the same way on every card in the pool, and a new '
       + '`ctx.targets[0]!` fails a sweep.',
     guards: [
-      '196-empty-target-fizzle.test.ts::R227 Burning Vengeance: the site the drive CANNOT reach',
-      '65-effect-conformance.test.ts::R227: no card reads a declared target without the shared fizzle helper',
+      '196-empty-target-fizzle.test.ts::CR D7.3a Burning Vengeance: the site the drive CANNOT reach',
+      '65-effect-conformance.test.ts::CR D7.3a: no card reads a declared target without the shared fizzle helper',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R223/R227, and THE CLASS WAS EIGHT TIMES THE TICKET. The '
+      '✔ CLOSED 2026-08-28 (round 29) as the fizzle-and-say-so ruling (now CR D7.3a), and THE CLASS WAS EIGHT TIMES THE TICKET. The '
       + 'ruling first — the owner, asked what a spell should do when it resolves with nothing to '
       + 'target: "FIZZLE, AND SAY SO IN THE LOG." Not silently; the player must learn why nothing '
       + 'happened. One helper, `firstTarget(g, ctx, i)` in cards/dsl.ts, returns the target or logs '
@@ -5247,7 +5247,7 @@ export const CLOSED: TodoEntry[] = [
       + 'IT REACHES. `Burning Vengeance` holds an unguarded ctx.targets[0]! behind `if (deaths <= '
       + '0) return`, and no board the rig builds has a battle death — so the drive walks straight '
       + 'past it. Separately, Jelly and Leaping Lillik (2 routes) read a target they were never '
-      + 'given and DO NOT THROW, because `isEnt` is null-safe: they fizzled SILENTLY, which R223 '
+      + 'given and DO NOT THROW, because `isEnt` is null-safe: they fizzled SILENTLY, which CR D7.3a '
       + 'rules out exactly as explicitly as the crash. FINAL SCOPE: 17 slots, 15 cards, 13 call '
       + 'sites. SO THERE ARE TWO GUARDS, NOT ONE, and the second exists because of the first\'s '
       + 'blind spot: the starve sweep (194 slots × 3 boards, subject list computed from the '
@@ -5264,7 +5264,7 @@ export const CLOSED: TodoEntry[] = [
       + 'rewritten to assert real behaviour. That is the clearest argument in this round for why '
       + 'break-testing is not ceremony. ⚠ DELIBERATELY NOT CONVICTED, recorded so it is not '
       + 'rediscovered as a defect: the starve pass also finds ~100 slots that complete SILENTLY '
-      + 'when starved. Those are the R86 path, where the ENGINE fizzles and logs before `run` is '
+      + 'when starved. Those are the CR 704.6 path, where the ENGINE fizzles and logs before `run` is '
       + 'entered, so the player is already told. ⚠ TERRITORY NOTE: `src/cards/registry.ts` was in '
       + 'neither the agent\'s allowed nor its forbidden list and holds 7 of the 12 convicted cards, '
       + 'including the whole 11-slot dealToAnyTarget family. It edited it and said so. That was the '
@@ -5297,7 +5297,7 @@ export const CLOSED: TodoEntry[] = [
       'Work out which of the two is authoritative — most likely `castable()`, since the step exists '
       + 'to let somebody cast — and make `canHaste` ask it rather than approximating it. ⚠ This'
       + 'changes when a priority window opens, so it is a rules-visible change and wants a ruling,'
-      + 'not just a patch. Check it against R97\'s battle-timing refusals: a {Battle} card prophesied'
+      + 'not just a patch. Check it against CR 207.4a\'s battle-timing refusals: a {Battle} card prophesied'
       + 'with a [Haste] banner would bypass both, which is unreachable today only because no such'
       + 'card exists.',
     proof: null,
@@ -5305,30 +5305,30 @@ export const CLOSED: TodoEntry[] = [
       'The haste step opens exactly when the player has something they can legally do in it, '
       + 'demonstrated in both directions.',
     guards: [
-      '200-haste-step-is-unconditional.test.ts::R228 §1: seat 1 is served the same view whatever seat 0 is holding',
-      '200-haste-step-is-unconditional.test.ts::R228 §1 control: the same comparison DOES fire on a difference seat 1 may see',
-      '200-haste-step-is-unconditional.test.ts::R228 §3: at donePlanning → haste, the step does not depend on hand contents',
-      '200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step',
-      '200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5: seat 1 is served the same view whatever seat 0 is holding',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5 control: the same comparison DOES fire on a difference seat 1 may see',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5: at donePlanning → haste, the step does not depend on hand contents',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5a: no seat is auto-done, and BOTH have to close the step',
+      '200-haste-step-is-unconditional.test.ts::CR 504.6: the step still ENDS properly — endOfHaste fires exactly once',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R228, and BOTH OF THIS TICKET\'S CLAIMS WERE WRONG. The '
-      + 'owner ruled ALWAYS OFFER THE STEP (R224). `canHaste` is DELETED — nothing replaces it '
+      '✔ CLOSED 2026-08-28 (round 29): the haste step always opens (CR 504.5), and BOTH OF THIS TICKET\'S CLAIMS WERE WRONG. The '
+      + 'owner ruled ALWAYS OFFER THE STEP (CR 504.5). `canHaste` is DELETED — nothing replaces it '
       + 'anywhere — and `apply.ts` calls `startHasteStep()` unconditionally, which removes the last '
       + 'hand-maintained duplicate of a shared predicate. That is the shape report #74 cost us '
-      + 'once, after which R95 and R97 each became THE ONE PREDICATE. ⚠ CLAIM 1 WAS FALSE: "both '
+      + 'once, after which the haste-mod and haste-play permissions each became THE ONE PREDICATE. ⚠ CLAIM 1 WAS FALSE: "both '
       + 'failure directions are live". The over-permissive direction ("the step opens on an empty '
       + 'hand-of-options") has a population of ZERO across all 495 cards — every candidate under '
       + 'all four over-permissive mechanisms is {Battle}, and both grantors return early on battle '
       + 'timing; the 21 printed {Haste} cards carry no targets and no castCost at all, so both '
       + 'predicates are vacuously true on every one. The under-permissive direction is ONE CARD: '
       + 'Eldritch Reclaimer (the pool\'s only grant-eligible min-0 target spec) under Dispatch '
-      + 'Courier (the pool\'s only R97 grantor), with an EMPTY BIN. ⚠ CLAIM 2 WAS FALSE TOO — this '
+      + 'Courier (the pool\'s only haste-play grantor), with an EMPTY BIN. ⚠ CLAIM 2 WAS FALSE TOO — this '
       + 'ticket\'s warning that "a {Battle} card prophesied with a [Haste] banner would bypass both, '
       + 'which is unreachable today only because no such card exists". IT EXISTS. Of the 7 printed '
       + 'banners exactly one carries a [Haste] release marker and it is a {Battle} card: Divine '
-      + 'Intervention. It is not a bypass — R42\'s printed per-card banner is a deliberate override, '
-      + 'unlike R97/R123\'s generic grants — and its release can never legally happen anyway, '
+      + 'Intervention. It is not a bypass — the banner\'s [Haste] was then read as a deliberate per-card release override (a reading since reversed: CR 803.7i), '
+      + 'unlike the generic haste grants — and its release can never legally happen anyway, '
       + 'because its stackEffect target cannot exist in a stackless haste step. ⚠⚠ AND THE '
       + 'INFORMATION FRAMING WAS BACKWARDS IN BOTH THE TICKET AND THE BRIEF. The worry was that '
       + 'fixing this would MAKE the step a side channel. It already was one, at full strength: '
@@ -5363,7 +5363,7 @@ export const CLOSED: TodoEntry[] = [
       + 'X=0',
     detail:
       'Prints "Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 '
-      + 'life for each ally recalled this way." Two defects found by the R212 correctness sample. (a)'
+      + 'life for each ally recalled this way." Two defects found by the 30-card correctness sample. (a)'
       + 'AMOUNT: with X=2 each player sacrifices TWO units, not one — batch-hybrids-fwe.ts wraps the'
       + 'seat loop in `for (let r = 0; r < recalled.length; r++)`. The trailing "for each ally'
       + 'recalled this way" should bind to the life loss it is attached to; no other card in the pool'
@@ -5414,7 +5414,7 @@ export const CLOSED: TodoEntry[] = [
       + 'worth carrying out of this round — docs/13 §5 is about exactly this, and a clean 127/127 '
       + 'quoted without that sentence would be the same flattering blindness. '
       + '⚠⚠ THE REAL FINDING, AND IT IS ABOUT RULINGS RATHER THAN CARDS: THIS WAS ALREADY RULED '
-      + 'ON. R157 §17 (2026-08-25) reads "the card checks how many units you recalled and forces '
+      + 'ON. The owner\'s 2026-08-25 answer reads "the card checks how many units you recalled and forces '
       + 'each player to sacrifice that many units and you lose that much life", marked *Already '
       + 'correct*. Four days later THIS TICKET filed it as a MAJOR OPEN BUG, 182 recorded the '
       + 'engine as WRONG on it, and docs/questions-round28.md Q1 RE-ASKED THE SETTLED QUESTION '
@@ -5422,13 +5422,13 @@ export const CLOSED: TodoEntry[] = [
       + 'have reversed his own ruling of four days earlier and NOTHING IN THE REPOSITORY WOULD '
       + 'HAVE OBJECTED. Found by the round-29 Downloads reconciliation, from OUTSIDE the suite — '
       + 'exactly like every finding in docs/13 §5. THE GAP IS STRUCTURAL: 184-ruling-register '
-      + 'checks that a cited R-number EXISTS and R215 checked that a used ruling is REGISTERED, '
+      + 'checks that a cited R-number EXISTS and the register scan checked that a used ruling is REGISTERED, '
       + 'but NOTHING checks that an open ticket or a pending question is not re-litigating a '
       + 'CLOSED ruling. That guard is worth more than the card fix that produced it — CT-101. '
-      + '⚠ WHERE R157 §17 AND R221 PULL APART, recorded rather than smoothed over: read literally, '
+      + '⚠ WHERE THE TWO TORRENTIAL RECLAMATION ANSWERS PULL APART, recorded rather than smoothed over: read literally, '
       + '"sacrifice THAT MANY units" gives ZERO at X=0, which is the early return this change '
-      + 'deleted. But §17 was answering "does the for-each distribute?" and was never asked about '
-      + 'X=0; R221 was asked exactly that, was SHOWN the "X=0 therefore does nothing" option, and '
+      + 'deleted. But the 2026-08-25 answer was answering "does the for-each distribute?" and was never asked about '
+      + 'X=0; the later ruling (now CR 107.2b) was asked exactly that, was SHOWN the "X=0 therefore does nothing" option, and '
       + 'declined it. Later and more specific governs, so the floor stands — but that is the seam '
       + 'if it is ever revisited. ORCHESTRATOR VERIFIED '
       + 'BY BREAKING: `Math.max(1, recalled.length)` reverted to `recalled.length` reddens 182\'s '
@@ -5473,7 +5473,7 @@ export const CLOSED: TodoEntry[] = [
       '81-card-drill.test.ts::CT-92: no run silently DROPPED an activation window by overwriting it',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R232. The drill now REFUSES a second activation offered '
+      '✔ CLOSED 2026-08-28 (round 29); see 81-card-drill. The drill now REFUSES a second activation offered '
       + 'while one is unresolved, and counts the refusal, instead of overwriting the open evidence '
       + 'window and dropping everything the first activation delivered. MEASURED POOL-WIDE AFTER '
       + 'THE FIX: 0 refusals across 491 cards and 1473 runs, printed by 81-card-drill on every run. '
@@ -5488,7 +5488,7 @@ export const CLOSED: TodoEntry[] = [
       + 'pins the window open, and the same Slag Spewer run that normally takes 4 activations with '
       + '0 refusals then takes 1 and refuses 45. The control also asserts the held run takes FEWER '
       + 'activations than the normal one, so it is proving the refusal really costs evidence rather '
-      + 'than just incrementing. The hatch is guarded the way R211 guarded its sibling — 181 counts '
+      + 'than just incrementing. The hatch is guarded the way CARD-TODO #87 guarded its sibling — 181 counts '
       + 'the FILES naming it and requires exactly two, because prose in a comment is how such a '
       + 'hatch gets quietly re-adopted. THE GENERALISATION WORTH KEEPING, which the ticket spotted '
       + 'and is right about: this defect biases the metric DOWNWARD. Round 26\'s four blindnesses '
@@ -5517,7 +5517,7 @@ export const CLOSED: TodoEntry[] = [
       'The card-ledger guard tally dropped seven guards with no explanation, and the floor does not '
       + 'care',
     detail:
-      '71-card-ledger.test.ts carries an R155 tally comment reading 49/6/99, and the file now '
+      '71-card-ledger.test.ts carries an inert-shape tally comment reading 49/6/99, and the file now '
       + 'reports 50/6/92. The first two numbers moved for understandable reasons; the third means'
       + 'SEVEN GUARDS ARE GONE and nothing in the repository says which, when, or why. The floor'
       + 'assertion below it is a lower bound that 92 still clears, so the suite is content. A guard'
@@ -5529,7 +5529,7 @@ export const CLOSED: TodoEntry[] = [
       + 'comment to match, which is the right call — rewriting the number to 92 would destroy the'
       + 'only evidence that seven went missing.',
     fix:
-      'Find the seven: `git log -p` on the file against the R155 commit will name them. Then decide '
+      'Find the seven: `git log -p` on the file against the inert-shape audit commit will name them. Then decide '
       + 'per guard whether it was deliberately retired (say so, with the ruling) or lost in a'
       + 'refactor (restore it). ⚠ Then make the tally a real assertion rather than a comment — an'
       + 'exact expected count, or a floor that is raised when guards are added — because a lower'
@@ -5550,12 +5550,12 @@ export const CLOSED: TodoEntry[] = [
       + 'ticket pointed its instrument at the wrong artifact, which is the identical mistake '
       + 'reports #15, #104 and #106 each made, and it is the third time a ticket in this repo has '
       + 'prescribed a fix nobody had tried. HOW THEY WERE ACTUALLY FOUND: run the same tally in a '
-      + 'git worktree at the R155 commit (8b92357) and again at HEAD, and diff PER CARD. Both '
+      + 'git worktree at the inert-shape audit commit (8b92357) and again at HEAD, and diff PER CARD. Both '
       + 'headline numbers reproduce exactly (49/6/99 → 50/6/92) and the per-card diff nets exactly '
       + '−7. All seven are DELIBERATE conversions, each documented at length in its own card file: '
-      + 'Aetherflux Golem (R168, triggered → static), Arbiter of Vitality ×2 (R162 and R157 §23, → '
-      + 'AmountMultiplier), Stellarspore Harvester ×2 (R161 and R157 §15), Powerforge Synergist '
-      + '(R165, → spawnsWithCounters), Maelstrom Charger (R178 via the RAQ, → asYouPlay). ⚠ AND THE '
+      + 'Aetherflux Golem (CR 721.1e, triggered → static), Arbiter of Vitality ×2 (CR 708.6, → '
+      + 'AmountMultiplier), Stellarspore Harvester ×2 (CR 110.3a), Powerforge Synergist '
+      + '(CR 707.5, → spawnsWithCounters), Maelstrom Charger (CR 109.6 via the RAQ, → asYouPlay). ⚠ AND THE '
       + 'TICKET WAVED THROUGH ITS OWN ANSWER: it dismissed the "+1 static" as moving "for '
       + 'understandable reasons". That +1 IS the Aetherflux Golem row — the same single edit. The '
       + 'guard did not vanish, it MOVED, and the ticket had already seen it move and looked away. '
@@ -5587,7 +5587,7 @@ export const CLOSED: TodoEntry[] = [
       + 'ui/main.ts:1023 gates the only board-click-to-decide route to dec.kind === \'targets\', so a '
       + 'formationSlot question can never be answered by clicking the board. (b) engine.ts:5352 '
       + 'sends a BARE SLOT INDEX, so the client holds the label prose and nothing else and CANNOT '
-      + 'draw a drop target even in principle. The R29 sibling (engine.ts:6234) already sends a '
+      + 'draw a drop target even in principle. The CR 602.7 sibling (engine.ts:6234) already sends a '
       + 'real FormationSpot and at least pings, so the correct shape exists in the engine already '
       + 'and this family simply does not use it.',
     evidence:
@@ -5600,7 +5600,7 @@ export const CLOSED: TodoEntry[] = [
       'Add a DISPLAY-ONLY spot? to DecisionOption and populate it at every formationSlot site, '
       + 'then draw the spots as data-act="fslot" targets modelled on the existing '
       + 'slotHtml/data-act="slot". ⚠ THE ANSWER NAMESPACE MUST STAY THE INTEGER INDEX — saved games '
-      + 'are keyed on it, and re-keying breaks 143-replay-divergence and the R200 forensic stack '
+      + 'are keyed on it, and re-keying breaks 143-replay-divergence and the replay forensic stack '
       + 'for exactly the games we most want to re-examine. Site list to be COMPUTED from the '
       + 'kind:\'formationSlot\' call sites (docs/13 §7.2), not typed.',
     proof: null,
@@ -5612,20 +5612,20 @@ export const CLOSED: TodoEntry[] = [
       + '`DecisionOption.spot?` exists and is populated, so the client now HAS the geometry it '
       + 'lacked; drawing the drop targets is what remains. ⚠ THERE ARE THREE ASK SITES, NOT SEVEN — '
       + 'the seven above is a CARD list, not a site list, and conflating the two is how a fix gets '
-      + 'scoped to the wrong thing. The three: engine.ts::placeInFormation (R75 → Lin/Bot/God/Pon '
-      + 'out of battle), engine.ts::collectFormationSpot (R29 → Tiderunner, Trench Stalker), '
-      + 'batch-water-a.ts::pushInlinePlay (R198 → Pon in battle). All three emit `spot`, and a scan '
+      + 'scoped to the wrong thing. The three: engine.ts::placeInFormation (CR 602.6 → Lin/Bot/God/Pon '
+      + 'out of battle), engine.ts::collectFormationSpot (CR 602.7 → Tiderunner, Trench Stalker), '
+      + 'batch-water-a.ts::pushInlinePlay (CR 702.3e → Pon in battle). All three emit `spot`, and a scan '
       + 'pins that there are exactly three so a fourth cannot appear unnoticed. THE ANSWER '
-      + 'NAMESPACE IS UNCHANGED AND THAT IS ASSERTED, NOT ASSUMED: R75 options still carry the bare '
+      + 'NAMESPACE IS UNCHANGED AND THAT IS ASSERTED, NOT ASSUMED: CR 602.6 options still carry the bare '
       + 'integer index in `value`, and `referenceKey` (server/rooms.ts:487) keys `decide` on kind + '
       + 'option count + chosen label — none of which moved. server/view.ts passes the decision '
       + 'through wholesale, so no server change is needed for the client to receive `spot`. ⚠ '
-      + 'PARKED, AND IT IS A REAL RESIDUE RATHER THAN A TIDY-UP: `pushInlinePlay`\'s R198 spot menu '
+      + 'PARKED, AND IT IS A REAL RESIDUE RATHER THAN A TIDY-UP: `pushInlinePlay`\'s CR 702.3e spot menu '
       + 'is still built from `formationSlots(seat)`, and `resolveItem` consumes it via '
       + '`spawnUnit(item.controller, …)`. Making the OFFER source-based without moving the '
       + 'RESOLUTION would guarantee a no-match, so it was correctly left alone. Under mid-battle '
-      + 'control theft Hooba-Pon\'s new R225 guard passes but the grid it offers is its '
-      + 'CONTROLLER\'s, not its own. That needs an R29-side decision about where the resolution '
+      + 'control theft Hooba-Pon\'s new CR 602.6e guard passes but the grid it offers is its '
+      + 'CONTROLLER\'s, not its own. That needs a CR 602.7-side decision about where the resolution '
       + 'reads from, not another placement patch.',
     guards: [
       '215-formation-click.test.ts::§1a the ATTACKING grid: every offered spot points at the column the engine named',
@@ -5645,17 +5645,17 @@ export const CLOSED: TodoEntry[] = [
       + '"you MAY". '
       + '⚠ THE ANSWER NAMESPACE IS UNTOUCHED and that is asserted rather than claimed: the click '
       + 'sends the option\'s INTEGER INDEX, i.e. byte-for-byte the `decide` the bar\'s button has '
-      + 'always sent (§3b), so `referenceKey` and the R200 forensic stack never see this file. '
+      + 'always sent (§3b), so `referenceKey` and the replay forensic stack never see this file. '
       + '⚠ TWO THINGS THE TICKET DID NOT SAY, both of which a reader gets wrong. (1) THE PANEL '
       + 'INDEXES BY ATTACK COLUMN FOR BOTH SEATS, and the engine\'s defender grid is '
       + '`Object.keys(b.blocks)` in key order — COMPACTED. A `hole` naming grid index 0 is drawn at '
       + 'attack column 1 when column 0 is unblocked. `attackColumnOf` is that translation, and §1b '
       + 'is a fixture built to catch it: three attackers, TWO blocked, so the identity map fails. '
       + 'A fixture that blocked everything would have gone green with the function deleted. '
-      + '(2) THE ENGINE SENDS THE SPOTS BUT NOT WHOSE GRID THEY ARE IN, and under R225 '
+      + '(2) THE ENGINE SENDS THE SPOTS BUT NOT WHOSE GRID THEY ARE IN, and under CR 602.6e '
       + '`Decision.seat` is the wrong answer. It is derived from the offer instead — an `end` spot '
       + 'exists if and only if the grid is the attacker\'s, because only an attacking line can '
-      + 'widen (R72) — and §2b pins that the derivation really reads the OPTIONS and not the seat. '
+      + 'widen (CR 602.6c) — and §2b pins that the derivation really reads the OPTIONS and not the seat. '
       + 'VERIFIED BY BREAKING, THREE WAYS: the identity map reddens §1b; a dead `fslot` click '
       + 'reddens §3b/§3c; and reconstructing the pre-#107 inert battlefield reddens §3a–§3d — the '
       + 'historical defect measured in `evidence`, not a synthetic one.',
@@ -5694,16 +5694,16 @@ export const CLOSED: TodoEntry[] = [
       'Borrower of Forms and Apex Prime show the copied art, still carry the copy note and the '
       + 'green stats, and Ancient One is untouched.',
     guards: [
-      '198-copy-art.test.ts::R229 §1: a Borrower of Forms is DRAWN as the card it borrowed',
-      '198-copy-art.test.ts::R229 §2: Apex Prime redraws EVERY unit it copied onto, in one resolution',
-      '198-copy-art.test.ts::R229 §3: an Ancient One keeps its OWN art — a projection is not an identity',
-      '198-copy-art.test.ts::R229 §3b: a copy is marked even when the borrowed body matches its own',
+      '198-copy-art.test.ts::CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed',
+      '198-copy-art.test.ts::CR D6.8: Apex Prime redraws EVERY unit it copied onto, in one resolution',
+      '198-copy-art.test.ts::CR D6.8: an Ancient One keeps its OWN art — a projection is not an identity',
+      '198-copy-art.test.ts::CR D6.8: a copy is marked even when the borrowed body matches its own',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R229. ONE SEAM: `faceOf(u) = q().nameOf(u)` in '
+      '✔ CLOSED 2026-08-28 (round 29) as the copy-art ruling (now CR D6.8). ONE SEAM: `faceOf(u) = q().nameOf(u)` in '
       + 'ui/main.ts — "which card is this, for anything that SHOWS it" — used by the board art, the '
       + 'focus-rail art, and the right-click context menu. The cause was that main.ts fed '
-      + '`Entity.card` to `art()` while R118 deliberately never rewrites `Entity.card`; the '
+      + '`Entity.card` to `art()` while the copy layer (CR 201.5) deliberately never rewrites `Entity.card`; the '
       + 'projected face lives in `E.nameOf`, which cardtext.ts already used. That is exactly why '
       + 'the NAME updated and the ART did not. THE CLASS, DERIVED TWICE AND AGREEING: the '
       + 'becomeCopy/prepareCopy call sites give Apex Prime and Borrower of Forms; printed text '
@@ -5723,7 +5723,7 @@ export const CLOSED: TodoEntry[] = [
       + 'correct fix and an over-applied one, and it earns it by asserting FIRST that the '
       + 'projection is really running and that \'Good Whale\' really is in facesWith, so it proves '
       + 'the over-broad path is LIVE before asserting the art. Restored byte-identical, 10/10 '
-      + 'green. ⚠ 117-copy-everything is R127/Ancient One only and covers none of this — its green '
+      + 'green. ⚠ 117-copy-everything is CR 710.7/Ancient One only and covers none of this — its green '
       + 'was never evidence here.',
     status: 'done',
   },
@@ -5752,7 +5752,7 @@ export const CLOSED: TodoEntry[] = [
     fix:
       'Open the step unconditionally, which deletes canHaste\'s hand-maintained duplicate of '
       + 'castable() — the last haste gate keeping its own copy, and the exact shape report #74 cost '
-      + 'us once before R95/R97 each became THE ONE PREDICATE. ⚠ An always-open window is a tax on '
+      + 'us once before the haste-mod and haste-play permissions each became THE ONE PREDICATE. ⚠ An always-open window is a tax on '
       + 'every turn unless passing through it is cheap; that is a requirement of the ruling, not a '
       + 'nicety. Assert the ABSENCE of the side channel seat-aware via logFor/viewFor, not just the '
       + 'presence of the step.',
@@ -5761,11 +5761,11 @@ export const CLOSED: TodoEntry[] = [
       'The haste step opens every turn regardless of hand contents, no seat can infer another '
       + 'seat\'s holdings from hasteDone, and passing through it costs one cheap action.',
     guards: [
-      '200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing',
-      '200-haste-step-is-unconditional.test.ts::R228 §1: seat 1 is served the same view whatever seat 0 is holding',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5a: a bluff is a real move — you may sit in the step holding nothing',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5: seat 1 is served the same view whatever seat 0 is holding',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R228, TOGETHER WITH CT-90 AND BY THE SAME CHANGE — which '
+      '✔ CLOSED 2026-08-28 (round 29): the haste step always opens (CR 504.5), TOGETHER WITH CT-90 AND BY THE SAME CHANGE — which '
       + 'is the outcome the owner chose when he was offered them as alternatives. He picked "always '
       + 'offer the step + Bluff Haste" over "make canHaste ask castable()", so the toggle he asked '
       + 'for in report #109 became THE FIX rather than a feature bolted beside one. WHY THAT IS THE '
@@ -5821,11 +5821,11 @@ export const CLOSED: TodoEntry[] = [
       'The tooltip appears on the FIRST landing on a fresh card, in a real browser, and the '
       + 'driver either reproduces the failure or is documented as unable to.',
     guards: [
-      '199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110',
-      '199-hover-scroll.test.ts::R230 §5: test/ui-driver.ts really cancels a cleared timeout',
+      '199-hover-scroll.test.ts::CR D6.17: the focus rail scrolling does NOT hide the tip — this is #110',
+      '199-hover-scroll.test.ts::§5: test/ui-driver.ts really cancels a cleared timeout',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R230, and THE OWNER\'S "weirdly difficult" was more '
+      '✔ CLOSED 2026-08-28 (round 29) as the hover-tooltip ruling (now CR D6.17), and THE OWNER\'S "weirdly difficult" was more '
       + 'precise than this ticket\'s "never appears". The cause: main.ts\'s window scroll listener '
       + 'hid the tooltip unconditionally, and `scrollFocusToBottom` scrolls #preview from inside '
       + 'the same mouseover handler that just armed the 550ms timer. A new pure '
@@ -5882,27 +5882,27 @@ export const CLOSED: TodoEntry[] = [
       'Hand placeInFormation the source ENTITY ID, guard on columnOf, resolve slots from the '
       + 'source\'s grid, and move the guard AHEAD of the spawn in Lin and Bot — today the token is '
       + 'minted first and would be stranded. Guard Pon before the pay question. ⚠ RULES POSITION, '
-      + 'already settled so nobody re-derives it: R1 makes "if I am still in formation" look like '
-      + 'the only recheck, but "in my formation" is a REFERENT COMPUTED AT RESOLUTION, and R27 '
+      + 'already settled so nobody re-derives it: CR 109.3c makes "if I am still in formation" look like '
+      + 'the only recheck, but "in my formation" is a REFERENT COMPUTED AT RESOLUTION, and CR 602.6h '
       + 'already rules exactly this for the same phrase ("a unit that wasn\'t attacking gets X = 0 → '
-      + 'no token"). So this is consistency with R27, not an exception to R1. Add a call-site '
+      + 'no token"). So this is consistency with CR 602.6h, not an exception to CR 109.3c. Add a call-site '
       + 'conformance scan so a FIFTH card inherits the guard or reddens the suite.',
     proof: null,
     verify:
       'A source that is dead, or alive but not in a formation, creates nothing and raises no '
       + 'decision — and nothing is left stranded in the region.',
     guards: [
-      '108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger',
-      '108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172)',
-      '108-formation-class.test.ts::R325 Hooba-Bot: killed under its own attack trigger',
-      '108-formation-class.test.ts::R225 Hooba-God: alive but out of the formation (R172)',
-      '108-formation-class.test.ts::R225 Hooba-Pon: alive but out of the formation (R172)',
-      '108-formation-class.test.ts::R225 conformance: EVERY card call site of placeInFormation names its source ENTITY',
-      '108-formation-class.test.ts::R225 conformance: every "in my formation" placer guards on the SOURCE before it spawns',
-      '108-formation-class.test.ts::R225 the primitive itself: placeInFormation given a sourceId that is in NO formation refuses',
+      '108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger',
+      '108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3)',
+      '108-formation-class.test.ts::CR 714.4 Hooba-Bot: killed under its own attack trigger',
+      '108-formation-class.test.ts::CR 602.6e Hooba-God: alive but out of the formation (CR 711.3)',
+      '108-formation-class.test.ts::CR 602.6e Hooba-Pon: alive but out of the formation (CR 711.3)',
+      '108-formation-class.test.ts::CR 602.6e conformance: EVERY card call site of placeInFormation names its source ENTITY',
+      '108-formation-class.test.ts::CR 602.6e conformance: every "in my formation" placer guards on the SOURCE before it spawns',
+      '108-formation-class.test.ts::CR 602.6e the primitive itself: placeInFormation given a sourceId that is in NO formation refuses',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29), as R225, and the class held at exactly four. THE FIX: two '
+      '✔ CLOSED 2026-08-28 (round 29), as the source-formation fix, and the class held at exactly four. THE FIX: two '
       + 'new source-read primitives, `E.formationSeatOf(id)` and `E.myFormationSlots(id)`, derived '
       + 'from the existing private `formationGrid` so they CANNOT disagree with '
       + '`formationSlots`/`adjacentSlots`. `placeInFormation` now takes `opts.sourceId` (an '
@@ -5910,17 +5910,17 @@ export const CLOSED: TodoEntry[] = [
       + 'slots from THAT UNIT\'s grid; a source in no grid gets a LOGGED REFUSAL rather than '
       + 'silence. All four cards guard AHEAD of the spawn — Hooba-Lin and Hooba-Bot had no guard at '
       + 'all, and Hooba-God and Hooba-Pon guarded on IN PLAY, which is the wrong predicate under '
-      + 'R172 control theft. Hooba-Pon\'s guard sits BEFORE `payCard`, so a player is never charged '
+      + 'CR 711.3 control theft. Hooba-Pon\'s guard sits BEFORE `payCard`, so a player is never charged '
       + 'for a play that cannot happen. THE CLASS, COMPUTED, AND NARROWER THAN THE PHRASE SUGGESTS: '
       + '14 /formation/i hits in printed.json reduce to SEVEN cards that refer to a formation BY '
       + 'THE SOURCE. The placing half is Hooba-Lin, Bot, God, Pon (all four wrong) plus Hooba-Nan, '
       + 'Rousing Spirit and Riftwalker — and those three were ALREADY RIGHT, because they read '
       + '`columnOf`/`locateInGrid(self.id)`. The counting half (Embermaw Fledgling, Lumengrove '
-      + 'Lurker, Luminary Leader) is R27 and untouched. NOT members: Galactic Germination (a TARGET '
-      + 'formation), Tiderunner Initiate and Trench Stalker (R29, YOUR formation), Aberrant '
+      + 'Lurker, Luminary Leader) is CR 602.6h and untouched. NOT members: Galactic Germination (a TARGET '
+      + 'formation), Tiderunner Initiate and Trench Stalker (CR 602.7, YOUR formation), Aberrant '
       + 'Populace (reminder text only). ⚠ Hooba-Nan\'s printed "if I am still in formation" turns '
-      + 'out to be REDUNDANT REMINDER TEXT, not a fifth member — which is the evidence that R27\'s '
-      + 'reading was always right and R1\'s "only recheck mechanism" was the wrong frame. There is '
+      + 'out to be REDUNDANT REMINDER TEXT, not a fifth member — which is the evidence that the referent '
+      + 'reading was always right and the trigger-condition ruling\'s "only recheck mechanism" was the wrong frame. There is '
       + 'no fifth wrong card. TWO RUNTIME CONFORMANCE SCANS now derive membership rather than '
       + 'listing it: every `.placeInFormation(` call in engine/src/cards/** must pass `sourceId:`, '
       + 'and every card() body containing one must mention a source-read primitive. A fifth card '
@@ -5928,7 +5928,7 @@ export const CLOSED: TodoEntry[] = [
       + 'NOTES, either of which would have made this fix LOOK proven when it was not. (1) The '
       + 'scenarios attack with a SECOND LIVING COLUMN, because on a lone-source board '
       + '`formationSlots` returns [] anyway and the test passes on the OLD code — the guard would '
-      + 'never be reached. (2) Grade 2 is built with R172\'s own `giveControl` there-and-back, so '
+      + 'never be reached. (2) Grade 2 is built with a `giveControl` there-and-back (CR 711.3 control theft), so '
       + 'the only changed fact is "not in a line". ⚠⚠ ORCHESTRATOR VERIFIED BY BREAKING, '
       + 'INDEPENDENTLY, in a scratch copy outside the repo: neutering Hooba-Lin\'s guard to `if '
       + '(false)` reddens tests 9 and 10 (both grades) AND test 18, the conformance scan. That '
@@ -6030,7 +6030,7 @@ export const CLOSED: TodoEntry[] = [
       + 'into targeted removal against its own controller. {Unaware} beats both (layer 6 returns '
       + 'printed stats), as does attribute stripping.',
     fix:
-      'A ruling under R93 stating the law as −2·Δ rather than "always", with the column-sharing '
+      'A ruling under the {Inverted} layer (now CR 802.8d) stating the law as −2·Δ rather than "always", with the column-sharing '
       + 'consequence as its headline, plus tests in 79-round17-layers.test.ts. NO ENGINE CHANGE. '
       + 'That file currently pins Caleb\'s THREE-attribute example but not the TWO-attribute case '
       + 'that actually occurs in games. ⚠ Break-test by perturbing the layer-3 arithmetic — an '
@@ -6063,7 +6063,7 @@ export const CLOSED: TodoEntry[] = [
       + 'effAttrs/statLayerAttrs rather than ownAttrs, which is precisely why a player cannot see '
       + 'the wipe coming. The class is FIVE cards, computed from printed.json plus behaviour defs '
       + 'over the whole pool, with no sixth member. ⚠ CORRECTION THE AGENT MADE TO ITS OWN BRIEF: '
-      + '{Pure} is NOT an escape. R61 blinds a combat EXCHANGE, not effStats, so a Pure unit with Δ '
+      + '{Pure} is NOT an escape. CR 802.25e blinds a combat EXCHANGE, not effStats, so a Pure unit with Δ '
       + '≥ 0 still dies to the state-based check. The real escapes are {Unaware} (layer 6 returns '
       + 'printed stats) and attribute stripping. ⚠⚠ ORCHESTRATOR VERIFIED INDEPENDENTLY, and this '
       + 'is the verification worth reading. In a scratch copy of the engine OUTSIDE the repo the '
@@ -6084,12 +6084,12 @@ export const CLOSED: TodoEntry[] = [
       'Nothing stops an open ticket or a pending question from re-litigating a CLOSED ruling',
     detail:
       'A settled ruling can be re-opened, re-asked and REVERSED with nothing in the repository '
-      + 'objecting. This is not hypothetical and it nearly happened on 2026-08-28. R157 §17 '
-      + '(2026-08-25) ruled Torrential Reclamation "Already correct". Four days later CT-91 carried '
+      + 'objecting. This is not hypothetical and it nearly happened on 2026-08-28. The owner\'s answer of '
+      + '2026-08-25 ruled Torrential Reclamation "Already correct". Four days later CT-91 carried '
       + 'it as a MAJOR OPEN BUG, 182-correctness-sample recorded the engine as WRONG on it, and '
       + 'docs/questions-round28.md Q1 re-asked the owner the settled question WHILE RECOMMENDING '
       + 'THE OPPOSITE ANSWER. He happened to answer consistently with his earlier ruling. Had he '
-      + 'taken the recommendation, R157 §17 would have been silently reversed and the suite would '
+      + 'taken the recommendation, that ruling would have been silently reversed and the suite would '
       + 'have stayed green.',
     evidence:
       'Found by the round-29 reconciliation of the owner answer sheets against the repo — from '
@@ -6105,22 +6105,17 @@ export const CLOSED: TodoEntry[] = [
       + 'The hard part is the MATCH, not the sweep — start with the cheap, high-precision version '
       + '(an open ticket whose `cards` intersect a ruling section\'s cards) and let it be '
       + 'noisy-but-reviewable rather than clever and silent. ⚠ It needs a POSITIVE CONTROL (docs/13 '
-      + '§7.4): feed it the CT-91/R157 §17 pair and prove it convicts, or it is another checker '
+      + '§7.4): feed it the CT-91 / Torrential Reclamation pair and prove it convicts, or it is another checker '
       + 'reporting sight it does not have.',
     proof: null,
     verify:
       'Re-filing a settled question fails the suite by name, and the guard is demonstrated to '
       + 'convict on the CT-91 / R157 §17 pair that motivated it.',
-    guards: [
-      '202-settled-rulings-not-reopened.test.ts::no OPEN todo entry says a card is broken that a ruling calls',
-      '202-settled-rulings-not-reopened.test.ts::no UNANSWERED question re-asks something a ruling already settled',
-      '202-settled-rulings-not-reopened.test.ts::the guard convicts the CT-91 / R157 §17 pair that motivated it',
-    ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R234, and the positive control convicts the REAL '
+      '✔ CLOSED 2026-08-28 (round 29) as the both-directions register check, and the positive control convicts the REAL '
       + 'near-miss rather than a fixture. `202-settled-rulings-not-reopened.test.ts` runs the '
       + 'register BACKWARD toward the open work — the direction neither existing guard covers. '
-      + '184-ruling-register asks whether a CITED number RESOLVES; R215 asked whether a USED ruling '
+      + '184-ruling-register asks whether a CITED number RESOLVES; the register scan asked whether a USED ruling '
       + 'is REGISTERED. Both run from the code toward the register; the direction in which a '
       + 'decision gets UNDONE had never been checked. THE SIGNAL, chosen narrow on purpose: a '
       + 'ruling section saying "Already correct" is the register asserting the engine needs no '
@@ -6132,7 +6127,7 @@ export const CLOSED: TodoEntry[] = [
       + 'FALSE POSITIVE ON ITS VERY FIRST RUN IS THE MOST VALUABLE THING HERE. The first version '
       + 'matched any occurrence of a card name and immediately convicted round-27 Q8 — which asks '
       + 'whether a region-scoped effect can reach a player outside the region and names "Big '
-      + 'Glimpse Card" in a PARENTHETICAL — against R157 §18, which settled a completely different '
+      + 'Glimpse Card" in a PARENTHETICAL — against the owner\'s 2026-08-25 answer, which settled a completely different '
       + 'question about the same card. Same card, different question, and the guard could not tell. '
       + 'That single false positive produced the rule that makes it survivable: THE CARD MUST BE '
       + 'THE SUBJECT — bolded, or in the heading — which is how these documents name what they are '
@@ -6147,8 +6142,10 @@ export const CLOSED: TodoEntry[] = [
       + 'ruling that had already settled it. Restored byte-identical, 3/3 green. It also carries '
       + 'the control every checker in this repo needs and most lacked: it asserts its subject set '
       + 'is NON-EMPTY, that it can still see R157 §17 specifically, and that it does NOT convict a '
-      + 'ticket about an unruled card.',
-    status: 'done',
+      + 'ticket about an unruled card. RETIRED 2026-10-11 on the owner\'s decision to remove the '
+      + 'ruling register: the guard (202) read its "Already correct" sections, which the comprehensive '
+      + 'rules do not carry, and went with it.',
+    status: 'wontfix',
   },
   {
     id: 102,
@@ -6163,7 +6160,7 @@ export const CLOSED: TodoEntry[] = [
       + 'TICKET: the stale paragraph sits directly above a warning box which says this line was got '
       + 'wrong three times in one day and ends "The tally the suite prints has been right every '
       + 'single time. Quote it; do not re-derive it." NOBODY RE-DERIVED IT. It was copied once and '
-      + 'never re-read, and R219 (7864bb8) moved a claim underneath it.',
+      + 'never re-read, and a later fix (7864bb8) moved a claim underneath it.',
     evidence:
       'Measured 2026-08-28 by running 84-card-semantics and diffing its printed tally against the '
       + 'document. This is a FIFTH failure mode for docs/13 §5, and the most uncomfortable, because '
@@ -6187,7 +6184,7 @@ export const CLOSED: TodoEntry[] = [
       '201-assessment-numbers.test.ts::CT-102 POSITIVE CONTROL: the reader can see',
     ],
     closed:
-      '✔ CLOSED 2026-08-28 (round 29) as R233, and the control convicts the REAL drift rather '
+      '✔ CLOSED 2026-08-28 (round 29), and the control convicts the REAL drift rather '
       + 'than a synthetic one. `201-assessment-numbers.test.ts` reads docs/13 and compares it to '
       + '`UNREACHED` at RUNTIME via Object.keys — never a scrape, because the scenario queue\'s '
       + 'first version regexed UNREACHED out of a source file and read 32 keys where the object has '
@@ -6219,7 +6216,7 @@ export const CLOSED: TodoEntry[] = [
       + 'two',
     detail:
       'THE THIRD INSTANCE OF THE CT-75 FAMILY, and the second to produce a real bug that shipped. '
-      + 'R230 fixed ONE of ui-driver.ts\'s two hover-related fictions — `clearTimeout` is real now — '
+      + 'The hover fix (now CR D6.17) fixed ONE of ui-driver.ts\'s two hover-related fictions — `clearTimeout` is real now — '
       + 'but the driver still fires NO `scroll` event when `scrollTop` is assigned, so the client\'s '
       + 'own scroll is invisible to it. ⚠ AND FIXING ONLY THAT WOULD MAKE THINGS WORSE, which is '
       + 'why it was deliberately left: `#preview` and `#hovertip` are in the driver\'s ABSENT set, '
@@ -6240,12 +6237,12 @@ export const CLOSED: TodoEntry[] = [
       + 'redden tests — a driver that starts telling the truth is ALLOWED to break tests that were '
       + 'passing on a lie, and each one that reddens is a finding rather than a regression. Budget '
       + 'for triaging them. ⚠ Until it is done, a hover or nested-element behaviour MUST be '
-      + 'verified in a real browser over CDP; the driver\'s green is not evidence. R230\'s header '
-      + 'says so already so the next agent cannot walk into it.',
+      + 'verified in a real browser over CDP; the driver\'s green is not evidence. The hover ruling\'s write-up '
+      + 'said so already so the next agent cannot walk into it.',
     proof: null,
     verify:
       'A hover bug that fails in a browser also fails in the driver — demonstrated by reverting '
-      + 'R230\'s client fix and watching a driver-only test redden.',
+      + 'the hover fix\'s client change (CR D6.17) and watching a driver-only test redden.',
     closed:
       '✔ FIXED 2026-08-29 (round 30) as BL-32. `handDockTucked()` is true while a draft pack or '
       + 'the constructed bottom-two choice is open, and `.handdock.tucked .zone` clips the row to '
@@ -6276,12 +6273,12 @@ export const CLOSED: TodoEntry[] = [
       '`actionCount` is served live to both seats, so a modified client can see WHEN its opponent '
       + 'acted inside a hidden step',
     detail:
-      'R236 closed the haste step\'s readiness tell in server/view.ts, and while measuring it the '
+      'The haste-step ruling (now CR D2.5d) closed the haste step\'s readiness tell in server/view.ts, and while measuring it the '
       + 'agent found the channel underneath. `actionCount` is served live and ticks on EVERY action '
       + '— measured on the real wire as 2 → 3 → 6 across a single haste step. So a modified client '
       + 'can still see THAT its opponent acted and WHEN, inside a step whose whole purpose is that '
       + 'it cannot. ⚠ IT IS NOT HASTE-SPECIFIC: identical in the resource step and in deployment, '
-      + 'and it PREDATES all of R224/R228/R236 — this round did not introduce it, it made it '
+      + 'and it PREDATES the haste-step rulings — this round did not introduce it, it made it '
       + 'visible. It is invisible in the SHIPPED client, so no honest player can exploit it today; '
       + 'the exposure is to a modified one.',
     evidence:
@@ -6295,8 +6292,8 @@ export const CLOSED: TodoEntry[] = [
       + '`actionCount` inside a segment jams the client\'s own one-intent-per-state latch, so the '
       + 'obvious fix breaks the client. Closing it needs a PER-SEAT action counter in engine.ts or '
       + 'rooms.ts. ⚠ THAT IS A DESIGN DECISION FOR THE OWNER, not a patch: it costs a state field '
-      + 'on every game and touches the replay/forensic stack, which is keyed on the action index '
-      + '(R200). Ask before building. The honest framing for him: \'a cheating client can currently '
+      + 'on every game and touches the replay/forensic stack, which is keyed on the action index. '
+      + 'Ask before building. The honest framing for him: \'a cheating client can currently '
       + 'tell when you acted during a hidden step; closing it costs a per-seat counter and touches '
       + 'replay.\'',
     proof: null,
@@ -6310,7 +6307,7 @@ export const CLOSED: TodoEntry[] = [
       + 'This entry asked before building, which was right — the fix cannot be done in view.ts '
       + '(freezing the counter jams the client one-intent-per-state latch) and needs a per-seat '
       + 'counter in engine.ts/rooms.ts, touching the replay and forensics stack keyed on action '
-      + 'index (R200). That is a large change to the most safety-critical part of the server, '
+      + 'index. That is a large change to the most safety-critical part of the server, '
       + 'against a threat model — an opponent running a modified client — this client does not '
       + 'defend against anywhere else. '
       + 'NOT CLOSED AS FIXED, and there is deliberately no guard: nothing changed, so nothing can '
@@ -6324,10 +6321,10 @@ export const CLOSED: TodoEntry[] = [
     area: 'engine',
     severity: 'major',
     title:
-      'OWNER RULING NEEDED: the log has no region dimension, so R239 stops effects but not '
+      'OWNER RULING NEEDED: the log has no region dimension, so CR 601.1b stops effects but not '
       + 'INFORMATION',
     detail:
-      'R239 (the owner, 2026-08-28) is stronger than target legality: "Only players that are in '
+      'The owner\'s 2026-08-28 region ruling (now CR 601.1a) is stronger than target legality: "Only players that are in '
       + 'the region as an effect can even see that it exists. So anything that happens in a region '
       + 'where a player or unit currently isn\'t is 100% IGNORED, as if that effect didn\'t exist." '
       + 'The effects half is now fixed. The SEEING half is not, and cannot be without a decision. '
@@ -6367,7 +6364,7 @@ export const CLOSED: TodoEntry[] = [
       + 'public — and it was right that answering yes to both is contradictory, because `viewFor` '
       + 'ships every region board state to both seats. "Hide the log" was never available without '
       + 'also hiding the board. No to both is the coherent pair. '
-      + 'Registered as R243 §2, and guarded: a region test appearing in the redactor now reddens, '
+      + 'Registered as the information half of the region ruling (now CR 601.8), and guarded: a region test appearing in the redactor now reddens, '
       + 'because the next reader will otherwise fix what was ruled not to be broken.',
     status: 'done',
   },
@@ -6377,10 +6374,10 @@ export const CLOSED: TodoEntry[] = [
     severity: 'minor',
     cards: ['Bloppert', 'The Mighty Doot', 'Finality'],
     title:
-      'OWNER RULING NEEDED: does a GLOBAL superlative respect R25 region scoping?',
+      'OWNER RULING NEEDED: does a GLOBAL superlative respect CR 601.4d region scoping?',
     detail:
       'Three cards loop `g.s.players` GLOBALLY rather than asking the region: Bloppert, The '
-      + 'Mighty Doot, and Finality. R239 settled that an effect cannot REACH a player outside its '
+      + 'Mighty Doot, and Finality. CR 601.1b says that an effect cannot REACH a player outside its '
       + 'region — but these do not reach anybody, they COMPARE everybody, and then act on the '
       + 'winner. "The player with the most life", "more life than you" and similar superlatives are '
       + 'the shape. If the comparison is global but the effect is regional, a player who is not in '
@@ -6405,7 +6402,7 @@ export const CLOSED: TodoEntry[] = [
       + 'acknowledgement escape hatch instead, and that is the correct outcome: the guard\'s job '
       + 'here was to force this paragraph to be written, not to block the ticket.',
     fix:
-      '⚠ ASK. R239\'s words — "100% ignored, AS IF THAT EFFECT DIDN\'T EXIST" — point at regional '
+      '⚠ ASK. The owner\'s words (now CR 601.1a) — "100% ignored, AS IF THAT EFFECT DIDN\'T EXIST" — point at regional '
       + 'comparison: a player who does not exist for the effect should not be able to define its '
       + 'outcome. But a superlative is not an effect reaching anyone, and narrowing it changes '
       + 'three cards\' power level, so this is not the same question and must not be answered by '
@@ -6422,7 +6419,7 @@ export const CLOSED: TodoEntry[] = [
       '219-region-scoped-all.test.ts::§1e ONE helper for the pool — the local copies are gone',
     ],
     closed:
-      '✔ RULED AND FIXED 2026-08-29 as R243 §1. The owner: "they do scope global things (every card '
+      '✔ RULED AND FIXED 2026-08-29 as the region-scoped "all" rule. The owner: "they do scope global things (every card '
       + 'that says all is actually all in this region)". '
       + '⚠ THIS ENTRY CARDS LIST WAS WRONG IN BOTH DIRECTIONS, which is the reason its own `fix` '
       + 'said to derive the class. It named three (Bloppert, The Mighty Doot, Finality); the scan '
@@ -6436,9 +6433,9 @@ export const CLOSED: TodoEntry[] = [
       + 'files had each grown a local `presentSeats` helper and that they DID NOT AGREE — five '
       + 'ordered initiative-first, batch-hybrids-ld-a took the raw array. Two cards in one region '
       + 'could iterate seats in different orders, which is a replay hazard as well as a rules one. '
-      + '⚠ TWO CARDS CHANGED POWER and both are consequences of the ruling, recorded in R243 so they '
+      + '⚠ TWO CARDS CHANGED POWER and both are consequences of the ruling, recorded with the ruling so they '
       + 'are decisions rather than surprises: The Mighty Doot gives no bonus during deployment (a '
-      + 'home region lists only its owner, so no opponent is present to lead you — the standing R25 '
+      + 'home region lists only its owner, so no opponent is present to lead you — the standing CR 601.4d '
       + 'treatment of every "each opponent" card), and Wake the Dead reaches the enemy bin only '
       + 'where the enemy is, which for a {Battle} spell is everywhere it can legally be cast.',
     status: 'done',
@@ -6469,10 +6466,10 @@ export const CLOSED: TodoEntry[] = [
       'server/e2e/test-pending-ask.ts::none of the asker-only values reaches the watcher',
       'server/e2e/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
       'server/e2e/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
-      '50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub',
+      '50-ui-inspect.test.ts::CR D6.4: the pause bar names the effect an opponent is answering, off the server stub',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R247, and MOST OF IT WAS NOT A CLIENT BUG AT ALL. Measured on '
+      'RULED AND FIXED 2026-08-29 (now CR D6.4), and MOST OF IT WAS NOT A CLIENT BUG AT ALL. Measured on '
       + 'the report own {Alluring} board: at the moment the question is open the opponent view '
       + 'holds decision null, stack empty, resolving null, legal empty. server/view.ts nulls the '
       + 'decision before it arrives, and an {Alluring} target is chosen while the trigger is being '
@@ -6536,14 +6533,14 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Open the Rules page and read the Piercing entry, then compare it with the printed reminder.',
     guards: [
-      '227-reminder-text.test.ts::R248: no string a renderer can reach off a glossary row carries an R-number',
-      '227-reminder-text.test.ts::R248: no module that imports the glossary touches its citation field',
-      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
-      '227-reminder-text.test.ts::R248/R252: a row no channel reminds a player about keeps its full authored rule',
-      '177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
+      '227-reminder-text.test.ts::no string a renderer can reach off a glossary row carries an R-number',
+      '227-reminder-text.test.ts::no module that imports the glossary touches its citation field',
+      '227-reminder-text.test.ts::rendering every card in the pool leaks no R-number',
+      '227-reminder-text.test.ts::a row no channel reminds a player about keeps its full authored rule',
+      '177-glossary-conformance.test.ts::a row the pool prints a reminder for SHOWS that reminder, verbatim',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R248. '
+      'RULED AND FIXED 2026-08-29 (now CR D6.11). '
       + '⚠ THIS ENTRY SENT THE AGENT TO THE WRONG SURFACE. It said to check glossary.ts first, '
       + 'which was right, but the leak it pointed at (cardpanel.ts rendering the citation field) is '
       + 'the CARD BROWSER panel — not the Rules page and not under units. Those are main.ts '
@@ -6557,7 +6554,7 @@ export const CLOSED: TodoEntry[] = [
       + 'registry — which is the different-mechanism check derive-never-enumerate asks for. '
       + '⚠ LEFT FOR THE OWNER, on the round-31 sheet: THREE printed reminders are NARROWER than '
       + 'this client model and now win on screen — {Flying} (printed says only flying units block '
-      + 'flying units; the client blocks by COLUMN), {Pure} (no R61 {Feeble} carve-out) and '
+      + 'flying units; the client blocks by COLUMN), {Pure} (no CR 802.12b {Feeble} carve-out) and '
       + '{Electric} (no controller-picks-the-path, no {Piercing} interaction). All three are '
       + 'preserved in rule and asserted; showing the printed sentence is exactly what was asked '
       + 'for, but it now contradicts how the client actually plays.',
@@ -6572,9 +6569,9 @@ export const CLOSED: TodoEntry[] = [
       + 'rules question, not a bug.',
     evidence: 'Report #119, room YFUE 2026-08-28, actionIndex 200 (seat 1).',
     fix:
-      'ASK THE OWNER BEFORE BUILDING ANYTHING. On the round-31 question sheet. Related: R198 '
-      + '(response window mid-resolution) is the nearest existing ruling and may already settle it — '
-      + 'read it before asking, so the question is the part R198 does not answer.',
+      'ASK THE OWNER BEFORE BUILDING ANYTHING. On the round-31 question sheet. Related: CR 703.5 '
+      + '(response window mid-resolution) is the nearest existing rule and may already settle it — '
+      + 'read it before asking, so the question is the part CR 703.5 does not answer.',
     proof: null,
     verify: 'Rules question — nothing to observe until it is ruled.',
     progress:
@@ -6587,38 +6584,38 @@ export const CLOSED: TodoEntry[] = [
       + 'legalActions(seat 1) EMPTY — she was never offered a window, rather than refused a spell. '
       + 'processTriggerQueue leaves battleMode false while battle.damageStep is set, so a trigger '
       + 'fired there takes the immediate resolve branch and never reaches the stack. '
-      + 'THAT IS R3, the owner own ruling of 2026-07-16: "no priority window between damage '
-      + 'sub-steps". Deployment (R144) is the other windowless place. '
-      + '⚠ SO THIS CANNOT BE BUILT WITHOUT OVERRULING R3, which reopens R3, R117 and R157 §5. Put '
+      + 'THAT IS the owner\'s 2026-07-16 no-window ruling (since amended): "no priority window between damage '
+      + 'sub-steps". Deployment (CR 703.7) is the other windowless place. '
+      + '⚠ SO THIS CANNOT BE BUILT WITHOUT OVERRULING THE NO-WINDOW RULING, which reopens the rulings built on it. Put '
       + 'back to the owner as a second question rather than built. '
       + 'Separately: the two things the report BLAMED were both innocent. There is no castability '
       + 'restriction on Cosmic Reversal and never was (offered at eleven indices with an empty '
-      + 'stack), and what she wanted to DO is now possible under R250. Only the timing is open.',
+      + 'stack), and what she wanted to DO is now possible under the 2026-08-29 owner ruling. Only the timing is open.',
     guards: [
-      '239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
-      '239-damage-triggers-after-combat.test.ts::R261: the other seat holds priority over a combat-damage trigger and can actually respond to it',
-      '239-damage-triggers-after-combat.test.ts::R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP',
-      '239-damage-triggers-after-combat.test.ts::R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits',
+      '239-damage-triggers-after-combat.test.ts::CR 608.9: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
+      '239-damage-triggers-after-combat.test.ts::CR 608.9b: the other seat holds priority over a combat-damage trigger and can actually respond to it',
+      '239-damage-triggers-after-combat.test.ts::THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP',
+      '239-damage-triggers-after-combat.test.ts::CR 608.3e STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits',
     ],
     closed:
-      'FIXED 2026-08-30 as R261, and the round-31 progress note above called it exactly right: it '
-      + 'could not be built without overruling R3, so it was put back to the owner rather than '
+      'FIXED 2026-08-30 (now CR 608.9b), and the round-31 progress note above called it exactly right: it '
+      + 'could not be built without overruling the no-window ruling, so it was put back to the owner rather than '
       + 'built. He answered round-32 Q1: "The ruling is correct, but WHERE the trigger goes is '
       + 'wrong ... all triggers that are caused by damage get moved to After combat, along with '
       + 'anything that triggers then", with an official RAQ showing damage triggers and after-'
       + 'combat triggers interleaved on ONE stack, initiative seat first. '
-      + 'R3 SURVIVES, NARROWED: no priority window between damage sub-steps is still true — only '
-      + 'the reading that a TRIGGER resolves inside the damage step is superseded. R117/R157 §5 '
-      + 'keep their gate and lose the ordering claim; R121 is widened, because combat-damage '
+      + 'THE NO-WINDOW RULING SURVIVES, NARROWED: no priority window between damage sub-steps is still true (that clause was itself amended later) — only '
+      + 'the reading that a TRIGGER resolves inside the damage step is superseded. The column-trigger rulings (CR 608.9a) '
+      + 'keep their gate and lose the ordering claim; the Crevice Lurker tax ruling is widened (CR 608.9d), because combat-damage '
       + 'triggers now arrive as battle-mode triggers and Crevice Lurker printed "during battle" '
       + 'always covered them. '
       + '⚠ THE FIX IS THREE LINES AND THE COLLATERAL WAS ~58 TESTS ACROSS ~22 FILES. One '
       + 'correction from the agent: holding the queue in pumpCombatDamage is not enough, because '
-      + 'doDecide resumes an R120 election and an R121 pay answer straight into settle() with a '
+      + 'doDecide resumes a CR 608.6a election and a CR 111.10g pay answer straight into settle() with a '
       + 'sub-step half-run — the hold has to live in settle(). VERIFIED BY BREAKING BY THE '
       + 'ORCHESTRATOR: restoring the defect needs all THREE reverts (any two deadlock, because the '
       + 'pump returns on a non-empty stack and nothing has priority), and with all three back 8 of '
-      + '9 redden while R3 STILL STANDS survives as its control.',
+      + '9 redden while CR 608.3e STILL STANDS survives as its control.',
     status: 'done',
   },
   {
@@ -6640,19 +6637,19 @@ export const CLOSED: TodoEntry[] = [
       'Find a unit with [once] and one with [Switch1], expend each, and compare the icon shown with '
       + 'the marker the card prints.',
     guards: [
-      '228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints',
-      '228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card',
-      '228-spent-marker.test.ts::R249: every card in the pool with a bounded ability gets the marker it prints',
-      '228-spent-marker.test.ts::R249: no card prints both markers, and none has two bounded abilities',
+      '228-spent-marker.test.ts::CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card prints',
+      '228-spent-marker.test.ts::CR D6.10b: a spent [once] ability wears [Once] — the same code, the other card',
+      '228-spent-marker.test.ts::CR D6.10b: every card in the pool with a bounded ability gets the marker it prints',
+      '228-spent-marker.test.ts::CR D6.10b: no card prints both markers, and none has two bounded abilities',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R249, WHICH OVERTURNS ONE CLAUSE OF R135 — the owner was right '
+      'RULED AND FIXED 2026-08-29 as the spent-marker ruling (now CR D6.10b), WHICH OVERTURNS ONE CLAUSE OF THE EARLIER TEXT-BOX RULING — the owner was right '
       + 'and the previous ruling was wrong here. Two reasons, neither of them in this entry: '
-      + '(1) R135 rule that "a line never repeats what its own TAG already says" is about the '
+      + '(1) Its rule that "a line never repeats what its own TAG already says" is about the '
       + 'augment and graft lines, whose tags are ICONS; the note line tag is the word spent, with '
       + 'no symbol, so there was never a duplicate to remove. (2) The markers are not two spellings '
       + 'of one thing: [Switch1] is the bounded GRAFT marker and its clause TRANSFERS when grafted, '
-      + '[once] transfers nothing. R135 other two clauses stand. '
+      + '[once] transfers nothing. Its other two clauses stand. '
       + '⚠ AND THE PRESCRIBED FIX WAS NOT AVAILABLE. cardtext.ts own header says printed prose and '
       + 'abilities[] do not line up 1:1, and that guessing a mapping makes the box confidently '
       + 'wrong — there is no per-ability clause to read off. It works only because the POOL has no '
@@ -6681,13 +6678,13 @@ export const CLOSED: TodoEntry[] = [
       'Put a spell unit in play, cast Cosmic Reversal, and see whether it returns to its controller '
       + 'hand.',
     guards: [
-      '229-cosmic-and-control.test.ts::R250: Cosmic Reversal recalls a spell unit in play to its controller hand',
-      '229-cosmic-and-control.test.ts::R250 whole pool: every printed Spell Unit is recalled off the board',
-      '229-cosmic-and-control.test.ts::R250: an ordinary unit in the same region is left alone',
-      '229-cosmic-and-control.test.ts::R250: the log names both halves of the sweep, whether or not it found anything',
+      '229-cosmic-and-control.test.ts::CR 801.7a: Cosmic Reversal recalls a spell unit in play to its controller hand',
+      '229-cosmic-and-control.test.ts::whole pool: every printed Spell Unit is recalled off the board',
+      '229-cosmic-and-control.test.ts::an ordinary unit in the same region is left alone',
+      '229-cosmic-and-control.test.ts::the log names both halves of the sweep, whether or not it found anything',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R250. The owner: "It returns all spell effects on the stack '
+      'RULED AND FIXED 2026-08-29. The owner: "It returns all spell effects on the stack '
       + '(anything currently on the stack with type spell goes to the owners hand) and recalls all '
       + 'spell units FROM THE BOARD." '
       + 'THE REASON THE OLD CODE COULD NEVER HAVE WORKED, which this entry had not spotted: in play '
@@ -6696,7 +6693,7 @@ export const CLOSED: TodoEntry[] = [
       + 'the registry rather than naming any of the 14 printed Spell Units. '
       + 'The auditability half shipped too: the log now names what BOTH halves considered, found or '
       + 'not, which was the second thing the owner noticed. '
-      + '⚠ R243 SCOPES IT — the board half is ctx.region, so an attacker spell unit left at home is '
+      + '⚠ CR 601.1c SCOPES IT — the board half is ctx.region, so an attacker spell unit left at home is '
       + 'out of reach of a {Battle} spell. That is the ruling, not a gap, and it is pinned by name.',
     status: 'done',
     progress:
@@ -6736,7 +6733,7 @@ export const CLOSED: TodoEntry[] = [
       '223-client-legality.test.ts::[122] a refusal that follows a real click is still the player refusal',
     ],
     closed:
-      'FIXED 2026-08-29 as R245 (b) and (c). '
+      'FIXED 2026-08-29 as parts (b) and (c) of the no-second-opinion ruling (now CR D1.3). '
       + '⚠ THIS ENTRY PRESCRIBED FIX (1) WAS A DESCRIPTION OF A STATE THE CLIENT NEVER SEES. '
       + 'autoHasteDone reads the authoritative state and legal list, and its two guards ARE '
       + 'doDoneHaste two need() clauses — the FIRST send is legal by construction. The defect is '
@@ -6767,7 +6764,7 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify:
       'Arm each of the three pass buttons in a networked game and note what makes it drop. (Was '
-      + '"Arm Pass all…" when there was one button; R251 made it three with different answers.)',
+      + '"Arm Pass all…" when there was one button; the 2026-08-29 ruling (now CR D2.2) made it three with different answers.)',
     guards: [
       '230-pass-modes.test.ts::[123] an item that was on the stack when the chip was armed is never a change',
       '230-pass-modes.test.ts::[123] pass through stack finishes when the stack it was armed on has resolved',
@@ -6776,11 +6773,11 @@ export const CLOSED: TodoEntry[] = [
       '230-pass-modes.test.ts::[123] pass all still stops on the one pass that would erase castable spell tokens',
     ],
     closed:
-      'ANSWERED AND FIXED 2026-08-29 as R251, after being deliberately left open through the first '
+      'ANSWERED AND FIXED 2026-08-29 (now CR D2.2), after being deliberately left open through the first '
       + 'half of round 31 because only the owner could name the narrower promise. He named three: '
       + 'Pass, Pass through stack, Pass all. '
-      + '⚠ THE REAL DEFECT WAS NOT IN passAllRelease, WHERE BOTH THIS ENTRY AND R245 WERE LOOKING. '
-      + 'It was the R245 RE-TAKE in main.ts: the snapshot was retaken at every declined window, so '
+      + '⚠ THE REAL DEFECT WAS NOT IN passAllRelease, WHERE BOTH THIS ENTRY AND the no-second-opinion fix WERE LOOKING. '
+      + 'It was the earlier re-take in main.ts: the snapshot was retaken at every declined window, so '
       + '"new" meant "new since the last window I passed" — a running diff with no fixed scope. '
       + 'Nothing could ever finish, which is why the chip could only stop at the end of the battle '
       + 'and why the middle option was not expressible at all. Removing the re-take creates the '
@@ -6788,7 +6785,7 @@ export const CLOSED: TodoEntry[] = [
       + 'STACK. '
       + '⚠ The tokens release stays in Pass all on purpose: passEndsBattlePhase is true only of a '
       + 'pass that LEAVES the phase, so it fires AT the terminus rather than before it, and '
-      + 'dropping it would re-open report #66 (irreversible R11 token loss, no undo).',
+      + 'dropping it would re-open report #66 (irreversible CR 506.2 token loss, no undo).',
     status: 'done',
     progress:
       'ROUND 31 — ⚠ NOT FIXED AS REPORTED, AND DELIBERATELY LEFT OPEN. VYTV was replayed and the '
@@ -6807,7 +6804,7 @@ export const CLOSED: TodoEntry[] = [
       + 'as "something new is played", and should the chip keep passing once the player has said "I '
       + 'am done acting this battle"? Round-31 question sheet, Q6 — ANSWERED THERE THE SAME DAY, and '
       + 'the answer was three promises rather than a narrowed one. See `closed` above: it turned out '
-      + 'the reason the middle promise could not be expressed was the R245 re-take, not any release '
+      + 'the reason the middle promise could not be expressed was the earlier re-take, not any release '
       + 'clause, so this entry two "real derivation failures" were both true and neither was the '
       + 'headline. Leaving it open for one round to get the owner answer was the right call.',
   },
@@ -6910,7 +6907,7 @@ export const CLOSED: TodoEntry[] = [
       + 'DECISION — never a preference, never armed — latched by ui.orderAutoFor so a repaint '
       + 'cannot re-fire it, and §3b is the guard that says nothing goes out until it is clicked. '
       + 'The ordering options render as the CARDS they came from, derived from the same '
-      + 'triggerQueue filter the engine builds AND answers the question with (R245), and are '
+      + 'triggerQueue filter the engine builds AND answers the question with (CR D1.3), and are '
       + 'refused unless lengths and labels still match — so a stale paint falls back to labels '
       + 'rather than pinning a click to the wrong trigger.',
     status: 'done',
@@ -6938,7 +6935,7 @@ export const CLOSED: TodoEntry[] = [
       '223-client-legality.test.ts::[127] the region a formation leaves from has one derivation, not three',
     ],
     closed:
-      'FIXED 2026-08-29 as R245 (a): an affordance is a claim about legality and it must be true. '
+      'FIXED 2026-08-29 as part (a) of the no-second-opinion ruling (now CR D1.3a): an affordance is a claim about legality and it must be true. '
       + 'This entry was RIGHT, and the log confirms it exactly — DSVQ action 84 sent only entity 4, '
       + 'so round two attackerPool is [4], but canClick asked only step === declare && controller '
       + '=== attacker and lit her whole army. WIDER THAN THE REPORT: "Attack all" silently omitted '
@@ -6966,21 +6963,21 @@ export const CLOSED: TodoEntry[] = [
       + 'Monstrosity augments The Everywhere (Ben) — it is now Unstable" then "Rashi trashes '
       + 'Malformed Monstrosity (from play)" then "Malformed Monstrosity is erased from the bin".',
     fix:
-      'Attribution follows the HOST controller. And per R244 a mod erased with an Unstable host is '
-      + 'not trashed at all — it never had a presence of its own. ⚠ R137 IS THE BOUNDARY AND IT '
+      'Attribution follows the HOST controller. And per CR 720.8a a mod erased with an Unstable host is '
+      + 'not trashed at all — it never had a presence of its own. ⚠ THE ENGINE\'S UNSTABLE-BODY TRASH (CT-246; CR 801.2h differs) IS THE BOUNDARY AND IT '
       + 'STANDS: the BODY of an Unstable unit that dies is still trashed (that is what closed report '
       + '#93, and it overruled the printed reminder text and a direct Caleb ruling on purpose). Only '
       + 'the mods change. Derive the affected card set from printed text, never from the two cards in '
       + 'the report.',
     proof: () => /binnedMods\)\s*this\.noteTrashed\(modBin\(m\)/.test(ENGINE_SRC),
     guards: [
-      '224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all',
-      '224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner',
-      '224-mod-trash.test.ts::R244 whole pool: no nontoken mod is trashed by its host death, and the body always is',
-      '224-mod-trash.test.ts::R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods',
+      '224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all',
+      '224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner',
+      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is',
+      '224-mod-trash.test.ts::CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R244. '
+      'RULED AND FIXED 2026-08-29 (now CR 720.8 and 720.8a). '
       + '⚠ THIS ENTRY NAMED THE WRONG FIX SITE, and the agent said so rather than editing it. The '
       + 'death loop at engine.ts ~4646 only runs under keepBinned (Pull Under), which always passes '
       + 'binTo — so attribution and destination were ALREADY identical there and changing it is a '
@@ -6989,12 +6986,12 @@ export const CLOSED: TodoEntry[] = [
       + '⚠ AND DROPSLIME WAS NEVER AN ATTRIBUTION CASE: it reads the battle-wide trashed counter, '
       + 'not trashed:<seat>. It is affected by the OTHER half — its damage now drops by one per '
       + 'nontoken mod on a dying modded unit. '
-      + '⚠ THE TRAP THE PLAN HID: noteTrashed seat argument also computed R131 bin ref. Splitting '
+      + '⚠ THE TRAP THE PLAN HID: noteTrashed seat argument also computed CR 405.6 bin ref. Splitting '
       + 'attribution from destination naively would look for the card in the TRASHER bin, where an '
       + 'innocent older copy of the same name would answer and Cthyrian Rector would recall IT — '
-      + 'R140 bug, one seat over. Hence an explicit binSeat that stamps nothing when the two differ. '
-      + 'R137 is amended rather than left alone: R244 overrules its "The mods ride with it" section, '
-      + 'which R137 had flagged as reasoning stated so it could be overruled cleanly. The BODY '
+      + 'the wrong-copy bug (CR 405.6), one seat over. Hence an explicit binSeat that stamps nothing when the two differ. '
+      + 'The Unstable-trash ruling is amended rather than left alone: the mods ruling overrules its "The mods ride with it" section, '
+      + 'which the Unstable-trash ruling had flagged as reasoning stated so it could be overruled cleanly. The BODY '
       + 'ruling and report #93 stand, and a guard reddens if the body stops trashing. '
       + 'Blast radius over 492 cards: 203 can become a nontoken mod, 200 of 200 lose the trashed '
       + 'event on host death, 200 of 200 change attribution on recall; four self-trashing graftable '
@@ -7003,7 +7000,7 @@ export const CLOSED: TodoEntry[] = [
       + 'the ORIGINAL TEST TITLE had to be restored: playtest-ledger.ts names it as report #93 guard '
       + 'by name, so renaming it reddened 70-playtest-ledger. That title is load-bearing. '
       + 'SURFACED, NOT FIXED, and worth a ruling one day: the BODY trash is attributed to u.owner '
-      + 'while its mods are now attributed to u.controller, so an R8-stolen unit that dies trashes '
+      + 'while its mods are now attributed to u.controller, so a stolen unit (CR 711.1) that dies trashes '
       + 'in its owner name and its mods in its controller name. No card in the pool distinguishes '
       + 'them today.',
     status: 'done',
@@ -7031,7 +7028,7 @@ export const CLOSED: TodoEntry[] = [
       '225-stack-readout.test.ts::§1e INVENTORY — every printed X is paid, worn by a token, forecast, or listed here',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R246 — a forecast is not a commitment, and a commitment always '
+      'RULED AND FIXED 2026-08-29 (now CR D6.9) — a forecast is not a commitment, and a commitment always '
       + 'wins. This entry was RIGHT that it is a different family from #85, and WRONG about the '
       + 'seam: previewNote (which the brief suggested) is keyed on a live Entity, and a stack item '
       + 'is not one. The right hook was xPreviewRows — the one #85 already added for the hand chip '
@@ -7048,7 +7045,7 @@ export const CLOSED: TodoEntry[] = [
     id: 123, area: 'client', severity: 'minor',
     title: 'the skip chip is invisible exactly while the throttle is holding',
     detail:
-      'R150 HOLDS an update the player cannot act on, and a held update triggers no render at all. '
+      'CR D5.4b HOLDS an update the player cannot act on, and a held update triggers no render at all. '
       + 'The "catching up (n) — ⏭ skip" affordance is drawn by that render, so while a standing '
       + 'pass is armed and the throttle is holding, the one control that would let you skip ahead '
       + 'is not on screen until something else happens to repaint. The S key still works, so the '
@@ -7059,37 +7056,37 @@ export const CLOSED: TodoEntry[] = [
       + 'empty. Not reported by the owner; surfaced by a test that had to work around it.',
     fix:
       'A held update should still be allowed to paint the throttle chip, or the hold should repaint '
-      + 'once when it starts holding. ⚠ THE CONSTRAINT THAT MAKES THIS NON-TRIVIAL: R150 holds '
+      + 'once when it starts holding. ⚠ THE CONSTRAINT THAT MAKES THIS NON-TRIVIAL: CR D5.4c holds '
       + 'precisely so the client is never painting an old board while asking a live question, so a '
-      + 'repaint here must draw the chip WITHOUT drawing the held state behind it. Read R150 before '
+      + 'repaint here must draw the chip WITHOUT drawing the held state behind it. Read CR D5.4c before '
       + 'touching this — a naive render defeats the whole mechanism.',
     proof: null,
     verify:
       'Arm Pass all in a networked game during a long resolution and watch for the catching-up chip '
       + 'while the log is behind. The S key works; the chip is not drawn.',
     guards: [
-      '237-live-while-held.test.ts::R258 no catching-up chip is drawn while the throttle is holding',
-      '237-live-while-held.test.ts::R258 several held arrivals still draw nothing, and S releases them all',
-      '237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board',
-      '237-live-while-held.test.ts::R258 S drains the throttle, and the board lands on the held state',
+      '237-live-while-held.test.ts::CR D5.5 no catching-up chip is drawn while the throttle is holding',
+      '237-live-while-held.test.ts::CR D5.5 several held arrivals still draw nothing, and S releases them all',
+      '237-live-while-held.test.ts::CR D5.5a a held update moves the live slots and NOTHING else on the board',
+      '237-live-while-held.test.ts::CR D5.5 S drains the throttle, and the board lands on the held state',
     ],
     closed:
       'SUPERSEDED 2026-09-28: the owner removed the catching-up chip altogether ("that catching up '
       + 'banner does not need to be there at all"), so there is no affordance left to draw during a '
       + 'hold. The guards now pin that nothing is drawn while holding and that S still drains the '
-      + 'throttle; the live-slot guard is unchanged. The history below is R258 as it stood. '
-      + 'RULED AND FIXED 2026-08-29 as R258, and BOTH OF THIS ENTRY OWN GUESSES ABOUT THE CONSTRAINT '
-      + 'WERE WRONG. (1) Staleness is not the hazard. R150 invariant is about asking a live '
+      + 'throttle; the live-slot guard is unchanged. The history below is the original ruling as it stood. '
+      + 'RULED AND FIXED 2026-08-29, and BOTH OF THIS ENTRY OWN GUESSES ABOUT THE CONSTRAINT '
+      + 'WERE WRONG. (1) Staleness is not the hazard. CR D5.4c invariant is about asking a live '
       + 'question over a stale board, and a live question is un-holdable and FLUSHES first — so a '
       + 'repaint during a hold repaints the state already on screen. (2) The entry warned that a '
       + 'naive render would defeat the mechanism, and the brief said the reason was runAutoPass '
-      + 'sending an action. It cannot: [59]/R245 latch it to one send per actionCount and a held '
+      + 'sending an action. It cannot: [59] and the no-second-opinion fix latch it to one send per actionCount and a held '
       + 'update does not move actionCount. MEASURED — a render-instead-of-paint build puts nothing '
       + 'extra on the wire. What is actually wrong with a render there is what a render IS: a '
       + 'whole-page innerHTML plus hideHoverTip (which closes the card box the player is reading, '
       + 'once per held arrival at machine speed), gcStaleUi, planAutoPass, maybeCancelChain, '
       + 'publishBuilding, viewport snapshot/restore/rewire and a full motion/sound/beat pass, at '
-      + 'exactly the rate R150 exists to stop. Telling the two candidate fixes apart needed a '
+      + 'exactly the rate CR D5.4 exists to stop. Telling the two candidate fixes apart needed a '
       + 'RENDER COUNTER in the driver — markup equality cannot do it. '
       + '(3) NO WAKE NEEDED BOOKING. The brief asked for one at the start of a hold; unnecessary, '
       + 'because pumpPace is where an ARRIVAL lands too (onMsg calls it straight after queueing), '
@@ -7118,7 +7115,7 @@ export const CLOSED: TodoEntry[] = [
     evidence: 'Report #131, room PUCG 2026-08-29, actionIndex 123.',
     fix:
       'MEASURED 2026-08-29 by the round-32 audit. ⚠ THIS ENTRY OWN FIRST CLASS HINT WAS FALSE: it '
-      + 'said the R150 "catching up — skip" chip lives in or beside the log panel. It does not. '
+      + 'said the "catching up — skip" chip lives in or beside the log panel. It does not. '
       + 'The chip is main.ts:4429 inside .topbar > .stickytop > .main (the LEFT column); the log '
       + 'panel is main.ts:4465 inside .side (the RIGHT rail). They share no ancestor below #app '
       + 'and hiding the log does not touch the chip. CT-123 is independent of this ticket. '
@@ -7130,7 +7127,7 @@ export const CLOSED: TodoEntry[] = [
       + 'modal must keep data-prev live inside it), and the .logcurtain footer. Beside it: the '
       + '.preview focus viewer sized against the log, the scenario panel, the .sidehead clocks and '
       + 'nine chrome buttons, the #app grid columns, and .glimpsenotice. '
-      + 'THE MENU ENTRY POINT IS NOT IN main.ts. R241 puts the decision in inspect.ts:653 '
+      + 'THE MENU ENTRY POINT IS NOT IN main.ts. The card-menu fix (CR D6.15) puts the decision in inspect.ts:653 '
       + 'boardMenuEntries(); main.ts:7091 boardMenuItems() only renders it. Attaching only in '
       + 'main.ts reddens 216-menu-scoping.test.ts, which asserts label equality between the two. '
       + 'Add a third kind to BoardMenuEntry (inspect.ts:630) plus a go branch. '
@@ -7159,11 +7156,11 @@ export const CLOSED: TodoEntry[] = [
       '232-log-modal.test.ts::§5 the rail did not become dead space, and the modal is still painted',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R253. ALL THIRTEEN of the class were carried; none dropped. '
+      'RULED AND FIXED 2026-08-29 (now CR D6.15a). ALL THIRTEEN of the class were carried; none dropped. '
       + 'The panel body was extracted WHOLE — same .logpanel, same #log, same heading, same '
       + 'Story/Everything toggle, same typed rows, same data-prev spans, same curtain footer — and '
       + 'wrapped in an overlay, so it is a move and not a re-authoring. The menu entry went into '
-      + 'inspect.ts boardMenuEntries() per R241, which is WHY 216-menu-scoping needed no edit at '
+      + 'inspect.ts boardMenuEntries() per CR D6.15, which is WHY 216-menu-scoping needed no edit at '
       + 'all: its assertions are derived from that function, so the entry propagated into the '
       + 'bare-table menu and stayed out of the card menu by itself. '
       + '⚠ TWO PREMISES IN THE BRIEF WERE WRONG. (a) .overlay.mainonly is the RIGHT modifier, not '
@@ -7237,7 +7234,7 @@ export const CLOSED: TodoEntry[] = [
       '233-burst-count-and-size.test.ts::§0a the spell-token KIND is a superset of burst — the container is not the rule',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R254. Both defects addressed: the token strip now sorts tiles '
+      'RULED AND FIXED 2026-08-29 (now CR D6.9d). Both defects addressed: the token strip now sorts tiles '
       + 'name then X then id so a burst group is contiguous, with a tally above it reading '
       + '"Fireball x3 · X=1 x2 · X=3"; and the stack X moved out of .stacktag — where the kind '
       + 'word alone spent the 30.4px sliver visible at six deep — into its own left-anchored '
@@ -7296,14 +7293,14 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Target a player with any effect and try to read their life total.',
     guards: [
-      '234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text',
-      '234-arrowhead-clears-text.test.ts::[R255] the head stops just short of the label, never far from the thing it points at',
-      '234-arrowhead-clears-text.test.ts::[R255] arrowGeometry keeps aiming at the exact centre, and reports its own inset',
-      '234-arrowhead-clears-text.test.ts::[R255] the fixtures are the bug: at the old inset the head sits on their text',
-      '234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] every measured endpoint has an arrowhead that clears its text',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] the head stops just short of the label, never far from the thing it points at',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] arrowGeometry keeps aiming at the exact centre, and reports its own inset',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] the fixtures are the bug: at the old inset the head sits on their text',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] an endpoint with nothing legible in the middle is not moved at all',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R255, entirely inside anim.ts — no main.ts or style.css hunk '
+      'RULED AND FIXED 2026-08-29 (now CR D6.18), entirely inside anim.ts — no main.ts or style.css hunk '
       + 'was needed after all. Measured over CDP against the real style.css and a real demo board, '
       + 'independently of the audit run. '
       + '⚠ TWO PREMISES IN THIS ENTRY WERE WRONG AND THE BROWSER CORRECTED BOTH. (a) A STACK ITEM '
@@ -7336,14 +7333,14 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'Printed: "Negate target effect that targets an allied effect, player or unit." The '
       + 'qualifier is a property of the TARGET OWN targets, which is visible at cast time — the '
-      + 'R64/R65 restriction seam (TargetSpec.restrict, slotRestricts, apply.castable, '
+      + 'CR 110.3a restriction seam (TargetSpec.restrict, slotRestricts, apply.castable, '
       + 'E.canFillSlot) exists to express exactly this. batch-wood-a.ts:195 instead lets any stack '
       + 'effect be chosen and makes the illegal case a no-op AT RESOLUTION, by deliberate comment '
       + 'citing a "Graxxlid/Minor Kraken precedent".',
     evidence: 'Report #134, room PUCG 2026-08-29, actionIndex 353.',
     fix:
       'MEASURED 2026-08-29 by the round-32 audit on a clean harness. THE PRECEDENT IS REAL AND THE '
-      + 'COMMENT HAS IT BACKWARDS. R88 (docs/digital-rules.md:3673), from report #70, converted '
+      + 'COMMENT HAS IT BACKWARDS. The Graxxlid fix (report #70) converted '
       + 'Graxxlid FROM a resolution check TO TargetSpec.restrict and states the general rule: '
       + '"the printed restriction is part of what makes a target LEGAL, not a condition checked '
       + 'once the spell resolves" — and it names Boon of Protection explicitly as asking the '
@@ -7352,8 +7349,8 @@ export const CLOSED: TodoEntry[] = [
       + 'carry BOTH a cast-time restrict AND a resolution re-check. Boon of Protection has only '
       + 'the second half. '
       + 'NOT A REGRESSION. git log -S: the card and its comment landed together in fc8c9c6 '
-      + '(2026-08-18); Minor Kraken gained restrict in 140de9b (R64, 08-21); Graxxlid in f15ed40 '
-      + '(R88, 08-23); Boon was never revisited. Nothing to do with round 31 R244/R250, and the '
+      + '(2026-08-18); Minor Kraken gained restrict in 140de9b (08-21); Graxxlid in f15ed40 '
+      + '(08-23); Boon was never revisited. Nothing to do with the round-31 bin rulings, and the '
       + 'PUCG fork caveat is moot because it reproduces from a clean board. '
       + 'CLASS COMPUTED over 456 source blocks: 56 cards carry a qualifying clause on a target. 28 '
       + 'enforce it with a cast-time predicate, 25 have it carried by the target KIND or by '
@@ -7363,7 +7360,7 @@ export const CLOSED: TodoEntry[] = [
       + 'effect (2 of 2). Boon of Protection is the single card on the wrong side of that line — '
       + 'the last member of a family already converted twice and missed. '
       + 'FIX: hoist the existing allied predicate into TargetSpec.restrict and KEEP the resolution '
-      + 'check (R88: redirects and spent parts can break the restriction after cast; '
+      + 'check (CR 704.5: redirects and spent parts can break the restriction after cast; '
       + '85-silent-branches.test.ts:262 STACK_GONE must still speak). Fix the misleading comment '
       + 'at batch-wood-a.ts:190 — it is why this survived four rounds. THE GUARD IS THE PART THAT '
       + 'PAYS: a derived assertion in 68-target-conformance.test.ts over the whole pool, with the '
@@ -7374,21 +7371,21 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered',
       '23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target',
-      '68-target-conformance.test.ts::R256: every printed occurrence of target is read, not skipped',
-      '68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST',
-      '68-target-conformance.test.ts::R256: the if-clause exemptions are exactly the cards that print one',
+      '68-target-conformance.test.ts::CR 110.3: every printed occurrence of target is read, not skipped',
+      '68-target-conformance.test.ts::CR 110.3: a restrictive clause on a target noun is enforced at CAST',
+      '68-target-conformance.test.ts::CR 110.3: the if-clause exemptions are exactly the cards that print one',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R256. Reproduced from a clean board first: the illegal stack '
+      'RULED AND FIXED 2026-08-29 (now CR 110.3a). Reproduced from a clean board first: the illegal stack '
       + 'item was the ONLY candidate offered, the mana was spent and the card binned for nothing. '
       + 'The fix hoists the allied predicate into TargetSpec.restrict and KEEPS the resolution '
-      + 'check per R88, and replaces the comment that caused this — it claimed a '
+      + 'check per CR 704.5, and replaces the comment that caused this — it claimed a '
       + '"Graxxlid/Minor Kraken precedent" for resolution-only enforcement when both those cards '
-      + 'carry BOTH halves and R88 names this card explicitly. '
+      + 'carry BOTH halves and the designer\'s Virus ruling names this card explicitly. '
       + '⚠ THE FIX AS BRIEFED WOULD HAVE MADE A DOCUMENTED GAP PERMANENT. doAugment builds a Virus '
       + 'with parts: [], so the old parts[].targets read said a Virus targets nothing. Adding a '
       + 'restrict over that predicate unchanged would have stopped Boon of Protection being '
-      + 'OFFERED against a Virus on your own unit — and R88 quotes the designer naming this exact '
+      + 'OFFERED against a Virus on your own unit — and the Virus ruling (now CR 110.10a) quotes the designer naming this exact '
       + 'card ("so you could Graxxlid or Boon of Protection it as well?" — "Yep! They are fully '
       + 'interactible."). The agent found it and added the Virus arm plus a test. '
       + 'THE GUARD IS THE PART THAT PAYS AND IT GENERALISES. It reads every printed occurrence of '
@@ -7401,13 +7398,13 @@ export const CLOSED: TodoEntry[] = [
       + 'VERIFIED BY BREAKING THREE TIMES BY THE ORCHESTRATOR. Deleting Boon own restrict reddens '
       + 'the guard and the card test by name. Removing the Virus arm reddens the Virus test. AND '
       + 'THE DECISIVE ONE: reverting Minor Kraken and Graxxlid to their PRE-RULING state — the '
-      + 'literal historical code R64 and R88 were written to fix — reddens the same guard naming '
+      + 'the literal historical code the targeting-restriction fixes were written to fix — reddens the same guard naming '
       + 'both. Written properly it would have caught all three reports on the day each ruling '
       + 'landed. '
       + 'One honest hole opened and named rather than hidden: the synthetic rig in '
       + '65-effect-conformance cannot build a stack that satisfies the new predicate, so Boon '
       + 'joins UNJUDGED with its reason — the same shape as the existing Riftwalker entry, which '
-      + 'is R64 same case.',
+      + 'is the same case.',
     status: 'done',
   },
   {
@@ -7415,8 +7412,8 @@ export const CLOSED: TodoEntry[] = [
     title: 'nothing notices when a question the owner has already answered still reads as open',
     detail:
       'questions-round31.md opened by listing five round-27 questions as unanswered. FOUR OF THEM '
-      + 'HAD BEEN ANSWERED THE DAY BEFORE — Q2 by R237, Q5 by R238, Q6 by R240, Q8 by R239 — and '
-      + 'R237 and R238 each name the question by number in their own first line. The sheets own '
+      + 'HAD BEEN ANSWERED THE DAY BEFORE — Q2 by a 2026-08-28 ruling, Q5 by the owner\'s 2026-08-28 ruling (now CR 608.8a), Q6 by the Interdiction Rift ruling, Q8 by the region-scoping ruling (now CR 601.1b) — and '
+      + 'two of those rulings name the question by number in their own first line. The sheets own '
       + 'ANSWER lines were never backfilled, so every list built by looking for a blank answer '
       + 'kept reporting them open. Round 32 opened believing two questions blocked it; the real '
       + 'number was five.',
@@ -7435,26 +7432,26 @@ export const CLOSED: TodoEntry[] = [
       'Blank an ANSWER line the register claims to have settled and run 238; it names the sheet, '
       + 'the question and the ruling line that contradicts it.',
     guards: [
-      '238-question-sheets.test.ts::R259 §1: every question a ruling claims to answer has a non-blank ANSWER on its sheet',
-      '238-question-sheets.test.ts::R259 §2: the blank answers on every sheet are exactly the inventory, no more and no fewer',
-      '238-question-sheets.test.ts::R259 §3: every R-number an ANSWER line cites is a ruling that exists',
-      '238-question-sheets.test.ts::R259 §4: the guard convicts the HISTORICAL state — round-27 Q2 blank while R237 claims it',
+      '238-question-sheets.test.ts::every question a ruling claims to answer has a non-blank ANSWER on its sheet',
+      '238-question-sheets.test.ts::the blank answers on every sheet are exactly the inventory, no more and no fewer',
+      '238-question-sheets.test.ts::§3: every CR number an ANSWER line cites is a live rule',
+      '238-question-sheets.test.ts::§4: the guard convicts the HISTORICAL state — round-27 Q2 blank while an owner call claims it',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R259, the mirror of R234 / CT-101. R234 came from round 28 '
+      'RULED AND FIXED 2026-08-29 as the question-sheet check, the mirror of CT-101. The CT-101 check came from round 28 '
       + 'Q1, which re-asked a settled question and recommended reversing it, and stated the lesson '
-      + 'as "a question sheet is not proof a thing is unruled". R259 states the other half: a '
+      + 'as "a question sheet is not proof a thing is unruled". It states the other half: a '
       + 'BLANK ANSWER LINE IS NOT PROOF OF IT EITHER. '
       + '⚠ THE DERIVED HALF ONLY REACHES TWO OF THE FOUR, and that is the finding rather than a '
-      + 'shortfall: a ruling is not obliged to say which question it answers, and R239 and R240 '
+      + 'shortfall: a ruling is not obliged to say which question it answers, and two of those rulings '
       + 'name none. So the INVENTORY carries the rest, and its second direction is the load-bearing '
       + 'one — when the owner answers something the file goes red and names it, which is the '
       + 'reminder to backfill the sheet. '
       + 'All four sheets are backfilled. The genuinely open list is five, not nine: round-27 Q4 and '
-      + 'Q7, round-28 Q3, round-31 Q8, and the R250 zones question — re-asked together as '
+      + 'Q7, round-28 Q3, round-31 Q8, and the zones-follow-control question — re-asked together as '
       + 'docs/questions-round32.md. VERIFIED BY BREAKING BY THE ORCHESTRATOR against the HISTORICAL '
       + 'state: reverting round-27 Q2 to the bare word ANSWER in a scratch copy reddens §1 by name, '
-      + 'quoting R237 own line back, and reddens §2 alongside it.',
+      + 'quoting the ruling\'s own line back, and reddens §2 alongside it.',
     status: 'done',
   },
   {
@@ -7462,7 +7459,7 @@ export const CLOSED: TodoEntry[] = [
     cards: ['Brough'],
     title: 'the card browser attaches glossary rows off the TYPE LINE only, so an attribute granted in the text box shows no rules text',
     detail:
-      'Owner verbatim, in the second half of the Q7 answer that R248 and R252 acted on: "Not all '
+      'Owner verbatim, in the second half of the Q7 answer that the reminder rulings (now CR D6.11) acted on: "Not all '
       + 'cards are done properly anyway: Brough … [Augment] Everything is balanced. (The power and '
       + 'defense of balanced units are equal to the greater of the two.) … Balanced is not '
       + 'actually in the text here." '
@@ -7498,7 +7495,7 @@ export const CLOSED: TodoEntry[] = [
       + 'Blob of the Dark Order, Inexorable Miasma, Unrelenting Horror. That half is an oracle-data '
       + 'change, not a client one. '
       + '⚠ AND THE IRONY BELONGS IN THE FIX: Brough is the ONLY card in the pool printing a '
-      + '{Balanced} reminder, so R248 asShown took Brough own sentence as the game words for '
+      + '{Balanced} reminder, so asShown (CR D6.11) took Brough own sentence as the game words for '
       + '{Balanced} — the browser now shows Brough sentence on Child of Aether and refuses to show '
       + 'it on Brough. '
       + '⚠ THE BUDGET A FIX INHERITS: 52-ui-glossary.test.ts:268 pins a pool-wide readability '
@@ -7515,11 +7512,11 @@ export const CLOSED: TodoEntry[] = [
       '236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row',
       '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
       '236-browser-glossary-reach.test.ts::CT-130: rot is explained on every card that mentions it',
-      '236-browser-glossary-reach.test.ts::R257: the panel is a UNION — the text scan is added to the type line, never swapped for it',
-      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
+      '236-browser-glossary-reach.test.ts::CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it',
+      '227-reminder-text.test.ts::rendering every card in the pool leaks no R-number',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R257 — ONE LINE in cardpanel.ts glossaryFor, and it closes '
+      'RULED AND FIXED 2026-08-29 (now CR D6.11c) — ONE LINE in cardpanel.ts glossaryFor, and it closes '
       + 'CT-130 with it rather than growing a second mechanism. Measured over the whole pool: the '
       + 'browser went from 488 reminder rows on 373 cards to 791 on 479, and from TEN glossary '
       + 'rows unreachable in the browser (Rot, Cache, Glimpse, Trash, Battle, Haste, Once, '
@@ -7551,7 +7548,7 @@ export const CLOSED: TodoEntry[] = [
     title: 'the {Rot} glossary row is never shown on any card in the browser, on any of its three pages',
     detail:
       'Owner verbatim, same Q7 answer: "Rot cards also do not have rules text yet." Measured: Rot '
-      + 'is a PLAYER COUNTER (glossary.ts:277, ruling R38), not an attribute, subtype or card '
+      + 'is a PLAYER COUNTER (glossary.ts:277, CR 112.13), not an attribute, subtype or card '
       + 'family. A glossary row exists and is correct — CT-80 audited its wording and cleared it. '
       + 'Fifteen cards mention rot in printed text and NONE carries Rot in attrs, which is exactly '
       + 'why the type-line attach never fires. The ? rules overlay shows it and the in-game '
@@ -7574,18 +7571,18 @@ export const CLOSED: TodoEntry[] = [
       '236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row',
       '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
       '236-browser-glossary-reach.test.ts::CT-130: rot is explained on every card that mentions it',
-      '236-browser-glossary-reach.test.ts::R257: the panel is a UNION — the text scan is added to the type line, never swapped for it',
-      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
+      '236-browser-glossary-reach.test.ts::CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it',
+      '227-reminder-text.test.ts::rendering every card in the pool leaks no R-number',
     ],
     closed:
-      'FIXED 2026-08-29 by R257 / CT-129, with no Rot-specific code at all — the text-driven attach '
+      'FIXED 2026-08-29 by the CT-129 fix (CR D6.11c), with no Rot-specific code at all — the text-driven attach '
       + 'finds Rot in the text box, which is the whole point of not building a second mechanism. '
       + 'The browser went from 0 of 16 index rows to 16 of 16. '
       + '⚠ ONLY THE DISPLAY HALF IS CLOSED. Whether the authored Rot sentence should be replaced by '
       + 'the game words is unanswerable here — 231-manual-text pins Rot at ZERO occurrences in the '
       + 'Algomancy Manual and Rot is not an attribute, so no printed reminder exists either; the '
       + 'glossary.ts row is the only statement of the rule this repository has, which is already '
-      + 'the settled policy for the 21 rows in that position (R252 §3). That half is round-32 Q6 '
+      + 'the settled policy for the 21 rows in that position (CR D6.11). That half is round-32 Q6 '
       + 'on the question sheet and needs the owner to write a sentence if he wants one.',
     status: 'done',
   },
@@ -7617,15 +7614,15 @@ export const CLOSED: TodoEntry[] = [
       '83-card-todo.test.ts::every unanswered owner report is carried into the todo list, and none is invented',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R260. ⚠ THE FIRST DRAFT OF THE EARN-THE-WORD CHECK WAS WRONG '
+      'RULED AND FIXED 2026-08-29 as the partial-is-not-live fix. ⚠ THE FIRST DRAFT OF THE EARN-THE-WORD CHECK WAS WRONG '
       + 'AND WAS CAUGHT WITHIN A SECOND OF RUNNING: it demanded a partial report have a done todo '
       + 'item of its own. Report #119 is legitimately partial at 0 done / 1 open, because what the '
-      + 'owner wanted to do became possible under R250 but that work is booked under report #121 '
+      + 'owner wanted to do became possible under the Cosmic Reversal ruling but that work is booked under report #121 '
       + 'ticket. A REPORT CAN BE PART-FIXED BY WORK TRACKED ELSEWHERE. Demanding a same-report done '
       + 'entry would have forced either a lie or an invented bookkeeping ticket — a guard '
       + 'generating the paperwork it was supposed to check. The weaker true check survived: a '
       + 'partial must have something OPEN citing it. Second round running that a false positive on '
-      + 'first run was worth more than the rule it produced (R234 was the other). '
+      + 'first run was worth more than the rule it produced (the both-directions check was the other). '
       + 'VERIFIED BY BREAKING TWICE BY THE ORCHESTRATOR against the historical state.',
     status: 'done',
   },
@@ -7704,7 +7701,7 @@ export const CLOSED: TodoEntry[] = [
     id: 133, area: 'client', severity: 'major',
     title: 'a disconnect was throttled like game news, so the opponent could show as connected for twelve seconds after leaving',
     detail:
-      'R150 holdable() answers exactly one question — could the player act on this? — and it never '
+      'The pacing throttle\'s holdable() (CR D5.4b) answers exactly one question — could the player act on this? — and it never '
       + 'consulted peers. A disconnect arrives as an ordinary holdable update, so "opponent '
       + 'connected" could stand for up to PACE_MAX_HELD x PACE_MS = 12 SECONDS after they had '
       + 'gone. The presence dot and the "waiting for opponent" share banner are two surfaces of '
@@ -7717,19 +7714,19 @@ export const CLOSED: TodoEntry[] = [
     fix:
       '⚠ NOT BY WIDENING holdable(). Making a disconnect un-holdable would FLUSH THE ENTIRE '
       + 'BACKLOG — spending the pacing the player is relying on, for a reason unrelated to the '
-      + 'game. R150 already gives them a skip for that and the client should not take it for '
+      + 'game. CR D5.5 already gives them a skip for that and the client should not take it for '
       + 'them. Instead m.peers is hoisted into the un-held prefix beside m.clock, m.names and '
       + 'm.scenario, and painted by the same live-slot patcher as the skip chip.',
     proof: null,
     verify: 'Have the opponent close their tab during a long resolution with a standing pass armed; the dot should go dark at once.',
     guards: [
-      '237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once',
-      '237-live-while-held.test.ts::R258 a disconnect is not queued behind the backlog it arrived into',
+      '237-live-while-held.test.ts::CR D5.5b a disconnect that arrives while the throttle is holding is on screen at once',
+      '237-live-while-held.test.ts::CR D5.5b a disconnect is not queued behind the backlog it arrived into',
     ],
     closed:
-      'FIXED 2026-08-29 as part of R258, the sibling of CT-123 in the same class. The design call '
+      'FIXED 2026-08-29 as part of the live-while-held fix (now CR D5.5b), the sibling of CT-123 in the same class. The design call '
       + '— patch the slot rather than widen holdable — was the agent own and is argued in the '
-      + 'ruling: holdable() is R150 whole safety argument and it should keep answering one '
+      + 'ruling: holdable() is the throttle\'s whole safety argument (CR D5.4b) and it should keep answering one '
       + 'question. VERIFIED BY BREAKING BY THE ORCHESTRATOR: removing paintLive from pumpPace '
       + 'reddens both guards above by name, and so does putting a full render() there instead for '
       + 'the first of them.',
@@ -7766,20 +7763,20 @@ export const CLOSED: TodoEntry[] = [
       '244-log-is-not-the-only-surface.test.ts::the pass route was never log-only: report 66 warning is already a promptbar confirm',
     ],
     closed:
-      'FIXED 2026-08-30 as R266, and the owner answer went well past this ticket: "no warnings '
+      'FIXED 2026-08-30 (now CR D7.4), and the owner answer went well past this ticket: "no warnings '
       + 'should only exist in the log. In fact, NOTHING should only exist in the log. Everything '
       + 'should be clear in the UI. The log is for checking past things." '
       + '⚠ HALF THIS ENTRY WAS WRONG, and it explains why the owner opened with "I do not know '
       + 'what warning you are talking about". The warning has TWO routes and only one was '
-      + 'log-only. The PASS route has been a .promptbar confirm since R194, with Go back / Pass '
+      + 'log-only. The PASS route has been a .promptbar confirm since the regroup confirm (CR D2.6) shipped, with Go back / Pass '
       + 'anyway — it was already in "the normal warning and choice area" he asked for. The DECLINE '
       + 'route was the log-only one: a round-2 attacker who declines goes doDeclareAttack -> '
       + 'endBattleRound -> startRegroup with no priority window, so there is no pass to hang a '
-      + 'confirm on, and R194 ev(erased) reaches no other surface BY CONSTRUCTION — E.ev only '
-      + 'feeds the R65 erased pile when the event carries cards, and a spell token is not a card. '
+      + 'confirm on, and the erased event logged for it reaches no other surface BY CONSTRUCTION — E.ev only '
+      + 'feeds the CR 407.1 erased pile when the event carries cards, and a spell token is not a card. '
       + 'It is the one erase in the engine that reaches nothing. '
       + 'The notice identifies it BY SHAPE, not prose: erased + numeric seat + non-empty ids + NO '
-      + 'cards. The missing key is the identifier, and it is the R65 gate itself. '
+      + 'cards. The missing key is the identifier, and it is the CR 407.1 gate itself. '
       + 'THE GENERAL SWEEP IS CT-142: 38 announcements are log-only, 20 of them costly, and 19 '
       + 'remain. Which of those deserve a surface is still a product call and was not guessed.',
     status: 'done',
@@ -7853,7 +7850,7 @@ export const CLOSED: TodoEntry[] = [
       + 'SCREEN after the raise (by the census own definition - the scrim is in the markup), '
       + 'because a raise that quietly did nothing reads as a suppression forever. Two raises '
       + 'were silently failing when that assert went in: the reveal needed a NON-holdable update '
-      + '(R150 holds one that offers this seat nothing, and a held update never reaches '
+      + '(CR D5.4b holds one that offers this seat nothing, and a held update never reaches '
       + 'applyUpdate, where pendingReveal is set), and the queue has to be loaded AFTER the '
       + 'raise because a `gameover` begins with flushPace and drains it on the way in.\n\n'
       + '⚠ WHAT 269 DELIBERATELY DOES NOT CLAIM, and says so in its header: ui-driver '
@@ -7875,8 +7872,8 @@ export const CLOSED: TodoEntry[] = [
     id: 137, area: 'engine', severity: 'minor',
     title: 'three per-seat destinations still read owner while their neighbour read controller',
     detail:
-      'R250 ruled that a trashed stolen card goes to the CONTROLLER bin, and deliberately left '
-      + 'recall (to hand), cacheUnit (to cache) and eraseMod (to the R65 erased pile) reading '
+      'The bin ruling (CR 405.3) sent a trashed stolen card to the CONTROLLER bin and deliberately left '
+      + 'recall (to hand), cacheUnit (to cache) and eraseMod (to the CR 407.1 erased pile) reading '
       + 'owner, because each is a power change rather than a tidy-up. One seam reading owner while '
       + 'its neighbour reads controller is how a card that can finally tell them apart gets it '
       + 'wrong once and quietly.',
@@ -7888,12 +7885,12 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Steal a unit, recall it, and check it lands in the thief hand.',
     guards: [
-      '246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner',
-      '246-zones-follow-control.test.ts::R262 §5: the erased pile files a stolen mod under the THIEF',
-      '246-zones-follow-control.test.ts::R262 §4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite',
+      '246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner',
+      '246-zones-follow-control.test.ts::CR 720.9: the erased pile files a stolen mod under the THIEF',
+      '246-zones-follow-control.test.ts::CR 400.4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite',
     ],
     closed:
-      'FIXED 2026-08-30 as R262. ⚠ THE WHOLE SUITE STAYED GREEN AFTER THE CHANGE AND THAT WAS NOT '
+      'FIXED 2026-08-30. ⚠ THE WHOLE SUITE STAYED GREEN AFTER THE CHANGE AND THAT WAS NOT '
       + 'GOOD NEWS: for any unit nobody has stolen owner === controller, so every existing test is '
       + 'a positive control for the case that did NOT change and none covered the case that did. A '
       + 'change no test can see is a change nothing will keep — the next person to simplify it back '
@@ -7907,7 +7904,7 @@ export const CLOSED: TodoEntry[] = [
     id: 138, area: 'card', severity: 'minor',
     title: 'a card played mid-resolution carried no source zone, so Proph and Stalwart Sentinel fired for nobody',
     detail:
-      'R49 gives a played card a `from` marker so "when you play a card from anywhere other than '
+      'A played card carries a `from` marker (CR 410.6) so "when you play a card from anywhere other than '
       + 'your hand" is a field read rather than a log scan. playInline, the shared helper for a '
       + 'mid-resolution play, threaded it on neither of its two paths, so those plays carried a '
       + 'blank — read as neither hand nor elsewhere, firing for nobody rather than for someone.',
@@ -7919,14 +7916,14 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Play Tides of the Cosmos with a Proph out; Proph should draw.',
     guards: [
-      '241-played-from-zone.test.ts::R263 §1: every mid-resolution play names the zone it came out of',
-      '241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows',
-      '241-played-from-zone.test.ts::R263 §7: an effect-created token carries no zone at all, so neither watcher fires',
+      '241-played-from-zone.test.ts::CR 701.4a: every mid-resolution play names the zone it came out of',
+      '241-played-from-zone.test.ts::CR 410.6: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows',
+      '241-played-from-zone.test.ts::CR 410.6b: an effect-created token carries no zone at all, so neither watcher fires',
     ],
     closed:
-      'FIXED 2026-08-30 as R263. TWO CORRECTIONS FROM THE AGENT, both worth keeping. (1) It is '
+      'FIXED 2026-08-30 (now CR 701.4a). TWO CORRECTIONS FROM THE AGENT, both worth keeping. (1) It is '
       + 'THREE cards, not the four the brief named — Spell Excavation stopped being a '
-      + 'mid-resolution play at R197, which turned it into a GRANT, and there was nothing to fix '
+      + 'mid-resolution play when an earlier fix turned it into a GRANT, and there was nothing to fix '
       + 'there. (2) A FIFTH ZONE was needed: Tides of the Cosmos plays off the REVEALED TOP OF THE '
       + 'DECK, which none of hand/cache/bin covers, and the owner "or somewhere else" reaches it. '
       + 'The agent refused to force it into one of the three and asked for the union to be widened '
@@ -7939,7 +7936,7 @@ export const CLOSED: TodoEntry[] = [
     id: 139, area: 'engine', severity: 'minor',
     title: 'two gates asked the ally question with a spec they built themselves, and agreed only by luck',
     detail:
-      'R64/R65 turn on ONE predicate being asked in every place that judges a target. Two places '
+      'CR 110.3a and 110.9 turn on ONE predicate being asked in every place that judges a target. Two places '
       + 'broke that: the Ambush legality gate hand-built { what: allyUnit } instead of asking '
       + 'ambushEffect(name).targets, and ui/inspect.ts activationNeedsConfirm re-asked '
       + 'targetCandidates WITHOUT sourceId while apply.ts abilityUnusable passes it. Neither is '
@@ -7952,11 +7949,11 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Give the ambush spec a restriction; the mode should stop being offered when no ally passes it.',
     guards: [
-      '243-ally-and-enemy-scope.test.ts::R265 §4a the ambush legality gate asks for the same ally the ambush effect will',
-      '243-ally-and-enemy-scope.test.ts::R265 §4b2 the irreversible-cost warning reads the source the real gate reads',
+      '243-ally-and-enemy-scope.test.ts::CR 110.4 the ambush legality gate asks for the same ally the ambush effect will',
+      '243-ally-and-enemy-scope.test.ts::CR 110.4a the irreversible-cost warning reads the source the real gate reads',
     ],
     closed:
-      'FIXED 2026-08-30 alongside R265. ⚠ THE AGENT GUARDS DID NOT HOLD ITS OWN FIXES, and the '
+      'FIXED 2026-08-30 alongside the ally definition (CR 110.4). ⚠ THE AGENT GUARDS DID NOT HOLD ITS OWN FIXES, and the '
       + 'orchestrator only found that by planting the historical defect: both §4a and §4b were '
       + 'TRIPWIRES over the pool (assert the spec has no restrict; assert no card is on both sides '
       + 'of the seam) and each passed IDENTICALLY before and after the fix. A guard that cannot '
@@ -7977,8 +7974,8 @@ export const CLOSED: TodoEntry[] = [
       + 'surface for any announcement with no notice of its own, and the decline route of the '
       + 'unused-spell-token warning was relying on it: a round-2 attacker who declines goes '
       + 'doDeclareAttack -> endBattleRound -> startRegroup with no priority window, so there is no '
-      + 'pass to hang a confirm on. R194 ev(erased, ...) went to the log and nowhere else — by '
-      + 'construction, since E.ev only feeds the R65 erased pile when the event carries cards, and '
+      + 'pass to hang a confirm on. The token-loss ev(erased, ...) went to the log and nowhere else — by '
+      + 'construction, since E.ev only feeds the CR 407.1 erased pile when the event carries cards, and '
       + 'a spell token is not a card.',
     evidence:
       'Round-32 Q7, the owner: "no warnings should only exist in the log. In fact, NOTHING should '
@@ -7994,9 +7991,9 @@ export const CLOSED: TodoEntry[] = [
       '244-log-is-not-the-only-surface.test.ts::one of the thirty-eight now has a surface, and the client really draws it',
     ],
     closed:
-      'FIXED 2026-08-30 as R266. ⚠ HALF THE PREMISE WAS WRONG AND IT EXPLAINS THE OWNER OWN '
+      'FIXED 2026-08-30 as the log-only ruling (now CR D7.4). ⚠ HALF THE PREMISE WAS WRONG AND IT EXPLAINS THE OWNER OWN '
       + 'CONFUSION. He answered "I do not know what warning you are talking about" — because the '
-      + 'PASS route was never log-only: it has been a promptbar confirm since R194, with Go back / '
+      + 'PASS route was never log-only: it has been a promptbar confirm since the regroup confirm (CR D2.6) shipped, with Go back / '
       + 'Pass anyway. Only the DECLINE route was log-only, and it is the one erase in the engine '
       + 'that reaches no existing surface. Supersedes CT-134. The agent also found the type-level '
       + 'sweep gives the WRONG ANSWER — erased has non-log consumers, so a per-EventType inventory '
@@ -8011,8 +8008,8 @@ export const CLOSED: TodoEntry[] = [
       'printedReminders() recognised a {i}(...) span as a reminder for term T only when THE SPAN '
       + 'CONTAINS T. The pool has a second convention, where the keyword is printed as the ability '
       + 'and the parenthetical explains it without repeating the word — "Glimpse 1 {i}(Reveal the '
-      + 'top card ...)". Three rows sat behind their own cards. Separately, both R248 and R252 '
-      + 'channels are BASE-GAME channels, so every Light and Dark row was structurally certain to '
+      + 'top card ...)". Three rows sat behind their own cards. Separately, the card and Manual reminder '
+      + 'channels (CR D6.11) are both BASE-GAME channels, so every Light and Dark row was structurally certain to '
       + 'fall through to the authored sentence whatever the game said.',
     evidence:
       'Round-32 Q6, the owner: "Rot has now been added. So this question should[nt] exist since it '
@@ -8023,17 +8020,17 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Open the card browser on Foretell; the {Glimpse} row should read the card own words.',
     guards: [
-      '245-printed-reminder-reach.test.ts::R267: every convention-B candidate the pool produces has a reviewed verdict',
-      '245-printed-reminder-reach.test.ts::R267: each accepted convention-B reminder is printed on a real card, verbatim',
-      '245-printed-reminder-reach.test.ts::R267: every card-library sentence is quoted verbatim from the file it cites',
-      '245-printed-reminder-reach.test.ts::R267: the four channels partition the glossary, and the split is pinned',
+      '245-printed-reminder-reach.test.ts::CR D6.11: every convention-B candidate the pool produces has a reviewed verdict',
+      '245-printed-reminder-reach.test.ts::CR D6.11: each accepted convention-B reminder is printed on a real card, verbatim',
+      '245-printed-reminder-reach.test.ts::CR D6.11: every card-library sentence is quoted verbatim from the file it cites',
+      '245-printed-reminder-reach.test.ts::CR D6.11: the four channels partition the glossary, and the split is pinned',
     ],
     closed:
-      'FIXED 2026-08-30 as R267. Four rows moved: {Glimpse} (R252 §3 had called it "the ONLY '
-      + 'statement of the rule this repository has" — four cards print one), {Unstable} (R252 §4 '
+      'FIXED 2026-08-30 (now CR D6.11). Four rows moved: {Glimpse} (the manual-channel ruling had called it "the ONLY '
+      + 'statement of the rule this repository has" — four cards print one), {Unstable} (that ruling '
       + 'read the MANUAL, judged it inadmissible, and never asked whether a card printed one — two '
-      + 'do), {Ambush} (R252 §1 took the manual sentence while six cards print a shorter one, and '
-      + 'R252 own PRINTED BEATS MANUAL hands it to the cards), and {Rot}. THE LESSON: a list of '
+      + 'do), {Ambush} (it took the manual sentence while six cards print a shorter one, and '
+      + 'its own PRINTED BEATS MANUAL hands it to the cards), and {Rot}. THE LESSON: a list of '
       + '"things the game is silent about" is a claim about a SCAN, not about the game. 231 '
       + 'OCCURRENCES map recorded Glimpse: 0 and Rot: 0 and those zeros were read for three rounds '
       + 'as "the game says nothing" when all they meant was "the MANUAL says nothing". Sharper '
@@ -8048,7 +8045,7 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'Derived over the 193 structural ev() sites in engine.ts and apply.ts: 38 reach no surface '
       + 'but the log, of which 20 were ranked as costing the player something irreversible. One was '
-      + 'fixed as R266. The remaining 19, worst first: a spell FIZZLES (x2 — and main.ts:4349 '
+      + 'fixed (the token-loss notice, CR D7.4a). The remaining 19, worst first: a spell FIZZLES (x2 — and main.ts:4349 '
       + 'labels a fizzled stack item "resolved", so the client says the opposite of the truth); a '
       + 'cost cannot be paid so that effect is SKIPPED (x5); a trigger prevented by a tax (x2); a '
       + 'declined [cost] and a copy not made (x2); no legal target so it does nothing; a paid-for '
@@ -8078,25 +8075,25 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Fizzle a spell by removing its only target in response; the stack entry reads "resolved".',
     guards: [
-      '256-cost-toasts.test.ts::[R276] the derived tier-1 population, and every member of it earns a toast',
-      '256-cost-toasts.test.ts::[R276] the whole tier, as one number, over engine and pool together',
-      '256-cost-toasts.test.ts::[R276] the client puts a costly absence on the screen and not only in the log',
-      '256-cost-toasts.test.ts::[R276] the overflow is counted and pointed at the log, never dropped in silence',
-      '256-cost-toasts.test.ts::[R276] the log still carries every one of them',
+      '256-cost-toasts.test.ts::[CR D7.4] the derived tier-1 population, and every member of it earns a toast',
+      '256-cost-toasts.test.ts::[CR D7.4] the whole tier, as one number, over engine and pool together',
+      '256-cost-toasts.test.ts::[CR D7.4] the client puts a costly absence on the screen and not only in the log',
+      '256-cost-toasts.test.ts::[CR D7.4] the overflow is counted and pointed at the log, never dropped in silence',
+      '256-cost-toasts.test.ts::[CR D7.4] the log still carries every one of them',
     ],
     closed:
-      'R276 - the shared cost-toast tier the owner chose on 2026-08-30, plus R271 for the '
+      'CR D7.4b - the shared cost-toast tier the owner chose on 2026-08-30, plus CR D6.12 for the '
       + 'fizzle mislabel half. ⚠ THE POPULATION IS 22, NOT 19: 19 was the number of ROWS in the '
       + 'stem table, and the table has 19 stems covering 20 SITES (the cost-cannot-be-paid stem '
-      + 'fires at two engine sites). 20 structural, minus one the R266 promptbar took this '
-      + 'round and two the R271 stack strip took, plus five in the card pool = 22. THE TIER IS '
+      + 'fires at two engine sites). 20 structural, minus one the CR D7.4a promptbar took this '
+      + 'round and two the stack strip took, plus five in the card pool = 22. THE TIER IS '
       + 'NOT A LIST OF CASES: the rule is ABSENCE AND COSTLY over the engine own prose, then a '
       + 'chain of questions put to the SURFACES THEMSELVES - beatKeys, fizzledIds, negatedIds, '
-      + 'the R65 erased gate, tokenLossNotice - every one imported rather than restated, so '
+      + 'the CR 407.1 erased gate, tokenLossNotice - every one imported rather than restated, so '
       + 'WIDENING ANY SURFACE NARROWS THIS TIER AUTOMATICALLY and a twenty-third announcement '
       + 'is carried without anyone editing anything. Owner answers: card-text losses are IN (an '
       + 'absence has nothing to sit next to, so 244 reason for scoping the pool out does not '
-      + 'survive the move to this question); the R266 token loss KEEPS ITS BAR and the toast '
+      + 'survive the move to this question); the CR D7.4a token loss KEEPS ITS BAR and the toast '
       + 'stands down for it; the shared label is "this did nothing", one constant, because a '
       + 'per-case label map is a hand-typed list wearing a different hat. Coalesce, then stack '
       + 'staggered, at most four drawn, the rest counted and pointed at the log - never dropped '
@@ -8111,7 +8108,7 @@ export const CLOSED: TodoEntry[] = [
     detail:
       'test/184-ruling-register.test.ts citedRulings ended `.filter(n => n >= 1 && n <= 250)`, with '
       + 'a comment saying the ceiling was "the register own highest number". That stopped being '
-      + 'true at R251, so every citation of R251 through R267 — the whole of rounds 31, 32 and 33 — '
+      + 'true at the round-31 rulings, so every citation from rounds 31, 32 and 33 — '
       + 'was dropped BEFORE it reached the "a cited number must resolve" check. The guard did not '
       + 'fail; it had nothing left to look at.',
     evidence:
@@ -8127,7 +8124,7 @@ export const CLOSED: TodoEntry[] = [
       + 'should name it as a new gap. (Writing that number literally HERE trips the same guard — '
       + 'which is the shortest possible demonstration that the ceiling is gone.)',
     guards: [
-      '184-ruling-register.test.ts::R215 §2: every R-number cited in the tree resolves to a register entry, or is on the ledger',
+      '184-ruling-register.test.ts::§2: every CR number cited in client/ is a live rule of the comprehensive rules',
     ],
     closed:
       'FIXED 2026-08-30. A hand-set bound that has to be maintained is a bug even while it is '
@@ -8137,17 +8134,17 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 145, area: 'engine', severity: 'minor',
-    title: 'the R117 sub-step gate is dead code and no test can tell',
+    title: 'the CR 608.9a sub-step gate is dead code and no test can tell',
     detail:
-      'E.strikesInCurrentSubStep is the gate R117 and R157 §5 are written on: it answers "does my '
+      'E.strikesInCurrentSubStep is the gate CR 608.9a is written on: it answers "does my '
       + 'column strike in the sub-step that is running?" and is asked from when(), at event time. '
       + 'Replace its body with `return true` and NOTHING in the tree notices — not '
       + '134-column-and-substep, the file named after it, not 53-playtest-round7, not '
       + '115-literal-light, not 239. Measured across the FULL suite with the gate disabled and '
       + 'again with it restored: 25 failures either way, the same 25 titles. '
-      + '⚠ THE BEHAVIOUR IS CORRECT, and that is the point — R195 gave the aggregated lifeLost a '
+      + '⚠ THE BEHAVIOUR IS CORRECT, and that is the point — an earlier fix gave the aggregated lifeLost a '
       + 'per-column breakdown, and faceDamageDealtBy answers "is this my sub-step" on the way to '
-      + '"is this my damage". Either mechanism alone holds R117; only removing BOTH moves a '
+      + '"is this my damage". Either mechanism alone holds CR 608.9a; only removing BOTH moves a '
       + 'number. So the gate is redundant, not wrong.',
     evidence:
       'Found by the agent converting the tests R261 broke, and confirmed by the orchestrator with '
@@ -8157,8 +8154,8 @@ export const CLOSED: TodoEntry[] = [
       '⚠ NOT "delete it" — decide which mechanism is the spec, then make the other checkable. A '
       + 'guard belongs in 134-column-and-substep that fails when the method stops discriminating: '
       + 'the cheapest honest one asserts the method itself returns false for a column that is NOT '
-      + 'striking, which no current test asks it. If the R195 breakdown is the real spec, say so '
-      + 'in R117 and leave the gate as belt-and-braces WITH that guard; if the gate is the spec, '
+      + 'striking, which no current test asks it. If the breakdown is the real spec, say so '
+      + 'in the rules and leave the gate as belt-and-braces WITH that guard; if the gate is the spec, '
       + 'something has to exercise it through behaviour.',
     proof: null,
     verify: 'Replace the body of E.strikesInCurrentSubStep with `return true` and run the suite: '
@@ -8174,21 +8171,21 @@ export const CLOSED: TodoEntry[] = [
       + 'DIFFERENT questions and only look interchangeable because every card in the pool asks '
       + 'both at once. strikesInCurrentSubStep answers WHEN (does my column strike in the '
       + 'sub-step that is running — read from when(), at event time, before damageStep '
-      + 'advances); R195\'s faceDamageDealtBy answers WHOSE (which of this seat\'s columns did '
-      + 'the damage the aggregated per-seat lifeLost reports). R117 and R157 \u00a75 are '
+      + 'advances); the per-column breakdown\'s faceDamageDealtBy answers WHOSE (which of this seat\'s columns did '
+      + 'the damage the aggregated per-seat lifeLost reports). CR 608.9a and 608.2c are '
       + 'written on the first — "both apply" for a {Swift}{Sluggish} column is a statement '
-      + 'about the sub-step gate — so the gate stays as the timing spec and R195 is the '
+      + 'about the sub-step gate — so the gate stays as the timing spec and the per-column breakdown is the '
       + 'attribution layer. Nothing in digital-rules.md needed changing; that file is not this '
       + 'lane\'s in any case.\n\nTHE GUARD IS DELIBERATELY WHITE-BOX. Every existing test asks '
-      + 'the gate a question R195 also answers, which is exactly why `return true` was free; a '
+      + 'the gate a question the per-column breakdown also answers, which is exactly why `return true` was free; a '
       + 'method whose redundancy makes it behaviourally untestable is guarded directly or not '
       + 'at all. 134 \u00a7CT-145 asks it the question it can get WRONG: a 3x3 matrix of one '
       + '{Swift}, one {Sluggish} and one normal column against each running sub-step (exactly '
       + 'one true cell per row, so `return true` makes all nine wrong), plus the two states '
       + 'that are not a striking sub-step at all — the after-combat step, and damageStep null, '
-      + 'which is THE R261 WORLD where these triggers actually RUN and where asking this gate '
+      + 'which is THE AFTER-COMBAT WORLD (CR 608.9b) where these triggers actually RUN and where asking this gate '
       + 'from run() would return false for everything.\n\nRE-BROKEN THREE WAYS: `return true` '
-      + 'reddens the new test; reverting to R157 \u00a75\'s lossy singular (combatSubStepOf '
+      + 'reddens the new test; reverting to the lossy singular (combatSubStepOf '
       + 'instead of the full list) reddens the EXISTING {Swift}{Sluggish} test, which is the '
       + 'evidence the two guards cover different halves; and dropping the after/null guard '
       + 'reddens the new one again.',
@@ -8196,9 +8193,9 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 146, area: 'engine', severity: 'minor',
-    title: 'R121 now taxes combat-damage triggers, and fixtures that use Crevice Lurker as scenery pass for the wrong reason',
+    title: 'CR 608.9d now taxes combat-damage triggers, and fixtures that use Crevice Lurker as scenery pass for the wrong reason',
     detail:
-      'R261 routes combat-damage triggers through the battle-mode stack, so R121 gateTaxedTrigger '
+      'The after-combat hold (CR 608.9b) routes combat-damage triggers through the battle-mode stack, so gateTaxedTrigger (CR 111.10g) '
       + 'now runs for them — correctly, since Crevice Lurker prints "during battle" and combat '
       + 'damage is during battle. The side effect: any fixture that happens to contain a Crevice '
       + 'Lurker now taxes its combat-death triggers [1], and a controller with no mana has the '
@@ -8222,7 +8219,7 @@ export const CLOSED: TodoEntry[] = [
       'DERIVED AND MEASURED, AND THE ANSWER IS ONE FIXTURE, NOT A CLASS. The sweep the entry '
       + 'asks for: 19 `spawn(..., \'Crevice Lurker\')` sites across 8 test files. Rather than '
       + 'reading each for "would it still fail if its trigger were prevented", the prevention '
-      + 'itself was instrumented (both R121 exits already stamp `prevented: true` on their '
+      + 'itself was instrumented (both CR 111.10g exits already stamp `prevented: true` on their '
       + 'event) and all 8 files were run. THREE triggers are ever prevented in the whole set:\n'
       + '  \u00b7 Astral Painseeker (declined) and Pestilent Titan (no mana), both in '
       + '16-earth-a\'s own "declining prevents the trigger" and "zero open mana" tests — which '
@@ -8240,7 +8237,7 @@ export const CLOSED: TodoEntry[] = [
       + 'THE ENTRY\'S WORRY WAS "fixtures passing for the wrong reason" AND THAT DID NOT '
       + 'HAPPEN: every one of the three preventions was in a test whose assertions still hold, '
       + 'and no expected value moved anywhere. What did happen is one test describing a board '
-      + 'it did not have. RE-BROKEN TWICE: restoring R261\'s old exemption (combat-damage '
+      + 'it did not have. RE-BROKEN TWICE: restoring the old exemption (combat-damage '
       + 'triggers slipping past gateTaxedTrigger) reddens it, and dropping `prevented: true` '
       + 'from the announcement reddens it — so the guard depends on the announcement staying '
       + 'machine-readable, which is what makes this sweep repeatable.',
@@ -8248,9 +8245,9 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 147, area: 'engine', severity: 'minor',
-    title: 'an UNREACHED promise went stale because R261 made it reachable, and nothing sweeps for that',
+    title: 'an UNREACHED promise went stale because the after-combat hold made it reachable, and nothing sweeps for that',
     detail:
-      'test/unreached.ts lists card promises the scenario fixtures cannot reach. R261 gives combat '
+      'test/unreached.ts lists card promises the scenario fixtures cannot reach. CR 608.9b gives combat '
       + 'triggers a real stack resolution window, so ownResolution can finally attribute their '
       + 'payload — Cinder Scuttler is now observed delivering, and its UNREACHED entry is a lie. '
       + '84-card-semantics caught exactly this and named the entry, which is the system working; '
@@ -8272,7 +8269,7 @@ export const CLOSED: TodoEntry[] = [
     ],
     closed:
       'THE WHOLE LIST WAS CHECKED ONCE, ROUND 36, AND THE ANSWER IS THAT ONLY ONE HALF OF THIS '
-      + 'ENTRY WAS EVER TRUE. (1) The Cinder Scuttler entry was ALREADY GONE — R261 deleted it '
+      + 'ENTRY WAS EVER TRUE. (1) The Cinder Scuttler entry was ALREADY GONE — the after-combat round deleted it '
       + 'and its WITNESSED note in the same change, so "delete the entry" was done before this '
       + 'ticket was read. (2) "Expect MORE entries to go stale the same way": measured, and NO. '
       + '84 is green over all 35 entries, and its staleness arm is not a once-per-round sweep — '
@@ -8281,10 +8278,10 @@ export const CLOSED: TodoEntry[] = [
       + 'rule. The direction this entry worried about is continuously swept and clean. I read '
       + 'all 35 reasons by hand as well: 1 REGION, 25 BOARD, 5 CHOICE, 2 VOCAB, 2 EXTRACT, and '
       + 'the four that touch combat/damage language (Bloated Manablub, Stellarspore Harvester, '
-      + 'Perpetual Construct, Skittering Blight) are unobserved for reasons R261 did not move.\n\n'
+      + 'Perpetual Construct, Skittering Blight) are unobserved for reasons the after-combat hold did not move.\n\n'
       + '⚠ BUT THE SWEEP HAD A REAL HOLE, AND IT WAS IN THE LEDGER\'S OWN HEADER. '
       + 'ledgers/unreached.ts opened "38 claims over 37 cards". The object holds 35 cards and '
-      + 'the drill counts 36 claims. Slag Spewer left at R219 and Cinder Scuttler at R261; the '
+      + 'the drill counts 36 claims. Slag Spewer left when its erase began filing the pile and Cinder Scuttler when combat-damage triggers moved to after combat; the '
       + 'sentence never moved, and nothing could see it — 187 §1 pins the OBJECT\'s card count, '
       + 'and no guard read the prose. That is the fourth instance of the failure '
       + '84-card-semantics lists three of beside its own tally ("a card count that was really a '
@@ -8325,17 +8322,17 @@ export const CLOSED: TodoEntry[] = [
       + 'not exist, not "connecting to server".',
     reportId: 135,
     guards: [
-      '254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it',
-      '254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever',
-      '254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board',
+      '254-join-nonexistent-room.test.ts::CR D7.5 a code the server never minted is refused, and the refusal names it',
+      '254-join-nonexistent-room.test.ts::CR D7.5 a refused join reaches the connecting screen instead of Connecting forever',
+      '254-join-nonexistent-room.test.ts::CR D7.5 an error in the constructed waiting room lands too, where there is still no board',
     ],
     closed:
-      'R274. THE BRIEF WAS WRONG ABOUT WHICH HALF WAS MISSING and the agent said so: the '
+      'The refusal-reach ruling (CR D7.5). THE BRIEF WAS WRONG ABOUT WHICH HALF WAS MISSING and the agent said so: the '
       + 'display path was always there (renderConnecting has a uiError slot, a .joinerr style '
       + 'and a way home) and the SERVER always answered - measured over a raw socket, it '
       + 'replies with a named refusal in under a millisecond. What broke is BETWEEN them, and '
       + 'it is a thrown exception rather than a missing branch. `onMsg` t===error begins with '
-      + 'flushPace() (R150, spend the queue first), which ends in paintLive(), which computes '
+      + 'flushPace() (CR D5.4c, spend the queue first), which ends in paintLive(), which computes '
       + 'shareBannerHtml() as an ARGUMENT - and setLiveSlot bails on a missing node only inside '
       + 'the CALLEE. shareBannerHtml read h.state.phase while NetBackend.state is still null, '
       + 'so the TypeError ate `uiError = m.msg; render()` three statements later. Reproduced in '
@@ -8380,7 +8377,7 @@ export const CLOSED: TodoEntry[] = [
       '249-suppression-scope.test.ts::§3 and the weaver still stops the sacrifice it does print',
     ],
     closed:
-      'R269. Three of the four suppressAbilities users print a genuine blanket clause (Monke, '
+      'CR 712.4. Three of the four suppressAbilities users print a genuine blanket clause (Monke, '
       + 'Transmogrifant, The Everywhere all print "lose(s) all ... abilities"); only Wispweaver '
       + 'was misusing it. The agent also found the Wisp is NOT the only card with an '
       + 'after-combat self-sacrifice - Smouldering Inferno prints "[Augment] After combat, '
@@ -8420,7 +8417,7 @@ export const CLOSED: TodoEntry[] = [
       '253-combat-orientation.test.ts::a live block column is marked pending without changing where it stands',
     ],
     closed:
-      'R273. MY PREMISE WAS RIGHT AND THERE WAS A SECOND SITE I DID NOT NAME. The attack live '
+      'CR D6.13. MY PREMISE WAS RIGHT AND THERE WAS A SECOND SITE I DID NOT NAME. The attack live '
       + 'view was as measured: watchingHtml returned before `flip` existed and drew a flat '
       + '.cols with no halves and no vs line (bhalf appears 0 times in the live markup for a '
       + 'two-column attack and 4 times in the committed markup). But THE BLOCKS LIVE VIEW WAS '
@@ -8431,7 +8428,7 @@ export const CLOSED: TodoEntry[] = [
       + 'block landed, with IDENTICAL DOM ORDER THROUGHOUT. That is why the owner wrote '
       + '"attacks OR blocks", and it is invisible to any test that reads DOM order. Fixed by '
       + 'hoisting `flip` above the declare branch and routing every battle column - committed '
-      + 'table, R75 placement end-columns, watching view and the new invader column - through '
+      + 'table, CR 602.6a placement end-columns, watching view and the new invader column - through '
       + 'one battleColHtml; pendingColHtml now returns bare cards so pending and committed are '
       + 'children of the same .bhalf and one CSS rule governs both. Verified in headless '
       + 'Chrome: live and committed block columns are pixel-identical apart from the dimming '
@@ -8462,7 +8459,7 @@ export const CLOSED: TodoEntry[] = [
       '253-combat-orientation.test.ts::while an attack is only being declared the region panel still draws the invaders',
     ],
     closed:
-      'R273. invadersIn + battleHoldsInvaders: one derivation and one predicate asked by both '
+      'The live-view ruling\'s second half. invadersIn + battleHoldsInvaders: one derivation and one predicate asked by both '
       + 'panels, so they can never both draw or both skip. TWO JUDGEMENT CALLS ON THE OWNER '
       + 'HEDGE ("should probably be"): (1) it is a COLUMN, not a top-pinned strip, routed '
       + 'through battleColHtml so it lands on its controller side of the vs line - a strip '
@@ -8517,7 +8514,7 @@ export const CLOSED: TodoEntry[] = [
       '248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box',
     ],
     closed:
-      'R268, and THE BRIEF WAS WRONG TWICE. (1) It called the rule the mirror of the existing '
+      'The augment-box ruling (CR 721.1c), and THE BRIEF WAS WRONG TWICE. (1) It called the rule the mirror of the existing '
       + 'one. It is ASYMMETRIC: a card own [Augment] text is active when it is played NORMALLY '
       + 'too (Manual Q&A), so a unit in play radiates body PLUS box while an augment mod '
       + 'radiates box ONLY. A symmetric fix would have broken Prickly Protector, a 0/1 that '
@@ -8561,10 +8558,10 @@ export const CLOSED: TodoEntry[] = [
       'Put Spellbind on the stack and look at the graft icon.',
     reportId: 140,
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §3 no game icon on the stack strip is drawn at its full size',
+      '251-fizzle-label-and-mod-strips.test.ts::§3 no game icon on the stack strip is drawn at its full size',
     ],
     closed:
-      'R271. Cause was CSS specificity, not sizing: img.txticon { width:15px } at (0,1,1) '
+      'Cause was CSS specificity, not sizing: img.txticon { width:15px } at (0,1,1) '
       + 'beats every bare-class rule, and .stacktag is an 8px chip with no override - unlike '
       + '.card .badge .txticon (10px) and .zonelabel .txticon (12px), which exist for exactly '
       + 'this. Confirmed against the ERJZ replay, log line 528: Spellbind + Pernicious '
@@ -8592,10 +8589,10 @@ export const CLOSED: TodoEntry[] = [
       'Mod a spell, put it on the stack, hover it. The mod should show.',
     reportId: 141,
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §4a a modded stack item composes the same picture as a modded unit',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.12a a modded stack item composes the same picture as a modded unit',
     ],
     closed:
-      'R271, AND THE BRIEF NAMED THE WRONG SURFACE: this is not the hover TOOLTIP, which is '
+      'CR D6.12a, AND THE BRIEF NAMED THE WRONG SURFACE: this is not the hover TOOLTIP, which is '
       + 'deliberately suppressed for stack cards. "the little modded effect under them" is the '
       + 'focus rail .modstrip, which previewEntityHtml drew for units and previewStackHtml did '
       + 'not draw at all. That made this report and CT-159 ONE fix on ONE renderer - '
@@ -8627,13 +8624,13 @@ export const CLOSED: TodoEntry[] = [
       + 'land. Scroll position and hover should survive.',
     reportId: 142,
     guards: [
-      '252-viewport-and-log.test.ts::R272 §2 a card image reserves its height, so a repaint cannot clamp the scroll',
-      '252-viewport-and-log.test.ts::R272 §3a a repaint that leaves the hovered card where it was keeps the tip',
-      '252-viewport-and-log.test.ts::R272 §3b a card that is gone from the new board takes its tip with it',
-      '252-viewport-and-log.test.ts::R272 §4 an update this seat cannot see costs exactly one paint',
+      '252-viewport-and-log.test.ts::a card image reserves its height, so a repaint cannot clamp the scroll',
+      '252-viewport-and-log.test.ts::a repaint that leaves the hovered card where it was keeps the tip',
+      '252-viewport-and-log.test.ts::a card that is gone from the new board takes its tip with it',
+      '252-viewport-and-log.test.ts::an update this seat cannot see costs exactly one paint',
     ],
     closed:
-      'R272, AND TWO OF THE THREE CAUSES IN MY BRIEF DID NOT EXIST. Measured in headless '
+      'The repaint ruling, AND TWO OF THE THREE CAUSES IN MY BRIEF DID NOT EXIST. Measured in headless '
       + 'Chrome before any edit. (1) WINDOW SCROLL - wrong, and the fix I prescribed is a '
       + 'literal no-op: #app.board is height:100vh; overflow:hidden, so in game the document '
       + 'has nothing to scroll (scrollHeight 813 vs clientHeight 813 at 1400x900); .main is the '
@@ -8680,14 +8677,14 @@ export const CLOSED: TodoEntry[] = [
       + 'attribute line.',
     reportId: 143,
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §5a a printed-Unstable card wears it on the attribute line',
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §5c the sentence a player reads there is the POOLs, not ours',
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §5d the inspector really draws that row for a modded unit',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.10c a printed-Unstable card wears it on the attribute line',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.11 the sentence a player reads there is the POOLs, not ours',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.10c the inspector really draws that row for a modded unit',
     ],
     closed:
-      'R271. {Unstable} moved from box.state to box.attrs with an AttrOrigin, so it reads on '
+      'CR D6.10c. {Unstable} moved from box.state to box.attrs with an AttrOrigin, so it reads on '
       + 'the attribute line rather than as a footnote. The hand-typed "(Manual p.35)" sentence '
-      + 'was DELETED: the inspector now sources the sentence from the glossary, i.e. R267 '
+      + 'was DELETED: the inspector now sources the sentence from the glossary, i.e. CR D6.11 '
       + 'pool-printed reminder, so the text a player reads is the game words and not ours. '
       + 'Needed ui/cardtext.ts, which was outside the agent listed territory and was flagged '
       + 'rather than taken silently. 122-cardtext-markup was updated because it encoded the old '
@@ -8726,13 +8723,13 @@ export const CLOSED: TodoEntry[] = [
       + 'ally in region, then move the region. It should not die.',
     reportId: 144,
     guards: [
-      '250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker (R270, report 144)',
-      '250-ally-count-and-absence.test.ts::a host wearing a donated Prickly Protector survives being sent out (R270)',
-      '250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival (R270)',
+      '250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker (CR 610.2e, report 144)',
+      '250-ally-count-and-absence.test.ts::a host wearing a donated Prickly Protector survives being sent out (CR 610.2e)',
+      '250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival (CR 610.2e)',
       '250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away',
     ],
     closed:
-      'R270, AND THE BRIEF HYPOTHESIS WAS WRONG: not a live-amount or region-timing problem, '
+      'Fixed (a sent counterattacker is not death-checked), AND THE BRIEF HYPOTHESIS WAS WRONG: not a live-amount or region-timing problem, '
       + 'and not the statics reentrancy guard (otherAllies reads raw unitsOf, never effStats, '
       + 'so it is reentrancy-safe). The real cause is one line wide. doDeclareBlocks stamps '
       + 'absent=true on every sent counterattacker, and EVERY read honours it - untargetable, '
@@ -8774,13 +8771,13 @@ export const CLOSED: TodoEntry[] = [
       'Play until the log is long, open it, and scroll to the beginning.',
     reportId: 145,
     guards: [
-      '252-viewport-and-log.test.ts::R272 §1a a log longer than the old 80-line window is shown WHOLE',
-      '252-viewport-and-log.test.ts::R272 §1b lifting the window does not lift the story curtain with it',
-      '252-viewport-and-log.test.ts::R272 §1c the pacing curtain still holds the tail it has not told yet',
+      '252-viewport-and-log.test.ts::CR D6.15a a log longer than the old 80-line window is shown WHOLE',
+      '252-viewport-and-log.test.ts::CR D6.15a lifting the window does not lift the story curtain with it',
+      '252-viewport-and-log.test.ts::CR D6.15a the pacing curtain still holds the tail it has not told yet',
     ],
     closed:
-      'R272. logFrom is 0. ⚠ The 80-line window was NOT the only curtain over that observable '
-      + 'and the other two are deliberate and stay: R80 pacing (heldLines/logEnd) and the '
+      'CR D6.15a. logFrom is 0. ⚠ The 80-line window was NOT the only curtain over that observable '
+      + 'and the other two are deliberate and stay: CR D5.4 pacing (heldLines/logEnd) and the '
       + 'story/verbose fold. §1b and §1c pin each of them separately, so lifting the window '
       + 'cannot quietly lift them too - this repo has already been bitten once by a second '
       + 'curtain over one observable breaking an older guard that named neither. Orchestrator '
@@ -8808,10 +8805,10 @@ export const CLOSED: TodoEntry[] = [
       'Open the focus card window on a modded unit and check the spacing.',
     reportId: 146,
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §4b [#146] the strip carries no badge, and its peek is one named number',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.12a [#146] the strip carries no badge, and its peek is one named number',
     ],
     closed:
-      'R271, same renderer as CT-154. The badge and the strip it needed came out; the peek is '
+      'CR D6.12a, same renderer as CT-154. The badge and the strip it needed came out; the peek is '
       + 'now one named number, --modpeek: .16. ⚠ ONE JUDGEMENT CALL THAT COULD NOT BE DERIVED '
       + 'and is flagged for the owner: "according to where the augment/graft symbol is" has no '
       + 'single answer, because the frame is bottom-anchored so the symbol moves with text '
@@ -8910,7 +8907,7 @@ export const CLOSED: TodoEntry[] = [
       + 'is still full of moves, so both banks would have drained for as long as the two of them '
       + 'sat staring at a board that would not accept a move. A stopped game waits on nobody.\n\n'
       + 'DRIFT IS DELIBERATELY NOT FROZEN, and this is the one judgement call. The brief said '
-      + '`skipped.length > 0` and that is right: an R191 drifted log still replays straight '
+      + '`skipped.length > 0` and that is right: a drifted log still replays straight '
       + 'through, so it does still produce this board - one game, recorded honestly, on rules '
       + 'that moved, which `forks` says out loud. A REFUSAL is different in kind: the log stops '
       + 'describing the board at that index and everything appended after it is fiction. Guarded '
@@ -8939,7 +8936,7 @@ export const CLOSED: TodoEntry[] = [
       'every markup helper reachable from paintLive must survive a null game state, and '
       + 'nothing checks that',
     detail:
-      'R258/CT-123 introduced `paintLive()` as a SECOND writer of the board nodes, called '
+      'The live-while-held fix (CT-123) introduced `paintLive()` as a SECOND writer of the board nodes, called '
       + 'from `flushPace()` and from `pumpPace()`. `setLiveSlot` has a "not a board screen" '
       + 'bail — but that guard is inside the CALLEE, so the ARGUMENT is evaluated first. Any '
       + 'helper passed to it therefore runs on screens that have no board, where '
@@ -9049,18 +9046,18 @@ export const CLOSED: TodoEntry[] = [
       + 'typable field, and the confirm should look like a button.',
     reportId: 147,
     guards: [
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §2 the pay-X-life bar carries R197s arrows and its typed box',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §2b the dial goes DOWN as well as up, and never below what is already paid',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §4 one confirm walks the ramp to the dialled X and then stops',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the pay-X-life bar carries the number-entry arrows and its typed box',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the dial goes DOWN as well as up, and never below what is already paid',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2c that is enough is a full button, and the plain declines stay quiet',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2b one confirm walks the ramp to the dialled X and then stops',
     ],
     closed:
-      'R280. The word "also" was right and the reason it never got the ramp is structural: a '
+      'CR D7.2b. The word "also" was right and the reason it never got the ramp is structural: a '
       + 'variable cost is NOT a number question. E.collectCastCosts LOOPS, raising a fresh '
-      + 'kind:targets decision each turn with ONE option (Pay 1 more life) plus R64 That is '
-      + 'enough - which is what re-asks R49 (never your last life) before every point. numDec() '
-      + 'dresses that live cost question as the NumberDecisionLike R197 already draws, so the '
-      + 'arrows, the typed box, Enter-to-confirm and the caret rescue are all R197 unchanged; '
+      + 'kind:targets decision each turn with ONE option (Pay 1 more life) plus the That is '
+      + 'enough option (CR 702.6b) - which is what re-asks CR 111.6b (never your last life) before every point. numDec() '
+      + 'dresses that live cost question as the NumberDecisionLike the numeric entry (CR D7.2a) already draws, so the '
+      + 'arrows, the typed box, Enter-to-confirm and the caret rescue are all that same entry, unchanged; '
       + 'nothing was rebuilt. The dial reads TOTAL X floored at what is already paid, so down '
       + 'is free (nothing is spent until Confirm - that is the "had to hit cancel" half) and '
       + 'dialling below the paid floor cannot promise a refund. Recognised by OPTION VALUE '
@@ -9097,7 +9094,7 @@ export const CLOSED: TodoEntry[] = [
       '259-card-text-surface.test.ts::CT-163: with nothing named, the printed clause stands exactly as printed',
     ],
     closed:
-      'R279, and it is R151 rather than a new rule. Entity.named is a live per-instance value '
+      'CR D6.9b, and it is the token-X rule (CR D6.9a) applied again rather than a new rule. Entity.named is a live per-instance value '
       + 'sitting behind a PRINTED VARIABLE ("My last named card"), exactly as a token X is, so '
       + 'it is SUBSTITUTED INTO THE POOL SENTENCE rather than announced on a new line: the box '
       + 'now reads "During [Haste] name a card. Triskaidekaphage loses all abilities." The '
@@ -9134,14 +9131,14 @@ export const CLOSED: TodoEntry[] = [
       '259-card-text-surface.test.ts::CT-164: the STAT arithmetic is not deduplicated — compact mode hides it',
     ],
     closed:
-      'R279. The class is bigger than the instance and it is TOTAL: every bit the synthesized '
+      'The class is bigger than the instance and it is TOTAL: every bit the synthesized '
       + 'static line emitted was also stated by a structured row, because both are built from '
       + 'E.projections. The rule landed: a bit is dropped only when another row of the same box '
       + 'states it in EVERY render mode. Suppression and attribute grants are drawn in compact '
       + 'too, so they go; the STAT arithmetic is NOT deduplicated, because statMathHtml is '
       + 'dropped in compact and on hover that line is the only per-source attribution a +2/+2 '
-      + 'has. Also removed: the copy line {Unstable} tail (R271 moved it to the attr row) and a '
-      + 'redundant X = 3 when R151 had already printed the number.',
+      + 'has. Also removed: the copy line {Unstable} tail (moved to the attr row, CR D6.10c) and a '
+      + 'redundant X = 3 when the token-X substitution (CR D6.9a) had already printed the number.',
     status: 'done',
   },
   {
@@ -9157,10 +9154,10 @@ export const CLOSED: TodoEntry[] = [
       'ROUND 35, report #150, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
       + 'on engine e8aed524a8, the deployed commit.',
     fix:
-      'DERIVE the sentence from the pool, the way R267 did for {Glimpse}, rather than '
-      + 'authoring one. If the pool prints no prophecy reminder anywhere then the manual or R42 '
+      'DERIVE the sentence from the pool, the way the {Glimpse} fix did (CR D6.11), rather than '
+      + 'authoring one. If the pool prints no prophecy reminder anywhere then the manual or CR 803.7 '
       + 'is the source, and the ruling must say which and why - an authored sentence that looks '
-      + 'printed is the failure R252 documented.',
+      + 'printed is the failure the manual-channel ruling documented.',
     proof: null,
     verify:
       'Open a card with a prophecy banner and look at the reminder area.',
@@ -9171,9 +9168,9 @@ export const CLOSED: TodoEntry[] = [
       '259-card-text-surface.test.ts::CT-164 + CT-165: the browser panel does not state prophecy twice',
     ],
     closed:
-      'R279, AND MY BRIEF WAS WRONG IN THE MOST USEFUL WAY. I told the agent to derive a '
+      'The live-value ruling (CR D6.9), AND MY BRIEF WAS WRONG IN THE MOST USEFUL WAY. I told the agent to derive a '
       + 'reminder from the pool and, failing that, to justify authoring one. NOTHING NEEDED '
-      + 'AUTHORING: ui/glossary.ts has carried a {Prophecy} row cited to R42/R43/R44/R111 since '
+      + 'AUTHORING: ui/glossary.ts has carried a cited {Prophecy} row (today CR 803.7, 803.7g, 803.7j) since '
       + 'the expansion landed. The bug was pure REACH - extract-printed.mjs strips the banner '
       + 'out of `text` into a structured field, so (a) the box showed nothing (The Foretold '
       + 'entire printed text box IS its banner, and printedTextBox rendered "no rules text") '
@@ -9190,11 +9187,11 @@ export const CLOSED: TodoEntry[] = [
     cards: ['Divine Intervention'],
     title:
       'a fulfilled prophecy is gated to its [Haste] marker instead of the card printed '
-      + 'timing, against R42, and it lost a game',
+      + 'timing, against CR 803.7i, and it lost a game',
     detail:
       'engine.ts cachedTiming reads `if (via === "prophecy" && cc.prophecy?.release) return '
       + 'cc.prophecy.release;` under a comment saying a release marked [Haste] "overrides it '
-      + 'for the prophecy release only (R42, Divine Intervention)". R42 SAYS THE OPPOSITE, in '
+      + 'for the prophecy release only ([…], Divine Intervention)". The prophecy ruling (now CR 803.7i) SAYS THE OPPOSITE, in '
       + 'so many words: "normal TIMING still applies, since it is played as if it were in your '
       + 'hand". Divine Intervention is timing: battle carrying prophecy { mana: 1, condition: '
       + '"Your life is 5 or less [Haste]" }, so the override turned a battle spell into a '
@@ -9208,7 +9205,7 @@ export const CLOSED: TodoEntry[] = [
       + 'while a free "You may change the targets of target effect" sat in cache. ZSPG replays '
       + 'faithfully at HEAD (236/236, 0 refused) on engine e8aed524a8, the deployed commit.',
     fix:
-      'Remove the timing override so R42 governs the release, and guard that the engine and '
+      'Remove the timing override so CR 803.7i governs the release, and guard that the engine and '
       + 'the ruling agree. ⚠ The comment cited a ruling that contradicts it, so ALSO look for '
       + 'other places a comment claims an R-number it does not have - that is the class, and a '
       + 'code comment is not a citation until someone reads the ruling.',
@@ -9218,12 +9215,12 @@ export const CLOSED: TodoEntry[] = [
       + 'be offered.',
     reportId: 152,
     guards: [
-      '257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step',
-      '257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window',
-      '257-prophecy-release-timing.test.ts::R277: Divine Intervention can be released from cache in the battle it was prophesied for',
+      '257-prophecy-release-timing.test.ts::CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step',
+      '257-prophecy-release-timing.test.ts::CR 803.7i: a fulfilled prophecy on a battle card is offered at a BATTLE window',
+      '257-prophecy-release-timing.test.ts::CR 203.5b: Divine Intervention can be released from cache in the battle it was prophesied for',
     ],
     closed:
-      'R277. THE OWNER LOST A GAME TO THIS AND THE COST IS NOW EXACT. Summing legalActions '
+      'CR 803.7i. THE OWNER LOST A GAME TO THIS AND THE COST IS NOW EXACT. Summing legalActions '
       + 'for both seats across all 237 states of ZSPG, HEAD offers 6127 actions and the fix '
       + 'offers 6138: +10 playCached and +1 prophesy, every other type unchanged at 0. All ten '
       + 'are Divine Intervention at a battle window. DIVINE INTERVENTION WAS OFFERABLE AT TEN '
@@ -9247,7 +9244,7 @@ export const CLOSED: TodoEntry[] = [
       + 'instead does nothing there',
     detail:
       'The owner: "Divine Intervention can be Prophecied during the haste step. That is why '
-      + 'it has that symbol." R42 allows prophesying only during deployment (Caleb 2025-05-09). '
+      + 'it has that symbol." The prophecy ruling allowed prophesying only during deployment (Caleb 2025-05-09). '
       + 'A [Haste] marker in the prophecy condition is the printed exception to that, and it is '
       + 'the OTHER half of CT-166: the marker says when you may CACHE the card, not when you '
       + 'may play it. Today the marker is read as a release timing and so has no effect on the '
@@ -9264,12 +9261,12 @@ export const CLOSED: TodoEntry[] = [
       'Hold Divine Intervention during the haste step. Prophesying it should be offered.',
     reportId: 151,
     guards: [
-      '257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step',
-      '257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it',
-      '257-prophecy-release-timing.test.ts::R277: the marker never widens the window outside the haste step',
+      '257-prophecy-release-timing.test.ts::CR 504.9: a banner marked [Haste] may be prophesied during the haste step',
+      '257-prophecy-release-timing.test.ts::CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it',
+      '257-prophecy-release-timing.test.ts::CR 803.7b: the marker never widens the window outside the haste step',
     ],
     closed:
-      'R277. Built as briefed, and the doubt in the brief was right to be there: exactly ONE '
+      'CR 504.9. Built as briefed, and the doubt in the brief was right to be there: exactly ONE '
       + 'card in 492 carries a trailing [Haste] (Divine Intervention). Seven print a banner, '
       + 'two have any bracket, and Tithe Enforcer "End [Haste] with used mana" is correctly '
       + 'excluded as non-trailing. The mechanism survives one-card scope because THE CONDITION '
@@ -9293,7 +9290,7 @@ export const CLOSED: TodoEntry[] = [
       'ROUND 35, report #153, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
       + 'on engine e8aed524a8, the deployed commit.',
     fix:
-      'One derivation shared by both surfaces. R268 just established that an augment radiates '
+      'One derivation shared by both surfaces. The augment-box ruling (CR 721.1c) just established that an augment radiates '
       + 'its box onto a host; this is the presentation half of the same fact.',
     proof: null,
     verify:
@@ -9304,7 +9301,7 @@ export const CLOSED: TodoEntry[] = [
       '259-card-text-surface.test.ts::CT-168: the host wearing it as an augment says the named card too',
     ],
     closed:
-      'R279, one derivation with two consumers. See CT-163 - the engine stores the named card '
+      'CR D6.9b, one derivation with two consumers. See CT-163 - the engine stores the named card '
       + 'on the anchor, so the host answers from the same field the unit does.',
     status: 'done',
   },
@@ -9336,12 +9333,12 @@ export const CLOSED: TodoEntry[] = [
       'Target a card in a bin and look at the bin from both seats.',
     reportId: 154,
     guards: [
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §6 a targeted bin card surfaces onto the region strip, on top',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §6b the dialog marks it too, so one fact reaches both surfaces',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §7b the opponent sees the target too, which is the half the report is really about',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D6.6d a targeted bin card surfaces onto the region strip, on top',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the dialog marks it too, so one fact reaches both surfaces',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the opponent sees the target too, which is the half the report is really about',
     ],
     closed:
-      'R280. ⚠ MY TICKET DETAIL WAS FACTUALLY WRONG and the agent measured it: I wrote that '
+      'CR D6.6d. ⚠ MY TICKET DETAIL WAS FACTUALLY WRONG and the agent measured it: I wrote that '
       + 'the opponent cannot open the bin dialog at all. Through the real viewFor and the real '
       + 'client, EITHER SEAT CAN - binopen is on either region panel, binView takes either '
       + 'seat, and viewFor redacts no bin. The true fault was simpler and symmetric: one strip, '
@@ -9379,18 +9376,18 @@ export const CLOSED: TodoEntry[] = [
       'Trash a card during combat with Muck Rummager in play and watch for the trigger.',
     reportId: 155,
     guards: [
-      '258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in',
-      '258-simultaneous-disposal-listeners.test.ts::R278 the class: no disposal listener in the pool goes deaf by dying in the same batch',
+      '258-simultaneous-disposal-listeners.test.ts::CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in',
+      '258-simultaneous-disposal-listeners.test.ts::CR 706.8c the class: no disposal listener in the pool goes deaf by dying in the same batch',
       '258-simultaneous-disposal-listeners.test.ts::CONTROL: Muck Rummager hears an ally trashed by combat damage it survives',
     ],
     closed:
-      'R278, AND MY FRAMING OF THE CLASS WAS WRONG. I briefed "any trigger listening for a '
+      'CR 706.8c, AND MY FRAMING OF THE CLASS WAS WRONG. I briefed "any trigger listening for a '
       + 'trash must hear one that happens during combat". The engine already hears combat '
       + 'trashes - the agent proved it with a CONTROL TEST THAT PASSES AT HEAD, and with action '
       + '119 of the same game where Muck Rummager heard a battle-phase trash. The real cause is '
       + 'SIMULTANEITY: destroy() second line is `delete this.s.entities[u.id]`, and fireEvent '
       + 'builds its listener list from Object.values(this.s.entities), so the first corpse out '
-      + 'of a batch is not a listener for the rest of it. R189 (a batch simultaneous in the '
+      + 'of a batch is not a listener for the rest of it. The simultaneity fix (CR D6.7: a batch simultaneous in the '
       + 'rules must LOOK simultaneous) had stopped at the entity table. Derived class: of the '
       + '13 board-scan disposal listeners in the pool, NINE went deaf. It also repairs '
       + 'Mischievous Reclaimer, whose "when the second ally dies in this battle" could never '
@@ -9405,9 +9402,9 @@ export const CLOSED: TodoEntry[] = [
       'the glossary was validated against the ENGINE, so an engine bug launders itself into '
       + 'the only statement of a rule the repo has',
     detail:
-      'R206 says of its own method, in one sentence: "All 43 rows were read against the '
+      'The 2026-08-26 glossary audit says of its own method, in one sentence: "All 43 rows were read against the '
       + 'engine. Fifteen were wrong." For a keyword that prints a reminder somewhere in the '
-      + 'pool that is safe - R206 rule 1 is "printed text wins". But R206 ALSO measured that '
+      + 'pool that is safe - rule 1 of that audit is "printed text wins". But the audit ALSO measured that '
       + 'fourteen keywords carry no printed reminder anywhere ({Evasive}, {Sneaky}, {Alluring}, '
       + '{Tough}, {Vulnerable}, {Feeble}, {Resonant}, {Thieving}, {Reaping}, {Unaware}, '
       + '{Burst}, {Virus}, {Ambush}, {Unstable}), and it says of those that the glossary row '
@@ -9432,7 +9429,7 @@ export const CLOSED: TodoEntry[] = [
       + 'guard the distinction: a row whose only support is "the engine does this" is not a '
       + 'rules statement and must be marked as such, so the next audit cannot quietly promote '
       + 'an implementation detail into a rule. ⚠ Do NOT simply re-read the rows against the '
-      + 'engine again - that is the method that produced this. And note the mirror risk: R206 '
+      + 'engine again - that is the method that produced this. And note the mirror risk: the audit '
       + 'found fifteen genuinely wrong rows, so the method was productive; the fix is to change '
       + 'what the rows are checked AGAINST, not to distrust the audit.',
     proof: null,
@@ -9440,14 +9437,14 @@ export const CLOSED: TodoEntry[] = [
       'Pick a row for a keyword with no printed reminder and ask what it rests on. If the '
       + 'answer is "it matches the engine", that is the defect.',
     guards: [
-      '261-glossary-basis.test.ts::R281 §1 every row declares what it rests on, and the rulings-only set is the pinned one',
-      '261-glossary-basis.test.ts::R281 §2 every ruling a rulings-only row cites NAMES that row term',
-      '261-glossary-basis.test.ts::R281 §0 POSITIVE CONTROL: the three channels and the register all loaded',
-      '262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text',
+      '261-glossary-basis.test.ts::every row declares what it rests on, and the rulings-only set is the pinned one',
+      '261-glossary-basis.test.ts::every ruling a rulings-only row cites NAMES that row term',
+      '261-glossary-basis.test.ts::POSITIVE CONTROL: the three channels and the register all loaded',
+      '262-type-line-attributes.test.ts::CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text',
     ],
     closed:
-      'R281, and the ticket premise was itself wrong in the most useful way. THE DEFECT IS '
-      + 'WORSE THAN FILED: it was not only R206 audit METHOD ("All 43 rows were read against '
+      'The glossary-basis ruling, and the ticket premise was itself wrong in the most useful way. THE DEFECT IS '
+      + 'WORSE THAN FILED: it was not only the audit\'s METHOD ("All 43 rows were read against '
       + 'the engine"). 177-glossary-conformance carries SIX STANDING TESTS shaped "the engine '
       + 'does X, so the row must say X", each regexing the engine SOURCE and the ROW and '
       + 'requiring agreement - so when the engine is wrong such a test HOLDS THE ROW WRONG AND '
@@ -9456,25 +9453,25 @@ export const CLOSED: TodoEntry[] = [
       + 'mistakes coherence for authority. DERIVED POPULATION: 43 rows split 18 printed / 12 '
       + 'document / 13 rulings-only - the 13 audited row by row against their cited rulings. '
       + 'FOUND: {Prismite} promised "1 affinity of every element at once", the exact '
-      + 'wild-affinity reading R17 exists to abolish, while the engine was right all along - '
-      + 'THE CLIENT WOULD HAVE REFUSED A PLAY THE GLOSSARY SAID WAS LEGAL, and R206 audited '
-      + 'that very row and fixed only the clause beside it. {Once} was cited to R9, which says '
-      + 'none of it. {Cache} to R51, which supports no clause. {Unaware} stated an '
+      + 'wild-affinity reading CR 105.5 exists to abolish, while the engine was right all along - '
+      + 'THE CLIENT WOULD HAVE REFUSED A PLAY THE GLOSSARY SAID WAS LEGAL, and the 2026-08-26 audit audited '
+      + 'that very row and fixed only the clause beside it. {Once} was cited to a ruling which says '
+      + 'none of it. {Cache} to the bin-listener ruling, which supports no clause. {Unaware} stated an '
       + 'unimplemented gap as a rule. {Graft} sourced two sentences to apply.ts when the Manual '
-      + 'states them at pp.32-33. {Trash} dropped R40 erasing half. {Debt} was clean. {Reaping} '
-      + 'was CIRCULAR - R184 says in its own words that the glossary row "is what this ruling '
+      + 'states them at pp.32-33. {Trash} dropped the trashing rule\'s erasing half. {Debt} was clean. {Reaping} '
+      + 'was CIRCULAR - the Reaping ruling says in its own words that the glossary row "is what this ruling '
       + 'read". ⚠ THE PREMISE WAS WRONG: five keywords believed to print no reminder ALL DO - '
       + 'the scans carry them, and the transcription is empty because the keyword is a '
       + 'TYPE-LINE ATTRIBUTE and the oracle text field is ability text. Owner: "That is cause '
       + 'they are attributes in the type line, not abilities. Attributes should show up in that '
       + 'place too." So NO override was added and the transcription was not touched; the real '
-      + 'gap was presentation and it is R282 (a card whose only content is an attribute '
-      + 'rendered "no rules text"), the third step after R271 and R279. DURABLE HALF: '
+      + 'gap was presentation and it is CR D6.10 (a card whose only content is an attribute '
+      + 'rendered "no rules text"), the third step after the {Unstable} and live-value fixes. DURABLE HALF: '
       + '261-glossary-basis derives what every row rests on, pins the rulings-only set by name '
       + 'so a row silently losing an outside witness fails, and adds THE MISSING THIRD LEG - '
       + 'every citation on such a row must NAME the row term. Deliberately weak: it cannot read '
       + 'a sentence, but it refuses a citation attached to make a row look sourced, and it '
-      + 'removed two the day it was written. Orchestrator break-tested both legs: restoring R19 '
+      + 'removed two the day it was written. Orchestrator break-tested both legs: restoring one of the two '
       + 'reddens §2, giving {Debt} an outside witness reddens §1. Spun out: CT-172 and CT-173, '
       + 'two {Reaping} engine defects found only by finally reading the printed text.',
     status: 'done',
@@ -9512,12 +9509,12 @@ export const CLOSED: TodoEntry[] = [
     verify:
       'Kill two units at once with a reaping source. One card, not two.',
     guards: [
-      '263-reaping-counts-the-kill.test.ts::R283 §2 THE FIX: two units dying in one kill draw ONE card, not two',
-      '263-reaping-counts-the-kill.test.ts::R283 §2b and it does not scale with the body count — three dead still draw one',
-      '263-reaping-counts-the-kill.test.ts::R283 §0 PREMISE: the kill-diff seam really pays a reaping source for one dead unit',
+      '263-reaping-counts-the-kill.test.ts::CR 802.21 THE FIX: two units dying in one kill draw ONE card, not two',
+      '263-reaping-counts-the-kill.test.ts::CR 802.21 and it does not scale with the body count — three dead still draw one',
+      '263-reaping-counts-the-kill.test.ts::CR 802.21 PREMISE: the kill-diff seam really pays a reaping source for one dead unit',
     ],
     closed:
-      'R283. Fixed at both payout sites: the damage-batch rider and the kill diff each pay '
+      'CR 802.21. Fixed at both payout sites: the damage-batch rider and the kill diff each pay '
       + 'ONCE when the kill list is non-empty, instead of once per body. THE PRINTED TEXT WAS '
       + 'VERIFIED ON THE SCAN, not taken from an agent report: Seismomancy prints "(When a '
       + 'reaping source kills one or more units, draw a card. It loses reaping until regroup.)" '
@@ -9613,9 +9610,9 @@ export const CLOSED: TodoEntry[] = [
       + 'each call below its discard satisfies the first sentence and silently fails the '
       + 'second on Bripp, and it leaves five chances to get it wrong again plus one for every '
       + 'site nobody has written yet. E.revealHandTo now marks the snapshot `pending`; '
-      + 'E.settleSeenHands reconciles it ONCE from settle(), BELOW the R154 decision guard (it '
+      + 'E.settleSeenHands reconciles it ONCE from settle(), BELOW the open-decision guard (it '
       + 'must not finish while the effect is still asking which card to discard) and ABOVE the '
-      + 'R261 damage hold (an Eldritch Dreamtender look is a combat-damage trigger, and its '
+      + 'CR 608.9b damage hold (an Eldritch Dreamtender look is a combat-damage trigger, and its '
       + 'moment ends inside that hold). Multiset, not set - DQVZ\'s hand holds the Statweaver '
       + 'twice and discarding one must leave the other. Frozen after one pass: a list that '
       + 'kept following the hand would report every later discard and play, a live readout of '
@@ -9653,11 +9650,11 @@ export const CLOSED: TodoEntry[] = [
       'ui/cardtext.ts states the current rule in its own header: "An until-regroup change '
       + 'with no card text behind it is not a line: a temp +X/+Y is a term in the stat '
       + 'arithmetic and a temp attribute is a chip in the attribute row." That accounts for '
-      + 'tempPower/tempToughness, tempAttrs, suppressed (the ⊘ row), granted (R63) and '
-      + 'copies (R118). It accounts for nothing else, and the R11 step-3 sweep in engine.ts '
-      + 'clears more than that: `unstable` (R96), `damageShield`/`shieldPending` (R98 — '
+      + 'tempPower/tempToughness, tempAttrs, suppressed (the ⊘ row), granted (CR 109.8) and '
+      + 'copies (CR 710.1). It accounts for nothing else, and the CR 506.2 step-3 sweep in engine.ts '
+      + 'clears more than that: `unstable` (CR 803.8d), `damageShield`/`shieldPending` (CR 506.2d — '
       + '"UNTIL REGROUP, prevent all damage that would be dealt to target unit", which is the '
-      + 'likeliest thing that was on the owner\'s Prickly Protector), `allured` (R84, "can\'t '
+      + 'likeliest thing that was on the owner\'s Prickly Protector), `allured` (CR 802.15e, "can\'t '
       + 'attack"), and `baseSet`/`baseSetSeq`. A unit under a damage shield reads as an '
       + 'ordinary unit.',
     evidence:
@@ -9677,7 +9674,7 @@ export const CLOSED: TodoEntry[] = [
       + 'the damage is being prevented and by what. Same for an Alluring-locked unit and a '
       + 'unit made Unstable until regroup.',
     guards: [
-      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a71 the until-regroup fields are read out of the R11 sweep',
+      '266-until-regroup-in-the-box.test.ts::CT-175 §1 the until-regroup fields are read out of the CR 506.2 sweep',
       '266-until-regroup-in-the-box.test.ts::CT-175 \u00a72 the fixture table covers the derived field list exactly',
       '266-until-regroup-in-the-box.test.ts::CT-175 \u00a72 every until-regroup field changes the box',
       '266-until-regroup-in-the-box.test.ts::CT-175 \u00a73 Phytochemical Protection says so on the unit it shielded',
@@ -9691,18 +9688,18 @@ export const CLOSED: TodoEntry[] = [
       + '([138]/[139]) it prevented all 8 damage and paid out 8 +1/+1 counters, off a box that '
       + 'had been telling the owner the unit was ordinary. 266 \u00a73 casts it for real - from a '
       + 'hand, targeted, off the stack - rather than writing the field.\n\n'
-      + 'THE SWEEP FOUND TWELVE FIELDS AND THREE HOLES. The R11 step-3 block in engine.ts is '
+      + 'THE SWEEP FOUND TWELVE FIELDS AND THREE HOLES. The CR 506.2 step-3 block in engine.ts is '
       + 'the whole definition of "until regroup": tempPower, tempToughness, tempAttrs, '
       + 'baseSet, baseSetSeq, suppressed, unstable, damageShield, shieldPending, granted, '
       + 'allured, copies. Nine were already represented - stats (temp pair, baseSet), the '
-      + 'attribute row (tempAttrs and, since R271/#143, unstable), the \u2298 row (suppressed), and '
-      + 'lines of their own (granted R63, copies R118). ⚠ THE TICKET WAS WRONG ABOUT ONE: it '
+      + 'attribute row (tempAttrs and, since the #143 fix (CR D6.10c), unstable), the \u2298 row (suppressed), and '
+      + 'lines of their own (granted CR 109.8, copies CR 710.1). ⚠ THE TICKET WAS WRONG ABOUT ONE: it '
       + 'lists `unstable` as unrepresented, and it has been on the attribute row with origin '
-      + '"temp" since R271. The real holes were damageShield, shieldPending and allured.\n\n'
+      + '"temp" since the #143 fix. The real holes were damageShield, shieldPending and allured.\n\n'
       + 'THE FIX: a new `LineOrigin` "until" and `untilRegroupLines()` in ui/cardtext.ts, one '
       + 'synthesized line per effect, plus LINE_TAG.until ("\u23f1 until regroup - <card>") and a '
       + 'tb-until style. Synthesized because there is no card text to quote: the shield\'s '
-      + 'spell has resolved and left play, and R84\'s allurer may be long dead - which is why '
+      + 'spell has resolved and left play, and the allurer may be long dead (CR 802.15j) - which is why '
       + 'main.ts\'s #117 badge derives it from the field, and this asks the same question '
       + '(`allured.round === battle.round && columns.length`) so badge and box cannot disagree.'
       + '\n\nA LINE, NOT A `state` NOTE, AND THAT IS THE REPORT RATHER THAN TASTE. The owner was '
@@ -9747,8 +9744,8 @@ export const CLOSED: TodoEntry[] = [
       + 'wood Flower Spell, "[Switch1] Target unit gains +7/+7 until regroup" '
       + '(batch-wood-b.ts). The copying trigger belongs to some OTHER permanent; HTEW\'s final '
       + 'position has an Earthbound Replicator in play, which is the pool\'s spell-copy card '
-      + 'and whose copy path was rebuilt at R164 (pushSpellCopy — a real stack item, '
-      + 'respondable and negatable, inheriting the R35 receipt and the R57 mode).',
+      + 'and whose copy path was rebuilt when spell copies became stack items (pushSpellCopy — a real stack item, '
+      + 'respondable and negatable, inheriting the CR 111.5 receipt and the CR 710.8a mode).',
     evidence:
       'ROUND 36, owner report #158, room HTEW, actionIndex 148, filed 2026-08-30T18:59Z, '
       + 'one minute after #157 in the same game. ⚠ HTEW replayed 206/206 at HEAD when this was filed; it no longer does. CT-176 landed this round and the copy it restores asks two new questions at [147], so HTEW now DRIFTS at [148] (154 replayed / 52 refused, all cascade behind one unanswered "choose new targets for the copy of Overbloom?"). That is the fix working, not damage - the file is intact and declares no fork. Everything this entry is about sits BEFORE [148], inside the faithful stretch, so the evidence still stands; do not re-quote the old number. '
@@ -9759,7 +9756,7 @@ export const CLOSED: TodoEntry[] = [
       + 'minutes later) — so establish from the replay WHICH card was supposed to copy and '
       + 'whether its condition actually held at [148], before writing anything. If the '
       + 'condition held and no copy was pushed, the defect is in that card\'s trigger, not in '
-      + 'pushSpellCopy, which R164 pinned. If the condition did not hold, this is a report '
+      + 'pushSpellCopy, which the spell-copy fix pinned (CR 710.8). If the condition did not hold, this is a report '
       + 'about the client not SAYING why — which is the same family as #157 and lands in the '
       + 'same round.',
     proof: null,
@@ -9783,31 +9780,31 @@ export const CLOSED: TodoEntry[] = [
       + '"Overbloom already left the stack — no copy" about a stack Overbloom had never been '
       + 'on. Overbloom prints DEPLOY timing, and playAtTiming\'s deployment branch commits '
       + "with commitItem(…, 'resolve'): the item resolves where it stands and never reaches "
-      + 'the stack, so R178\'s item id — put on spellPlayed precisely so a listener could '
+      + 'the stack, so the item id — put on spellPlayed precisely so a listener could '
       + 'name the play — named nothing and the resolution-time .find() missed. Not an '
       + 'Overbloom bug and not a Replicator bug: a seam that had only ever been exercised in '
       + 'battle. FIX, three parts: spellPlayed now also carries `offStack`, a pre-resolution '
       + "snapshot of the item, when and only when `then === 'resolve'`; new E.playedItem is "
       + 'the single reader (the id while there is a stack, the snapshot when there is not); '
       + 'the Replicator asks it instead of scanning the stack itself. cardPlayed deliberately '
-      + 'carries NO snapshot — its readers (Void Mandible, R207) NEGATE, and an effect that '
+      + 'carries NO snapshot — its readers (Void Mandible, CR 706.13) NEGATE, and an effect that '
       + 'has already resolved is not negatable. DERIVED, not enumerated: the census guard '
       + 'computes the reachable family from printed.json plus the card defs (a nonunit spell '
       + 'playable outside battle whose target spec can name a unit) and it is exactly '
       + '[Overbloom] out of 19 non-battle nonunit spells — which is why one report was the '
-      + 'first sighting of a hole that has been there since R164. ⚠ WHAT WAS TRIED AND '
+      + 'first sighting of a hole that has been there since spell copies went on the stack. ⚠ WHAT WAS TRIED AND '
       + 'REVERTED, so nobody repeats it: routing the deployment PLAY through the deployment '
-      + "stack ('push'), which looks like the missing half of R144(a) and produces a textbook "
+      + "stack ('push'), which looks like the missing half of the deployment-trigger ruling and produces a textbook "
       + 'log (copy above the original, resolving first). settle() refuses to drain that stack '
-      + 'while ANY decision is open (the R154 guard) and deployment is SIMULTANEOUS, so one '
+      + 'while ANY decision is open (the global decision hold) and deployment is SIMULTANEOUS, so one '
       + "seat's pending question froze the other seat's play. Measured on saved game DQVZ: "
       + "Ben's Eldritch Dreamtender waited behind Rashi's Floral Singularity X question and "
       + "spawned in the wrong order, moving that replay's divergence from [184] to [139]; 14 "
-      + "engine tests failed, including R154's own two in 130-seat-aware-gate.test.ts. The "
+      + "engine tests failed, including the decision gate's own two in 130-seat-aware-gate.test.ts. The "
       + 'reverted branch is commented in apply.ts so the next reader does not re-derive it. '
       + 'RE-BREAK: dropping the offStack field reddens the three behaviour tests; reverting '
       + 'the card to the raw stack scan reddens the same three; restoring the push branch '
-      + "reddens the event test and R154's guards. REPLAY: DQVZ is unmoved from its baseline "
+      + "reddens the event test and the decision gate's guards. REPLAY: DQVZ is unmoved from its baseline "
       + '(184 replayed / 13 refused); HTEW now diverges at [148] — the recorded doneDeploying '
       + '— because the copy asks its two new questions there. That is the bug being fixed, at '
       + 'the exact action the owner reported it from.',
@@ -9839,7 +9836,7 @@ export const CLOSED: TodoEntry[] = [
       + 'one sat for five days while the queue read as empty.',
     fix:
       'Open vengeance-taxes-their-play, reproduce, and decide which of the two readings is '
-      + 'true. ⚠ Check against R284 before writing: it ruled that a printed square bracket '
+      + 'true. ⚠ Check against the bracket ruling (CR 205.3a) before writing: it ruled that a printed square bracket '
       + 'belongs to the OWNER of the effect, and Vengeance GRANTS a bracket to the opponent\'s '
       + 'cards (digital-rules.md ~6655), so whose choice the imposed sacrifice is may already '
       + 'be answered. Separately and independently: add the guard that makes the verdict loop '
@@ -9873,9 +9870,9 @@ export const CLOSED: TodoEntry[] = [
       + 'to their bin before Sudden Bloom reached the stack. Rebuilt in the harness: '
       + 'unitsToPlay(opponent)=1, unitsToPlay(Vengeance controller)=0, decision.seat = the '
       + 'opponent, menu = exactly their two units, stack empty at the question. Neither '
-      + 'failure the scenario names is present. R284 confirms rather than contradicts: a '
+      + 'failure the scenario names is present. CR 205.3a confirms rather than contradicts: a '
       + 'printed bracket is paid by the owner of the effect, and Vengeance grants the bracket '
-      + "TO the opponent's card, so its player owns it — R284 §3 already lists Vengeance among "
+      + "TO the opponent's card, so its player owns it — the bracket ruling's own census already listed Vengeance among "
       + 'the thirteen additional-cost brackets that "were already correct". No rules question. '
       + 'WHAT WAS ADDED, since a retracted verdict still leaves real gaps. (1) The scenario as '
       + 'a test: all ten existing Vengeance tests tax a TARGETED spell (Flame of History), so '
@@ -9889,13 +9886,13 @@ export const CLOSED: TodoEntry[] = [
       + 'Re-break: zeroing the sacrifice reddens 8 tests; flipping the seat test reddens 9; '
       + "and copying Vengeance's seat test onto the Arbiter — the plausible tidy-up — is "
       + 'caught by the new census and by NOTHING else. (3) ⚠ THE REAL DEFECT: '
-      + '264-verdict-loop.test.ts, the R285 guard written this same round, read the journal as '
+      + '264-verdict-loop.test.ts, the verdict-lock guard written this same round, read the journal as '
       + 'a set of facts and is what manufactured this ticket. It now honours supersession — '
       + 'newest ts wins per (scenario, room), which is the owner\'s own convention, quoted '
       + '"on this same room" — with a non-vacuity check so the rule cannot become dead code '
       + 'and a room assertion so it cannot retire Slag Spewer\'s separate RYDP judgement '
-      + '(CT-86/R219). Its header no longer claims the Vengeance verdict went unanswered. '
-      + '⚠ FOR THE COORDINATOR: R285\'s write-up in digital-rules.md makes the same claim and '
+      + '(CT-86/CR 407.2). Its header no longer claims the Vengeance verdict went unanswered. '
+      + '⚠ FOR THE COORDINATOR: the verdict-lock write-up in the old rulings register makes the same claim and '
       + 'is not in this lane — it needs the same correction.',
     status: 'done',
   },
@@ -9936,7 +9933,7 @@ export const CLOSED: TodoEntry[] = [
       + 'the feature - measure it rather than assume it; (b) the browser loses keyup when the '
       + 'window blurs (alt-tab), so a stuck-on state is the obvious bug and needs a blur '
       + 'handler; (c) Control is a modifier used in ordinary shortcuts, so this must not fire '
-      + 'on Ctrl+C or a browser chord. ⚠ Keep the deployment half OUT of scope until R286 '
+      + 'on Ctrl+C or a browser chord. ⚠ Keep the deployment half OUT of scope until the deployment stack '
       + 'lands: "nothing will automatically resolve in deployment" is only expressible once '
       + 'there is a deployment stack to stop on.',
     proof: null,
@@ -9982,22 +9979,22 @@ export const CLOSED: TodoEntry[] = [
       + 'and 267 derives that list from these files, so it left both places or neither. And '
       + 'the side-rail control became a READOUT rather than a button ("full control: hold '
       + 'Ctrl" / "HELD") - a held key with nothing on screen is a feature nobody discovers.\n\n'
-      + '⚠ THE DEPLOYMENT HALF IS NOT IN THIS AND IS NOW UNBLOCKED: see CT-185. R286 landed '
-      + 'the stack it needs; stopping ON that stack is a further engine change with a replay '
+      + '⚠ THE DEPLOYMENT HALF IS NOT IN THIS AND IS NOW UNBLOCKED: see CT-185. Deployment got '
+      + 'the stack it needs (CR 507.5); stopping ON that stack is a further engine change with a replay '
       + 'contract attached, and it is the owner\'s call.',
     status: 'done',
   },
   {
     id: 184, area: 'engine', severity: 'major',
     title:
-      'R286: a deployment play never reaches a stack, and the fix needs the R154 hold to '
+      'CR 507.5: a deployment play never reaches a stack, and the fix needs the global decision hold to '
       + 'become seat-aware first',
     detail:
-      'R286, owner ruling 2026-09-01: deployment DOES use the stack, but it is one ISOLATED '
+      'The owner\'s ruling of 2026-09-01 (now CR 703.7): deployment DOES use the stack, but it is one ISOLATED '
       + 'stack per player - "the two players are, essentially, playing different games during '
       + 'deployment". Today `playAtTiming`\'s deployment branch commits with `\'resolve\'`, so '
-      + 'the item resolves where it stands and no stack is involved. R144(a) is true of '
-      + 'TRIGGERS and false of PLAYS.',
+      + 'the item resolves where it stands and no stack is involved. The deployment-stack rule was then true of '
+      + 'TRIGGERS (CR 706.3c) and false of PLAYS.',
     evidence:
       'CT-176 is what it costs: Earthbound Replicator\'s copy trigger fired correctly and '
       + 'found nothing on the stack to copy, because a deploy-timing spell has never been on '
@@ -10009,11 +10006,11 @@ export const CLOSED: TodoEntry[] = [
       + 'and spawned in the wrong order; 14 engine tests failed including R154\'s own two. The '
       + 'reverted branch is commented in apply.ts.',
     fix:
-      '⚠ ORDER IS THE WHOLE TICKET, and the 14 failures are the receipt: make the R154 hold '
+      '⚠ ORDER IS THE WHOLE TICKET, and the 14 failures are the receipt: make the global decision hold '
       + 'SEAT-AWARE in deployment FIRST, then put the play on a per-seat stack. The revert was '
       + 'right and its reasoning was incomplete - the branch failed not because deployment '
       + 'plays belong off the stack but because it used THE stack, one shared object with one '
-      + 'shared gate, where the rule is one per player. R154 is correct in battle, where both '
+      + 'shared gate, where the rule is one per player. The global hold is correct in battle (CR D2.1a), where both '
       + 'seats are in the same game, and wrong in deployment, where by this ruling they are '
       + 'not. Default behaviour must not change: battle spells cannot be played in deployment '
       + 'and triggers are automatic, so the stack normally drains itself - this makes the rare '
@@ -10024,16 +10021,16 @@ export const CLOSED: TodoEntry[] = [
       + 'stack ABOVE the original, and resolves first. Meanwhile the other seat, holding an '
       + 'open X question, is not blocked and neither blocks the other.',
     guards: [
-      '276-deployment-stack.test.ts::R286 \u00a71: seat 1 is mid-question and seat 0',
-      '276-deployment-stack.test.ts::R286 \u00a71: the play really went ON a stack',
-      '276-deployment-stack.test.ts::R286 \u00a71: seat 0 acting does not build, aim or resolve',
-      '276-deployment-stack.test.ts::R286 \u00a72: the acting seat',
-      '276-deployment-stack.test.ts::R286 \u00a72 CONTROL: put the question on the OTHER seat',
-      '276-deployment-stack.test.ts::R286 \u00a72: with no acting seat at all',
-      '276-deployment-stack.test.ts::R286 \u00a73: the copy resolves BEFORE the original',
-      '276-deployment-stack.test.ts::R286 \u00a74: in BATTLE the hold is exactly what it was',
-      '276-deployment-stack.test.ts::R286 \u00a74: your OWN question still stops you',
-      '276-deployment-stack.test.ts::R286 \u00a74: with NO question open the shared drain',
+      '276-deployment-stack.test.ts::CR 507.5a: seat 1 is mid-question and seat 0',
+      '276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack',
+      '276-deployment-stack.test.ts::CR 703.7: seat 0 acting does not build, aim or resolve',
+      '276-deployment-stack.test.ts::CR 703.7: the acting seat',
+      '276-deployment-stack.test.ts::CR 703.7 CONTROL: put the question on the OTHER seat',
+      '276-deployment-stack.test.ts::CR 507.5a: with no acting seat at all',
+      '276-deployment-stack.test.ts::CR 507.5: the copy resolves BEFORE the original',
+      '276-deployment-stack.test.ts::CR D2.1a: in BATTLE the hold is exactly what it was',
+      '276-deployment-stack.test.ts::CR D2.1: your OWN question still stops you',
+      '276-deployment-stack.test.ts::CR 507.5: with NO question open the shared drain',
       '138-spell-copy.test.ts::a deploy-timing play names a REAL stack item',
     ],
     closed:
@@ -10052,22 +10049,22 @@ export const CLOSED: TodoEntry[] = [
       + '(a) THE FLASH. `stackFlash` is the beat round 8 gave to anything that resolves with '
       + 'no window to respond in, and moving the play onto a stack would have taken it away - '
       + 'the item is pushed and drained inside ONE action, so a client\'s next frame sees an '
-      + 'empty stack and the log line is all that is left. Worse, R144(a) had already done '
+      + 'empty stack and the log line is all that is left. Worse, the deployment-trigger ruling had already done '
       + 'exactly that to deployment TRIGGERS in 2026-08-24, on the reasoning that flashing '
       + 'one would "draw it twice" alongside its live stack row. That row almost never '
       + 'exists. So `E.pushItem` now flashes every push outside battle and `stackRows` drops '
       + 'a flash whose id is already a live row - the double-draw is made impossible one '
       + 'layer up, where it can be measured, instead of being avoided by having no beat.\n'
       + '(b) THE LINE GOES THE OTHER WAY. "X \u2192 stack." announces a window to respond in, '
-      + 'and outside battle there is none; R286 would have made it a double announcement '
+      + 'and outside battle there is none; putting deployment plays on the stack would have made it a double announcement '
       + 'besides, since `spellPlayed` already reads "Ben plays Overbloom \u2192 stack." one '
       + 'line above. It is signal-only outside battle now. That also fixed 217-reveal-rows, '
       + 'which had started drawing THREE rows for two Good Whales and putting the mod on '
       + 'neither: the extra line was opening a row of its own in the deployment reveal.\n'
-      + '(c) `offStack` DID NOT DIE, and R286 predicted it would. CT-176\'s snapshot exists '
+      + '(c) `offStack` DID NOT DIE, and the ruling predicted it would. CT-176\'s snapshot exists '
       + 'because a play with no stack had no item to name; deployment has one now and takes '
       + 'no snapshot - 138\'s assertion is INVERTED, which is the check the ruling asked for '
-      + '- but the haste step, a spell token cast from play (R59) and an activation outside '
+      + '- but the haste step, a spell token cast from play and an activation outside '
       + 'battle all still commit with `resolve`, so the fallback stays for them. 138\'s '
       + 'census is what says whether anything in that set can ever reach a copy effect. '
       + 'Today nothing can.',
@@ -10081,7 +10078,7 @@ export const CLOSED: TodoEntry[] = [
     title: 'the discount was printed "this phase" and the engine cleared it at "this turn"',
     detail:
       'Deferral Drone printed "[Augment][once] Gain 4 debt: The next card you play this TURN '
-      + 'costs [3] less" and Caleb narrowed it to "this PHASE" (2026-09-21). R119 had built '
+      + 'costs [3] less" and Caleb narrowed it to "this PHASE" (2026-09-21). The first discount ruling had built '
       + 'the charge as a per-seat flag granted by the ability, spent at the two play emit '
       + 'sites, and CLEARED in `E.startTurn` beside the `Entity.budgets` wipe - so the card '
       + 'was more generous than it printed.',
@@ -10110,8 +10107,8 @@ export const CLOSED: TodoEntry[] = [
       + '`E.expireNextPlayDiscount` is called from all four.\n\n'
       + 'THE CLEAR MOVED, IT WAS NOT COPIED. A turn begins by entering planning, so the turn '
       + 'boundary is a phase boundary and `startTurn`\'s wipe was this one arriving early; '
-      + 'leaving both would have been two reasons for one effect. R43\'s `hasteManaSpent` '
-      + 'tally stayed in startTurn, because its window really is the turn.\n\n'
+      + 'leaving both would have been two reasons for one effect. The prophecy condition\'s `hasteManaSpent` '
+      + 'tally (CR 803.7) stayed in startTurn, because its window really is the turn.\n\n'
       + '\u26a0 AND THE NARROWING IS BARELY REACHABLE, which the brief did not know. The '
       + 'ability is only OFFERED during deployment - no priority window opens for a Drone in '
       + 'play anywhere else - and deployment is the LAST phase of the turn, so a charge armed '
@@ -10204,7 +10201,7 @@ export const CLOSED: TodoEntry[] = [
       '349-retarget-distinct-slots.test.ts::CT-189 commitRetargets refuses a write that would leave one object in two slots of a part',
     ],
     closed:
-      'REPRODUCED AND FIXED 2026-09-30 (R307). The path was not the cast: it was a RETARGET. Divine Intervention built each slot\'s re-choice menu from the part\'s WHOLE spec and excluded only that slot\'s own occupant, so both of Twin Flame\'s slots could be moved onto one Good Whale (board-pick-stack, 4 damage), or slot 0 onto slot 1\'s unit. Gravitational Correction excluded nothing, and a THIRD card nobody had named, Hexbane Shiitake, had the same loop. The per-slot hypothesis was true too: Fight/Squish\'s ally slot offered enemies, Channel Through\'s opponent slot offered units, Necromorph\'s bin slot offered units in play. E.slotCandidates is now the one legality list for a slot (its own spec, source, X, event, siblings as chosen), canFillSlot is its membership test, and helpers.rechooseTargets / commitRetargets are the one re-choice loop all three cards use. No resolution-time dedupe: every writer now refuses a duplicate, and a silent dedupe would hide the next one as 2 damage instead of 4. 140-layers-and-riders had ASSERTED the bug ([keep, keep]) and was re-pinned. Replay corpus (108 games) byte-identical in verdicts. Still open, noted only: whether two different parts of a graft may share a target.',
+      'REPRODUCED AND FIXED 2026-09-30 (CR 110.9). The path was not the cast: it was a RETARGET. Divine Intervention built each slot\'s re-choice menu from the part\'s WHOLE spec and excluded only that slot\'s own occupant, so both of Twin Flame\'s slots could be moved onto one Good Whale (board-pick-stack, 4 damage), or slot 0 onto slot 1\'s unit. Gravitational Correction excluded nothing, and a THIRD card nobody had named, Hexbane Shiitake, had the same loop. The per-slot hypothesis was true too: Fight/Squish\'s ally slot offered enemies, Channel Through\'s opponent slot offered units, Necromorph\'s bin slot offered units in play. E.slotCandidates is now the one legality list for a slot (its own spec, source, X, event, siblings as chosen), canFillSlot is its membership test, and helpers.rechooseTargets / commitRetargets are the one re-choice loop all three cards use. No resolution-time dedupe: every writer now refuses a duplicate, and a silent dedupe would hide the next one as 2 damage instead of 4. 140-layers-and-riders had ASSERTED the bug ([keep, keep]) and was re-pinned. Replay corpus (108 games) byte-identical in verdicts. Still open, noted only: whether two different parts of a graft may share a target.',
     status: 'done',
   },
   {
@@ -10304,7 +10301,7 @@ export const CLOSED: TodoEntry[] = [
       'Make the prompt say what it is. Two halves, and the second is the general one: (a) an '
       + 'imposed-cost pick should name the owner of each option the way a target menu does, '
       + 'and (b) it should not wear `kind: \'targets\'` if that is the only thing telling the '
-      + 'client how to draw it — a cost is not a target (R64/R67 keep those apart in the '
+      + 'client how to draw it — a cost is not a target (CR 110.2 keeps those apart in the '
       + 'rules; the UI collapses them). ⚠ DERIVE the affected family rather than fixing the '
       + 'two cards: CT-177 established by census over printed.json that exactly two cards '
       + 'hang a bracketed additional cost on somebody else\'s play (Vengeance, Arbiter of '
@@ -10325,7 +10322,7 @@ export const CLOSED: TodoEntry[] = [
   },
   {
     id: 190, area: 'client', severity: 'major',
-    title: 'a column whose blocker has left is drawn "unblocked" — the engine (R185) keeps it blocked',
+    title: 'a column whose blocker has left is drawn "unblocked" — the engine (CR 606.3a) keeps it blocked',
     detail:
       'Report #176 (EGBM, kareds): "hooba god should be blocked". It WAS blocked. The battle panel '
       + 'reads `b.blocks[ci] ?? []` and draws the "unblocked" ghost slot whenever that list is '
@@ -10481,7 +10478,7 @@ export const CLOSED: TodoEntry[] = [
   {
     id: 198, area: "client", severity: "major",
     title: "every restart reported a false fork in each game in progress: the saved reference keys were a per-process counter",
-    detail: "R191 persists each action's reference key as the file's refs, and a restore compares them with a fresh rebuild. The key named the action that created a unit by tagOf(), a counter global to the server PROCESS, so a new process numbered tags differently and every attack, block or ability naming a unit made mid-game read as changed meaning. Each restart recorded a fork and posted the restored onto changed rules warning into live games. Known since 2026-09-23 (ZDAY); hit the owner's own game KEMX at the 197cb77 deploy, 2026-10-04 (6 actions flagged, all 163 replay faithfully).",
+    detail: "The saved game persists each action's reference key as the file's refs, and a restore compares them with a fresh rebuild. The key named the action that created a unit by tagOf(), a counter global to the server PROCESS, so a new process numbered tags differently and every attack, block or ability naming a unit made mid-game read as changed meaning. Each restart recorded a fork and posted the restored onto changed rules warning into live games. Known since 2026-09-23 (ZDAY); hit the owner's own game KEMX at the 197cb77 deploy, 2026-10-04 (6 actions flagged, all 163 replay faithfully).",
     evidence: "KEMX.json forks[0] at 2026-10-04T07:42:49Z; its saved refs read t76#1, t77#1 ...",
     fix: "Persist a position-based key under a new field and compare only that; keep the identity tags for the in-process undo comparison.",
     proof: null,
@@ -10501,7 +10498,7 @@ export const CLOSED: TodoEntry[] = [
     title: "{Resonant} is applied as life loss, not as damage from an effect, so Conduit of Pain and Powerful never touch it",
     detail: "The printed reminder: \"Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.\" The engine calls loseLife inline, so Conduit of Pain cannot add its 1 (2 to the face instead of 3) and a Powerful Resonant source is not doubled on the face hit (4 instead of 8; 10 with Conduit).",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Resonant, Combat Damage, Conduit and Powerful\", _passer: \"put effect on stack to deal…\". digital-rules already marks the Powerful half \"OPEN\" with no ticket.",
-    fix: "Make the Resonant rider deal damage from its source (an effect), so damage modifiers apply. Check R121 (CT-212 is the Crevice Lurker half of the same rider).",
+    fix: "Make the Resonant rider deal damage from its source (an effect), so damage modifiers apply. Check CR 802.19h (CT-212 is the Crevice Lurker half of the same rider).",
     proof: null,
     verify: "Run the todo reproduction in 387-raq-combat.test.ts, the three \"RAQ Resonant:\" todo tests about Conduit and Powerful on the face hit. — it fails while this is open.",
     guards: [
@@ -10509,7 +10506,7 @@ export const CLOSED: TodoEntry[] = [
       "387-raq-combat.test.ts::RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage",
       "387-raq-combat.test.ts::RAQ Resonant: Resonant + Powerful + Conduit"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R315, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 802.19d), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10525,7 +10522,7 @@ export const CLOSED: TodoEntry[] = [
       "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
       "387-raq-combat.test.ts::RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R316, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 112.9), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10542,7 +10539,7 @@ export const CLOSED: TodoEntry[] = [
       "388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt normal damage deals no Sluggish damage",
       "388-raq-blocks-and-windows.test.ts::RAQ Swift: a Tiderunner played into an emptied Swift column"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R320, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10555,28 +10552,28 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: "Run the todo reproduction in 388-raq-blocks-and-windows.test.ts, the two \"RAQ Blocked:\" todo tests; 387 has the Piercing side-block claim. — it fails while this is open.",
     guards: [
-      "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player",
+      "400-raq-fix-blocks.test.ts::CR 606.4f a Piercing side-blocker deals no combat damage to the attacking player",
       "388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks",
       "388-raq-blocks-and-windows.test.ts::RAQ Blocked: a defender may block where no attacker is",
-      "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+      "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R321 and R322, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 606.4 and 607.2), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 204, area: "attribute", severity: "minor",
     cards: ["Ember of Life"],
     title: "{Electric} excess is forced to jump, and dropped when there is nowhere to jump",
-    detail: "The RAQ reads Electric's \"can be\" as optional: all 6 may stay on a Vulnerable unit (12). With no neighbour and no Piercing the engine drops the excess: a lone Vulnerable 3/8 is dealt 8, not 12, which also contradicts R114 (\"ALL damage is dealt to units\").",
+    detail: "The RAQ reads Electric's \"can be\" as optional: all 6 may stay on a Vulnerable unit (12). With no neighbour and no Piercing the engine drops the excess: a lone Vulnerable 3/8 is dealt 8, not 12, which also contradicts the designer's ruling, now CR 608.6d (\"ALL damage is dealt to units\").",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Vulnerable + Piercing / Electric\", _passer.",
-    fix: "Make the jump a choice, and never drop combat damage (R114). Check R7 (Piercing is automatic) is not the model copied here.",
+    fix: "Make the jump a choice, and never drop combat damage (CR 608.6d). Check the old split ruling (Piercing is automatic) is not the model copied here.",
     proof: null,
     verify: "Run the todo reproduction in 387-raq-combat.test.ts, the two \"RAQ Vulnerable:\" todo tests. — it fails while this is open.",
     guards: [
       "387-raq-combat.test.ts::all 6 may stay on the Vulnerable unit",
       "387-raq-combat.test.ts::Electric damage with nowhere to jump is still dealt"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R317, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 802.17a), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10591,22 +10588,22 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Powerful Squish does not double"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R318, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 112.6, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 206, area: "engine", severity: "minor",
     cards: ["Squish"],
     title: "Squish reads the ally's live defense even when the target is {Unaware}",
-    detail: "A Robot 10 squishing Bubb kills it; R106 reads everything in an interaction with an Unaware unit at printed stats, so the RAQ answer is no harm.",
+    detail: "A Robot 10 squishing Bubb kills it; CR 802.9c reads everything in an interaction with an Unaware unit at printed stats, so the RAQ answer is no harm.",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Squish/Fight/Battle vs Source of damage & Interactions\"; R106.",
-    fix: "Route the Squish amount through the same printed-stat read R106 uses for combat.",
+    fix: "Route the Squish amount through the same printed-stat read CR 802.9d uses for combat.",
     proof: null,
     verify: "Run the todo reproduction in 387-raq-combat.test.ts, \"RAQ Squish: a Robot 10 squishing Unaware Bubb\". — it fails while this is open.",
     guards: [
       "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Robot 10 squishing Unaware Bubb"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R318, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 112.6, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10622,13 +10619,13 @@ export const CLOSED: TodoEntry[] = [
       "390-raq-stack.test.ts::RAQ target requirements: Fight cannot be played",
       "390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion is not playable"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R323, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 110.7, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 208, area: "engine", severity: "major",
     title: "a target restriction is not re-checked at resolution unless the card does it itself",
-    detail: "R56 says re-validate at resolution, but targetStillLegal checks only that the target exists. Ambush whose ally was stolen in response still recalls it to its new controller's hand and spawns the ambusher. Minor Kraken and Throw off a Cliff re-check by hand; most cards do not.",
+    detail: "CR 704.5 says re-validate at resolution, but targetStillLegal checks only that the target exists. Ambush whose ally was stolen in response still recalls it to its new controller's hand and spawns the ambusher. Minor Kraken and Throw off a Cliff re-check by hand; most cards do not.",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Valid targets becomes invalid.\", _passer: \"Ambush won't resolve as … that unit is no longer ally of your opponent\".",
     fix: "Re-run the slot restriction in targetStillLegal (general), then a whole-pool sweep for cards that re-check by hand and can drop it.",
     proof: null,
@@ -10636,36 +10633,36 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R324, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 704.5, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 209, area: "engine", severity: "major",
     cards: ["Flamebreath Initiate", "Bellowing Boulder"],
     title: "an effect whose source has died loses it: \"the carrier is gone\" and no last-known state",
-    detail: "Flamebreath Initiate removed with its trigger on the stack makes nothing (\"the carrier is gone — no Fireball\"); the RAQ says X = 0 and it still makes a Fireball 1. Bellowing Boulder dead with its ping on the stack loses the Deadly its column gave it, because effectSourceAttrs falls back to the printed card. There are 63 \"carrier is gone\" guards across 19 card files; the ones that only READ the source contradict R1 and this thread.",
+    detail: "Flamebreath Initiate removed with its trigger on the stack makes nothing (\"the carrier is gone — no Fireball\"); the RAQ says X = 0 and it still makes a Fireball 1. Bellowing Boulder dead with its ping on the stack loses the Deadly its column gave it, because effectSourceAttrs falls back to the printed card. There are 63 \"carrier is gone\" guards across 19 card files; the ones that only READ the source contradict CR 109.3c and this thread.",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Dead Unit Effect on Stack\", _passer: \"Bellowing Boulder will remember his last state\". ⚠ The same thread says Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling and Lumengrove Lurker \"remember they were in formation\", which R225 (owner, room FTUW) ruled the other way — those claims are marked outdated by R225 pending the owner.",
-    fix: "The thread makes last-known state general (\"his effect will check BB state/last known state on resolution\"), and the RAQ is the authority (owner, 2026-10-09): reverse R225. Snapshot the source on the stack item (attributes, formation, column), resolve against it when the source is gone, and sweep the 63 guards. Rousing Spirit and Hooba-Nan are the thread's named exceptions that do nothing.",
+    fix: "The thread makes last-known state general (\"his effect will check BB state/last known state on resolution\"), and the RAQ is the authority (owner, 2026-10-09): reverse the earlier formation ruling (room FTUW). Snapshot the source on the stack item (attributes, formation, column), resolve against it when the source is gone, and sweep the 63 guards. Rousing Spirit and Hooba-Nan are the thread's named exceptions that do nothing.",
     proof: null,
     verify: "Run the todo reproduction in 390-raq-stack.test.ts, the two \"RAQ dead unit:\" todo tests. — it fails while this is open.",
     guards: [
-      "108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger",
-      "108-formation-class.test.ts::R325 Hooba-Bot: killed under its own attack trigger",
-      "401-raq-fix-stack.test.ts::R325 Embermaw Fledgling gone before",
-      "401-raq-fix-stack.test.ts::R325 Lumengrove Lurker gone before",
+      "108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger",
+      "108-formation-class.test.ts::CR 714.4 Hooba-Bot: killed under its own attack trigger",
+      "401-raq-fix-stack.test.ts::CR 714.4 Embermaw Fledgling gone before",
+      "401-raq-fix-stack.test.ts::CR 714.4 Lumengrove Lurker gone before",
       "390-raq-stack.test.ts::RAQ dead unit: Flamebreath Initiate removed",
       "390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder dead"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R325, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 210, area: "engine", severity: "major",
     cards: ["Monke", "Transmogrifant", "Suppression Field", "Formless"],
-    title: "suppression vetoes attributes and abilities gained AFTER it (R62), where the RAQ and Caleb apply timestamps",
-    detail: "R62 made suppression a veto, so a mod or grant arriving after Monke, Transmogrifant, Suppression Field or Formless is switched off too. Caleb: \"anything after that will still apply\"; _passer: \"timestamps takes precedence\". Five claims across three threads fail on this one rule.",
+    title: "suppression vetoes attributes and abilities gained AFTER it, where the RAQ and Caleb apply timestamps",
+    detail: "The engine made suppression a veto, so a mod or grant arriving after Monke, Transmogrifant, Suppression Field or Formless is switched off too. Caleb: \"anything after that will still apply\"; _passer: \"timestamps takes precedence\". Five claims across three threads fail on this one rule.",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Threads \"[Solved] Timestamps vs Static Abilities\", \"[Solved] Monke & Transmogrifant vs Suppression Field & Formless\", \"[Asked] Suppression Field & Formless vs Gaining Attributes\" (calebgannon). R62 and R293 are the engine's rulings; R293's quote is about the same attributes coming back, not new ones.",
-    fix: "The RAQ wins (owner, 2026-10-09), and the owner: \"that goes for all ability stripping … it becomes a layer of some kind.\" Make ability/attribute stripping a layer applied in timestamp order: it removes what is there when it applies, and later grants apply. Reverses R62's veto. Covers Monke, Transmogrifant, Suppression Field, Formless and every other stripper.",
+    fix: "The RAQ wins (owner, 2026-10-09), and the owner: \"that goes for all ability stripping … it becomes a layer of some kind.\" Make ability/attribute stripping a layer applied in timestamp order: it removes what is there when it applies, and later grants apply. Reverses the old suppression ruling's veto. Covers Monke, Transmogrifant, Suppression Field, Formless and every other stripper.",
     proof: null,
     verify: "Run the todo reproduction in 390-raq-stack.test.ts \"RAQ timestamps:\", and in 393-raq-mods.test.ts the \"RAQ Suppression Field: an attribute granted after\", \"a Powerful virus attached after\" and \"RAQ Transmogrifant:\" todos. — it fails while this is open.",
     guards: [
@@ -10674,7 +10671,7 @@ export const CLOSED: TodoEntry[] = [
       "393-raq-mods.test.ts::RAQ Suppression Field: a Powerful virus attached after",
       "390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R328, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10690,14 +10687,14 @@ export const CLOSED: TodoEntry[] = [
       "393-raq-mods.test.ts::RAQ Suppression Field: it takes the attributes of the target",
       "393-raq-mods.test.ts::RAQ Suppression Field: aimed at either unit of a column"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R329, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 712.3), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 212, area: "attribute", severity: "minor",
     cards: ["Crevice Lurker"],
     title: "Crevice Lurker does not tax {Resonant}, which Caleb intends",
-    detail: "Resonant is an inline rider, not a trigger, so the R121 gate never sees it: 2 life drained with or without a Lurker. Caleb: \"my intent is for it to stop those from triggering\"; the card prints \"Abilities\".",
+    detail: "Resonant is an inline rider, not a trigger, so the CR 111.10g gate never sees it: 2 life drained with or without a Lurker. Caleb: \"my intent is for it to stop those from triggering\"; the card prints \"Abilities\".",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Trigger-like Attributes vs Crevice Lurker & Containment Protocol\", calebgannon.",
     fix: "Follow Caleb's stated intent (the RAQ is the authority, owner 2026-10-09). Falls out of CT-200 if Resonant becomes an effect on the stack.",
     proof: null,
@@ -10705,7 +10702,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R315, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 802.19h), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10720,7 +10717,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "393-raq-mods.test.ts::RAQ Reconfigure vs Once per Turn"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R331, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 720.10b), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10735,7 +10732,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R332, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 721.5a), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10750,7 +10747,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "393-raq-mods.test.ts::RAQ Download: a Fireball already cast"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R333, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 304.11d), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10758,14 +10755,14 @@ export const CLOSED: TodoEntry[] = [
     title: "a grafted [cost] can be declined, and an unpayable one skips only that graft",
     detail: "Graft 101 point 11: \"you MUST pay it, you can't opt out\", and if it cannot be paid \"the whole Graft Effect won't go on the stack\". The engine offers \"Don't pay — skip this effect\" and, when unpayable, still resolves the host and the other grafts.",
     evidence: "RAQ audit 2026-10-09 (ledgers/raq.ts). Thread \"[Solved] Graft 101. All you need to know about Grafts.\" point 11. R110 says skip \"that effect\"; whether that means the one graft part or the whole composite is the question.",
-    fix: "Follow Graft 101 point 11 (the RAQ is the authority, owner 2026-10-09): the grafted cost is mandatory, and an unpayable one keeps the whole graft effect off the stack. Narrows R110.",
+    fix: "Follow Graft 101 point 11 (the RAQ is the authority, owner 2026-10-09): the grafted cost is mandatory, and an unpayable one keeps the whole graft effect off the stack. Narrows the earlier multiplied-cost reading.",
     proof: null,
     verify: "Run the todo reproduction in 393-raq-mods.test.ts, the two \"RAQ Graft 101 point 11:\" todos. — it fails while this is open.",
     guards: [
       "393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable",
       "393-raq-mods.test.ts::a payable [cost] graft must be paid"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R334, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 111.15, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10795,7 +10792,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "393-raq-mods.test.ts::RAQ Recall Spell Token:"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R335, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 410.5b), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10813,7 +10810,7 @@ export const CLOSED: TodoEntry[] = [
       "393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Robot costs 0",
       "393-raq-mods.test.ts::RAQ Borrower of Forms: while it mimics a unit it is not a spell unit"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R336, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10828,7 +10825,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "396-raq-timing.test.ts::RAQ Tides 3:"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R337, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10843,7 +10840,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "396-raq-timing.test.ts::RAQ Tides 5:"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R338, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round; now CR 702.4e), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
@@ -10858,84 +10855,84 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "396-raq-timing.test.ts::RAQ Tides 6:"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R339, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 223, area: "attribute", severity: "major",
     title: "{Piercing} is automatic; the RAQ lets the attacker overkill a unit and keep the excess off the player",
-    detail: "R7 (owner, 2026-07-16) made Piercing automatic. Two RAQ write-ups say otherwise: with Piercing \"the attacker may still overkill the front or back unit, keeping that excess off the player\", and a Piercing attacker may put all 10 into a Vulnerable unit (20) so none reaches the player. The RAQ is the authority (owner, 2026-10-09), so R7 is reversed.",
+    detail: "The split ruling (owner, 2026-07-16) made Piercing automatic. Two RAQ write-ups say otherwise: with Piercing \"the attacker may still overkill the front or back unit, keeping that excess off the player\", and a Piercing attacker may put all 10 into a Vulnerable unit (20) so none reaches the player. The RAQ is the authority (owner, 2026-10-09), so the 2026-07-16 ruling is reversed.",
     evidence: "RAQ audit 2026-10-09. Threads \"[Solved] Excessive Combat Damage & interaction with Piercing, Deadly and Phytochemical Protection\" and \"[Solved] Vulnerable + Piercing / Electric\", _passer. The owner: \"we can reuse the blocking damage assignment UI\".",
-    fix: "Let a Piercing column assign its damage the way a blocked column already does (the existing damage-assignment UI), with the player as one more place excess may or may not go. New ruling reversing R7, citing both threads.",
+    fix: "Let a Piercing column assign its damage the way a blocked column already does (the existing damage-assignment UI), with the player as one more place excess may or may not go. New ruling reversing the old split ruling, citing both threads.",
     proof: null,
     verify: "Attack with a Piercing unit into one blocker: the attacker is asked how to assign, and may keep everything on the blocker.",
     guards: [
-      "399-raq-fix-combat.test.ts::R319: with Piercing the attacker may overkill the front unit",
-      "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
+      "399-raq-fix-combat.test.ts::CR 802.16c: with Piercing the attacker may overkill the front unit",
+      "399-raq-fix-combat.test.ts::CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R319, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 802.16c, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 224, area: "card", severity: "minor",
     cards: ["Stasis Sentry"],
     title: "under Stasis Sentry an X spell keeps X below 3 and only pays more; the RAQ says X itself must be at least 3",
-    detail: "R157 §20 raised only the COST to 3, so Wildfire cast at X=0 costs 3 and deals 0. The RAQ: under Stasis Sentry in battle an X spell's X must be at least 3 (Wildfire deals at least 3); it is not an additional cost. The RAQ is the authority (owner, 2026-10-09), so R157 §20 is reversed.",
+    detail: "The earlier reading raised only the COST to 3, so Wildfire cast at X=0 costs 3 and deals 0. The RAQ: under Stasis Sentry in battle an X spell's X must be at least 3 (Wildfire deals at least 3); it is not an additional cost. The RAQ is the authority (owner, 2026-10-09), so the earlier reading is reversed.",
     evidence: "RAQ audit 2026-10-09. Thread \"[Solved] Spells with cost X vs Stasis Sentry\".",
-    fix: "Make Stasis Sentry raise the minimum X (the collectX floor) instead of the price. New ruling reversing R157 §20.",
+    fix: "Make Stasis Sentry raise the minimum X (the collectX floor) instead of the price. New ruling reversing the earlier price reading.",
     proof: null,
     verify: "Under Stasis Sentry in battle, cast Wildfire: X starts at 3 and it deals 3.",
     guards: [
       "133-x-cost-semantics.test.ts::under a Stasis Sentry the X menu starts at 3"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R326, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), now CR 107.5, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 225, area: "card", severity: "minor",
     cards: ["Borrower of Forms"],
     title: "a Borrower of Forms that copied a modded unit is Unstable; the RAQ says a fresh copy is not",
-    detail: "R118 ruling 2 (owner): \"Inherit the mods text, but it IS Unstable.\" The RAQ write-up says a freshly resolved Borrower that copied a modded unit is not Unstable. The RAQ is the authority (owner, 2026-10-09), so R118 ruling 2 is reversed.",
+    detail: "The owner's earlier copy ruling: \"Inherit the mods text, but it IS Unstable.\" The RAQ write-up says a freshly resolved Borrower that copied a modded unit is not Unstable. The RAQ is the authority (owner, 2026-10-09), so the earlier reading is reversed.",
     evidence: "RAQ audit 2026-10-09. Thread \"[Solved & Expanding?] Borrower of Forms - The weird interactions\", _passer.",
-    fix: "A copy inherits the mods' text but is not itself modded, so not Unstable. New ruling reversing R118 ruling 2; check what else reads \"modded\" off a copy.",
+    fix: "A copy inherits the mods' text but is not itself modded, so not Unstable. New ruling reversing that copy ruling's Unstable half; check what else reads \"modded\" off a copy.",
     proof: null,
     verify: "Borrower copies an Unstable modded unit and then dies: it goes to the bin, not erased.",
     guards: [
-      "403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin"
+      "403-raq-fix-mods.test.ts::CR 720.7e: a Borrower that copied a modded unit dies to the bin"
     ],
-    closed: "FIXED 2026-10-09 (RAQ fix round) as R336, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
+    closed: "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
   },
   {
     id: 254, area: "card", severity: "major",
     cards: ["Bloomcaster"],
-    title: "Bloomcaster does not hear its own play: correct (R347), a card being played is on the stack, not in play",
-    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.playing.what-is-played.includes-itself. R26 (current): Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") fires on its own arrival when played normally. The trigger listens on cardPlayed from holders in play, and cardPlayed fires at commit while Bloomcaster is still on the stack, so it never hears itself. Measured: no 1/1 when Bloomcaster is played from hand. The card file comment still claims it makes one. Either the engine regressed when the card moved to cardPlayed, or R26 is stale (D-U14-11).",
+    title: "Bloomcaster does not hear its own play: correct (CR 701.1e), a card being played is on the stack, not in play",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.playing.what-is-played.includes-itself. The own-play ruling (then current): Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") fires on its own arrival when played normally. The trigger listens on cardPlayed from holders in play, and cardPlayed fires at commit while Bloomcaster is still on the stack, so it never hears itself. Measured: no 1/1 when Bloomcaster is played from hand. The card file comment still claims it makes one. Either the engine regressed when the card moved to cardPlayed, or the own-play reading is stale (D-U14-11).",
     evidence: "Findings F-U14-5 (dup F-U14-8). digital-rules.md: \"Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") **fires on its own\". batch-fire-wood.ts: \"type: 'triggered', events: ['cardPlayed'],\" and \"// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12).\" Re-measured 2026-10-10 by the proof below.",
     fix: "Let the item being committed hear its own cardPlayed (or fire a self-play check on arrival), then add a guard that plays Bloomcaster from hand and counts the 1/1.",
     proof: () => bloomcasterHearsItself(),
     guards: [
-      "11-fire-wood.test.ts::R347: Bloomcaster played from hand makes no 1/1 for its own play"
+      "11-fire-wood.test.ts::CR 701.1e: Bloomcaster played from hand makes no 1/1 for its own play"
     ],
-    closed: "NOT A BUG. The owner answered D-U14-11 with reading B on 2026-10-11 (R347, reversing R26's own-play half): a 'whenever you play a unit' ability works only while its card is in play. The engine already does this, so nothing was changed. Closed as done rather than wontfix so the proof keeps running as R347's guard: it now reads true if Bloomcaster makes a 1/1 for its own play, which R347 rules out.",
+    closed: "NOT A BUG. The owner answered D-U14-11 with reading B on 2026-10-11 (CR 701.1e, reversing the earlier reading's own-play half): a 'whenever you play a unit' ability works only while its card is in play. The engine already does this, so nothing was changed. Closed as done rather than wontfix so the proof keeps running as CR 701.1e's guard: it now reads true if Bloomcaster makes a 1/1 for its own play, which CR 701.1e rules out.",
     status: 'done',
   },
   {
     id: 277, area: "card", severity: "minor",
     cards: ["Stalwart Sentinel", "Proph", "Bloomcaster", "Void Mandible"],
-    title: "Stalwart Sentinel played from a bin hears its own play and takes its own two +1/+1 counters (R347)",
-    detail: "(CR review-comment round, 2026-10-11; found by the round-4 verifier.) R347: an ability that triggers when its controller plays a unit works only while its card is in play; a card being played is on the stack, not in play, so its own play does not trigger it. Stalwart Sentinel's \"[Augment][once] When you play a unit or spell from anywhere other than your hand, put two +1/+1 counters on me.\" listens on 'spellPlayed' and 'spawned' with no self-exclusion, so a Sentinel that Wake the Dead plays from a bin fires on its own arrival and ends with two counters. Bloomcaster (cardPlayed, holders in play) already behaves.",
+    title: "Stalwart Sentinel played from a bin hears its own play and takes its own two +1/+1 counters (CR 701.1e)",
+    detail: "(CR review-comment round, 2026-10-11; found by the round-4 verifier.) CR 701.1e: an ability that triggers when its controller plays a unit works only while its card is in play; a card being played is on the stack, not in play, so its own play does not trigger it. Stalwart Sentinel's \"[Augment][once] When you play a unit or spell from anywhere other than your hand, put two +1/+1 counters on me.\" listens on 'spellPlayed' and 'spawned' with no self-exclusion, so a Sentinel that Wake the Dead plays from a bin fires on its own arrival and ends with two counters. Bloomcaster (cardPlayed, holders in play) already behaves.",
     evidence: "Finding F-U14-10. batch-light-a.ts: \"type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]\". Measured by a verifier probe (uncommitted, scratch mirror client/engine/test/zz-probe-U14-1.test.ts 1b): cardPlayed fired once for the Sentinel, it is in play with 2 counters, and its own trigger fired. The whole-pool sweep written to close it (444) measured three more: Proph drew for its own play from a cache, a bin or the deck exactly as the Sentinel took counters, and Bloomcaster (a 1/1) and Void Mandible (sacrificed itself) heard their own play when Wake the Dead played them, because the asPlay spawn fires 'cardPlayed' after the body is in play.",
     fix: "Exclude the Sentinel's own arrival from its trigger (the event's entity is the listener itself), then a guard: Wake the Dead plays a Sentinel from the bin, 0 counters; a second unit played from the bin afterwards, 2.",
     proof: () => sentinelHearsItself(),
     guards: [
-      "444-no-self-hearing-play.test.ts::R347: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play",
-      "444-no-self-hearing-play.test.ts::R347 calibration: the detector sees a Stalwart Sentinel hear a unit played after it",
-      "444-no-self-hearing-play.test.ts::R347: no play listener hears its own play from a bin",
-      "444-no-self-hearing-play.test.ts::R347: no play listener hears its own play from a cache",
-      "444-no-self-hearing-play.test.ts::R347: no play listener hears its own play from the deck",
+      "444-no-self-hearing-play.test.ts::CR 701.1e: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play",
+      "444-no-self-hearing-play.test.ts::CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit played after it",
+      "444-no-self-hearing-play.test.ts::CR 701.1e: no play listener hears its own play from a bin",
+      "444-no-self-hearing-play.test.ts::CR 701.1e: no play listener hears its own play from a cache",
+      "444-no-self-hearing-play.test.ts::CR 701.1e: no play listener hears its own play from the deck",
     ],
-    closed: "FIXED 2026-10-11. Two seams, one rule. (1) E.fireEvent gained `beingPlayed`: the asPlay spawn (Wake the Dead, The Bonesculptor) dispatches its 'cardPlayed' with the arriving body excluded from the listeners, which fixes Bloomcaster and Void Mandible and every future 'cardPlayed' listener. (2) A plain unit's play is announced on its own 'spawned' (R263), which a \"When I spawn\" ability must keep hearing, so the two cards that read 'spawned' as a play (Stalwart Sentinel, Proph) drop their own arrival with the shared helpers.ts isOwnArrival. 444 derives every play listener in the pool (21 cards) and plays each from hand, cache, bin and deck.",
+    closed: "FIXED 2026-10-11. Two seams, one rule. (1) E.fireEvent gained `beingPlayed`: the asPlay spawn (Wake the Dead, The Bonesculptor) dispatches its 'cardPlayed' with the arriving body excluded from the listeners, which fixes Bloomcaster and Void Mandible and every future 'cardPlayed' listener. (2) A plain unit's play is announced on its own 'spawned', which a \"When I spawn\" ability must keep hearing, so the two cards that read 'spawned' as a play (Stalwart Sentinel, Proph) drop their own arrival with the shared helpers.ts isOwnArrival. 444 derives every play listener in the pool (21 cards) and plays each from hand, cache, bin and deck.",
     status: 'done',
   },
   {

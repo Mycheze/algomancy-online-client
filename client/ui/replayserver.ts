@@ -249,8 +249,7 @@ export class ReplayServer {
   log(): string[] {
     if (this.omniscient) return this.events.filter(e => e.msg).map(e => e.msg!);
     const mine = this.seat;
-    // R310: the opponent's glimpse is held with the rest of their step (R235's
-    // live reveal is reversed), so nothing of theirs inside it is told here
+    // CR D6.2: the opponent's glimpse is held with the rest of their step (the old live reveal is reversed), so nothing of theirs inside it is told here
     const visible = this.events.filter((e, i) =>
       this.segFrom < 0 || i < this.segFrom || this.eventSeat[i] === mine);
     return redactLog(visible, mine, this.names);

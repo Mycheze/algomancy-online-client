@@ -1,4 +1,4 @@
-/* R164 — A COPY OF A SPELL IS A SPELL ON THE STACK.
+/* CR 710.8 — A COPY OF A SPELL IS A SPELL ON THE STACK.
  *
  * Earthbound Replicator and Maelstrom Charger both print "copy". Until now the
  * engine answered that by re-running the copied card's `spellEffect` IN PLACE,
@@ -56,7 +56,7 @@ function replicatorBattle(h: Harness): { A: Seat; D: Seat; atk: EntityId; repl: 
 
 const copies = (h: Harness) => h.state.stack.filter(i => i.copy);
 
-/** R178: answer the pending decision by option LABEL. Maelstrom Charger's
+/** answer the pending decision by option LABEL. Maelstrom Charger's
  * as-you-play option (E.collectAsYouPlay) carries bookkeeping values rather
  * than target refs, so `pick` — which matches on the value — cannot name it. */
 function say(h: Harness, label: string): void {
@@ -69,7 +69,7 @@ function say(h: Harness, label: string): void {
 
 // ── the copy is REALLY on the stack ──────────────────────────────────────
 
-test('R164 Earthbound Replicator: the copy is a real stack item, pushed ABOVE the original', () => {
+test('CR 710.8 Earthbound Replicator: the copy is a real stack item, pushed ABOVE the original', () => {
   const h = new Harness(13800);
   const { A, D, atk, repl } = replicatorBattle(h);
   giveResources(h, A, 'wood', 2);                             // Burgeon: g, mana 2
@@ -77,7 +77,7 @@ test('R164 Earthbound Replicator: the copy is a real stack item, pushed ABOVE th
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Burgeon') });
   pick(h, { unit: repl });                                    // Burgeon targets the Replicator
-  pick(h, 'power');                                           // R57: the half, declared at cast
+  pick(h, 'power');                                           // CR 702.5: the half, declared at cast
   assert.equal(h.state.stack.length, 2, 'the Burgeon, and the Replicator trigger above it');
   pass(h); pass(h);                                           // resolve the Replicator trigger
   pick(h, false);                                             // keep the declared target
@@ -106,7 +106,7 @@ test('R164 Earthbound Replicator: the copy is a real stack item, pushed ABOVE th
   finishBattle(h);
 });
 
-test('R164 Earthbound Replicator: the copy is offered as a "target effect" and Dematerialize negates it', () => {
+test('CR 710.8 Earthbound Replicator: the copy is offered as a "target effect" and Dematerialize negates it', () => {
   const h = new Harness(13801);
   const { A, D, atk, repl } = replicatorBattle(h);
   giveResources(h, A, 'wood', 2);                             // Burgeon: g, mana 2
@@ -125,13 +125,13 @@ test('R164 Earthbound Replicator: the copy is offered as a "target effect" and D
   assert.ok(offered(h).includes(JSON.stringify({ stack: copy.id })),
     'the COPY is a legal "target effect" — every stack sweep can see it now');
   pick(h, { stack: copy.id });
-  // R178: Dematerialize targets an EFFECT, not the Replicator, so the
+  // CR 706.9: Dematerialize targets an EFFECT, not the Replicator, so the
   // Replicator's trigger no longer queues at all — "targeting me" is asked in
   // `when`, at the moment of the play. It used to queue on every nonunit spell
   // and print a no-op line at resolution, which is the pair of passes that
   // used to be here.
   pass(h); pass(h);                     // Dematerialize resolves
-  assert.equal(copies(h).length, 0, 'R68: the negated copy left the stack at once');
+  assert.equal(copies(h).length, 0, 'CR 704.4: the negated copy left the stack at once');
   assert.ok(h.log.some(l => l.includes('Burgeon (copy) is negated')), 'and the negation is announced');
   assert.ok(!h.log.some(l => l.includes('Burgeon (copy) is negated → bin')),
     'a copy has NO CARD — negating it must not conjure one into a bin');
@@ -144,7 +144,7 @@ test('R164 Earthbound Replicator: the copy is offered as a "target effect" and D
   finishBattle(h);
 });
 
-test('R164 Earthbound Replicator: an unanswered copy resolves too — the spell happens twice', () => {
+test('CR 710.8 Earthbound Replicator: an unanswered copy resolves too — the spell happens twice', () => {
   const h = new Harness(13802);
   const { A, atk, repl } = replicatorBattle(h);
   giveResources(h, A, 'wood', 2);
@@ -165,7 +165,7 @@ test('R164 Earthbound Replicator: an unanswered copy resolves too — the spell 
 
 // ── a copy was not PLAYED ────────────────────────────────────────────────
 
-test('R164 Earthbound Replicator: a copy is not PLAYED, so it fires no play event and copies nothing ("No, it\'s not infinity")', () => {
+test('CR 701.5 Earthbound Replicator: a copy is not PLAYED, so it fires no play event and copies nothing ("No, it\'s not infinity")', () => {
   const h = new Harness(13803);
   const { A, atk, repl } = replicatorBattle(h);
   giveResources(h, A, 'wood', 2);
@@ -191,9 +191,9 @@ test('R164 Earthbound Replicator: a copy is not PLAYED, so it fires no play even
   finishBattle(h);
 });
 
-// ── what the copy INHERITS: R57's mode, R35's receipt ────────────────────
+// ── what the copy INHERITS: CR 710.8a's mode, CR 111.5's receipt ────────────────────
 
-test('R164 Earthbound Replicator: the copy inherits the declared mode (R57) and is never asked again', () => {
+test('CR 710.8a Earthbound Replicator: the copy inherits the declared mode (CR 702.5) and is never asked again', () => {
   const h = new Harness(13804);
   const { A, atk, repl } = replicatorBattle(h);
   giveResources(h, A, 'wood', 2);
@@ -207,7 +207,7 @@ test('R164 Earthbound Replicator: the copy inherits the declared mode (R57) and 
   pick(h, false);
   const copy = copies(h)[0]!;
   assert.equal(copy.parts[0]?.mode, 'defense',
-    'R57: the original said which half it was, in public, in its own cast window — '
+    'CR 710.8a: the original said which half it was, in public, in its own cast window — '
     + 'the copy is that spell again, not a second chance to pick');
   assert.ok(!h.state.decision || h.state.decision.kind !== 'mode', 'and nobody is re-asked');
   pass(h); pass(h);                                           // the copy resolves
@@ -217,7 +217,7 @@ test('R164 Earthbound Replicator: the copy inherits the declared mode (R57) and 
   finishBattle(h);
 });
 
-test('R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid', () => {
+test('CR 710.8a Maelstrom Charger: the copy inherits the cast-cost receipt (CR 111.5) — Volatile Toxicity is not re-paid', () => {
   const h = new Harness(13805);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -231,9 +231,9 @@ test('R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — 
   assert.ok(defense > 0, 'the sacrifice has a defense worth measuring');
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
-  pick(h, { unit: food });                                    // R35: the bracket is paid AT CAST
+  pick(h, { unit: food });                                    // CR 702.5: the bracket is paid AT CAST
   assert.ok(!ent(h, food), 'the cast cost was paid once, on the way to the stack');
-  // R178: the Charger's option is a stage of the CAST WINDOW now, not a
+  // CR 702.3g: the Charger's option is a stage of the CAST WINDOW now, not a
   // trigger — so it is asked here, before anyone has priority, rather than
   // after a pair of passes resolves a trigger off the stack.
   say(h, 'Sacrifice Maelstrom Charger');
@@ -254,7 +254,7 @@ test('R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — 
 
 // ── what the copy TARGETS ────────────────────────────────────────────────
 
-test('R164 Earthbound Replicator: the copy keeps EVERY target the spell declared, not only me (Fight)', () => {
+test('CR 710.8a Earthbound Replicator: the copy keeps EVERY target the spell declared, not only me (Fight)', () => {
   const h = new Harness(13806);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -287,7 +287,7 @@ test('R164 Earthbound Replicator: the copy keeps EVERY target the spell declared
 
 // ── the copy has no card: every disposal path ────────────────────────────
 
-test('R164 Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a copy erases nothing (Suspend)', () => {
+test('CR 710.8c Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a copy erases nothing (Suspend)', () => {
   const h = new Harness(13807);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -299,7 +299,7 @@ test('R164 Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Suspend') });
   pick(h, { player: A });                                     // "target player's life can't change"
-  say(h, 'Sacrifice Maelstrom Charger');                      // R178: in the cast window
+  say(h, 'Sacrifice Maelstrom Charger');                      // CR 702.3g: in the cast window
   say(h, 'Keep the original targets');
   pass(h); pass(h);                                           // the COPY resolves — "Erase me."
   const erasedSuspends = () => (h.state.players[D]!.erased ?? []).filter(c => c === 'Suspend').length;
@@ -323,7 +323,7 @@ test('R164 Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a
 //
 // Overbloom prints DEPLOY timing, and `playAtTiming`'s deployment branch
 // commits with `then: 'resolve'` — the item resolves where it stands and never
-// reaches the stack at all. R178 had put the item's ID on `'spellPlayed'` so a
+// reaches the stack at all. The item's ID had been put on 'spellPlayed' so a
 // listener could name the play; an id names nothing when there is no stack, so
 // the Replicator's resolution-time lookup missed and announced that Overbloom
 // had "already left the stack" — a stack it had never been on.
@@ -333,13 +333,13 @@ test('R164 Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a
 // copy that has no original to sit above rather than stranding it on a stack
 // nothing outside battle and deployment drains.
 //
-// ⚠ ROUTING THE PLAY THROUGH THE DEPLOYMENT STACK **IS** THE FIX — R286, owner
-// ruling 2026-09-01 — AND THIS COMMENT USED TO SAY THE OPPOSITE. It was tried
+// ⚠ ROUTING THE PLAY THROUGH THE DEPLOYMENT STACK **IS** THE FIX — owner
+// ruling 2026-09-01, now CR 507.5 — AND THIS COMMENT USED TO SAY THE OPPOSITE. It was tried
 // first and reverted on a real measurement: `settle()` would not drain that
-// stack while ANY decision was open (the R154 guard), and deployment is
+// stack while ANY decision was open (the old global decision hold), and deployment is
 // SIMULTANEOUS, so on saved game DQVZ one seat's Floral Singularity X question
 // held the other seat's unit play until it was answered and spawned it in the
-// wrong order; R154's own two guards in test/170 failed under it.
+// wrong order; the decision gate's own two guards in test/170 failed under it.
 //
 // The revert was right and its reasoning was incomplete. The branch did not
 // fail because deployment plays belong off the stack — the owner says they do
@@ -371,7 +371,7 @@ function deployReplicator(h: Harness): { A: Seat; repl: EntityId; idx: number } 
 
 const said = (h: Harness, s: string) => h.events.some(e => e.msg.includes(s));
 
-test('R164/CT-176 Earthbound Replicator: a DEPLOY-timing spell is copied too — the play that never reached the stack (Overbloom, report #158)', () => {
+test('CR 710.8/CT-176 Earthbound Replicator: a DEPLOY-timing spell is copied too — the play that never reached the stack (Overbloom, report #158)', () => {
   const h = new Harness(13810);
   const { A, repl, idx } = deployReplicator(h);
   const before = effStats(h, repl);
@@ -396,7 +396,7 @@ test('R164/CT-176 Earthbound Replicator: a DEPLOY-timing spell is copied too —
     + 'so a copy with no original to sit above must resolve where it stands');
 });
 
-test('R164/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-AIMED, at a target the original never named', () => {
+test('CR 710.8a/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-AIMED, at a target the original never named', () => {
   const h = new Harness(13811);
   const { A, repl, idx } = deployReplicator(h);
   const other = spawn(h, A, 'Unit Token');
@@ -404,13 +404,13 @@ test('R164/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-AIMED,
   h.do({ type: 'playCard', seat: A, handIndex: idx });
   pick(h, { unit: repl });                        // the original targets the Replicator
   pick(h, true);                                  // "…and may choose new targets for the copy"
-  pick(h, { unit: other });                       // R64 judged NOW, against the live board
+  pick(h, { unit: other });                       // CR 110.3a, 710.8a judged NOW, against the live board
 
   assert.deepEqual(effStats(h, repl), [8, 10], 'the original still resolved on the Replicator');
   assert.deepEqual(effStats(h, other), [8, 8], 'and the copy landed on the re-aimed body (1/1 + 7/+7)');
 });
 
-test('R286/CT-176: a deploy-timing play names a REAL stack item — the snapshot is not needed and is not taken', () => {
+test('CR 507.5/CT-176: a deploy-timing play names a REAL stack item — the snapshot is not needed and is not taken', () => {
   const h = new Harness(13812);
   const { A, repl, idx } = deployReplicator(h);
   h.do({ type: 'playCard', seat: A, handIndex: idx });
@@ -418,12 +418,11 @@ test('R286/CT-176: a deploy-timing play names a REAL stack item — the snapshot
   pick(h, false);
 
   const plays = h.events.filter(e => e.type === 'spellPlayed' && e.data?.['card'] === 'Overbloom');
-  assert.equal(plays.length, 1, 'exactly one play event — a copy is not played (R164)');
+  assert.equal(plays.length, 1, 'exactly one play event — a copy is not played (CR 701.5)');
   const d = plays[0]!.data!;
-  assert.equal(typeof d['item'], 'number', 'R178: the play still names its item by id');
-  // ⚠ THIS ASSERTION USED TO BE ITS OPPOSITE, and the flip is the check R286
-  // asked for. CT-176 added `offStack` because a deploy-timing play "was
-  // committed with `then: resolve`" and the id named nothing; R286 puts the
+  assert.equal(typeof d['item'], 'number', 'CR 706.13: the play still names its item by id');
+  // ⚠ THIS ASSERTION USED TO BE ITS OPPOSITE, and the flip is the check the deployment-stack ruling asked for. CT-176 added `offStack` because a deploy-timing play "was
+  // committed with `then: resolve`" and the id named nothing; CR 507.5 puts the
   // play on a stack, so the id names the real item and the snapshot has
   // nothing left to do here. The field itself stays — the haste step, a spell
   // token cast from play and an activation outside battle still commit with
@@ -438,13 +437,13 @@ test('R286/CT-176: a deploy-timing play names a REAL stack item — the snapshot
   // that has already resolved cannot be negated — there is nothing standing
   // there to remove. So the WIDE event deliberately carries no snapshot.
   const wide = h.events.filter(e => e.type === 'cardPlayed' && e.data?.['card'] === 'Overbloom');
-  assert.equal(wide.length, 1, 'R129 fires alongside');
+  assert.equal(wide.length, 1, 'the wide cardPlayed event (CR 108.1a) fires alongside');
   assert.equal(wide[0]!.data!['offStack'], undefined,
-    "'cardPlayed' must NOT carry the item: R207's readers negate, and negating something "
+    "'cardPlayed' must NOT carry the item: CR 706.13's readers negate, and negating something "
     + 'that has already resolved is exactly the bug the snapshot would introduce');
 });
 
-test('R164/CT-176 census: every spell that could ask the Replicator to copy it outside battle is drilled above', () => {
+test('CR 710.8/CT-176 census: every spell that could ask the Replicator to copy it outside battle is drilled above', () => {
   const printed = JSON.parse(readFileSync(join(HERE, '../src/cards/printed.json'), 'utf8')) as
     Record<string, { name: string; kind: string; timing: string }>;
 
@@ -469,6 +468,6 @@ test('R164/CT-176 census: every spell that could ask the Replicator to copy it o
   assert.deepEqual(canNameAUnit, ['Overbloom'],
     'a NEW card can now be played outside battle at a target that could be the Earthbound '
     + 'Replicator, and it is not drilled in this file. Overbloom was the only one, which is '
-    + 'why report #158 was the first sighting of a bug that had been there since R164 — add '
+    + 'why report #158 was the first sighting of a bug that had been there since spell copies went on the stack — add '
     + 'the new card to the CT-176 drill above rather than editing this list.');
 });

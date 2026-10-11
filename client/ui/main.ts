@@ -9,7 +9,7 @@
  * M1 test rig, not the product", which stayed true of the file for a year
  * after it stopped being true of the client. The hotseat mode it described was
  * removed on 2026-09-23; the both-seats view it needed survives only in
- * `test/ui-driver.ts`, for R170. */
+ * `test/ui-driver.ts`, for CR D2.1. */
 import {
   createGame, decisionBlocks, legalActions, ALL_ELEMENTS,
 } from '../engine/src/apply.ts';
@@ -93,8 +93,8 @@ import type { Beat, Flash, StackCaption } from './flash.ts';
 import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceGo, paceHeld, paceSequence, paceStopped, paceToStop, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, playbackGapsOf, playbackStopsOf, sameSourceTop } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
 import { undoAvailable } from './undo.ts';
-// R272: may the long-hover box survive the paint that just happened? The rule
-// is a module for the same reason R230's is (test/199 §0) — the driver cannot
+// Report [142]: may the long-hover box survive the paint that just happened? The rule
+// is a module for the same reason CR D6.17's is (test/199 §0) — the driver cannot
 // see a tooltip, so the decision has to be reachable without one.
 import { hoverSurvivesPaint } from './hover.ts';
 import {
@@ -136,7 +136,7 @@ import * as pg from './postgame.ts';
 import * as ps from './pickset.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
-// R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
+// CR D8.4 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
@@ -170,7 +170,7 @@ interface ClockSnap {
 let clockSnap: (ClockSnap & { rx: number }) | null = null;
 
 /** How NetBackend opens its connection. A WebSocket to the server, except in
- * Learn to Play (R297), where the "server" is ui/solo.ts running in the page
+ * Learn to Play (CR D8.1), where the "server" is ui/solo.ts running in the page
  * and this is swapped for its socket-shaped stand-in before the backend is built. */
 let openSocket: (url: string) => WebSocket = url => new WebSocket(url);
 
@@ -180,11 +180,11 @@ interface Backend { state: GameState; log: string[]; do(a: Action): void; }
 
 /** a formation the other seat is still building (server/rooms.ts
  * Formation): its columns by attacker column, its counterattack list and —
- * R321 — its LEFT side-blocks, `left[0]` the one just left of column 1 */
+ * CR 606.4a — its LEFT side-blocks, `left[0]` the one just left of column 1 */
 interface Building { cols: EntityId[][]; send: EntityId[]; left?: EntityId[][] }
 
 /** one message off the socket. Named (it used to be inline on onMsg) because
- * R150 QUEUES the 'update' ones — see ui/pace.ts. */
+ * CR D5.4 QUEUES the 'update' ones — see ui/pace.ts. */
 interface NetMsg {
   t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
   /** which server PROCESS answered — changes on every restart (see NetBackend.boot) */
@@ -215,13 +215,13 @@ interface NetMsg {
    * push, a moment after the frames, cut every playback off at frame 1). */
   playbackTail?: true;
   clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
-  /** R298: present on every push of a single card duel */
+  /** present on every push of a single card duel */
   single?: true;
   trio?: lob.TrioReveal;
   cols?: EntityId[][]; send?: EntityId[]; left?: EntityId[][]; building?: Building | null;
   me?: acct.Me;
   rematch?: [boolean, boolean];
-  /** R216: present only for a room the SERVER dealt with a scenario id */
+  /** CR D8.4: present only for a room the SERVER dealt with a scenario id */
   scenario?: scn.ScenarioInfo;
   /** CT-160: present only while the SERVER has STOPPED this game — a restart
    * rebuilt it onto an engine that could not replay part of its log. The
@@ -230,7 +230,7 @@ interface NetMsg {
   /** BL-29: how many people are watching this room (absent when nobody is) */
   watchers?: number;
   /**
-   * R170 — THIS CONNECTION ACTS FOR BOTH SEATS.
+   * CR D2.1 — THIS CONNECTION ACTS FOR BOTH SEATS.
    *
    * One screen, both hands, no redaction, and either seat may be played. The
    * real server never sends it and cannot: a room has two sockets and each is
@@ -240,8 +240,8 @@ interface NetMsg {
    *
    * It replaces asking `!NET`. That question used to mean "the hotseat client",
    * which was true only because the hotseat client was the one thing that was
-   * not a NetBackend; it was never what the code wanted to know. R154 taught
-   * the engine that a decision belongs to a SEAT and that the seat not being
+   * not a NetBackend; it was never what the code wanted to know. Per CR D2.1b,
+   * the engine knows that a decision belongs to a SEAT and that the seat not being
    * asked may carry on deploying, and every branch that reads this is asking
    * whether there is a second seat here to carry on WITH.
    */
@@ -268,11 +268,11 @@ class NetBackend implements Backend {
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
   waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } } | null = null;
-  /** R298: this room is a single card duel — the server says so (every push,
+  /** CR D8.2: this room is a single card duel — the server says so (every push,
    * and the waiting payload), or the creating link does (`&single=1`) before
    * the room exists. Only ever set. */
   single = new URLSearchParams(location.search).get('single') === '1';
-  /** R298: may a join carry this browser's card? Only the CREATING join (whose
+  /** CR D8.2b: may a join carry this browser's card? Only the CREATING join (whose
    * link says `&single=1`; the share link never does) and a join after the
    * player pressed Play. Otherwise a joiner's card from last week would lock
    * itself in on arrival, and a blind pick they never made is no pick. */
@@ -294,7 +294,7 @@ class NetBackend implements Backend {
   /** the standing pass as the server last heard it ('' = none): see passAll() */
   private sentPassAll = '';
   /**
-   * R150/CT-28: authoritative updates waiting their turn on the clock, so the
+   * CR D5.4/CT-28: authoritative updates waiting their turn on the clock, so the
    * table can never move faster than a human can read it. See ui/pace.ts for
    * the whole argument; the two invariants worth repeating here are that the
    * queue only ever holds updates the player cannot act on, and that an
@@ -347,7 +347,7 @@ class NetBackend implements Backend {
    * belt and braces on top of that, not the fence.
    */
   spectating = false;
-  /** R170: this connection acts for BOTH seats — see NetMsg.both. */
+  /** CR D2.1: this connection acts for BOTH seats — see NetMsg.both. */
   both = false;
   /** BL-29: how many people are watching this room (0 when nobody is) */
   watchers = 0;
@@ -435,7 +435,7 @@ class NetBackend implements Backend {
       // …and, when the deck came out of the saved collection, WHICH deck it
       // is, so the game counts toward that deck's record (server/collection.ts)
       //
-      // R298: a single card duel brings a CARD instead — the one this browser
+      // CR D8.2: a single card duel brings a CARD instead — the one this browser
       // last picked. The server ignores a deck in a single room and a card in
       // any other, so sending the one the room wants is all this decides.
       ...(this.single
@@ -444,10 +444,10 @@ class NetBackend implements Backend {
     }));
   }
   /**
-   * R245 — automatic intents this client has sent that the server has not
+   * CR D2.4 — automatic intents this client has sent that the server has not
    * answered yet, counted since the last intent a HUMAN sent.
    *
-   * The client sends things the player did not: the haste-step ready (R236)
+   * The client sends things the player did not: the haste-step ready (CR D2.5)
    * and the automatic pass ([59]/#2/#68). A refusal of one of those is not
    * something the player did wrong, and #122 is what it costs to tell them it
    * is — a red ✗ and an error cue, in the prompt bar, naming an engine rule
@@ -460,7 +460,7 @@ class NetBackend implements Backend {
   /** the PLAYER's intent — everything act() sends, and every direct caller
    * that is answering a click */
   do(a: Action): void { this.send(a, false); }
-  /** R245: an intent the CLIENT decided on by itself (the haste-step ready,
+  /** CR D2.4: an intent the CLIENT decided on by itself (the haste-step ready,
    * the automatic pass). Same wire, same latch; only the attribution of a
    * refusal differs, and #122 is what getting that wrong looks like. */
   doAuto(a: Action): void { this.send(a, true); }
@@ -473,7 +473,7 @@ class NetBackend implements Backend {
     // [59] …and must take the latch with them. This state has now been spent;
     // nothing else may act on it until the server says what it became.
     this.latch();
-    this.mineInFlight = true;   // R150: our own echo is never paced
+    this.mineInFlight = true;   // CR D5.4b: our own echo is never paced
     this.sentBuilding = '';                       // a real action resets the relay
     // A pass carries the count of the view it answers: if the server's
     // Pass-all backstop has already passed that window for this seat, the
@@ -486,7 +486,7 @@ class NetBackend implements Backend {
   private latch(): void { ui.sentFor = this.state?.actionCount ?? -1; }
   /** publish the formation being built (no-op when nothing changed) */
   sendBuilding(cols: EntityId[][], send: EntityId[], left: EntityId[][] = []): void {
-    // R321: `left` only when there is one, so every other payload is the
+    // CR 606.4a: `left` only when there is one, so every other payload is the
     // one it always was
     const payload = JSON.stringify({ t: 'building', cols, send, ...(left.length ? { left } : {}) });
     if (payload === this.sentBuilding || this.ws.readyState !== WebSocket.OPEN) return;
@@ -495,12 +495,12 @@ class NetBackend implements Backend {
   }
   undo(): void {
     this.latch(); this.mineInFlight = true;
-    // R245: an undo is always the player's own — a refusal of it is theirs
+    // CR D2.4a: an undo is always the player's own — a refusal of it is theirs
     this.autoOutstanding = 0;
     this.ws.send(JSON.stringify({ t: 'undo' }));
   }
 
-  // ── R150/CT-28: the drain ───────────────────────────────────────────
+  // ── CR D5.4/CT-28: the drain ───────────────────────────────────────────
   /** release everything whose moment has come, then re-arm the timer */
   private pumpPace(): void {
     const { out, rest } = paceDue(this.paced, Date.now());
@@ -508,7 +508,7 @@ class NetBackend implements Backend {
     for (const m of out) this.applyUpdate(m);
     if (out.length) render();
     this.schedulePace();
-    // R258/CT-123: an ARRIVAL lands here too (onMsg calls this straight after
+    // CR D5.5a/CT-123: an ARRIVAL lands here too (onMsg calls this straight after
     // queueing), and a held one releases nothing, so `out` is empty and the
     // line above painted nothing at all. This is the one thing that still has
     // to happen: the ⏭ chip and the presence dot, patched in place. It never
@@ -523,7 +523,7 @@ class NetBackend implements Backend {
     this.schedulePace();
     for (const m of out) this.applyUpdate(m);
     if (out.length) render();
-    paintLive();   // R258: and the chip that was offering the skip goes away
+    paintLive();   // CR D5.5: and the chip that was offering the skip goes away
   }
 
   /** how many updates the throttle is holding — what the skip chip counts */
@@ -618,7 +618,7 @@ class NetBackend implements Backend {
     // the post-game screen: the whole payload on game over, then just the
     // rematch state as the two of you make up your minds
     if (m.t === 'gameover') {
-      this.flushPace();   // R150: nothing is left waiting behind the result
+      this.flushPace();   // CR D5.4b: nothing is left waiting behind the result
       postGame = m as unknown as pg.GameOver;
       postGameHidden = false;
       if (m.me) acct.applyMe(m.me);
@@ -649,8 +649,8 @@ class NetBackend implements Backend {
     }
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if (m.names) this.names = m.names;
-    // R258: WHO IS CONNECTED IS NOT GAME NEWS. It is true the moment it
-    // arrives, it is not something the player acts on, and R150's gate does
+    // CR D5.5a: WHO IS CONNECTED IS NOT GAME NEWS. It is true the moment it
+    // arrives, it is not something the player acts on, and CR D5.4b's gate does
     // not look at it — so a disconnect (server/main.ts pushes a view when a
     // socket closes) used to be throttled like a resolution, up to
     // PACE_MAX_HELD × PACE_MS = 12s behind the truth. Applied HERE, ahead of
@@ -667,7 +667,7 @@ class NetBackend implements Backend {
     }
     if (m.peers) this.peers = m.peers;
     // BL-29: same reasoning as `peers` above — an audience arriving or leaving
-    // is not game news and must not be held behind R150's pacing gate. Read as
+    // is not game news and must not be held behind CR D5.4b's pacing gate. Read as
     // "the field is absent ⇒ nobody", because the server omits it rather than
     // sending a zero (see baseView).
     if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.watchers = m.watchers ?? 0;
@@ -676,13 +676,13 @@ class NetBackend implements Backend {
     // reach by different routes. Only ever set: a room does not un-freeze
     // while the player is sitting in it.
     if (m.frozen) this.frozen = m.frozen;
-    // R216: every scenario push carries the whole brief (the action index and
+    // every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
     if (m.scenario) scn.setScenario(m.scenario);
     // BL-43: a custom room's rules ride every push (and the waiting payload before the deal)
     if (m.custom) this.custom = m.custom;
     else if (m.waiting?.custom) this.custom = m.waiting.custom;
-    // R298: likewise the single-card flag
+    // likewise the single-card flag
     if (m.single || m.waiting?.single) this.single = true;
     // …and a DRAW cleared both cards: this seat has to choose again, so a
     // reconnect must not quietly resubmit the card that just drew
@@ -720,7 +720,7 @@ class NetBackend implements Backend {
         render(); return;
       }
       this.joined = true; this.seat = m.seat!;
-      if (m.both) this.both = true;   // R170 — latched: a room does not stop having two seats
+      if (m.both) this.both = true;   // CR D2.1 — latched: a room does not stop having two seats
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
       // the room you were sitting in just filled: say so to a background tab
@@ -732,11 +732,11 @@ class NetBackend implements Backend {
       this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
-      this.autoOutstanding = 0;   // R245: a (re)join answers nothing; start clean
+      this.autoOutstanding = 0;   // CR D2.4: a (re)join answers nothing; start clean
       this.serverPlayback = false;   // a join is the live board, never frames
       this.sentPassAll = '';      // the server dropped the standing pass on this join, and resetUi drops ours
       resetUi();
-      // R78: seed the cast watch AFTER resetUi has dropped the baselines, so
+      // seed the cast watch AFTER resetUi has dropped the baselines, so
       // the first update after a join has something to diff against. Never
       // `quiet` — a join is not an action somebody just took.
       noteCast(this.state, this.seat, false);
@@ -763,7 +763,7 @@ class NetBackend implements Backend {
         this.pumpPace();
         return;
       }
-      // R150/CT-28: a readable ceiling on how fast the table may move. The
+      // CR D5.4/CT-28: a readable ceiling on how fast the table may move. The
       // gate is in ui/pace.ts and is tested there; all this does is ask it,
       // queue, and pump.
       const mine = this.mineInFlight;
@@ -806,7 +806,7 @@ class NetBackend implements Backend {
       return;
     }
     if (m.t === 'error') {
-      // R150: never say "no" about a board the player cannot see yet — spend
+      // CR D5.4c: never say "no" about a board the player cannot see yet — spend
       // the queue first, so the refusal lands on the state it is about
       this.flushPace();
       // [59] a refusal leaves actionCount exactly where it was, so the latch
@@ -814,7 +814,7 @@ class NetBackend implements Backend {
       // state they are still holding. Release it here instead.
       ui.sentFor = -1; ui.autoAt = -1;
       ui.cancelling = false;
-      // R245 / #122: a refusal of something the CLIENT decided to send is not
+      // CR D2.4a / #122: a refusal of something the CLIENT decided to send is not
       // the player's refusal, and must not wear the player's refusal. It still
       // reaches the screen — a silent one would hide exactly the bug #122 is —
       // but as a plain toast and a log line, with no red bar and no error cue.
@@ -831,7 +831,7 @@ class NetBackend implements Backend {
   }
 
   /** One queued authoritative update, folded in. Everything here used to run
-   * inline in onMsg; R150 only moved WHEN it runs, never what it does. The
+   * inline in onMsg; the pacing queue (CR D5.4) only moved WHEN it runs, never what it does. The
    * caller renders — a flush folds several in and paints once. */
   private applyUpdate(m: NetMsg): void {
     // 2026-10-03 — ONE FRAME OF A PLAYBACK: the board as one of the
@@ -858,7 +858,7 @@ class NetBackend implements Backend {
       // the stack beats, with what each one made held back until its card
       // gets there — the same one trip a play of your own makes (round 1)
       absorbFlashes(evs, prev ? bornSince(prev, m.view) : null);
-      // R310 (report #192): an opponent's glimpse inside the hidden step is
+      // CR D5.2 (report #192): an opponent's glimpse inside the hidden step is
       // held for the recap, so THIS is the moment it happens on your screen —
       // the frame of the action that made it — and its card notice pops here,
       // as it would have live. A "watch again" pops it again: it is the same
@@ -890,12 +890,12 @@ class NetBackend implements Backend {
     // so a refusal earned by an automatic pass — which never goes through
     // act() — stayed on screen for the rest of the game.
     uiError = '';
-    rememberStack();   // R68: before the new view replaces the negated item
+    rememberStack();   // CR 704.4: before the new view replaces the negated item
     // the board this update replaces — what its beats' results are new against
     // (absorbFlashes). Not across a full resync: that is a rewrite, not a step.
     const prevState = m.log ? null : this.state;
     if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
-    // R245 / #122: the server has spoken about the state — if it records my
+    // CR D2.4 / #122: the server has spoken about the state — if it records my
     // automatic haste answer (or has moved past the step), the latch is down
     noteHasteAnswered(this.state, this.seat);
     if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
@@ -910,9 +910,9 @@ class NetBackend implements Backend {
       }
     }
     if (m.legal) this.legal = m.legal;
-    // R258: `m.peers` is deliberately NOT applied here — see onMsg. A held
+    // CR D5.5a: `m.peers` is deliberately NOT applied here — see onMsg. A held
     // update's presence reading is stale by the time it is released.
-    // R78(b): a cast-time suspension is the ONE thing that changes the board
+    // A cast-time suspension is the ONE thing that changes the board
     // and says nothing at all. A full log resync (`m.log` — an undo replayed
     // the game) is a wholesale arrival, not an action, so it re-baselines.
     noteCast(this.state, this.seat, !m.log
@@ -928,20 +928,20 @@ class NetBackend implements Backend {
     absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : null);
     // CT-78: it is a moment on YOUR screen, so it is noted from the batch that
     // carries it: a battle glimpse live, a resource-step one in the reveal half
-    // of that step's close. R310: a haste or deployment glimpse arrives in a
+    // of that step's close. CR D6.2: a haste or deployment glimpse arrives in a
     // playback frame instead (the branch above) — it is held for the recap, and
     // never reaches this live path while the step is open.
     absorbGlimpse(m.events ?? []);
-    // R266/CT-134: and the one announcement that has NO window to warn in —
+    // CR D7.4a/CT-134: and the one announcement that has NO window to warn in —
     // the tokens a declined attack erases at regroup. Off the same batch, and
     // not held behind a reveal: it is a loss, not a beat.
     absorbTokenLoss(m.events ?? []);
-    absorbCostToasts(m.events ?? []);   // R276/CT-142 — see ui/toast.ts
+    absorbCostToasts(m.events ?? []);   // CR D7.4b/CT-142 — see ui/toast.ts
     // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
     // the very line announcing a card ("Ben plays Bripp → stack.") would be
     // the one line that fails to link it.
     noteCardsSeen(m.events ?? []);
-    // R80: and the combat beats are staged off the same batch, so the log
+    // CR D5.4: and the combat beats are staged off the same batch, so the log
     // lets go of a whole damage step one stage at a time. Behind the reveal
     // overlay nobody is looking at the log, so that batch is not paced —
     // and passing [] is also what clears a queue the reveal would otherwise
@@ -983,7 +983,7 @@ const NO_GAME: Backend = { state: createGame(0).state, log: [], do() { /* nothin
 let h: Backend = NO_GAME;
 let uiError = '';
 
-/** the zones a mod (augment/graft) can be applied from — R41 added the cache */
+/** the zones a mod (augment/graft) can be applied from — the cache included (CR 507.2) */
 type ModZone = 'hand' | 'bin' | 'cache';
 
 /**
@@ -998,7 +998,7 @@ interface MenuItem { label: string; icon?: string; go: () => void; confirm?: boo
 interface UiState {
   carrying: EntityId | null;
   columns: EntityId[][];
-  /** R321: how many of `columns` are LEFT side-blocks, held at its front —
+  /** CR 606.4a: how many of `columns` are LEFT side-blocks, held at its front —
    * key k is index k + blockLeft (ui/formation.ts openLeft). 0 outside the
    * block step. */
   blockLeft: number;
@@ -1008,25 +1008,25 @@ interface UiState {
   send: EntityId[];
   /** spell tokens riding along with the attack being built (C1) */
   spellTokens: EntityId[];
-  /** R41/R303: 'cache' is a third mod source — "you CAN augment or graft from
+  /** CR 403.3b, 720.5a: 'cache' is a third mod source — "you CAN augment or graft from
    * cache" (Caleb 2024-12-02), on the same permission a play from it needs —
    * so the in-progress mod has to name it too. */
   modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: MenuItem[] } | null;
   orderPicked: number[];
-  /** BL-25/R139: how many counters the next counter-removal click takes, and
+  /** BL-25/CR D7.2: how many counters the next counter-removal click takes, and
    * the decision id it was dialled for — a fresh question always starts at
    * the floor, so the count can never be carried onto a menu that never
    * offered it. */
   counterCount: number;
   counterFor: number;
-  /** CT-34/R149: how much combat damage the elective-split ticker is offering
+  /** CT-34/CR D7.2e: how much combat damage the elective-split ticker is offering
    * the victim currently being asked, and the decision id it was dialled for.
    * A strike asks one question per victim, so a fresh id always restarts at
    * that victim's floor rather than carrying a number its menu never had. */
   assignCount: number;
   assignFor: number;
-  /** R197: the number dialled or typed into a `kind: 'number'` decision, and
+  /** CR D7.2a: the number dialled or typed into a `kind: 'number'` decision, and
    * the decision id it was dialled for. A fresh question restarts at the
    * engine's own suggestion — carrying the last answer onto a different
    * question is how a client answers something nobody asked. */
@@ -1047,27 +1047,27 @@ interface UiState {
   /** which turn+seat draftPack was built for (re-init on change) */
   draftFor: string;
   /**
-   * R251: which of the two standing pass promises is armed, or null for none —
+   * CR D2.2: which of the two standing pass promises is armed, or null for none —
    * 'stack' passes on the effects that were on the stack when it was clicked
    * and hands priority back if anything changes, 'all' gives up priority until
    * the phase turns over. Net mode only. The one arm for both, because they are
    * one machine with two scopes (ui/inspect.ts PassMode).
    */
   passMode: PassMode | null;
-  /** ⚠ pre-R245: stack height when the chip was armed. Subsumed by
+  /** ⚠ legacy arm: stack height when the chip was armed. Subsumed by
    * `autopassItems`; see AutoPassArm.armedStack (ui/inspect.ts). */
   autopassStack: number;
-  /** ⚠ pre-R245: activateAbility keys when the chip was armed. Subsumed by
+  /** ⚠ legacy arm: activateAbility keys when the chip was armed. Subsumed by
    * `autopassOpts`. */
   autopassSig: string[];
-  /** R245: the stack BY IDENTITY when the chip was armed — an id that was not
-   * in it is the "something new was played" the button promises, and R251 made
-   * that same list the SCOPE 'stack' mode passes through and then finishes. */
+  /** CR D2.2b: the stack BY IDENTITY when the chip was armed — an id that was not
+   * in it is the "something new was played" the button promises, and under CR D2.2b
+   * that same list is the SCOPE 'stack' mode passes through and then finishes. */
   autopassItems: EntityId[];
-  /** R245: ui/inspect.ts optionKeys at that same moment — every option the
+  /** CR D2.2b: ui/inspect.ts optionKeys at that same moment — every option the
    * game has since handed the player, not just an activated ability */
   autopassOpts: string[];
-  /** R251: the phase the chip was armed in — "until the next phase", derived
+  /** CR D2.2: the phase the chip was armed in — "until the next phase", derived
    * from the arm rather than written down as `'battle'` */
   autopassPhase: Phase;
   /**
@@ -1095,7 +1095,7 @@ interface UiState {
   /** actionCount the last cancel-chain undo was sent for */
   cancelAt: number;
   /**
-   * R280/CT-162 — the X a committed variable-cost ramp is walking TO, or null
+   * CR D7.2/CT-162 — the X a committed variable-cost ramp is walking TO, or null
    * when no ramp is running. Shaped on `cancelling`/`cancelAt` above, and for
    * the same reason: the engine takes a variable cost ONE POINT AT A TIME, so
    * "pay 5" is five answers to five successive questions, and over a socket
@@ -1119,7 +1119,7 @@ interface UiState {
   /** Pass pressed with castable spell tokens during battle (C5): which pass
    * button is being confirmed */
   confirmPass: 'pass' | PassMode | null;
-  /** R288/BL-30: a target pick carrying `confirm` is being asked about — the
+  /** CR D2.8/BL-30: a target pick carrying `confirm` is being asked about — the
    * OPTION INDEX, so answering "yes" re-sends exactly the intent that was
    * interrupted rather than re-deriving it. */
   confirmTarget: number | null;
@@ -1152,7 +1152,7 @@ interface UiState {
   bottomPick: number[];
   /** which turn+seat bottomPick was built for (re-init on change) */
   bottomFor: string;
-  /** R72/R75: the ATTACKING line as it stood at the last paint, so a collapse
+  /** CR 602.5, 603.5a: the ATTACKING line as it stood at the last paint, so a collapse
    * or a left-insert can be spotted and `columns` — which is keyed by attack
    * column index — carried across it. Null outside my block step. */
   blockLine: EntityId[][] | null;
@@ -1334,7 +1334,7 @@ const resetUi = () => {
   inspect = null;
   showSpentCache = new Set();
   cardsSeen = new Set();
-  // R236/R245: a new game answers nothing that was outstanding in the old one,
+  // CR D2.4: a new game answers nothing that was outstanding in the old one,
   // and a latch left up would silently decline to answer its first haste step
   hasteAutoOut = false;
   dropBaselines();
@@ -1384,9 +1384,9 @@ function dropBaselines(): void {
 /** items having (or waiting for) their beat on the visual stack */
 let flashQueue: Flash[] = [];
 /**
- * R68: what the client last drew on the stack, by item id.
+ * CR 704.4: what the client last drew on the stack, by item id.
  *
- * Negating REMOVES an item now (docs/digital-rules R68) and the 'negated'
+ * Negating REMOVES an item now (CR 704.4) and the 'negated'
  * event carries only its id — the engine's own copy is detached and dropped.
  * So the beat that shows a player their spell was answered has to be drawn
  * from a snapshot this client kept while the item was still on screen.
@@ -1412,9 +1412,9 @@ function rememberStack(): void {
   }
 }
 /**
- * R78: the "a card has left their hand and has not appeared" watch.
+ * the "a card has left their hand and has not appeared" watch.
  *
- * A CAST-time suspension (X, {Modular} mods, a bracketed cost, R67 targets)
+ * A CAST-time suspension (X, {Modular} mods, a bracketed cost, CR 702.3c targets)
  * happens before the item reaches state.stack, and view.ts nulls the other
  * seat's suspension along with their decision — so `resolving` cannot help and
  * there is no `casting` field to read. ui/inspect.ts watchCast() infers it from
@@ -1438,7 +1438,7 @@ function noteCast(state: GameState, mySeat: Seat, quiet: boolean): void {
  * A moment, not a piece of state: `E.glimpse` leaves no structured record in
  * GameState (ui/reveal.ts says why), so this is set from the event batch and
  * expires. A client that reconnects while it is up has missed it and has the
- * log line, which is the residual R235 left and this does not close.
+ * log line, which is the residual the old live reveal left and this does not close.
  */
 let glimpseUp: { seat: Seat; cards: CardName[]; until: number } | null = null;
 
@@ -1450,7 +1450,7 @@ function absorbGlimpse(events: readonly EngineEvent[]): void {
   glimpseUp = {
     seat: seen.seat as Seat,
     cards: seen.cards,
-    // R242: the client's one tempo, not a number of this surface's own
+    // CR D5.4: the client's one tempo, not a number of this surface's own
     until: glimpseNoticeUntil(Date.now(), seen.cards.length, HOLD_MS, STAGGER_MS),
   };
   // deliberately SILENT. Every existing cue is a state change you may have to
@@ -1470,18 +1470,18 @@ function glimpseNoticeHtml(): string {
 }
 
 /**
- * R266 / CT-134 — the unused spell tokens somebody just lost, still on screen.
+ * CR D7.4a / CT-134 — the unused spell tokens somebody just lost, still on screen.
  *
  * Sibling of `glimpseUp` and deliberately NOT the same shape. A glimpse is a
  * moment you may miss; this is a LOSS, so it has no `until`: it stays up until
  * the player puts it away or until the next battle makes it old news
  * (`gcStaleUi`). Nothing is undone by dismissing it — the tokens are already
- * gone, and R194 argues why the client cannot be handed the chance to stop it.
+ * gone, and a declined round opens no window (CR 610.4e), so the client cannot be handed the chance to stop it.
  *
  * Set from the event batch for the same reason the glimpse is: `startRegroup`
  * deletes the token entities in the same breath as announcing them, so there
  * is no state left to read this off. A client that reconnects across it has
- * missed it and has the log line — the same residual R235 left on the glimpse.
+ * missed it and has the log line — the same residual the old live reveal left on the glimpse.
  */
 let tokenLossUp: { seat: Seat; n: number; msg: string } | null = null;
 
@@ -1511,7 +1511,7 @@ function tokenLossBarHtml(): string {
 }
 
 /**
- * R276 / CT-142 — the cost toasts that are up.
+ * CR D7.4 / CT-142 — the cost toasts that are up.
  *
  * Third sibling of `glimpseUp` and `tokenLossUp`, and the same argument for
  * being a moment rather than state: every one of these announcements says that
@@ -1555,13 +1555,13 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
  * not something somebody just did, and must not replay old beats. */
 function flashReset(): void {
   glimpseUp = null;     // CT-78: a resync is not somebody glimpsing at you
-  tokenLossUp = null;   // R266: nor is it somebody losing their tokens
-  costToastsUp = [];    // R276: nor anything a resolution cost somebody
+  tokenLossUp = null;   // CR D7.4a: nor is it somebody losing their tokens
+  costToastsUp = [];    // CR D7.4: nor anything a resolution cost somebody
   flashQueue = [];
-  beatQueue = [];       // R80: and the narrative beats holding back log lines
-  cancelAutoPass();     // R80: a pass scheduled against a board that is gone
+  beatQueue = [];       // CR D5.4: and the narrative beats holding back log lines
+  cancelAutoPass();     // CR D5.4: a pass scheduled against a board that is gone
   seenStack = new Map();
-  // R78: and the cast watch with them. It is a DIFF against the last thing you
+  // and the cast watch with them. It is a DIFF against the last thing you
   // were shown, so a state that arrives wholesale gives it nothing to diff —
   // and a stale baseline would read a fresh join's hand as a card in flight.
   castWatch = null;
@@ -1569,7 +1569,7 @@ function flashReset(): void {
 }
 
 /**
- * R242 — HOW MUCH THE ⏭ CHIP HAS TO OFFER TO SKIP.
+ * CR D5.5 — HOW MUCH THE ⏭ CHIP HAS TO OFFER TO SKIP.
  *
  * Three queues pace this client and the chip only ever counted one of them.
  * That was defensible while a cascade emptied itself inside 2.2 seconds; now
@@ -1605,9 +1605,9 @@ function skipPacing(): void {
 }
 
 /**
- * R258 — WHAT STAYS LIVE WHILE THE THROTTLE IS HOLDING.
+ * CR D5.5a — WHAT STAYS LIVE WHILE THE THROTTLE IS HOLDING.
  *
- * R150 holds an update the player cannot act on, and a held update paints
+ * CR D5.4b holds an update the player cannot act on, and a held update paints
  * NOTHING: `pumpPace` renders only when something was released. For the board
  * that is the whole feature — the table is meant to move at one step per
  * second. But it took down two things that are not the board:
@@ -1615,8 +1615,8 @@ function skipPacing(): void {
  *   · the ⏭ chip, which is the only VISIBLE way out of the pacing, and so was
  *     absent exactly while the thing it offers to skip was happening
  *     (CT-123). Measured against the real drain over ten held arrivals: at a
- *     ~PACE_MS arrival gap the chip is drawn ZERO times, and R150 documents
- *     the real gap as "a few hundred ms apart" — squarely in the band;
+ *     ~PACE_MS arrival gap the chip is drawn ZERO times, and the measured
+ *     real gap is "a few hundred ms apart" — squarely in the band;
  *   · the opponent's presence, which is truth about the SESSION rather than
  *     news about the game. A disconnect reaches the client as an ordinary
  *     `update` (server/main.ts pushes a view on socket close), so it was held
@@ -1631,7 +1631,7 @@ function skipPacing(): void {
  *
  * ⚠ AND THE SECOND GUESS IS ALSO WRONG, so it is written down here: the
  * dangerous-looking line is `runAutoPass()` at the foot of renderNow, which
- * sends an action. It cannot double-send. [59]/R245 latch it to one send per
+ * sends an action. It cannot double-send. [59]/CR D2.4 latch it to one send per
  * `actionCount` (ui/inspect.ts takeAutoPass), and a held update does not move
  * actionCount, so the extra render finds the latch down. MEASURED, not
  * assumed — a render()-instead-of-paint build puts nothing extra on the wire.
@@ -1641,7 +1641,7 @@ function skipPacing(): void {
  * player is reading, closed once per held arrival, at machine speed),
  * gcStaleUi(), planAutoPass(), maybeCancelChain(), publishBuilding(), a
  * viewport snapshot/restore and a full motion/sound/beat pass — run at exactly
- * the rate R150 exists to STOP. The throttle would still be holding the state
+ * the rate CR D5.4 exists to STOP. The throttle would still be holding the state
  * and doing all the work anyway. So this seam writes one node and calls
  * nothing, and test/237 asserts the render did not RUN rather than that the
  * markup did not change: those are different questions, and only the first one
@@ -1744,7 +1744,7 @@ function bornSince(prev: GameState, next: GameState): Slot[] {
   return census(next).slots.filter(sl => !had.has(sl.key));
 }
 
-// ── R80: narrative beats — the combat step told one stage at a time ───
+// ── CR D5.4: narrative beats — the combat step told one stage at a time ───
 //
 // UFAB: "Neither of us had anything to do during the end of that combat, but
 // damage and all effects happened instantly. We should have been able to see,
@@ -2010,7 +2010,7 @@ const tableWatcher: ResizeObserver | null = typeof ResizeObserver === 'function'
   ? new ResizeObserver(() => { relayout(); zoomCheck(); }) : null;
 
 /** the rows on the visual stack right now: the real stack, then the beats,
- * then (R78) whatever is mid-resolution — off the rules stack, still happening */
+ * then (CR D6.12) whatever is mid-resolution — off the rules stack, still happening */
 const visualStack = (now = Date.now()): ReturnType<typeof stackRows> =>
   stackRows(h.state.stack, flashQueue, now, h.state.resolving ?? null);
 
@@ -2047,14 +2047,14 @@ try {
 const elIcon = (name: string): string => elIconOf(name, name);
 
 // card-text icon/markup formatting lives in ./cardtext.ts (iconizeText) so it
-// can be tested — see R134. main.ts imports it with the other text helpers.
+// can be tested — see 122-cardtext-markup. main.ts imports it with the other text helpers.
 
 const q = () => new E(h.state);
 
 /**
- * R229 — THE CARD AN ENTITY IS, for anything that SHOWS it.
+ * CR D6.8 — THE CARD AN ENTITY IS, for anything that SHOWS it.
  *
- * R118 deliberately never rewrites `Entity.card`: that stays the PHYSICAL card
+ * The engine deliberately never rewrites `Entity.card` (CR 201.5): that stays the PHYSICAL card
  * — the one that bins, is erased and belongs to a deck (ruling 1) — and the
  * face it currently wears lives in `Entity.copies`, behind `E.nameOf`. Every
  * surface that reads the card's TEXT already went through `E.nameOf`
@@ -2078,7 +2078,7 @@ const q = () => new E(h.state);
  */
 const faceOf = (u: Entity): string => q().nameOf(u);
 
-// ── R41: the cache zone ───────────────────────────────────────────────
+// ── CR 403.1: the cache zone ───────────────────────────────────────────────
 /** `seat`'s cache. The field is optional/additive (older saves have none), so
  * it is always read through the engine query rather than off PlayerState. */
 const cacheOf = (seat: Seat): CachedCard[] => q().cache(seat);
@@ -2099,7 +2099,7 @@ let actCount = 0;
 
 function act(a: Action): void {
   /**
-   * R288 / BL-30 — THE ALLY MISCLICK GUARD, at the one door every intent goes
+   * CR D2.8 / BL-30 — THE ALLY MISCLICK GUARD, at the one door every intent goes
    * through.
    *
    * The owner, 2026-08-26: *"it might be nice to add a small warning if they
@@ -2113,7 +2113,7 @@ function act(a: Action): void {
    * loses one. `act()` is the choke point: every `decide` passes through it,
    * so the guard cannot be walked around by a route somebody adds later.
    *
-   * `confirm` and not `warning`: R74's warning says "this will do nothing" and
+   * `confirm` and not `warning`: CR D7.1's warning says "this will do nothing" and
    * has never wanted a dialogue. See DecisionOption.confirm.
    */
   if (a.type === 'decide' && typeof a.choice === 'number' && ui.confirmTarget !== a.choice) {
@@ -2129,7 +2129,7 @@ function act(a: Action): void {
   // a second arm here that did, for hotseat, and it was the reason `h` could
   // be something other than a NetBackend at all.
   if (!NET) return;
-  // R170: your seat — or either of them, on a screen that is playing both.
+  // CR D2.1: your seat — or either of them, on a screen that is playing both.
   // The server that serves both halves accepts both; the real one has one
   // socket per seat and would refuse, so this stays a client-side gate.
   if (!bothSeats() && a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
@@ -2154,7 +2154,7 @@ function cancelableCast(): boolean {
   const sus = s.suspension, dec = s.decision;
   if (!dec || !sus) return false;
   const seat = bothSeats() ? dec.seat : NET!.seat;
-  // R309: picking a burst's next token is part of the same pre-commit cast
+  // CR D4.2: picking a burst's next token is part of the same pre-commit cast
   if (sus.type === 'burstPick') return dec.seat === seat && sus.seat === seat;
   if (sus.type !== 'cast') return false;
   if (sus.item.kind === 'triggered') return false;
@@ -2164,7 +2164,7 @@ function cancelableCast(): boolean {
 function canCancelNow(): boolean { return cancelableCast(); }
 function startCastCancel(): void {
   if (!canCancelNow() || !NET) return;
-  ui.rampTo = null;   // R280: taking the cast back ends any ramp that was running
+  ui.rampTo = null;   // CR D7.2b: taking the cast back ends any ramp that was running
   // the server undoes ONE of my actions per message — chain them until the
   // whole pre-commit cast is unwound (maybeCancelChain drives the rest). There
   // used to be a second arm here that rewound a local snapshot stack instead,
@@ -2181,7 +2181,7 @@ function maybeCancelChain(): void {
   ui.cancelAt = h.state.actionCount;
   NET.undo();
 }
-/* ── R280/CT-162: spending a dialled X ────────────────────────────────
+/* ── CR D7.2b/CT-162: spending a dialled X ────────────────────────────────
  *
  * Shaped on the cast-cancel chain above, and for the same reason: the engine
  * takes one answer per state, so "pay 5" is five answers and over a socket
@@ -2190,7 +2190,7 @@ function maybeCancelChain(): void {
  *
  * ⚠ IT TERMINATES THREE WAYS, and the third is the one that matters. It stops
  * at the dialled X; it stops when the engine stops offering "pay one more"
- * (R49's floor, or the mana reserve this client cannot see); and it stops when
+ * (CR 111.6b's floor, or the mana reserve this client cannot see); and it stops when
  * a payment goes out and the RECEIPT does not move. Without that last one a
  * server that accepts an answer and changes nothing is a machine-speed send
  * loop — the same failure `ui.autoAt` exists to prevent for the auto-pass.
@@ -2200,7 +2200,7 @@ function rampStep(): void {
   ui.rampDone = r.done;
   act({ type: 'decide', seat: r.seat, choice: r.payIndex });
 }
-/** stop where we are: R64's own "That's enough", pressed for the player */
+/** stop where we are: CR 702.6b's own "That's enough", pressed for the player */
 function rampStop(): void {
   const r = costRamp(h.state.decision);
   if (r.active && r.doneIndex >= 0) act({ type: 'decide', seat: r.seat, choice: r.doneIndex });
@@ -2285,7 +2285,7 @@ const modPickAttrs = (id: EntityId): string =>
   pickable(`mod:${id}`) ? ` data-act="mod" data-id="${id}" class="modpick"` : '';
 /** the option indexes a click on this board element answers */
 const pickIndexes = (key: string): number[] => picks()?.board.get(key) ?? [];
-/** R74's "this will do nothing" for the option(s) behind a board element */
+/** CR D7.1's "this will do nothing" for the option(s) behind a board element */
 function pickWarning(key: string): string {
   const dec = picks()?.dec;
   return dec ? pickIndexes(key).map(i => dec.options[i]!.warning).filter(Boolean).join(' · ') : '';
@@ -2301,7 +2301,7 @@ const pickable = (key: string): boolean => pickIndexes(key).length > 0;
 function pickOnBoard(key: string): boolean {
   const dec = h.state.decision;
   if (!dec) return false;
-  // BL-25/R139: a counter pick sends the (unit, amount) option the stepper
+  // BL-25/CR D7.2: a counter pick sends the (unit, amount) option the stepper
   // is dialled to, not the first option naming the unit
   if (key.startsWith('unit:')) {
     const ctr = counterClickIndex(Number(key.slice(5)) as EntityId);
@@ -2319,14 +2319,14 @@ function pickOnBoard(key: string): boolean {
  * (data-previd). Options without a live entity degrade to nothing. */
 function pingAttrs(o: { value: unknown }): string {
   // the judgement (which option values name a live entity, per decision kind)
-  // is ui/inspect.ts optionPingId, where BL-24's collision is tested: R75's
+  // is ui/inspect.ts optionPingId, where BL-24's collision is tested: CR 602.6's
   // formation-slot options carry slot INDEXES, which are not entity ids
   const id = optionPingId(o.value, h.state.decision?.kind, !!h.state.decision?.pickSet);
   if (id === null || !h.state.entities[id]) return '';
   return ` data-ping="${id}" data-previd="${id}"`;
 }
 
-/* ── BL-25/R139: the counter-removal quantity stepper ──────────────────
+/* ── BL-25/CR D7.2: the counter-removal quantity stepper ──────────────────
  *
  * The owner: "it's just not clear that it wants you to click the unit. It
  * needs to say that. Plus maybe a counter with up/down arrows … or an 'All'
@@ -2372,7 +2372,7 @@ function counterStepperHtml(dec: Decision): string {
     btn('ctrall', `All (${v.max})`, v.canAll, 'set the count to the most this can take — it does NOT submit')}${take}</span>`;
 }
 
-/* CT-34/R149 — the R120 elective damage-split ticker.
+/* CT-34/CR D7.2e — the CR 608.6a elective damage-split ticker.
  *
  * Owner report #100: "The damage distribution UI is terrible and confusing.
  * Better would to have a ticker counter thing on each unit that you click
@@ -2386,7 +2386,7 @@ function counterStepperHtml(dec: Decision): string {
  * game over a websocket, and nobody writes that test.
  */
 
-/* R197 — THE NUMERIC ENTRY BAR.
+/* CR D7.2a — THE NUMERIC ENTRY BAR.
  *
  * `kind: 'number'` is the one decision whose `choice` is the VALUE and not an
  * index (see `NumericEntry` in types.ts). Prediction Prophet is the card that
@@ -2401,38 +2401,37 @@ function counterStepperHtml(dec: Decision): string {
  * two steppers, so it is testable without playing a whole game over a socket.
  */
 
-/* R280/CT-162 — THE VARIABLE-COST RAMP.
+/* CR D7.2/CT-162 — THE VARIABLE-COST RAMP.
  *
  * Owner report #147, room ZSPG action 62, on a Flesh Tithe ("[Pay X life],
  * create an X/X unit"): *"Pay X life effects should also have the up/down
  * arrows and the ability to type a number. I accidentally went too far and had
  * to hit cancel."* The log is the proof — thirteen consecutive
  * `Ben loses 1 life (Flesh Tithe (cost))` lines, then `X = 13`, then a play he
- * had to unwind. The word carrying the report is **also**: R197's numeric
+ * had to unwind. The word carrying the report is **also**: CR D7.2a's numeric
  * entry already exists two functions below, and this question never got it.
  *
  * ⚠ WHY IT DID NOT, AND WHY THE FIX IS SHAPED LIKE THIS. A variable cost is
  * not a number question. `E.collectCastCosts` loops, and every turn of the
  * loop raises a fresh `kind: 'targets'` decision offering ONE option — "Pay 1
- * more life" — plus R64's "That's enough — X = n". Each answer is charged on
+ * more life" — plus CR 702.6b's "That's enough — X = n". Each answer is charged on
  * the spot and cannot be taken back short of cancelling the cast, which is
  * exactly what the owner had to do. `castCostOptions` cannot collapse the loop
- * either: it is what re-asks R49 ("never your last life") before every single
- * point, and R196 gives `payMana` the same shape for the same reason.
+ * either: it is what re-asks CR 111.6b ("never your last life") before every single
+ * point, and CR 705.3b gives `payMana` the same shape for the same reason.
  *
  * So the DIAL is client-side and the payment is still the engine's loop:
- * `numDec()` dresses the live cost question as the `NumberDecisionLike` R197
- * already knows how to draw, and `startCostRamp` spends the answer one point
+ * `numDec()` dresses the live cost question as the `NumberDecisionLike` the numeric entry (CR D7.2a) already knows how to draw, and `startCostRamp` spends the answer one point
  * at a time. That is the whole point of doing it here rather than writing a
  * second stepper — the box, the arrows, the quick picks, the Enter key,
  * `snapshotViewport`'s caret rescue and `rewireInputs`'s listeners are the
- * ones R197 built, unchanged.
+ * numeric entry's (CR D7.2a), unchanged.
  *
  * The dial reads the TOTAL X, floored at what is already paid: down is free
  * because nothing is spent until Confirm, and the floor is honest because a
  * paid point is gone. That is the "and had to hit cancel" half — an overshoot
  * is no longer reachable, because the number is read before it is spent
- * (R139's ruling, which every other stepper in this file already carries).
+ * (CR D7.2, which every other stepper in this file already carries).
  *
  * DERIVED, NOT ENUMERATED: the ramp is recognised by the OPTION VALUE the
  * engine sends (`payLife1` / `payMana1` — `castCostOptions`'s two
@@ -2446,7 +2445,7 @@ interface CostRampView {
   seat: Seat;
   /** option index of "pay one more", or -1 when nothing more can be paid */
   payIndex: number;
-  /** option index of R64's "That's enough", or -1 below the cost's floor */
+  /** option index of CR 702.6b's "That's enough", or -1 below the cost's floor */
   doneIndex: number;
   /** X so far — the engine's OWN receipt off the suspension, never parsed out
    * of the prompt and never counted by this client */
@@ -2464,7 +2463,7 @@ const NO_RAMP: CostRampView = {
 };
 
 /** the two iterated scalar costs `castCostOptions` offers one point at a time
- * (R64 for life, R196 for mana), keyed by the value shape they send */
+ * (CR 702.6b for life, CR 705.3b for mana), keyed by the value shape they send */
 const RAMP_KEYS = [
   { key: 'payLife1', unit: 'life' as const, noun: 'life' },
   { key: 'payMana1', unit: 'mana' as const, noun: 'mana' },
@@ -2476,7 +2475,7 @@ function costRamp(dec: Decision | null | undefined): CostRampView {
   const row = RAMP_KEYS.find(r => dec.options.some(o => has(o.value, r.key)));
   if (!row) return NO_RAMP;
   // the receipt. `E.costPaidSoFar` writes it onto the part the suspension
-  // carries (R85), and server/view.ts hands the whole cast suspension to the
+  // carries, and server/view.ts hands the whole cast suspension to the
   // seat that must answer — so this is the engine's own number, not a tally
   // this client kept. No suspension, no ramp: guessing X would be worse than
   // the wall of clicks it replaces.
@@ -2486,7 +2485,7 @@ function costRamp(dec: Decision | null | undefined): CostRampView {
   const done = (row.unit === 'life' ? paid?.life : paid?.mana) ?? 0;
   // ⚠ THE CEILING IS A DISPLAY BOUND, AND THE RUN DOES NOT TRUST IT. Life is
   // exact — `canPayLife` is `life > n` and the loop asks it one point at a
-  // time, so R49 stops the ramp at 1 life and never below. Mana is an UPPER
+  // time, so CR 111.6b stops the ramp at 1 life and never below. Mana is an UPPER
   // bound: `castCostOptions` subtracts `activationManaReserve(item)`, which is
   // private to the engine, so a ramp aimed past it simply stops early when the
   // "pay one more" option is no longer offered. Both directions are safe
@@ -2508,7 +2507,7 @@ function costRamp(dec: Decision | null | undefined): CostRampView {
  *
  * This is the seam that makes "share it, do not build a second one" true: past
  * here, `numberEntry`, `stepNumberEntry`, `numberEntryHtml` and every `num*`
- * handler are R197's, and neither they nor `ui/inspect.ts` know a ramp exists.
+ * handler are the numeric entry's (CR D7.2a), and neither they nor `ui/inspect.ts` know a ramp exists.
  */
 function numDec(): NumberDecisionLike | null {
   const dec = h.state.decision;
@@ -2533,8 +2532,8 @@ function numberCount(): number {
   return numberEntry(nd, ui.numberCount).value;
 }
 
-/** the typed box, the dial, the quick picks and the confirm. Drawn for R197's
- * `kind: 'number'` and — R280 — for a variable cost's ramp, which is the same
+/** the typed box, the dial, the quick picks and the confirm. Drawn for CR D7.2a's
+ * `kind: 'number'` and — CR D7.2 — for a variable cost's ramp, which is the same
  * control over the same judgement; see `numDec`. */
 function numberEntryHtml(): string {
   const nd = numDec();
@@ -2553,10 +2552,10 @@ function numberEntryHtml(): string {
   // "so many buttons" counted two of those
   const quick = v.quick.filter(q => !ramp.active || q.value > ramp.done).map(q =>
     `<button data-btn="numquick" data-n="${q.value}">${esc(q.label)}</button>`).join(' ');
-  // R280: on a ramp the confirm is not "answer n", it is "spend up to here" —
+  // CR D7.2: on a ramp the confirm is not "answer n", it is "spend up to here" —
   // and it says how many more points that is, because that is the number the
   // player is about to lose and the one the old menu never showed. Stopping
-  // where you are is R64's own option, so its label — "That's enough — X = 0
+  // where you are is CR 702.6b's own option, so its label — "That's enough — X = 0
   // ⚠ X = 0 creates no unit" — is the button, warning and all: the raw option
   // is no longer drawn beside the dial (decisionBarHtml), and this is where
   // its sentence lives now.
@@ -2611,7 +2610,7 @@ function assignSplitHtml(dec: Decision): string {
     return `<span style="color:${dim}${live ? ';font-weight:700' : ''}">${
       esc(r.card)} <b>${r.amount}</b>${r.state === 'locked' ? ' ✓' : ''}</span>`;
   }).join('<span style="color:var(--dim)"> → </span>');
-  // R319: on a {Piercing} strike's last unit there is nobody behind — what
+  // CR 802.16c: on a {Piercing} strike's last unit there is nobody behind — what
   // this unit does not take goes to the player
   const toFace = dec.prompt.includes('{Piercing}')
     && (!v.rows.length || v.rows[v.rows.length - 1]!.state === 'active');
@@ -2633,7 +2632,7 @@ function assignSplitHtml(dec: Decision): string {
 /**
  * What `seat` may do, according to whoever is serving this game.
  *
- * R170 — THE LIST SAYS WHOSE EACH ACTION IS, so this does not have to know what
+ * CR D2.1 — THE LIST SAYS WHOSE EACH ACTION IS, so this does not have to know what
  * kind of client it is. Every Action carries `seat`. The real server computes
  * and pushes only MY actions (the opponent's depend on cards I may not see, so
  * they cannot be computed here), and filtering a list that is already all mine
@@ -2650,7 +2649,7 @@ function legalFor(seat: Seat): Action[] {
 }
 
 /**
- * R170 — ARE BOTH SEATS BEING PLAYED ON THIS SCREEN?
+ * CR D2.1 — ARE BOTH SEATS BEING PLAYED ON THIS SCREEN?
  *
  * The question a handful of branches in this file actually want, and the one
  * they used to approximate by asking `!NET`. That approximation held only
@@ -2659,21 +2658,21 @@ function legalFor(seat: Seat): Action[] {
  * is somebody else here to act". A server running inside the page can serve
  * both halves over the ordinary net path, and then the two come apart.
  *
- * Everything that keys off this is R154's consequence: a decision belongs to a
+ * Everything that keys off this is CR D2.1b's consequence: a decision belongs to a
  * SEAT, and the seat that is not being asked may carry on deploying. Online
  * there is no such seat on this screen; the question is whether there is one.
  */
 function bothSeats(): boolean { return !NET || NET.both; }
 
 /**
- * R170/CT-46 — does the open question (if any) stop `seat` from touching the
+ * CR D2.1/CT-46 — does the open question (if any) stop `seat` from touching the
  * board? THE one predicate behind every "a decision is up, take no input"
  * branch in this file, and the reason there is only one is that the two
  * callers do not agree and used to.
  *
- * R154 taught `apply()` and `legalActions()` that a decision belongs to a
- * SEAT: outside battle, and where answering it will not rewind the world, the
- * other seat may keep deploying. The client stayed on the pre-R154 reading —
+ * `apply()` and `legalActions()` know that a decision belongs to a
+ * SEAT (CR D2.1b): outside battle, and where answering it will not rewind the world, the
+ * other seat may keep deploying. The client stayed on the old global-gate reading —
  * a bare `!!s.decision` — and so drew a board it would then refuse to use:
  * measured, seat 1's hand card still wearing its green `playable` ring, taking
  * clicks and doing nothing, with no "done deploying" button anywhere on
@@ -2693,7 +2692,7 @@ function decisionFreezes(seat: Seat): boolean {
 
 /** hosts the in-progress mod (ui.modding) could legally land on — computed
  * once per render(); unitHtml highlights the units and stackBoardHtml the
- * stack items (R79), both from the same read of the legal-action list */
+ * stack items (CR 723.4), both from the same read of the legal-action list */
 let modHostCache: ModHosts = { units: new Set(), stack: new Set() };
 /** UZRG: units with a legal activated ability RIGHT NOW — computed once per
  * render() from the legal-action list (never re-derived), so the glow and the
@@ -2710,7 +2709,7 @@ function refreshActCache(): void {
 }
 function moddingHosts(): ModHosts {
   const m = ui.modding;
-  // R89: the state is what tells a spell-token host from a unit host — the
+  // CR 721.4a: the state is what tells a spell-token host from a unit host — the
   // engine names both in `hostId`, so without it the token would glow as a
   // "unit" and the bar would say so.
   return modHosts(m ? legalFor(m.seat) : [], m, h.state);
@@ -2721,7 +2720,7 @@ function moddingHosts(): ModHosts {
  * list to read. */
 /** distinct spell tokens `seat` could cast right now (C5 pass guard) */
 const castableTokenCount = (seat: Seat): number => castableTokens(legalFor(seat));
-/* R245: `abilityKeys` used to live here — the client's own copy of "what
+/* CR D1.3: `abilityKeys` used to live here — the client's own copy of "what
  * Pass-all snapshots on arming". The snapshot is one function now
  * (ui/battle.ts armSnapshot), and it covers every kind of option rather than
  * activated abilities alone, so there is nothing left for a local helper to
@@ -2965,7 +2964,7 @@ function showToast(msg: string): void {
  * its own `region` and its own `controller`, and those are the coordinates the
  * card will actually resolve against. Both are optional and both default to
  * what a card sitting in a hand would use, so this stays ONE definition of
- * "what would X be" for every surface that asks (R245). */
+ * "what would X be" for every surface that asks (CR D1.3). */
 function xPreviewFor(name: string, seat: Seat, region?: number): XPreviewRow[] | null {
   const s = h.state;
   if (s.phase !== 'battle' || !s.battle) return null;
@@ -3009,7 +3008,7 @@ function xPreviewFor(name: string, seat: Seat, region?: number): XPreviewRow[] |
  *  1. **A committed X wins, and silences this.** A forecast next to a number
  *     the player has already paid is two answers to one question, and the paid
  *     one is the true one. `stackItemX(it).length` is that test — one place.
- *  2. **A declared MODE narrows it.** R57 fixes Retribution Thing's bracket at
+ *  2. **A declared MODE narrows it.** CR 702.5 fixes Retribution Thing's bracket at
  *     cast, so on the stack "lost 7 / gained 0" is no longer a choice: one of
  *     those two rows is what this item will do. The narrowing is derived — the
  *     part's `mode` value matched against the preview rows' own labels — and
@@ -3105,18 +3104,18 @@ function cardHtml(name: string, opts: {
   // one class with no behaviour attached to it, so nothing but a test notices
   // when it stops being emitted and the green halo quietly goes away.
   const cls = cardClasses(opts);
-  // BL-23/R136: the strip is ONE line. Chips are pushed from a dozen call
+  // BL-23: the strip is ONE line. Chips are pushed from a dozen call
   // sites that cannot each know how many others there will be, so the fold
   // decision lives here, in the container — ui/inspect.ts packBadgeLine, where
   // 123-badge-line can reach it. Nothing is dropped: what does not fit rides in
   // the "+N" chip's tooltip, and the strip itself carries the full list.
   const line = packBadgeLine(opts.badges ?? []);
-  // CT-65/R192: `filter(Boolean).join(' ')`, not a template with three holes in
+  // CT-65/CR D6.16: `filter(Boolean).join(' ')`, not a template with three holes in
   // it. The template wrote `class="badge   "` for a plain chip — badge plus
   // THREE spaces — and `badge` + three spaces + `proph on` for a classed one.
   // CSS did not care; regexes did. `/badge offer/` could never match, so an
   // assertion written that way passed for a reason unrelated to what it named,
-  // and the R183 agent only caught it because a mutation failed to redden it.
+  // and the agent reworking the hand marking only caught it because a mutation failed to redden it.
   const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(badgeSpan).join('');
   return `<div class="${cls.join(' ')}"${opts.data ? ` ${opts.data}` : ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
@@ -3129,7 +3128,7 @@ function cardHtml(name: string, opts: {
   </div>`;
 }
 
-/** R309 — an ordered {Burst} cast, so far: the tokens already picked, in the
+/** CR 803.5d — an ordered {Burst} cast, so far: the tokens already picked, in the
  * order they will RESOLVE, each with its die and what it is aimed at, then the
  * one being aimed now. Drawn at the front of the question's bar, because the
  * picked tokens have left the board (they are stack items under construction)
@@ -3178,7 +3177,7 @@ function backHtml(anim?: string): string {
   return `<div class="card back" title="hidden card"${anim ? ` data-anim="${esc(anim)}"` : ''}></div>`;
 }
 
-/** R243/#preview: what a card will be worth somewhere it is not yet — the
+/** CR 601.1c/#preview: what a card will be worth somewhere it is not yet — the
  * card's own note, evaluated engine-side against the seats it would meet in a
  * battle. See CardBehavior.previewNote: the client never does the arithmetic,
  * and a card with nothing to say returns null. */
@@ -3231,11 +3230,11 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
     });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
-  // R74 on the board: the warning a target button used to carry in its label
+  // CR D7.1 on the board: the warning a target button used to carry in its label
   // rides on the unit itself now that the unit IS the button
   const warn = opts.zoom ? '' : pickWarning(`unit:${u.id}`);
   if (warn) badges.push({ t: '⚠', cls: 'optwarn', title: warn });
-  /* #117 — R84 {Alluring}: THIS UNIT HAS BEEN LURED.
+  /* #117 — CR 802.15 {Alluring}: THIS UNIT HAS BEEN LURED.
    *
    * Owner: *"It'd be nice to have some kind of indicator when a unit is
    * 'allured', like a badge."*
@@ -3244,7 +3243,7 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
    * .allured` IS the rule: `apply.ts` refuses an attack with `need(!u.allured,
    * …)` and refuses a counterattack with `need(!t.allured, …)`, both on the
    * bare presence of the field, so "cannot attack" is exactly "the field is
-   * there" and the badge cannot hold a second opinion about it (R245). The
+   * there" and the badge cannot hold a second opinion about it (CR D1.3). The
    * allurer may be long dead — the mark survives it — and no card is consulted
    * here for that reason.
    *
@@ -3265,9 +3264,9 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
       t: duty ? '🪝 lured — must block' : '🪝 lured',
       mod: true,
       title: duty
-        ? 'R84 {Alluring}: it cannot attack for the rest of this battle phase, and it must '
+        ? '{Alluring}: it cannot attack for the rest of this battle phase, and it must '
           + 'block the column that lured it if it is able to on its own'
-        : 'R84 {Alluring}: it cannot attack for the rest of this battle phase. The must-block '
+        : '{Alluring}: it cannot attack for the rest of this battle phase. The must-block '
           + 'half belonged to the round that lured it and is over',
     });
   }
@@ -3293,7 +3292,7 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
         : 'its last naming was released: nothing is being silenced',
     });
   }
-  /* R229 — THE MARKING THAT DOES NOT DEPEND ON THE NUMBERS.
+  /* CR D6.8 — THE MARKING THAT DOES NOT DEPEND ON THE NUMBERS.
    *
    * Now that the art follows the face, the board's only "this is a copy" tell
    * was the green stat plate — and that plate appears only when the borrowed
@@ -3331,14 +3330,14 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   // the printed base underneath it (playtest: base stats matter to the game)
   let base: [number, number] = u.tokenStats ?? [0, 0];
   try { const c = getCard(u.card); base = u.tokenStats ?? [c.power, c.toughness]; } catch { /* unknown */ }
-  // ⚠ R229: `base` stays the PHYSICAL card's printed pair on purpose. On a
+  // ⚠ CR D6.8: `base` stays the PHYSICAL card's printed pair on purpose. On a
   // copy that is the marking — live stats in green over "2/2" — and the owner
   // asked for it to survive the art fix, not to be tidied away by it.
   const changed = p !== base[0] || t !== base[1];
   const stats = changed
     ? `<span class="${p + t >= base[0] + base[1] ? 'statup' : 'statdown'}">${p}/${t}</span><span class="basestat">${base[0]}/${base[1]}</span>`
     : `${p}/${t}`;
-  // R229: the FACE, not the cardboard — a Borrower of Forms wearing a Good
+  // CR D6.8: the FACE, not the cardboard — a Borrower of Forms wearing a Good
   // Whale is drawn as a Good Whale. `faceOf` is `E.nameOf`, so an additive
   // projection (Ancient One) is untouched.
   return cardHtml(faceOf(u), {
@@ -3371,7 +3370,7 @@ function resHtml(r: ResourceView, p: Seat, i: number, opts: { title?: boolean } 
     r.kind.charAt(0).toUpperCase() + r.kind.slice(1) + '-Resource';
   const chip = r.state === 'dormant' && r.kind !== 'hidden'
     ? `<span class="reschip ${r.kind}">${r.kind === 'prismite' ? 'P' : r.kind.charAt(0).toUpperCase()}</span>` : '';
-  // R151 (CT-31): `title` and `emphasis` come from ui/resources.ts, so the
+  // CR 106.3b (CT-31): `title` and `emphasis` come from ui/resources.ts, so the
   // "dormant is not spendable here" rule is a tested value rather than a class.
   // Light and Dark have no resource-card scan in data/cards/ yet, so the
   // face 404s. Degrade to a coloured element plate rather than a broken image:
@@ -3399,7 +3398,7 @@ function handBadges(n: CardName, offers: ReturnType<typeof handOffers>, xrows: X
   // says what a click will DO is the last thing packBadgeLine folds away
   if (offer) badges.push(offer);
   if (xrows) badges.push(xBadge(xrows));
-  // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
+  // CR 803.7: this card can be prophesied RIGHT NOW — the banner cost, up front
   if (offers.includes('prophesy')) {
     let mana: number | undefined;
     try { mana = getCard(n).prophecy?.mana; } catch { /* unknown */ }
@@ -3487,12 +3486,12 @@ function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
   if (!b || s.decision) return null;
   if (!bothSeats() && t.controller !== NET!.seat) return null;
   if (b.step === 'declare' && t.controller === b.attacker) {
-    // R245: the region a formation leaves from was written out here as well as
+    // CR D1.3: the region a formation leaves from was written out here as well as
     // in ui/battle.ts twice over; it is `attackFrom` now, in one place
     if (t.region === attackFrom(s) && (!b.attackerPool || b.attackerPool.includes(t.id))) return 'ride';
     return null;
   }
-  // [67] R87: and the counterattack side, from the same mirror of the engine
+  // [67] CR 610.3: and the counterattack side, from the same mirror of the engine
   // the dialogue lists — a token standing somewhere other than the contested
   // region is one doDeclareBlocks refuses, so it must not be clickable into
   // the send list either.
@@ -3503,7 +3502,7 @@ function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
 }
 
 /**
- * CT-125 / R254 — HOW MANY, AND OF WHAT SIZE.
+ * CT-125 / CR D6.9d — HOW MANY, AND OF WHAT SIZE.
  *
  * Report #132 (room PUCG): *"When casting a bunch of burst spells, it's very
  * hard to tell how many you have left and of which sizes they are."*
@@ -3601,7 +3600,7 @@ function tokenTallyHtml(tokens: Entity[]): string {
 function tokenHtml(t: Entity): string {
   const riding = ui.spellTokens.includes(t.id);
   const castable = legalFor(t.controller).some(a => a.type === 'castSpellToken' && a.entityId === t.id);
-  // R89: a spell token is the third kind of mod host (Caleb 2025-03-06 — "you
+  // CR 721.4a: a spell token is the third kind of mod host (Caleb 2025-03-06 — "you
   // can augment spells during deployment but currently that would only be
   // possible with spell tokens"). It wears the same green pulse a unit host
   // does, because it is the same click.
@@ -3686,7 +3685,7 @@ function counterTray(): EntityId[] {
  * One standing unit or spell token, as a region panel or the battle panel's
  * invader column draws it.
  *
- * [127] R245: the ring on a unit says "you can put this in the declaration",
+ * [127] CR D1.3a: the ring on a unit says "you can put this in the declaration",
  * and it says it iff the engine would take it — ui/battle.ts
  * formationCandidates, which mirrors validFormation / checkBlocks. It used to
  * be step + controller alone, so in a round-2 counterattack the whole army lit
@@ -3708,7 +3707,7 @@ function standingIn(region: number): Entity[] {
 }
 
 /**
- * R273 / report #138 — THE INVADERS, AND THE ONE PLACE THAT DECIDES WHERE THEY
+ * CR D6.13 / report #138 — THE INVADERS, AND THE ONE PLACE THAT DECIDES WHERE THEY
  * ARE DRAWN.
  *
  * *"The Invaders area should probably be in the attackers window somewhere.
@@ -3755,7 +3754,7 @@ function battleHoldsInvaders(region: number): boolean {
  * region (owner's first, then invaders marked), with the region owner's
  * identity row attached. Absent ("sent") units sit in their own strip (B2). */
 /**
- * R296 — THE TWO NUMBERS BESIDE A DECK.
+ * CR 408.2c — THE TWO NUMBERS BESIDE A DECK.
  *
  * The owner, 2026-09-16: *"We'll also need to change the UI so that you see how
  * many cards are actually left in the deck, plus recycled (but can't look at
@@ -3786,7 +3785,7 @@ function deckTitle(s: GameState, seat: Seat): string {
       + 'are shuffled back in when it runs out.');
 }
 
-/** R295: what the sub-step after this boundary window will be, in words. */
+/** CR 608.3b: what the sub-step after this boundary window will be, in words. */
 function damageWindowWhatsNext(s: GameState): string {
   const next = s.battle?.pendingSub;
   return next === 'Sluggish' ? 'Sluggish' : next === 'after' ? 'no further' : 'normal';
@@ -3874,7 +3873,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     : '';
   // #1: invaders sit as a compact strip at the SIDE of the region's space —
   // visually subordinate to the owner's formation, not front-and-center.
-  // R273/#138: …except while the battle is HERE, when the fight is what you
+  // CR D6.13/#138: …except while the battle is HERE, when the fight is what you
   // are reading and they belong in it — battleHtml draws them then, and
   // `battleHoldsInvaders` is the one place that decides which of us it is.
   const inv = invadersIn(region);
@@ -3960,21 +3959,21 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   const binLive = binUsableIndexes(legal);
   const binUsable = binLive.size > 0;
   const binKeys = nameKeys(pl.bin, `b${p}:`);
-  // CT-82(b)/R205: the twin of CT-64 that nobody filed. These thumbs used to
+  // CT-82(b)/CR D6.16: the twin of CT-64 that nobody filed. These thumbs used to
   // carry no affordance at all, so a bin card that could be PLAYED right now
-  // (R96/R123 — Abyssal Evocation's grant, Trench Stalker's own line) took two
+  // (CR 405.9 — Abyssal Evocation's grant, Trench Stalker's own line) took two
   // clicks from the panel while the same card in the dialog took one. Same
   // predicate as the dialog's own glow (`binUsableIndexes`), so the two
   // surfaces cannot come to disagree about which entry is live.
   //
-  // ⚠ `data-btn`, NOT `data-act` — the same trap R192 documented on the cache
+  // ⚠ `data-btn`, NOT `data-act` — the same trap CR D6.16 documented on the cache
   // and CT-75 turned into a guard. The click delegator asks
   // `closest('[data-btn]')` FIRST, and this panel IS a `data-btn="binopen"`
   // ancestor, so a `data-act` on a thumb would lose to the panel at any depth.
   // CARD-TODO #64's prescribed fix was exactly that shape, and test/176 now
   // fails loudly if anyone writes it again.
   //
-  /* R280/CT-169 — WHICH THREE THUMBS.
+  /* CR D6.6d/CT-169 — WHICH THREE THUMBS.
    *
    * It was the last three, full stop: `pl.bin.slice(-3)`. A targeted card any
    * deeper than that was not on screen for either player, and the opponent
@@ -4009,7 +4008,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
       ${binUsable ? `<div class="binmodhint">${txtIcon('augment', '+')}${txtIcon('graft', '[Switch]')} playable as mods</div>` : ''}
     </div>`;
 
-  // R38/R39: rot and debt are per-player counters that bite every single turn
+  // CR 112.13, 112.14: rot and debt are per-player counters that bite every single turn
   // (rot damages you at the start of deployment and never decays; debt eats
   // mana at the end of your next resource step). They live next to life, and
   // ONLY when non-zero, so a base-set game's identity row looks unchanged.
@@ -4281,15 +4280,15 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
     </div>`;
 }
 
-/** CT-82(b)/R205: the bin indexes `seat` can do something with RIGHT NOW.
+/** CT-82(b)/CR D6.16: the bin indexes `seat` can do something with RIGHT NOW.
  *
  * ONE predicate, two surfaces. The dialog glows an entry and the region panel
  * hands its thumb a first-click affordance off the same set, so the two can
- * never come to disagree about which card is live — the argument R192 made for
- * the cache's `playableCachedIndexes`, and the reason that pair has stayed
+ * never come to disagree about which card is live — the argument made for
+ * the cache's `playableCachedIndexes` (CR D6.16), and the reason that pair has stayed
  * honest. Every route a bin card can take that STARTS with a click on the card
- * is here: applied as a mod (#4), prophesied (R42), or played outright
- * (R96/R123). Nothing else in the bin is clickable at all. */
+ * is here: applied as a mod (#4), prophesied (CR 803.7c), or played outright
+ * (CR 405.9). Nothing else in the bin is clickable at all. */
 function binUsableIndexes(legal: readonly Action[]): Set<number> {
   const out = new Set<number>();
   for (const a of legal) {
@@ -4301,7 +4300,7 @@ function binUsableIndexes(legal: readonly Action[]): Set<number> {
 }
 
 /**
- * R280/CT-169 — the cards in `seat`'s bin that something on the stack is
+ * CR D6.6d/CT-169 — the cards in `seat`'s bin that something on the stack is
  * currently AIMING AT.
  *
  * Owner report #154, room ZSPG action 200: *"When a card or effect is
@@ -4317,8 +4316,8 @@ function binUsableIndexes(legal: readonly Action[]): Set<number> {
  * not answering it, so anything read off `state.decision` is invisible to the
  * opponent by construction — while the item's declared targets are on the
  * public stack precisely so that they can be responded to. That is also what
- * R64 bought when it made a bin card a real declared target instead of a
- * mid-resolution pick: *"the spell went on the stack with nobody able to see
+ * making a bin card a real declared target (CR 110.1a) instead of a
+ * mid-resolution pick bought: *"the spell went on the stack with nobody able to see
  * what it was reaching for"* (cards/sets/batch-fire-b.ts). The information has
  * been on the wire ever since; nothing drew it.
  *
@@ -4343,14 +4342,14 @@ function binTargetIndexes(seat: Seat): number[] {
 }
 
 /**
- * R280/CT-169: the badge that says WHY a bin card is showing. One class, one
+ * CR D6.6d/CT-169: the badge that says WHY a bin card is showing. One class, one
  * tooltip, two surfaces — the discipline `binUsableIndexes` above already
  * keeps, so the panel and the dialog can never come to mean different things
  * by the same chip.
  *
  * Only the LABEL is width-driven, and measured: a region thumb is 46px and
  * "🎯 targeted" renders 42px wide inside it, which `.badge`'s
- * `text-overflow: ellipsis` then eats (Chrome 151, 1400×900). BL-23/R136 made
+ * `text-overflow: ellipsis` then eats (Chrome 151, 1400×900). BL-23 made
  * exactly this argument for `packBadgeLine` — "the same strip is drawn over a
  * 40px sent-strip thumb and a 116px cache entry" — so the crosshair goes on
  * the thumb and the words go where there is room for them.
@@ -4371,20 +4370,20 @@ function binDialogHtml(): string {
   const legal = legalFor(p);
   const binKeys = nameKeys(pl.bin, `b${p}:`);
   const live = binUsableIndexes(legal);
-  const tgt = binTargetIndexes(p);   // R280/CT-169
+  const tgt = binTargetIndexes(p);   // CR D6.6d/CT-169
   let anyUsable = false;
   const items = pl.bin.map((n, i) => {
     // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
     const canAug = legal.some(a => a.type === 'augment' && a.from === 'bin' && a.index === i);
     const canGraft = legal.some(a => a.type === 'graft' && a.from === 'bin' && a.index === i);
-    // R42: "I can be prophesied from your bin" (Angel of Anguish) — the only
+    // CR 803.7c: "I can be prophesied from your bin" (Angel of Anguish) — the only
     // way a bin card leaves the bin without being a mod
     const canProph = legal.some(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
-    // R96/R123: a bin card that may be PLAYED right now — under Abyssal
+    // CR 405.9, 405.9a: a bin card that may be PLAYED right now — under Abyssal
     // Evocation's battle grant, or the card's own "played from your bin" line
     // (Trench Stalker). legalActions already knows which; this just renders it.
     const canPlay = legal.some(a => a.type === 'playFromBin' && a.binIndex === i);
-    // CT-82(b)/R205: the badges above are per-ROUTE; "does this entry glow" is
+    // CT-82(b)/CR D6.16: the badges above are per-ROUTE; "does this entry glow" is
     // the one fact the region panel's thumb needs too, so it is READ from the
     // shared predicate rather than recomputed here. Two copies of this
     // disjunction is how the panel would come to offer a click the dialog says
@@ -4392,7 +4391,7 @@ function binDialogHtml(): string {
     const usable = live.has(i);
     anyUsable ||= usable;
     const badges: Badge[] = [];
-    // R280/CT-169: the same chip the region thumb wears, first, because "this
+    // CR D6.6d/CT-169: the same chip the region thumb wears, first, because "this
     // is what the spell is pointed at" outranks every route chip below it
     if (tgt.includes(i)) badges.push(binTargetBadge(false));
     if (canAug || canGraft) {
@@ -4411,7 +4410,7 @@ function binDialogHtml(): string {
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
     ${anyUsable ? `<div class="binmodbanner">${txtIcon('augment', '+')} Glowing cards can be applied to a ${
-      // R79: not always a unit — a virus from the bin can go onto a spell on
+      // CR 723.4: not always a unit — a virus from the bin can go onto a spell on
       // the stack too, and this banner used to deny that in so many words.
       modHostPhrase(modHosts(legal, { from: 'bin', mode: 'augment' }, h.state))
     } as a mod right now — click one, then pick a host.</div>` : ''}
@@ -4420,12 +4419,12 @@ function binDialogHtml(): string {
   </div></div>`;
 }
 
-/** R65: the erased pile — cards taken OUT OF THE GAME. Not a zone anything is
+/** CR 407.1, 407.1a: the erased pile — cards taken OUT OF THE GAME. Not a zone anything is
  * played from, and nothing here is ever clickable; it exists because the
  * information is public and there was no way to look at it ("I dont think
  * there's currently a way to view erased cards").
  *
- * R69 sends every dying token through a bin and then erases it, so the pile
+ * CR 410.5a sends every dying token through a bin and then erases it, so the pile
  * itself is now mostly dead Wisps. The engine's record keeps them; the VIEW
  * lists only the real cards and says how many tokens it left out —
  * erasedPileView() in ui/inspect.ts owns that decision and is tested there. */
@@ -4434,7 +4433,7 @@ function erasedDialogHtml(): string {
   if (erasedView === null) return '';
   const pl = h.state.players[erasedView]!;
   // the owner, 2026-09-28: the title and the cards, nothing else — no banner,
-  // and erased tokens are neither listed nor counted (R69: every dead token is
+  // and erased tokens are neither listed nor counted (CR 410.5a: every dead token is
   // erased, and a token was never a card)
   const gone = erasedPileView(pl.erased);
   const empty = gone.cards.length === 0 ? '<span class="binempty">none</span>' : '';
@@ -4447,13 +4446,13 @@ function erasedDialogHtml(): string {
 
 // (bins moved into their players' region panels — see regionPanelHtml/binDialogHtml)
 
-// ── R41: the cache — a fourth zone, and a PUBLIC one ──────────────────
+// ── CR D6.6: the cache — a fourth zone, and a PUBLIC one ──────────────────
 //
-// Both players see every cached card and the prophecy attached to it (R41), so
+// Both players see every cached card and the prophecy attached to it (CR D6.6), so
 // this renders identically for either seat and the server does no redaction.
 // Being cached is NOT permission to play: an entry is playable only through a
-// FULFILLED prophecy (free, ignoring affinity — R42) or a live glimpse stamp
-// (pay the mana, ignoring affinity — R45), and everything else just sits there.
+// FULFILLED prophecy (free, ignoring affinity — CR 803.7h) or a live glimpse stamp
+// (pay the mana, ignoring affinity — CR 403.3a, 403.3c), and everything else just sits there.
 
 /** the seat whose cache the full dialog is showing, or null */
 let cacheView: Seat | null = null;
@@ -4476,7 +4475,7 @@ function cacheChip(p: Seat, i: number): Badge & { title: string } {
   const cc = e.cache(p)[i]!;
   const via = e.cachePermission(p, i);
   const pr = cc.prophecy;
-  // R44: fulfilment latches, so "✓ free" never goes back to counting
+  // CR 803.7g: fulfilment latches, so "✓ free" never goes back to counting
   if (pr && (pr.fulfilled || via === 'prophecy')) {
     return { t: '✓ free', cls: 'proph on', title: `Prophecy fulfilled (${pr.condition}): play it free, ignoring affinity` };
   }
@@ -4511,12 +4510,12 @@ function prophecyToGo(p: Seat, cc: CachedCard): string {
 function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): string {
   const cc = cacheOf(p)[i]!;
   const via = q().cachePermission(p, i);
-  // R41: a cached card is a legal TARGET (Prismatic Observer) — in BOTH
+  // CR 403.6: a cached card is a legal TARGET (Prismatic Observer) — in BOTH
   // players' caches, so the highlight is not gated on whose zone this is
   const candidate = cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`);
   const pr = cc.prophecy;
   const met = !!pr?.fulfilled || via === 'prophecy';
-  // R42/R45: permission is not the whole story — a cached card is still played
+  // CR 403.3d: permission is not the whole story — a cached card is still played
   // "as if it were in your hand", so its TIMING gate applies on top. Say which
   // it is, rather than letting a permitted-but-unplayable card look broken.
   //
@@ -4524,7 +4523,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
   // print "…but only during deployment" whenever a permitted entry was not in
   // the legal list — during deployment, at a card that was merely unaffordable.
   // cacheBlockReason (ui/inspect.ts) asks the cache offer loops' questions in
-  // their order (R311: every mode — a battle Virus is not "only during
+  // their order (CR 702.2d: every mode — a battle Virus is not "only during
   // deployment") and this prints the answer it gets.
   const TIMING_WORD: Record<string, string> = { deploy: 'deployment', battle: 'battle', haste: 'the haste step' };
   const e = q();
@@ -4536,7 +4535,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
         : why === 'timing' && when ? `<div class="cachepay none">…but only during ${when}</div>`
           : '';
   const meta = [
-    // R277: this used to append "(released at haste)" off a marker the engine
+    // CR 203.5b: this used to append "(released at haste)" off a marker the engine
     // no longer stores, because the marker never meant that — it widens the
     // window in which the card may be PROPHESIED, which is a fact about a card
     // still in hand, not about one already sitting here.
@@ -4552,7 +4551,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
   const card = cardHtml(cc.card, {
     anim: cacheAnimKeys(p)[i],
     badges: [cacheChip(p, i)],
-    // R303: the `|| cacheModActions(...)` that used to sit here is gone. It
+    // CR 720.5a: the `|| cacheModActions(...)` that used to sit here is gone. It
     // existed because a spent entry was still moddable and therefore still
     // worth glowing; now a mod offer implies a permission, so the permission
     // alone is the answer and the two can no longer drift apart.
@@ -4564,7 +4563,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
 }
 
 /** motion keys for a seat's cache, index-aligned with cacheOf(seat). The uid
- * is the real handle (R41); an entry cached before uids existed falls back to
+ * is the real handle; an entry cached before uids existed falls back to
  * name+occurrence, exactly as ui/motion.ts does. */
 function cacheAnimKeys(p: Seat): string[] {
   const cache = cacheOf(p);
@@ -4573,10 +4572,10 @@ function cacheAnimKeys(p: Seat): string[] {
 }
 
 /**
- * R41/R45: a cache entry that can never be USED again — no prophecy to fulfil,
+ * CR 403.5, 801.9i: a cache entry that can never be USED again — no prophecy to fulfil,
  * and either no glimpse stamp at all or one that has expired.
  *
- * R303 (2026-09-20): it really is dead now. This comment used to say "not
+ * Since 2026-09-20 (CR 801.9i) it really is dead now. This comment used to say "not
  * quite dead (you may still augment or graft from cache)", which was the
  * engine bug — an expired glimpse stayed a live graft forever. Permission
  * governs the cache's mod verbs exactly as it governs its play verb, so a
@@ -4597,8 +4596,8 @@ function cacheSpent(p: Seat, i: number): boolean {
 /** the seats whose spent cache entries the player has asked to see */
 let showSpentCache = new Set<Seat>();
 
-/** the augment/graft actions available from `seat`'s cache entry `i` — R41's
- * "you CAN augment or graft from cache", under R303's permission gate, so
+/** the augment/graft actions available from `seat`'s cache entry `i` — CR 403.3b's
+ * "you CAN augment or graft from cache", under CR 720.5a's permission gate, so
  * this is empty for exactly the entries `cacheSpent` calls spent. */
 function cacheModActions(seat: Seat, i: number): Action[] {
   return legalFor(seat).filter(a =>
@@ -4613,7 +4612,7 @@ function cacheModActions(seat: Seat, i: number): Action[] {
  *  - every LIVE entry is a real thumb, side by side (not a fan, so each chip
  *    shows), sized from the block's height like the bin (`--cacheth`);
  *  - each thumb wears its `cacheChip` — ⏳ 5/13, waiting, ✓ free, ⚡ turn — so
- *    the prophecy count ticks on the table where both players see it (R302,
+ *    the prophecy count ticks on the table where both players see it (CR D6.6a,
  *    and the owner's "a number that ticks up/down … visible from the normal
  *    play view");
  *  - the status SENTENCES that used to sit under it ("1 ready — not this
@@ -4636,7 +4635,7 @@ function regionCacheHtml(p: Seat): string {
   // the newest three; older live ones fold into a "+N" that opens the dialog
   const shown = liveIdx.slice(-3);
   const folded = liveIdx.length - shown.length;
-  // CT-64/R192: a thumb that can be PLAYED right now plays on one click; every
+  // CT-64/CR D6.16: a thumb that can be PLAYED right now plays on one click; every
   // other thumb — and every other pixel of the panel — still opens the dialog.
   // Same predicate as the hand-side strip (handCachedHtml), so the two surfaces
   // cannot disagree about which entry is live.
@@ -4804,7 +4803,7 @@ function inspectorHtml(): string {
   // every attribute on that box gets its reminder text — including the ones
   // that are switched off, which is exactly when a player goes looking
   const attrs = box.attrs.map(a => a.attr);
-  // R282: on a card whose whole rules content IS its type-line attributes, the
+  // CR D6.10: on a card whose whole rules content IS its type-line attributes, the
   // text box now prints each marker with its reminder — so repeating the same
   // sentence here is the CT-164 complaint ("the text is often redundant")
   // reappearing one panel over. Drop only the rows the box already states; a
@@ -4829,9 +4828,9 @@ function inspectorHtml(): string {
   });
   const referenced = glossaryHits(
     [type, text, ...modTexts, ...(inspect.rulings ?? [])], { skip: attrs });
-  // R69 + UZRG ("Primordial Coalescence isn't showing the Tokens it creates"):
+  // UZRG ("Primordial Coalescence isn't showing the Tokens it creates"):
   // the DECLARED creates list, plus an inflection-tolerant scan of the box the
-  // inspector is actually showing — so a token named in granted (R63) or
+  // inspector is actually showing — so a token named in granted (CR 109.8) or
   // donated text counts, and "Wraiths" finds Wraith.
   const tokenRows = tokensCreatedBy(name, u ? { e: q(), unit: u } : undefined)
     .map(tokenRowHtml).join('');
@@ -4914,7 +4913,7 @@ function judgeOverlayHtml(): string {
   </div></div>`;
 }
 
-/** One judge question. `context` (R297) is the Learn to Play lesson the player
+/** One judge question. `context` (CR D8.1) is the Learn to Play lesson the player
  * is reading, so the answer is about it. */
 function judgeRequest(question: string, context?: string): Promise<{ answer: string; cards: { title: string }[]; sources: JudgeSource[] }> {
   // the judge needs a signed-in caller (the server refuses anonymous spend on
@@ -4951,7 +4950,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
    * (with a seat of your own; both-seats keeps attacker-on-top). Default layout has the
    * attacker on top — flip when the viewer IS the attacker.
    *
-   * R273 / report #137 — DERIVED ONCE, ABOVE EVERY CONSUMER. This line used to
+   * CR D6.13 / report #137 — DERIVED ONCE, ABOVE EVERY CONSUMER. This line used to
    * sit below the `declare` branch, so the live "watching" view returned
    * before the client had computed which way up the table goes and drew the
    * declarer's columns in a flat strip instead. Two views of one board that
@@ -5001,7 +5000,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
   }
 
   const iBlock = bothSeats() || b.defender === NET!.seat;
-  /** R273: the defending half is the OPPONENT building it, live and
+  /** CR D6.13: the defending half is the OPPONENT building it, live and
    * uncommitted — the same fact `blkCols` and `blockBuild` are already reading
    * off `NET.building`, named once so the half can be dressed as pending. */
   const watchingBlocks = b.step === 'blocks' && !iBlock;
@@ -5048,7 +5047,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
   /** "a new column on the left/right" is a column that does not exist yet, so
    * it gets drawn as one. Always in the ATTACKER's half — E.formationSlots
    * offers an end spot to the attacking grid and to no other, because a
-   * blocking column is keyed to an attacking column (R72) and a new one would
+   * blocking column is keyed to an attacking column (CR 602.6c) and a new one would
    * have no index to exist at. */
   const fsEndCol = (t: SpotTarget | undefined): string => {
     if (!t) return '';
@@ -5077,13 +5076,13 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // column. One expression covers both — the drop target is appended to
     // whatever the half already holds, and an empty half holds nothing.
     const atkDrop = fsMine(b.attacker) ? fsCol.get(ci) : undefined;
-    // R321: a side-block's column never had an attacker in it — not "gone"
+    // CR 606.4: a side-block's column never had an attacker in it — not "gone"
     const sideCol = !!b.sideCols?.includes(ci);
     const atkSide = atkDrop ? atkCards + fsSlot(atkDrop)
       : (atkCards || (sideCol ? '<div class="slot ghost">no attacker</div>' : '<div class="slot ghost">gone</div>'));
     const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
     // CT-190 / report #176: BLOCKED IS KEY PRESENCE, NOT A NON-EMPTY LIST
-    // (BattleState.blocks; R185). A block whose blocker has since left — a
+    // (BattleState.blocks; CR 606.3a). A block whose blocker has since left — a
     // recall, a kill — still stops the column's damage, so an emptied block is
     // drawn as one, not as the "unblocked" a column nobody answered gets.
     const blockedEmpty = b.step !== 'blocks' && Object.hasOwn(b.blocks, ci);
@@ -5097,7 +5096,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
       sides: { atk: b.attacker, blk: b.defender },
     });
   }).join('');
-  /* R321 — SIDE-BLOCKS, while blocks are being built. The Manual: "Units may
+  /* CR 606.4 — SIDE-BLOCKS, while blocks are being built. The Manual: "Units may
    * even be placed blocking in slots where attackers aren't"; Caleb, on the
    * RAQ: any number of them, each its own column, and they count as blocked.
    * The builder draws the side columns already filled and one more open one
@@ -5144,7 +5143,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
         ? `<div class="col sendcol"><div class="collabel">being sent to counterattack</div>
             ${pendingColHtml(NET.building.send, { across: true })}</div>` : ''))
     : '';
-  /* R273 / report #138 — THE INVADERS, IN THE FIGHT THEY ARE PART OF.
+  /* CR D6.13 / report #138 — THE INVADERS, IN THE FIGHT THEY ARE PART OF.
    *
    * *"The Invaders area should probably be in the attackers window somewhere.
    * Sending counter attackers way over there is good, but for tokens and
@@ -5174,7 +5173,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
   const stepLabel: Record<string, string> = {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
     blockWindow: 'response window (blocks)',
-    // R295: the window between two damage sub-steps. It only exists when
+    // CR 608.3b: the window between two damage sub-steps. It only exists when
     // {Swift} or {Sluggish} split the step, and the label has to say what is
     // still COMING or it reads like the battle is over.
     damageWindow: `response window — ${damageWindowWhatsNext(h.state)} damage still to come`,
@@ -5188,7 +5187,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${leftSideCols}${attackCols}${sideCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
 }
 
-/** R321: how many side-block columns the battle panel draws past the attack
+/** CR 606.4: how many side-block columns the battle panel draws past the attack
  * — only in the block step: the ones built so far (mine, or the opponent's
  * live build) and, for the seat building them, one more open one. */
 function sideBlockColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
@@ -5199,13 +5198,13 @@ function sideBlockColumns(b: NonNullable<GameState['battle']>, iBlock: boolean):
   return last - (b.columns.length - 1) + (iBlock ? 1 : 0);
 }
 
-/** R321: the same, to the LEFT of the attack — keys -1, -2, … outward. */
+/** CR 606.4a: the same, to the LEFT of the attack — keys -1, -2, … outward. */
 function leftSideColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
   if (b.step !== 'blocks') return 0;
   return iBlock ? leftReach(ui.columns, ui.blockLeft) + 1 : (NET?.building?.left?.length ?? 0);
 }
 
-/** R321: the build index of block key `ci` (negative = a left side-block),
+/** CR 606.4a: the build index of block key `ci` (negative = a left side-block),
  * opening left columns at the front of the build when it reaches further
  * out than any has yet. The identity outside the block step. */
 function buildIndex(ci: number): number {
@@ -5276,7 +5275,7 @@ function counterSendHtml(): string {
 }
 
 /**
- * R273 / report #137 — ONE COLUMN OF THE BATTLE TABLE, AND THE ONLY PLACE THAT
+ * CR D6.13 / report #137 — ONE COLUMN OF THE BATTLE TABLE, AND THE ONLY PLACE THAT
  * DECIDES WHICH HALF IS WHOSE.
  *
  * *"The 'live view' of an opponent's attacks or blocks are showing in the
@@ -5320,7 +5319,7 @@ function battleColHtml(o: {
  * place so far. Inert — not clickable, not targetable — and marked `pending`
  * so it never reads as a committed declaration.
  *
- * ⚠ R273 — VERTICALLY THIS RETURNS BARE CARDS, NO WRAPPER, and it has to.
+ * ⚠ CR D6.13 — VERTICALLY THIS RETURNS BARE CARDS, NO WRAPPER, and it has to.
  * `.bhalf.top` is `flex-direction: column-reverse` (style.css §combat fronts)
  * so that a column's FRONT unit hugs the vs line however deep the column is.
  * A wrapper div is its own flex context: the reversal stopped at it, the
@@ -5346,7 +5345,7 @@ function pendingColHtml(col: EntityId[], opts: { across?: boolean } = {}): strin
 /** the whole battle panel while the OTHER seat declares: their formation as
  * it is being built, with nothing of mine to click.
  *
- * R273: `flip` is the caller's — battleHtml computes it once for every view of
+ * CR D6.13: `flip` is the caller's — battleHtml computes it once for every view of
  * the table. Reaching here it is always `false` (only the seat that is not
  * declaring watches, and during `declare` the declarer is the attacker), but
  * taking it as an argument is what stops a second copy of the rule existing. */
@@ -5445,9 +5444,9 @@ function blockRefusalHtml(): string {
 }
 
 /** the block declaration the board is holding right now, in the shape the
- * action takes. ONE reader of `ui.columns`, so the bar's R84 duty check and
+ * action takes. ONE reader of `ui.columns`, so the bar's CR 606.2e duty check and
  * the button that sends the declaration can never be looking at two different
- * plans (the whole point of gating Confirm). R321: a left side-block comes out
+ * plans (the whole point of gating Confirm). CR 606.4a: a left side-block comes out
  * negative (ui/formation.ts planOfBuild); its inverse is buildOfPlan. */
 function blockPlan(): Record<number, EntityId[]> {
   return planOfBuild(ui.columns, ui.blockLeft);
@@ -5460,14 +5459,14 @@ function moddingBarHtml(err: string): string {
   const card = zoneCardName(m.seat, m.from, m.index) ?? '?';
   const icon = txtIcon(m.mode === 'graft' ? 'graft' : 'augment', m.mode === 'graft' ? '[Switch]' : '[Augment]');
   const nHosts = modHostCount(modHostCache);
-  // R79: the hosts are not always units — a virus may go onto a SPELL on the
+  // CR 723.4: the hosts are not always units — a virus may go onto a SPELL on the
   // stack, and the bar has to name what is actually glowing. modHostPhrase
   // reads the offer, so it can never promise a host the engine will refuse.
   const what = modHostPhrase(modHostCache);
-  // R42: a fulfilled prophecy makes the graft/augment free too, not only the play
+  // CR 803.7k: a fulfilled prophecy makes the graft/augment free too, not only the play
   const free = m.from === 'cache' && q().cachePermission(m.seat, m.index) === 'prophecy'
     ? ' <span class="freetag">FREE — fulfilled prophecy</span>' : '';
-  // R89: "you can only do this with attributes" (Caleb 2025-03-06). A mod
+  // CR 721.4a: "you can only do this with attributes" (Caleb 2025-03-06). A mod
   // whose whole payload is rules text is a legal thing to put on a spell token
   // and donates nothing at all — said HERE, while the card can still be taken
   // back, not in the log after it is spent.
@@ -5487,18 +5486,18 @@ function moddingBarHtml(err: string): string {
 let autoPassing: AutoPassPlan = { disarm: false, pass: null };
 /** the reason, in the words the player set up */
 const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
-  // R251: the plan's reason is 'passall' for BOTH standing promises, because
+  // CR D2.2: the plan's reason is 'passall' for BOTH standing promises, because
   // the machinery is one machine; the sentence is not, so it is asked of the
   // arm (passChipWhy) rather than read out of this row. Kept as the fallback
   // for an arm that has already dropped by the time the bar paints.
   passall: 'a standing pass is on — stop it in the bar above to act here.',
   pref: 'auto-pass is on and passing is your only legal action here.',
   yield: 'you chose to auto-yield to this unit’s triggers.',
-  // R236. Both halves are said out loud: nothing is playable here, AND the way
+  // CR D2.5. Both halves are said out loud: nothing is playable here, AND the way
   // to stay in the step anyway is the toggle in the side panel.
   haste: 'nothing you hold can be played in the haste step — “bluff haste” keeps you in it anyway.',
 };
-/** R236: the haste answer is a ready, not a pass, and the bar must not call it
+/** CR D2.5: the haste answer is a ready, not a pass, and the bar must not call it
  * one — "Auto-passing…" over a step nobody passes in reads as a bug. */
 const AUTO_PASS_WHO: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
   passall: 'Auto-passing…', pref: 'Auto-passing…', yield: 'Auto-passing…',
@@ -5506,7 +5505,7 @@ const AUTO_PASS_WHO: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
 };
 
 /**
- * R251 — the two standing promises, in the words of the button that made them.
+ * CR D2.2 — the two standing promises, in the words of the button that made them.
  *
  * One sentence per mode and both of them say how it ENDS, because the whole of
  * report #123 ("Pass All still isn't working right") was a player unable to
@@ -5539,7 +5538,7 @@ const CONFIRM_BARS = {
   done:   { cancel: 'doneplancancel', back: 'Go back <span class="kh">(esc)</span>', confirm: 'doneplanconfirm', go: 'Really done <span class="kh">(enter)</span>' },
   pass:   { cancel: 'passcancel',     back: 'Go back',       confirm: 'passconfirm',     go: 'Pass anyway <span class="kh">(space)</span>' },
   deploy: { cancel: 'deploycancel',   back: 'Go back',       confirm: 'deployconfirm',   go: 'End deployment anyway' },
-  // R288/BL-30. "No" is deliberately not "cancel": nothing has been sent, the
+  // CR D2.8/BL-30. "No" is deliberately not "cancel": nothing has been sent, the
   // question is still open, and going back drops you straight into the same
   // target pick. Taking the whole cast back is Escape's job and always was.
   ally:   { cancel: 'allycancel',      back: 'No, pick again', confirm: 'allyconfirm',    go: 'Yes, target my own' },
@@ -5702,7 +5701,7 @@ function playerOptionX(o: DecisionOption): string {
 }
 
 /** What a player target says ON the life total now that the bar no longer
- * draws a button per player: Soul Siphon's X for that seat (VNNW), and R74's
+ * draws a button per player: Soul Siphon's X for that seat (VNNW), and CR D7.1's
  * "this will do nothing" as a ⚠ with the reason on hover. */
 function playerPickNote(p: Seat): string {
   const P = picks();
@@ -5807,7 +5806,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
     return `<button ${cls ? `class="${cls}" ` : ''}data-btn="decide" data-i="${i}"${
       pingAttrs(o)}>${iconizeText(o.label)}${playerOptionX(o)}</button>`;
   };
-  // BL-25/R139: a counter-removal menu carries one option per (unit, amount)
+  // BL-25/CR D7.2: a counter-removal menu carries one option per (unit, amount)
   // pair. The bar draws ONE scan per unit and lets the stepper carry the
   // amount — the alternative, a wall of "Take 2 / Take 3 / Take 4 …" buttons
   // per ally, is the tedium the stepper exists to end.
@@ -5830,7 +5829,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
     // and the decline is last and secondary.
     /* Live report 2026-09-05 (VNNW, Flesh Tithe): *"There are so many buttons
      * and I literally don't know which to press. It's warning that X = 0, but
-     * it doesn't???"* The bar drew R280's dial AND the two raw engine options
+     * it doesn't???"* The bar drew CR D7.2b's dial AND the two raw engine options
      * it dials — "Pay 1 more life" and "That's enough — X = 0 ⚠ …" — eleven
      * buttons, two of them saying X = 0 while the box said 11. On a ramp the
      * dial's confirm IS both options (dial up and confirm pays; confirm where
@@ -5841,7 +5840,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
     const btns = ramp ? '' : [...split.refs, ...split.plain]
       .filter(i => !onBoard(i) && (step.mode !== 'pick' || !isCtrOpt(i)))
       .map(i => optBtn(i)).join(' ');
-    /* R280/CT-162, the report's second half: *"the that's enough button is too
+    /* CR D7.2c/CT-162, the report's second half: *"the that's enough button is too
      * hard to see and tell that it's a button. it should be a full,
      * differently colored button"*. It was `.declinebtn` — transparent
      * background, dashed border, dim text — because `partitionOptions` sorts
@@ -5863,7 +5862,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
       return !!v && typeof v === 'object' && 'doneCost' in (v as object);
     };
     const declines = ramp ? '' : split.decline.map(i => optBtn(i, isCommit(i) ? 'commitbtn' : 'declinebtn')).join(' ');
-    // R288/BL-30: the misclick question stands in front of the pick it is
+    // CR D2.8/BL-30: the misclick question stands in front of the pick it is
     // about — same bar, so the board underneath is untouched and the target
     // highlights are still there to look at while you answer.
     if (ui.confirmTarget !== null) {
@@ -5879,7 +5878,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
         ${cardRow('decide')} <span class="decpicks">${btns}</span>
         ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
   }
-  // CT-34/R149: the elective split gets the ticker instead of the wall of
+  // CT-34/CR D7.2e: the elective split gets the ticker instead of the wall of
   // "1 to X / 2 to X / 3 to X …" buttons the owner called terrible. The raw
   // options stay reachable behind the expander below, because the ticker is an
   // affordance over the menu, never a narrowing of it — every legal split the
@@ -5893,7 +5892,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
           <span class="decpicks">${dec.options.map((_o, i) => optBtn(i)).join(' ')}</span></details>
         ${castCancelBtnHtml()}${err}</div>`;
   }
-  // R197: TYPE A NUMBER. There are no options to render — the answer is the
+  // CR D7.2a: TYPE A NUMBER. There are no options to render — the answer is the
   // value — so this bar is the entry itself, and it must exist: a decision
   // kind whose client shows nothing at all is a frozen game for the seat that
   // has to answer it.
@@ -5915,7 +5914,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
      * shortcut the client takes for you"), and the two only coexist because
      * this one is a CLICK: it is never armed, never remembered across
      * decisions, never a preference, and `ui.orderAutoFor` exists purely so
-     * that a repaint cannot re-fire it. Trigger order is a real decision (R2:
+     * that a repaint cannot re-fire it. Trigger order is a real decision (CR 706.5:
      * first picked resolves first) and a client that took it for you would be
      * playing the game.
      *
@@ -6044,7 +6043,7 @@ function promptHtml(): string {
   if (replayActive()) return '';
   if (NET && !s.decision && !NET.legal.length) {   // gameover returned above
     const opp = s.players[other(NET.seat)]!.name;
-    // R78: WHY you are waiting, when the state can say. `resolving` names the
+    // CR D6.3: WHY you are waiting, when the state can say. `resolving` names the
     // effect outright; the cast watch reports only what it observed. Both live
     // in ui/inspect.ts (waitingNote), which is where the judgement is tested.
     /* #116 — A PAUSE HAS TO LOOK ALIVE.
@@ -6059,7 +6058,7 @@ function promptHtml(): string {
      * `stack: []`, `resolving: null` and an empty legal list, so there was no
      * stack item to flash on either screen and nothing to name.
      *
-     * ⚠ NAMING THE EFFECT IS THE SERVER'S HALF, AND IT IS R247's `pendingAsk`.
+     * ⚠ NAMING THE EFFECT IS THE SERVER'S HALF, AND IT IS `pendingAsk` (CR D6.4).
      * `server/view.ts` still nulls a decision that is not yours, options and
      * all; alongside it a two-field stub now says WHO owes an answer and — when
      * the question came from a permanent already on this board — WHICH one, as
@@ -6074,12 +6073,12 @@ function promptHtml(): string {
     const strip = burstStripHtml();
     const bare = decisionBarHtml(s.decision, err);
     const bar = strip ? bare.replace(/^(\s*<div class="promptbar[^"]*">)/, `$1${strip}`) : bare;
-    // R170/CT-46: ONLINE this is the whole truth and always was — view.ts
+    // CR D2.1/CT-46: ONLINE this is the whole truth and always was — view.ts
     // nulls a decision that is not yours, so the only question a net client
     // ever holds is its own, and `decisionFreezes` says so for both seats.
     //
-    // HOTSEAT is different in kind: one screen, both seats, no redaction. R154
-    // taught the engine that the seat which is NOT being asked may carry on
+    // HOTSEAT is different in kind: one screen, both seats, no redaction. Under CR D2.1b
+    // the seat which is NOT being asked may carry on
     // deploying, and returning only the asker's bar is what still froze them —
     // it is the bar that carries "done deploying". So the free seat's own bar
     // goes UNDER the question instead of being replaced by it. Nothing is
@@ -6091,13 +6090,13 @@ function promptHtml(): string {
 }
 
 /** The ordinary phase bar: whose turn it is to do what, and the buttons for
- * doing it. Split out of `promptHtml` by R170 for one reason — with a decision
+ * doing it. Split out of `promptHtml` (CR D2.1) for one reason — with a decision
  * open for ONE seat on a both-seats screen, the other seat still needs this. */
 function phaseBarHtml(err: string): string {
   const s = h.state;
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
-  // R170: this bar's wait banner is about the seat you are NOT. With both seats
+  // CR D2.1: this bar's wait banner is about the seat you are NOT. With both seats
   // on one screen there is no such seat, and nothing to wait for.
   if (NET && !bothSeats() && !ui.modding) {
     const seat = NET.seat, b = s.battle;
@@ -6118,10 +6117,10 @@ function phaseBarHtml(err: string): string {
       return `<div class="promptbar"><span class="who">${flavor}</span>${note}${err}</div>`;
     }
   }
-  // R170: …and never to a seat the engine would refuse. With both seats on
+  // CR D2.1: …and never to a seat the engine would refuse. With both seats on
   // screen this bar is drawn UNDER an open question (promptHtml), and the asked seat
   // must not be handed a "done deploying" button that `apply()` throws on —
-  // that is the "screen full of refusals" R150's own notes warn about. A no-op
+  // that is the "screen full of refusals" the pacing ruling's own notes warn about. A no-op
   // online, where this bar is only ever reached with no decision at all.
   const doneRow = (done: boolean[], btn: string, label: string): string =>
     ([0, 1] as Seat[]).map(p => (done[p] || (!bothSeats() && p !== NET!.seat) || decisionFreezes(p))
@@ -6195,7 +6194,7 @@ function phaseBarHtml(err: string): string {
         ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
     if (b.step === 'blocks') {
-      // [67] R87: the same dialogue as the attack side, on the counterattack.
+      // [67] CR 610.3: the same dialogue as the attack side, on the counterattack.
       // "What happened to Rashi's Poison tokens here? She just wanted to bring
       // them with her attackers but they somehow went onto the stack" — the
       // Confirm is held here until the question is answered once. The chips
@@ -6217,7 +6216,7 @@ function phaseBarHtml(err: string): string {
           ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
       }
       const built = hasBuild(ui);   // BL-19 — same question, same answer, both bars
-      // R84: a lured unit's block is COMPULSORY, and the client used to know
+      // CR 606.2e: a lured unit's block is COMPULSORY, and the client used to know
       // nothing about it — Confirm was always live and the duty only ever
       // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
       // asks the engine's own validator what it would say to this declaration.
@@ -6306,7 +6305,7 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
  * detail is load-bearing off-screen: `server/replay-room.ts` runs its forensics
  * on these lines and several playtest-ledger entries were settled by reading
  * them. So `h.log` is untouched and every line stays one click away: this is a
- * CURTAIN, the same shape as R80's narrative hold.
+ * CURTAIN, the same shape as CR D5.4's narrative hold.
  *
  * ⚠ AND READABLE IS NOT THE SAME AS SHORTER. Report #121, filed the day
  * before this one, is the opposite complaint — the owner tried to audit what
@@ -6403,12 +6402,12 @@ function logLineHtml(msg: string): string {
  * panel — it is the FRAME around it that moved.
  */
 function logPanelHtml(): string {
-  // R80: the tail of the log a narrative beat has not told yet. `h.log` itself
+  // CR D5.4: the tail of the log a narrative beat has not told yet. `h.log` itself
   // is untouched — this is a curtain, not an edit, and it lifts on a timer
   // bounded by MAX_LEAD_MS whatever else happens.
   const untold = heldLines(beatQueue, Date.now());
   const logEnd = Math.max(0, h.log.length - untold);
-  /* R272 / report [145] — NO WINDOW. This was `Math.max(0, logEnd - 80)`, and
+  /* CR D6.15a / report [145] — NO WINDOW. This was `Math.max(0, logEnd - 80)`, and
    * eighty lines was the right number for the 290px rail column the panel used
    * to live in: a taller list there simply pushed the focus viewer off the
    * screen. CT-124 moved the panel into the `.logbox` modal, which is far
@@ -6417,7 +6416,7 @@ function logPanelHtml(): string {
    * log, without cutting things off"*.
    *
    * ⚠ THE OTHER TWO CURTAINS OVER THIS SAME OBSERVABLE STAY. `logEnd` above is
-   * R80's pacing curtain (`untold` = the tail no narrative beat has told yet,
+   * CR D5.4's pacing curtain (`untold` = the tail no narrative beat has told yet,
    * and it lifts on a timer), and `logCurtained` below is #125's story fold,
    * which counts what it holds and offers it back in one click. Neither is
    * this report, and test/252 §1b and §1c are pointed at exactly that
@@ -6492,12 +6491,12 @@ function logOverlayHtml(): string {
 function previewStackHtml(id: number): string {
   const it = stackItemById(id);
   if (!it) return '';
-  // R284: `q()` is what lets the rows narrow a declared modal clause down to
+  // CR D6.10a: `q()` is what lets the rows narrow a declared modal clause down to
   // the half that was chosen — the same read `stackItemModes` below makes.
   const abRows = stackAbilityRows(it, q());
   const rows = abRows.map(t => {
     const tag = t.graft ? `${txtIcon('graft', '[Switch]')} ${esc(t.source)}` : esc(t.source);
-    // R64: a clause that paid its own variable cast cost defines its own X —
+    // CR 702.6b: a clause that paid its own variable cast cost defines its own X —
     // it belongs on the clause, not on the item, or a grafted rider's X and
     // its carrier's would read as the same number
     const x = t.x !== undefined
@@ -6525,7 +6524,7 @@ function previewStackHtml(id: number): string {
   const soonX = stackPreviewX(it).map(r =>
     `<div class="xnow">X = ${r.x} right now${
       r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
-  // R57 (report #81, EGCW): the declared MODE rides on the stack so the
+  // CR 702.5 (report #81, EGCW): the declared MODE rides on the stack so the
   // opponent can price their response. Choosing it at cast time is only half
   // the fix — an unreadable declaration leaves them responding blind, which is
   // the harm the report described. Same badge as X: one presentation, one idea.
@@ -6544,7 +6543,7 @@ function previewStackHtml(id: number): string {
           <span class="modfrom">from ${esc(m.from)}</span></span>`).join('')}</div>`
     : '';
   // #141: "Cards on the stack that are modded should show the little modded
-  // effect under them when hovering, just like a modded unit." R35/R105 — a
+  // effect under them when hovering, just like a modded unit." CR 724.3 — a
   // {Modular} card's mods ride on the stack WITH it, so this is the same
   // physical object the unit viewer draws, and it now draws it the same way
   // (ui/inspect.ts modStrips). The chips below still name them; the strips are
@@ -6564,7 +6563,7 @@ function previewStackHtml(id: number): string {
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
       ${it.negated ? '<div class="abneg">fizzled — it left the stack and will do nothing</div>' : ''}
       ${modHostCache.stack.has(it.id)
-        // R79: the other place the player looks at a stack item. The glow is
+        // CR 723.4: the other place the player looks at a stack item. The glow is
         // on the strip; the viewer says what it means in words.
         ? `<div class="abmodhost">${txtIcon('augment', '+')} a legal host for the mod you are
             placing — click this card on the stack to apply it</div>`
@@ -6633,7 +6632,7 @@ const STACK_KIND: Record<string, string> = {
  * response window and so never touched state.stack at all. Those are drawn as
  * cards like any other, marked as already-resolved, for one beat each.
  *
- * R78 adds the third kind of row: the item that is resolving RIGHT NOW. Playtest
+ * A third kind of row (CR D6.3): the item that is resolving RIGHT NOW. Playtest
  * round 13: "to my opponent, it looks like something already resolved… it would
  * make more sense if there was a different state before resolution like
  * 'Opponent is resolving [effect]'". It is off state.stack (so the "negate every
@@ -6735,7 +6734,7 @@ function stackBoardHtml(): string {
   const last = rows.length - 1;
   const cards = rows.map((r, i) => {
     const it = r.item;
-    // R79: this spell is a legal host for the mod the player is holding
+    // CR 723.4: this spell is a legal host for the mod the player is holding
     const modhost = modHostCache.stack.has(it.id);
     // an ABILITY is drawn as a slice, not as the card (ui/effectface.ts)
     const fx = effectFace(it, h.state);
@@ -6749,7 +6748,7 @@ function stackBoardHtml(): string {
     // a modular item's extra parts ARE its mods' [Switch] effects — don't
     // double-count them as "grafted parts"
     const extraParts = it.parts.length - 1 - mods.length;
-    // R68 / R78 / R271: what this row IS, in one word. The three ternaries
+    // CR 704.4, D6.12: what this row IS, in one word. The three ternaries
     // that used to spell it out here, in the chip below and in stackCaption
     // are one exported classifier now (ui/flash.ts rowState) — CT-142 was
     // exactly what a fourth state does to a nest of ternaries: a FIZZLE is not
@@ -6791,13 +6790,13 @@ function stackBoardHtml(): string {
       'stackcard',
       fx ? 'fx' : '',
       r.flashing ? 'flashing' : '',
-      r.resolving ? 'resolving' : '',   // R78: pending, not finished (style.css)
+      r.resolving ? 'resolving' : '',   // CR D6.12: pending, not finished (style.css)
       r.top ? 'top' : '',
       it.negated ? 'negated' : '',   // greys it, like a fizzle (style.css)
-      st === 'fizzled' ? 'fizzled' : '',   // R271: greyed, but not answered (style.css)
+      st === 'fizzled' ? 'fizzled' : '',   // CR D6.12: greyed, but not answered (style.css)
       lost.length ? 'lost' : '',
       pickable(`stack:${it.id}`) ? 'candidate' : '',
-      // R79: a mod is in flight and THIS spell is one of its legal hosts —
+      // CR 723.4: a mod is in flight and THIS spell is one of its legal hosts —
       // the same green pulse a unit host wears (style.css .card.modhost /
       // .stackcard.modhost), because it is the same click.
       modhost ? 'modhost' : '',
@@ -6837,13 +6836,13 @@ function stackBoardHtml(): string {
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
       ${tag ? `<div class="stacktag">${tag}</div>` : ''}
       ${st === 'resolving'
-        // R78: the pending chip is NOT gated on being the rightmost card the
+        // the pending chip is NOT gated on being the rightmost card the
         // way the other two are. stackRows() puts the resolving item last so
         // in practice it is rightmost, but this is the one label that must
         // survive whatever else lands on the strip — it is the answer to "why
         // has nothing happened yet?", not a decoration.
         ? '<div class="stackbolt pending">resolving…</div>'
-        // R271: the state word IS the chip. It cannot disagree with the tag
+        // CR D6.12: the state word IS the chip. It cannot disagree with the tag
         // above or the caption below, because all three read `rowState`.
         : i === last && r.flashing
           // a negation reads "fizzled" too (owner, 2026-09-30 — flash.ts VERB)
@@ -6853,7 +6852,7 @@ function stackBoardHtml(): string {
     </div>`;
   }).join('');
   // one line of prose for the card that matters: what is happening right now
-  // (R78), else what resolves next, else — when nothing is really on the stack
+  // (CR D6.3), else what resolves next, else — when nothing is really on the stack
   // — what just went off. ui/flash.ts stackCaption() picks the row and the
   // words; this only paints them.
   const cap = stackCaption(rows, {
@@ -6886,7 +6885,7 @@ function stackBoardHtml(): string {
   </div>`;
 }
 
-/** the caption's classes: `pending` (R78), and the row's state — a verb
+/** the caption's classes: `pending` (CR D6.12), and the row's state — a verb
  * about a thing that came to nothing is grey, like its card (style.css, THE
  * STACK HAS FOUR COLOURS) */
 function captionClass(cap: StackCaption): string {
@@ -6934,14 +6933,14 @@ function tgtLabel(t: TargetRef): string {
   // #189: a unit or item that has left is named as the board last saw it
   if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? lastKnown(TABLE_MEMORY, t)?.name ?? 'gone');
   if ('player' in t) return esc(h.state.players[t.player]!.name);
-  // R184: "target formation" — a player's WHOLE SIDE of the battle grid
+  // CR 110.3d: "target formation" — a player's WHOLE SIDE of the battle grid
   if ('formation' in t) return esc(`${h.state.players[t.formation]!.name}'s formation`);
-  // R41: a card in someone's cache (Prismatic Observer) — the zone is public
+  // CR 403.6: a card in someone's cache (Prismatic Observer) — the zone is public
   if ('cached' in t) {
     const cc = (h.state.players[t.cached.seat]!.cache ?? []).find(c => c.uid === t.cached.uid);
     return esc(cc ? `${cc.card} (cache)` : 'gone');
   }
-  // R64: a card named in a bin — the zone is public, so it always reads
+  // a card named in a bin — the zone is public, so it always reads
   if ('bin' in t) return esc(`${t.bin.card} (bin)`);
   return esc(stackItemById(t.stack)?.label ?? lastKnown(TABLE_MEMORY, t)?.name ?? 'gone');
 }
@@ -6984,12 +6983,12 @@ function phaseTrackHtml(): string {
  * the post-game screen is what that room is for now. */
 function shareBannerHtml(): string {
   if (!NET || NET.peers[other(NET.seat)]) return '';
-  // CT-148/R274: paintLive() computes this from flushPace(), which is the
+  // CT-148/CR D7.5: paintLive() computes this from flushPace(), which is the
   // first line of the 'error' handler — so it runs on the CONNECTING screen
   // and in the waiting room, where NetBackend.state is still null. The throw
   // ate the refused-join message and left the player on "Connecting…".
   if (!h.state || h.state.phase === 'gameover' || postGame) return '';
-  // R216: a scenario room with a scripted opponent has nobody to wait for, and
+  // CR D8.4: a scenario room with a scripted opponent has nobody to wait for, and
   // "waiting for your opponent" across the top of it is exactly the misreading
   // docs/14 §4 warns about — the owner goes looking for a second tab he does
   // not need. The runner strip says which of the two this room is; this banner
@@ -7269,13 +7268,13 @@ function ensureCounterPrefill(): void {
 }
 
 /**
- * R72/R75: keep the in-progress block preview pointing at the attackers the
+ * CR 602.5, 603.5a: keep the in-progress block preview pointing at the attackers the
  * player actually pointed at.
  *
- * `ui.columns` is keyed by ATTACK column index while blocking, and R72 leaves
+ * `ui.columns` is keyed by ATTACK column index while blocking, and CR 602.5 leaves
  * those indices moving for exactly as long as the block step lasts: the last
  * unit in a column dies, the line closes ranks, and every key from the hole
- * rightwards means a different column than it did a moment ago. R75's
+ * rightwards means a different column than it did a moment ago. CR 603.5a's
  * left-insert does the same in the other direction. `doDeclareBlocks` rejects
  * a key naming no column, so the engine is safe — but from the table a
  * rejected declaration is indistinguishable from the client eating your work.
@@ -7296,7 +7295,7 @@ function ensureBlockKeys(): void {
     ui.blockSent = false;
     ui.columns = []; ui.blockLeft = 0; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
   }
-  // R321: left side-blocks mean nothing outside the block step, and an
+  // CR 606.4: left side-blocks mean nothing outside the block step, and an
   // attack build has no negative keys — whatever is left of one goes
   if (!mine && ui.blockLeft) { ui.columns = ui.columns.slice(ui.blockLeft); ui.blockLeft = 0; }
   if (!mine) { ui.blockRefusal = null; ui.blockLine = null; return; }
@@ -7304,7 +7303,7 @@ function ensureBlockKeys(): void {
   const was = ui.blockLine;
   ui.blockLine = b.columns.map(col => [...col]);
   if (!was) return;                       // first paint of this block step
-  // R321: a LEFT side-block keeps its key — its distance from column 1 —
+  // CR 606.4a: a LEFT side-block keeps its key — its distance from column 1 —
   // whatever the line does, so only the part from column 1 on is re-keyed
   const r = rekeyBuild(was, ui.blockLine, ui.columns.slice(ui.blockLeft));
   if (!r.changed) return;
@@ -7328,7 +7327,7 @@ const SCROLLERS = ['.main', '.side .preview', '#rules-list'] as const;
  * board (connecting / lobby) — the motion layer uses that to drop its
  * baseline instead of animating the first real board out of nowhere. */
 function renderNow(): boolean {
-  /* R272 — THE HIDE IS NOT UNCONDITIONAL AND NOT FIRST ANY MORE. It used to be
+  /* THE HIDE IS NOT UNCONDITIONAL AND NOT FIRST ANY MORE. It used to be
    * both, on the reasoning that "a long-hover box left floating over the board
    * would be describing a card that has moved or died". That reasoning is
    * right about the cards that HAVE moved or died and wrong about every other
@@ -7355,7 +7354,7 @@ function renderNow(): boolean {
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
   const botSeat: Seat = NET ? NET.seat : 0;
-  // R258: the presence dot is a LIVE SLOT — emitted empty here and filled by
+  // CR D5.5a: the presence dot is a LIVE SLOT — emitted empty here and filled by
   // paintLive(), so a disconnect that arrives while the throttle is holding
   // reaches the screen without a render.
   // BL-29: who you are at this table — or that you are not at it. A spectator
@@ -7383,14 +7382,14 @@ function renderNow(): boolean {
   const canUndo = undoAvailable(h.state, NET);   // ui/undo.ts — also what skips "Yes, activate"
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
-  const bluffPref = bluffHasteOn();   // R236
+  const bluffPref = bluffHasteOn();   // CR D2.5b
   const fullPref = fullControlOn();   // BL-18 — the master switch over both
   // [59] BEFORE the markup: whether this client is about to pass this window
   // by itself decides what the prompt bar may claim. The send happens after
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
   autoPassing = planAutoPass();
   const snap = snapshotViewport();
-  const hoverWas = hoverRect();   // R272: before the node it names is detached
+  const hoverWas = hoverRect();   // before the node it names is detached
   $app.innerHTML = `
     <div class="main">
       <!-- playtest: the turn/phase strip is sticky at the top. The "what to do
@@ -7491,17 +7490,17 @@ function renderNow(): boolean {
     ${costToastHtml(costToastsUp, Date.now())}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   restoreViewport(snap);
-  // R272/[142]: …and the hover, which is the other thing every paint used to
+  // [142]: …and the hover, which is the other thing every paint used to
   // throw away. After restoreViewport, because "did the card move?" is a
   // question about the board in its final position.
   keepHoverThroughPaint(hoverWas);
-  // R258: the paint just destroyed every live slot along with the rest of the
+  // CR D5.5a: the paint just destroyed every live slot along with the rest of the
   // board, so fill them again before anything else looks at the page. Same
   // markup, one writer — see paintLive().
   paintLive();
   runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
   maybeCancelChain();
-  maybeCostRamp();            // R280: the next point of a committed X ramp
+  maybeCostRamp();            // CR D7.2b: the next point of a committed X ramp
   maybePickSetChain();        // the picker's second answer (ui/pickset.ts)
   publishBuilding();
   rewireInputs(snap);
@@ -7518,7 +7517,7 @@ function gcStaleUi(): void {
   // stale confirm — the bar asks about a pass that would end the battle with
   // tokens still castable, so it goes the moment either half stops being true
   // ([66]: the window moved on, or the tokens did)
-  // R288/BL-30: the question belongs to ONE option of ONE decision. A new
+  // CR D2.8/BL-30: the question belongs to ONE option of ONE decision. A new
   // decision, or the same decision without that option, and it is stale — a
   // confirm bar over a question that has moved would send an index into a
   // menu it was never about.
@@ -7528,7 +7527,7 @@ function gcStaleUi(): void {
   if (ui.confirmPass !== null && (h.state.priority === null
     || !passEndsBattlePhase(h.state, h.state.priority)
     || castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;
-  // R266/CT-134: the token-loss notice is not a question and cannot go stale
+  // CR D7.4a/CT-134: the token-loss notice is not a question and cannot go stale
   // the way a confirm does — the tokens are gone and stay gone. What it CAN
   // become is old news, and the moment it does is the next battle: that is the
   // next chance to have tokens, so a notice about the last one has stopped
@@ -7549,7 +7548,7 @@ function gcStaleUi(): void {
   // it goes the moment that declare step does (an undo, a resync, the attack
   // landing) — and `rideAnswered` goes with it, or the next attack would
   // inherit an answer given about a formation that no longer exists.
-  // …and R87 gives the block step the same dialogue, so both steps keep it.
+  // …and CR 610.3 gives the block step the same dialogue, so both steps keep it.
   if (h.state.battle?.step !== 'declare' && h.state.battle?.step !== 'blocks') {
     ui.confirmRide = null; ui.rideAnswered = false;
   }
@@ -7578,7 +7577,7 @@ function snapshotViewport(): ViewportSnap {
     [sel, document.querySelector(sel)?.scrollTop ?? 0] as const);
   // same discipline for the text inputs a server push can repaint mid-word:
   // remember which one (if any) owned focus and where the caret sat, so the
-  // rebuilt input neither steals focus nor teleports the caret. R197 adds the
+  // rebuilt input neither steals focus nor teleports the caret. CR D7.2a's typed box is the
   // third — a numeric answer is typed, and an opponent's action landing while
   // you type must not eat the digits or the caret.
   const focusedBox = document.activeElement;
@@ -7653,11 +7652,11 @@ function rewireInputs(snap: ViewportSnap): void {
       }
     });
   }
-  // R216: the runner strip's optional note/ruling/clause boxes, for the same
+  // the runner strip's optional note/ruling/clause boxes, for the same
   // reason — the moment a note is lost to a repaint the owner stops writing
   // notes, and an optional field nobody fills in is a field that is not there.
   scn.rewire();
-  // R197: the numeric-entry box is a typing box too, and it is fresh DOM after
+  // CR D7.2a: the numeric-entry box is a typing box too, and it is fresh DOM after
   // every paint. Its draft lives in `ui.numberCount` so a re-render (an
   // opponent's action, a log line) cannot swallow half-typed digits, and Enter
   // confirms — the box is the affordance that makes an unbounded range
@@ -7789,7 +7788,7 @@ function render(): void {
     const frame = captureFrame();
     const before = lastCensus;
     const painted = renderNow();
-    lessonTick();   // R297: a Learn to Play lesson opens at its moment (a no-op elsewhere)
+    lessonTick();   // CR D8.1: a Learn to Play lesson opens at its moment (a no-op elsewhere)
     if (!painted) { lastCensus = null; clearArrows(); sfxReset(); flashReset(); return; }
     holdDeferred(deferredKeys(flashQueue, Date.now()));
     const after = censusWithFlashes(h.state);
@@ -7797,7 +7796,7 @@ function render(): void {
     if (before) playMotion(frame, diffCensus(before, after));
     updateArrows();
     soundPass();
-    // R80: the narrative beats this paint just let out point at what they are
+    // CR D5.4: the narrative beats this paint just let out point at what they are
     // about — after playMotion, so the pulse lands on the settled board
     fireBeats();
     // a beat starts or ends at a known moment, so book the repaint for it
@@ -7812,7 +7811,7 @@ function targetSelectors(t: TargetRef): string[] {
   if ('unit' in t) return [`.card[data-anim="e${t.unit}"]`, `[data-anim="e${t.unit}"]`];
   if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
   if ('stack' in t) return [`.stackcard[data-anim="s${t.stack}"]`];
-  // R280/CT-169: the targeted card is now ON the strip (see `binTargetIndexes`),
+  // CR D6.6d/CT-169: the targeted card is now ON the strip (see `binTargetIndexes`),
   // so the arrow can land on the CARD and only fall back to the pile. The key
   // is `nameKeys`'s, recomputed rather than passed down, for the same reason
   // `binIndexOf` is the engine's: two spellings of one id is how the arrow
@@ -7825,7 +7824,7 @@ function targetSelectors(t: TargetRef): string[] {
       `[data-animzone="bin:${t.bin.seat}"]`,
     ];
   }
-  // R184: a formation is that player's half of EVERY battle column, so the
+  // CR 602.1c: a formation is that player's half of EVERY battle column, so the
   // arrow lands on the box round all of them (anim.ts ALL_OF). It used to
   // point at the player's In Play zone — "the right player, the right half of
   // the screen" on the classic board; on the regions board that zone is
@@ -7843,7 +7842,7 @@ function targetSelectors(t: TargetRef): string[] {
  * are skipped — they are the parts that will do nothing. */
 function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
   const it = stackItemById(id);
-  // R68: a negated item is off the rules stack, so this can only ever be a
+  // CR 704.4: a negated item is off the rules stack, so this can only ever be a
   // flash snapshot having its beat — and an answered effect must not still be
   // drawing arrows at the things it was going to do
   if (!it || it.negated) return [];
@@ -7877,7 +7876,7 @@ function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
  * cast in progress starts from */
 const CASTING = '.castpending .stackcard.casting';
 
-/** #4/R57: targets chosen for a cast that has NOT reached the stack yet. They
+/** #4/CR 702.3c: targets chosen for a cast that has NOT reached the stack yet. They
  * start at the card being played, waiting at the table's corner (owner,
  * 2026-09-30: "the arrow needs to point to the actual card that's being
  * played … It should also be the source of the arrows") — so they leave the
@@ -7957,7 +7956,7 @@ function publishBuilding(): void {
   // publishCols keeps the sparse column INDICES, which the old
   // `.filter(c => c.length)` compacted away — see ui/formation.ts.
   NET.sendBuilding(mine ? publishCols(ui.columns.slice(ui.blockLeft)) : [], mine ? ui.send : [],
-    mine ? leftCols(ui.columns, ui.blockLeft) : []);   // R321: the left side-blocks, nearest first
+    mine ? leftCols(ui.columns, ui.blockLeft) : []);   // CR 606.4a: the left side-blocks, nearest first
 }
 
 /**
@@ -7987,7 +7986,7 @@ function publishBuilding(): void {
  * included; it moves up on Done. The caller's render() republishes the build. */
 function dropCarried(key: number, row: number): void {
   if (ui.carrying === null) return;
-  // R321: `key` is the column as the board numbers it — negative is a LEFT
+  // CR 606.4a: `key` is the column as the board numbers it — negative is a LEFT
   // side-block — and `ci` where the build holds it (the identity otherwise)
   const ci = buildIndex(key);
   const dropped = dropIntoRow(ui.columns[ci], row, ui.carrying, ui.backOnly);
@@ -8008,7 +8007,7 @@ function numberableColumns(): number {
     const pool = myCounterPool();
     return pool ? Math.max(pool.length, ui.columns.length) : ui.columns.length + 1;
   }
-  if (b.step === 'blocks') return b.columns.length + sideBlockColumns(b, true);   // R321
+  if (b.step === 'blocks') return b.columns.length + sideBlockColumns(b, true);   // CR 606.4
   return 0;
 }
 
@@ -8197,7 +8196,7 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
   const placed = inCols || ui.send.includes(id);
   if (!placed && !canJoinFormation(s, id)) return null;
   // where a unit that is already standing in the build stands
-  // …as a KEY, the namespace `data-ci` is in (R321: a left side-block's is
+  // …as a KEY, the namespace `data-ci` is in (CR 606.4a: a left side-block's is
   // negative, and sits at the front of the build)
   const posOf = (x: EntityId): { ci: number; row: number } | null => {
     const bi = ui.columns.findIndex(c => c?.includes(x));
@@ -8314,7 +8313,7 @@ function clampMenu(): void {
  * bookkeeping around it: dropping the armed promise when it releases, and the
  * repaint that takes the chip off screen.
  *
- * R251: it does NOT arm anything and does not touch the snapshot. `armPass` is
+ * CR D2.2: it does NOT arm anything and does not touch the snapshot. `armPass` is
  * the one writer of both, at the click, so "the stack I said yes to" is a set
  * with one author and a reader can point at it.
  *
@@ -8344,7 +8343,7 @@ function planAutoPass(): AutoPassPlan {
     prefOn: !full && localStorage.getItem('algoAutopass') === '1',
     yieldIds: full ? new Set<EntityId>() : new Set(yieldMap.keys()),
   });
-  // R251: the snapshot is NOT re-taken here. R245 re-took it at every window
+  // CR D2.2: the snapshot is NOT re-taken here. The earlier version re-took it at every window
   // the chip declined, so "new" meant "new since the last window I passed" —
   // a running diff with no fixed scope, which is neither of the owner's two
   // promises and is why the middle button could not be built. `armPass` takes
@@ -8358,7 +8357,7 @@ function planAutoPass(): AutoPassPlan {
   // dropped (its releases above still run): closing the dialog repaints, and
   // this function decides again against the state as it is then.
   if (isReportOpen()) return { disarm: plan.disarm, pass: null };
-  // R236: the haste step is not a priority window — there is no priority in
+  // CR 703.8: the haste step is not a priority window — there is no priority in
   // it and nothing to pass — so it is asked LAST and only when the priority
   // machinery has nothing to say. `plan.disarm` is carried through untouched:
   // arriving in the haste step is itself a Pass-all release ('phase'), and
@@ -8394,7 +8393,7 @@ function runAutoPass(plan: AutoPassPlan): void {
   // the chip was drawn this render but the arm just dropped: repaint it away
   if (plan.disarm) renderChipOff();
   const at = h.state.actionCount;
-  // R236: the haste-step answer is `doneHaste`, not `passPriority`, and it
+  // CR D2.5: the haste-step answer is `doneHaste`, not `passPriority`, and it
   // goes out NOW — there is no story to let finish (sendAutoPass's STAGGER is
   // about a resolving stack) and the owner asked for "very very quickly". The
   // secrecy this would otherwise cost is paid in server/view.ts, which stops
@@ -8413,10 +8412,10 @@ function runAutoPass(plan: AutoPassPlan): void {
 }
 
 /**
- * R245 — AN AUTOMATIC HASTE-STEP READY IS OUTSTANDING: sent, and not yet
+ * CR D2.4 — AN AUTOMATIC HASTE-STEP READY IS OUTSTANDING: sent, and not yet
  * answered by the server.
  *
- * ⚠ THIS USED TO BE AN `actionCount` STAMP (`hasteAutoAt`, R236), and playtest
+ * ⚠ THIS USED TO BE AN `actionCount` STAMP (`hasteAutoAt`), and playtest
  * report #122 is what that measured wrongly: *"I'm getting random 'errors' in
  * the top about not being in the haste step."*
  *
@@ -8444,14 +8443,14 @@ function runAutoPass(plan: AutoPassPlan): void {
  * unanswered intent is precisely the thing that has not moved it. So the latch
  * is the fact itself. It is lowered ONLY by an authoritative state that shows
  * the answer landed (`applyUpdate` below: my flag is set, or the step is gone)
- * or by a new game — deliberately NOT by a refusal, which is R236's original
- * anti-loop argument and still right: an automatic answer that retries a
+ * or by a new game — deliberately NOT by a refusal, which is the original
+ * anti-loop argument (CR D2.4) and still right: an automatic answer that retries a
  * refusal is not a retry, it is a loop. A refusal therefore leaves the step to
  * the player's own Ready button, which is the safe direction.
  */
 let hasteAutoOut = false;
 
-/** R245: the answer to an outstanding automatic `doneHaste` has landed — this
+/** CR D2.4: the answer to an outstanding automatic `doneHaste` has landed — this
  * state either records it or has moved past the step. Asked of every arriving
  * authoritative state, so the latch tracks the SERVER's opinion and not the
  * client's own hopes. */
@@ -8459,7 +8458,7 @@ function noteHasteAnswered(v: GameState, seat: Seat): void {
   if (hasteAutoOut && (!v.hasteDone || v.hasteDone[seat])) hasteAutoOut = false;
 }
 
-/** R236: the per-player "Bluff Haste" preference. OFF by default, which is
+/** CR D2.5b: the per-player "Bluff Haste" preference. OFF by default, which is
  * what makes the step cheap; ON means "never answer the haste step for me — I
  * intend to sit in it", so an opponent cannot read my hand off how long I
  * spend there. Persisted exactly like `algoAutopass`, the client's other
@@ -8473,7 +8472,7 @@ const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '
  *
  * FOUR THINGS ACT FOR YOU and this is the master switch over the three that
  * are the CLIENT's: the auto-pass preference, the standing Pass-all/Pass-stack
- * promise, and the right-click auto-yield map. (A fifth, the R236 automatic
+ * promise, and the right-click auto-yield map. (A fifth, the CR D2.5 automatic
  * haste-step ready, is not on the entry's list and acts for you just as much —
  * it goes off here too.) The FOURTH, the server's `forcedAction()` drain, is
  * not reachable from this file; see BL-18's own note on why it must be
@@ -8584,7 +8583,7 @@ function renderChipOff(): void {
 }
 
 /**
- * R80: an automatic pass, a beat late.
+ * CR D5.4: an automatic pass, a beat late.
  *
  * UFAB: "damage and all effects happened instantly." Half of that is the
  * engine's one-pump damage step (the beats above); the other half is this.
@@ -8639,7 +8638,7 @@ function sendAutoPass(at: number): void {
     // the timer would otherwise land the second pass the report complained
     // about — one round trip later, and this time from a real decision.
     if (ui.sentFor === at) return;
-    // R245: automatic — a refusal of it is not the player's to be told off for
+    // CR D2.4: automatic — a refusal of it is not the player's to be told off for
     NET.doAuto({ type: 'passPriority', seat: NET.seat });
     // the pass that resolves the top of a same-source run (owner, 2026-09-28)
     // goes out at the run's tempo, three a second; anything else waits the beat
@@ -8725,7 +8724,7 @@ function deckPickerHtml(): string {
 }
 
 /**
- * R298 — SINGLE CARD DUEL, tucked under the Constructed card.
+ * CR D8.2 — SINGLE CARD DUEL, tucked under the Constructed card.
  *
  * The owner, 2026-09-18: a goofy thought-experiment format that should be "not
  * easy to start. But not tooo hidden" — so it is a closed disclosure at the
@@ -8914,7 +8913,7 @@ function renderHome(): void {
   });
   wireDeckPicker(renderHome);
   crp.wirePanel();   // BL-43
-  wireSingleDuel();  // R298
+  wireSingleDuel();  // CR D8.2
   const opts = document.querySelector('[data-homeoptions]') as HTMLDetailsElement | null;
   opts?.addEventListener('toggle', () => { homeOptionsOpen = opts.open; });   // #191
   wireUpdates();
@@ -8983,7 +8982,7 @@ function renderWaiting(): void {
   wireDeckPicker(renderWaiting);
 }
 
-/** R298: the waiting room of a single card duel — the constructed one, asking
+/** CR D8.2: the waiting room of a single card duel — the constructed one, asking
  * for a card. Blind: the other seat's line says only that their card is in. */
 function renderSingleWaiting(): void {
   const net = NET!;
@@ -9061,12 +9060,12 @@ const LINE_TAG: Record<LineOrigin, (from: string) => string> = {
   augment: from => `${txtIcon('augment', '+')} ${esc(from)}`,
   graft: from => `${txtIcon('graft', '⇄')} ${esc(from)}`,
   granted: from => `✦ granted by ${esc(from)}`,
-  copy: from => `⧉ ${esc(from)}`,          // R118: a copied / projected face
+  copy: from => `⧉ ${esc(from)}`,          // CR 710.1, 710.7: a copied / projected face
   static: from => `⟳ ${esc(from)}`,
   note: () => '⏳ spent',
   // CT-175: an until-regroup effect stamped on the entity. `from` is the card
-  // that stamped it where the engine kept one (R98's damageShield does) and ''
-  // where it did not — R84's allurer may be long dead and is deliberately not
+  // that stamped it where the engine kept one (the damageShield does) and ''
+  // where it did not — CR 802.15j's allurer may be long dead and is deliberately not
   // consulted, so the tag says the duration, which is the part that is always
   // true. Same wording as ATTR_TAG.temp: one phrase for one lifetime.
   until: from => `⏱ until regroup${from ? ` — ${esc(from)}` : ''}`,
@@ -9160,7 +9159,7 @@ function boxFor(name: string, id?: EntityId): CardTextBox {
  * reads off it. Both, in that order, because the picture is how you recognise
  * the card and the box is how you play it correctly.
  *
- * R229: "physically stacked" is the MODS. The base art is the card the entity
+ * CR D6.8: "physically stacked" is the MODS. The base art is the card the entity
  * IS (`faceOf`), because this panel is the big version of the board card and
  * the two disagreeing about which card you are looking at is the bug. Which
  * cardboard it really is stays one line further down, in the box, where
@@ -9168,7 +9167,7 @@ function boxFor(name: string, id?: EntityId): CardTextBox {
  * bins."
  */
 /**
- * R271 (#141/#146) — the mods, as a physical stack of cards.
+ * CR D6.12a (#141/#146) — the mods, as a physical stack of cards.
  *
  * The RULE (which mods, and what each one is) is `ui/inspect.ts modStrips`, so
  * the unit viewer and the stack viewer cannot draw two different pictures of
@@ -9426,14 +9425,14 @@ document.addEventListener('click', e => {
 const HOVER_MS = 550;
 let hoverTimer: number | null = null;
 let hoverKey = '';
-/** R230: the element the dwell is being counted on, so a scroll can be asked
+/** CR D6.17: the element the dwell is being counted on, so a scroll can be asked
  * the only question that matters — could it have MOVED this card? */
 let hoverEl: HTMLElement | null = null;
-/** R272: what the dwell was armed WITH, so a repaint that keeps the tip can
+/** Report [142]: what the dwell was armed WITH, so a repaint that keeps the tip can
  * re-derive its contents from the state that just landed rather than leave the
  * old text floating. Held for as long as `hoverKey` is. */
 let hoverArgs: { id: number | undefined; name: string; x: number; y: number } | null = null;
-/** R272: is the box on screen right now (as opposed to still counting down)?
+/** Report [142]: is the box on screen right now (as opposed to still counting down)?
  * `#hovertip` lives on document.body, OUTSIDE #app, so a paint does not
  * destroy it — it was only ever being closed by hand. */
 let hoverShown = false;
@@ -9460,7 +9459,7 @@ function hideHoverTip(): void {
 }
 
 /**
- * R272 — THE HOVER SURVIVES A PAINT THAT DID NOT MOVE ITS CARD.
+ * Report [142] — THE HOVER SURVIVES A PAINT THAT DID NOT MOVE ITS CARD.
  *
  * Report [142]: *"…and also resets the hover effects. It even happens when the
  * other player is doing things in a hidden zone, which just feels clunky."*
@@ -9503,7 +9502,7 @@ function keepHoverThroughPaint(was: DOMRect | null): void {
   // the RULE is ui/hover.ts's and stays there; `|| !now` after it is narrowing
   // for the compiler, not a second opinion — `present: false` already returned
   if (!hoverSurvivesPaint({ key: hoverKey, present: !!now, moved }) || !now) { hideHoverTip(); return; }
-  hoverEl = now;                       // R230's scroll rule needs the NEW node
+  hoverEl = now;                       // CR D6.17's scroll rule needs the NEW node
   if (!hoverShown || !hoverArgs) return;   // the dwell is still counting: leave it
   // re-derived from the state that just landed, so a kept box is never stale —
   // the counter that was just added to the unit is in it before the player
@@ -9577,7 +9576,7 @@ function armHoverTip(target: HTMLElement, x: number, y: number): void {
     // an art tip is a picture, not a paragraph — the two want different widths
     el.classList.toggle('art', art);
     placeHoverTip(el, x, y);
-    hoverShown = true;          // R272: from here a repaint may keep it
+    hoverShown = true;          // [142]: from here a repaint may keep it
   }, art ? 0 : HOVER_MS);
 }
 
@@ -9687,7 +9686,7 @@ document.addEventListener('pointermove', e => {
  *    strips say it.
  *  - *"I'd love for them to almost feel like dice on the card, but only on the
  *    art area."* Every chip the unit wears, UNFOLDED — the table folds to one
- *    line and a "+N" (R136); the zoom has the room, so nothing hides behind
+ *    line and a "+N"; the zoom has the room, so nothing hides behind
  *    a tooltip. style.css lays them out as dice.
  *
  * Only a card with a live source is rebuilt: a unit (keyed by its motion key,
@@ -9772,7 +9771,7 @@ window.addEventListener('scroll', e => {
 document.addEventListener('pointerdown', hideHoverTip, { passive: true });
 document.addEventListener('keydown', hideHoverTip);
 /*
- * R230 — WHY THIS ONE IS NOT `hideHoverTip` BARE.
+ * CR D6.17 — WHY THIS ONE IS NOT `hideHoverTip` BARE.
  *
  * It used to be, and the tooltip then never appeared on the first landing on a
  * card. Measured in headless Chrome: 0 of 4 units, not intermittent. The
@@ -9816,7 +9815,7 @@ document.addEventListener('click', e => {
   // outside a game (home screen / kicked screen) a stray click must not
   // trigger the game render() — it would paint a board over the UI.
   if (!inGame) return;
-  // …and nor may it in a WAITING room (the constructed deck lobby, R298's card
+  // …and nor may it in a WAITING room (the constructed deck lobby, CR D8.2's card
   // lobby): there is no board to deselect, and the repaint rebuilt the page
   // under the pointer — so clicking into the card search or the deck-link box
   // lost focus the moment it was given (owner, 2026-09-18). The draft lobby's
@@ -9896,7 +9895,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     saveHomeName();
     const m = btn.dataset['mode'];
     const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
-    // R298: a single card duel is a constructed room that brings a card, not a deck
+    // CR 901.8: a single card duel is a constructed room that brings a card, not a deck
     const single = mode === 'constructed' && btn.dataset['single'] === '1';
     if (single ? !sc.chosen() : mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
     // a draft with NO els opens the lobby and chooses the trio there; passing
@@ -9964,14 +9963,14 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
 type BtnHandler = (btn: HTMLElement, e: MouseEvent) => void | 'no-repaint';
 
 /**
- * R251: arm one of the two standing promises.
+ * CR D2.2: arm one of the two standing promises.
  *
  * [59] the pass that arms the chip is the one going out for THIS state — the
  * latch (UiState.sentFor, set by NetBackend.do) is what stops the chip's own
  * auto-pass adding a second one on the very next paint.
  *
- * R245/R251: what "this window looked like" is ONE definition (ui/battle.ts
- * armSnapshot), taken here and NOWHERE ELSE. R245 re-took it at every window
+ * CR D1.3, D2.2: what "this window looked like" is ONE definition (ui/battle.ts
+ * armSnapshot), taken here and NOWHERE ELSE. The earlier version re-took it at every window
  * the chip declined; that made the baseline a running diff and left the scope
  * unbounded, which is exactly what stopped "pass through the stack" from being
  * expressible. The mode rides on the same arm, so a release can never be asked
@@ -10000,7 +9999,7 @@ function passClick(mode: 'pass' | PassMode): void {
   // in hand, which during a busy battle is every window — so it stopped being
   // information and became a second click on the Pass button.
   //
-  // Regroup is the ONLY step that erases spell tokens (R11), so the pass that
+  // Regroup is the ONLY step that erases spell tokens (CR 506.2), so the pass that
   // reaches it is the only pass that costs anything. passEndsBattlePhase
   // (ui/battle.ts) derives that from the engine's own transition and is
   // tested there.
@@ -10027,12 +10026,12 @@ function declareBuiltBlocks(): void {
   const s = h.state;
   if (!s.battle || s.battle.step !== 'blocks') return;   // the window moved
   const blocks = blockPlan();
-  // R84: the bar disables the button, and Enter honours `disabled` — this is
+  // the bar disables the button, and Enter honours `disabled` — this is
   // the belt to that braces, so no path can send a declaration the engine has
   // already told us it will refuse.
   const duty = blockPlanIssue(s, s.battle!.defender, blocks);
   if (duty) { uiError = duty; render(); return; }
-  // R87: one list on the board, two fields in the action. splitCounterattack
+  // CR 610.3: one list on the board, two fields in the action. splitCounterattack
   // (ui/battle.ts) is the only place that split is made, so the log line and
   // the reachability ledger see the tokens the player actually picked.
   const { send, spellTokens } = splitCounterattack(s, ui.send);
@@ -10117,12 +10116,12 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   doneplancancel: () => { ui.confirmDone = null; },
   donehaste: btn => { act({ type: 'doneHaste', seat: Number(btn.dataset['p']) }); },
   pass: () => passClick('pass'),
-  // R251: the owner's three buttons. `passall` keeps its handle because a
+  // CR D2.2: the owner's three buttons. `passall` keeps its handle because a
   // saved keybinding, a report and the ledger all name it.
   passstack: () => passClick('stack'),
   passall: () => passClick('all'),
   passcancel: () => { ui.confirmPass = null; },
-  // R288/BL-30 — and neither of these is a rules event: one re-sends the
+  // CR D2.8/BL-30 — and neither of these is a rules event: one re-sends the
   // interrupted intent, the other drops the question and leaves the same
   // target pick open, which is what "rechoose targets" means when nothing has
   // been sent yet.
@@ -10145,23 +10144,23 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
       act({ type: 'passPriority', seat: h.state.priority! });
     }
   },
-  // R80: an auto-pass is SCHEDULED now rather than sent on the spot, so
+  // CR D5.4: an auto-pass is SCHEDULED now rather than sent on the spot, so
   // switching either of them off has to reach into the wait as well — the
   // whole point of the stop button is that this window becomes yours again.
   // BL-18: one ✕ for both promises, always on screen while either is armed.
   passallstop: () => { ui.passMode = null; cancelAutoPass(); syncPassAll(); },
-  // R150/CT-28: jump to the live state. flushPace() renders on its own, and
+  // CR D5.5/CT-28: jump to the live state. flushPace() renders on its own, and
   // the handler table's trailing render() is harmless on top of it.
   // CT-78: a moment you have already read is a moment you can put away
   glimpseclose: () => { glimpseUp = null; },
-  // R266: the tokens are gone either way, so this only puts the notice away
+  // CR D7.4a: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
   costtoastclose: () => { costToastsUp = []; },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
   },
-  // R236. No `cancelAutoPass()` companion: the haste answer is not scheduled,
+  // CR D2.5b. No `cancelAutoPass()` companion: the haste answer is not scheduled,
   // it has already gone out by the time this bar can be clicked. Turning the
   // bluff ON therefore governs the NEXT haste step, which is the only one it
   // can — and turning it OFF mid-step readies you on the very next paint.
@@ -10203,7 +10202,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   attackall: () => {
     // one click for the whole army: every eligible unit fronts its own
     // column (still adjustable before "Attack!"; playtest: 100 token clicks)
-    // [127] R245: "every eligible unit" is the same eligibility the ring and
+    // [127] CR D1.3a: "every eligible unit" is the same eligibility the ring and
     // the click use — ui/battle.ts formationCandidates. This used to re-derive
     // the region and the pool here and forgot {Alluring} while doing it, so
     // one click could build an attack the engine refuses whole.
@@ -10291,7 +10290,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   decide: btn => { ui.boardPick = null; act({ type: 'decide', seat: h.state.decision!.seat, choice: Number(btn.dataset['i']) }); },
   boardpickback: () => { ui.boardPick = null; },
-  // BL-25/R139 — the stepper. NONE of these three answers the decision: the
+  // BL-25/CR D7.2 — the stepper. NONE of these three answers the decision: the
   // owner asked for All to jump the count "without auto submitting", and the
   // whole reason is that a unit with a lot of counters is exactly where you
   // want to see the number before you spend them. ui/inspect.ts says so in
@@ -10306,7 +10305,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     const i = dec ? counterAmountIndex(dec, counterStepper(dec, ui.counterCount).count) : -1;
     if (i >= 0) act({ type: 'decide', seat: dec!.seat, choice: i });
   },
-  // CT-34/R149 — the damage-split ticker. As with the counter stepper, −/+/All
+  // CT-34/CR D7.2e — the damage-split ticker. As with the counter stepper, −/+/All
   // move the dial and NOTHING ELSE: assigning combat damage is irreversible,
   // so the number is read before it is spent (StepperAction.submit is the
   // literal false). asgtake and asgdefault are the only two that act.
@@ -10324,12 +10323,12 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     const i = assignSplitStepper(dec, h.state, ui.assignCount).defaultIndex;
     if (i >= 0) act({ type: 'decide', seat: dec!.seat, choice: i });
   },
-  // R197 — the numeric entry. −/+ and the quick picks MOVE the number and
+  // CR D7.2, D7.2a — the numeric entry. −/+ and the quick picks MOVE the number and
   // nothing else, the same ruling the other two steppers carry in their types;
   // `numtake` is the only one that answers, and what it sends is the VALUE,
   // never an index, because that is what `kind: 'number'` means.
-  // R280: `numDec()`, not `h.state.decision` — the same six handlers now serve
-  // R197's numeric question AND a variable cost's ramp, which is the whole
+  // CR D7.2: `numDec()`, not `h.state.decision` — the same six handlers now serve
+  // CR D7.2a's numeric question AND a variable cost's ramp, which is the whole
   // point of dressing the ramp as a numeric question instead of writing a
   // second stepper. Only `numtake` can tell them apart, and only because what
   // it SPENDS the number on differs.
@@ -10349,7 +10348,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     const want = box.trim() === '' ? numberCount() : Number(box);
     const sub = numberEntrySubmit(numDec(), want);
     if (!sub.ok) { if (sub.why) uiError = sub.why; return; }
-    // R280: a ramp's answer is not one `decide` carrying the value — it is one
+    // CR D7.2b: a ramp's answer is not one `decide` carrying the value — it is one
     // `decide` per point, walked by startCostRamp against the engine's loop.
     if (costRamp(dec).active) startCostRamp(sub.choice);
     else act({ type: 'decide', seat: dec!.seat, choice: sub.choice });
@@ -10393,8 +10392,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // (ui/inspect.ts boardMenuEntries) and Escape closes it too.
   logclose: () => { logOpen = false; },
   binopen: btn => { binView = Number(btn.dataset['p']) as Seat; },
-  // CT-82(b)/R205: the region-bin thumb of a card that is usable RIGHT NOW —
-  // playable (R96/R123), prophesiable (R42) or applicable as a mod (#4). It
+  // CT-82(b)/CR D6.16: the region-bin thumb of a card that is usable RIGHT NOW —
+  // playable (CR 405.9), prophesiable (CR 803.7c) or applicable as a mod (#4). It
   // hands to `handleBinClick`, the dialog's own handler, so the panel and the
   // dialog can never come to do different things with the same card.
   binplay: (btn, e) => {
@@ -10411,9 +10410,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     concedeAsk = null;
     if (seat !== null) act({ type: 'concede', seat });
   },
-  // R41: the cache is public — either seat's zone opens for either player
+  // CR D6.6: the cache is public — either seat's zone opens for either player
   cacheopen: btn => { cacheView = Number(btn.dataset['p']) as Seat; },
-  // CT-64/R192: the region-cache thumb of a card that is playable RIGHT NOW.
+  // CT-64/CR D6.16: the region-cache thumb of a card that is playable RIGHT NOW.
   // It hands to `handleCacheClick` — the dialog's own handler — so the panel
   // and the dialog can never come to play different cards, and so a cached
   // card that needs a menu (two modes, a mod) still gets the same menu here.
@@ -10454,7 +10453,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   resetblocks: () => { resetFormation(); },
   // the rail's Report: the form is ui/report.ts's own layer; this hands it
   // the room and the seat, which is what makes an in-game report replayable
-  // R297: a Learn to Play game has no room on the server to replay, so its
+  // CR D8.1: a Learn to Play game has no room on the server to replay, so its
   // report is filed as a page report rather than against a room code that is not one
   reportopen: () => { openReport(learn.currentSolo() ? {} : { room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
@@ -10489,7 +10488,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // and the metagame page everything prefixed meta-
   if (meta.handleButton(btn)) return;
   if (lg.handleButton(btn)) return;
-  // R298: and the single card picker everything prefixed sc- (home + waiting room)
+  // CR D8.2: and the single card picker everything prefixed sc- (home + waiting room)
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
   if (admin.handleButton(btn)) return;
@@ -10500,7 +10499,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
     rerender: render,
     dismiss: () => { postGameHidden = true; render(); },
   })) return;
-  // and the scenario runner everything prefixed scn- (R216)
+  // and the scenario runner everything prefixed scn- (CR D8.4)
   if (NET && scn.handleButton(btn, { room: NET.room, seat: NET.seat, rerender: render })) return;
   // and the draft lobby everything prefixed lobby-
   if (NET?.waiting?.trio && lob.handleLobbyButton(btn, {
@@ -10574,7 +10573,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   if (kind === 'stackitem') {
     const id = Number(t.dataset['id']);
     if (pickOnBoard(`stack:${id}`)) { /* answered the open question */ }
-    // R79: a stack item is the second KIND of mod host — clicking a glowing
+    // CR 723.4: a stack item is the second KIND of mod host — clicking a glowing
     // spell finishes the placement exactly as clicking a glowing unit does.
     // modHostCache.stack is the engine's own answer (hostStack), so a spell
     // that is not a legal host takes no click at all.
@@ -10598,7 +10597,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     // a spell token is a unit-kinded target like any other: the question first
     if (pickOnBoard(`unit:${Number(t.dataset['id'])}`)) { render(); return; }
     const tok = s.entities[Number(t.dataset['id'])];
-    // R89: a mod in flight lands on a glowing spell token exactly as it lands
+    // CR 721.4a: a mod in flight lands on a glowing spell token exactly as it lands
     // on a glowing unit. Checked FIRST and against modHostCache.tokens — the
     // engine's own offer — so a token that is not a legal host takes no click,
     // and a placement in progress is never mistaken for "cast this token".
@@ -10619,7 +10618,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         const at = ui.send.indexOf(tok.id);
         if (at >= 0) ui.send.splice(at, 1); else ui.send.push(tok.id);
       } else {
-        // R309: always ordered — the caster picks the burst's resolve order
+        // CR D1.2h: always ordered — the caster picks the burst's resolve order
         act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true });
       }
     }
@@ -10640,10 +10639,10 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const u = s.entities[id];
     const b = s.battle;
     if (!bothSeats() && u && u.controller !== NET!.seat) return;   // one seat per screen manipulates only its own units
-    // R170: both option-pick routes above have already been tried and missed,
+    // CR D2.1: both option-pick routes above have already been tried and missed,
     // so an open question this unit IS part of can never reach here. What is
-    // left is "may its controller act at all", and since R154 that turns on
-    // whose question it is — see `decisionFreezes`.
+    // left is "may its controller act at all", and that turns on
+    // whose question it is (CR D2.1a, D2.1b) — see `decisionFreezes`.
     if (u && !decisionFreezes(u.controller)) {
       // UZRG: the formation branch used to be tested FIRST, so during your own
       // declare (or block) step every click on your own unit picked it up for a
@@ -10651,7 +10650,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
       // ability on a unit you are also attacking with had no input path at all.
       // The two are one LIST now (ui/inspect.ts unitClickOptions): one entry
       // means do it, more than one means ask.
-      // [127] R245: the CLICK and the RING answer the same question, from the
+      // [127] CR D1.3a: the CLICK and the RING answer the same question, from the
       // same predicate. A unit the engine would refuse from this declaration
       // has no formation entry at all, so it is not picked up and cannot reach
       // a column — and its {Battle} ability, if it has one, still fires the
@@ -10787,8 +10786,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   // a {Modular} mod from hand — though no TargetRef names one (ui/boardpick.ts
   // reads the other spellings). The question is offered the click first.
   if (name && name !== HIDDEN_CARD && pickOnBoard(`hand:${p}:${i}`)) return;
-  // R170: `decisionFreezes`, not a bare `s.decision`: past the question, the
-  // gate is only "may this seat act at all" — which since R154 is a question
+  // CR D2.1: `decisionFreezes`, not a bare `s.decision`: past the question, the
+  // gate is only "may this seat act at all" — which is a question
   // about WHOSE question it is. It used to be answered wrong in the most
   // misleading way available: the card kept its green `playable` ring
   // (handHtml reads legalFor, which was never gated) and then ate the click.
@@ -10803,7 +10802,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
     // play whatever the deck holds (BL-44, the owner: "it's technically legal
     // to make a Fire resource, even if you don't have any Fire cards").
     const openRecycle = (expanded: boolean): void => {
-      // R299 (#168), the owner's layout. The main menu: this deck's elements,
+      // CR D6.14b (#168), the owner's layout. The main menu: this deck's elements,
       // then a Prismite, then the expander. The expander holds only what the
       // main menu does not — the other elements of the game, then a Shard
       // (legal, almost never wanted). The expander shows in every game, since
@@ -10835,18 +10834,18 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   const items: MenuItem[] = [];
   for (const a of playActions) {
     const mode = a.type === 'playCard' ? a.mode : undefined;
-    // R40: "1 Discard me" is a whole alternative play mode like Ambush — pay
+    // CR 111.12: "1 Discard me" is a whole alternative play mode like Ambush — pay
     // the cost line, discard the card, which TRASHES it and fires its own
     // "when I am trashed" trigger (Dropslime, Nothyr, Sacrifice Dude).
     const label = mode === 'ambush' ? `Ambush with ${name}`
       : mode === 'discardMe' ? discardMeLabel(name)
-      // R123: an erase-funded haste play (Writhing Host) — the cost is said
+      // CR 504.7: an erase-funded haste play (Writhing Host) — the cost is said
       // on the button, before the click, because the erase is not undoable
       : a.type === 'playCard' && a.eraseGrant ? `Play ${name} as if it had [Haste] — erases the grantor from your bin`
       : `Play ${name}`;
     items.push({ label, go: () => { act(a); render(); } });
   }
-  // R42/R277: prophesying is a deployment action, plus the haste step for a
+  // CR 803.7b, 504.9: prophesying is a deployment action, plus the haste step for a
   // banner whose condition ends in [Haste]; legalActions already knows that,
   // and which cards may come from the bin, so this just renders it.
   // [08b] …and it never fires on the click that revealed it: it spends mana
@@ -10865,7 +10864,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
 const MANA_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 const manaTok = (n: number): string => `[${MANA_WORDS[n] ?? n}]`;
 
-/** R42: the prophesy menu entry. The banner cost is a PLAIN number — no
+/** CR 803.7: the prophesy menu entry. The banner cost is a PLAIN number — no
  * affinity pips — and the condition is what the payment actually buys. */
 function prophesyLabel(name: string): string {
   let mana: number | undefined;
@@ -10878,7 +10877,7 @@ function prophesyLabel(name: string): string {
     (condition ? `, free once “${condition}”` : '');
 }
 
-/** R40: the "Discard me" cost line, spelled out (it is a cost, not an effect).
+/** CR 111.12: the "Discard me" cost line, spelled out (it is a cost, not an effect).
  * A cost with affinity pips (Nothyr's `2 [d]`) has to stay in DIGITS — the
  * spelled-out `[two]` form only iconizes on its own, `[twod]` matches nothing. */
 function discardMeLabel(name: string): string {
@@ -10891,18 +10890,18 @@ function discardMeLabel(name: string): string {
 }
 
 /** Clicking a bin card — from the DIALOG's `data-act="bin"` entry or, since
- * CT-82(b)/R205, from the region panel's `data-btn="binplay"` thumb. One
+ * CT-82(b)/CR D6.16, from the region panel's `data-btn="binplay"` thumb. One
  * handler for both so the two surfaces can never come to play different cards,
  * and so a bin card that needs a menu still gets the same menu either way.
  * (`binView = null` inside the menu items is a no-op when the dialog was never
  * open, which is exactly what the panel route wants.) */
 function handleBinClick(p: Seat, i: number, e: MouseEvent): void {
   const legal = legalFor(p);
-  // R42: Angel of Anguish prints "I can be prophesied from your bin" — the
+  // CR 803.7c: Angel of Anguish prints "I can be prophesied from your bin" — the
   // bin is a prophesy source too, so a bin card can offer both.
   const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
   const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-  // R96/R123: playing a card straight out of the bin (Abyssal Evocation's
+  // CR 405.9: playing a card straight out of the bin (Abyssal Evocation's
   // grant, or the card's own line — Trench Stalker)
   const plays = legal.filter(a => a.type === 'playFromBin' && a.binIndex === i);
   if (plays.length || proph.length) {
@@ -10922,10 +10921,10 @@ function handleBinClick(p: Seat, i: number, e: MouseEvent): void {
   }
 }
 
-/** R41/R42/R45: clicking a cached card — play it (free via a fulfilled
+/** CR 403.3c, 803.7h, 403.3a: clicking a cached card — play it (free via a fulfilled
  * prophecy, or for its mana via a live glimpse), or apply it as a mod. Cached
  * cards in EITHER cache are also legal targets (Prismatic Observer).
- * R311: every mode the hand's click offers — Ambush, the haste grants, and in
+ * CR 702.2d: every mode the hand's click offers — Ambush, the haste grants, and in
  * a battle window the {Virus} augment onto a unit or a spell on the stack
  * (the mod items below; report #195). */
 function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {
@@ -10937,9 +10936,9 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
     // is tried first and wins — `cc.uid === undefined` means cached before
     // uids existed, i.e. untargetable, and it simply cannot be one.
     if (cc.uid !== undefined && pickOnBoard(`cache:${p}:${cc.uid}`)) return;
-    // R170: it is not an option. Then this is an ordinary click, and whether
-    // it is allowed is the R154 question of whose decision is open — not the
-    // pre-R154 "any decision at all".
+    // CR D2.1: it is not an option. Then this is an ordinary click, and whether
+    // it is allowed is the CR D2.1b question of whose decision is open — not the
+    // old "any decision at all".
     if (decisionFreezes(p)) return;
   }
   if (!bothSeats() && p !== NET!.seat) return;   // I can look at their cache, not play from it
@@ -10948,8 +10947,8 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
   const proph = legalFor(p).filter(a => a.type === 'prophesy' && a.from === 'cache' && a.index === i);
   const mods = cacheModActions(p, i);
   const items: MenuItem[] = [];
-  // R311: the cache plays like the hand for every mode, so the release comes
-  // in the hand's shapes too — the Ambush mode and the R123 erase-funded haste
+  // CR 403.3c: the cache plays like the hand for every mode, so the release comes
+  // in the hand's shapes too — the Ambush mode and the CR 504.7 erase-funded haste
   // play — each priced the cache's way (free off a fulfilled prophecy, mana
   // with the affinity waived off a glimpse), and the tag says which.
   const price = via === 'prophecy' ? 'FREE (fulfilled prophecy; ignores affinity)'
@@ -10965,13 +10964,13 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
       go: () => { cacheView = null; act(a); render(); },
     });
   }
-  // R308: a glimpsed card may be prophesied as if it were in your hand —
+  // CR 801.9h: a glimpsed card may be prophesied as if it were in your hand —
   // [08b] and, as from the hand, never on the click that revealed it
   for (const a of proph) {
     items.push({ label: prophesyLabel(cc.card), confirm: actionNeedsMenu(a),
       go: () => { cacheView = null; act(a); render(); } });
   }
-  // R42/R303: the mod is priced exactly as the play above it is — free off a
+  // CR 803.7k, 403.3c: the mod is priced exactly as the play above it is — free off a
   // fulfilled prophecy, the card's mana off a live glimpse, affinity waived
   // either way. The tag says which, because it is the one thing the board
   // does not show.
@@ -10995,7 +10994,7 @@ function offer(items: MenuItem[], e: MouseEvent): void {
 
 /** The augment/graft menu entries for a mod-source card. Hand, bin and cache
  * share them, differing only in the zone, an optional dialog to close first
- * (so the host pick is visible), and the cache's price tag (R42/R303: the
+ * (so the host pick is visible), and the cache's price tag (CR 803.7k, 403.3b, 403.3c: the
  * permission that lets you play a cached card is the one that lets you mod
  * with it, at the same price). */
 function modMenuItems(p: Seat, from: ModZone, i: number, name: string, mods: Action[],
@@ -11008,7 +11007,7 @@ function modMenuItems(p: Seat, from: ModZone, i: number, name: string, mods: Act
   const sfx = opts.suffix ?? '';
   const items: { label: string; go: () => void }[] = [];
   if (mods.some(a => a.type === 'augment')) {
-    // R79: name the hosts the engine is actually offering — a virus in a
+    // CR 723.4: name the hosts the engine is actually offering — a virus in a
     // battle window can go onto a spell on the stack, and an entry that says
     // "a unit" is how that ruling stayed invisible.
     const what = modHostPhrase(modHosts(mods, { from, index: i, mode: 'augment' }, h.state));
@@ -11030,12 +11029,12 @@ function startModding(p: Seat, from: ModZone, i: number, legal: Action[], e: Mou
   };
 }
 
-/** the two kinds of host a mod can land on: a unit in play, or (R79) a spell
+/** the two kinds of host a mod can land on: a unit in play, or (CR 723.4) a spell
  * on the stack. `Action.augment` carries exactly one of them. */
 type ModHost = { unit: EntityId } | { stack: number };
 
 function applyMod(m: NonNullable<UiState['modding']>, host: ModHost, e: MouseEvent): void {
-  // R79: a virus onto a SPELL. Only augment ever offers a stack host (a graft
+  // CR 723.4: a virus onto a SPELL. Only augment ever offers a stack host (a graft
   // wants a graft-cause unit's stack, which a spell has not got), so there is
   // no position menu to open here — it goes on the stack above its host.
   if ('stack' in host) {
@@ -11089,8 +11088,8 @@ function demoBattle(): void {
   const h = new Harness(7);
   resetUi();
   // NB: h.do() replaces h.state — always read it fresh
-  /* R230 (found while verifying #110 in a browser, not part of it): the haste
-   * step is OFFERED UNCONDITIONALLY since R224, so `donePlanning` no longer
+  /* CR D6.17 (found while verifying #110 in a browser, not part of it): the haste
+   * step is OFFERED UNCONDITIONALLY (CR 504.5), so `donePlanning` no longer
    * lands in the battle phase and `h.state.battle!.attacker` threw a TypeError
    * that left ?demo painting nothing at all — the Practice demo button on the
    * home screen was dead. Decline the step before declaring, exactly the order
@@ -11263,7 +11262,7 @@ document.addEventListener('keydown', e => {
     // the [69] ride-along ones even advertise it on the button)
     if (ui.confirmRide !== null) { ui.confirmRide = null; render(); return; }
     if (ui.confirmDone !== null) { ui.confirmDone = null; render(); return; }
-    // R288/BL-30 — ABOVE the others because it is the innermost: it stands in
+    // CR D2.8/BL-30 — ABOVE the others because it is the innermost: it stands in
     // front of a target pick that is itself in front of a cast, and Escape
     // takes one layer at a time. Press it again and `canCancelNow` below takes
     // the whole cast back, which is the "picks cleared" the entry asks for.
@@ -11309,11 +11308,11 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
+  // CR D5.5/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
   // or Space: those two are how game actions are confirmed, and the whole
   // promise of the skip is that it only ever moves the SCREEN forward.
   if (e.key === 's' || e.key === 'S') {
-    // R242: every paced queue, not only the update backlog — during a cascade
+    // CR D5.5: every paced queue, not only the update backlog — during a cascade
     // the update queue is empty and the beats are the whole of the wait
     if (overlayUp || !pacedAhead()) return;
     e.preventDefault();
@@ -11356,10 +11355,10 @@ document.addEventListener('keydown', e => {
 });
 
 /**
- * R241 (BL-20) — the two things THE BOARD offers on a right-click of BARE
+ * CR D6.15 (BL-20) — the two things THE BOARD offers on a right-click of BARE
  * TABLE: view a player's erased pile, and concede.
  *
- * ⚠ THIS NARROWED, AND THE NARROWING REVERSES R65. R65 hung these on every
+ * ⚠ THIS NARROWED, AND THE NARROWING REVERSES AN EARLIER RULING, which hung these on every
  * card menu as well, in as many words — *"so you never have to hunt for bare
  * table"* — because the original playtest asks were that neither was reachable
  * AT ALL ("We need a way to right click -> concede match :(", "I dont think
@@ -11423,14 +11422,14 @@ document.addEventListener('contextmenu', e => {
   e.preventDefault();
   const id = t.dataset['previd'] !== undefined ? Number(t.dataset['previd']) : undefined;
   const me = e as MouseEvent;
-  // R229: the FACE. The card under the cursor now DRAWS as the copied card, so
+  // CR D6.8: the FACE. The card under the cursor now DRAWS as the copied card, so
   // "📖 … details" opening the cardboard's page would name a card that is not
   // on screen — and the rulings you want are the ones for what it currently
   // is. The physical card is still named, in the box this dialog itself shows.
   const en0 = id !== undefined ? h.state.entities[id] : undefined;
   const name = id !== undefined ? (en0 && faceOf(en0)) : t.dataset['prev'];
   if (!name || name === HIDDEN_CARD) {
-    // R241/BL-20 — THE DELIBERATE CALL THE ENTRY ASKED FOR, and the one place
+    // CR D6.15/BL-20 — THE DELIBERATE CALL THE ENTRY ASKED FOR, and the one place
     // this rule does not simply mean "fewer entries". A card BACK is a card
     // you cannot read: there are no card things to offer about it, so there is
     // no scope to confuse, and falling through to the TABLE's own menu is what
@@ -11453,7 +11452,7 @@ document.addEventListener('contextmenu', e => {
  * click and Safari fires no contextmenu on a long press: *"there's no way to
  * open the right click menus at all. It'd probably make sense to put those in
  * the right hand column … down under its actual text."* One list, so the two
- * cannot drift — and R241/BL-20's scoping (card things only, no field entries)
+ * cannot drift — and CR D6.15/BL-20's scoping (card things only, no field entries)
  * holds in the rail because it is the same list.
  *
  * `id` is the entity under the cursor (a unit, a mod), `sid` the stack item
@@ -11498,7 +11497,7 @@ function cardMenuItems(name: string, id: EntityId | undefined, sid: number | und
       });
     }
   }
-  // R241/BL-20: card things only. `boardMenuItems()` is NOT appended here —
+  // CR D6.15/BL-20: card things only. `boardMenuItems()` is NOT appended here —
   // concede and "view erased" are field entries and belong to a right-click of
   // bare table, which still offers them.
   return items;
@@ -11587,7 +11586,7 @@ installHelpLayer();
 // BL-38: the replay transport. A layer for the usual reason — renderNow()
 // writes over #app on every frame and would wipe the controls with it.
 installReplayBar();
-// R297 — Learn to Play: the menu (opened by any [data-learn]) and the lesson
+// CR D8.1 — Learn to Play: the menu (opened by any [data-learn]) and the lesson
 // window, both layers beside #app. The window only has lessons to show in a
 // `?learn=play` game; off the board it is the reader the menu opens.
 installLearnMenu();
@@ -11600,7 +11599,7 @@ installLessonLayer({
     const p = learn.currentSolo()?.progress ?? learn.loadProgress();
     if (p && !p.seen.includes(id)) { p.seen.push(id); learn.saveProgress(p); }
   },
-  // R297, first playtest: "sign in (or play as a guest) to ask the judge" makes
+  // CR D8.1, first playtest: "sign in (or play as a guest) to ask the judge" makes
   // no sense to someone learning the game. A learner with no session is given
   // a guest one — the queue's own move (BL-42), an ordinary account unnamed.
   judge: async (q, context) => {
@@ -11650,7 +11649,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   loadSeenDrop();    // …and so do the cards you have crossed off the hand aid
   renderConnecting();
 } else if (params.get('learn') === 'play') {
-  // R297 — Learn to Play: a NetBackend whose "server" is the SoloServer in this
+  // CR D8.1 — Learn to Play: a NetBackend whose "server" is the SoloServer in this
   // page. Everything from here on is the ordinary NET path, bot hidden and all.
   const solo = learn.startSolo(params.get('el'), {
     fresh: params.get('new') === '1',

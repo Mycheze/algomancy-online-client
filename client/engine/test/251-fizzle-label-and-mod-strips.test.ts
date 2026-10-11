@@ -1,4 +1,4 @@
-/* R271 — FOUR OWNER REPORTS AND ONE TICKET, ALL ON THE STACK STRIP AND THE
+/* CR D6.12, D6.12a — FOUR OWNER REPORTS AND ONE TICKET, ALL ON THE STACK STRIP AND THE
  * FOCUS CARD.
  *
  *  [#140] (ERJZ 234) "There's a weird massive graft icon on Spellbind as it's
@@ -28,7 +28,7 @@
  *     The client has a copy, draws the beat, finds `negated` false, and prints
  *     "resolved" over a spell that did nothing. That is the ticket's bug.
  *   · an item that fizzles on the REAL stack emits no `stackFlash` at all.
- *     Before R271 the client had no beat to label: the card simply VANISHED
+ *     Before the fizzle label (CR D6.12) the client had no beat to label: the card simply VANISHED
  *     off the strip. Not a lie, but the ticket's own verify line — "fizzle a
  *     spell by removing its only target in response; the stack entry reads
  *     'resolved'" — describes this path, and this path said nothing at all.
@@ -104,7 +104,7 @@ function stackCard(html: string, id: number): string | null {
 
 /* ══ §1 — CT-142: A FIZZLE IS NOT A RESOLUTION ═══════════════════════════
  *
- * 05-rulings' own R5 fixture, which is the ticket's verify line verbatim: a
+ * 05-rulings' own fizzle fixture (CR 704.6), which is the ticket's verify line verbatim: a
  * spell unit on the stack, its only target killed under it in response, so it
  * reaches resolution with nothing left to aim at.
  */
@@ -139,7 +139,7 @@ function jellyFizzle(seed: number): Fizzle {
   const jelly = h.state.stack.find(i => i.card === 'Jelly');
   assert.ok(jelly, 'Jelly really is still on the stack, waiting to fizzle');
   assert.equal(h.state.stack.length, 1, 'and it is the only thing on it');
-  // WHOSE SCREEN. Both seats see the same strip, but R150 holds an update the
+  // WHOSE SCREEN. Both seats see the same strip, but CR D5.4b holds an update the
   // viewer cannot act on, and a held update never reaches the beat queue at
   // all (160 carries the same construction note) — so the fixture is read from
   // the seat that holds priority when the fizzle lands.
@@ -156,14 +156,14 @@ function jellyFizzle(seed: number): Fizzle {
  * memory of the stack (`rememberStack`) has the item in it. */
 function showFizzle(f: Fizzle, now: number): string {
   const legal: Action[] = legalActions(f.before, f.seat);
-  assert.ok(legal.length, 'the seat can act, so R150 will not hold the update out of reach');
+  assert.ok(legal.length, 'the seat can act, so CR D5.4b will not hold the update out of reach');
   return at(now, () => {
     ui.join(viewFor(f.before, f.seat), f.seat, legal);
     return ui.update(viewFor(f.h.state, f.seat), legalActions(f.h.state, f.seat), { events: f.events });
   });
 }
 
-test('R271 §1a the batch really fizzles it, and says so the way negate says it', () => {
+test('CR D6.12 the batch really fizzles it, and says so the way negate says it', () => {
   const f = jellyFizzle(25101);
   // NON-VACUITY FIRST (house rule 5). Everything below is a claim about how
   // the client draws a `fizzled` event; if the engine stopped emitting one
@@ -176,10 +176,10 @@ test('R271 §1a the batch really fizzles it, and says so the way negate says it'
     + 'which is the whole reason ui/flash.ts can reuse the negatedFlashItems mechanism');
   assert.ok(!f.h.state.stack.some(i => i.id === f.item), 'the fizzled item left the stack');
   assert.equal(f.events.filter(e => e.type === 'stackFlash').length, 0,
-    'and NOTHING snapshotted it — which is why, before R271, the strip had no beat to label');
+    'and NOTHING snapshotted it — which is why, before the fizzle label (CR D6.12), the strip had no beat to label');
 });
 
-test('R271 §1b THE REPORT: the strip says the spell fizzled, not that it resolved', () => {
+test('CR D6.12 THE REPORT: the strip says the spell fizzled, not that it resolved', () => {
   const f = jellyFizzle(25102);
   const html = showFizzle(f, (base += 100_000));
   const card = stackCard(html, f.item);
@@ -194,7 +194,7 @@ test('R271 §1b THE REPORT: the strip says the spell fizzled, not that it resolv
     'a fizzle is not a negation: nobody answered this spell, it ran out of targets');
 });
 
-test('R271 §1c the caption under the strip agrees with the chip on it', () => {
+test('CR D6.12 the caption under the strip agrees with the chip on it', () => {
   const f = jellyFizzle(25103);
   const html = showFizzle(f, (base += 100_000));
   const at0 = html.indexOf('class="stackcaption');
@@ -222,7 +222,7 @@ const ROW = (o: Partial<StackRow>): StackRow => ({
   flashing: false, top: false, resolving: false, fizzled: false, detached: false, ...o,
 });
 
-test('R271 §2a every row has exactly one state, and every state is reachable', () => {
+test('CR D6.12 every row has exactly one state, and every state is reachable', () => {
   const ALL: RowState[] = ['answered', 'fizzled', 'resolved', 'resolving', 'waiting'];
   const seen = new Set<RowState>();
   for (const flashing of [false, true]) {
@@ -234,7 +234,7 @@ test('R271 §2a every row has exactly one state, and every state is reachable', 
           const st = rowState(row);
           seen.add(st);
           assert.ok(ALL.includes(st), `rowState invented a sixth state: ${st}`);
-          // the ORDER is the one the board depends on: R78's "still going"
+          // the ORDER is the one the board depends on: CR D6.3's "still going"
           // outranks every replay, because it is the answer to "why has
           // nothing happened yet?", and a negation outranks a fizzle because
           // an item somebody answered never reached the resolution that could
@@ -251,7 +251,7 @@ test('R271 §2a every row has exactly one state, and every state is reachable', 
     'all five states are reachable from some row — one nothing can produce is dead code');
 });
 
-test('R271 §2b a fizzle and a negation are never the same beat', () => {
+test('CR D6.12 a fizzle and a negation are never the same beat', () => {
   const f = jellyFizzle(25104);
   const seen = new Map<number, StackItem>(
     f.before.stack.map(i => [i.id, structuredClone(i) as StackItem]));
@@ -309,7 +309,7 @@ function moddedSpellOnStack(seed: number): { h: Harness; seat: Seat; item: numbe
   return { h, seat, item: it!.id };
 }
 
-test('R271 §3 no game icon on the stack strip is drawn at its full size', () => {
+test('§3 no game icon on the stack strip is drawn at its full size', () => {
   const base15 = /img\.txticon\s*\{[^}]*width:\s*(\d+)px/.exec(STYLE);
   assert.ok(base15, 'style.css still states one base size for a text icon');
   const full = Number(base15![1]);
@@ -340,12 +340,12 @@ test('R271 §3 no game icon on the stack strip is drawn at its full size', () =>
 
 /* ══ §4 — [#141] + [#146] the mods peeking out from under a card ══════════ */
 
-test('R271 §4a a modded stack item composes the same picture as a modded unit', () => {
+test('CR D6.12a a modded stack item composes the same picture as a modded unit', () => {
   const f = moddedSpellOnStack(25106);
   const it = f.h.state.stack.find(i => i.id === f.item)!;
   const stackStrips = modStrips(it.mods ?? []);
   assert.equal(stackStrips.length, (it.mods ?? []).length,
-    '#141: one strip per mod, on the stack too — R35/R105, the mods ride WITH the card');
+    '#141: one strip per mod, on the stack too — CR 724.3, the mods ride WITH the card');
   assert.match(stackStrips[0]!.title, /Pernicious Photosynthesis/,
     'and the strip still names the card: #146 takes the printed badge off the picture, '
     + 'not the fact off the page');
@@ -372,7 +372,7 @@ test('R271 §4a a modded stack item composes the same picture as a modded unit',
     'a unit mod knows HOW it was applied and says so');
 });
 
-test('R271 §4b [#146] the strip carries no badge, and its peek is one named number', () => {
+test('CR D6.12a [#146] the strip carries no badge, and its peek is one named number', () => {
   assert.doesNotMatch(STYLE, /\.modtag\b/,
     '#146: "That extra space/badge isn\'t needed" — the .modtag rule is what the band '
     + 'was made tall enough to fit');
@@ -393,7 +393,7 @@ test('R271 §4b [#146] the strip carries no badge, and its peek is one named num
     '…and so does the slice of the scan it shows');
 });
 
-test('R271 §4c [#146] each strip starts at ITS OWN card\'s symbol, type-line [Augment] included', () => {
+test('CR D6.12a [#146] each strip starts at ITS OWN card\'s symbol, type-line [Augment] included', () => {
   // The fixed .16 was measured on text-box abilities. A type-line [Augment]
   // sits on the type bar, which rides on top of the rules box — up to 21% up
   // the card — and the fixed slice cut it off, showing only the reminder text
@@ -424,7 +424,7 @@ test('R271 §4c [#146] each strip starts at ITS OWN card\'s symbol, type-line [A
 
 /* ══ §5 — [#143] {Unstable} on the attribute line ═════════════════════════ */
 
-test('R271 §5a a printed-Unstable card wears it on the attribute line', () => {
+test('CR D6.10c a printed-Unstable card wears it on the attribute line', () => {
   // DERIVED: whichever cards print the marker, not the two a comment knows
   const printers = Object.entries(CARDS)
     .filter(([, d]) => /\{Unstable\}/.test(d.type ?? '')).map(([n]) => n);
@@ -444,7 +444,7 @@ test('R271 §5a a printed-Unstable card wears it on the attribute line', () => {
     'a card that is not Unstable says nothing — this is not a banner on every box');
 });
 
-test('R271 §5b the acquired kind says WHICH way in, on the same line', () => {
+test('CR D6.10c the acquired kind says WHICH way in, on the same line', () => {
   const h = new Harness(25108);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -470,10 +470,10 @@ test('R271 §5b the acquired kind says WHICH way in, on the same line', () => {
     `the hand-typed footnote is gone with it: ${JSON.stringify(after.state)}`);
 });
 
-test('R271 §5c the sentence a player reads there is the POOLs, not ours', () => {
+test('CR D6.11 the sentence a player reads there is the POOLs, not ours', () => {
   // The payoff of moving the word onto the attribute line: main.ts's inspector
-  // looks every attribute up in the glossary, and R267 made the glossary's
-  // {Unstable} text a reminder PRINTED on a real card. Nothing here types the
+  // looks every attribute up in the glossary, and under CR D6.11 the glossary's
+  // {Unstable} text is a reminder PRINTED on a real card. Nothing here types the
   // sentence — it is read back out of printed.json, which is what makes this a
   // guard rather than a second copy of the string.
   const g = GLOSSARY.find(x => x.term === 'Unstable');
@@ -484,11 +484,11 @@ test('R271 §5c the sentence a player reads there is the POOLs, not ours', () =>
     .filter(([, d]) => tidy(d.text ?? '').includes(said)).map(([n]) => n);
   assert.ok(printers.length,
     '{Unstable}\'s reminder is authored prose, not the game\'s: no card in the pool prints '
-    + `"${said}". R267 sourced it from Spell Excavation; if that has changed, the attribute `
+    + `"${said}". It was sourced from Spell Excavation (CR D6.11); if that has changed, the attribute `
     + 'row is back to showing our words for the game\'s rule.');
 });
 
-test('R271 §5d the inspector really draws that row for a modded unit', () => {
+test('CR D6.10c the inspector really draws that row for a modded unit', () => {
   const h = new Harness(25109);
   toDeployment(h);
   const A = h.state.deployPlayer!;

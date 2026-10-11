@@ -2,11 +2,11 @@
  * (batch-dark-a/b/c, batch-hybrids-fwe): the cards whose IMPLEMENTATION was
  * narrower than their PRINTED TEXT.
  *
- * The standing principle is R125's — "when a printed text carries no
+ * The standing principle is the Rotspore ruling's (CR 707.7) — "when a printed text carries no
  * qualifier, do not invent one" — and both cards pinned here had exactly that
  * shape: a qualifier in the code with no word behind it on the card.
  *
- *  · Nothyr prints "negate up to one target NONSPELL effect". R60 enumerates
+ *  · Nothyr prints "negate up to one target NONSPELL effect". the old ruling (now CR 700.1b) enumerates
  *    the nonspell half itself — "triggered abilities, activated abilities and
  *    A VIRUS BEING APPLIED" — and the restriction listed only the first two,
  *    so a virus on the stack was never offered.
@@ -28,9 +28,9 @@ import {
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
-// ── Nothyr: a VIRUS is a nonspell effect (R60) ───────────────────────────
+// ── Nothyr: a VIRUS is a nonspell effect (CR 700.1b) ───────────────────────────
 
-test('Nothyr: "target nonspell effect" reaches a VIRUS on the stack (R60)', () => {
+test('Nothyr: "target nonspell effect" reaches a VIRUS on the stack (CR 700.1b)', () => {
   const h = new Harness(11401);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -42,39 +42,39 @@ test('Nothyr: "target nonspell effect" reaches a VIRUS on the stack (R60)', () =
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
 
   // A applies a {Virus} to an enemy unit: in battle that goes on the STACK as
-  // a `kind: 'virus'` item, which R60 names as one of the nonspell effects.
+  // a `kind: 'virus'` item, which CR 700.1b names as one of the nonspell effects.
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Gzxyclop'), hostId: host });
   const virusItem = h.state.stack[0]!;
   assert.equal(virusItem.kind, 'virus', 'the premise: a virus item is on the stack');
 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Nothyr'), mode: 'discardMe' });
-  assert.ok(h.state.players[D]!.bin.includes('Nothyr'), 'the cost discarded it — a trash (R40)');
-  assert.equal(h.state.decision!.kind, 'targets', 'R67: the negate names its victim at cast');
+  assert.ok(h.state.players[D]!.bin.includes('Nothyr'), 'the cost discarded it — a trash (CR 801.3)');
+  assert.equal(h.state.decision!.kind, 'targets', 'CR 110.1a: the negate names its victim at cast');
   // THE REGRESSION: the restriction used to allow only 'triggered' and
   // 'activated', so this menu was empty and Nothyr could not answer a virus.
   assert.ok(offered(h).includes(JSON.stringify({ stack: virusItem.id })),
-    'the virus is offered — "nonspell" is the complement of R60\'s spell half, '
+    'the virus is offered — "nonspell" is the complement of CR 700.1a\'s spell half, '
     + 'and a virus being applied is in it');
   pick(h, { stack: virusItem.id });
   pass(h); pass(h);                                     // resolve Nothyr's trigger
 
-  assert.equal(h.state.stack.length, 0, 'R68: the negated virus left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated virus left the stack at once');
   assert.equal(ent(h, host)!.mods.length, 0, 'the negated virus never attached');
-  assert.ok(h.state.players[A]!.bin.includes('Gzxyclop'), 'and its card went to the bin (R68)');
+  assert.ok(h.state.players[A]!.bin.includes('Gzxyclop'), 'and its card went to the bin (CR 704.4a)');
   finishBattle(h);
 });
 
-test('Nothyr: an AMBUSH stays out of reach — R60 puts it on the SPELL side', () => {
+test('Nothyr: an AMBUSH stays out of reach — CR 700.1a puts it on the SPELL side', () => {
   // The other direction of the same line, so the widening above cannot drift
   // into "Nothyr negates anything". `stackSpell` is "spell / spell unit /
   // spell token / ambush"; "nonspell" is precisely its complement.
   const spec = getCard('Nothyr').abilities![0]!.effect.targets!;
-  assert.equal(spec.what, 'stackEffect', 'the superset kind (R60)');
+  assert.equal(spec.what, 'stackEffect', 'the superset kind (CR 700.1)');
   const kinds = ['spell', 'spellUnit', 'spellToken', 'ambush', 'triggered', 'activated', 'virus'];
   const g = { s: { stack: kinds.map((kind, i) => ({ id: i, kind })) } } as never;
   const allowed = kinds.filter((_, i) => spec.restrict!(g, { stack: i } as never, {} as never));
   assert.deepEqual(allowed, ['triggered', 'activated', 'virus'],
-    'exactly R60\'s nonspell half — no more (ambush and the spell kinds are spell-side) '
+    'exactly CR 700.1b\'s nonspell half — no more (ambush and the spell kinds are spell-side) '
     + 'and no less (a virus being applied is a nonspell effect)');
 });
 
@@ -88,7 +88,7 @@ test('Rotling: the printed [Switch1] makes it graftable at all', () => {
   assert.equal(getCard('Rotling').graftEffect!.bounded, true, '[Switch1]: bounded, not [Switch]');
   assert.ok(getCard('Rotling').abilities!.some(a => a.graftCause),
     'and the same marked ability is the graft CAUSE, as every other [Switch] card in the '
-    + 'pool declares it (it can never carry riders from a bin — R51 anchors a zone firing '
+    + 'pool declares it (it can never carry riders from a bin — the engine anchors a zone firing (CR 400.5) '
     + 'on a stand-in whose mods are [] — but the symbol is on the card)');
 });
 
@@ -115,8 +115,8 @@ test('Rotling grafted onto a host: the pay-[1] rider fires off the HOST\'s graft
   assert.equal(h.q.openMana(P), mana0 - 1, 'the [1] was paid');
 });
 
-test("Rotling grafted OUT OF THE BIN fires its own 'leftBin' (R124's choke point)", () => {
-  // The consequence R124's engine note could not have: `zoneTake` routes a
+test("Rotling grafted OUT OF THE BIN fires its own 'leftBin' (CR 405.7's choke point)", () => {
+  // The consequence the original bin-exit note could not foresee: `zoneTake` routes a
   // mod applied from a bin through E.removeFromBin with reason 'modded', and
   // the comment there says no reachable card noticed "only because Rotling
   // carries no mod symbol". It prints one — so this is the reachable case.
@@ -137,7 +137,7 @@ test("Rotling grafted OUT OF THE BIN fires its own 'leftBin' (R124's choke point
   // pay [1] to draw a card and gain 1 rot."
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   assert.ok(h.state.decision!.prompt.startsWith('Rotling:'),
-    'the card that left the bin is the card that triggers (R124)');
+    'the card that left the bin is the card that triggers (CR 405.7)');
   pick(h, true);
   assert.equal(h.q.rot(P), 1, 'the [1] bought a draw and a rot');
 });

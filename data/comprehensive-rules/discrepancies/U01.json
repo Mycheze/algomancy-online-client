@@ -4,7 +4,7 @@
     "kind": "a-sources-disagree",
     "rule": "concepts.golden.regions.information",
     "tier": 4,
-    "summary": "The Manual says there is \"zero information or interaction between regions\". R243 says regions do NOT scope information: a player may read what happens in a region they are not in.",
+    "summary": "The Manual says there is \"zero information or interaction between regions\". The owner ruling of 2026-08-29 (“regions scope \"all\", and they do…”) says regions do NOT scope information: a player may read what happens in a region they are not in.",
     "seeAlso": [
       {
         "id": "D-U10-1",
@@ -17,15 +17,15 @@
         "quote": "regions. This means there is zero information or interaction between regions."
       },
       {
-        "source": "R243",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
       },
       {
-        "source": "R91",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "**the single rule we'll never violate is 'nothing can send information across"
       }
     ],
-    "resolution": "Settled without asking. The Manual sentence and Caleb's line in R91 each have two readings on their own, but Caleb was answering whether something can be done with units across regions, and Manual p.42 (\"Each region treats the players and cards in other regions as if they don’t exist\") is about what cards and players interact with. Read so, print and Caleb say what R243 says: no effect carries information from one region into another, while a player may watch any region (at a table every region is in plain view). concepts.golden.regions.information states that. A question only if the owner meant that a player must not learn what happens in a region they are not in."
+    "resolution": "Settled without asking. The Manual sentence and Caleb's line in the owner ruling of 2026-08-23 (“\"Name a card\" is a Decision…”) each have two readings on their own, but Caleb was answering whether something can be done with units across regions, and Manual p.42 (\"Each region treats the players and cards in other regions as if they don’t exist\") is about what cards and players interact with. Read so, print and Caleb say what the owner ruling of 2026-08-29 (“regions scope \"all\", and they do…”) says: no effect carries information from one region into another, while a player may watch any region (at a table every region is in plain view). concepts.golden.regions.information states that. A question only if the owner meant that a player must not learn what happens in a region they are not in."
   },
   {
     "id": "D-U01-2",
@@ -51,7 +51,7 @@
         "quote": "Deal 2 prismites to each player face down (dormant)."
       }
     ],
-    "resolution": "The rules state the Manual, which R17 (prismites start dormant) and R292 (opening hand 6 = Manual p.16's 4 plus turn 1's 2) both follow. The Rulebook's \"x16 in hand\" may only show where the 16 cards start before the first draft step combines hand and pack (Rulebook 2023 p.6), so the conflict may be smaller than it looks. Question for the owner only if a judge's CR follows the Rulebook 2023 setup."
+    "resolution": "The rules state the Manual, which the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) (prismites start dormant) and the owner ruling of 2026-09-14 (“Custom rules on a live draft…”) (opening hand 6 = Manual p.16's 4 plus turn 1's 2) both follow. The Rulebook's \"x16 in hand\" may only show where the 16 cards start before the first draft step combines hand and pack (Rulebook 2023 p.6), so the conflict may be smaller than it looks. Question for the owner only if a judge's CR follows the Rulebook 2023 setup."
   },
   {
     "id": "D-U01-3",
@@ -65,11 +65,11 @@
         "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
       },
       {
-        "source": "R49 (its life-cost half)",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "reaching 0 ends the game inside `loseLife`, so paying at cast would hand the"
       }
     ],
-    "resolution": "No rule written. R49 describes an engine that ends the game when the FIRST life total reaches 0, which would decide a simultaneous loss by the order the life is taken, but that is a description of the code, not a rule. Cards that make every player lose life at once exist (Visage of Ruin: \"each player loses half of their life total, rounded up\"; Recall). Question for the owner only if a judge's CR rules on simultaneous elimination."
+    "resolution": "No rule written. The owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) describes an engine that ends the game when the FIRST life total reaches 0, which would decide a simultaneous loss by the order the life is taken, but that is a description of the code, not a rule. Cards that make every player lose life at once exist (Visage of Ruin: \"each player loses half of their life total, rounded up\"; Recall). Question for the owner only if a judge's CR rules on simultaneous elimination."
   },
   {
     "id": "D-U01-4",
@@ -83,7 +83,7 @@
         "quote": "opponents by bringing their life to 0."
       },
       {
-        "source": "R197 (its §1, predict your life total)",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
       }
     ],
@@ -94,10 +94,10 @@
     "kind": "c-owner-call-only",
     "rule": "concepts.golden.printed-text-wins",
     "tier": 3,
-    "summary": "\"Printed text always wins\" is the owner's statement (R157). No printed page or designer answer in the sources states it as a rule.",
+    "summary": "\"Printed text always wins\" is the owner's statement (owner ruling of 2026-08-25, “the owner's answers to the 27…”). No printed page or designer answer in the sources states it as a rule.",
     "sides": [
       {
-        "source": "R157 (its §27)",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
       }
     ],
@@ -108,10 +108,10 @@
     "kind": "c-owner-call-only",
     "rule": "concepts.golden.permissive",
     "tier": 3,
-    "summary": "Taking the reading that lets more things happen is the owner's standing steer (R157). No printed or designer source states it.",
+    "summary": "Taking the reading that lets more things happen is the owner's standing steer (owner ruling of 2026-08-25, “the owner's answers to the 27…”). No printed or designer source states it.",
     "sides": [
       {
-        "source": "R157 (its standing steer)",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "and neither is absurd, take the one that lets more things happen."
       }
     ],
@@ -122,10 +122,10 @@
     "kind": "c-owner-call-only",
     "rule": "concepts.ending.concede",
     "tier": 3,
-    "summary": "Conceding, and conceding at any time including while a decision is pending, rest on R65 alone. The printed rules do not mention conceding.",
+    "summary": "Conceding, and conceding at any time including while a decision is pending, rest on the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”) alone. The printed rules do not mention conceding.",
     "sides": [
       {
-        "source": "R65 (its concede half)",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "with no timing, no priority and no phase, and the one thing you may do while a"
       }
     ],
@@ -136,10 +136,10 @@
     "kind": "c-owner-call-only",
     "rule": "concepts.ending.no-deck-out",
     "tier": 3,
-    "summary": "That running out of cards does not lose the game rests on R296 alone. The printed rules do not say what happens when a deck runs out.",
+    "summary": "That running out of cards does not lose the game rests on the owner ruling of 2026-09-16 (“Recycling puts a card past the…”) alone. The printed rules do not say what happens when a deck runs out.",
     "sides": [
       {
-        "source": "R296",
+        "source": "owner ruling, adopted 2026-09-16",
         "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
       }
     ],
@@ -153,7 +153,7 @@
     "summary": "The client plays two-player games only, so the printed rules for more than two players (the game continues after an elimination, neighbouring regions join, the eliminated player's pack is recycled, team wins) have nothing in the client to enforce or demonstrate them.",
     "sides": [
       {
-        "source": "R27",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed."
       },
       {
@@ -168,7 +168,7 @@
     "kind": "g-other",
     "rule": "concepts.players.owner",
     "tier": 2,
-    "summary": "The RAQ register's paraphrase of claim 1372468222158180424#8 says the mods go to \"their owner's bin\". _passer's words say \"your bin/discard\", and under R250/R262 a card leaving play goes to its controller's zone.",
+    "summary": "The RAQ register's paraphrase of claim 1372468222158180424#8 says the mods go to \"their owner's bin\". _passer's words say \"your bin/discard\", and under the owner rulings of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and 2026-08-30 (“zones follow control, in all four…”) a card leaving play goes to its controller's zone.",
     "sides": [
       {
         "source": "RAQ 1372468222158180424#8",
@@ -179,21 +179,21 @@
         "quote": "Those would go to your bin/discard as usual."
       },
       {
-        "source": "R250 (its §4, zones follow control)",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "| which zone does it go to? | its CONTROLLER's |"
       }
     ],
-    "resolution": "In the thread's case (you attached the mods to your own BoFy) owner and controller are the same player, so nothing conflicts. Reword the register claim to \"go to the bin as usual\" or \"their controller's bin\", so the paraphrase does not assert the owner rule that R250 reversed."
+    "resolution": "In the thread's case (you attached the mods to your own BoFy) owner and controller are the same player, so nothing conflicts. Reword the register claim to \"go to the bin as usual\" or \"their controller's bin\", so the paraphrase does not assert the owner rule that the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) reversed. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U01-11",
     "kind": "a-sources-disagree",
     "rule": "concepts.golden.printed-text-wins",
     "tier": 4,
-    "summary": "R157 says \"Printed text always wins\". Caleb says Crevice Lurker works against its printed word \"Abilities\" because his intent differs, so printed text does not always win.",
+    "summary": "The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) says \"Printed text always wins\". Caleb says Crevice Lurker works against its printed word \"Abilities\" because his intent differs, so printed text does not always win.",
     "sides": [
       {
-        "source": "R157",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
       },
       {
@@ -201,14 +201,14 @@
         "quote": "So as written it wouldn't work but my intent is for it to stop those from triggering"
       }
     ],
-    "resolution": "The designer outranks R157 (authority order), so the rule scopes \"always\": printed text beats general rules and engine defaults, and yields only to the designer's stated intent for that card (concepts.golden.designer-intent). R157 was about print against defaults, so the two do not otherwise conflict."
+    "resolution": "The designer outranks the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (authority order), so the rule scopes \"always\": printed text beats general rules and engine defaults, and yields only to the designer's stated intent for that card (concepts.golden.designer-intent). The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) was about print against defaults, so the two do not otherwise conflict."
   },
   {
     "id": "D-U01-12",
     "kind": "a-sources-disagree",
     "rule": "concepts.golden.regions",
     "tier": 2,
-    "summary": "The Manual and Caleb say every effect is region-specific and never impacts anything in another region. R265 says the stack, bins and cache have no region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions.",
+    "summary": "The Manual and Caleb say every effect is region-specific and never impacts anything in another region. The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) says the stack, bins and cache have no region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions.",
     "seeAlso": [
       {
         "id": "D-U10-5",
@@ -229,7 +229,7 @@
         "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
       },
       {
-        "source": "R265",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "Three zones have no region and are deliberately global — the **stack**"
       },
       {
@@ -237,7 +237,7 @@
         "quote": "Additionally, if a player enters a region, their bin, hand,"
       },
       {
-        "source": "R12",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
       },
       {
@@ -249,15 +249,15 @@
         "quote": "followed by a priority window inside of each region:"
       },
       {
-        "source": "R250",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "The STACK is not regional and is deliberately left global; narrowing"
       },
       {
-        "source": "R344",
+        "source": "owner ruling, adopted 2026-10-11",
         "quote": "A player's bin and cache are tied to that player."
       }
     ],
-    "resolution": "Settled by the authority order, and answered by the owner on 2026-10-11 (R344): Manual p.19 and Caleb (\"everything in the game is region specific\") outrank R265 and R250, and the owner's ruling R344 amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated R265's premise, and 601.2a's stack sentence on 2026-10-11. Register fix: R344 is the mark this row asked for on R250 and R265."
+    "resolution": "Settled by the authority order, and answered by the owner on 2026-10-11 (owner ruling of 2026-10-11, “The stack, the bins and the…”): Manual p.19 and Caleb (\"everything in the game is region specific\") outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), and the owner's ruling the owner ruling of 2026-10-11 (“The stack, the bins and the…”) amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s premise, and 601.2a's stack sentence on 2026-10-11. Register fix: The owner ruling of 2026-10-11 (“The stack, the bins and the…”) is the mark this row asked for on the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)."
   },
   {
     "id": "D-U01-13",
@@ -300,21 +300,21 @@
     "kind": "g-other",
     "rule": "concepts.ending.elimination.immediate",
     "tier": 4,
-    "summary": "Sources silent on whether R49's refusal of a lethal life cost looks at the printed amount or at the amount a life-loss multiplier would make the payer lose. The verifier reports the game can end mid-cost only through such a multiplier.",
+    "summary": "Sources silent on whether the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”)’s refusal of a lethal life cost looks at the printed amount or at the amount a life-loss multiplier would make the payer lose. The verifier reports the game can end mid-cost only through such a multiplier.",
     "sides": [
       {
-        "source": "R49 (its life-cost half)",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only"
       }
     ],
-    "resolution": "Belongs to 111 (U04). Question for the owner only if U04's sources are silent too: R49's words \"pay N life\" support (A) N is the printed cost, or (B) N is the life actually lost after multipliers."
+    "resolution": "Belongs to 111 (U04). Question for the owner only if U04's sources are silent too: The owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”)’s words \"pay N life\" support (A) N is the printed cost, or (B) N is the life actually lost after multipliers."
   },
   {
     "id": "D-U01-15",
     "kind": "g-other",
     "rule": "concepts.golden.as-much-as-possible",
     "tier": 3,
-    "summary": "Sources silent on \"do as much as you can\" as a general principle. Print says it of a spell that lost some of its targets; Caleb says it of one graft; the only general statement is R30, which the register marks provisional (⚠).",
+    "summary": "Sources silent on \"do as much as you can\" as a general principle. Print says it of a spell that lost some of its targets; Caleb says it of one graft; the only general statement is the owner ruling of 2026-08-18 (“\"Each player recalls a unit and…”), which the register marks provisional (⚠).",
     "sides": [
       {
         "source": "Manual p.43",
@@ -325,10 +325,10 @@
         "quote": "You just can't give Ralph, but that's okay - rest of graft still happens."
       },
       {
-        "source": "R30",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
       }
     ],
-    "resolution": "The rule states the general principle at medium confidence: print and Caleb each apply it, and nothing in the sources limits it. Question for the owner only if R30 is to lose its ⚠ or a judge's CR limits the principle to targets."
+    "resolution": "The rule states the general principle at medium confidence: print and Caleb each apply it, and nothing in the sources limits it. Question for the owner only if the owner ruling of 2026-08-18 (“\"Each player recalls a unit and…”) is to lose its ⚠ or a judge's CR limits the principle to targets."
   }
 ]

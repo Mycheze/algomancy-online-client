@@ -1,4 +1,4 @@
-/* R297 — the Tutorial Bot (ui/bot.ts) against real lesson games.
+/* CR D8.1 — the Tutorial Bot (ui/bot.ts) against real lesson games.
  *
  * The bot is a policy over the engine's legal list, so the claims worth
  * proving are behavioural and are read off the game, not the policy: it never

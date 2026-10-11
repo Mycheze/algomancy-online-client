@@ -1,4 +1,4 @@
-/* R200 — THE REFERENCE ENGINE'S HALF OF A DIFF.
+/* THE REFERENCE ENGINE'S HALF OF A DIFF (see replay-room.ts).
  *
  *   node replay-probe.ts <file.json>        # one line of JSON on stdout
  *
@@ -91,7 +91,7 @@ function playerSig(p: unknown): string {
  *
  * ⚠ The id is NOT in here, on purpose. Two engines can produce the identical
  * board and number it differently (an effect that allocates an id it later
- * frees, a decision id off `nextId` — R85 does exactly that), and a diff that
+ * frees, a decision id off `nextId` — the suspension rollback does exactly that), and a diff that
  * calls THAT a rules change would fire on every file and mean nothing.
  */
 function entitiesSig(v: unknown): string {
@@ -140,16 +140,16 @@ export function signature(state: unknown): string {
     `stack ${stackSig(s['stack'])}`,
     `ask ${decisionSig(s['decision'])}`,
     `packs [${arr(s['packs']).map(p => `(${cards(p)})`).join(' ')}]`,
-    // R296 — CARDS LEFT, NOT DECK LENGTH, and the two stopped being the same
+    // THE RECYCLE MARK (CR 408.2) — CARDS LEFT, NOT DECK LENGTH, and the two stopped being the same
     // number when the MARK arrived. A recycled card used to go onto the bottom
     // of `sharedDeck`; it goes into `sharedRecycled` now. Counting only the
-    // deck would report every pre-R296 game as parting for good at its FIRST
+    // deck would report every game recorded before the mark as parting for good at its FIRST
     // RECYCLE — a permanent difference in a number nobody can point at, on a
     // board where nothing a player could see had changed. (Measured: it took
     // the fuzz fixture's parting from action 95 to action 0 and emptied the
     // healed list, which is how this was found.)
     //
-    // The sum is the honest projection: R296 moved the mark, not the cards.
+    // The sum is the honest projection: the recycling change moved the mark, not the cards.
     // An old engine has no `sharedRecycled`, so `arr()` reads 0 and its deck
     // already holds what the new engine keeps behind the mark — the totals
     // agree, exactly as the boards do. Where the two really diverge is which
@@ -211,7 +211,7 @@ export interface ProbeInput {
   actions: unknown[];
   decks?: unknown;
   /**
-   * R216 — the scenario this room was dealt with, if any.
+   * CR D8.4 — the scenario this room was dealt with, if any.
    *
    * ⚠ THIS FILE CANNOT HONOUR IT, AND SAYS SO RATHER THAN GUESSING. Everything
    * else here is written to run against an engine checked out at a PAST
@@ -224,7 +224,7 @@ export interface ProbeInput {
    *
    * Probing a scenario room anyway would deal the plain opening board, replay
    * a log written for a completely different one, and report the resulting
-   * mess as a rules change — which is precisely the wrong answer R200 exists
+   * mess as a rules change — which is precisely the wrong answer replay versioning exists
    * to stop being given. So `probe()` refuses by name. A refusal is a true
    * statement about the file; a divergence report would be a false one.
    */
@@ -240,12 +240,12 @@ export interface ProbeInput {
  * side would throw away the part of the comparison that matters.
  */
 export async function probe(raw: ProbeInput): Promise<ProbeResult> {
-  // R216 — see ProbeInput.scenario. Refused before the engine is even loaded,
+  // See ProbeInput.scenario. Refused before the engine is even loaded,
   // because there is nothing an engine of any vintage could do about it.
   if (raw.scenario) {
     return {
       ok: false,
-      error: `this room was dealt with scenario '${raw.scenario}' (R216), and a scenario board `
+      error: `this room was dealt with scenario '${raw.scenario}', and a scenario board `
         + 'is built by server/scenarios.ts against the CURRENT engine. A historical engine '
         + 'cannot reproduce it, so probing here would replay the log onto the wrong board and '
         + 'report a rules change that did not happen. Use --as-recorded on this build instead.',
@@ -280,7 +280,7 @@ export async function probe(raw: ProbeInput): Promise<ProbeResult> {
   // through untouched, which is what an engine of that vintage expected.
   const sanitizeTrio = engine['sanitizeTrio'] as ((e: unknown) => unknown) | undefined;
   const checkDeck = engine['checkDeck'] as ((d: unknown) => Rec) | undefined;
-  // R298: younger still — a single card duel's thirty-of-one deck
+  // CR D8.2: younger still — a single card duel's thirty-of-one deck
   const checkSingleDeck = engine['checkSingleDeck'] as ((d: unknown) => Rec) | undefined;
 
   const names = raw.names ?? ['Player 1', 'Player 2'];

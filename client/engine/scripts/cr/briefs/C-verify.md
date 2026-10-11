@@ -22,8 +22,8 @@ Never run `npm run check` (the full gate). Do not use git.
 
 Seven files, one per drafting unit: `data/comprehensive-rules/build/verify-input/<U>-r4.json`
 for U = U02, U03, U08, U10, U14, U18, U19. Each is an array of records:
-`{key, text, examples[{text, test}], see, sources{printed, designer, ours, rulings, history,
-engine, tests}, basis, engineDiffers?}`. ⚠ Some batches contain deliberately FALSE records,
+`{key, text, examples[{text, test}], see, sources{printed, designer, ours, owner, engine,
+tests}, basis, scope, engineDiffers?}`. ⚠ Some batches contain deliberately FALSE records,
 planted to test you. A batch in which you confirm any false record is discarded whole.
 Judge every record on the evidence, never on how plausible it sounds.
 
@@ -38,18 +38,18 @@ Judge every record on the evidence, never on how plausible it sounds.
 - Designer (Caleb / RAQ write-ups): `client/ledgers/raq.ts`. A ref "RAQ <threadId>#<i>" is
   claim i (0-based) of the thread with that id; check its `claim`, `source`, and `status`
   (an `outdated` claim is not authority).
-- R-rulings (this project's rulings register): `client/docs/digital-rules.md`, one
-  `## R<n> — …` heading each. A ref "R265 (its units half …)" cites only that part of R265.
-  `data/comprehensive-rules/supersession.json` says which rulings, or parts, later rulings
-  amended or reversed; a superseded part is not current law.
+- Owner calls: `sources.owner[]` in the record itself — `{quote, adopted, from}`, the owner's
+  words and the date he adopted them. The quote is its own evidence (there is no register to
+  check it against); judge whether it says what the record uses it for, and whether a printed
+  or designer source outranks it.
 - The engine: `client/engine/src/` (rules reducer), plus `client/ui/` and `client/server/`
   for Annex D (`annexd.*`) rules only. Tests: `client/engine/test/`, `client/ui/test/`,
   `client/server/test/`.
 
 Authority, strongest first: a RAQ `[Solved]` write-up by `_passer` or Caleb's own words;
-printed text read literally; current R-rulings; owner calls with no designer source.
+printed text read literally; the owner's calls (`sources.owner`) where neither speaks.
 Other players are not authority. Our glossary is never authority.
-`basis` must match: `printed`, `designer`, `owner` (rulings only), `engine` (code + test
+`basis` must match: `printed`, `designer`, `owner` (owner calls only), `engine` (code + test
 only), or `mixed` (more than one kind).
 
 ## What to check, per record
@@ -64,8 +64,8 @@ only), or `mixed` (more than one kind).
    (titles may contain `\'`; match on a prefix). If no executed test demonstrates a
    behaviour claim, write a probe test in `client/engine/test/zz-probe-<unit>-<n>.test.ts`
    (copy the harness use of a nearby test), run it, and record it. Probes stay uncommitted.
-4. `engineDiffers: [id]` means the record states the RULING and the engine is known to do
-   otherwise. Then: confirm the ruling is supported by the sources; check the engine really
+4. `engineDiffers: [id]` means the record states the RULE and the engine is known to do
+   otherwise. Then: confirm the rule is supported by the sources; check the engine really
    differs (`engine[].agrees: false`); the record is still `confirmed` if both hold.
    If the engine differs and the record does NOT say engineDiffers, the record can still be
    confirmed when its sources are authoritative, but report the divergence under `bugs`.

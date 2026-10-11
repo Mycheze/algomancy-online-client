@@ -3,7 +3,7 @@
   --bg: #12151a; --panel: #1a1f27; --panel2: #20262f; --line: #2e3742;
   --text: #d6dde6; --dim: #8794a3; --accent: #d9a441; --danger: #d95454;
   --glow: #6fc36f; --target: #e0b93c;
-  /* R78 "in progress": purple already means resolved, red means answered,
+  /* CR D6.12 "in progress": purple already means resolved, red means answered,
      green means next and gold means targeting — so pending gets the one hue
      none of them use. A teal that is not --water (#3f8fd9) either, because a
      resolving card wears it as a border and the seat hairlines are elemental. */
@@ -40,9 +40,9 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 syst
   border-radius: 6px; padding: 6px 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .topbar .phase { font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
 .topbar .init { color: var(--dim); }
-/* R258/CT-123: a LIVE SLOT is a node render() paints EMPTY for a patcher to
+/* CR D5.5a/CT-123: a LIVE SLOT is a node render() paints EMPTY for a patcher to
    fill outside any render, so the ⏭ chip and the presence dot stay true while
-   R150's throttle is holding and a render would be the wrong hammer. An empty
+   CR D5.4's throttle is holding and a render would be the wrong hammer. An empty
    one must take up no room — .topbar and .sideid are both flex with a gap. */
 .liveslot:empty { display: none; }
 button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px;
@@ -61,7 +61,7 @@ button:disabled { opacity: .4; cursor: default; }
 .promptbar.playbar { background: #1f2630; border-color: #3d4a5c; }
 .promptbar.playbar .playstep { color: var(--dim); font-variant-numeric: tabular-nums; }
 .promptbar.playbar .playcap { color: var(--text); }
-/* R84 {Alluring}: the compulsory block, named in the bar that gates Confirm */
+/* CR 606.2e {Alluring}: the compulsory block, named in the bar that gates Confirm */
 .promptbar .duty { color: var(--warn, #e8b64c); font-weight: 700; }
 /* [77] the refused-block notice: the engine's reason, the units it took back
    out of the plan, and the explicit "Reset blockers?" the report asked for.
@@ -84,11 +84,11 @@ button:disabled { opacity: .4; cursor: default; }
    the owner's word was "a bit too large".)
 
    The PADDING is load-bearing, and not for looks: a 21px total has a 29px
-   glyph box, taller than the pill is at any tight padding, and R255 says the
+   glyph box, taller than the pill is at any tight padding, and CR D6.18 says the
    targeting arrowhead must stop clear of that text while still resting on the
    thing it points at (ui/anim.ts headStop, budget = half the box plus
    HEAD_SLACK). Too tight and the head gives up and parks back on the number —
-   which is R255's own report, reintroduced by a CSS tweak. It happened once
+   which is report #133, the bug behind CR D6.18, reintroduced by a CSS tweak. It happened once
    already, during this change. ui/test/234 holds the measured pill; shrink
    this padding and it goes red. */
 .life { position: relative; display: inline-flex; align-items: center; gap: 6px;
@@ -174,7 +174,7 @@ button:disabled { opacity: .4; cursor: default; }
 .zonelabel { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; }
 
 .card { position: relative; width: var(--cw); border-radius: 5px; cursor: default; flex-shrink: 0; }
-/* R272 / report [142] — `aspect-ratio` IS WHAT KEEPS THE BOARD FROM SCROLLING
+/* Report [142] — `aspect-ratio` IS WHAT KEEPS THE BOARD FROM SCROLLING
    TO THE TOP, and it is not obviously a scroll fix at all, so: the card is
    width-driven and its HEIGHT came from the image and from nothing else. Every
    repaint replaces `$app.innerHTML`, which builds a fresh <img> for every card
@@ -215,7 +215,7 @@ button:disabled { opacity: .4; cursor: default; }
   padding: 0 4px; font-weight: 700; font-size: 12px; }
 .card .dmg { position: absolute; bottom: 2px; left: 2px; background: var(--danger); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 11px; }
-/* BL-23/R136: ONE line, at every card width — the same strip is drawn over a
+/* BL-23: ONE line, at every card width — the same strip is drawn over a
    40px sent-strip thumb and a 116px cache entry. `nowrap` is the guarantee and
    ui/inspect.ts packBadgeLine decides what is worth putting on the line
    (budgeted for the 78px board scan, style.css --cw); chips shrink and
@@ -268,9 +268,9 @@ button:disabled { opacity: .4; cursor: default; }
   box-shadow: 0 0 3px 1px rgba(111,195,111,.75), 0 0 10px 2px rgba(111,195,111,.3);
   animation: actpulse 1.8s ease-in-out infinite; }
 /* the shrink-and-ellipsise this used to carry alone is now on every `.badge`
-   (R136) — the ability chip was just the first one long enough to need it */
+   (BL-23) — the ability chip was just the first one long enough to need it */
 .card .badge.act { border-color: var(--glow); color: var(--glow); background: rgba(10,20,10,.92); }
-/* R243/#preview: a value that is NOT applying here but will be in battle. It
+/* CR 601.1c/#preview: a value that is NOT applying here but will be in battle. It
    has to read as a forecast rather than as a live stat, or it is worse than
    saying nothing — dimmer, and the ⤴ carries the tense. */
 .card .badge.soon { border-color: var(--target); color: var(--target);
@@ -355,7 +355,7 @@ button:disabled { opacity: .4; cursor: default; }
 
 /* ── resource cards (docs/07 §9.2: literal scans, not dots) ─────────── */
 .rescard { position: relative; width: 34px; border-radius: 3px; flex-shrink: 0; display: inline-block; line-height: 0; }
-/* R272: the same reserved box as `.card img`, and for the same reason — see
+/* Report [142]: the same reserved box as `.card img`, and for the same reason — see
    the long note there. Measured after fixing `.card img` alone: 10 resource
    cards still collapsed to 0px at paint time and the board was still 46px
    short, which is 46px of the player's scroll. Same scans, same 720x1000. */
@@ -369,7 +369,7 @@ button:disabled { opacity: .4; cursor: default; }
 .rescard.expended .resplate { transform: rotate(90deg) scale(.82); }
 .rescard.dormant { cursor: pointer; }
 .rescard.canact { outline: 2px solid var(--glow); border-radius: 3px; }
-/* R151 (report #97): a dormant resource cannot be spent, and outside planning
+/* CR 106.3b (report #97): a dormant resource cannot be spent, and outside planning
    it cannot be woken either — but it sits in the same row as the ones that can
    and gets counted as mana under battle-clock pressure. ui/resources.ts decides
    WHEN (battle and deployment; planning shows the row normally, because
@@ -626,7 +626,7 @@ button:disabled { opacity: .4; cursor: default; }
 .card .stats .basestat { display: block; font-size: 9px; font-weight: 400; color: var(--dim); text-align: right; }
 
 /* Composed modded card in the focus viewer: each mod slides under the base,
-   showing the bottom of its scan (the physical table look). R271 draws these
+   showing the bottom of its scan (the physical table look). Under CR D6.12a these are drawn
    for a modded STACK ITEM too (#141) — same builder, same picture.
 
    #146, the owner: "the mods are shown attached to the unit with a TON of
@@ -770,7 +770,7 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
    line deletes that guard rather than extending it. */
 .invaders .card { width: 52px; }
 .invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
-/* R273/#138 — the same strip, standing IN the battle panel while the battle is
+/* CR D6.13/#138 — the same strip, standing IN the battle panel while the battle is
    in this region: *"for tokens and things made during combat, they'd look
    better in the attacking box area"*. It is a `.col` like every other one, so
    it sits on its controller's side of the vs line (main.ts battleColHtml) —
@@ -871,7 +871,7 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .seenx:hover { background: var(--danger); border-color: var(--danger); color: #fff; opacity: 1; }
 
 /* C3: the armed "Pass all" is visible and cancelable */
-/* R251: the caption names WHICH standing pass is running ("passing through the
+/* CR D2.2: the caption names WHICH standing pass is running ("passing through the
    stack" / "passing until the next phase"), so it is longer than the one word
    it replaced and must not wrap inside the sticky top bar. */
 .passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700;
@@ -1054,17 +1054,17 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
 /* game icons sitting on a TEXT line (card text, prompts, labels, help) */
 .txticon { width: 15px; height: 15px; vertical-align: -3px; margin: 0 1px; }
-/* R134: `{g}` in card text marks the ONE keyword that follows it, which the
-   printed cards colour. Before R134 the marker fell through the icon table and
+/* `{g}` in card text marks the ONE keyword that follows it, which the
+   printed cards colour. Before the fix the marker fell through the icon table and
    rendered as a literal "g" ("ginverted"). Amber to match the card faces. */
 .kw { color: #e3b341; font-weight: 600; }
 /* one class per marker letter, so {g} attributes and {p} unstable can diverge
    later without another renderer change */
 .kw-p { color: #c98bdb; }
-/* R142/R284: the panel the PRINTED card draws around a bracket — an additional
+/* CR D6.10a: the panel the PRINTED card draws around a bracket — an additional
    cost ("[Sacrifice a unit]: Draw a card") or ONE HALF of a modal choice.
-   21 cards print one; before R142 the markup reached the player verbatim, and
-   before R284 eight of them printed literal square brackets because their
+   21 cards print one; before the no-markup fix the markup reached the player verbatim, and
+   before the bracket-box fix eight of them printed literal square brackets because their
    upstream transcription omits the `/` marker.
 
    A MODE draws TWO of these with the "or" between them, outside both, because
@@ -1117,7 +1117,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* a "gone" / "unblocked" / "…" marker: says the word, takes no card of room */
 .slot.ghost { height: auto; min-height: 0; padding: 2px 8px; border-style: dotted;
   font-size: 9px; letter-spacing: .04em; opacity: .8; width: auto; min-width: var(--cw); }
-/* CT-190: a declared block whose blocker left — still blocked (R185), so it
+/* CT-190: a declared block whose blocker left — still blocked (CR 606.3a), so it
    must not read like the "unblocked" marker beside it */
 .slot.ghost.blockgone { border-style: dashed; border-color: var(--dim); opacity: 1; }
 /* #107/CT-94 — the drop targets for a formation placement question. The whole
@@ -1161,7 +1161,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 @keyframes modpulse { 50% { box-shadow: 0 0 14px rgba(111,195,111,.95); } }
 .card.modhost { outline: 3px solid var(--glow); cursor: pointer;
   box-shadow: 0 0 8px rgba(111,195,111,.5); animation: modpulse 1.1s ease-in-out infinite; }
-/* R79: a SPELL on the stack is the second kind of mod host (a virus may be
+/* CR 723.4: a SPELL on the stack is the second kind of mod host (a virus may be
    augmented onto one — Caleb 2025-04-06). It is the same click, so it wears
    the same green pulse; the strip's own card is a .stackcard, not a .card. */
 .stackcard.modhost { outline: 3px solid var(--glow); cursor: pointer;
@@ -1257,7 +1257,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 
 /* ═══ Light & Dark (docs/08) ═══════════════════════════════════════════ */
 
-/* ── R38/R39: rot & debt on the player identity row ──────────────────── */
+/* ── CR 112.13, 112.15: rot & debt on the player identity row ──────────────────── */
 /* Both sit next to life and BOTH are hidden at zero, so a base-set game's
    header is byte-identical to what it was before the expansion. */
 .pcount { border-radius: 12px; padding: 2px 10px; font-weight: 700; font-size: 12px;
@@ -1265,7 +1265,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .pcount.rot { background: #2a1c22; border-color: #7d3b52; color: #e79ab2; }
 .pcount.debt { background: #2a2418; border-color: #7d6a2f; color: #e2c778; }
 
-/* R309: an ordered burst, so far (burstStripHtml) — on its own line in the bar */
+/* CR 803.5d: an ordered burst, so far (burstStripHtml) — on its own line in the bar */
 .burststrip { flex-basis: 100%; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
 .burststrip .burstlabel { align-self: center; font-size: 12px; color: var(--dim); }
 .bursttile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -1290,7 +1290,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .xdie.num { display: flex; align-items: center; justify-content: center; padding: 0; container-type: inline-size; }
 .xdie.num span { font-size: 62cqw; font-weight: 800; color: #151515; line-height: 1; }
 
-/* ── R41: the cache — a fourth zone, rendered next to the bin ─────────── */
+/* ── CR D6.16: the cache — a fourth zone, rendered next to the bin ─────────── */
 /* 2026-10-01 rework: the cards side by side, each wearing ONE chip under it
    (cacheChip: ⏳ 5/13 · waiting · ✓ free · ⚡ turn), and nothing else */
 .regioncache .cthumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin-top: 2px; }
@@ -1418,7 +1418,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .ridechip:hover { border-color: var(--accent); }
 .ridechip.on { background: #3d5a20; border-color: var(--glow, #b7e26a); color: #eaf6d8; }
 
-/* R89: what an augment would actually donate to a SPELL token, in the
+/* CR 721.4a: what an augment would actually donate to a SPELL token, in the
    mod-in-progress bar — "you can only do this with attributes" (Caleb
    2025-03-06). A mod of pure rules text is legal on a token and changes
    nothing, and the player must be able to read that before they commit. */
@@ -1522,7 +1522,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    live here too; it is on the table now (see .stackboard). */
 #app.board .sidehead { flex: none; }
 
-/* R219 — THE SCENARIO PANEL NEEDS ITS OWN SHARE OF THE RAIL, like everything
+/* THE SCENARIO PANEL NEEDS ITS OWN SHARE OF THE RAIL, like everything
  * else in here. `#app.board .side` is `overflow: hidden` ON PURPOSE (the rail
  * must not scroll away while you act), so every child has to manage its own
  * height. `.scnpanel` was added after that rule and never got one — so it took
@@ -1551,7 +1551,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* CT-124/#131 — WHO ABSORBS THE RAIL'S SLACK NOW.
    The log panel used to be the column's only `flex: 1 1 0`, and `.side` is
    `overflow: hidden` on purpose, so removing it would have left the bottom of
-   the rail as dead space — the exact regression the R219 note above records
+   the rail as dead space — the exact regression the note above records
    as already fixed once. The focus viewer inherits the job: it was the other
    thing sized against the log (`max-height: 62%` existed only to leave the log
    room), and it is the panel that most wants the height anyway — a card scan
@@ -1608,7 +1608,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 @keyframes livepulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
 .pendingcol { display: flex; flex-direction: column; gap: 4px; align-items: center;
   border: 1px dashed #4a5f7a; border-radius: 6px; padding: 4px; background: rgba(60,90,130,.08); }
-/* R273/#137 — a half of the battle table holding an UNCOMMITTED build. The
+/* CR D6.13/#137 — a half of the battle table holding an UNCOMMITTED build. The
    pending cards are direct children of the .bhalf now (main.ts pendingColHtml
    says why: a wrapper broke .bhalf.top's column-reverse and flipped the
    column's front and back the moment it committed), so the dashed
@@ -1721,7 +1721,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* a game the current engine cannot replay to its end: its numbers are a floor */
 .partial { color: var(--accent); font-weight: 700; margin-left: 2px; cursor: help; }
 .roomcell { font-family: ui-monospace, monospace; color: var(--dim); }
-/* R290: a conceded game that did not weigh as a full one — the tag beside its
+/* CR D8.5: a conceded game that did not weigh as a full one — the tag beside its
  * result. A walkover row is dimmed whole: it is in the history, counted nowhere. */
 .constag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px;
   font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
@@ -1930,7 +1930,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .pgach .achicon { font-size: 22px; filter: none; }
 
 .pgnote { color: var(--dim); font-size: 11px; text-align: center; }
-/* R290: the weight line on a walkover / early concession — set apart from the
+/* CR D8.5: the weight line on a walkover / early concession — set apart from the
  * "recorded" note under it, because it changes what "recorded" means */
 .pgweight { color: var(--text); font-size: 12px; padding: 6px 8px; border: 1px solid var(--line);
   border-radius: 4px; }
@@ -2114,7 +2114,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .stackcard.candidate { outline: 2px solid var(--target); cursor: pointer; }
 .stackcard:hover { transform: translateY(-12px) scale(1.06); z-index: 60 !important;
   box-shadow: 0 8px 20px rgba(0,0,0,.7); }
-/* R68: a negated item is off the rules stack the instant the negation
+/* CR 704.4: a negated item is off the rules stack the instant the negation
    resolves, so nothing in GameState wears this any more — it is reached ONLY
    by a flash snapshot having its beat (ui/flash.ts negatedFlashItems), which
    is the whole reason a player still gets to see that their spell was
@@ -2129,14 +2129,14 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* the chips are words, not colours: one neutral plate for all of them */
 .stackcard .stackbolt, .stackcard .stackbolt.answered {
   background: #2a313b; color: var(--text); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
-/* R271 / CT-142: a FIZZLE is the third way off the stack and it had no colour
+/* CR D6.12 / CT-142: a FIZZLE is the third way off the stack and it had no colour
    of its own — the chip said "resolved" in the purple that means "it did what
    it said", about a spell that did nothing at all. Neither purple (it did not
    resolve) nor the negation red (nobody answered it): muted, because the
    honest picture of a fizzle is a thing that came to nothing. */
 .stackcard .stackbolt.fizzled { background: #6b7382; color: #f2f5f9; }
 .stackcard.fizzled { filter: grayscale(1) brightness(.7); }
-/* R78: the item RESOLVING right now — off the stack, past every response
+/* CR D6.3: the item RESOLVING right now — off the stack, past every response
    window, and NOT finished. The report was that a half-done effect looked
    identical to a done one, so this shares nothing with either beat: it keeps
    its colour, it sits proud like the top of the stack because it is the thing
@@ -2188,7 +2188,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .stackcaption:is(.st-answered, .st-fizzled) .stackverb { color: #7c8593; }
 .stackcaption .stackname { color: var(--text); font-weight: 600; }
 .stackcaption .stackfrom { flex-basis: 100%; text-align: center; color: var(--dim); font-style: italic; }
-/* R78: "<name> is resolving" is a sentence about a person, so it keeps its
+/* CR D6.3: "<name> is resolving" is a sentence about a person, so it keeps its
    capitals instead of being shouted like the one-word verbs beside it. */
 .stackcaption.pending .stackverb { color: var(--text); text-transform: none; font-size: 10px; }
 .stackcaption .stackwait { color: var(--dim); animation: stackpending 1.6s ease-in-out infinite; }
@@ -2372,7 +2372,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   .hovertip { transition: none; }
 }
 
-/* ── R216: the scenario tester's runner strip (docs/14 §3/§5) ─────────────
+/* ── CR D8.4: the scenario tester's runner strip (docs/14 §3/§5) ─────────────
    Lives in the side rail, above the focus viewer. It is deliberately loud —
    a distinct border colour and a flask — because a scenario room is NOT a
    real game and mistaking one for the other is how a fixture ends up in a
@@ -2454,7 +2454,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   margin-bottom: 8px; }
 .deckcover { width: 132px; border-radius: 6px; overflow: hidden; background: var(--panel2);
   display: flex; align-items: center; justify-content: center; min-height: 100px; }
-/* R272: reserve the box, same as `.card img` — the deck page is the other half
+/* Report [142]: reserve the box, same as `.card img` — the deck page is the other half
    of report [142] ("it happens on most pages, deck building"), and a cover that
    is 0px tall until it loads shortens the page under `alight()`'s restore in
    exactly the way it shortens the board under restoreViewport's. */
@@ -2937,7 +2937,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .metadivider .hint { text-transform: none; letter-spacing: 0; display: block; margin-top: 3px; }
 .metapage .dkfilters { margin-bottom: 4px; }
 
-/* ═══ R276 / CT-142 — the cost-toast tier. Agent T.
+/* ═══ CR D7.4 / CT-142 — the cost-toast tier. Agent T.
    Self-contained: append verbatim to the end of client/ui/style.css.
    Every custom property it uses (--panel, --line, --text, --dim, --danger) is
    already declared at the top of that file; nothing here is redefined and
@@ -2948,14 +2948,14 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    trigger a tax prevented, a discount that expired unused, a column that dealt
    no damage. None of them changes anything on the board — that is what makes
    them invisible — so until now the log was the only place they existed, which
-   is what R266 forbids.
+   is what CR D7.4 forbids.
 
    WHERE IT SITS. Bottom LEFT, the one free corner: .glimpsenotice owns bottom
    right, .toast owns bottom centre, and .stackboard.live floats against the
    rail. It lifts above the hand dock in net mode exactly as .toast does, with
    the same 178px, so the two can never sit on top of the dock or each other.
 
-   WHAT IT LOOKS LIKE. Quieter than the .promptbar the R266 token loss earned
+   WHAT IT LOOKS LIKE. Quieter than the .promptbar the CR D7.4a token loss earned
    and quieter than .glimpsenotice: those are things to act on or to study, and
    these are things you are allowed to ignore. A muted panel, one --danger rule
    down the left edge to say it is a loss, and no button — the whole strip is
@@ -2983,7 +2983,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 @keyframes costtoastin { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .costtoast { animation: none; } }
 
-/* ═══ R280 / CT-162 + CT-169 ══════════════════════════════════════════
+/* ═══ CR D7.2b, D6.6d / CT-162 + CT-169 ══════════════════════════════════════════
 
    TWO OWNER REPORTS FROM ROOM ZSPG, one round, one stylesheet block.
 
@@ -3000,7 +3000,7 @@ button.commitbtn { background: #3c5a2f; border: 1px solid #5b8747; border-style:
 button.commitbtn:hover:not(:disabled) { border-color: var(--glow); background: #476b37; }
 button.commitbtn:disabled { opacity: .45; cursor: default; }
 
-/* the ramp's own dial, sharing R197's `.numentry` markup: on a cost question
+/* the ramp's own dial, sharing CR D7.2a's `.numentry` markup: on a cost question
    it is the primary affordance in the bar, so it gets a little room of its own
    rather than sitting flush against the option buttons. */
 .promptbar .numentry { display: inline-flex; align-items: center; gap: .25em;
@@ -3148,7 +3148,7 @@ button.commitbtn:disabled { opacity: .45; cursor: default; }
 .dot.off { background: rgba(255,255,255,.2); }
 .unk { color: var(--dim); font-style: normal; cursor: help; }
 
-/* ── R297 Learn to Play (ui/lessonlayer.ts, ui/learnmenu.ts) ──────────────
+/* ── CR D8.1 Learn to Play (ui/lessonlayer.ts, ui/learnmenu.ts) ──────────────
    Both are layers beside #app with their own scrims — never the board's
    overlay class (269). The lesson window sits above the board and below the
    report form and the legal pages; the lesson pill floats over the rail's foot. */
@@ -3233,7 +3233,7 @@ a.lcard { color: var(--accent); text-decoration: underline dotted; cursor: help;
 .lscroll, .ljlog { scrollbar-color: var(--line) transparent; scrollbar-width: thin; }
 .init .linkish { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline dotted; cursor: pointer; font: inherit; }
 
-/* ── R297 Learn to Play, round 2: figures, citations, callouts, highlights ── */
+/* ── CR D8.1 Learn to Play, round 2: figures, citations, callouts, highlights ── */
 .lcites { margin-top: 10px; font-size: 11px; color: var(--dim); }
 .lcites summary { cursor: pointer; opacity: .7; list-style: none; width: max-content; }
 .lcites summary::-webkit-details-marker { display: none; }
@@ -3342,7 +3342,7 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .lfcell .lbadge { font-size: 11px; }
 @media (max-width: 700px) { .lfcell .lfigimg, .lfcell .lfigback, .lfcell .lfigcard { width: 64px; max-width: 64px; } }
 
-/* ═══ R298 — Single Card Duel: the picker (home + waiting room) and the card ladder */
+/* ═══ CR D8.2 — Single Card Duel: the picker (home + waiting room) and the card ladder */
 .singleduel .cardsub { margin: 6px 0; }
 .linkbtn { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline dotted; cursor: pointer; font: inherit; }
 .scpick { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 8px; }
@@ -4310,7 +4310,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    Light & Dark, prints it at the right end of the name bar: x 80–92 %,
    y 5–10 % of the scan. The plate sits over the printed pair, the same size,
    so the number you read is the live one. The printed base (when it differs,
-   and always on a copy — R229) drops just under it. */
+   and always on a copy — CR D6.8) drops just under it. */
 #cardzoom > .zoomcopy .stats { top: 6.6cqw; right: 6.6cqw; bottom: auto;
   min-width: 14cqw; padding: 0 1.8cqw; box-sizing: border-box; text-align: center;
   font: 700 5.8cqw/7.6cqw Georgia, 'Times New Roman', serif;

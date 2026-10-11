@@ -1,8 +1,8 @@
 {
   "_README": [
-    "R267 / round-32 Q6 — THE THIRD REMINDER CHANNEL: A CARD THE POOL DOES NOT CARRY.",
+    "CR D6.11 / round-32 Q6 — THE THIRD REMINDER CHANNEL: A CARD THE POOL DOES NOT CARRY.",
     "",
-    "R248 read the pool's own {i}(...) reminder spans. R252 added the Algomancy",
+    "The first channel reads the pool's own {i}(...) reminder spans; the second adds the Algomancy",
     "Manual for the markers no card reminds you about. Both are BASE-GAME channels,",
     "and that is the gap this file closes: the Light & Dark expansion has neither a",
     "manual nor (for its player counters) a printed reminder in our transcribed pool,",
@@ -18,7 +18,7 @@
     "machine-readable and the manual is the game's own rules document; this is a",
     "screenshot of a card in a Discord bot, transcribed by us into a file whose own",
     "corpus record is labelled 'unofficial, outdated_risk: true'. So the",
-    "admissibility bar is R252 §4's, applied one channel over: the entry must be a",
+    "admissibility bar is CR D6.11's, applied one channel over: the entry must be a",
     "CONTIGUOUS VERBATIM QUOTE attributed to a named card with a date, and",
     "test/245-printed-reminder-reach.test.ts re-derives every sentence here out of",
     "the checked-in Rules file so that nothing in it can be paraphrased. What the",

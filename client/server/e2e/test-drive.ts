@@ -72,7 +72,7 @@ class Client {
       if (r.state === 'dormant' && r.kind !== 'hidden') this.leaks.push(`opponent dormant resource kind (${r.kind})`);
     }
     if (!view.sharedDeck.every((n: string) => n === HIDDEN_CARD)) this.leaks.push('shared deck contents');
-    // R296: the recycle pile is redacted like the deck — its COUNT is public,
+    // CR 408.2c: the recycle pile is redacted like the deck — its COUNT is public,
     // its contents never are. Cards players put there themselves are exactly
     // what the mark exists to stop anyone tracking.
     if (view.sharedRecycled && !view.sharedRecycled.every((n: string) => n === HIDDEN_CARD)) {
@@ -82,11 +82,11 @@ class Client {
       if (!pile.every((n: string) => n === HIDDEN_CARD)) this.leaks.push('recycle pile contents');
     }
     if (view.seed !== 0 || view.rngState !== 0) this.leaks.push('seed/rngState');
-    // R85: a 'resolve' suspension carries the engine's rollback snapshot — a
+    // A 'resolve' suspension carries the engine's rollback snapshot — a
     // WHOLE unredacted GameState, both hands and the deck order included. It
     // is server-internal and must never appear in a view, not even the view of
     // the seat whose decision it is.
-    if (view.suspension?.snapshot) this.leaks.push('suspension rollback snapshot (R85)');
+    if (view.suspension?.snapshot) this.leaks.push('suspension rollback snapshot');
   }
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
   waitFor(pred: (m: Msg) => boolean): Promise<Msg> {
@@ -109,7 +109,7 @@ function passAction(legal: Action[]): Action | null {
 async function main(): Promise<void> {
   setTimeout(() => { console.error('TEST TIMEOUT (something hung)'); process.exit(3); }, 45000).unref();
   // ── boot the server on an ephemeral port ─────────────────────────────
-  /* R204/CT-85: the server picks its own port and tells us which — see
+  /* CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
    * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
    * in the child, which left the port held by nobody for as long as node took
    * to boot. spawnServer() also waits for the real ready line, which is what
@@ -198,7 +198,7 @@ async function main(): Promise<void> {
     ok(a2Join.seat === 0, 'reconnected into seat 0');
     ok(a2.log.length > 0, `resynced the full game log (${a2.log.length} lines)`);
     ok(a2.view.players[1].hand.every((n: string) => n === HIDDEN_CARD), 'resynced view is still redacted');
-    // R181: the parens are load-bearing. `>=` binds tighter than `??`, so this
+    // The parens are load-bearing (found when server/ was first typechecked). `>=` binds tighter than `??`, so this
     // read `(a2.view.turn >= a.view?.turn) ?? 0` — a boolean, never nullish, so
     // the fallback was dead code and a missing `a.view` made the comparison
     // `>= undefined`, i.e. false, i.e. a failing assertion for the wrong reason.

@@ -4,36 +4,36 @@
     "kind": "f-register-chain-wrong",
     "rule": "turn.deploy.stack",
     "tier": 2,
-    "summary": "R38 is presented as current and still says \"there is no priority during deployment\". R286 later gave each player priority over their own deployment stack. The register marks R250's deployment half as amended by R286, but not R38's identical clause. The engine still gives nobody priority in deployment: a test asserts priority is null there, and R287 records that the deployment stop is not built (CT-185).",
+    "summary": "The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”) is presented as current and still says \"there is no priority during deployment\". The owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) later gave each player priority over their own deployment stack. The register marks the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”)’s deployment half as amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”), but not the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)’s identical clause. The engine still gives nobody priority in deployment: a test asserts priority is null there, and the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) records that the deployment stop is not built (CT-185).",
     "sides": [
       {
-        "source": "R38",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "window as regroup triggers, and because there is no priority during"
       },
       {
-        "source": "R286",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
       },
       {
-        "source": "R287",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
       }
     ],
-    "resolution": "Mark R38's no-priority clause as amended by R286 in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (R50). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here."
+    "resolution": "Mark the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)’s no-priority clause as amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (owner ruling of 2026-08-19, “The haste step ends, and deployment…”). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U09-3",
     "kind": "c-owner-call-only",
     "rule": "turn.battle.steps.declined-no-window",
     "tier": 3,
-    "summary": "Manual p.20 lists a priority window after the attack declaration without a condition. It says only that combat and after-combat are skipped in a region that was not attacked. The client opens no window at all after a declined attack, on R194's reasoning, an owner call.",
+    "summary": "Manual p.20 lists a priority window after the attack declaration without a condition. It says only that combat and after-combat are skipped in a region that was not attacked. The client opens no window at all after a declined attack, on the owner ruling of 2026-08-26 (“a warning is not worth a…”)’s reasoning, an owner call.",
     "sides": [
       {
         "source": "Manual p.20",
         "quote": "2. There is a priority window for interaction."
       },
       {
-        "source": "R194",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "1. **It is a rules change.** A declined attack fights no combat, so there is no"
       }
     ],
@@ -69,7 +69,7 @@
         "quote": "End this battle. Erase this spell."
       },
       {
-        "source": "R12",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
       }
     ],
@@ -98,10 +98,10 @@
     "kind": "c-owner-call-only",
     "rule": "turn.battle.this-battle",
     "tier": 3,
-    "summary": "Cards print \"in this battle\", but no printed or designer source says the count is per region and resets each battle phase. That is R14, marked as an engine call.",
+    "summary": "Cards print \"in this battle\", but no printed or designer source says the count is per region and resets each battle phase. That is the owner ruling of 2026-08-18 (“\"In this battle\" counters are per…”), marked as an engine call.",
     "sides": [
       {
-        "source": "R14",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "## R14 ⚠ — \"In this battle\" counters are per region-battle"
       },
       {
@@ -116,10 +116,10 @@
     "kind": "g-other",
     "rule": "turn.regroup.sequence",
     "tier": 4,
-    "summary": "R11 says regroup runs in a set order and takes the order from Manual p.7, with spell-token erasure added at the end. Manual p.26 lists the same five things with tokens erased fourth and formation left fifth, and it does not say the list is an order. R11 itself says to verify the order when it first matters in play.",
+    "summary": "The owner ruling of 2026-08-18 (“Regroup order”) says regroup runs in a set order and takes the order from Manual p.7, with spell-token erasure added at the end. Manual p.26 lists the same five things with tokens erased fourth and formation left fifth, and it does not say the list is an order. The owner ruling of 2026-08-18 (“Regroup order”) itself says to verify the order when it first matters in play.",
     "sides": [
       {
-        "source": "R11",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "detailed regroup section confirms this exact sequence when it first matters in play."
       },
       {
@@ -131,7 +131,7 @@
         "quote": "temporary stat changes are removed, and units"
       }
     ],
-    "resolution": "No observable difference is known, and the CR keeps R11's order. The R11 test checks only the end state (F-U09-2 (CT-241)), so nothing would notice if the order changed. Question for the owner only if a card is found whose outcome depends on the order."
+    "resolution": "No observable difference is known, and the CR keeps the owner ruling of 2026-08-18 (“Regroup order”)’s order. The owner ruling of 2026-08-18 (“Regroup order”) test checks only the end state (F-U09-2 (CT-241)), so nothing would notice if the order changed. Question for the owner only if a card is found whose outcome depends on the order."
   },
   {
     "id": "D-U09-9",
@@ -192,7 +192,7 @@
     "kind": "g-other",
     "rule": "turn.deploy.mods.graft-only",
     "tier": 4,
-    "summary": "The designer says grafting is always a deployment action, whatever the card's speed. Slurpr prints a grant to apply other mods in the haste step as if it were deployment, and R95 reads \"other mods\" as grafts as well as augments (R37's word for both). The earlier draft of this rule said \"never in the haste step\" without the card exception.",
+    "summary": "The designer says grafting is always a deployment action, whatever the card's speed. Slurpr prints a grant to apply other mods in the haste step as if it were deployment, and the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”) reads \"other mods\" as grafts as well as augments (the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”)’s word for both). The earlier draft of this rule said \"never in the haste step\" without the card exception.",
     "sides": [
       {
         "source": "RAQ 1355115946032889914#0",
@@ -203,7 +203,7 @@
         "quote": "[Augment] You can apply other mods during [Haste] as if it was deployment."
       },
       {
-        "source": "R95",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
       }
     ],

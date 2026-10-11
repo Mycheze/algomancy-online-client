@@ -2,12 +2,12 @@
  *  - Ember of Life (triple fix): "one of YOUR spell effects" filters on the
  *    effect's CONTROLLER (damage events now carry it); spell-effect damage
  *    to a PLAYER's face counts (a damage event is emitted for it); the 1/1s
- *    spawn in the CARRIER's region (R33, absorbed into R115).
- *  - Unstable Apparition: pinned once-per-TURN semantics for [once] (R9) —
+ *    spawn in the CARRIER's region (CR 601.5).
+ *  - Unstable Apparition: pinned once-per-TURN semantics for [once] (CR 109.9) —
  *    the AGBP game review found the engine correct (fired on Accelerated
  *    Germination in the haste step, X = 2; correctly silent on Organic
  *    Exchange later the same turn).
- *  - R34: a seat's simultaneous IDENTICAL triggers (same card, ability,
+ *  - CR D1.2d: a seat's simultaneous IDENTICAL triggers (same card, ability,
  *    label, parts) skip the orderTriggers decision; mixed triggers still ask.
  * Seeds: 3300-3399.
  */
@@ -72,7 +72,7 @@ test("Ember of Life: an OPPONENT's spell effect neither fires it nor spends [onc
 
 // ── Ember of Life: face damage counts; 1/1s spawn in the carrier's region ──
 
-test("Ember of Life: your spell hitting a player's FACE fires it; 1/1s arrive in the carrier's region (R33)", () => {
+test("Ember of Life: your spell hitting a player's FACE fires it; 1/1s arrive in the carrier's region (CR 601.5)", () => {
   const h = new Harness(3301);
   toDeployment(h);
   const P = h.state.initiative, O = (1 - P) as 0 | 1;
@@ -93,7 +93,7 @@ test("Ember of Life: your spell hitting a player's FACE fires it; 1/1s arrive in
   const minted = mintedOnes(h, P);
   assert.equal(minted.length, 2, 'player damage counts — "that many" = 2');
   assert.ok(minted.every(u => u.region === away),
-    "created in the CARRIER's region (R33) — the battle region, not home");
+    "created in the CARRIER's region (CR 601.5) — the battle region, not home");
   assert.ok(minted.every(u => u.region !== new E(h.state).homeRegion(P)),
     'and that region is NOT the controller\'s home');
   finishBattle(h);
@@ -101,7 +101,7 @@ test("Ember of Life: your spell hitting a player's FACE fires it; 1/1s arrive in
 
 // ── Unstable Apparition: [once] = once per TURN (the AGBP diagnosis) ──────
 
-test('Unstable Apparition: [once] resets each turn — silent same-turn, fires again next turn (R9)', () => {
+test('Unstable Apparition: [once] resets each turn — silent same-turn, fires again next turn (CR 109.9)', () => {
   const h = new Harness(3302);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -112,7 +112,7 @@ test('Unstable Apparition: [once] resets each turn — silent same-turn, fires a
     'first nontoken spell of the turn → a Fireball');
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Lonely Forager') });
   assert.equal(tokensOf(h, p).filter(t => t.card === 'Fireball').length, 1,
-    'second nontoken spell the SAME turn → nothing ([once], R9)');
+    'second nontoken spell the SAME turn → nothing ([once], CR 109.9)');
   // roll into the next turn's deployment (regroup erases the old Fireball)
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -125,9 +125,9 @@ test('Unstable Apparition: [once] resets each turn — silent same-turn, fires a
   assert.equal(fires[0]!.x, 3, "X = the spell's cost (Lonely Forager: 3)");
 });
 
-// ── R34: identical simultaneous triggers skip the ordering decision ───────
+// ── CR D1.2d: identical simultaneous triggers skip the ordering decision ───────
 
-test('R34: Flourishing Flora firing twice at once (one spell, two spawns) asks NO ordering', () => {
+test('CR D1.2d: Flourishing Flora firing twice at once (one spell, two spawns) asks NO ordering', () => {
   const h = new Harness(3303);
   const p = 0 as const;
   const flora = spawn(h, p, 'Flourishing Flora');            // 0/1
@@ -135,28 +135,28 @@ test('R34: Flourishing Flora firing twice at once (one spell, two spawns) asks N
   const idx = give(h, p, 'Accelerated Germination');
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone, 'the payable haste card engaged the haste step (R18)');
+  assert.ok(h.state.hasteDone, 'the payable haste card engaged the haste step');
   h.do({ type: 'playCard', seat: p, handIndex: idx });       // two 1/1s spawn at once
   assert.equal(h.state.decision, null,
-    'two IDENTICAL Flora triggers — no orderTriggers decision (R34)');
+    'two IDENTICAL Flora triggers — no orderTriggers decision (CR D1.2d)');
   assert.deepEqual(effStats(h, flora), [2, 3], 'both triggers resolved (+1/+1 each)');
   skipHasteStep(h);
 });
 
-test('R34: MIXED simultaneous triggers (different cards) still ask for an order', () => {
+test('CR D1.2d: MIXED simultaneous triggers (different cards) still ask for an order', () => {
   const h = new Harness(3304);
   const p = 0 as const;
   const flora = spawn(h, p, 'Flourishing Flora');            // +1/+1 on another ally spawn
   // ⚠ This used to use Bloomcaster, whose trigger fired on 'spawned'. It now
   // fires on 'cardPlayed' (it prints "whenever you PLAY a unit", and
   // spawnUnit is a PUT INTO PLAY), so it no longer fires here and there was
-  // only one trigger left to order. The subject of this test is R2/R34 trigger
-  // ORDERING, not Bloomcaster — so it takes a card that genuinely triggers on
+  // only one trigger left to order. The subject of this test is trigger
+  // ORDERING (CR 706.5, D1.2d), not Bloomcaster — so it takes a card that genuinely triggers on
   // its own spawn. Pathogenic Enclave prints "When I spawn, create two 1/1
   // units", which fires alongside Flora's "another ally spawned".
   whiteBox(h, e => { e.spawnUnit(p, 'Pathogenic Enclave', e.homeRegion(p)); });
   const dec = h.state.decision;
-  assert.equal(dec?.kind, 'orderTriggers', 'different triggers still ask (R2)');
+  assert.equal(dec?.kind, 'orderTriggers', 'different triggers still ask (CR 706.5)');
   assert.equal(dec!.options.length, 2, 'one Flora + one Pathogenic Enclave');
   assert.notEqual(dec!.options[0]!.label, dec!.options[1]!.label, 'distinguishable labels');
   h.do({ type: 'decide', seat: p, choice: [0, 1] });

@@ -270,7 +270,7 @@ runs the same function):
 7. every name the client will draw has a scan on disk
 8. aliases resolve and do not leak
 9. **subtypes exactly one card prints** — the check that would have caught
-   `{Battle}AI Cosmic Spell`, which R162 found and R240 confirmed was an OCR
+   `{Battle}AI Cosmic Spell`, which an earlier repair found and a later check confirmed was an OCR
    artifact rather than a subtype
 
 Findings we have looked at and accepted are named in

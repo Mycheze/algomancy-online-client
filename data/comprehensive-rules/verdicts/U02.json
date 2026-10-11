@@ -495,7 +495,7 @@
   },
   {
     "key": "concepts.elements.ignoring-affinity",
-    "textHash": "cfcede2c3e4add6b",
+    "textHash": "24ac64a55fa75f6c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -857,7 +857,7 @@
   },
   {
     "key": "concepts.numbers.chosen-number",
-    "textHash": "bedec2dba38abe35",
+    "textHash": "a495c35968bda077",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
@@ -904,7 +904,7 @@
   },
   {
     "key": "concepts.numbers.copy-x",
-    "textHash": "ed1355ed90f5b712",
+    "textHash": "cee7017e967e81ff",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
@@ -951,7 +951,7 @@
   },
   {
     "key": "concepts.numbers.cost-reference",
-    "textHash": "88bf3cc6f0d354e8",
+    "textHash": "e0fbfb0b48b65aa7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1005,7 +1005,7 @@
   },
   {
     "key": "concepts.numbers.cost-reference.not-cast",
-    "textHash": "e7e447ef366c406d",
+    "textHash": "e7a15ea71a620e39",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
@@ -1049,7 +1049,7 @@
   },
   {
     "key": "concepts.numbers.free-play",
-    "textHash": "71f6139f23ccd8ea",
+    "textHash": "42be46efc50a6f73",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1107,7 +1107,7 @@
   },
   {
     "key": "concepts.numbers.free-play.cant-be-zero",
-    "textHash": "79b51c7cff66a6f9",
+    "textHash": "c2a9aa62fcc5dfc4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -1251,7 +1251,7 @@
   },
   {
     "key": "concepts.numbers.symbols.mana",
-    "textHash": "1cef4bb992795303",
+    "textHash": "f07d9b28b09bd201",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1304,7 +1304,7 @@
   },
   {
     "key": "concepts.numbers.token-x",
-    "textHash": "a48a64b41790104e",
+    "textHash": "25e018762b25d97c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
@@ -1347,7 +1347,7 @@
   },
   {
     "key": "concepts.numbers.token-x.robot",
-    "textHash": "e80fc4b4636b04f7",
+    "textHash": "4c75ef8902f89d6b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1431,7 +1431,7 @@
   },
   {
     "key": "concepts.numbers.x-cost",
-    "textHash": "d43050982d13ccd2",
+    "textHash": "5ca61e254f679626",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1573,7 +1573,7 @@
   },
   {
     "key": "concepts.numbers.x-cost.zero",
-    "textHash": "521a5d1da7641e80",
+    "textHash": "8acae86858ea425e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1638,7 +1638,7 @@
   },
   {
     "key": "concepts.numbers.x-minimum",
-    "textHash": "40826ded613e8986",
+    "textHash": "ba24faef1df4dfa0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2121,7 +2121,7 @@
   },
   {
     "key": "concepts.resources.dormant-active.starting",
-    "textHash": "c61b90677d8dfc02",
+    "textHash": "ff84edd407140e82",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2446,7 +2446,7 @@
   },
   {
     "key": "concepts.resources.prismite",
-    "textHash": "fc0883e78640123f",
+    "textHash": "36bbbc862638fbc0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2499,7 +2499,7 @@
   },
   {
     "key": "concepts.resources.prismite.exchange",
-    "textHash": "dab8aa4788949b44",
+    "textHash": "a814162c46464cee",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
@@ -2592,7 +2592,7 @@
   },
   {
     "key": "concepts.resources.prismite.exchange.activation",
-    "textHash": "0d22209ae7792bbc",
+    "textHash": "b320b8f66b6290a4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -2651,7 +2651,7 @@
   },
   {
     "key": "concepts.resources.prismite.exchange.dormant",
-    "textHash": "31b5826477c32fb2",
+    "textHash": "bf6c0821a616be7c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2699,7 +2699,7 @@
   },
   {
     "key": "concepts.resources.prismite.exchange.element-only",
-    "textHash": "3455e9b2a3874653",
+    "textHash": "edf3ae1a51435751",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -2812,7 +2812,7 @@
   },
   {
     "key": "concepts.resources.recycle.made-prismite",
-    "textHash": "bb37d60b0b2e1c8d",
+    "textHash": "7669c44819bbd395",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2856,7 +2856,7 @@
   },
   {
     "key": "concepts.resources.recycle.prismite-shard",
-    "textHash": "b904b25de200a9e3",
+    "textHash": "007e90a72bcfee25",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2900,7 +2900,7 @@
   },
   {
     "key": "concepts.resources.shard",
-    "textHash": "33e70a456a4d60de",
+    "textHash": "8cc5611a3fc3ddcb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",

@@ -160,7 +160,7 @@ function loadOne(id: string): void {
     .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
 }
 
-// ── R298: the card ladder ─────────────────────────────────────────────
+// ── CR D8.2f: the card ladder ─────────────────────────────────────────────
 
 /** the shape server/cardladder.ts sends, one row per card that has duelled */
 interface CardStanding {
@@ -574,7 +574,7 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'meta-list':
       openMeta();
       return true;
-    case 'meta-ladder':   // R298
+    case 'meta-ladder':   // CR D8.2f
       openLadder();
       return true;
     case 'meta-stats-open':

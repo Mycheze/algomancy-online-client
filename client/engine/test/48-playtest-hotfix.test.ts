@@ -1,7 +1,7 @@
 /* Playtest round 5 — four bugs Bena hit at the table, plus the guards that
  * stop each CLASS of them recurring rather than just the one card.
  *
- *  1. Cards that "create a Shard" were pushing PRISMITES (R17-exchangeable,
+ *  1. Cards that "create a Shard" were pushing PRISMITES (CR 106.8a-exchangeable,
  *     strictly better). Shards are their own ResourceKind: mana only.
  *  2. "When I become targeted" (Mohruung) never fired — commitItem logged the
  *     `targeted` event but never dispatched it.
@@ -35,7 +35,7 @@ registerSynthetic(ping, {
 test('Swirling Shardform creates two dormant SHARDS, not prismites', () => {
   // The bug at the table: these were prismites. openMana counts both the same,
   // so the difference is invisible until planning — where a prismite can be
-  // traded for a resource of ANY element (R17) and a Shard cannot. Two free
+  // traded for a resource of ANY element (CR 106.8a, 106.9) and a Shard cannot. Two free
   // prismites is two free element-fixers; two Shards is two generic mana.
   const h = new Harness(4802, ['Ben', 'Rashi']);
   toDeployment(h);
@@ -62,7 +62,7 @@ test('a Shard gives mana but no affinity and no element exchange', () => {
   for (const el of ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark']) {
     assert.equal(e.affinity(0, el), 0, `a Shard grants no ${el} affinity`);
   }
-  // R17's exchange is the prismite's whole point and a Shard must not have it
+  // The exchange (CR 106.8a) is the prismite's whole point, and a Shard must not have it (CR 106.9)
   const exchanges = h.legal(0).filter(a => a.type === 'exchangePrismite');
   assert.deepEqual(exchanges, [], 'a Shard can never be exchanged for an element');
 });
@@ -89,7 +89,7 @@ test('Mohruung has a live targeted trigger', () => {
   const ab = (c.abilities ?? []).find(a => a.type === 'triggered' && a.events.includes('targeted'));
   assert.ok(ab, 'Mohruung must listen for the targeted event');
   assert.equal(ab.type === 'triggered' && ab.self, true, 'it is "when I become targeted"');
-  assert.equal(ab.bounded, true, '[Switch1] — once per turn (R9)');
+  assert.equal(ab.bounded, true, '[Switch1] — once per turn (CR 722.5)');
 });
 
 test('a spell aimed at Mohruung actually creates the Crystal 2', () => {
@@ -125,7 +125,7 @@ test('the targeted trigger is bounded — [Switch1] is once per turn', () => {
     pick(h, { unit: moh });
   }
   assert.equal(tokensOf(h, 0).filter(t => t.card === 'Crystal').length, 1,
-    'R9: a bounded trigger fires once per turn however many times it is targeted');
+    'CR 109.9: a bounded trigger fires once per turn however many times it is targeted');
 });
 
 /* ── 3. Printed [Augment] ⇒ applicable as an augment ───────────────────── */
@@ -150,7 +150,7 @@ test('every card printing a text-box [Augment] marker is applicable as an augmen
 test('the four cards from the report are augmentable', () => {
   for (const n of ['Brough', 'Air Plant', 'Life Power Dude', 'The Omniphage']) {
     assert.equal(isAugment(n), true, `${n} must be applicable as an augment`);
-    assert.ok(radiantList(n, 'statics').length > 0,   // R268: body + [Augment] box
+    assert.ok(radiantList(n, 'statics').length > 0,   // CR 721.1: body + [Augment] box
       `${n}'s [Augment] text is implemented as a static`);
   }
 });

@@ -128,12 +128,12 @@ function logLines(html: string): string[] {
 /** just the text of each line */
 const textOf = (lines: string[]): string[] => lines.map(l => l.slice(l.indexOf('|') + 1));
 
-/** R80 holds the tail of the log until its narrative beats have played, and
- * R150 paces authoritative updates — both on timers. Run them out, or a test
+/** The log holds its tail until its narrative beats have played, and the tempo
+ * (CR D5.4) paces authoritative updates — both on timers. Run them out, or a test
  * reads a log the client has not finished telling and calls the curtain guilty
  * of what the beat queue was doing.
  *
- * (R258 note: the skip chip no longer needs a repaint to appear — it is a live
+ * (Note: the skip chip no longer needs a repaint to appear — it is a live
  * slot, patched at the arrival. This helper is unaffected: it is draining the
  * two timed queues, not waiting for the chip.) */
 function settle(ui: { tick(): void; html(): string; has(w: Record<string, string | number>): boolean;

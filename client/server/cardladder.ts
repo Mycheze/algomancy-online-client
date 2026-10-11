@@ -1,4 +1,4 @@
-/* R298 — THE CARD LADDER: Elo for cards, folded out of Single Card Duels.
+/* CR D8.2e — THE CARD LADDER: Elo for cards, folded out of Single Card Duels.
  *
  * A single card duel pits two decks of thirty copies of one card against each
  * other, so its result says something about the two CARDS and next to nothing
@@ -15,7 +15,7 @@
  *   · an unfinished game, or one with no known winner;
  *   · a MIRROR (the same card on both sides) — a card beating itself says
  *     nothing about it. Counted in `mirrors` so the page can say it was played;
- *   · a WALKOVER (R290, conceded on turn 1). Nobody played the card. An EARLY
+ *   · a WALKOVER (CR D8.5, conceded on turn 1). Nobody played the card. An EARLY
  *     concession (turn 2) counts at the reduced weight the player ladder uses.
  */
 import type { CardName, Seat } from '../engine/src/types.ts';

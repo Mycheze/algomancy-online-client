@@ -2,7 +2,7 @@
  *
  * Behaviour only; printed data comes from printed.json (never hand-copied).
  * Spec for the expansion's new mechanics: docs/08-light-and-dark.md,
- * rulings R38-R48 in docs/digital-rules.md.
+ * and the Comprehensive Rules.
  *
  * Cards in this batch:
  *   Banishment
@@ -34,16 +34,16 @@
  * anchors both on the HOST, so "I" is the host and "you" is the host's
  * controller (which is the whole point of the two Virus cards here).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (mid-resolution payments/choices via ctx.choose),
- * R9 (bounded budgets per card), R12/R25 ("each player" = the seats present in
- * the effect's region), R35 (X paid at cast), R39 (debt), R41-R46 (cache,
- * prophecy, glimpse, mods-don't-follow), R48 ({Blessed} is simultaneous).
+ * Rules referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 704.1a (mid-resolution payments/choices via ctx.choose),
+ * CR 803.4 (bounded budgets per card), CR 601.4d ("each player" = the seats present in
+ * the effect's region), CR 107.2a (X paid at cast), CR 112.14 (debt), CR 403.1, 403.7 (cache,
+ * prophecy, glimpse, mods-don't-follow), CR 802.22b ({Blessed} is simultaneous).
  *
  * ⚠ ENGINE GAPS this batch ran into (reported, NOT worked around in engine
  * code — every one of them is a one-liner outside this file's lane):
  *
- * ✔ ALL THREE ENGINE GAPS this batch reported are now closed (R49):
+ * ✔ ALL THREE ENGINE GAPS this batch reported are now closed:
  *  - `lifeGained:<seat>` is the exact mirror of `lifeLost:<seat>`, bumped by
  *    E.gainLife. Life Channel and Riftspawn Remnant were already written to
  *    read it and became correct without a code change: Life Channel counts
@@ -60,14 +60,14 @@ import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, isOwnAr
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** "each player" = the seats PRESENT in the effect's region (R12/R25), in
+/** "each player" = the seats PRESENT in the effect's region (CR 601.4d), in
  * presentSeats order (region owner first) — the whole table in 1v1 battle. */
 const playersIn = (g: E, region: number): Seat[] =>
   [...(g.s.regions[region]?.presentSeats ?? [])] as Seat[];
 
 /** The engine's per-battle life ledgers, read together. Both are live:
  * E.gainLife bumps `lifeGained:<seat>` exactly as E.loseLife bumps
- * `lifeLost:<seat>` (R49 — see the header). */
+ * `lifeLost:<seat>` (see the header). */
 const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeLost:${seat}`);
 const lifeGainedThisBattle = (g: E, region: number, seat: Seat): number =>
@@ -77,7 +77,7 @@ const lifeGainedThisBattle = (g: E, region: number, seat: Seat): number =>
  * Printed mana cost as a number ("gain debt equal to its cost", "a card with
  * cost [x]").
  *
- * R157 §1: an X card's cost is the X ACTUALLY PAID — *"pips aren't a relevant
+ * CR 107.3a: an X card's cost is the X ACTUALLY PAID — *"pips aren't a relevant
  * part of looking at the cost of a card"* — and a card sitting in a HAND has
  * had no X paid, so its cost is **0**. It used to return `null` here, which
  * Living Vault's `.filter(o => o.cost !== null)` turned into "an X card is
@@ -97,8 +97,8 @@ const printedMana = (g: E, name: string): number => {
 // "Erase all units that spawned this turn. (This includes units that spawned
 // during [Haste].)" — l/3 {Battle} Holy Spell.
 //
-// R49: `Entity.spawnedTurn` is stamped by newEntity, so "spawned this turn" is
-// a field read (g.spawnedThisTurn). R12/R25: region-scoped, like every other
+// `Entity.spawnedTurn` is stamped by newEntity, so "spawned this turn" is
+// a field read (g.spawnedThisTurn). CR 601.1b: region-scoped, like every other
 // board sweep — the units where the spell is resolving. The parenthetical
 // about [Haste] needs no code: a haste-step spawn carries the same turn stamp.
 // Erase = out of the game entirely (no bin, no died/despawned, mods erased).
@@ -123,7 +123,7 @@ card('Banishment', {
 // the point of the seam — do not pre-normalise here.
 //
 // "Its cost" is the cached card's printed mana (an X card counts as 0). The
-// debt is paid off automatically at the end of the next resource step (R39).
+// debt is paid off automatically at the end of the next resource step (CR 502.4).
 card('Blurf', {
   augmentText: [{
     type: 'triggered', events: ['endOfTurn'],
@@ -144,7 +144,7 @@ card('Blurf', {
 
 // "[Augment][once] Gain 2 debt: I gain +3/+3 until regroup." — l/1 1/1
 // Caterpillar Unit. An activated ability whose cost is DEBT rather than mana.
-// R49: `cost: { debt: 2 }` is a real activation cost — taken as the ability is
+// CR 112.14c: `cost: { debt: 2 }` is a real activation cost — taken as the ability is
 // activated, before it reaches the stack, so a negated pump still cost the
 // debt. [once] is the bounded budget: it cannot be pumped twice in a turn.
 card('Debt Blep', {
@@ -168,7 +168,7 @@ card('Debt Blep', {
 // Gravitational Correction's shape minus the "unless its controller pays"
 // clause, plus the "you may": the caster is asked once whether to change
 // anything, and then, per declared target of every live part, either keeps it
-// or picks a new one out of the CURRENT legal candidates (R166 — see the run).
+// or picks a new one out of the CURRENT legal candidates (CR 110.9 — see the run).
 // All choices are requested before any mutation (the engine rolls back to the
 // part boundary on suspension).
 card('Divine Intervention', {
@@ -194,7 +194,7 @@ card('Divine Intervention', {
         g.ev('info', `${ctx.sourceName}: ${item.label}'s targets are left alone.`);
         return;
       }
-      // R166 — "YOU MAY CHANGE THE TARGETS", ONE TARGET AT A TIME.
+      // CR 110.9 — "YOU MAY CHANGE THE TARGETS", ONE TARGET AT A TIME.
       //
       // The "may" above is a single question about the whole spell, and under
       // it every declared slot was re-picked from a menu with no way to say
@@ -213,9 +213,9 @@ card('Divine Intervention', {
       // get this. It prints "Change the targets of target effect unless its
       // controller pays [x]" — the same shape with no "may" in it: an
       // unconditional change its victim can buy off with mana. The permission
-      // that differs is printed, so the behaviour differs (R166).
+      // that differs is printed, so the behaviour differs.
       //
-      // R307: each menu is the SLOT's legal candidates (`rechooseTargets`) —
+      // CR 110.9: each menu is the SLOT's legal candidates (`rechooseTargets`) —
       // its own printed restriction, and never a ref already in a sibling
       // slot, a sibling changed earlier in this same pass included. CT-189:
       // Twin Flame's two targets both moved to one Good Whale, which took 4.
@@ -257,10 +257,10 @@ card('Divine Intervention', {
 // life." — lll/4 1/3 {Blessed} Horror Unit, banner "[2] Prophecy — Two Turns
 // Pass".
 //
-// {Blessed} itself is engine-side (R48: simultaneous, not a trigger) and the
+// {Blessed} itself is engine-side (CR 802.22b: simultaneous, not a trigger) and the
 // banner is engine-side too; the scripted half is the drain. "You" is the
 // holder's controller — on a host, the HOST's controller — so the `when`
-// compares the lifeGained event's seat against the anchor's controller (R1:
+// compares the lifeGained event's seat against the anchor's controller (CR 109.3a:
 // condition at event time), and "that much" is read from the event snapshot.
 card('Flzzz', {
   augmentText: [{
@@ -271,10 +271,10 @@ card('Flzzz', {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.['n'] as number | undefined) ?? 0;
         if (n <= 0) return;
-        // R25: "each opponent" reads the effect region's PRESENT seats, like
+        // CR 601.4d: "each opponent" reads the effect region's PRESENT seats, like
         // every other "each opponent" in the expansion. Out of battle a home
         // region lists only its owner, so a deployment-phase life gain drains
-        // nobody — the standing R25 behaviour, not a Flzzz special case.
+        // nobody — the standing CR 601.4d behaviour, not a Flzzz special case.
         let drained = 0;
         for (const seat of playersIn(g, ctx.region)) {
           if (seat === ctx.controller) continue;
@@ -291,7 +291,7 @@ card('Flzzz', {
 
 // "When I attack or block, [Switch1] You gain 3 debt." — l/3 7/7 Horror Unit.
 // A 3-mana 7/7 whose whole cost is deferred: three debt every time it fights
-// is three mana off next turn's resource step (R39). [Switch1] = bounded and
+// is three mana off next turn's resource step (CR 502.4). [Switch1] = bounded and
 // a graft cause; the marked clause is also the transferable graft effect.
 const gluttonDebt: EffectDef = {
   run: (g, ctx) => { g.gainDebt(ctx.controller, 3); },
@@ -310,12 +310,12 @@ card('Glutton of Absolution', {
 // gains 'Prophecy — One Battle Passes'." — lll/4 5/3 Spirit Unit.
 //
 // "Up to one" is min: 0, so declaring no target is legal and the part still
-// resolves (with an empty ctx.targets). E.cacheUnit does the R46 work: the
+// resolves (with an empty ctx.targets). E.cacheUnit does the CR 403.7 work: the
 // unit leaves play, its mods stay behind and go to their owners' bins (which
-// trashes them, R40), and the CARD lands in a cache carrying the granted
+// trashes them, CR 801.2f), and the CARD lands in a cache carrying the granted
 // prophecy.
 //
-// R157 §27 — WHOSE cache. The note that used to sit here said the printed
+// CR 801.8, 101.1 — WHOSE cache. The note that used to sit here said the printed
 // text names the controller "while the card can only go to its OWNER's cache",
 // and shrugged that off as the base-rules default for a zone change. The owner
 // overruled it, 2026-08-25: *"Controller's cache — the printed text wins.
@@ -323,7 +323,7 @@ card('Glutton of Absolution', {
 // through the `to` seat `E.cacheUnit` grew for this (the same parameter
 // `E.recall` has always had).
 //
-// It is only reachable after a control change (R8) — Abduct, Download,
+// It is only reachable after a control change (CR 711.1) — Abduct, Download,
 // Mindwarp Sporefrog and Bloppert all produce one — and then it matters a
 // great deal: attacking with Grob and caching a unit you have STOLEN puts the
 // card in YOUR cache with a prophecy you will fulfil, rather than handing it
@@ -341,7 +341,7 @@ const grobCache: EffectDef = {
       g.ev('info', 'Grob: no unit is targeted (or it left play) — nothing is cached.');
       return;
     }
-    // R157 §27: "target unit's CONTROLLER caches it" — printed text wins
+    // CR 101.1, 801.8: "target unit's CONTROLLER caches it" — printed text wins
     g.cacheUnit(t, { to: t.controller, prophecy: 'Prophecy — One Battle Passes' });
   },
 };
@@ -360,8 +360,8 @@ card('Grob', {
 //
 // Parity is snapshotted for every player BEFORE anything happens, so the
 // sacrifices cannot flip anyone's branch mid-resolution. "Each player" is the
-// seats present in the region (R12/R25); each even-life player picks their own
-// sacrifice (R6 model), and all picks are gathered before any destruction.
+// seats present in the region (CR 601.4d); each even-life player picks their own
+// sacrifice (CR 704.1a model), and all picks are gathered before any destruction.
 card('Insatiable Want', {
   spellEffect: {
     run: (g, ctx) => {
@@ -379,7 +379,7 @@ card('Insatiable Want', {
         });
         picks.push(chosen as EntityId);
       }
-      // R209/CT-74: with no even-life player present, or with every even-life
+      // CR D7.3/CT-74: with no even-life player present, or with every even-life
       // player out of units here, the sacrifice clause delivers nothing. The
       // draw clause below may still speak, so this has to be said for its own
       // clause rather than for the whole effect.
@@ -401,7 +401,7 @@ card('Insatiable Want', {
 // where X is the life you've gained in this battle." — l/2 {Battle} Nature
 // Spell.
 //
-// The `lifeGained:<seat>` battle ledger is live (R49). The spell reads it
+// The `lifeGained:<seat>` battle ledger is live. The spell reads it
 // BEFORE gaining its own 3 and adds the 3 itself, so X is "everything gained
 // this battle, this spell included" with nothing double-counted. The
 // [Switch1] GRAFT rider is the buff clause alone (no "gain 3 life" rides
@@ -446,7 +446,7 @@ card('Life Channel', {
 
 // "[Augment] At the end of turn, you may pay [x] and cache a card in your hand
 // with cost [x]. It gains 'Prophecy — One Turn Passes'." — ll/2 2/2 Alien
-// Unit. The banked card comes back FREE (and affinity-free, R42) one turn
+// Unit. The banked card comes back FREE (and affinity-free, CR 803.7h) one turn
 // later, so this is a mana-for-tempo bank rather than card advantage.
 //
 // [x] is the chosen card's own printed cost, so only hand cards whose printed
@@ -522,10 +522,10 @@ card('Ploosh', {
 // "When you play a card from anywhere other than your hand, [Switch1] Draw a
 // card." — ll/2 2/1 Horror Unit.
 //
-// R49: both play events now carry `data.from`, the ZONE the card was played
+// CR 410.6, 410.6b: both play events now carry `data.from`, the ZONE the card was played
 // out of (doPlayCard stamps 'hand', doPlayCached 'cache'), so this is exact.
 // A play event with NO `from` is not a played card at all (an effect-created
-// token), and R37 keeps mods out — applying a mod from bin or cache is not
+// token), and CR 701.2a keeps mods out — applying a mod from bin or cache is not
 // playing a card and fires no play event in the first place.
 //
 // Heard on BOTH channels so every card type counts exactly once: a unit
@@ -542,7 +542,7 @@ card('Proph', {
     label: 'draw a card',
     when: (g, self, ev) => {
       if (ev.data?.['seat'] !== self.controller) return false;
-      if (isOwnArrival(self, ev)) return false;              // R347: never its own play
+      if (isOwnArrival(self, ev)) return false;              // CR 701.1e: never its own play
       const from = ev.data?.['from'] as string | undefined;
       if (from === undefined || from === 'hand') return false;
       const name = ev.data?.['card'] as string | undefined;
@@ -565,14 +565,14 @@ card('Proph', {
 // holder (self === the host when it rides as a Virus), so "you" is the host's
 // controller — pinning a fragile 4/1 body onto an enemy unit is the point.
 //
-// Both halves are live: E.gainLife's `lifeGained:<seat>` ledger (R49) and
+// Both halves are live: E.gainLife's `lifeGained:<seat>` ledger and
 // E.loseLife's `lifeLost:<seat>` ledger. `affects` reads
 // battle counters only — never effStats (statics reentrancy guard).
 // `augmentable` because the card's [Augment] text is implemented as a static
 // and a Virus still has to qualify as an augment to be applied.
 card('Riftspawn Remnant', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -598,14 +598,14 @@ card('Riftspawn Remnant', {
 });
 
 // "Target player [gains or loses] X life." — ll/X {Battle} Nature Spell.
-// X is chosen and PAID AT CAST (R35). No xMin: the card does not print "X
+// X is chosen and PAID AT CAST (CR 107.2a). No xMin: the card does not print "X
 // can't be zero" (the batch convention is to set xMin only when it does), so
-// a pointless X = 0 cast is legal and simply does nothing. R64: "target
+// a pointless X = 0 cast is legal and simply does nothing. CR 110.3c: "target
 // player" is the 'player' kind — either seat, yourself included, and no unit.
 // It said 'any', the damage kind, which put every unit in the region on a menu
 // where none of them could do anything.
 //
-// R57 — the bracketed "[gains or loses]" is the caster's choice and it is made
+// CR 702.5 — the bracketed "[gains or loses]" is the caster's choice and it is made
 // AT CAST (`EffectDef.modes`), not at resolution. This is the card the report
 // was written about: a spell that says "target player gains or loses X life"
 // and will not say WHICH until after everybody has finished responding to it
@@ -623,7 +623,7 @@ card('Siphon Life', {
         return `Siphon Life: does ${who} gain or lose ${item.x ?? 0} life?`;
       },
       // X = 0 gains and loses nothing either way — not worth a question.
-      // R284 `half`: the printed bracket reads "[gains {i1}or loses]", so
+      // CR D6.10a `half`: the printed bracket reads "[gains {i1}or loses]", so
       // GAIN is half 0 — the reverse of the order they are offered in, which
       // is the whole reason `half` exists rather than an index.
       options: (_g, item) => (item.x ?? 0) <= 0 ? [] : [
@@ -637,7 +637,7 @@ card('Siphon Life', {
       const who = t.player;
       const x = ctx.x ?? 0;
       if (x <= 0) { g.ev('info', 'Siphon Life: X = 0 — no life is gained or lost.'); return; }
-      const mode = ctx.mode;   // R57: declared at cast
+      const mode = ctx.mode;   // CR 702.5: declared at cast
       if (mode === 'gain') g.gainLife(who, x, 'Siphon Life');
       else g.loseLife(who, x, 'Siphon Life');
     },
@@ -646,9 +646,9 @@ card('Siphon Life', {
 
 // "Erase target unit. Its controller gains life equal to its power plus its
 // defense." — lll/3 {Battle} Cosmic Spell. Erasing is the hard removal: no
-// bin, no death trigger, no trash (R40), and the unit's mods go with it. The
+// bin, no death trigger, no trash (CR 801.2c), and the unit's mods go with it. The
 // consolation life is read from the unit's EFFECTIVE stats an instant before
-// it stops existing (R1: amounts at resolution), and a negative total simply
+// it stops existing (CR 107.8: amounts at resolution), and a negative total simply
 // gains nothing.
 card('Stellar Fission', {
   spellEffect: {
@@ -676,7 +676,7 @@ card('The Foretold', {});
 // total, rounded up." — lll/6 4/5 Spirit Anima Unit. Symmetrical, which is
 // why it is playable: at 20 life it is a 10-point swing both ways, and the
 // halving never quite kills (except from 1). "Each player" is the seats
-// present in the region (R12/R25), in presentSeats order for determinism —
+// present in the region (CR 601.4d), in presentSeats order for determinism —
 // and a lethal halving ends the game mid-loop, which is correct.
 card('Visage of Ruin', {
   augmentText: [{
@@ -699,7 +699,7 @@ card('Visage of Ruin', {
 // first, then the 3/3 body spawns (spellUnit), so a battle-speed removal that
 // leaves a blocker behind. The victim's owner keeps the card and gets it back
 // for free one battle later — in 1v1 both the initiative battle and the
-// counterattack tick "One Battle Passes" (R43), so it is genuinely one round.
+// counterattack tick "One Battle Passes" (CR 803.7), so it is genuinely one round.
 // [Switch1] makes the clause the bounded graft rider too.
 const waxenCache: EffectDef = {
   targets: { what: 'unit', prompt: "Waxen Witness: cache target unit with 'Prophecy — One Battle Passes'" },

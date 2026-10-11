@@ -1,18 +1,18 @@
 /* Per-card tests for the Light & Dark hybrid batch C (batch-hybrids-ld-c):
- * bin-prophesying (Angel of Anguish, R42), life-paid recall and glimpse
- * (Aurozoa, Visionary Construct, R45), the combat-damage-as-rot replacement
- * (Blightsea Polyp, R38), counter/rot/debt doubling (Buffer Overflow),
- * stealing a unit into your hand plus a discard (Capture, R40), life-change
- * pumps and their [Switch1] budget (Deathcoil Construct, R9), a paid
+ * bin-prophesying (Angel of Anguish, CR 803.7c), life-paid recall and glimpse
+ * (Aurozoa, Visionary Construct, CR 801.9), the combat-damage-as-rot replacement
+ * (Blightsea Polyp, CR 608.8a), counter/rot/debt doubling (Buffer Overflow),
+ * stealing a unit into your hand plus a discard (Capture, CR 801.3), life-change
+ * pumps and their [Switch1] budget (Deathcoil Construct, CR 722.5), a paid
  * spell-played drain (Dragnol), empty-hand bin plays (Gridxlan), a life total
  * rewritten from the bins (Haunting Memories), spawn lifegain (Iyngstra),
  * cost-funded glimpses (Lilbot), a variable discard CAST COST (No Hand Killer,
- * R64 — the discards used to happen at resolution),
- * a granted prophecy computed from a cost (Prophecy Bug, R43), damage-driven
- * rot (Rotwall), and the two shapes of a discard trigger (Swarmling, R40).
+ * CR 705.3b — the discards used to happen at resolution),
+ * a granted prophecy computed from a cost (Prophecy Bug, CR 803.7), damage-driven
+ * rot (Rotwall), and the two shapes of a discard trigger (Swarmling).
  * The PARKED Counter Thief (counter-placement replacement) has a registration
- * test + todo. Trench Stalker is LIVE as of R123, whole: the [Discard two
- * cards] cast cost, R29 formation entry and the play-from-bin action landed
+ * test + todo. Trench Stalker is LIVE, whole: the [Discard two
+ * cards] cast cost, CR 602.7 formation entry and the play-from-bin action landed
  * together.
  *
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
@@ -97,12 +97,12 @@ function nextTurnsDeployment(h: Harness): void {
 
 // ── Angel of Anguish ─────────────────────────────────────────────────────
 
-test('Angel of Anguish: can be prophesied FROM THE BIN, then released free two turns later (R42/R43)', () => {
+test('Angel of Anguish: can be prophesied FROM THE BIN, then released free two turns later (CR 803.7c, 803.7)', () => {
   const h = new Harness(4600);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   h.state.players[P]!.bin.push('LDC Grunt', 'Angel of Anguish');
-  giveResources(h, P, 'light', 1);   // R301: the banner is [1ld] — one mana,
+  giveResources(h, P, 'light', 1);   // CR 803.7d: the banner is [1ld] — one mana,
   giveResources(h, P, 'dark', 1);    // and a light and a dark pip to meet
 
   // only the card that SAYS SO is offered from the bin
@@ -118,7 +118,7 @@ test('Angel of Anguish: can be prophesied FROM THE BIN, then released free two t
   assert.equal(h.q.openMana(P), 1, 'the [1] banner was paid');
 
   nextTurnsDeployment(h);
-  assert.equal(h.q.cachePermission(P, 0), null, 'one turn is not two (R43)');
+  assert.equal(h.q.cachePermission(P, 0), null, 'one turn is not two (CR 803.7)');
   nextTurnsDeployment(h);
   assert.equal(h.q.cachePermission(P, 0), 'prophecy');
   const mana = h.q.openMana(P);
@@ -156,10 +156,10 @@ test('Aurozoa: "[Augment] Pay 1 life: Recall me" — on itself and donated to a 
   assert.equal(lifeOf(h, P), life2 - 1);
   assert.ok(!ent(h, host), 'the HOST was recalled');
   assert.ok(h.state.players[P]!.hand.includes('LDC Grunt'));
-  assert.ok(h.state.players[P]!.bin.includes('Aurozoa'), 'the mod stayed behind → bin (R40)');
+  assert.ok(h.state.players[P]!.bin.includes('Aurozoa'), 'the mod stayed behind → bin (CR 410.4)');
 });
 
-test('Aurozoa: R49 — at 1 life the cost is unpayable and the activation is ILLEGAL', () => {
+test('Aurozoa: CR 111.6b — at 1 life the cost is unpayable and the activation is ILLEGAL', () => {
   const h = new Harness(4602);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -177,7 +177,7 @@ test('Aurozoa: R49 — at 1 life the cost is unpayable and the activation is ILL
 
 // ── Blightsea Polyp ──────────────────────────────────────────────────────
 
-test('Blightsea Polyp: a column\'s combat damage to a player becomes 1 rot, per column (R38)', () => {
+test('Blightsea Polyp: a column\'s combat damage to a player becomes 1 rot, per column (CR 608.8a)', () => {
   const h = new Harness(4603);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -254,14 +254,14 @@ test('Capture: puts target unit into YOUR hand (a steal), then you discard a car
     "it went to the CASTER's hand, not its owner's");
   assert.ok(h.state.players[D]!.bin.includes('LDC Grunt'), 'and a card was discarded');
   assert.ok(h.events.some(ev => ev.type === 'trashed' && ev.data?.['card'] === 'LDC Grunt'),
-    'discarding trashes it (R40)');
+    'discarding trashes it (CR 801.3)');
   assert.ok(!h.state.players[A]!.hand.includes('LDC Brute'), 'the owner never got it back');
 });
 
 // ── Counter Thief ────────────────────────────────────────────────────────
 
 test('Counter Thief: counters placed on any unit during battle land on it instead', () => {
-  // R104, the REDIRECT family: the number is untouched and the RECIPIENT
+  // CR 708.4a, the REDIRECT family: the number is untouched and the RECIPIENT
   // changes, so this is a first-claimant-consumes hook and not a summed
   // AmountMod. The counters land on exactly one unit either way.
   const h = new Harness(4620);
@@ -332,7 +332,7 @@ test('Counter Thief: plays as a 0/5 and augments (donating nothing yet)', () => 
 
 // ── Deathcoil Construct ──────────────────────────────────────────────────
 
-test('Deathcoil Construct: gaining OR losing life pumps all your units — once per turn (R9)', () => {
+test('Deathcoil Construct: gaining OR losing life pumps all your units — once per turn (CR 109.9)', () => {
   const h = new Harness(4608);
   toDeployment(h);
   const P = h.state.deployPlayer!, O = (1 - P) as Seat;
@@ -366,7 +366,7 @@ test('Deathcoil Construct: the [Switch1] budget resets next turn, and losing lif
 // ── Dragnol ──────────────────────────────────────────────────────────────
 
 // Dragnol sits with the DEFENDER, whose home region IS the battle region —
-// R12: an [Augment] trigger only hears events in its own region.
+// CR 601.1d: an [Augment] trigger only hears events in its own region.
 test('Dragnol: a spell you play in battle lets you pay [2] to drain 2 and gain 2', () => {
   const h = new Harness(4610);
   toDeployment(h);
@@ -434,10 +434,10 @@ test('Gridxlan: with an EMPTY hand, play a unit out of your bin during deploymen
   assert.equal(h.q.openMana(P), 2, 'LDC Grunt is a [0] — its own cost is what is paid');
 });
 
-test('R77: Gridxlan with a non-empty hand is not offered, and does not burn its [once]', () => {
+test('CR 705.3a: Gridxlan with a non-empty hand is not offered, and does not burn its [once]', () => {
   // this used to activate, print "your hand is not empty", do nothing, and
   // SPEND the once-per-turn budget — so emptying your hand afterwards was too
-  // late. "If your hand is empty" is an activation condition (R77).
+  // late. "If your hand is empty" is an activation condition (CR 111.7b).
   const h = new Harness(4613);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -460,7 +460,7 @@ test('R77: Gridxlan with a non-empty hand is not offered, and does not burn its 
   assert.ok(unitsOf(h, P).some(u => u.card === 'LDC Grunt'), 'it plays from the bin');
 });
 
-test('R77: Gridxlan with an empty hand but nothing playable in the bin is not offered', () => {
+test('Gridxlan with an empty hand but nothing playable in the bin is not offered', () => {
   const h = new Harness(4616);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -469,7 +469,7 @@ test('R77: Gridxlan with an empty hand but nothing playable in the bin is not of
   h.state.players[P]!.bin.length = 0;                      // empty hand, empty bin
   assert.ok(!legalActions(h.state, P).some(a =>
     a.type === 'activateAbility' && a.entityId === grid),
-    'an ability with nothing to do is not offered (R64)');
+    'an ability with nothing to do is not offered (CR 705.3a)');
 });
 
 // ── Haunting Memories ────────────────────────────────────────────────────
@@ -523,7 +523,7 @@ test('Iyngstra: gain life equal to the defense of each OTHER ally that spawns', 
   assert.equal(lifeOf(h, P), life0 + 5, 'defense 5, five life');
   spawn(h, O, 'LDC Wall');
   assert.equal(lifeOf(h, P), life0 + 5, "not for an opponent's spawn");
-  // live defense at resolution (R1): counters count
+  // live defense at resolution (CR 107.8): counters count
   whiteBox(h, e => {
     const u = e.spawnUnit(P, 'LDC Grunt', e.homeRegion(P), { counters: 3 });
     assert.ok(u);
@@ -533,7 +533,7 @@ test('Iyngstra: gain life equal to the defense of each OTHER ally that spawns', 
 
 // ── Lilbot ───────────────────────────────────────────────────────────────
 
-test('Lilbot: [once] discard a card OR sacrifice another nontoken unit → Glimpse 2 (R45)', () => {
+test('Lilbot: [once] discard a card OR sacrifice another nontoken unit → Glimpse 2 (CR 801.9)', () => {
   const h = new Harness(4617);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -546,16 +546,16 @@ test('Lilbot: [once] discard a card OR sacrifice another nontoken unit → Glimp
   const dec = h.state.decision!;
   assert.deepEqual(dec.options.map(o => o.label), ['Discard LDC Five', 'Sacrifice LDC Grunt'],
     'both halves of the either-or are offered; "another" excludes Lilbot itself');
-  pick(h, { discard: 0 });                                 // R49: paid at activation
+  pick(h, { discard: 0 });                                 // CR 111.7: paid at activation
   assert.deepEqual(h.state.players[P]!.hand, [], 'the card was discarded');
   assert.ok(ent(h, fodder), 'and the unit survived');
-  // R45: Glimpse 2 reveals two and caches ONE of the glimpser's choice
+  // CR 801.9a: Glimpse 2 reveals two and caches ONE of the glimpser's choice
   const glimpseDec = h.state.decision!;
   assert.deepEqual(glimpseDec.options.map(o => o.card), ['LDC Brute', 'LDC Wall'],
     'both revealed cards are offered');
   h.do({ type: 'decide', seat: P, choice: 0 });
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['LDC Brute'], 'exactly ONE is cached');
-  assert.deepEqual(h.q.recycleOf(P).slice(-1), ['LDC Wall'], 'R296: the other is recycled past the mark');
+  assert.deepEqual(h.q.recycleOf(P).slice(-1), ['LDC Wall'], 'CR 408.2: the other is recycled past the mark');
   assert.equal(h.q.cachePermission(P, 0), 'glimpse', 'playable until end of turn');
   // [once]: the budget is spent
   assert.throws(() => h.do({ type: 'activateAbility', seat: P, entityId: lil, abilityIndex: 0, via: 'augment' }));
@@ -573,12 +573,12 @@ test('Lilbot: the sacrifice half works, and no payable cost means no glimpse', (
   assert.equal(h.state.decision!.options.length, 1, 'only one legal payment is offered');
   h.do({ type: 'decide', seat: P, choice: 0 });
   assert.ok(!ent(h, fodder), 'the other unit was sacrificed');
-  h.do({ type: 'decide', seat: P, choice: 1 });             // R45: cache one of the two
+  h.do({ type: 'decide', seat: P, choice: 1 });             // CR 801.9a: cache one of the two
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['LDC Wall'], 'exactly one cached');
-  assert.deepEqual(h.q.recycleOf(P).slice(-1), ['LDC Brute'], 'R296: the other recycled past the mark');
+  assert.deepEqual(h.q.recycleOf(P).slice(-1), ['LDC Brute'], 'CR 408.2: the other recycled past the mark');
 });
 
-test('Lilbot: R49 — with nothing to discard and no other unit the activation is ILLEGAL', () => {
+test('Lilbot: CR 705.4 — with nothing to discard and no other unit the activation is ILLEGAL', () => {
   const h = new Harness(4629);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -597,7 +597,7 @@ test('Lilbot: R49 — with nothing to discard and no other unit the activation i
 // ── No Hand Killer ───────────────────────────────────────────────────────
 
 // The killer sits with the DEFENDER (its home IS the battle region) and the
-// victims attack into it — "each opponent" is region-scoped (R25), so both
+// victims attack into it — "each opponent" is region-scoped (CR 601.4d), so both
 // seats have to be present, which only an attack arranges.
 test('No Hand Killer: [once] discard X cards → each opponent sacrifices X units', () => {
   const h = new Harness(4619);
@@ -615,7 +615,7 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   pass(h);                                                 // priority → D
   const trashedBefore = h.events.filter(ev => ev.type === 'trashed').length;
   h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
-  // R64 UN-PARKED: "Discard X cards" is the ACTIVATION cost, so the discards
+  // UN-PARKED (CR 111.7): "Discard X cards" is the ACTIVATION cost, so the discards
   // are chosen and paid HERE, in the cast window, before the ability is on the
   // stack and before anyone can answer it. X is fixed by the time it is.
   pick(h, { discard: 0 });                                 // discard #1
@@ -626,14 +626,14 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   pick(h, v1);                                             // A sacrifices, 1 of 2
   pick(h, v2);                                             // …and 2 of 2 (v3 survives)
   assert.ok(h.events.filter(ev => ev.type === 'trashed').length >= trashedBefore + 2,
-    'discarding trashes (R40)');
+    'discarding trashes (CR 801.3)');
   assert.ok(!ent(h, v1) && !ent(h, v2), "two of the opponent's units are gone");
   assert.ok(ent(h, v3), 'and only two — X, not everything');
   drainStack(h);
 });
 
-test('R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent', () => {
-  // REVERSED by R157 §22, owner 2026-08-25: *"You can legally activate it and
+test('CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent', () => {
+  // REVERSED by the owner's answer of 2026-08-25 (now CR 109.9c): *"You can legally activate it and
   // discard no cards."* The cost used to carry the unprinted floor `xMin: 1`
   // so that X = 0 — which does nothing AND burns the [once] budget — could not
   // be reached. The ruling says that pointless activation is the player's to
@@ -696,7 +696,7 @@ test('Prophecy Bug: caches a card from hand with "X Turns Pass", X = half its co
   assert.equal(cc.card, 'LDC Five');
   assert.equal(cc.prophecy!.condition, '3 Turns Pass');
   assert.equal(cc.prophecy!.norm, '3 turns pass', 'a condition the engine actually recognises');
-  assert.equal(cc.prophecy!.turn, h.state.turn, 'anchored to now (R43)');
+  assert.equal(cc.prophecy!.turn, h.state.turn, 'anchored to now (CR 803.7)');
   assert.equal(h.q.cachePermission(P, 0), null, 'and not yet fulfilled');
   assert.ok(unitsOf(h, P).some(u => u.card === 'Prophecy Bug'), 'the 1/1 body still spawned (spellUnit)');
 });
@@ -717,7 +717,7 @@ test('Prophecy Bug: with an empty hand it is a harmless 1/1', () => {
 
 // ── Rotwall ──────────────────────────────────────────────────────────────
 
-test('Rotwall: damage dealt to it gives each opponent a rot (R38)', () => {
+test('Rotwall: damage dealt to it gives each opponent a rot (CR 112.13)', () => {
   const h = new Harness(4623);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -725,7 +725,7 @@ test('Rotwall: damage dealt to it gives each opponent a rot (R38)', () => {
   const wall = spawn(h, D, 'Rotwall');                     // 0/5 — survives, deals nothing
   attackWith(h, A, [[atk]]);
   throughCombat(h, D, { 0: [wall] });
-  resolveAfterCombat(h);   // R261: the "damage dealt to it" trigger is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: the "damage dealt to it" trigger is stacked after combat
   assert.equal(ent(h, wall)!.damage, 3, 'it took the hit');
   assert.equal(rotOf(h, A), 1, 'the opponent gained a rot');
   assert.equal(rotOf(h, D), 0, 'not its own controller');
@@ -766,7 +766,7 @@ test('Swarmling: in play, discarding ANOTHER card fires it too — and declining
   assert.equal(unitsOf(h, P).filter(u => u.card === 'Swarmling').length, 1, 'declined — no copy');
   assert.equal(h.q.openMana(P), 1, 'and nothing paid');
 
-  // milling is not discarding (R40 trashes it, but not from hand)
+  // milling is not discarding (CR 801.2a trashes it, but not from hand)
   h.q.deckOf(P).unshift('LDC Grunt');
   whiteBox(h, e => { e.mill(P, 1); });
   assert.equal(h.state.decision, null, 'a mill offers no payment — "whenever you DISCARD"');
@@ -776,7 +776,7 @@ test('Swarmling: in play, discarding ANOTHER card fires it too — and declining
 // ── Trench Stalker ───────────────────────────────────────────────────────
 
 /** answer the cast-window questions in whatever order collectTargets raises
- * them (the R29 open-spot question comes before the fixed [Discard two
+ * them (the CR 702.3e open-spot question comes before the fixed [Discard two
  * cards]); returns how many of each were asked. */
 function answerStalkerCast(h: Harness): { spots: number; discards: number } {
   const n = { spots: 0, discards: 0 };
@@ -796,7 +796,7 @@ function answerStalkerCast(h: Harness): { spots: number; discards: number } {
   return n;
 }
 
-test('Trench Stalker (R123): played from your bin — [Discard two cards] paid in the cast window, straight into an open spot (R29), and NO {Unstable}', () => {
+test('Trench Stalker (CR 405.9a): played from your bin — [Discard two cards] paid in the cast window, straight into an open spot (CR 602.7), and NO {Unstable}', () => {
   const h = new Harness(4630);
   toDeployment(h);
   const A = h.state.initiative;
@@ -813,7 +813,7 @@ test('Trench Stalker (R123): played from your bin — [Discard two cards] paid i
   // mid-cast wire trip: the suspension and its cost receipts are plain state
   h.state = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
   const asked = answerStalkerCast(h);
-  assert.equal(asked.spots, 1, 'the R29 open-spot question was asked at cast');
+  assert.equal(asked.spots, 1, 'the CR 602.7 open-spot question was asked at cast');
   assert.equal(asked.discards, 2, 'both discards chosen and paid at cast');
   drainStack(h);                                           // resolve
   const ts = unitsOf(h, A).find(u => u.card === 'Trench Stalker')!;
@@ -824,10 +824,10 @@ test('Trench Stalker (R123): played from your bin — [Discard two cards] paid i
   assert.equal(h.state.players[A]!.bin.filter(n => n === 'LDC Grunt').length, 2, '…and the two discards reached it');
   assert.ok(h.log.some(l => l.includes("Trench Stalker is played from")), 'the log says where it came from');
   assert.ok(!h.q.isUnstable(ts),
-    "NOT {Unstable}: the R96 stamp is the GRANTING card's own text (Abyssal Evocation), and Trench Stalker's line grants none");
+    "NOT {Unstable}: the CR 405.9a stamp is the GRANTING card's own text (Abyssal Evocation), and Trench Stalker's line grants none");
 });
 
-test('Trench Stalker (R123): with fewer than two other cards in hand the bin play is not offered — the cost gates the offer', () => {
+test('Trench Stalker (CR 405.9): with fewer than two other cards in hand the bin play is not offered — the cost gates the offer', () => {
   const h = new Harness(4631);
   toDeployment(h);
   const A = h.state.initiative;
@@ -843,7 +843,7 @@ test('Trench Stalker (R123): with fewer than two other cards in hand the bin pla
   assert.ok(h.legal(A).some(a => a.type === 'playFromBin'), '…and with a second card it appears');
 });
 
-test('Trench Stalker (R123): from HAND the printed cost applies too — no longer strictly better than printed in either direction', () => {
+test('Trench Stalker (CR 205.3): from HAND the printed cost applies too — no longer strictly better than printed in either direction', () => {
   const h = new Harness(4632);
   toDeployment(h);
   const A = h.state.initiative;
@@ -870,7 +870,7 @@ test('Trench Stalker (R123): from HAND the printed cost applies too — no longe
   assert.equal(h.state.players[A]!.hand.length, 0, 'both discards paid from hand');
 });
 
-test('Trench Stalker: registers as a bd/2 {Battle} 6/2 — and a plain hand play now pays the printed [Discard two cards] (R123)', () => {
+test('Trench Stalker: registers as a bd/2 {Battle} 6/2 — and a plain hand play now pays the printed [Discard two cards] (CR 205.3)', () => {
   const h = new Harness(4626);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -881,9 +881,9 @@ test('Trench Stalker: registers as a bd/2 {Battle} 6/2 — and a plain hand play
   pass(h);                                                 // priority → D
   const before = h.state.players[D]!.hand.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Trench Stalker') });
-  pick(h, { discard: 0 }); pick(h, { discard: 0 });        // R123: the cost, paid at cast
+  pick(h, { discard: 0 }); pick(h, { discard: 0 });        // CR 205.3: the cost, paid at cast
   // no open-spot question here: the DEFENDER has no formation before blocks
-  // are declared, and R29 asks nothing when there is nothing to join
+  // are declared, and CR 602.7c asks nothing when there is nothing to join
   drainStack(h);                                           // resolve
   const ts = unitsOf(h, D).find(u => u.card === 'Trench Stalker');
   assert.ok(ts, 'it is in play');
@@ -905,14 +905,14 @@ test('Visionary Construct: "Pay 3 life: Glimpse 1" — cached, playable this tur
   assert.equal(lifeOf(h, P), life - 3, '3 life paid');
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['LDC Five']);
   assert.equal(h.q.cachePermission(P, 0), 'glimpse');
-  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'revealed publicly (R41)');
+  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'revealed publicly (CR D6.2c)');
   const mana = h.q.openMana(P);
   h.do({ type: 'playCached', seat: P, index: 0 });
-  assert.equal(h.q.openMana(P), mana - 5, 'glimpse ignores affinity but still pays the mana (R45)');
+  assert.equal(h.q.openMana(P), mana - 5, 'glimpse ignores affinity but still pays the mana (CR 801.9f)');
   assert.ok(unitsOf(h, P).some(u => u.card === 'LDC Five'));
 });
 
-test('Visionary Construct: R49 — 3 life it cannot survive paying makes the activation ILLEGAL', () => {
+test('Visionary Construct: CR 111.6b — 3 life it cannot survive paying makes the activation ILLEGAL', () => {
   const h = new Harness(4628);
   toDeployment(h);
   const P = h.state.deployPlayer!;

@@ -1,7 +1,7 @@
 /* Per-card tests for batch-wood-b (project rule: a test for every card).
  * Covers the attack-trigger Poison mint (Megadeath), the counting until-
  * regroup buffs (Might of the Grove, Overbloom), the give-control choose
- * (Mindspore Fiend, R6), the token-creation trigger (Mycelial Mentor —
+ * (Mindspore Fiend, CR 704.1a), the token-creation trigger (Mycelial Mentor —
  * unit-token channel; the spell-token channel is an engine gap, see the
  * batch header), -1/-1 counter effects (Noxious Deathcap, Noxious Demise
  * with its hand-rolled Reaping rider, Plague Bellower), the control/position
@@ -9,7 +9,7 @@
  * via {mod} (Pack Leader), the spawn/despawn token lifecycle (Pathogenic
  * Enclave), a team-wide temp buff (Pernicious Photosynthesis), the counter-
  * punisher (Pestilent Mycelion, fed by its own Poisonous combat damage),
- * a statics-only augment (Prickly Protector), and the R98 until-regroup
+ * a statics-only augment (Prickly Protector), and the CR 708.11 until-regroup
  * damage-prevention shield (Phytochemical Protection). States are built explicitly
  * (give/spawn/giveResources). Seeds 2400-2499. */
 import { test } from 'node:test';
@@ -71,7 +71,7 @@ test('Might of the Grove: target unit gains +1/+1 per your units, live at resolu
   assert.deepEqual(effStats(h, u1), [1, 1], 'until regroup: the buff is gone');
 });
 
-test('Mindspore Fiend: after combat, may give an opponent control of target ally → draw (R6)', () => {
+test('Mindspore Fiend: after combat, may give an opponent control of target ally → draw (CR 704.1a)', () => {
   const h = new Harness(2402);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -103,7 +103,7 @@ test('Mycelial Mentor: a unit token is created → target ally gains +3/+3 (once
   // the FIRST one ([Switch1]: the second is inside the same turn's budget)
   whiteBox(h, e => { e.spawnUnit(p, 'Pathogenic Enclave', e.homeRegion(p)); e.settle(); });
   pick(h, { unit: mentor });                          // target ally: the Mentor itself
-  assert.deepEqual(effStats(h, mentor), [5, 4], '2/1 + 3/3 — exactly one firing (bounded, R9)');
+  assert.deepEqual(effStats(h, mentor), [5, 4], '2/1 + 3/3 — exactly one firing (bounded, CR 109.9)');
   assert.equal(unitsOf(h, p).filter(u => u.token).length, 2, 'both tokens were still created');
 });
 
@@ -119,11 +119,11 @@ test('Noxious Deathcap: dies in combat → a -1/-1 counter on each unit in the r
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
   pass(h); pass(h);   // combat: the Deathcap dies to Bubb's 5
-  resolveAfterCombat(h);   // R261: the combat-death trigger is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: the combat-death trigger is stacked after combat
   assert.ok(!ent(h, cap), 'the Deathcap died');
   assert.ok(h.state.players[A]!.bin.includes('Noxious Deathcap'), '→ bin');
   assert.equal(ent(h, bubb)!.counters, -1, 'each unit in the region got a -1/-1 counter');
-  assert.equal(ent(h, home)!.counters, 0, 'units in other regions are untouched (R12)');
+  assert.equal(ent(h, home)!.counters, 0, 'units in other regions are untouched (CR 601.1b)');
   finishBattle(h);
 });
 
@@ -202,7 +202,7 @@ test("Pack Leader: [two] creates a 1/1 where the carrier stands — own text (vi
   assert.equal(unitsOf(h, p).filter(u => u.token && u.id !== host).length, 2, 'the donated ability minted another 1/1');
 });
 
-test('Pathogenic Enclave: spawn mints two 1/1s (at ctx.region — home, since it spawns during deployment, R115); despawn deletes token allies in its region', () => {
+test('Pathogenic Enclave: spawn mints two 1/1s (at ctx.region — home, since it spawns during deployment, CR 601.5); despawn deletes token allies in its region', () => {
   const h = new Harness(2409);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -215,7 +215,7 @@ test('Pathogenic Enclave: spawn mints two 1/1s (at ctx.region — home, since it
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
   pass(h); pass(h);   // combat: Enclave dies
-  resolveAfterCombat(h);   // R261: its own [Augment] death text is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: its own [Augment] death text is stacked after combat
   assert.ok(!ent(h, enc), 'the Enclave died');
   assert.ok(!ent(h, toks[0]!.id) && !ent(h, toks[1]!.id), 'both token allies in the region were deleted');
   finishBattle(h);
@@ -252,7 +252,7 @@ test('Pestilent Mycelion: its Poisonous block lands a -1/-1 counter → each opp
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [myc] } });
   pass(h); pass(h);   // combat: Poisonous damage = a -1/-1 counter → the trigger fires
-  resolveAfterCombat(h);   // R261: and is stacked after combat rather than resolving in the damage step
+  resolveAfterCombat(h);   // CR 608.9b: and is stacked after combat rather than resolving in the damage step
   assert.ok(!ent(h, atk), 'the 1/1 died to the -1/-1 counter');
   assert.equal(h.state.players[A]!.life, lifeA - 1, 'each opponent (A) lost 1 life');
   assert.equal(h.state.players[D]!.life, lifeD, 'its own controller is untouched');
@@ -260,7 +260,7 @@ test('Pestilent Mycelion: its Poisonous block lands a -1/-1 counter → each opp
   finishBattle(h);
 });
 
-/** R98: put the shield up white-box (the spell itself is played end-to-end in
+/** put the shield up white-box (the spell itself is played end-to-end in
  * the first test) and return the log lines a burst of effect damage produces. */
 function shield(h: Harness, id: number): void {
   whiteBox(h, e => { e.entity(id)!.damageShield = 'Phytochemical Protection'; });
@@ -279,7 +279,7 @@ function zap(h: Harness, from: Seat, id: number, n: number, attrs?: string[]): s
 }
 
 test('Phytochemical Protection: combat damage is prevented and paid back as +1/+1 counters', () => {
-  // R98, report #72 (GETD): "Phytochemical Protection is entirely non
+  // Report #72 (GETD): "Phytochemical Protection is entirely non
   // functional. Needs to work like the text says."
   const h = new Harness(2412);
   assert.equal(getCard('Phytochemical Protection').kind, 'spell', 'registered');
@@ -298,7 +298,7 @@ test('Phytochemical Protection: combat damage is prevented and paid back as +1/+
   pass(h); pass(h);                                   // close the attack window
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);                                   // combat damage
-  assignDefault(h);                                   // R319: both {Piercing} Whales elect
+  assignDefault(h);                                   // CR 802.16c: both {Piercing} Whales elect
   const blocker = ent(h, mine);
   assert.ok(blocker, 'it survived a hit that was lethal twice over — all of it was prevented');
   assert.equal(blocker!.damage, 0, 'no damage was marked');
@@ -308,7 +308,7 @@ test('Phytochemical Protection: combat damage is prevented and paid back as +1/+
 });
 
 test('Phytochemical Protection: the whole hit is prevented, not just the lethal part', () => {
-  // The RAQ, and now R114 in the engine:
+  // The RAQ, and now CR 608.6f in the engine:
   //   "Q: No Deadly, No Piercing. Single enemy with Phytochemical Protection?
   //    A: All damage must be assigned to this single unit and whole damage
   //       will be prevented, potentially putting a lot of +/+ counters."
@@ -332,9 +332,9 @@ test('Phytochemical Protection: the whole hit is prevented, not just the lethal 
 });
 
 test('Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pays 2 counters (report #79, EGCW 212)', () => {
-  // The exact table situation. {Deadly}'s 1 is a PASS-ALONG floor (R114), so
+  // The exact table situation. {Deadly}'s 1 is a PASS-ALONG floor (CR 802.3c, 608.6f), so
   // the whole 2 lands on the sole blocker; the shield prevents all of it, and
-  // R98 then stops {Deadly} from killing through damage that was never dealt.
+  // CR 802.3h then stops {Deadly} from killing through damage that was never dealt.
   const h = new Harness(2427);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -347,10 +347,10 @@ test('Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pa
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);
-  // R120: the 7-power BLOCK-side strike over the two 1/2s is now elective;
+  // CR 608.6a: the 7-power BLOCK-side strike over the two 1/2s is now elective;
   // this test is about the shield paying the Deadly floors, so take the default
   assignDefault(h);
-  assert.ok(ent(h, mine), 'nothing was dealt, so {Deadly} had nothing to kill through (R98)');
+  assert.ok(ent(h, mine), 'nothing was dealt, so {Deadly} had nothing to kill through (CR 802.3h)');
   assert.equal(ent(h, mine)!.counters, 2,
     'the whole 2-power column was assigned and prevented — 2 counters, not the 1 {Deadly} needs');
   finishBattle(h);
@@ -359,7 +359,7 @@ test('Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pa
 test('Phytochemical Protection: prevented damage is NOT dealt — no damage event fires', () => {
   // RAQ "[Solved] Poisonous vs 'Whenever I am dealt damage' vs Phytochemical
   // Protection": "Jollyglop doesn't trigger". Prevention unmakes the damage,
-  // unlike R38's replacements ("replacing the damage does NOT unmake it").
+  // unlike the rot ruling's replacements ("replacing the damage does NOT unmake it"; CR 708.11).
   const h = new Harness(2422);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -400,7 +400,7 @@ test('Phytochemical Protection: {Deadly} cannot kill through it', () => {
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);                                   // combat damage
-  assignDefault(h);                                   // R319: the blocking {Piercing} Whale elects
+  assignDefault(h);                                   // CR 802.16c: the blocking {Piercing} Whale elects
   assert.ok(ent(h, mine), 'a Deadly hit that dealt no damage kills nothing');
   assert.equal(ent(h, mine)!.counters, 1, 'and the 1 assigned point is still paid back');
   finishBattle(h);
@@ -414,7 +414,7 @@ test('Phytochemical Protection: the shield lasts UNTIL REGROUP and no longer', (
   toNextBattle(h, A);
   shield(h, mine);
   finishBattle(h);
-  assert.equal(ent(h, mine)!.damageShield, undefined, 'swept by the R11 regroup cleanup');
+  assert.equal(ent(h, mine)!.damageShield, undefined, 'swept by the CR 506.2 regroup cleanup');
   zap(h, A, mine, 2);
   assert.equal(ent(h, mine)!.damage, 2, 'damage lands again after regroup');
 });
@@ -458,7 +458,7 @@ test('Prickly Protector: +1/+1 per other ally — live count, played normally an
   assert.deepEqual(effStats(h, t1), [4, 4], 'the augmented host grew too');
 });
 
-// ── R148 / CT-38 + CT-39: the control-change choke point ──────────────────
+// ── CT-38 + CT-39: the control-change choke point ──────────────────
 //
 // Three cards used to flip `controller` by raw assignment and skip what
 // `E.giveControl` does for everyone else. Two of them are in this file. The
@@ -474,7 +474,7 @@ test('Prickly Protector: +1/+1 per other ally — live count, played normally an
 // therefore pins what is actually true: the unit STAYS put for the rest of the
 // battle, its mods stand with it, and regroup is what walks it home.
 
-/** the R148 control-change events since `from`, with their payloads */
+/** the control-change events since `from`, with their payloads */
 function controlEvents(h: Harness, from: number): { unit: number; from: Seat; to: Seat; region: number }[] {
   return h.events.slice(from).filter(e => e.type === 'controlChanged').map(e => {
     const d = e.data as unknown as { unit: number; from: Seat; to: Seat; region: number };
@@ -482,7 +482,7 @@ function controlEvents(h: Harness, from: number): { unit: number; from: Seat; to
   });
 }
 
-test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, it leaves the formation, and it stays in the battle region (R148/CT-38)', () => {
+test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, it leaves the formation, and it stays in the battle region (CR 711.2, 711.3/CT-38)', () => {
   const h = new Harness(2420);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -507,13 +507,13 @@ test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, i
   // (1) THE MODS. This is the whole of CT-38's "major": the raw assignment
   //     handed over a unit whose augments still answered to the old seat.
   assert.equal(ent(h, gift)!.controller, A, 'the unit changed hands');
-  assert.equal(ent(h, mod)!.controller, A, 'and its augment changed hands WITH it (R112)');
+  assert.equal(ent(h, mod)!.controller, A, 'and its augment changed hands WITH it (CR 711.2)');
   // (2) THE FORMATION. A unit the opponent now controls must not still be
   //     standing in the blocker grid of the seat that gave it away — the
   //     afterWindow priority is still to come and can see that line.
   assert.ok(!Object.values(h.state.battle!.blocks).some(col => col.includes(gift)),
     'it left the blocker grid it was declared in');
-  // (3) THE REGION. Both seats are present here, so R112 exclusivity does not
+  // (3) THE REGION. Both seats are present here, so CR 711.4 exclusivity does not
   //     fire and nothing moves mid-battle; the mod stands with its host.
   assert.equal(ent(h, gift)!.region, region, 'it stays in the battle region for the rest of the battle');
   assert.equal(ent(h, mod)!.region, region, 'and so does its augment');
@@ -526,7 +526,7 @@ test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, i
   assert.equal(ent(h, mod)!.region, ent(h, gift)!.region, 'the augment went with it');
 });
 
-test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and the positions still swap (R148/CT-38)', () => {
+test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and the positions still swap (CR 711.5/CT-38)', () => {
   const h = new Harness(2421);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -563,7 +563,7 @@ test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and
   finishBattle(h);
 });
 
-test('an UNMODDED control change behaves exactly as it did before R148 — the negative control', () => {
+test('an UNMODDED control change behaves exactly as it did before the control-change choke point — the negative control', () => {
   const h = new Harness(2422);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

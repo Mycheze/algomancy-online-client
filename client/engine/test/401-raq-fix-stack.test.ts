@@ -2,7 +2,7 @@
  * RAQ fix round F3 — the stack, targets and last-known state, built from the
  * threads the RAQ audit found broken (ledgers/raq.ts, CT-207/208/209/224).
  * The RAQ is the authority (owner, 2026-10-09): where a thread and one of our
- * own rulings disagreed, the ruling was reversed (R225, R157 §20).
+ * own rulings disagreed, the ruling was reversed (CR 101.3): the dead-source formation reading and the Stasis Sentry X-cost reading.
  *
  * The thread-by-thread reproductions live in 390-raq-stack.test.ts; this file
  * holds the whole-pool sweeps and the pieces 390 does not reach.
@@ -31,7 +31,7 @@ function multiTargetSpells(): string[] {
   });
 }
 
-test('R323 sweep: no spell that needs two distinct targets is offered when the region holds one unit', () => {
+test('CR 110.7 sweep: no spell that needs two distinct targets is offered when the region holds one unit', () => {
   // RAQ "[Solved] Target requirements to put effect on stack.": _passer, "You
   // cannot play Fight if there isn't 2 units in the region"; Caleb on Tidal
   // Reversion, "You can't play it if one player doesn't have a valid target".
@@ -59,10 +59,10 @@ test('R323 sweep: no spell that needs two distinct targets is offered when the r
   assert.deepEqual(offered, [], 'offered with only one unit in the region — a required slot cannot be filled');
 });
 
-// ── R325 (CT-209): last-known state — "[Solved] Dead Unit Effect on Stack" ──
+// ── CR 704.7a (CT-209): last-known state — "[Solved] Dead Unit Effect on Stack" ──
 
 /** A attacks with `cols`, D declines to block, and combat runs: the after-combat
- * triggers are on the stack (R261) when this returns */
+ * triggers are on the stack (CR 608.9b) when this returns */
 function toAfterCombat(h: Harness, A: Seat, cols: EntityId[][]): void {
   h.do({ type: 'declareAttack', seat: A, columns: cols });
   pass(h); pass(h);
@@ -77,7 +77,7 @@ const kill = (h: Harness, id: EntityId): void => {
 
 const onStack = (h: Harness, card: string): boolean => h.state.stack.some(i => i.card === card);
 
-test('R325 Embermaw Fledgling gone before its after-combat trigger resolves still counts the attackers it stood with', () => {
+test('CR 714.4 Embermaw Fledgling gone before its after-combat trigger resolves still counts the attackers it stood with', () => {
   // _passer names Embermaw Fledgling among the effects that "remember they were
   // in formation and will work fine"
   const h = new Harness(4020);
@@ -98,7 +98,7 @@ test('R325 Embermaw Fledgling gone before its after-combat trigger resolves stil
   finishBattle(h);
 });
 
-test('R325 Deathglow Strider gone before its after-combat trigger resolves deals its last-known defense', () => {
+test('CR 714.3 Deathglow Strider gone before its after-combat trigger resolves deals its last-known defense', () => {
   const h = new Harness(4021);
   toDeployment(h);
   const A = h.state.initiative, D = other(A);
@@ -113,7 +113,7 @@ test('R325 Deathglow Strider gone before its after-combat trigger resolves deals
   finishBattle(h);
 });
 
-test('R325 Spewing Mushroom gone before its attack trigger resolves still makes a Poison of its last-known power', () => {
+test('CR 714.3 Spewing Mushroom gone before its attack trigger resolves still makes a Poison of its last-known power', () => {
   const h = new Harness(4022);
   toDeployment(h);
   const A = h.state.initiative;
@@ -129,7 +129,7 @@ test('R325 Spewing Mushroom gone before its attack trigger resolves still makes 
   finishBattle(h);
 });
 
-test('R325 Echo of Despair gone before its after-combat trigger resolves still makes its copy', () => {
+test('CR 714.6 Echo of Despair gone before its after-combat trigger resolves still makes its copy', () => {
   const h = new Harness(4023);
   toDeployment(h);
   const A = h.state.initiative;
@@ -143,10 +143,10 @@ test('R325 Echo of Despair gone before its after-combat trigger resolves still m
   finishBattle(h);
 });
 
-test('R325 Lumengrove Lurker gone before its trigger resolves counts the formation it remembers', () => {
+test('CR 714.4 Lumengrove Lurker gone before its trigger resolves counts the formation it remembers', () => {
   // _passer names Lumengrove Lurker too. Its target was chosen against a
   // formation of 3 (it and two Whales); gone, it counts the two Whales left — a
-  // cost-2 target is still within reach, and R324 re-checks the restriction
+  // cost-2 target is still within reach, and CR 704.5 re-checks the restriction
   // against that remembered formation at resolution.
   const h = new Harness(4024);
   toDeployment(h);

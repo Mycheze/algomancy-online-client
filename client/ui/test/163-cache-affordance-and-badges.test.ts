@@ -1,4 +1,4 @@
-/* R192 — CARD-TODO #64 and #65: the cache thumb's first click, and the badge
+/* CR D6.16 — CARD-TODO #64 and #65: the cache thumb's first click, and the badge
  * class attribute that could not be matched.
  *
  * TWO TICKETS, ONE FILE, because both are about the same thing: a piece of
@@ -14,14 +14,14 @@
  * holes in it, so a plain chip rendered `class="badge   "` — badge plus THREE
  * spaces — and a classed one `badge` + three spaces + `proph on`. CSS did not
  * care. Every naive space-separated regex written against it silently never
- * matched, which is to say never FAILED: the R183 agent's `/badge offer/` was
+ * matched, which is to say never FAILED: the `/badge offer/` written for the hand marks (CR D6.14) was
  * an assertion that could not go red, and it only came to light because a
  * mutation that should have reddened it did not.
  *
  * §1  A cached card that is playable now plays on the FIRST click of its thumb.
  * §2  An unplayable thumb keeps the old route: no affordance of its own, so the
  *     click reaches the panel and the dialog opens. The zone stays one click
- *     from being READ, which is why the cache is public (R41) at all.
+ *     from being READ, which is why the cache is public (CR 403.2) at all.
  * §3  The thumb plays the entry it is drawn for, with two live entries on
  *     screen and only one of them playable.
  * §4  A badge chip's class attribute has single spaces and no trailing space —
@@ -34,7 +34,7 @@
  * that did were coupled to LAYOUT rather than behaviour and both failed on a
  * pure refactor that preserved every invariant they named.
  *
- * ⚠ WHAT THIS FILE COULD NOT ASSERT, AND NOW CAN (R205/CT-75). This paragraph
+ * ⚠ WHAT THIS FILE COULD NOT ASSERT, AND NOW CAN (CT-75). This paragraph
  * used to say the driver's fake `closest()` had no ancestors, so it could not
  * model a click BUBBLING from a thumb to the panel around it — and that §2
  * therefore asserted the two facts that COMPOSE to the bubble rather than
@@ -42,7 +42,7 @@
  * nested in a `data-btn` is dead in a browser and was green in the driver, so
  * a whole class of click bug could not be written down here at all.
  *
- * R205 gave `test/ui-driver.ts` real ancestors, resolved out of the rendered
+ * CARD-TODO #75 gave `test/ui-driver.ts` real ancestors, resolved out of the rendered
  * HTML, and `closest()` is now the browser's algorithm. §2 below still asserts
  * the composing facts, because they are the ones that say WHY, but the bubble
  * itself is now watched in `test/176-nested-affordance-and-serialiser.test.ts`
@@ -55,7 +55,7 @@
  * loses to the panel's `data-btn` in a real browser at any depth. `closest`
  * matches the element itself before any ancestor, so a `data-btn` on the thumb
  * is the one attribute that wins. 176 §3 plants #64's version and shows it go
- * red; before R205 it went green.
+ * red; before CARD-TODO #75 gave the driver ancestors it went green.
  *
  * Seeds 16300-16399.
  */
@@ -148,7 +148,7 @@ const dialogOpen = (html: string): boolean => html.includes('cachebox');
 
 /* ═══ §1 THE FIRST CLICK IS THE LAST ONE ══════════════════════════════ */
 
-test('R192 §1: a playable cached card plays on the FIRST click of its region-cache thumb', () => {
+test('CR D6.16: a playable cached card plays on the FIRST click of its region-cache thumb', () => {
   const h = deployment();
   const i = glimpse(h, SEAT, NOW);
 
@@ -174,7 +174,7 @@ test('R192 §1: a playable cached card plays on the FIRST click of its region-ca
 
 /* ═══ §2 THE TRADE-OFF, KEPT ══════════════════════════════════════════ */
 
-test('R192 §2: an unplayable cache thumb carries no affordance, so the click still opens the zone', () => {
+test('CR D6.16: an unplayable cache thumb carries no affordance, so the click still opens the zone', () => {
   const h = deployment(16301);
   const i = glimpse(h, SEAT, LATER);           // {Battle} timing, live stamp, wrong step
 
@@ -185,7 +185,7 @@ test('R192 §2: an unplayable cache thumb carries no affordance, so the click st
   const panel = panelOf(html, SEAT);
 
   // the two facts that compose to "the click reaches the panel" — asserted
-  // apart because they are the ones that say WHY. R205 made the bubble itself
+  // apart because they are the ones that say WHY. CARD-TODO #75 made the bubble itself
   // watchable; 176 §2 does the watching.
   const thumb = scanTag(panel, LATER);
   assert.doesNotMatch(thumb, /data-btn=/, 'the unplayable thumb claims no click of its own');
@@ -193,7 +193,7 @@ test('R192 §2: an unplayable cache thumb carries no affordance, so the click st
   assert.match(panel, /^<div class="regioncache[^"]*" data-btn="cacheopen"/,
     'and the element it is drawn inside IS the open-the-dialog panel');
 
-  // …and that route still works and still lands on a clickable entry. R41: the
+  // …and that route still works and still lands on a clickable entry. CR 403.2: the
   // cache is public precisely so both players can READ it, and one click to
   // inspect the zone is what this section is protecting.
   assert.ok(!dialogOpen(html), 'shut before');
@@ -206,7 +206,7 @@ test('R192 §2: an unplayable cache thumb carries no affordance, so the click st
 
 /* ═══ §3 THE THUMB PLAYS ITS OWN ENTRY ════════════════════════════════ */
 
-test('R192 §3: with two live entries the thumb plays the one it was drawn for', () => {
+test('CR D6.16: with two live entries the thumb plays the one it was drawn for', () => {
   // LATER first, so a client that reached for "the first live entry" — or for
   // the first thumb — would play the wrong card, or nothing at all.
   const h = deployment(16302);
@@ -240,7 +240,7 @@ test('R192 §3: with two live entries the thumb plays the one it was drawn for',
 const badgeClasses = (html: string): string[] =>
   [...html.matchAll(/class="(badge(?: [^"]*)?)"/g)].map(m => m[1]!);
 
-test('R192 §4: a badge chip class has single spaces and no trailing space', () => {
+test('CT-65: a badge chip class has single spaces and no trailing space', () => {
   const h = deployment(16303);
   spawn(h, SEAT, FLIER);                       // a PLAIN chip: no mod, no ctr, no cls
   glimpse(h, SEAT, NOW);                       // and a CLASSED one: `glimpse on`
@@ -269,7 +269,7 @@ test('R192 §4: a badge chip class has single spaces and no trailing space', () 
 /* the state used above is cloned into the client, so nothing here leaks into
  * another test file's Harness — but assert it, because a shared client is the
  * one thing in this file two tests could fight over */
-test('R192: the driver is holding its own state, not a fixture Harness', () => {
+test('CR D6.16: the driver is holding its own state, not a fixture Harness', () => {
   const h = deployment(16304);
   const before = structuredClone(h.state);
   ui.show(structuredClone(h.state));

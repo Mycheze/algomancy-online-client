@@ -16,10 +16,10 @@
  * themselves. A box can therefore never disagree with the board it describes.
  *
  *   printed   the card's own text box
- *   augment   a clause donated by an augment mod slid under it (R55)
+ *   augment   a clause donated by an augment mod slid under it (CR 721.1)
  *   graft     a [Switch] clause folded into the host's cause (Manual p.33)
- *   granted   text handed to it until regroup (R63)
- *   copy      R118: the card this entity currently IS, and what it kept of its
+ *   granted   text handed to it until regroup (CR 109.8)
+ *   copy      CR 201.5: the card this entity currently IS, and what it kept of its
  *             own — a copy changes the game NAME but never the physical card,
  *             so the box has to say both
  *   static    a continuous projection radiating onto it from elsewhere
@@ -40,11 +40,11 @@
  *
  * It costs nothing, because everything that varies per clause is already
  * per-CARD: a mod is its own card, a grant carries its own text, and
- * suppression (R62) is all-or-nothing by rule — "loses all abilities", never
+ * suppression (CR 712.1) is all-or-nothing by rule — "loses all abilities", never
  * "loses its second ability". The one genuinely per-ability fact, a bounded
  * ability whose once-per-turn budget is spent, rides as a `note` line.
  *
- * ── R135: a line never repeats what its own tag already says ──────────
+ * ── a line never repeats what its own tag already says ──────────
  *
  * The renderer prefixes each line with a tag for its origin, and that tag is
  * an ICON — the augment symbol for an augment, ⇄ for a graft. A donated clause
@@ -90,7 +90,7 @@ export interface AttrLine {
   origin: AttrOrigin;
   /** the card that supplies it (null = printed on this card) */
   from: CardName | null;
-  /** false = suppressed (R62): printed on the card, not in play */
+  /** false = suppressed (CR 712.1): printed on the card, not in play */
   active: boolean;
 }
 
@@ -134,7 +134,7 @@ export interface CardTextBox {
  * hyphen in front of one is a SOFT hyphen and is joined away with it; every
  * `- ` in the whole printed pool is one of those.
  *
- * R142: four of them had LOST their `{/n}` in transcription ("adja- cent"), and
+ * Four of them had LOST their `{/n}` in transcription ("adja- cent"), and
  * matching the hyphen rather than the marker is what covered those here. They
  * are joined in the extractor now, where a layout artifact belongs — this rule
  * still carries the five that kept their marker, which the extractor
@@ -156,7 +156,7 @@ export function switchClause(name: CardName): string {
 
 /**
  * A card's text from its text-box `[Augment]` marker onward — the half that
- * transfers when it augments (R55: printed `[Augment]` is a permission, so a
+ * transfers when it augments (CR 721.1a, 721.1b: printed `[Augment]` is a permission, so a
  * card with no marker in its TEXT donates nothing textual and the type line
  * carries the grant instead).
  */
@@ -167,7 +167,7 @@ export function augmentClause(name: CardName): string {
 }
 
 /**
- * R135: drop the printed origin marker a line's own TAG already shows.
+ * Drop the printed origin marker a line's own TAG already shows.
  *
  * Reported verbatim: "an augmented thing will show the :augment: icon twice,
  * once on each line." Both halves are correct on their own — `augmentClause`
@@ -183,14 +183,14 @@ export function augmentClause(name: CardName): string {
 export const dropOriginMarker = (text: string): string =>
   text.replace(/^\[(?:augment|switch1?)\]\s*/i, '');
 
-// ── R151: a token's X, printed as the number it actually is ───────────
+// ── CR D6.9a: a token's X, printed as the number it actually is ───────────
 
 /**
  * Report #99 (CT-33), Bena: *"Tokens should have their X value in their text
  * box modified to say the actual number, rather than X. So a Poison 5 would
  * say 'Put 5 -1/-1 counters on target unit'."*
  *
- * ⚠ THIS IS NOT THE MARKUP CLASS. R134/R141/R142 were each a formatter failing
+ * ⚠ THIS IS NOT THE MARKUP CLASS. The markup bugs were each a formatter failing
  * to consume a token and printing it verbatim. Nothing fails here: `X` is
  * genuinely the word printed on the card, and it is printed on the card
  * because the card is a template — 44 of the pool's 492 cards carry a bare X
@@ -238,7 +238,7 @@ export function liveX(u: Entity): number | undefined {
 /**
  * The one X the pool spells as a VALUE, and every spelling it is not.
  *
- * R141's lesson is that the pool spells the same thing more than one way and a
+ * The bare-digit cost bug's lesson is that the pool spells the same thing more than one way and a
  * regex that knows about one of them looks green while covering half the
  * cards, so this was censused over all 492 printed texts before it was
  * written. What is actually in there:
@@ -264,7 +264,7 @@ export function liveX(u: Entity): number | undefined {
  *
  * The stat forms are excluded by refusing an X that touches a `/`, `+` or `-`
  * on the side that would make it half of a stat pair — the same anchoring
- * discipline R142 used for `/[`, and test/122's sweep still proves no `X/X`
+ * discipline the markup fix used for `/[`, and test/122's sweep still proves no `X/X`
  * in the pool moves.
  */
 const X_VALUE_RE = /(?<![\w+\-/[{])X(?![\w/\]}])/g;
@@ -305,7 +305,7 @@ function defOf(name: CardName): CardDef | null {
   try { return getCard(name); } catch { return null; }
 }
 
-// ── R279: the card an entity has NAMED, printed where the clause is ───
+// ── CR D6.9b: the card an entity has NAMED, printed where the clause is ───
 //
 /**
  * Reports #148 and #153, one day apart and one fact:
@@ -321,12 +321,12 @@ function defOf(name: CardName): CardDef | null {
  * STATE (`Entity.named`) sitting behind a printed variable, and it was
  * readable nowhere.
  *
- * ⚠ THIS IS THE R151 SHAPE AND IT IS DELIBERATELY SOLVED THE R151 WAY. R151
- * (CT-33) is the ruling for a token's X: *"Tokens should have their X value in
- * their text box modified to say the actual number, rather than X"* — a
+ * ⚠ THIS IS THE TOKEN-X SHAPE AND IT IS DELIBERATELY SOLVED THE SAME WAY. CR D6.9a
+ * is the rule for a token's X (CT-33: *"Tokens should have their X value in
+ * their text box modified to say the actual number, rather than X"*) — a
  * display-time substitution of a live value into the sentence the pool already
  * prints. "My last named card" is the same kind of variable and gets the same
- * treatment, which is what keeps this out of R252's failure: no sentence is
+ * treatment, which is what keeps this clear of the failure CR D6.11 prevents: no sentence is
  * authored, so nothing new can acquire the authority of printed text. The box
  * reads "During [Haste] name a card. Triskaidekaphage loses all abilities."
  *
@@ -336,8 +336,8 @@ function defOf(name: CardName): CardDef | null {
  * (types.ts, and engine.ts:589 — an augment mod's anchor is
  * `entity(holder.modOf)`), so the memory of a donated naming sits on the HOST.
  * #148 reads it off the unit; #153 reads the same field off the same entity
- * from the host's side; a mod's own box resolves its host. R268 had already
- * made the host render the donated clause, which is why the substitution needs
+ * from the host's side; a mod's own box resolves its host. The host already
+ * renders the donated clause (CR 721.1), which is why the substitution needs
  * no second site — it is applied to the whole box, exactly as `substituteX` is.
  */
 
@@ -385,18 +385,18 @@ function substituteNamed(text: string, named: CardName): string {
   return text.replace(new RegExp(NAMED_CARD_RE.source, 'gi'), () => named);
 }
 
-// ── R279: the printed PROPHECY BANNER, put back into the text box ─────
+// ── CR D6.10d: the printed PROPHECY BANNER, put back into the text box ─────
 //
 /**
  * Report #150: *"Cards with prophecy should have what that means in their
  * rulings and reminder text area."*
  *
  * ⚠ THE POOL PRINTS NO PROPHECY REMINDER — I looked before writing one, which
- * is what R267 and R252 are both about. Nine cards carry a printed banner
+ * is what CR D6.11 is about. Nine cards carry a printed banner
  * (`CardDef.prophecy`) and none of the 492 printed texts contains a `{i}(…)`
  * span explaining it; `data/rules/Algomancy-Manual.txt` does not contain the
- * word "prophecy" at all, so R252's second channel is silent too. See R279 for
- * the third channel I found and rejected.
+ * word "prophecy" at all, so CR D6.11's second channel is silent too. There is also
+ * a third channel, which I found and rejected.
  *
  * So nothing is authored here either. What IS missing is mechanical: the
  * extractor STRIPS the banner out of `text` into a structured field
@@ -413,11 +413,10 @@ function substituteNamed(text: string, named: CardName): string {
  * `[0l]` becomes the mana circle and the light pip the scan shows beneath The
  * Foretold's title.
  *
- * ⚠ THE AFFINITY IS PART OF IT (R301, 2026-09-20). This drew the mana alone
+ * ⚠ THE AFFINITY IS PART OF IT (CR 203.1, 2026-09-20). This drew the mana alone
  * until then, and the note that stood here said "the scans show a cost pip on
  * all seven" — meaning the mana circle. The affinity pips beside it had been
- * lost in transcription, so no file in the repo could show them and R42
- * declared they did not exist. They do, and `canPayProphecy` now charges
+ * lost in transcription, so no file in the repo could show them and an earlier ruling declared they did not exist. They do, and `canPayProphecy` now charges
  * them, so omitting them would make the card lie about a cost the engine
  * enforces. `iconizeText` already draws this token shape for Ambush's
  * `[4bb]`, so the two banners render alike, as they print alike.
@@ -443,7 +442,7 @@ function printedBoxText(name: CardName): string {
   return [prophecyBanner(name), clean(textOf(name))].filter(Boolean).join('{/n}');
 }
 
-// ── R282: the TYPE-LINE ATTRIBUTE, in the place a player reads rules text ─
+// ── CR D6.10: the TYPE-LINE ATTRIBUTE, in the place a player reads rules text ─
 //
 /**
  * I asked the owner whether four cards whose oracle text is EMPTY — Whispering
@@ -460,7 +459,7 @@ function printedBoxText(name: CardName): string {
  * `CardDef.text`, that field is empty, and `ui/main.ts textBoxHtml` therefore
  * drew the words "no rules text" over a card whose printed marker is the only
  * thing it does — the same sentence, and the same shape, as the prophecy half
- * of R279 three hours earlier.
+ * of the banner fix (CR D6.10d) three hours earlier.
  *
  * ⚠ 21 CARDS, NOT FOUR. Derived, not typed: every card in the pool whose
  * printed box text is empty and whose type line carries an attribute. Flying,
@@ -472,7 +471,7 @@ function printedBoxText(name: CardName): string {
  * ⚠ WHY IT IS SCOPED TO A BOX THAT IS OTHERWISE EMPTY, and this is the whole
  * design decision. The obvious reading — "put every attribute's reminder in
  * every box" — re-opens report #118 on several hundred cards at once (*"the
- * reminders in the 'Rules' page and under units is too verbose"*, R248) and
+ * reminders in the 'Rules' page and under units is too verbose"*) and
  * restates on every card what the attribute ROW above it and the glossary
  * block below it already say. The defect is narrower than that and is exactly
  * what the owner was looking at: a box that declares a card has no rules text
@@ -480,9 +479,9 @@ function printedBoxText(name: CardName): string {
  * itself, nothing is added.
  *
  * ⚠ AND THE SENTENCE IS READ, NEVER COPIED. `ui/glossary.ts` is a rules
- * document (its own header, R206) whose rows are corrected on their own
+ * document (its own header) whose rows are corrected on their own
  * schedule and whose `text` is already the pool's own printed reminder
- * wherever one exists (R248), the manual's where one does not (R252). Reading
+ * wherever one exists, the manual's where one does not (CR D6.11). Reading
  * it here at render time is what makes a corrected row reach the card the same
  * day; a sentence pasted into this file would go on teaching the withdrawn
  * one, which is CT-76 twice over.
@@ -540,22 +539,22 @@ function attrTextLines(name: CardName, active: boolean): TextLine[] {
 }
 
 /**
- * R249 — the spent-budget note wears the marker THAT ABILITY prints.
+ * CR D6.10b — the spent-budget note wears the marker THAT ABILITY prints.
  *
- * ⚠ THIS SUPERSEDES ONE CLAUSE OF R135, and only that one. R135 said the note
+ * ⚠ THIS SUPERSEDES ONE CLAUSE OF THE EARLIER TEXT-BOX RULING, and only that one. That ruling said the note
  * is tagged `[Once]` **always**, on the argument that "the note is about the
- * BUDGET, not the card, and the budget symbol is [Once]". Before R135 it was
+ * BUDGET, not the card, and the budget symbol is [Once]". Before that ruling it was
  * `[Switch1]` always. So the marker has been wrong on one half of the pool in
  * each direction, and the report came back the second time as: *"the [Switch1]
  * and [once] effects are DIFFERENT, despite being very similar functionally.
  * The game should use the one actually relevant to the unit."*
  *
- * The owner is right and R135's argument does not survive contact with the
+ * The owner is right and that ruling's argument does not survive contact with the
  * `note` tag as it is actually rendered. Two reasons:
  *
- *  1. R135's own rule — *a line never repeats what its own TAG already says* —
+ *  1. Its own rule — *a line never repeats what its own TAG already says* —
  *     does not reach this line. `ui/main.ts LINE_TAG.note` is "⏳ spent", not
- *     an icon; there is no symbol on the tag for the text to duplicate. R135
+ *     an icon; there is no symbol on the tag for the text to duplicate. It
  *     borrowed the augment/graft argument for a line that is not shaped like
  *     the augment and graft lines.
  *  2. The two markers are not two spellings of one thing. `[Switch1]` is the
@@ -574,7 +573,7 @@ function attrTextLines(name: CardName, active: boolean): TextLine[] {
  *
  * Two cards spell the budget in PROSE and print no marker at all (The
  * Bonesculptor "each deployment", Gridxlan "during deployment"). They fall
- * back to `[Once]`, which is R135's answer kept exactly where its argument
+ * back to `[Once]`, which is the earlier ruling's answer kept exactly where its argument
  * still holds: with nothing printed to follow, the note names the budget.
  *
  * ⚠ Still the note line only. `[Switch1]` is a real token in printed card text
@@ -585,7 +584,7 @@ const SPENT_SWITCH1 = '[Switch1]';
 
 /**
  * The budget marker one printed clause wears. `[Switch1]` when the clause
- * prints one; `[Once]` otherwise — see R249 for why the fallback is `[Once]`
+ * prints one; `[Once]` otherwise — see the CR D6.10b note above for why the fallback is `[Once]`
  * and not "no marker".
  */
 export const budgetMarker = (clause: string): string =>
@@ -637,7 +636,7 @@ export function graftComposition(e: E, u: Entity): { head: string; parts: { text
 
 /**
  * Every attribute this unit has RIGHT NOW and where each one comes from,
- * plus — when R62 has switched the layer off — the printed ones it would have
+ * plus — when suppression (CR 712.1) has switched the layer off — the printed ones it would have
  * had, marked inactive, because "it has Flying but Flying is off" is the
  * thing a player needs to see.
  *
@@ -654,7 +653,7 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
     out.push({ attr, origin, from, active });
   };
   const live = sup.attrs ? new Set<string>() : e.ownAttrs(u);
-  // R118 layer 0: "printed" means the card this entity currently IS
+  // CR 709.4a: "printed" means the card this entity currently IS
   const def = defOf(e.nameOf(u));
   for (const a of def?.attrs ?? []) put(a, 'printed', null, live.has(a));
   for (const a of u.tempAttrs ?? []) put(a, 'temp', null, live.has(a));
@@ -663,7 +662,7 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
     if (!m || m.appliedAs !== 'augment') continue;
     for (const a of defOf(m.card)?.augmentAttrs ?? []) put(a, 'augment', m.card, live.has(a));
   }
-  // R341: a copy carries the type-line grants of the augment mods it copied
+  // CR 710.2a: a copy carries the type-line grants of the augment mods it copied
   for (const card of e.copiedAugments(u, 'attrs')) {
     for (const a of defOf(card)?.augmentAttrs ?? []) put(a, 'augment', card, live.has(a));
   }
@@ -686,7 +685,7 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
 // ── the stat arithmetic ───────────────────────────────────────────────
 
 export function statBreakdown(e: E, u: Entity): StatBreakdown {
-  // R118 layer 0 IS layer 1's input, so the box reads the engine's own answer
+  // CR 709.4a: the copied card's stats ARE layer 1's input, so the box reads the engine's own answer
   // rather than re-deriving it from a card definition
   const printed: [number, number] = e.printedStats(u);
   const base = e.baseStatsOf(u);
@@ -729,7 +728,7 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
   };
 }
 
-// ── {Unstable} (R135) ─────────────────────────────────────────────────
+// ── {Unstable} ─────────────────────────────────────────────────
 
 /**
  * "It also doesn't show unstable anywhere."
@@ -748,18 +747,18 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
  * play.
  *
  * The reason is worth printing because there are FOUR ways in and they expire
- * differently — a mod can be removed, an R96 stamp lapses at regroup, a printed
+ * differently — a mod can be removed, an until-regroup stamp (CR 803.8d) lapses at regroup, a printed
  * marker never does. Read through `E.isUnstable`, never re-derived: the union
  * lives in the engine and this asks it.
  *
- * ── R271 / REPORT #143: IT IS AN ATTRIBUTE LINE, NOT A FOOTNOTE ──────
+ * ── CR D6.10c / REPORT #143: IT IS AN ATTRIBUTE LINE, NOT A FOOTNOTE ──────
  *
  * The owner, 2026-08-30: *"Instead of putting Unstable reminder text at the
  * bottom of a card ("Unstable — it is modded; it is erased instead of binned
  * (Manual p.35)") put it in it's attribute line."*
  *
  * He is right and the comment above says why it was not: {Unstable} is not in
- * the `Attr` union, so R135 put it where a non-attribute could go. But `Attr`
+ * the `Attr` union, so the text-box fix put it where a non-attribute could go. But `Attr`
  * is the ENGINE's union — what a rule may test for — and `AttrLine` is the
  * BOX's, which is a list of the words printed on the type line. Oorblak and
  * Aberrant Statweaver print `{Unstable}` there; the four acquired ways in put
@@ -771,7 +770,7 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
  * spelling out in prose. And the payoff is the sentence: an attribute row is
  * looked up in the glossary (main.ts `inspectorHtml`), and the glossary's
  * {Unstable} text is the POOL's own printed reminder, read out of printed.json
- * by R267's `leadReminders` (Spell Excavation: *"If it would enter a bin,
+ * by `leadReminders` (CR D6.11; Spell Excavation: *"If it would enter a bin,
  * erase it instead."*). The hand-typed "(Manual p.35)" sentence goes with it.
  */
 
@@ -780,9 +779,9 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
  * attribute rather than in a sentence of its own */
 function unstableOrigin(e: E, u: Entity): AttrOrigin {
   if (u.mods.length > 0) return 'augment';         // "from a mod"
-  if (u.unstable === true) return 'temp';          // R96 — "until regroup"
+  if (u.unstable === true) return 'temp';          // CR 803.8d — "until regroup"
   if (defOf(e.nameOf(u))?.unstable === true) return 'printed';
-  return 'static';                                 // R118 ruling 2 — a copy of a modded card
+  return 'static';                                 // fallback (a fresh copy of a modded card is no longer Unstable, CR 803.8g)
 }
 
 /* ── CT-175 (#157): the until-regroup effects with nothing to quote ────
@@ -802,13 +801,13 @@ function unstableOrigin(e: E, u: Entity): AttrOrigin {
  * line: a temp +X/+Y is a term in the stat arithmetic and a temp attribute is
  * a chip in the attribute row" — and that rule is right about the fields it
  * was written for and silent about the rest. "Until regroup" is DEFINED in
- * exactly one place: the R11 step-3 sweep in engine.ts, whose twelve fields
+ * exactly one place: the CR 506.2 step-3 sweep in engine.ts, whose twelve fields
  * are the whole list. Nine of them already had somewhere to be:
  *
  *   tempPower · tempToughness · baseSet   the stat arithmetic
- *   tempAttrs · unstable (R271/#143)      the attribute row
+ *   tempAttrs · unstable (CR D6.10c/#143)  the attribute row
  *   suppressed                            the ⊘ row
- *   granted (R63) · copies (R118)         lines of their own
+ *   granted (CR 109.8) · copies (CR 710.1)         lines of their own
  *   baseSetSeq                            a tiebreak timestamp for `baseSet`,
  *                                         with no meaning of its own to show
  *
@@ -831,7 +830,7 @@ function unstableOrigin(e: E, u: Entity): AttrOrigin {
  */
 function untilRegroupLines(e: E, u: Entity): TextLine[] {
   const out: TextLine[] = [];
-  // R98. Both fields, one line: `shieldPending` is the damage prevented but
+  // Both fields, one line: `shieldPending` is the damage prevented but
   // not yet paid out as +1/+1 counters, and `E.settleDamagePrevention()`
   // drains it at the end of every commit — so it is almost always 0, and when
   // it is not, it is the same sentence with a number in it.
@@ -846,7 +845,7 @@ function untilRegroupLines(e: E, u: Entity): TextLine[] {
       active: true,
     });
   }
-  // R84 {Alluring}. TWO effects with two different lifetimes (types.ts), and
+  // CR 802.15 {Alluring}. TWO effects with two different lifetimes (types.ts), and
   // main.ts's #117 badge already says which is live; this says the same thing
   // by the same test, so the badge and the box cannot disagree. The
   // can't-attack half is the bare presence of the field — `apply.ts` refuses
@@ -876,7 +875,7 @@ function untilRegroupLines(e: E, u: Entity): TextLine[] {
  * of the board is projecting onto it.
  */
 export function entityTextBox(e: E, u: Entity): CardTextBox {
-  const face = e.nameOf(u);                 // R118: the card it currently IS
+  const face = e.nameOf(u);                 // CR 710.1: the card it currently IS
   const def = defOf(face);
   const sup = e.suppressionOf(u);
   const lines: TextLine[] = [];
@@ -887,7 +886,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   const silenced = sup.abilities;
 
   // 1. the printed box — composed with its grafts when they have a cause.
-  //    R279: `printedBoxText`, not `textOf`, so the prophecy banner the
+  //    CR D6.10d: `printedBoxText`, not `textOf`, so the prophecy banner the
   //    extractor split off is part of the printed card again on every surface.
   const comp = graftComposition(e, u);
   const printed = printedBoxText(face);
@@ -904,9 +903,9 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       active: !silenced,
     });
   } else {
-    // R282: nothing printed in the box — so the card's rules content, if it
+    // CR D6.10: nothing printed in the box — so the card's rules content, if it
     // has any, is the markers on its type line. `!sup.attrs` rather than
-    // `!silenced`: what R62 switches off here is the ATTRIBUTE layer, so this
+    // `!silenced`: what CR 712.1 switches off here is the ATTRIBUTE layer, so this
     // line is struck through by the same suppression that strikes its chip.
     for (const l of attrTextLines(face, !sup.attrs)) lines.push(l);
   }
@@ -922,7 +921,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       const t = switchClause(m.card);
       if (t) {
         lines.push({
-          // R135: the ⇄ tag beside it is already the [Switch] symbol
+          // the ⇄ tag beside it is already the [Switch] symbol
           text: dropOriginMarker(t), from: m.card, origin: 'graft', active: false,
           why: `${u.card} has no [Switch] cause for it to join`,
         });
@@ -936,13 +935,13 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       : '');
     if (!text) continue;
     lines.push({
-      // R135: the augment icon is already on this line's tag
+      // the augment icon is already on this line's tag
       text: dropOriginMarker(text), from: m.card, origin: 'augment',
       active: !silenced,
     });
   }
 
-  // 3. R63 grants
+  // 3. CR 109.8 grants
   for (const g of u.granted ?? []) {
     lines.push({
       text: g.text, from: g.from, origin: 'granted',
@@ -950,12 +949,12 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     });
   }
 
-  // 3b. R118 the COPY layer. The printed line above is already the copied
+  // 3b. CR 710 the COPY layer. The printed line above is already the copied
   //     card's, so what is left to say is the part a player cannot see: which
-  //     PHYSICAL card this is (it bins as itself — ruling 1), how long the
+  //     PHYSICAL card this is (it bins as itself — CR 201.5), how long the
   //     face lasts, and the mods' text a copy inherits without inheriting the
-  //     mods themselves (ruling 2's text half — R336 took away its Unstable
-  //     half: a fresh copy of a modded card is not Unstable).
+  //     mods themselves (CR 710.2a — and, being unmodded, a fresh copy of a
+  //     modded card is not Unstable).
   for (const c of u.copies ?? []) {
     if (!c.facets.includes('name')) continue;
     lines.push({
@@ -964,8 +963,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       from: c.from, origin: 'copy', active: true,
     });
     if (c.modText?.length) {
-      // R279 (#149, the class): the {Unstable} half of this sentence is gone.
-      // R336: and a copy of a modded card is no longer Unstable at all — the
+      // #149 (the class): the {Unstable} half of this sentence is gone.
+      // CR 710.2a: and a copy of a modded card is no longer Unstable at all — the
       // chip shows only when something really makes it so (a real mod).
       lines.push({
         text: `It copied a modded card, so it also has ${c.modText.join(', ')}.`,
@@ -989,11 +988,11 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   lines.push(...untilRegroupLines(e, u));
 
   // ── the attribute row, built BEFORE the projection lines because they are
-  //    now checked against it (R279 §2). `attrLines` is the type line plus
+  //    now checked against it. `attrLines` is the type line plus
   //    what the board is projecting; the two appended rows are the sources it
   //    does not know about.
   const attrRow = attrLines(e, u);
-  // R271 (#143): {Unstable} joins the attribute row rather than the footnotes.
+  // CR D6.10c (#143): {Unstable} joins the attribute row rather than the footnotes.
   // Appended, not spliced: this is a fifth source `attrLines` does not know
   // about — but only once, because a card that PRINTS the marker may already
   // be carrying it.
@@ -1005,8 +1004,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       active: true,
     });
   }
-  // R279 (#150): the printed PROPHECY banner marker, on the same argument R271
-  // made for {Unstable} — `Attr` is the ENGINE's union (what a rule may test
+  // CR D6.10d (#150): the printed PROPHECY banner marker, on the same argument as
+  // {Unstable}'s (CR D6.10c) — `Attr` is the ENGINE's union (what a rule may test
   // for) and `AttrLine` is the BOX's (the printed markers this card wears). It
   // is what carries the {Prophecy} reminder into ui/main.ts's inspector, whose
   // other reminder path scans `text` and can never see a banner the extractor
@@ -1020,7 +1019,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
    *    which is also the only honest thing to print, since the other card's
    *    sentence is about a whole class of units, not about this one.
    *
-   * ── R279 / REPORT #149: A SYNTHESIZED LINE NEVER RESTATES A ROW ────────
+   * ── REPORT #149: A SYNTHESIZED LINE NEVER RESTATES A ROW ────────
    *
    * The owner, room ZSPG: *"the text is often redundant. For example, when the
    * abilities are turned off, there's a red banner that says its abilities are
@@ -1048,7 +1047,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
    * That is a rule rather than a list: a bit goes only when another row of the
    * SAME box states it in EVERY render mode. Deleting the stat bits too would
    * have satisfied the report and quietly made the hover box worse, which is
-   * the trade R248 §2 is about.
+   * the trade CR D6.11b is about.
    */
   // What each blamed source switches off. The banner prints the UNION
   // ("attributes and abilities switched off by A, B"), which is complete only
@@ -1077,8 +1076,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       bits.push(`is base ${p.baseP ?? '\u2014'}/${p.baseT ?? '\u2014'}`);
     }
     if (p.dp || p.dt) bits.push(`${sign(p.dp)}/${sign(p.dt)}`);
-    // R279: only the attributes the row above does NOT already attribute to
-    // this same source. (One switched off by R62 is still ON the row, struck
+    // only the attributes the row above does NOT already attribute to
+    // this same source. (One switched off by CR 712.1 is still ON the row, struck
     // through and attributed, so it is covered either way.)
     const grants = p.attrs.filter(a => !attrRow.some(
       row => row.attr === a && row.origin === 'static' && row.from === p.from));
@@ -1094,7 +1093,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
 
   // 5. bounded abilities whose budget is spent — the one per-ability fact.
   //
-  //    R135: the note says WHICH BUDGET, not what the ability does. It used to
+  //    The note says WHICH BUDGET, not what the ability does. It used to
   //    restate `ab.label`, which is the scripted paraphrase of the very clause
   //    printed above it, so a spent ability read its own text twice and the box
   //    doubled in height ("it also duplicates the text, making it really long").
@@ -1103,7 +1102,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   //    disambiguate — only the SOURCE can repeat (a host plus two modded-on
   //    ones), and that is what these lines name.
   //
-  //    R249: the MARKER is the one this ability prints — `[Switch1]` for a
+  //    CR D6.10b: the MARKER is the one this ability prints — `[Switch1]` for a
   //    bounded graft clause, `[Once]` for a bounded ability — read off the
   //    clause the spent budget belongs to at each of the four emit sites
   //    below, never from a table of card names. See `budgetMarker`.
@@ -1117,7 +1116,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
         const tag = budgetMarker(prefix === 'augment' ? augmentClause(u.card) : ownClause(u.card));
         lines.push({
           text: `${tag} already used this turn.`,
-          from: u.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
+          from: u.card, origin: 'note', active: false, why: 'bounded to once per turn',
         });
       });
     }
@@ -1129,7 +1128,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
         // `[Switch1]` there, and all 25 unbounded ones print none
         lines.push({
           text: `${budgetMarker(switchClause(m.card))} ${m.card}'s grafted effect — already used this turn.`,
-          from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
+          from: m.card, origin: 'note', active: false, why: 'bounded to once per turn',
         });
       }
       // a bounded ability DONATED by an augment mod is budget-keyed by the
@@ -1141,14 +1140,14 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
           if (!(u.budgets[`augment:${m.card}#${i}`] ?? 0)) return;
           lines.push({
             text: `${budgetMarker(augmentClause(m.card))} ${m.card}'s ability — already used this turn.`,
-            from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
+            from: m.card, origin: 'note', active: false, why: 'bounded to once per turn',
           });
         });
       }
     }
   }
 
-  // R151 (CT-33): this instance's X, printed as the number it is. Applied to
+  // CR D6.9a (CT-33): this instance's X, printed as the number it is. Applied to
   // the WHOLE box rather than to the printed line alone: a grant, an augment's
   // donated clause or a projection landing on a Fireball describes the same
   // spell and would otherwise disagree with the line above it. Everything
@@ -1164,10 +1163,10 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     }
   }
 
-  // R279 (#148/#153): and this instance's NAMED CARD, the same way and for the
+  // CR D6.9b (#148/#153): and this instance's NAMED CARD, the same way and for the
   // same reason — a live value standing behind a printed variable. Whole box,
   // so the clause reads the same whether it is printed on this card or donated
-  // onto it by an augment (R268).
+  // onto it by an augment (CR 721.1).
   const named = namedCardOf(e, u);
   if (named) {
     for (const l of lines) l.text = substituteNamed(l.text, named);
@@ -1175,8 +1174,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
 
   const state: string[] = [];
   if (u.absent) state.push('sent to counterattack — it does not exist until round 2');
-  // R279 (#149, the class): only when the substitution above did NOT already
-  // put the number in front of the player. R151 rewrites every X in the box to
+  // #149 (the class): only when the substitution above did NOT already
+  // put the number in front of the player. The substitution (CR D6.9) rewrites every X in the box to
   // the value, so on a Fireball 3 reading "Deal 3 damage" the note was the
   // second statement of one fact; on a token whose text never mentions X it is
   // the only one, and it stays.
@@ -1213,7 +1212,7 @@ function isModified(u: Entity, lines: TextLine[], attrs: AttrLine[], stats: Stat
  */
 export function printedTextBox(name: CardName): CardTextBox {
   const def = defOf(name);
-  // R279: the printed card includes its prophecy banner, which the extractor
+  // CR D6.10d: the printed card includes its prophecy banner, which the extractor
   // splits into `CardDef.prophecy`. Off the table is exactly where that line
   // matters most — a card in hand or in a bin is where you decide to prophesy
   // it — and The Foretold's whole text box IS its banner, so without this the
@@ -1228,9 +1227,9 @@ export function printedTextBox(name: CardName): CardTextBox {
       printed: [def.power, def.toughness], base: [def.power, def.toughness],
       parts: [], counters: 0, damage: 0, changed: false,
     },
-    // R135: off the table the only Unstable a card can have is the printed one
-    // — and R271 (#143) puts it where the rest of the type line already is.
-    // R279 (#150) adds the printed prophecy banner marker on the same footing:
+    // Off the table the only Unstable a card can have is the printed one
+    // — and CR D6.10c (#143) puts it where the rest of the type line already is.
+    // CR D6.10d (#150) adds the printed prophecy banner marker on the same footing:
     // the box's attribute row is the printed markers this card wears, and it is
     // the row ui/main.ts's inspector prints a glossary reminder for.
     attrs: [...new Set([
@@ -1238,7 +1237,7 @@ export function printedTextBox(name: CardName): CardTextBox {
       ...(def?.unstable ? ['Unstable'] : []),
       ...(def?.prophecy ? ['Prophecy'] : []),
     ])].map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
-    // R282: and when there is no printed box at all, the type line is the
+    // CR D6.10: and when there is no printed box at all, the type line is the
     // card's rules text — see `attrReminders`. A card with neither (Tidal
     // Menace, a genuine vanilla) still gets nothing, which is the truth.
     lines: text
@@ -1278,14 +1277,14 @@ const PIP_EL: Record<string, string> = ELEMENT_OF_PIP;
 /** the same pip letters as a character class, for the [4bb]-style cost token */
 const COST_TOKEN_RE = new RegExp(`^[0-9]*[${Object.keys(PIP_EL).join('')}]+$`);
 /**
- * R141 — a cost written as BARE DIGITS. The pool spells the same amount two
+ * A cost written as BARE DIGITS. The pool spells the same amount two
  * ways: `[two]` (24 cards) and `[2]` (12 cards). COST_TOKEN_RE demands at
  * least one pip letter, so the digit form failed every branch above and fell
  * through to "unknown [token]: untouched" — printing a literal "[2]" beside
  * cards whose `[two]` drew the icon. `data/icons/cost_0..9` and `cost_x` have
  * existed the whole time; only one of the two spellings ever reached them.
  *
- * Exactly the R134 shape: a token nobody taught the formatter about does not
+ * Exactly the `{g}` bug's shape: a token nobody taught the formatter about does not
  * announce itself, it just renders as its own source text. Digits are resolved
  * per character like [4bb], so a hypothetical [10] draws 1 then 0.
  */
@@ -1298,7 +1297,7 @@ export const txtIcon = (name: string, fallback: string): string =>
  * HTML. Unknown [tokens] stay bracketed; unknown {attrs} bare their word;
  * {/n}/{i}/{/i} formatting tokens become markup. */
 /**
- * R134: FORMATTING markers are resolved globally, before the icon pass.
+ * FORMATTING markers are resolved globally, before the icon pass.
  *
  * They used to be handled inside the `[token]`/`{token}` replacer, which meant
  * a marker sitting INSIDE an unrecognised bracket token was never reached —
@@ -1318,7 +1317,7 @@ function formatting(escaped: string): string {
   // ITALICS FIRST, so the generic keyword marker below cannot mistake `{i}`
   // for one and swallow the word after it.
   //
-  // R142: the whitespace between the marker and its word is CAPTURED and put
+  // The whitespace between the marker and its word is CAPTURED and put
   // back. `{i1}` sits on whichever side of the word the printed line break
   // happened to leave it — "units {i1}or your" has the space before it,
   // "enemy or{i1} put a" has it after — and a bare `\s*` consumed the second
@@ -1327,12 +1326,12 @@ function formatting(escaped: string): string {
   // engine to see" (#102): a marker that vanishes but takes a space with it is
   // as visible as one that prints.
   //
-  // R284 finishes that sentence. R142 kept the space but still italicised the
+  // The modal-bracket fix finishes that sentence. The earlier fix kept the space but still italicised the
   // word AFTER the marker in both forms, so "enemy or{i1} put" put the italics
   // on "put" — Wither and Bloom was the one card in the pool where the printed
   // emphasis landed on the wrong word, and nobody could see it because the
   // right word ("or") is the one every OTHER modal card italicises. The rule
-  // the marker actually follows is written in R142's own sentence: `{i1}`
+  // the marker actually follows is written in the earlier fix's own sentence: `{i1}`
   // marks the word it is GLUED to. Whichever side that is, the word with no
   // whitespace between it and the marker is the one. Only when it is glued to
   // neither (nothing in the pool) does it fall through to the older
@@ -1358,7 +1357,7 @@ function formatting(escaped: string): string {
 }
 
 /**
- * R142 — the `/[…]` box, report #102: "All the text on cards still includes
+ * The `/[…]` box, report #102: "All the text on cards still includes
  * things that are only for the engine to see (like {i} or / or some other
  * 'markup' notes)".
  *
@@ -1397,7 +1396,7 @@ function formatting(escaped: string): string {
 const COSTBOX = (inner: string): string => `<span class="costbox">${inner}</span>`;
 
 /**
- * R284 — the "or" that separates a MODAL bracket's two halves, in every
+ * CR D6.10a — the "or" that separates a MODAL bracket's two halves, in every
  * spelling it can be wearing when it reaches one of this module's two callers.
  *
  *   raw printed text   "power {i1}or defense", "each enemy or{i1} put a"
@@ -1407,7 +1406,7 @@ const COSTBOX = (inner: string): string => `<span class="costbox">${inner}</span
  *
  * `narrowToMode` splits the RAW text (it runs on a stack item's printed
  * clause, before anything is iconized) and `iconizeText` splits the FORMATTED
- * text (formatting is resolved globally first — R134), so one regex has to
+ * text (formatting is resolved globally first), so one regex has to
  * read both, and it does it by treating the marker and the tag as separators
  * on a par with whitespace. Requiring at least one separator on each side is
  * what keeps it a whole word: nothing matches inside "regroup" or "counters".
@@ -1421,7 +1420,7 @@ const balanced = (s: string): boolean =>
   (s.match(/<i>/g) ?? []).length === (s.match(/<\/i>/g) ?? []).length;
 
 /**
- * R284 — a printed bracket's two MODAL halves, or null when it is not modal.
+ * CR D6.10a — a printed bracket's two MODAL halves, or null when it is not modal.
  *
  * The discriminator is the printed "or", and it is sound both ways round:
  * every one of the pool's eight modal brackets contains one ("[power or
@@ -1429,7 +1428,7 @@ const balanced = (s: string): boolean =>
  * each enemy or put a +1/+1 counter on each of your units.]"), and not one of
  * its thirteen COST brackets does ("[Sacrifice a unit]", "[Remove X +1/+1
  * counters from allies]", "[Erase X cards from your bin]", "[Pay 2 life]").
- * That is the whole taxonomy — R157 §21: *"All text on cards that's in [square
+ * That is the whole taxonomy (CR 205.3) — the owner: *"All text on cards that's in [square
  * brackets] like that is either an additional cost or a modal choice."*
  */
 export function modalHalves(body: string): [string, string] | null {
@@ -1441,12 +1440,12 @@ export function modalHalves(body: string): [string, string] | null {
 }
 
 /**
- * R284 — the printed text with a modal bracket's UNCHOSEN half taken out.
+ * CR D6.10a — the printed text with a modal bracket's UNCHOSEN half taken out.
  *
  * Asked for by the owner in the same breath as the two boxes: *"when it's put
  * onto the stack, the non chosen mode vanishes, making the card read how it
  * will function"*. A declared item is no longer offering a choice — the choice
- * happened in the cast window (R57) — so the card on the stack should read as
+ * happened in the cast window (CR 702.5) — so the card on the stack should read as
  * the one thing it is now going to do, and the surviving half keeps its box so
  * you can still see that a mode was declared at all.
  *
@@ -1467,7 +1466,7 @@ export function narrowToMode(text: string, half: 0 | 1): string {
 }
 
 /**
- * R284 — a bracket the PRINTED CARD draws, as the box it draws.
+ * CR D6.10a — a bracket the PRINTED CARD draws, as the box it draws.
  *
  * A MODAL bracket gets TWO boxes with the "or" between them rather than one
  * box around the pair. The owner's ask, on seeing "[unit *or* spell]" drawn as
@@ -1487,7 +1486,7 @@ export function iconizeText(raw: string): string {
   return formatting(esc(raw))
     .replace(/(\/?)\[([^\[\]]+)\]|\{([^{}]+)\}/g, (tok, slash?: string, br?: string, bc?: string) => {
     if (br !== undefined) {
-      // R142: `/[` is the printed card's "draw this bracket as a box" marker
+      // `/[` is the printed card's "draw this bracket as a box" marker
       const box = slash ? COSTBOX : (s: string) => s;
       const body = br.toLowerCase();
       const icon = TEXT_ICON[body];
@@ -1500,15 +1499,15 @@ export function iconizeText(raw: string): string {
           return el ? txtIcon(el, c) : txtIcon(`cost_${c}`, c);
         }).join(''));
       }
-      // R284 — an unrecognised bracket is one of two very different things,
+      // CR 205.3c — an unrecognised bracket is one of two very different things,
       // and WHITESPACE tells them apart:
       //
       //  · a one-word body is a MARKER nobody taught the formatter about, and
-      //    R134/R141's lesson is that it has to announce itself rather than
+      //    the `{g}` and bare-digit bugs' lesson is that it has to announce itself rather than
       //    render as something plausible. It keeps its brackets and stays
       //    loud. (`[weird]`, and every future icon name.)
       //  · a body with a space in it is PROSE — printed card text, so a cost
-      //    or a mode (R157 §21), and it is drawn as the printed box.
+      //    or a mode (CR 205.3), and it is drawn as the printed box.
       //
       // That second branch is what the `/` marker used to be the only way in
       // to, and the marker is upstream transcription: eight of the pool's

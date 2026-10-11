@@ -1,6 +1,6 @@
 /**
  * A LOOP THAT COMMITS A COLLECTED LIST, WHEN THE LIST COMES BACK EMPTY —
- * CARD-TODO #74 and #81(b) / R209.
+ * CARD-TODO #74 and #81(b) / CR D7.3.
  *
  * ── THE CLASS, AND THE DEFINITION THIS FILE IS SWEPT AGAINST
  *
@@ -36,7 +36,7 @@
  *    a run that emits nothing. It reported this whole family clean because of a
  *    property of its RIG that nobody had written down: **both of its board
  *    states gave every present seat a unit.** The empty-collection branch was
- *    not rare there, it was UNREACHABLE. R209 adds a third board — `barren`,
+ *    not rare there, it was UNREACHABLE. The CT-74 round adds a third board — `barren`,
  *    both seats present in a battle region that every unit has left — and it
  *    convicted six labels on its first run, one of which (`Perish`) was on no
  *    ticket and in no report. Eight of the twelve below are caught by it now.
@@ -130,7 +130,7 @@ function barren(seed: number): Board {
 
 /**
  * HOME — deployment, the caster alone in his own region, with the opponent
- * intact in his. R25's ordinary out-of-battle shape, and the board 158 uses.
+ * intact in his. CR 601.4d's ordinary out-of-battle shape, and the board 158 uses.
  * Used here only for the two CT-81(b) cards, whose empty collection is a list
  * of SEATS rather than of picks.
  */
@@ -222,7 +222,7 @@ function assertClauseSpoke(evs: EngineEvent[], card: string, clause: string): vo
     + `The ${evs.length} event(s) it did emit are the OTHER half of the card:\n`
     + `${evs.map(e => `    ${e.type}: ${e.msg}`).join('\n') || '    (none at all)'}\n`
     + "Add a g.ev('info', '<Card>: <why>.') to that path. \"Nothing happened\" is a legitimate "
-    + 'outcome; not SAYING so never is. (R209 / CARD-TODO #74.)');
+    + 'outcome; not SAYING so never is. (CR D7.3 / CARD-TODO #74.)');
 }
 
 // ── 1. Cull ─────────────────────────────────────────────────────────────
@@ -436,15 +436,15 @@ test('Dragnol — the [2] is paid and 2 life gained; with no opponent here the d
   const b = home(7911);
   const others = b.g.s.regions[b.region]!.presentSeats.filter(s => s !== b.A);
   assert.deepEqual(others, [],
-    'Dragnol: this test is R25\'s case — the caster alone in his home region out of battle');
+    'Dragnol: this test is CR 601.4d\'s case — the caster alone in his home region out of battle');
   const lives = b.g.s.players.map(p => p.life);
-  assert.ok(lives[b.D]! > 2, 'Dragnol: the opponent HAS life to lose — the no-op is R25, not exhaustion');
+  assert.ok(lives[b.D]! > 2, 'Dragnol: the opponent HAS life to lose — the no-op is CR 601.4d, not exhaustion');
   const evs = resolve(augmentOf('Dragnol'), b, { sourceName: 'Dragnol' });
   assertClauseSpoke(evs, 'Dragnol', 'each opponent loses 2 life');
   assert.equal(b.g.player(b.A).life, lives[b.A]! + 2,
     'Dragnol: the gain half is unchanged — the player paid [2] and got the 2 life');
   assert.equal(b.g.player(b.D).life, lives[b.D]!,
-    'Dragnol: a seat that is not in this region loses nothing (R25)');
+    'Dragnol: a seat that is not in this region loses nothing (CR 601.4d)');
 });
 
 // ── 12. Shoreline Specter — HALF-SILENT, CT-81(b) ───────────────────────
@@ -455,7 +455,7 @@ test('Dragnol — the [2] is paid and 2 life gained; with no opponent here the d
 test('Shoreline Specter — its prompt promises "each opponent loses 2 life"; with none here it says why not', () => {
   const b = home(7912);
   const others = b.g.s.regions[b.region]!.presentSeats.filter(s => s !== b.A);
-  assert.deepEqual(others, [], 'Shoreline Specter: R25\'s case — nobody else in this region');
+  assert.deepEqual(others, [], 'Shoreline Specter: CR 601.4d\'s case — nobody else in this region');
   const victim = b.g.unitsOf(b.A, b.region)[0];
   assert.ok(victim, 'the rig needs a unit to recall, or the decline branch runs instead');
   const lives = b.g.s.players.map(p => p.life);
@@ -476,7 +476,7 @@ test('Shoreline Specter — its prompt promises "each opponent loses 2 life"; wi
   assert.equal(b.g.player(b.A).hand.length, hand + 1,
     'Shoreline Specter: the recalled ally really reached its owner\'s hand');
   assert.deepEqual(b.g.s.players.map(p => p.life), lives,
-    'Shoreline Specter: no opponent is here, so nobody loses 2 life (R25)');
+    'Shoreline Specter: no opponent is here, so nobody loses 2 life (CR 601.4d)');
 });
 
 // ── 13. THE CLASS ITSELF ────────────────────────────────────────────────
@@ -529,7 +529,7 @@ test('the empty-collection class and CARD-TODO #70\'s region class are disjoint'
   // are watched in two files — 158 for "no seat qualified", this one for "no
   // seat had anything to give" — and the split only works if no card is in
   // both lists with only one of them maintained. Malicious Hardware is the
-  // seam: R187 gave it the CT-70 line and the CT-74 line in the same commit,
+  // seam: the CT-70 repair gave it the CT-70 line and the CT-74 line in the same commit,
   // and it is 158's, not this file's.
   const ct70 = new Set([
     'Bloated Manablub', 'Blightmound', 'Linked Extinction', 'Void Memory',

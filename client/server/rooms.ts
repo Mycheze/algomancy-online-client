@@ -16,7 +16,7 @@ import type { WebSocket } from 'ws';
 import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase, Seat } from '../engine/src/types.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
-// R216 — the scenario tester. `dealScenario` IS `createGame` when no scenario
+// CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
 // imported instead of `createGame` rather than beside it, deliberately: a
@@ -27,7 +27,7 @@ import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSe
 import { dealScenario, isDealId, isSandboxId } from './scenarios.ts';
 import { legalForSeat, other } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
-// R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
+// The on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
 // every reader knows.
@@ -42,11 +42,11 @@ import { engineVersion } from './engine-version.ts';
 // inside checkouts of arbitrary past commits. Importing FROM it is free.
 import { digest, signature } from './replay-probe.ts';
 import { zoneDelta } from './zonedelta.ts';
-// R312: what an action showed each seat of the hidden cards (the undo floor)
+// CR D4.3e: what an action showed each seat of the hidden cards (the undo floor)
 import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
 import { gamesDir } from './statepaths.ts';
-// R290: a conceded game weighs by the turn it was conceded on — stamped here,
+// CR D8.5: a conceded game weighs by the turn it was conceded on — stamped here,
 // read by the folds. The type and the sanitizer only; the thresholds stay in
 // concession.ts, which is the one place they are named.
 import { sanitizeConcession, type Concession } from './concession.ts';
@@ -83,7 +83,7 @@ export function roomElementCount(room: { custom?: RoomCustom }): number {
 /** A saved room's custom rules. A file that names custom rules this build
  * cannot read is REFUSED, never restored as a standard game: its log was
  * recorded against a custom deal, and replaying it onto a standard one would
- * produce a plausible room describing a game nobody played (R216's argument). */
+ * produce a plausible room describing a game nobody played (the scenario tester's argument). */
 function restoreCustom(raw: { rules?: unknown; deal?: unknown } | undefined | null, mode: GameMode): RoomCustom | undefined {
   if (raw === undefined || raw === null) return undefined;
   const deal = sanitizeDraftDeal(raw.deal);
@@ -117,7 +117,7 @@ const GAMES_DIR = gamesDir();
  *            (test-hidden.ts asserts it directly) — which is exactly what
  *            makes an undo here always safe.
  *   'haste'  the haste step — plays resolve immediately, no priority, no
- *            responses (R18). Deployment's hazards, and no more.
+ *            responses (CR 504.3). Deployment's hazards, and no more.
  *   'deploy' simultaneous deployment, as before.
  *
  * Everything downstream is ONE rule: **the key changed → flush the old
@@ -128,7 +128,7 @@ export type SegKey = 'plan' | 'haste' | 'deploy';
 
 /** Which hidden segment is this state in, if any?
  *
- * R154 moved the predicate itself into the engine (`hiddenSegment` in
+ * The seat-aware gate fix (CT-44) moved the predicate itself into the engine (`hiddenSegment` in
  * apply.ts) because the engine's own decision gate now turns on it, and two
  * copies of one rule is the drift BL-19 is this repo's standing example of.
  * The doc block above stays here, where the segments are actually about the
@@ -142,8 +142,8 @@ export function segmentKey(s: GameState): SegKey | null {
   return hiddenSegment(s);
 }
 
-/* ── R310 (owner, 2026-10-04, report #192) — A GLIMPSE INSIDE A HIDDEN STEP
- *    WAITS FOR THE REVEAL. R235 is reversed. ──────────────────────────────
+/* ── CR D6.2 (owner, 2026-10-04, report #192) — A GLIMPSE INSIDE A HIDDEN STEP
+ *    WAITS FOR THE REVEAL. The earlier live-reveal ruling is reversed. ──────────────────────────────
  *
  * The owner: "Glimpse cards shouldn't be shown to an opponent *during*
  * Deployment. They should be a part of the recap only."
@@ -151,15 +151,15 @@ export function segmentKey(s: GameState): SegKey | null {
  * HISTORY, because the code used to say the opposite. The hold below
  * (`heldEvents`) parks, for the other seat, every event an action produces
  * inside a hidden simultaneous step (resource, haste, deployment) and flushes
- * them at the barrier. R188 found that this kept `Oracle of Foretelling`'s
+ * them at the barrier. The glimpse investigation found that this kept `Oracle of Foretelling`'s
  * Glimpse 5 silent until deployment closed (Glook, Lilbot, Visionary
  * Construct, Maw of Despair and Seer of Empty Spaces reach the same state;
  * the {Battle} Glimpse cards and Lifebound Seer only ever glimpse in battle,
- * where nothing is held). R235 then made `glimpsed` a one-entry exemption —
+ * where nothing is held). An earlier ruling then made `glimpsed` a one-entry exemption —
  * "the card says REVEAL" — so it went out live, popped the opponent's notice
  * mid-step, and was for that very reason MISSING from the recap.
  *
- * R310 removes the exemption outright (`escapesHold` and its set are gone, from
+ * CR D6.2 leaves no exemption: it is removed outright (`escapesHold` and its set are gone, from
  * view.ts and from all three hidden-step runners: this file, ui/solo.ts and
  * ui/replayserver.ts). A glimpse is now held like every other event: flushed
  * exactly once at the barrier, inside the playback frame of the action that
@@ -178,7 +178,7 @@ export function segmentKey(s: GameState): SegKey | null {
  * not parked for them. Asked of the queue itself, so main.ts never needs a rule
  * of its own about which events those are. Inside a step that is only the
  * events of `seat`'s OWN actions (a forced step of theirs drained on the other
- * seat's tick, say) — since R310 nothing of the other seat's escapes the hold.
+ * seat's tick, say) — since nothing of the other seat's escapes the hold (CR D6.1a).
  *
  * Outside a hidden segment nothing is held and this is the identity. */
 export function unheldFor(room: Room, seat: Seat, evs: EngineEvent[]): EngineEvent[] {
@@ -186,7 +186,7 @@ export function unheldFor(room: Room, seat: Seat, evs: EngineEvent[]): EngineEve
   return evs.filter(e => !held.has(e));
 }
 
-/* ── R150 / CT-32: ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER SEAT ──────
+/* ── CR D2.1b / CT-32: ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER SEAT ──────
  *
  * Playtest #98 (SMVJ, action 238): *"Rashi's start of combat (doing all her
  * Wraith triggers) doesn't need to take away from what I'm doing in
@@ -210,8 +210,8 @@ export function unheldFor(room: Room, seat: Seat, evs: EngineEvent[]): EngineEve
  * That gate is right in BATTLE, where priority is sequential and an opponent
  * mid-resolution genuinely does hold the game. It is wrong in a HIDDEN
  * SIMULTANEOUS SEGMENT, where by construction both seats are acting at once
- * and neither can see the other — R144 put deployment triggers on the stack,
- * so from that ruling onward a pile of start-of-deployment Wraith triggers
+ * and neither can see the other — deployment triggers use the stack (CR 703.7),
+ * so a pile of start-of-deployment Wraith triggers
  * sits there suspended on its controller's decision while the other player is
  * simply trying to deploy.
  *
@@ -243,14 +243,14 @@ export const MAX_DEFERRED = 8;
 /**
  * The legal actions the server publishes to `seat`.
  *
- * ⚠ R154 SHRANK THIS, and the sliver that is left is the interesting part.
+ * ⚠ The seat-aware gate (CR D2.1b) shrank this, and the sliver that is left is the interesting part.
  *
- * R150 wrote this as a shadow state with `decision`/`suspension` nulled,
+ * The first version wrote this as a shadow state with `decision`/`suspension` nulled,
  * because `legalActions` opened with a global `if (s.decision) return
  * legalDecisionActions(...)` and there was no other way past it. That made the
  * server the second place the "who may act while a question is open" rule was
  * written, and the FIRST place — the engine — went on freezing hotseat and
- * the whole test suite (CARD-TODO #44). R154 moved the rule into the engine,
+ * the whole test suite (CARD-TODO #44). The seat-aware gate moved the rule into the engine,
  * so for almost everything this is now `legalActions`, once, with no shadow.
  *
  * THE EXCEPTION, and why deleting this function outright was wrong: the
@@ -260,12 +260,12 @@ export const MAX_DEFERRED = 8;
  * still OFFER them their options and park what arrives, because parking is
  * not applying. The two layers disagree ON PURPOSE:
  *
- *      engine   "not yet"          (and it means it — R85 would erase you)
+ *      engine   "not yet"          (and it means it — the rollback would erase you)
  *      server   "go ahead, I'll hold it"   (arrivalVerdict → 'defer')
  *
  * `legalActions` must NOT be widened to match, whatever the symmetry argues:
  * its contract is "every action returned is legal", the fuzzer checks it, and
- * an engine that offers what it refuses is the exact half-fix R150's notes
+ * an engine that offers what it refuses is the exact half-fix the first version's notes
  * warn about. An offer the SERVER makes good on with a queue is a different
  * thing from an offer the engine breaks.
  *
@@ -273,7 +273,7 @@ export const MAX_DEFERRED = 8;
  * the state, which beats trusting the room's cached copy — and is kept only so
  * this stays a drop-in for every existing call site.
  */
-// (moved to view.ts — R297: the browser's solo game offers the same list)
+// (moved to view.ts — the browser's solo game, Learn to Play, offers the same list)
 export { legalForSeat };
 
 /**
@@ -307,7 +307,7 @@ export type ArrivalVerdict =
    * and it lands as soon as that decision closes */
   | 'defer'
   /** hand it to the engine and let it refuse by name (or accept it) — the
-   * pre-R150 path, kept for every case deferral must not cover */
+   * the pre-deferral path, kept for every case deferral must not cover */
   | 'refuse';
 
 /**
@@ -315,14 +315,14 @@ export type ArrivalVerdict =
  *
  * The negative cases are the load-bearing ones:
  *  - a `decide`/`concede` is never parked: `decide` is the very thing that
- *    closes the decision, and a concede must always be reachable (R65).
+ *    closes the decision, and a concede must always be reachable (CR 104.4a).
  *  - a decision belonging to the ACTING seat is never parked. It is their own
  *    question, they must answer it, and the engine's refusal is the right
  *    answer — this is the negative control the tests assert.
  *  - outside a hidden segment there is no concurrency to protect: battle is
  *    sequential and the block is correct.
  *
- * R154 NARROWED IT. Before, every action arriving while the opponent held a
+ * The seat-aware gate narrowed it. Before, every action arriving while the opponent held a
  * question was parked, because the engine refused all of them — which meant a
  * player deploying against a twelve-trigger pile watched their own clicks
  * queue up and land in a burst thirty seconds later. That is still #98's
@@ -349,7 +349,7 @@ export function arrivalVerdict(
 }
 
 /**
- * R154's second door onto the same queue: the engine ACCEPTED the action into
+ * The second door onto the same queue (CR D2.1d): the engine ACCEPTED the action into
  * a draft, discovered on the way out that it had disturbed the other seat's
  * open question, and threw the draft away whole (`IllegalAction.disturbs`).
  *
@@ -357,8 +357,8 @@ export function arrivalVerdict(
  * the card, its targets and the board — so `arrivalVerdict` cannot predict
  * this case and must not try. Park it here instead, where it is now a fact
  * rather than a forecast: the player gets the same "lands when they answer"
- * they would have got from a prediction, and R150's promise that nothing goes
- * back on the wire as a refusal survives R154's narrowing.
+ * they would have got from a prediction, and CR D2.1c's promise that nothing goes
+ * back on the wire as a refusal survives the seat-aware narrowing.
  */
 export function deferrableRefusal(room: Room, action: Action, err: unknown): boolean {
   return err instanceof IllegalAction && err.disturbs === true
@@ -468,9 +468,9 @@ function tagOf(a: Action): string {
 /**
  * The entity id an activation's `via` names, or null when it names none.
  *
- * R181, and this was a live bug rather than a tidy-up. `ActivateVia` has THREE
+ * This was a live bug rather than a tidy-up. `ActivateVia` has THREE
  * shapes — the string `'augment'`, `{ mod }` (activate through a mod on the
- * unit), and `{ face }` (activate through a granted face's text, R63). The
+ * unit), and `{ face }` (activate through a granted face's text, CR 109.8). The
  * three sites below were written when `{ mod }` was the only OBJECT shape, so
  * they tested `typeof via === 'object'` and read `.mod` — which on a `{ face }`
  * activation is `undefined`. `entityRefs` then reported `undefined` as a
@@ -483,7 +483,7 @@ function tagOf(a: Action): string {
  *
  * The engine declares `type Seat = number` (with `// 0 | 1 in 1v1` next to it),
  * so `heldEvents[other(seat)]` on a `[T, T]` reads as `T | undefined` — that is
- * where R181's two "Object is possibly 'undefined'" errors came from, and they
+ * where the first typecheck's two "Object is possibly 'undefined'" errors came from, and they
  * are strictness noise, not defects: every seat reaching those lines came from
  * `pickSeat` (which returns 0 or 1 and nothing else) or from an action the
  * engine already accepted. Written as a narrowing rather than a `!` so that if
@@ -591,8 +591,8 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
     case 'prophesy': parts.push(a.from, a.from === 'cache' ? at(p?.cache, a.index)
       : at(a.from === 'hand' ? p?.hand : p?.bin, a.index)); break;
     case 'playFromBin': parts.push(at(p?.bin, a.binIndex)); break;
-    // R311: the optional modes join the key only when present, so every
-    // pre-R311 playCached keys exactly as it always did
+    // CR 403.3b: the optional modes join the key only when present, so every
+    // older playCached keys exactly as it always did
     case 'playCached': parts.push(at(p?.cache, a.index), ...(a.mode ? [a.mode] : []),
       ...(a.eraseGrant ? ['erase'] : [])); break;
     case 'castSpellToken': parts.push(sym(a.entityId), ...(a.ordered ? ['ordered'] : [])); break;
@@ -616,7 +616,7 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
         (a.send ?? []).map(sym).join(','), (a.spellTokens ?? []).map(sym).join(','));
       break;
     case 'decide': {
-      // NEVER the decision's id: R85 takes decision ids off `nextId`, so a
+      // NEVER the decision's id: the suspension rollback takes decision ids off `nextId`, so a
       // renumbering moves them without anything about the decision changing.
       // The kind, the option count and the CHOSEN options' own labels are what
       // the answer meant.
@@ -678,7 +678,7 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
  * that file's header for the `ws` problem that forced the restatement. */
 
 /** Two skip sets describe the same fork iff they lost the same indices IN THE
- *  SAME WAY. R191 added the second half: a restore can now report an action
+ *  SAME WAY. The CARD-TODO #67c fix added the second half: a restore can now report an action
  *  index as 'changed' (it still replays, it just means something else) where a
  *  previous one reported it as 'lost', and those are different facts about the
  *  same game — collapsing them would leave the file claiming the first. */
@@ -727,13 +727,13 @@ export interface Room {
    */
   league?: RoomLeague;
   /**
-   * R216 — the scenario this room was dealt with, if any. PERSISTED, beside
+   * CR D8.4 — the scenario this room was dealt with, if any. PERSISTED, beside
    * `seed`, because it is part of the deal.
    *
    * A room's state is a function of `(seed, mode, els, decks, scenario,
    * actions)`. Recording the id (and not a `GameState`) is the whole design:
    * `rebuild()`, `restoreRooms()`, `undoActionAt()`, `replay-room.ts` and the
-   * R200 divergence diff all keep working on a scenario room, because it is
+   * divergence diff all keep working on a scenario room, because it is
    * still a seed and a log. See scenarios.ts's header for the four deal sites
    * this had to reach and the one it deliberately does not.
    *
@@ -745,13 +745,13 @@ export interface Room {
    * Part of the DEAL like `scenario`: every fresh()/rebuild() in this file
    * passes `custom?.deal` (test-custom-rules.ts scans for it). */
   custom?: RoomCustom;
-  /** R298: a SINGLE CARD DUEL — constructed, with each deck thirty copies of
+  /** CR D8.2: a SINGLE CARD DUEL — constructed, with each deck thirty copies of
    * one card (checkSingleCard). A seat brings a card NAME, never a deck list,
    * and the game is recorded, tagged and kept out of every player fold, the
    * way a custom game is; it feeds the card ladder instead (cardladder.ts).
-   * Absent on every other room, and on every file written before R298. */
+   * Absent on every other room, and on every file written before Single Card Duel existed. */
   single?: true;
-  /** R298: the last pair of cards this duel was DRAWN on before a deal — both
+  /** CR D8.2c: the last pair of cards this duel was DRAWN on before a deal — both
    * spells that make no units (apply.ts makesUnits), so neither player could
    * ever enter the other's region. Seat order. The room went back to waiting
    * with both cards cleared, and both seats are shown the pair and asked to
@@ -766,7 +766,7 @@ export interface Room {
    * Who won, RECORDED AT THE TIME and persisted — not re-derived.
    *
    * A saved game is replayed to restore it, and an old log replayed onto a
-   * newer engine can diverge (R34 re-ordered simultaneous triggers; the log
+   * newer engine can diverge (the change to identical simultaneous triggers, now CR D1.2d, re-ordered them; the log
    * then describes a board that no longer exists). When that happens the
    * replay stops short of the ending, and the game reads as if nobody won —
    * which is how three real wins turned into "five unfinished games". A fact
@@ -775,7 +775,7 @@ export interface Room {
    */
   winner: Seat | null;
   /**
-   * R290 — IF a concede decided this game: who, and on which game turn.
+   * CR D8.5 — IF a concede decided this game: who, and on which game turn.
    * Stamped by applyToRoom the moment the concede lands (the turn is
    * `state.turn` as the action was applied), persisted with the room, and
    * carried onto the RecordedGame by history.ts. It is what makes a turn-1
@@ -819,7 +819,7 @@ export interface Room {
    * skips are read-only forensics, nobody is going to play into it, and the
    * saved corpus has to stay readable. Same condition as recordFork().
    *
-   * ⚠ ONLY REFUSALS, not R191 drift. A drifted log still replays straight
+   * ⚠ ONLY REFUSALS, not drift. A drifted log still replays straight
    * through — every action applies, the board is a board that log really does
    * produce — so it is one game, recorded honestly, on rules that moved.
    * `forks` says so and the players are told. A refusal is different in kind:
@@ -834,7 +834,7 @@ export interface Room {
    */
   frozen: string | null;
   /**
-   * R200 — which engine recorded which stretch of this log. Persisted.
+   * which engine recorded which stretch of this log (see replay-room.ts). Persisted.
    *
    * One entry per engine this game has been played under, in order, each
    * naming the action index it took over at. `versions[0]` is stamped at
@@ -848,7 +848,7 @@ export interface Room {
    * which is an upper bound, late by up to six actions in every case anyone
    * has measured.
    *
-   * Additive: a file written before R200 has no `versions` and restores
+   * Additive: a file written before replay versioning has no `versions` and restores
    * exactly as it always did. It simply cannot be replayed --as-recorded,
    * which is a true statement about it rather than a failure.
    */
@@ -860,7 +860,7 @@ export interface Room {
    */
   lost: LostAction[];
   /**
-   * R191 — actions the most recent RESTORE replayed happily while they came to
+   * CARD-TODO #67c — actions the most recent RESTORE replayed happily while they came to
    * mean something else. DERIVED (never persisted), always `kind: 'changed'`,
    * and deliberately NOT part of `lost`.
    *
@@ -933,7 +933,7 @@ export interface Room {
    * undo may splice a seat's own actions at/after this point */
   segStartIndex: number;
   /**
-   * R150/CT-32: actions parked behind the OTHER seat's open decision inside a
+   * CR D2.1c/CT-32: actions parked behind the OTHER seat's open decision inside a
    * hidden simultaneous segment, per seat, in arrival order.
    *
    * DERIVED and never persisted — an action only reaches `actions` once it has
@@ -945,7 +945,7 @@ export interface Room {
    */
   deferred: [Action[], Action[]];
   /**
-   * R312 — per action, what it showed each seat of the HIDDEN cards
+   * CR D4.3e — per action, what it showed each seat of the HIDDEN cards
    * (server/seen.ts `seenBy`; `[]` for nothing, which is nearly every action).
    * DERIVED, never persisted, parallel to `actions`.
    *
@@ -996,7 +996,7 @@ export interface Room {
    * created") instead of by a process-local tag. DERIVED, parallel to
    * `actions`, and PERSISTED as the file's `posRefs`.
    *
-   * This is what R191's restart comparison (`driftedAgainst`) reads. A key
+   * This is what the restart comparison (`driftedAgainst`) reads. A key
    * written by the process that played the game and one recomputed by a fresh
    * process after a restart agree exactly when the action still means what it
    * meant — which tags could never promise, because a new process numbers them
@@ -1252,7 +1252,7 @@ export interface Room {
    *
    * PERSISTED, because it is the one thing a restart must not reset. Restore
    * used to age rooms by the file's mtime, and every boot re-wrote every live
-   * file (the R200 version stamp), so nothing ever aged out: 79 rooms, 64 of
+   * file (the replay version stamp), so nothing ever aged out: 79 rooms, 64 of
    * them under five actions, all resident, all "touched" at the last deploy.
    * A file written before the field is backfilled by `lastActionOf`.
    */
@@ -1315,7 +1315,7 @@ export interface Lobby {
 }
 
 /** an uncommitted attack/block declaration: columns of entity ids, plus the
- * counterattackers being set aside (round-1 blocks), and — R321 — the block
+ * counterattackers being set aside (round-1 blocks), and — CR 606.4a — the block
  * columns to the LEFT of the attack, `left[0]` just left of column 1 */
 export interface Formation { cols: number[][]; send: number[]; left?: number[][] }
 
@@ -1507,7 +1507,7 @@ export function setPassAll(room: Room, seat: Seat, arm: PassAllArm | null): bool
  *
  * ⚠ THE RELEASE IS THE CLIENT'S OWN FUNCTION (ui/passrelease.ts `passAllRelease`),
  * asked with the arm the client sent. Not a mirror of it: a second list here
- * would be the second opinion R245 forbids. The server's state is never older
+ * would be the second opinion CR D1.3 forbids. The server's state is never older
  * than the client's view, so this releases whenever the client would, and
  * possibly earlier (the client may flush several states into one paint). Early
  * is the safe direction: the seat is billed again and the backstop stands
@@ -1731,7 +1731,7 @@ const rooms = new Map<string, Room>();
 
 /** Build a fresh game and its initial event list.
  *
- * R216: `scenario` rides along, and every caller in this file passes the
+ * CR D8.4: `scenario` rides along, and every caller in this file passes the
  * room's own. It is the LAST argument on purpose — a caller that forgets it
  * deals an ordinary game, which is the safe direction, and the two tests that
  * matter (185/186 + test-scenario.ts) fail loudly if a room path forgets. */
@@ -1908,7 +1908,7 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
   return result;
 }
 
-/** R298: the two cards of a single card duel, seat order — null for any other
+/** CR D8.2: the two cards of a single card duel, seat order — null for any other
  * room, and for one still waiting on a card. What the history row, the
  * post-game tag and the card ladder all read; nothing re-derives it. */
 export function singleCards(room: Pick<Room, 'single' | 'decks'>): [CardName, CardName] | null {
@@ -1948,7 +1948,7 @@ function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
  *
  * So the mode check is the fix, and it belongs here rather than at the call
  * site: registering a deck is a thing only a constructed room does, and every
- * caller now gets that for free. `single` rooms are constructed rooms (R298),
+ * caller now gets that for free. `single` rooms are constructed rooms (CR 901.8),
  * so they are covered.
  */
 export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: string | null = null): boolean {
@@ -1957,7 +1957,7 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
   room.decks[seat] = [...cards];
   room.deckIds[seat] = deckId;
   let complete = !!room.decks[0] && !!room.decks[1];
-  // R298: two cards that can never make a unit are a DRAW, not a game — the
+  // CR D8.2c: two cards that can never make a unit are a DRAW, not a game — the
   // owner, 2026-09-18: end it, tell each what the other picked and why, and
   // let them choose again (the same card is allowed). Nothing is dealt and
   // nothing is recorded: no game was played, so no history row and no ladder.
@@ -2039,7 +2039,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   const cardLog: (CardFact | null)[] = [];
   const opened = cardOpen(state);
   const skipped: LostAction[] = [];
-  // R312: the OPEN segment's applied actions, measured once the loop knows
+  // CR D4.3e: the OPEN segment's applied actions, measured once the loop knows
   // which segment that is (it is the only one an undo can walk)
   let inSegment: { i: number; before: GameState; a: Action; after: GameState; events: EngineEvent[] }[] = [];
   for (let i = 0; i < actions.length; i++) {
@@ -2079,7 +2079,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     all.push(...r.events);
     segSeen.push(NOTHING_SEEN);   // the open segment's entries are filled in below
     if (holding) inSegment.push({ i, before, a, after: state, events: r.events });
-    // R310: EVERY event of a hidden step is held for the barrier, a reveal included
+    // CR D6.1a, D6.2: EVERY event of a hidden step is held for the barrier, a reveal included
     const now = segmentKey(state);
     if (holding) {
       const held = [...r.events];
@@ -2097,7 +2097,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       inSegment = [];
     }
   }
-  // R312: the same measurement applyToRoom takes as each action lands, against
+  // CR D4.3f: the same measurement applyToRoom takes as each action lands, against
   // the same frozen board — so a restart, or the rebuild an undo does, keeps
   // the floor exactly where play left it
   if (segKey !== null) {
@@ -2109,7 +2109,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
 }
 
 /**
- * R191 — WHAT THIS REBUILD QUIETLY CHANGED (see `Room.drifted`).
+ * WHAT THIS REBUILD QUIETLY CHANGED (see `Room.drifted`).
  *
  * `saved` is the per-action reference keys the file recorded as the game was
  * played (its `posRefs`); `refs` is what the same actions mean under the
@@ -2332,18 +2332,18 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     : fresh(seed, names, mode, trio, undefined, scenario, custom?.deal);
   const room: Room = {
     code, seed, mode, els: trio, decks, deckIds: [null, null], names, users: [null, null], winner: null,
-    // R216: only a scenario room carries one; `undefined` is the normal case
+    // CR D8.4: only a scenario room carries one; `undefined` is the normal case
     // and is not persisted (see persist()).
     ...(scenario ? { scenario } : {}),
     // BL-43: likewise only a custom room, and persisted only then
     ...(custom ? { custom } : {}),
-    // R298: only ever constructed, and persisted only when set
+    // CR 901.8: only ever constructed, and persisted only when set
     ...(single && mode === 'constructed' ? { single: true as const } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
     frozen: null,
-    // R200: stamped a line below, by resetSegment(), which is where EVERY
+    // stamped a line below, by resetSegment(), which is where EVERY
     // fresh action log gets its first version stamp — a new room and a re-deal
     // are the same event as far as "which engine is recording this" goes.
     // Setting it here as well would be dead code the moment resetSegment runs,
@@ -2424,7 +2424,7 @@ export function roomExistsOrReserved(code: string): boolean {
 }
 
 /**
- * R274 / CT-148 — WHY THE MESSAGE LIVES HERE AND NOT IN THE SOCKET HANDLER.
+ * CR D7.5 / CT-148 — WHY THE MESSAGE LIVES HERE AND NOT IN THE SOCKET HANDLER.
  *
  * A mistyped room code is the one refusal a player earns before they have a
  * game at all, and the SENTENCE is the whole product: the client shows it
@@ -2432,7 +2432,7 @@ export function roomExistsOrReserved(code: string): boolean {
  * "Connecting to the server…" forever. That decision used to be two inline
  * `send(ws, {t:'error', …})` calls inside main.ts's `msg.t === 'join'` branch,
  * where the only way to read it was to open a real WebSocket and play — the
- * same trap R204 named for the pacing and R150 named for the drain. Lifted to
+ * same trap the pacing and the drain had each fallen into. Lifted to
  * a named function it is a value, so a test can assert what the player is
  * told without binding a port.
  *
@@ -2555,7 +2555,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // sites instead would be five guards and a sixth site added later.
   //
   // `concede` is refused too, and that is deliberate rather than an oversight
-  // of R65. Conceding APPENDS to the log and stamps a winner — on a game whose
+  // of CR 104.4a. Conceding APPENDS to the log and stamps a winner — on a game whose
   // log already stopped describing its board, and into the stats fold. There
   // is no move that makes a forked file honest again; the players start a new
   // room.
@@ -2595,14 +2595,14 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // because this is the only moment at which anybody knows for certain what
   // the board looked like — every later answer is a reconstruction.
   room.sigs.push(digest(signature(r.state)));
-  // R312: what this showed each seat of the hidden cards — measured only for
+  // CR D4.3e, D4.3f: what this showed each seat of the hidden cards — measured only for
   // an action that stays inside the open hidden step (the only place an undo
   // walks), as rebuild() re-measures it after a restart or an undo
   room.segSeen.push(holding && segmentKey(r.state) === room.segKey
     ? seenBy(before, action, r.state, r.events, { frozen: room.segSnapshot, holding: true, names: room.names })
     : NOTHING_SEEN);
   room.events.push(...r.events);
-  // R310: EVERY event of a hidden step is held for the barrier, a reveal included
+  // CR D6.1a, D6.2: EVERY event of a hidden step is held for the barrier, a reveal included
   if (holding) {
     const held = [...r.events];
     room.heldEvents[seatSlot(other(action.seat))].push(...held);
@@ -2615,7 +2615,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
     }
   }
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
-  // R290: and if it was a concede that decided it, stamp who and WHEN. The
+  // CR D8.5: and if it was a concede that decided it, stamp who and WHEN. The
   // turn is read off the state the action was applied to — a concede does
   // not advance the turn, but "the turn it was taken on" is a fact about the
   // moment, and the fold must never have to replay to recover it.
@@ -2668,7 +2668,7 @@ function resetSegment(room: Room): void {
   // claim about `actions` is dropped with `actions`" has no exception to
   // remember.)
   room.frozen = null;
-  // R200: and so is the version ledger, for exactly the same reason — the old
+  // and so is the version ledger, for exactly the same reason — the old
   // stamps index an action log that no longer exists, and a `from` pointing
   // into a discarded log is worse than no stamp at all. The re-deal happens on
   // the running engine, so the new log starts stamped with it from action 0.
@@ -2769,7 +2769,7 @@ export function spliceable(room: Room, index: number, seat: Seat): boolean {
  * or every entity it created would look like a different entity.
  */
 /** Exported for `test-undo-segment.ts` §8: this is a pure function of an
- * action and an id range, and R181's `via: { face }` corruption is only
+ * action and an id range, and the `via: { face }` corruption is only
  * observable in its OUTPUT — by the time the rebuild has run, a mangled
  * activation is indistinguishable from an action the engine simply refused. */
 export function renumberAction(a: Action, lo: number, hi: number): Action {
@@ -2858,7 +2858,7 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
   const restore = [...room.actions];
   const wasRefs = [...room.segRefs];
-  // R312: what each later action in the open step SHOWED somebody of the
+  // CR D4.3d: what each later action in the open step SHOWED somebody of the
   // hidden cards. A splice may not change it: the seat that saw those cards
   // has seen them, and re-dealing them under their feet (your shuffle undone
   // after their glimpse of a shared deck) is the take-back the rule forbids,
@@ -2960,8 +2960,8 @@ export type UndoOutcome = { ok: true } | { ok: false; why: string };
  *
  * `segStartIndex` is nearly that line and not quite. Most start-of-phase
  * machinery never reaches the log at all — debt is paid inside the barrier
- * action that ends the resource step (R39), and start-of-deployment rot
- * damage inside the one that opens deployment (R38), so both are already
+ * action that ends the resource step (CR 502.4), and start-of-deployment rot
+ * damage inside the one that opens deployment (CR 112.13c), so both are already
  * below `segStartIndex`. What DOES reach the log is a start-of-phase trigger
  * that asks a question: the segment opens with the suspension already
  * standing, and the `decide` answering it lands at `segStartIndex` itself —
@@ -2990,17 +2990,17 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   if (room.frozen) return { ok: false, why: room.frozen };
   const segKey = room.segKey;
   // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
-  // target stages, R35) is undoable in ANY phase: while their decision
+  // target stages, CR 702.3) is undoable in ANY phase: while their decision
   // pends nobody else can act, so the log's tail is provably theirs and
   // splicing it takes nothing away from the opponent. The client chains
   // one undo per state until the suspension clears (cast-cancel, docs/07).
-  // R312 needs no floor here: every stage of the chain comes BEFORE the item
+  // The undo lock (CR D4.3) needs no floor here: every stage of the chain comes BEFORE the item
   // resolves, so nothing hidden has been shown yet — a glimpse or a draw runs
   // at resolution, under a 'resolve' suspension, which this test excludes.
   const sus = room.state.suspension, dec = room.state.decision;
   const castChain = !!dec && !!sus && dec.seat === seat
     && (sus.type === 'cast' ? sus.item.kind !== 'triggered' && sus.item.controller === seat
-      // R309: picking a burst's next token is part of the same pre-commit cast
+      // CR D4.2: picking a burst's next token is part of the same pre-commit cast
       : sus.type === 'burstPick' && sus.seat === seat);
   if (!segKey && !castChain) {
     return { ok: false, why: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' };
@@ -3032,7 +3032,7 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
         ? { ok: false, why: 'that is the start of the phase — its triggers cannot be taken back' }
         : { ok: false, why: 'nothing to undo — nothing of yours this step' };
     }
-    // R312 — NOR PAST WHAT YOU HAVE SEEN. The owner, 2026-10-04: an action
+    // CR D4.3 — NOR PAST WHAT YOU HAVE SEEN. The owner, 2026-10-04: an action
     // that showed you hidden cards cannot be taken back, nor anything before
     // it — "once you've seen the cards, it stands". Without this, Lilbot's
     // Glimpse 2 in deployment plus undo was a free look at the top of a deck
@@ -3076,7 +3076,7 @@ function undoRefusal(refused: LostAction[]): string {
 }
 
 /**
- * R200 — read a file's version ledger back, keeping only entries that could
+ * read a file's version ledger back, keeping only entries that could
  * have been written by this server.
  *
  * Defensive because the input is a FILE: it may predate the field entirely
@@ -3142,7 +3142,7 @@ function sanitizeVersions(raw: unknown): VersionStamp[] {
 }
 
 /**
- * R200 — this room is about to be played on THIS engine: say so in the file if
+ * this room is about to be played on THIS engine (see replay-room.ts): say so in the file if
  * it is not already what the file says.
  *
  * Returns true when something was appended (so the caller persists).
@@ -3182,7 +3182,7 @@ function stampVersion(room: Room): boolean {
  *                                     going to play into it, so there is
  *                                     nothing to stop.
  *   `lost.length > 0`                 a REFUSAL is where the log stops
- *                                     describing the board. R191 drift is a
+ *                                     describing the board. Drift is a
  *                                     different animal: every action still
  *                                     applies, so the log does still produce
  *                                     this board — on rules that moved, which
@@ -3222,7 +3222,7 @@ function freezeForFork(room: Room): boolean {
  * loses the same actions, and that is one fork, not one per boot.
  */
 function recordFork(room: Room): boolean {
-  // R191: EITHER kind of divergence. A restore that refused nothing and still
+  // EITHER kind of divergence. A restore that refused nothing and still
   // produced a different board is a fork too — the quieter one, and the one
   // the file had no way of admitting to before.
   const entries = [...room.lost, ...room.drifted];
@@ -3235,7 +3235,7 @@ function recordFork(room: Room): boolean {
     lost: entries.map(l => ({ ...l })),
     turn: room.state.turn,
     phase: room.state.phase,
-    // R200: WHICH engine refused these actions, and therefore which engine the
+    // WHICH engine refused these actions, and therefore which engine the
     // rest of this log was recorded against. Without it the fork block says a
     // game broke without saying what broke it.
     engineVersion: engineVersion(),
@@ -3305,7 +3305,7 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   // two callers that legitimately extend it (restoreRooms filling a pre-BL-38
   // file, undoActionAt recording a spliced tail) do so themselves, by name,
   // where the reason is visible.
-  // R191: drift is a claim about the FILE this room was restored from, and this
+  // Drift is a claim about the FILE this room was restored from, and this
   // rebuild has just superseded it (a persist() follows every one of these and
   // rewrites the keys). Only restoreRooms() sets it.
   room.drifted = [];
@@ -3326,7 +3326,7 @@ export function createRematch(old: Room, code: string): Room {
   // game again, and a pair who agreed on a 20-minute bank (or on none) did not
   // agree to an hour on the second one.
   const room = old.mode === 'constructed' && old.decks[0] && old.decks[1]
-    // R298: …and a single card duel stays one, with the same two cards
+    // …and a single card duel stays one, with the same two cards
     ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart, undefined, !!old.single)
     // BL-43: and a custom draft keeps its rules — the same resolved deal, not a re-resolution
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els,
@@ -3481,7 +3481,7 @@ const RESTORE_WINDOW_MS = 7 * 24 * 3600_000;
 /**
  * When a saved game's log last changed. `lastActionAt` when the file has it.
  *
- * A file written before the field is BACKFILLED from its R200 version stamps:
+ * A file written before the field is BACKFILLED from its replay version stamps:
  * the first stamp whose `from` equals the log's length was written by a boot
  * that found every action already there, so its `at` is an upper bound on the
  * last action — and the earliest such stamp is the tightest. (A 0-action room
@@ -3520,21 +3520,21 @@ function persist(room: Room): void {
       users: room.users,
       // and the result, stamped at the time — see Room.winner
       winner: room.winner,
-      // R290: and, when a concede decided it, who conceded on which turn.
+      // CR D8.5: and, when a concede decided it, who conceded on which turn.
       // Additive: written only when present, so no other file grows a field.
       ...(room.concession ? { concession: room.concession } : {}),
       // the draft lobby: a room can be restarted mid-trio-choice, and losing
       // two rankings to a deploy would be a genuinely annoying way to lose
       // them (additive field)
       ...(room.lobby ? { lobby: room.lobby } : {}),
-      // R216: the scenario is part of the DEAL, so it sits beside `seed`
+      // CR D8.4: the scenario is part of the DEAL, so it sits beside `seed`
       // rather than anywhere near the log. Additive: absent on every ordinary
       // room and on every file written before the tester existed.
       ...(room.scenario ? { scenario: room.scenario } : {}),
       // BL-43: the custom rules AND the deal they resolved to, beside the seed —
       // the deal is what a restore re-deals from. Additive: written only when present.
       ...(room.custom ? { custom: room.custom } : {}),
-      // R298: a single card duel. Additive: written only when set.
+      // CR D8.2: a single card duel. Additive: written only when set.
       ...(room.single ? { single: true } : {}),
       ...(room.singleDraw ? { singleDraw: room.singleDraw } : {}),
       // BL-02: rated iff the matchmaker made this room. Additive and written
@@ -3560,7 +3560,7 @@ function persist(room: Room): void {
       // (0 / null), which is why the post-game screen omits the line rather
       // than printing 0:00 for every game ever played before today.
       matchMs: room.matchMs, startedAt: room.startedAt,
-      // R191: WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
+      // WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
       // later restore can tell that the log still replays and no longer
       // describes the same game — see driftedAgainst(). Parallel to `actions`.
       // Additive: a file without it is compared against nothing and reports no
@@ -3596,7 +3596,7 @@ function persist(room: Room): void {
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
       ...(room.forks.length ? { forks: room.forks } : {}),
-      // R200: which engine recorded which stretch of this log — the decoder
+      // which engine recorded which stretch of this log (see replay-room.ts) — the decoder
       // ring `replay-room.ts --as-recorded` needs to check the file's claim
       // against the rules as they actually were. Additive: a file without it
       // restores exactly as before, it just cannot be replayed as-recorded.
@@ -3643,10 +3643,10 @@ export function restoreRooms(now = Date.now()): void {
         decks?: [CardName[] | null, CardName[] | null];
         deckIds?: [string | null, string | null];
         forks?: Fork[];
-        /** R191: per-action reference keys, as of when the game was played
+        /** per-action reference keys, as of when the game was played
          * (process-local tags — never compared; the card ledger reads them) */
         refs?: unknown;
-        /** R191: the same keys, position-named — what a restore compares */
+        /** the same keys, position-named — what a restore compares */
         posRefs?: unknown;
         /** BL-38: per-action board fingerprints, as of when the game was played */
         sigs?: unknown;
@@ -3654,7 +3654,7 @@ export function restoreRooms(now = Date.now()): void {
         cardLog?: unknown;
         cardOpen?: unknown;
         versions?: VersionStamp[];
-        /** R216: the scenario this room was dealt with */
+        /** CR D8.4: the scenario this room was dealt with */
         scenario?: unknown;
         /** BL-43: the custom rules, and the deal they resolved to */
         custom?: { rules?: unknown; deal?: unknown } | null;
@@ -3662,11 +3662,11 @@ export function restoreRooms(now = Date.now()): void {
         rated?: unknown;
         /** the league match this room settles (docs/20-league.md) */
         league?: unknown;
-        /** R290: who conceded, on which turn */
+        /** CR D8.5: who conceded, on which turn */
         concession?: unknown;
-        /** R298: a single card duel */
+        /** CR D8.2: a single card duel */
         single?: unknown;
-        /** R298: the pair it was last drawn on */
+        /** CR D8.2c: the pair it was last drawn on */
         singleDraw?: unknown;
         /** 2026-10-04: when the log last changed — see lastActionOf */
         lastActionAt?: unknown;
@@ -3701,7 +3701,7 @@ export function restoreRooms(now = Date.now()): void {
       const mode = raw.mode ?? 'shared';
       const custom = restoreCustom(raw.custom, mode);
       const els = sanitizeTrio(raw.els, roomElementCount({ custom }));
-      // R216. A file naming a scenario this build does not have is NOT
+      // CR D8.4. A file naming a scenario this build does not have is NOT
       // restored as an ordinary game: the log was recorded against a board
       // that came from somewhere, and replaying it without that board would
       // produce a plausible-looking room describing a game nobody played.
@@ -3717,7 +3717,7 @@ export function restoreRooms(now = Date.now()): void {
       const single = mode === 'constructed' && raw.single === true;
       if (mode === 'constructed') {
         for (const s of [0, 1] as const) {
-          // R298: a single-card room holds single-card decks and nothing else
+          // CR D8.2: a single-card room holds single-card decks and nothing else
           const c = single ? checkSingleDeck(raw.decks?.[s]) : checkDeck(raw.decks?.[s]);
           if (c.ok) decks[s] = c.cards;
         }
@@ -3774,7 +3774,7 @@ export function restoreRooms(now = Date.now()): void {
         rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
-        // R290: the concession stamp survives the restart with the result
+        // CR D8.5: the concession stamp survives the restart with the result
         ...(concession ? { concession } : {}),
         state, actions, events,
         sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segSeen,
@@ -3791,7 +3791,7 @@ export function restoreRooms(now = Date.now()): void {
         // CT-160: recomputed a few lines below, once the room exists to ask
         // decidedWinner() about
         frozen: null,
-        // R191: and what this rebuild changed WITHOUT refusing anything
+        // and what this rebuild changed WITHOUT refusing anything
         // (position keys on both sides: `raw.refs` is another process's tags)
         drifted: driftedAgainst(raw.posRefs, segPosRefs, actions, skipped),
         versions: sanitizeVersions(raw.versions),
@@ -3836,7 +3836,7 @@ export function restoreRooms(now = Date.now()): void {
       // record — it replaces continuing on top of it.
       freezeForFork(restored);
       let dirty = decidedWinner(restored) === null && recordFork(restored);
-      // R200: and a LIVE room now continues under THIS engine, whether or not
+      // and a LIVE room now continues under THIS engine, whether or not
       // anything was lost. A rules change that costs no action still changes
       // what the actions after it mean, so the boundary is stamped on any
       // engine change — the loss-free case is the one that used to leave no

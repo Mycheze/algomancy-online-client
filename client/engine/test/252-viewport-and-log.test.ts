@@ -74,8 +74,8 @@
  * ⚠ AND THE RULE, NOT THE LISTENER, IS WHAT IS TESTED HERE — see
  * test/199-hover-scroll.test.ts, which says at length why a tooltip assertion
  * CANNOT be written in test/ui-driver.ts (no mouseover, so no `#hovertip`;
- * `classList.contains` flat false). R230 answered that by moving the
- * decision into a pure function; R272 does the same, in ui/hover.ts. The
+ * `classList.contains` flat false). The scroll-tooltip fix (CR D6.17) answered that by moving the
+ * decision into a pure function; the repaint fix does the same, in ui/hover.ts. The
  * WIRING is what the browser numbers above are evidence for.
  *
  * ── [145] AND THE TWO CURTAINS IT IS NOT ABOUT ──────────────────────────
@@ -84,7 +84,7 @@
  * for the 290px rail column the panel lived in before CT-124 moved it into the
  * `.logbox` modal, and it outlived the panel it was written for. §1 removes
  * it — and asserts, in the same test, that the OTHER TWO curtains over the
- * same observable are untouched: R80's `untold`/`heldLines` pacing curtain and
+ * same observable are untouched: CR D5.4's `untold`/`heldLines` pacing curtain and
  * the #125 story/verbose fold. A guard that counts log rows can go red for a
  * reason unrelated to what it tests; this repo has already been bitten by that
  * once, when the story view landed.
@@ -127,7 +127,7 @@ function logLines(html: string): string[] {
     .filter(t => t && !/bookkeeping line/.test(t));
 }
 
-/** R80 paces the tail and R150 throttles updates; run both out or a test reads
+/** The pacing rule (CR D5.4) paces the tail and throttles updates; run both out or a test reads
  * a log the client has not finished telling. (Copied from 226 deliberately —
  * it is four lines and a shared helper would make two files move together for
  * no reason.) */
@@ -147,7 +147,7 @@ function seated(seed: number): { h: Harness; seat: Seat } {
   return { h, seat: h.state.initiative as Seat };
 }
 
-test('R272 §1a a log longer than the old 80-line window is shown WHOLE', async () => {
+test('CR D6.15a a log longer than the old 80-line window is shown WHOLE', async () => {
   const { h, seat } = seated(25201);
   /* A full resync — `log:` on an update, the shape a net client gets on join
    * and after an undo. Every line arrives with NO type, which is the case the
@@ -179,7 +179,7 @@ test('R272 §1a a log longer than the old 80-line window is shown WHOLE', async 
   closeLog(ui);
 });
 
-test('R272 §1b lifting the window does not lift the story curtain with it', async () => {
+test('CR D6.15a lifting the window does not lift the story curtain with it', async () => {
   /* The trap the brief names: there are THREE curtains over this one
    * observable and only one of them is the report. If removing the 80-line
    * window quietly took the #125 fold with it, §1a would go green and the
@@ -212,8 +212,8 @@ test('R272 §1b lifting the window does not lift the story curtain with it', asy
   closeLog(ui);
 });
 
-test('R272 §1c the pacing curtain still holds the tail it has not told yet', async () => {
-  /* R80's `untold`/`heldLines` is the second curtain, and it is the one that
+test('CR D6.15a the pacing curtain still holds the tail it has not told yet', async () => {
+  /* CR D5.4's `untold`/`heldLines` is the second curtain, and it is the one that
    * makes the log arrive at reading speed instead of all at once. It is
    * expressed as `logEnd`, one line above the window §1a removed, so a careless
    * edit takes it too — and nothing else in the suite reads the log BEFORE it
@@ -295,7 +295,7 @@ const RATIO_EXEMPT: Record<string, string> = {
     + 'scroll is snapshotted like the board\'s; nothing has been measured to be lost there.',
 };
 
-test('R272 §2 a card image reserves its height, so a repaint cannot clamp the scroll', () => {
+test('a card image reserves its height, so a repaint cannot clamp the scroll', () => {
   /* ⚠ THE NON-VACUITY ASSERTIONS COME FIRST. This guard is worth nothing
    * unless the boxes really are content-sized (nothing else gives a card a
    * height) and the ratio they reserve really is the ratio the scans have. */
@@ -344,11 +344,11 @@ test('R272 §2 a card image reserves its height, so a repaint cannot clamp the s
 
 /* ══ §3 — [142] THE HOVER TIP SURVIVES A PAINT THAT DID NOT MOVE ITS CARD ═ */
 /*
- * R272. The rule, as a total function, the way R230 put `scrollHidesHoverTip`
+ * The rule, as a total function, the way the scroll-tooltip fix (CR D6.17) put `scrollHidesHoverTip`
  * in ui/inspect.ts — read 199's header for why the browser half of this cannot
  * live in test/ui-driver.ts.
  *
- * The question the rule answers is the same one R230 asks of a scroll: could
+ * The question the rule answers is the same one CR D6.17 asks of a scroll: could
  * this have moved the card out from under the cursor? A repaint that leaves
  * the card where it was has not, and closing the box the player is reading
  * because a hidden zone changed is the "clunky" in the report.
@@ -356,14 +356,14 @@ test('R272 §2 a card image reserves its height, so a repaint cannot clamp the s
 
 const AT = { key: 'e17', present: true, moved: false };
 
-test('R272 §3a a repaint that leaves the hovered card where it was keeps the tip', () => {
+test('a repaint that leaves the hovered card where it was keeps the tip', () => {
   assert.equal(hoverSurvivesPaint(AT), true);
   // and the same for a card hovered by NAME (a log line, a decision menu) —
   // those carry data-prev and no entity id
   assert.equal(hoverSurvivesPaint({ ...AT, key: 'cGood Whale' }), true);
 });
 
-test('R272 §3b a card that is gone from the new board takes its tip with it', () => {
+test('a card that is gone from the new board takes its tip with it', () => {
   /* This is the reason the unconditional hide was written in the first place,
    * and it has to survive the fix: the unit died, or the card was played, and a
    * box still floating over the board would be describing something that is not
@@ -373,14 +373,14 @@ test('R272 §3b a card that is gone from the new board takes its tip with it', (
   assert.equal(hoverSurvivesPaint({ ...AT, present: false, moved: true }), false);
 });
 
-test('R272 §3c a card that moved is no longer under the cursor', () => {
+test('a card that moved is no longer under the cursor', () => {
   /* The board rearranged around it — a column closed ranks, a unit left the
    * hand for the table. The card exists, but the cursor is over whatever slid
    * into its place, so the box would be describing the wrong card. */
   assert.equal(hoverSurvivesPaint({ ...AT, moved: true }), false);
 });
 
-test('R272 §3d nothing hovered is not something to keep', () => {
+test('nothing hovered is not something to keep', () => {
   /* The common case by far, and it must answer the same as today: no key means
    * no tip and no dwell, and the client hides (idempotently) either way. */
   for (const present of [true, false]) {
@@ -391,7 +391,7 @@ test('R272 §3d nothing hovered is not something to keep', () => {
   }
 });
 
-test('R272 §3e the rule is total and keeps exactly one of its eight inputs', () => {
+test('the rule is total and keeps exactly one of its eight inputs', () => {
   /* The whole domain, enumerated, so a later edit that widens the `keep` side
    * has to come here and say so. */
   const kept: string[] = [];
@@ -408,7 +408,7 @@ test('R272 §3e the rule is total and keeps exactly one of its eight inputs', ()
 
 /* ══ §4 — [142] "WHEN THE OTHER PLAYER IS DOING THINGS IN A HIDDEN ZONE" ══ */
 
-test('R272 §4 an update this seat cannot see costs exactly one paint', async () => {
+test('an update this seat cannot see costs exactly one paint', async () => {
   /* The third reading of [142], and the one the brief expected to be the
    * loudest: that the client repaints wholesale on updates that change nothing
    * this seat can see, and that the waste is the "clunky".

@@ -180,7 +180,7 @@ test('Celestial Shifter twice: the later X replaces the earlier one', () => {
   const sh = spawn(h, A, 'Celestial Shifter');               // 2/2
   giveResources(h, A, 'metal', 7);
   h.do({ type: 'activateAbility', seat: A, entityId: sh, abilityIndex: 0, via: 'augment' });
-  // R196: the [x] is a `payMana` cast cost, paid a point at a time
+  // CR 705.3b: the [x] is a `payMana` cast cost, paid a point at a time
   for (let k = 0; k < 5; k++) pick(h, { payMana1: true });
   pick(h, { doneCost: true });
   assert.deepEqual(baseOf(h, sh), [5, 5], 'base 5/5');

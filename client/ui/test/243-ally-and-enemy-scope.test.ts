@@ -1,4 +1,4 @@
-/* R265 — ALLY INCLUDES ITSELF, "ANOTHER" IS THE WORD THAT EXCLUDES IT, AND
+/* CR 110.4a, 110.4 — ALLY INCLUDES ITSELF, "ANOTHER" IS THE WORD THAT EXCLUDES IT, AND
  * BOTH ARE SCOPED TO ONE REGION.
  *
  * The question (round-32 Q5) was about ONE card. Shoreline Specter prints
@@ -45,7 +45,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-// R214: the PUBLIC entry point. `cards/registry.ts` alone registers 494 of the
+// the PUBLIC entry point (see 180-pool-sight). `cards/registry.ts` alone registers 494 of the
 // 495 cards — `Alluring Attribute`, the pool's ONLY `enemyUnit` target, is
 // registered by `src/apply.ts`, which index.ts pulls. Importing the registry
 // directly would make §1c's enemy half silently empty.
@@ -92,7 +92,7 @@ function effectsOf(name: string): { where: string; def: EffectDef }[] {
   return out;
 }
 
-/** R58/R83: how many cast-time slots a spec asks for. `count: 'X'` is fixed at
+/** CR 110.1b, 110.2b: how many cast-time slots a spec asks for. `count: 'X'` is fixed at
  * cast and is never fewer than the one printed slot it stands for, so it
  * counts as one here — the point is to reach every DISTINCT slot kind, and a
  * counted spec repeats its last kind. */
@@ -161,7 +161,7 @@ function board(seed: number): Board {
 
 /** the menu one slot offers, as `{unit:id}` keys, asked exactly the way the
  * collector asks it: the EFFECT's controller as `ally`, the source entity as
- * `sourceId`, in the effect's region (R64). */
+ * `sourceId`, in the effect's region (CR 110.4c, 110.5). */
 function menu(b: Board, s: Slot, region = b.here, source: EntityId | undefined = b.self): string[] {
   let out: string[] = [];
   withE(b.h, e => {
@@ -175,7 +175,7 @@ const unitKey = (id: EntityId): string => JSON.stringify({ unit: id } as TargetR
 // §1 — CLAIM 1: an ally target offers the source
 // ══════════════════════════════════════════════════════════════════════
 
-test('R265 §1a the pool really has an ally-target family, and an enemy-target family of one', () => {
+test('CR 110.4 the pool really has an ally-target family, and an enemy-target family of one', () => {
   // POSITIVE CONTROL. A filter that matches nothing passes forever and is
   // indistinguishable from a working check, so the sizes are pinned.
   assert.equal(allCardNames().length, 496, 'the pool size these counts were measured against');
@@ -198,7 +198,7 @@ test('R265 §1a the pool really has an ally-target family, and an enemy-target f
   );
 });
 
-test('R265 §1b every printed target-ally card declares an allyUnit slot', () => {
+test('CR 110.4 every printed target-ally card declares an allyUnit slot', () => {
   // The two directions of the same claim. A card could print "target ally"
   // and be implemented as a plain `unit` slot with a hand-rolled ownership
   // restriction — a second seam answering the same word — and this is what
@@ -218,7 +218,7 @@ test('R265 §1b every printed target-ally card declares an allyUnit slot', () =>
     'the one card declaring an ally target it does not print is an Ambush with no reminder text');
 });
 
-test('R265 §1c an ally target offers the source — 17 of the pool 18 slots, and the 18th prints ANOTHER', () => {
+test('CR 110.4a an ally target offers the source — 17 of the pool 18 slots, and the 18th prints ANOTHER', () => {
   const b = board(24300);
   const withSelf: string[] = [];
   const withoutSelf: string[] = [];
@@ -243,7 +243,7 @@ test('R265 §1c an ally target offers the source — 17 of the pool 18 slots, an
   }
 });
 
-test('R265 §1d the enemy target is the mirror — not the source, not an ally', () => {
+test('CR 110.4 the enemy target is the mirror — not the source, not an ally', () => {
   const b = board(24301);
   assert.equal(enemySlots.length, 1);
   const m = menu(b, enemySlots[0]!);
@@ -256,7 +256,7 @@ test('R265 §1d the enemy target is the mirror — not the source, not an ally',
 // §2 — CLAIM 2: "another" is the word that excludes the source
 // ══════════════════════════════════════════════════════════════════════
 
-test('R265 §2a the two sides of the word both exist, and neither set is empty', () => {
+test('CR 110.4a the two sides of the word both exist, and neither set is empty', () => {
   const another = new Set(allCardNames()
     .filter(n => /another target all(y|ies)/i.test(textOf(n))));
   const plain = [...new Set(allySlots.map(s => s.card))].filter(n => !another.has(n));
@@ -267,7 +267,7 @@ test('R265 §2a the two sides of the word both exist, and neither set is empty',
   assert.ok(another.size > 0 && plain.length > 0);
 });
 
-test('R265 §2b the ANOTHER side, measured where its restriction can actually run', () => {
+test('CR 102.7a the ANOTHER side, measured where its restriction can actually run', () => {
   // The one card printing "another target ally" also prints "in my
   // formation", so it has nothing to aim at outside a battle — measuring it
   // on a quiet board would read "excludes the source" for the wrong reason.
@@ -292,11 +292,11 @@ test('R265 §2b the ANOTHER side, measured where its restriction can actually ru
   });
 });
 
-test('R265 §2c across the whole another-target family, the word excludes the SOURCE only when it means the source', () => {
+test('CR 110.4d across the whole another-target family, the word excludes the SOURCE only when it means the source', () => {
   // Widening claim 2 past the ally family. Ten cards print "another target";
   // the word does not always point at the effect's source — in six of them
   // the other anchor is a SIBLING SLOT ("move counters from target unit onto
-  // another target unit"), and slot distinctness (R56) is what enforces those.
+  // another target unit"), and slot distinctness (CR 704.5) is what enforces those.
   // So this measures the partition rather than asserting one rule for all ten,
   // and pins WHY each side is the size it is.
   const family = allCardNames().filter(n => /another target/i.test(textOf(n)));
@@ -314,7 +314,7 @@ test('R265 §2c across the whole another-target family, the word excludes the SO
   // entries — the two whose sentence names the source as the other half of
   // the move ("I fight another target unit", "move a counter FROM ME onto
   // another target unit"). The third source-anchored one is §2b's, which
-  // needs a battle. The bin-anchored one (R131 / test 121) has no board
+  // needs a battle. The bin-anchored one (CR 405.6a / test 121) has no board
   // candidates here at all.
   assert.deepEqual([...new Set(excludesSource)].length, 2,
     `another-target slots that drop the source: ${[...new Set(excludesSource)].join(', ')}`);
@@ -328,7 +328,7 @@ test('R265 §2c across the whole another-target family, the word excludes the SO
 // §3 — CLAIM 3: ally and enemy stop at the region boundary
 // ══════════════════════════════════════════════════════════════════════
 
-test('R265 §3a no ally or enemy slot in the pool can see a unit in another region', () => {
+test('CR 601.4e no ally or enemy slot in the pool can see a unit in another region', () => {
   const b = board(24304);
   assert.ok(b.farAlly !== b.ally && b.farEnemy !== b.enemy);
   for (const s of [...allySlots, ...enemySlots]) {
@@ -344,7 +344,7 @@ test('R265 §3a no ally or enemy slot in the pool can see a unit in another regi
   }
 });
 
-test('R265 §3b nor can any other unit-shaped target — the region filter is in the family, not the card', () => {
+test('CR 110.5 nor can any other unit-shaped target — the region filter is in the family, not the card', () => {
   // Breadth, because the ruling names units and not "ally targets": every
   // `unit` / `any` / `token` slot in the pool comes off the same
   // `unitsIn(region)` list. If ONE card hand-rolled its own unit list this is
@@ -359,7 +359,7 @@ test('R265 §3b nor can any other unit-shaped target — the region filter is in
   }
 });
 
-test('R265 §3c a static that says ENEMIES does not reach an enemy in another region', () => {
+test('CR 601.4e a static that says ENEMIES does not reach an enemy in another region', () => {
   // The static layer is a SECOND seam that answers "enemy" — the card's
   // `affects` compares controllers and says nothing about regions, and it is
   // `E.staticsFor` (`a.region === target.region`) that supplies the rest of
@@ -388,7 +388,7 @@ test('R265 §3c a static that says ENEMIES does not reach an enemy in another re
     'the enemy in the OTHER region is untouched');
 });
 
-test('R265 §3d a trigger that watches for another ALLY does not see one spawn in another region', () => {
+test('CR 601.4e a trigger that watches for another ALLY does not see one spawn in another region', () => {
   // The trigger layer is a THIRD seam. The card's `when` reads
   // `ev.data.seat === self.controller` and never mentions a region; the
   // region comes from `E.fireEvent`, which only offers the event to listeners
@@ -425,7 +425,7 @@ test('R265 §3d a trigger that watches for another ALLY does not see one spawn i
   assert.equal(counters(), 1, 'an ally spawning in ANOTHER region is not one this card can see');
 });
 
-test('R265 §3e every ally and enemy list a card builds for itself names a region', () => {
+test('CR 601.4e every ally and enemy list a card builds for itself names a region', () => {
   // The FOURTH seam: card code that walks the board directly rather than
   // through a target menu (sweeps, cost pools, untargeted "an ally" picks).
   // `unitsOf`/`unitsIn` are the only two doors to the board, and a call with
@@ -454,7 +454,7 @@ test('R265 §3e every ally and enemy list a card builds for itself names a regio
   }
   // 78 → 79 with report #171: Inexorable Miasma's after-combat bin trigger
   // gained a `when` that reads `g.unitsIn(self.region)` (a region, so the
-  // assertion below still holds). 79 → 80 with R337: Tides of the Cosmos'
+  // assertion below still holds). 79 → 80 because Tides of the Cosmos'
   // Virus mode lists its hosts with `g.unitsIn(region)` — the battle region.
   assert.equal(sites, 80, 'board reads in card code — the derivation must keep finding them');
   assert.deepEqual(bare, [], 'a card read the board without naming a region');
@@ -469,7 +469,7 @@ test('R265 §3e every ally and enemy list a card builds for itself names a regio
 // §4 — the seams have to keep agreeing
 // ══════════════════════════════════════════════════════════════════════
 
-test('R265 §4a the ambush legality gate asks for the same ally the ambush effect will', () => {
+test('CR 110.4 the ambush legality gate asks for the same ally the ambush effect will', () => {
   // WAS A TRIPWIRE, IS NOW AN AGREEMENT CHECK, and the difference matters.
   //
   // `apply.ts` used to gate "may I play this as an Ambush?" with a spec it
@@ -482,7 +482,7 @@ test('R265 §4a the ambush legality gate asks for the same ally the ambush effec
   // have held the fix down.
   //
   // So: plant a restriction on the real spec, in memory, and check the GATE
-  // follows it. That is the property R64/R65 are about, and it is the one a
+  // follows it. That is the property CR 110.3a, 110.7 are about, and it is the one a
   // future card actually depends on.
   const ambushers = allCardNames().filter(n => !!(getCard(n) as { ambush?: unknown }).ambush);
   assert.equal(ambushers.length, 6, 'cards with an Ambush mode');
@@ -553,7 +553,7 @@ test('R265 §4a the ambush legality gate asks for the same ally the ambush effec
   }
 });
 
-test('R265 §4b no activated ability needs both an irreversible cost and a source-sensitive target', () => {
+test('CR 110.4a no activated ability needs both an irreversible cost and a source-sensitive target', () => {
   // `ui/inspect.ts::activationNeedsConfirm` re-asks `targetCandidates` to
   // decide whether to warn before an irreversible cost — and it omits
   // `sourceId`, which `apply.ts`'s real gate (`abilityUnusable`) passes. A
@@ -588,7 +588,7 @@ test('R265 §4b no activated ability needs both an irreversible cost and a sourc
     + 'ui/inspect.ts:162 asks without it and will disagree with apply.ts:1135');
 });
 
-test('R265 §4b2 the irreversible-cost warning reads the source the real gate reads', () => {
+test('CR 110.4a the irreversible-cost warning reads the source the real gate reads', () => {
   // §4b above is a TRIPWIRE over the pool: it says no card is currently on both
   // sides of the seam, and it passes identically whether inspect.ts threads
   // `sourceId` or not. That makes it useless as a guard for the fix — which is
@@ -666,8 +666,8 @@ test('R265 §4b2 the irreversible-cost warning reads the source the real gate re
   }
 });
 
-test('R265 §4c ally is measured from the EFFECT controller, never from the chooser', () => {
-  // R58, restated for this ruling: "under YOUR control" is the controller of
+test('CR 102.7 ally is measured from the EFFECT controller, never from the chooser', () => {
+  // CR 110.4c, restated for this ruling: "under YOUR control" is the controller of
   // the effect. Asking the same slot as the other seat has to hand back the
   // other seat's units, or a redirect could drop an enemy into an ally slot.
   const b = board(24309);

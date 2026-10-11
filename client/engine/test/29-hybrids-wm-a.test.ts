@@ -1,5 +1,5 @@
 /* Per-card tests for the wood/metal-involved hybrid batch (batch-hybrids-wm-a):
- * live-X Robot construction (Colossal Construction, R27/R115), moving a unit
+ * live-X Robot construction (Colossal Construction, CR 107.8, 601.5), moving a unit
  * and its mods onto a new host (Reconfigure), counter-triggered draws +
  * grafts (Scrapyard Custodian, Corroded Alchemy), spawn-triggered Crystals
  * (Aether Channeler), damage-mirroring -1/-1 counters (Decay Distributor),
@@ -7,9 +7,9 @@
  * an either-or token conjure (Spirit of Nature), sacrifice-funded negation
  * (Malevolent Machinations), death-punishing sacrifices (Malicious Hardware,
  * Soulforger), the repeating sacrifice loop (Maw of Damnation), spell-damage
- * token minting (Ember of Life, R33 — absorbed into R115) and a sacrifice ACTIVATION cost
- * (Hearthwood Ancient, R49 sacrificeOther — it used to be paid at
- * resolution). The Silent's cost tax is live (R59 CostMod); the PARKED Rook
+ * token minting (Ember of Life, CR 601.5) and a sacrifice ACTIVATION cost
+ * (Hearthwood Ancient, CR 111.7 sacrificeOther — it used to be paid at
+ * resolution). The Silent's cost tax is live (CR 111.10 CostMod); the PARKED Rook
  * (play permission) has a registration test + todo.
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 2900-2999.
@@ -25,7 +25,7 @@ import {
   resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
-/** R178: answer the pending decision by option LABEL. Maelstrom Charger's
+/** answer the pending decision by option LABEL. Maelstrom Charger's
  * as-you-play option carries a bookkeeping value (which offering BODY is being
  * asked) rather than a target ref, so `pick` cannot name it. */
 function say(h: Harness, label: string): void {
@@ -53,7 +53,7 @@ function whiteBox(h: Harness, f: (e: E) => void): void {
 
 // ── Colossal Construction ────────────────────────────────────────────────
 
-test('Colossal Construction: creates a Robot X, X = greatest defense among your units (R27/R115)', () => {
+test('Colossal Construction: creates a Robot X, X = greatest defense among your units (CR 107.8, 601.5)', () => {
   const h = new Harness(2901);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -67,7 +67,7 @@ test('Colossal Construction: creates a Robot X, X = greatest defense among your 
   assert.equal(robot.counters, 4, 'X = 4 (the Rook’s defense) as +1/+1 counters');
   assert.deepEqual(effStats(h, robot.id), [4, 4], 'the 0/0 Robot is a 4/4');
   assert.ok(robot.token, 'the Robot is a token');
-  assert.equal(robot.region, new E(h.state).homeRegion(p), 'created UNIT arrives at ctx.region — home for a deploy cast (R115)');
+  assert.equal(robot.region, new E(h.state).homeRegion(p), 'created UNIT arrives at ctx.region — home for a deploy cast (CR 601.5)');
 });
 
 // ── Reconfigure ──────────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ test('Reconfigure: moves target augment unit AND its mods onto another target un
 
 // ── Rook ─────────────────────────────────────────────────────────────────
 
-/* ── Rook (R95) ────────────────────────────────────────────────────────────
+/* ── Rook (CR 723.5) ────────────────────────────────────────────────────────────
  *
  * "[Augment] You may augment cards from hand and bin during battle as if they
  * were [Virus]." This text is the whole card; until round 17 it was a vanilla
@@ -213,7 +213,7 @@ test('Rook: the permission is REGION-scoped, and does not reach the opponent', (
   assert.throws(
     () => h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: host }),
     /only Virus cards can augment from hand during battle/,
-    'a Rook in another region grants nothing here (R12)');
+    'a Rook in another region grants nothing here (CR 601.1d)');
   // and even in the region, it is not the OPPONENT's permission
   const e = new E(h.state);
   e.spawnUnit(A, 'Rook', h.state.battle!.region);
@@ -269,7 +269,7 @@ test('Rook: it prints "hand and bin", so the CACHE stays shut', () => {
   const e = new E(h.state);
   const rook = e.spawnUnit(A, 'Rook', e.homeRegion(A));
   e.settle(); h.state = e.s;
-  // R268: Rook's whole printed text is its [Augment] line, so the permission
+  // CR 721.1: Rook's whole printed text is its [Augment] line, so the permission
   // is declared in `augmentBox`. `radiantList` reads both halves.
   const perms = radiantList('Rook', 'modPermissions');
   assert.equal(perms.length, 1, 'one permission');
@@ -292,7 +292,7 @@ test('Scrapyard Custodian: counters on an ally → [Switch1] draw; grafts join t
   const ally = spawn(h, p, 'Unit Token');
   whiteBox(h, e => e.attachMod(ent(h, cust)!, 'Corroded Alchemy', p, 'graft', 0));
   const handBefore = h.state.players[p]!.hand.length;
-  // R130: the placement names its actor — "when YOU put" reads `by`, and a
+  // CR 708.8b: the placement names its actor — "when YOU put" reads `by`, and a
   // white-box call has no resolving effect to default it from.
   whiteBox(h, e => e.addCounters(ent(h, ally)!, 2, p));       // "you put counters on an ally"
   assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'drew a card');
@@ -301,18 +301,18 @@ test('Scrapyard Custodian: counters on an ally → [Switch1] draw; grafts join t
   assert.equal(tokensOf(h, p).filter(t => t.card === 'Poison').length, 1, '…and its Poison 1');
   // [Switch1]: bounded — a second batch of counters this turn does nothing
   whiteBox(h, e => e.addCounters(ent(h, cust)!, 1, p));       // counters on the Custodian itself
-  assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'no second draw (R9)');
+  assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'no second draw (CR 109.9)');
   assert.equal(tokensOf(h, p).length, 2, 'no second token pair');
 });
 
 // ── The Silent ───────────────────────────────────────────────────────────
 
 test('The Silent: spells cost [two] more per spell the team played this battle', () => {
-  // Unparked by R59's cost-modifier layer. The behaviour proper (asymmetry,
+  // Unparked by the cost-modifier layer (CR 111.10). The behaviour proper (asymmetry,
   // the counter, stacking with Tranquility) is pinned in 49-playtest-round6;
   // this checks the card is wired into the layer at all.
   const c = getCard('The Silent');
-  assert.equal(radiantList('The Silent', 'costMods').length, 1,   // R268: body + box
+  assert.equal(radiantList('The Silent', 'costMods').length, 1,   // CR 721.1: body + box
     'it carries a cost modifier');
   assert.equal(c.augmentable, true, 'and is still applicable as an augment');
 });
@@ -366,7 +366,7 @@ test('Corroded Alchemy: creates a Crystal 1 and a Poison 1', () => {
 
 // ── Decay Distributor ────────────────────────────────────────────────────
 
-test('Decay Distributor: dealt N damage → N -1/-1 counters on target unit (combat, R31)', () => {
+test('Decay Distributor: dealt N damage → N -1/-1 counters on target unit (combat, CR 608.9)', () => {
   const h = new Harness(2908);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -376,9 +376,9 @@ test('Decay Distributor: dealt N damage → N -1/-1 counters on target unit (com
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [dd] } });
-  pass(h); pass(h);   // combat: dd is dealt 1 and the trigger aims (R31)
+  pass(h); pass(h);   // combat: dd is dealt 1 and the trigger aims (CR 608.9)
   pick(h, { unit: atk });                                     // put the counter on the attacker
-  resolveAfterCombat(h);   // R261: the counter lands after combat, not in the damage step
+  resolveAfterCombat(h);   // CR 608.9b: the counter lands after combat, not in the damage step
   assert.ok(!ent(h, atk), 'the 1/1 died to the -1/-1 counter');
   assert.equal(ent(h, dd)!.damage, 1, 'the Distributor took the 1 damage');
   finishBattle(h);
@@ -405,7 +405,7 @@ test('Earthbound Replicator: a nonunit spell targeting me is copied; declining t
   assert.equal(h.state.decision?.kind, 'payOrDecline', 'the retarget question is a real decision');
   assert.equal(h.state.decision?.seat, A, "Replicator's 'they' — the copying player answers, not the carrier's owner");
   pick(h, false);                                             // keep the original target
-  // R164: the copy is a real stack item now — it has its own priority window
+  // CR 710.8: the copy is a real stack item now — it has its own priority window
   assert.ok(h.state.stack.some(i => i.copy), 'the copy is ON the stack');
   pass(h); pass(h);                                           // resolve the COPY
   pass(h); pass(h);                                           // then the original Fireball
@@ -430,16 +430,16 @@ test('Earthbound Replicator: choosing NEW targets aims the copy elsewhere; the o
   pass(h); pass(h);                                           // resolve the copy trigger
   pick(h, true);                                              // choose new targets for the copy
   // the re-collection is fresh against Fireball's own spec ('any') — units
-  // and players alike are on the menu, R64-judged now
+  // and players alike are on the menu, judged by CR 110.3a now
   pick(h, { unit: atk });                                     // aim the copy at A's own 1/1
-  pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
+  pass(h); pass(h);                                           // resolve the COPY (CR 710.8: its own window)
   pass(h); pass(h);                                           // then the original Fireball
   assert.ok(!ent(h, atk), 'the copy hit the NEW target — the 1/1 died to it');
   assert.equal(ent(h, repl)!.damage, 1, 'only the ORIGINAL hit the Replicator — the copy did not touch it');
   finishBattle(h);
 });
 
-test('Earthbound Replicator: the retarget choice survives a JSON round-trip mid-decision (R85)', () => {
+test('Earthbound Replicator: the retarget choice survives a JSON round-trip mid-decision', () => {
   const h = new Harness(2923);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -456,7 +456,7 @@ test('Earthbound Replicator: the retarget choice survives a JSON round-trip mid-
   pick(h, true);                                              // choose new targets
   h.state = JSON.parse(JSON.stringify(h.state));              // save + load mid-PICK too
   pick(h, { unit: atk });
-  pass(h); pass(h);                                           // resolve the COPY (R164)
+  pass(h); pass(h);                                           // resolve the COPY (CR 710.8)
   pass(h); pass(h);
   assert.ok(!ent(h, atk), 'the loaded state still drives the retargeted copy');
   assert.equal(ent(h, repl)!.damage, 1, 'and the copy still misses the original target');
@@ -476,7 +476,7 @@ test('Spirit of Nature: after combat, [Switch1] create a Poison 2 OR a Crystal 2
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                           // combat + afterCombat trigger
-  // R57: the either-or is declared as the trigger is put on the stack, not as
+  // CR 702.5: the either-or is declared as the trigger is put on the stack, not as
   // it resolves — the item says which token it will make before anyone may
   // answer it.
   assert.equal(h.state.decision?.kind, 'mode', 'the half is a cast-time question');
@@ -507,7 +507,7 @@ test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it; d
   const lifeA = h.state.players[A]!.life;
   h.do({ type: 'castSpellToken', seat: D, entityId: fb });    // D plays a nonunit spell
   pick(h, { player: A });                                     // Fireball 1 at the opponent
-  // R178: the option is a stage of the CAST WINDOW, not a trigger — asked here,
+  // CR 109.6: the option is a stage of the CAST WINDOW, not a trigger — asked here,
   // with nobody having had priority, and it is neither on the stack nor
   // negatable. (This used to be `pass; pass` to resolve a trigger off the
   // stack, which is exactly what the designer says it is not.)
@@ -515,10 +515,10 @@ test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it; d
   // "YOU may choose new targets" — the Charger's controller is asked.
   assert.equal(h.state.decision?.seat, D, "Charger's 'you' — its controller answers");
   assert.ok(!ent(h, chg),
-    'R178: the sacrifice is COST-SHAPED, so it is spent the instant the option is taken — '
+    'CR 702.3g: the sacrifice is COST-SHAPED, so it is spent the instant the option is taken — '
     + 'the re-aim that follows is about a copy already bought, not a plan that might be abandoned');
   pick(h, false);                                             // keep the original targets
-  pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
+  pass(h); pass(h);                                           // resolve the COPY (CR 710.8: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(h.state.players[D]!.bin.includes('Maelstrom Charger'), 'sacrificed → bin');
@@ -540,10 +540,10 @@ test('Maelstrom Charger: choosing NEW targets re-aims the copy; the original sti
   const lifeA = h.state.players[A]!.life;
   h.do({ type: 'castSpellToken', seat: D, entityId: fb });
   pick(h, { player: A });                                     // the original: 1 at A's face
-  say(h, 'Sacrifice Maelstrom Charger');                      // R178: in the cast window
+  say(h, 'Sacrifice Maelstrom Charger');                      // CR 702.3g: in the cast window
   pick(h, true);                                              // choose new targets
   pick(h, { unit: atk });                                     // the copy re-aims at the attacker
-  pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
+  pass(h); pass(h);                                           // resolve the COPY (CR 710.8: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(!ent(h, atk), 'the copy killed its NEW target');
@@ -566,8 +566,7 @@ test('Maelstrom Charger: with NO legal new target there is no retarget question 
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arcane Echo') });
   pick(h, { unit: tok });                                     // Echo targets the token
-  // the only token leaves the board: now 'target token' has NO candidate. R178
-  // moved the Charger's option into the CAST WINDOW, so this has to happen
+  // the only token leaves the board: now 'target token' has NO candidate. The Charger's option is in the CAST WINDOW (CR 702.3g), so this has to happen
   // before the option is taken rather than between a trigger and its
   // resolution — there is no longer any window of that kind, which is the
   // whole point ("Meal copying is not an effect on the stack").
@@ -577,8 +576,8 @@ test('Maelstrom Charger: with NO legal new target there is no retarget question 
   assert.ok(!h.state.decision, 'no retarget question when nothing is legal to aim at');
   assert.ok(h.log.some(m => m.includes('no legal new target')), 'and the log says why the originals ride');
   assert.ok(!ent(h, chg), 'the Charger was still sacrificed');
-  // R164: the copy is a stack item, so a dead target fizzles it through the
-  // ordinary R86 path — announced, in its own resolution, rather than being
+  // CR 710.8: the copy is a stack item, so a dead target fizzles it through the
+  // ordinary CR 704.6 path — announced, in its own resolution, rather than being
   // swallowed by an inline "no target — no effect" line.
   pass(h); pass(h);                                           // the copy fizzles (target gone)
   assert.ok(h.log.some(m => m.includes('(copy) fizzles')), 'the copy fizzles and says so');
@@ -602,9 +601,9 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
-  pick(h, { unit: atk });                                     // Collapse's cast cost (R35): paid up front
+  pick(h, { unit: atk });                                     // Collapse's cast cost (CR 702.4): paid up front
   const collapseId = h.state.stack.find(i => i.card === 'Structural Collapse')!.id;
-  // R64: the bracket is an additional cost — sacrificed AT CAST, X fixed
+  // CR 702.6b, 110.1a: the bracket is an additional cost — sacrificed AT CAST, X fixed
   // there, and the effect it negates is a declared target on the stack.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Malevolent Machinations') });
   pick(h, { unit: d1 });                                      // sacrifice one unit…
@@ -614,9 +613,9 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   assert.ok(ent(h, d2), 'only X = 1 unit sacrificed');
   pass(h); pass(h);                                           // resolve Malevolent (top of stack)
   assert.ok(h.log.some(m => m.includes('is negated')), 'the effect was negated');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Collapse left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Collapse left the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
-  assert.ok(!ent(h, atk), 'the Collapse cast cost stays paid (R35) — negation does not refund it');
+  assert.ok(!ent(h, atk), 'the Collapse cast cost stays paid (CR 702.4b) — negation does not refund it');
   finishBattle(h);
 });
 
@@ -634,8 +633,8 @@ test('Malicious Hardware: one of your units dies → each opponent sacrifices a 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk1], [atk2]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1] } });
-  pass(h); pass(h);   // combat: atk1 and b1 trade; b1's death fires the trigger (R31)
-  resolveAfterCombat(h);   // R261: the death trigger is stacked after combat
+  pass(h); pass(h);   // combat: atk1 and b1 trade; b1's death fires the trigger (CR 608.9)
+  resolveAfterCombat(h);   // CR 608.9b: the death trigger is stacked after combat
   assert.ok(!ent(h, b1), 'the blocker died (your unit died)');
   assert.ok(!ent(h, atk1), 'the blocked attacker died in the trade');
   assert.ok(!ent(h, atk2), 'the opponent sacrificed their surviving unit (forced pick)');
@@ -694,7 +693,7 @@ test('Soulforger: your NONTOKEN unit dying → Fireball 1 (token deaths don’t 
 
 // ── Ember of Life ────────────────────────────────────────────────────────
 
-test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units (R33, absorbed into R115)', () => {
+test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units (CR 601.5)', () => {
   const h = new Harness(2916);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -716,7 +715,7 @@ test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units
   const minted = unitsOf(h, D).filter(u => u.card === 'Unit Token');
   assert.equal(minted.length, 1, 'one 1/1 created (N = 1)');
   assert.equal(minted[0]!.region, unitsOf(h, D).find(u => u.card === 'Ember of Life')!.region,
-    "created UNIT arrives in the carrier's region (R33; here = D's home, where Ember stands)");
+    "created UNIT arrives in the carrier's region (CR 601.5; here = D's home, where Ember stands)");
   // [once]: a second spell-damage event this turn mints nothing
   pass(h);                                                    // priority → D again
   whiteBox(h, e => { fb2 = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });
@@ -725,7 +724,7 @@ test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units
   pass(h); pass(h);                                           // resolve the second Fireball
   assert.ok(!ent(h, a2), 'the second Fireball landed');
   assert.equal(unitsOf(h, D).filter(u => u.card === 'Unit Token').length, 1,
-    'no second minting (R9 [once])');
+    'no second minting (CR 109.9 [once])');
   finishBattle(h);
 });
 
@@ -739,7 +738,7 @@ test('Hearthwood Ancient: sacrifice another unit → your units gain +1/+1 until
   const t1 = spawn(h, p, 'Unit Token');
   const t2 = spawn(h, p, 'Unit Token');
   h.do({ type: 'activateAbility', seat: p, entityId: ha, abilityIndex: 0, via: 'augment' });
-  // R49 UN-PARKED: a real activation cost, paid in the cast window, and it can
+  // UN-PARKED (CR 111.7): a real activation cost, paid in the cast window, and it can
   // only offer ANOTHER unit
   notOffered(h, { unit: ha }, '"another unit" — never the carrier');
   pick(h, { unit: t1 });                                      // the activation cost

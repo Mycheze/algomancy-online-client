@@ -1,4 +1,4 @@
-/* R189 — playtest report #105 (GYSR, 2026-08-25), CARD-TODO #72.
+/* CR D6.7 — playtest report #105 (GYSR, 2026-08-25), CARD-TODO #72.
  *
  * THE REPORT, verbatim: *"All triggers from death (and after combat) should go
  * onto the stack VISUALLY at the same time. The Geode's trigger did, but not
@@ -41,7 +41,7 @@
  * four death triggers, one action, one update — drawn 280ms apart, one at a
  * time. That is what this file fixes.
  *
- * ── R261 TOOK THIS FILE'S FIXTURE AND LEFT ITS RULE ──────────────────
+ * ── THE AFTER-COMBAT HOLD TOOK THIS FILE'S FIXTURE AND LEFT ITS RULE ──────────────────
  *
  * ⚠ THE FIXTURE USED TO BE A COMBAT DEATH SWEEP, and every test below was
  * built on it. `deathSweep(seed, swift)` attacked with The Foretold and Good
@@ -53,7 +53,7 @@
  * the normal sub-step killed the other two: ONE update, TWO generations, which
  * is #53's direction.
  *
- * R261 (owner, 2026-08-30) moved every combat-damage and combat-death trigger
+ * The owner's 2026-08-30 ruling (now CR 608.9b) moved every combat-damage and combat-death trigger
  * to the AFTER-COMBAT window, where it goes on the real stack and both seats
  * may respond. A trigger on the stack emits `stackPushed`, never `stackFlash`.
  * So the whole fixture went to zero and its own positive control caught it:
@@ -61,20 +61,20 @@
  *     assert.equal(flashes.length, 3, `three death triggers resolved unanswerably`)
  *     // → 'three death triggers resolved unanswerably (0)'
  *
- * R189's RULE is untouched — it is about how the client PACES a batch, and it
+ * CR D6.7's RULE is untouched — it is about how the client PACES a batch, and it
  * still has to pace one. What had to be rebuilt is the segment the batch comes
  * out of, and the search for one is worth writing down, because it is short:
  *
  *   · BATTLE is out. `processTriggerQueue`'s `battleMode` is now plain
  *     `phase === 'battle'`, so in battle every trigger goes on the stack.
- *   · DEPLOYMENT is out, and was already out before R261: R144(a) routes
+ *   · DEPLOYMENT is out, and was already out before the after-combat hold: CR 706.3c routes
  *     deployment triggers through the stack too (`stackMode` includes
  *     'deploy'). Measured, not assumed — a Geode deployed under a real
  *     `playCard` logs `triggered · stackPushed · resolved`, and the only
  *     `stackFlash` in that action is the unit CARD.
  *   · REGROUP fires nothing that queues.
  *
- * That leaves the HASTE STEP (R18) — `phase === 'planning'`, a hidden
+ * That leaves the HASTE STEP (CR 504.3, D1.4) — `phase === 'planning'`, a hidden
  * simultaneous segment with no priority windows at all, where `playAtTiming`
  * commits with `then = 'resolve'` and the triggers the play causes drain
  * immediately. It is the last place in the engine where a trigger resolves
@@ -103,7 +103,7 @@
  * once. Both of the report's directions out of one board, which is what the old
  * fixture's two arms were for.
  *
- * ⚠ GUARD THE FEEDING, NOT THE STAGER. R173 had to widen #53's guards because
+ * ⚠ GUARD THE FEEDING, NOT THE STAGER. #53's guards had to be widened (see 154-guard-shape) because
  * they called the pure stager on hand-written arrays: they proved it COULD
  * stage and could not fail if the client stopped feeding it. So the load-
  * bearing tests here drive the real ui/main.ts through test/ui-driver.ts, and
@@ -130,7 +130,7 @@ const ui = await client();
  * arithmetic ON A CLOCK, so a test that cannot move the clock can only ever
  * see the first frame. `at()` lends the client a stopped one.
  *
- * The readings only ever go FORWARD across the file: R150's pace queue
+ * The readings only ever go FORWARD across the file: CR D5.4's pace queue
  * remembers the moment it last released, and a clock that jumps backwards
  * between tests would make one test's throttle state decide the next one's.
  */
@@ -163,12 +163,12 @@ interface Sweep {
 
 /**
  * One real haste-step play, in the last segment of the engine where a trigger
- * resolves without ever being respondable. See the R261 note in the header for
+ * resolves without ever being respondable. See the note in the header for
  * why it is not a combat death sweep any more.
  *
  * Everything about the batch that the tests below depend on is asserted HERE,
  * because a fixture that has quietly stopped reproducing the report is worse
- * than no fixture — and under R261 the failure mode is specifically an EMPTY
+ * than no fixture — and under CR 608.9b the failure mode is specifically an EMPTY
  * subject set, which passes and looks exactly like a fixture that works.
  */
 function hasteSweep(seed: number, listeners: number): Sweep {
@@ -181,8 +181,8 @@ function hasteSweep(seed: number, listeners: number): Sweep {
   h.state.initiative = seat;
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.equal(h.state.phase, 'planning', 'the haste step — R18, and the last unrespondable '
-    + 'segment a trigger can resolve in (R261 took the other two)');
+  assert.equal(h.state.phase, 'planning', 'the haste step — CR 504.3, and the last unrespondable '
+    + 'segment a trigger can resolve in (the after-combat hold took the other two)');
   giveResources(h, seat, 'water', 6);
   const idx = give(h, seat, 'Tidal Menace');            // {Haste}, nontoken, 7/2
   const mark = h.events.length;
@@ -193,7 +193,7 @@ function hasteSweep(seed: number, listeners: number): Sweep {
     + 'moment nobody could act in');
   assert.equal(h.state.stack.length, 0,
     'and nothing is on the REAL stack afterwards: everything here resolved unanswerably, '
-    + 'which is the property R261 left in exactly one segment');
+    + 'which is the property the after-combat hold left in exactly one segment');
 
   const items = flashItems(events);
   assert.equal(items.length, listeners + 1,
@@ -204,7 +204,7 @@ function hasteSweep(seed: number, listeners: number): Sweep {
     'and the rest are TRIGGERS — a non-empty subject set, asserted because an empty one '
     + 'would make every screen assertion below pass vacuously');
   assert.equal(events.filter(e => e.type === 'triggered').length, listeners,
-    'each of them carries the queue marker that says it was queued in this batch (R189 is '
+    'each of them carries the queue marker that says it was queued in this batch (the grouping uses '
     + 'positive evidence only)');
 
   const unit = Object.values(h.state.entities)
@@ -219,7 +219,7 @@ function hasteSweep(seed: number, listeners: number): Sweep {
 
 /** put the fixture's board and batch in front of the real client at `now`.
  *
- * The legal list is deliberately NON-EMPTY. R150's holdable() holds an update
+ * The legal list is deliberately NON-EMPTY. CR D5.4b's holdable() holds an update
  * the player cannot act on, and a held update never reaches absorbFlashes at
  * all — so an empty list would make every assertion below depend on how many
  * updates ran earlier in the same process rather than on the beat queue. (The
@@ -235,7 +235,7 @@ function show(s: Sweep, now: number): void {
 
 /* ── the report ─────────────────────────────────────────────────────── */
 
-test('R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame', () => {
+test('CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame', () => {
   const now = (base += 100_000);
   const s = hasteSweep(6181, 3);
   assert.equal(s.triggers.length, 3, 'three triggers to be simultaneous about');
@@ -257,7 +257,7 @@ test('R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE fr
     + 'on the screen');
 });
 
-test('R189 a beat explains and never gates: the board under it is already final', () => {
+test('CR D6.7 a beat explains and never gates: the board under it is already final', () => {
   const now = (base += 100_000);
   const s = hasteSweep(6182, 3);
   const hand = s.h.state.players[s.seat]!.hand.length;
@@ -282,7 +282,7 @@ test('R189 a beat explains and never gates: the board under it is already final'
 
 /* ── the other direction (#53) ──────────────────────────────────────── */
 
-test('R189 a play and the triggers it caused are TWO beats, and the second is three cards at once', () => {
+test('CR D6.7 a play and the triggers it caused are TWO beats, and the second is three cards at once', () => {
   const now = (base += 100_000);
   const s = hasteSweep(6183, 3);
   show(s, now);
@@ -299,7 +299,7 @@ test('R189 a play and the triggers it caused are TWO beats, and the second is th
   assert.deepEqual(onStrip(s.triggers), s.triggers, 'all three of it, in the same frame');
 });
 
-test('R189 a second batch queues behind the first — two updates are never one beat', () => {
+test('CR D6.7 a second batch queues behind the first — two updates are never one beat', () => {
   const now = (base += 100_000);
   const one = hasteSweep(6184, 3);
   const two = hasteSweep(6185, 3);
@@ -324,7 +324,7 @@ test('R189 a second batch queues behind the first — two updates are never one 
 
 /* ── the classifier, on real events ─────────────────────────────────── */
 
-test('R189 flashBatches cuts a real batch where the RULES cut it', () => {
+test('CR D6.7 flashBatches cuts a real batch where the RULES cut it', () => {
   const three = hasteSweep(6187, 3).events;
   assert.deepEqual(flashBatches(three).map(g => g.length), [1, 3],
     'the play is one generation and the three triggers it caused are the next — and the '
@@ -340,7 +340,7 @@ test('R189 flashBatches cuts a real batch where the RULES cut it', () => {
     + 'rather than any fixed shape of the batch');
 });
 
-test('R189 positive evidence only: flashes with no queue marker keep a beat each', () => {
+test('CR D6.7 positive evidence only: flashes with no queue marker keep a beat each', () => {
   const { events } = hasteSweep(6190, 3);
   const bare = events.filter(e => e.type === 'stackFlash');
   assert.equal(events.filter(e => e.type === 'triggered').length, 3, 'three markers…');
@@ -355,13 +355,13 @@ test('R189 positive evidence only: flashes with no queue marker keep a beat each
   // and the flashes arrived at [136], [137] and [138], each in an update whose
   // marker the client had already seen and spent three updates earlier.
   //
-  // A batch with no evidence gets the pre-R189 answer, a beat each. This is
-  // the conservative gate the whole fix rests on: it is why R189 never has to
+  // A batch with no evidence gets the old sequential answer, a beat each. This is
+  // the conservative gate the whole fix rests on: it is why the grouping (CR D6.7) never has to
   // widen 56-ui-flash's docs/11 guards ("a batch arrives as a sequence, not a
   // fan"), and why a deployment reveal of six cards is still six beats.
   assert.deepEqual(flashBatches(bare).map(g => g.length), [1, 1, 1, 1],
     'no marker, no grouping — the client never invents a simultaneity the wire did not show it');
   assert.deepEqual(queueFlashes([], bare, 0).map(f => f.at),
     [0, STAGGER_MS, STAGGER_MS * 2, STAGGER_MS * 3],
-    'and the queue still spaces them exactly as it did before R189');
+    'and the queue still spaces them exactly as it did before the grouping rule (CR D6.7)');
 });

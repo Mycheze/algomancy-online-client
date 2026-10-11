@@ -1,4 +1,4 @@
-/* R70 — facts about a dying unit ride the EVENT, not a lookup afterwards.
+/* CR 714.9 — facts about a dying unit ride the EVENT, not a lookup afterwards.
  *
  * destroy() deletes the entity as its second statement, before the 'died'
  * event is even built, so by the time a queued trigger RESOLVES there is no
@@ -6,7 +6,7 @@
  * want therefore has to be on the event (or, for the region, on the queued
  * trigger). Two live bugs came out of that, and both are pinned here:
  *
- *  1. R12 violation — processTriggerQueue() resolved a trigger in
+ *  1. CR 101.6 violation — processTriggerQueue() resolved a trigger in
  *     `entity(sourceId)?.region ?? actionRegion(controller)`. For a death
  *     trigger the entity is ALWAYS gone, so it always took the fallback: the
  *     controller's action region, not the region the unit died in. That
@@ -56,7 +56,7 @@ const died = (h: Harness): EngineEvent => h.events.filter(ev => ev.type === 'die
 
 // ── 1. the region a unit died in ──────────────────────────────────────
 
-test('R70: a "when I die" trigger resolves in the region the unit DIED in, not the controller\'s', () => {
+test('CR 714.9a: a "when I die" trigger resolves in the region the unit DIED in, not the controller\'s', () => {
   const h = new Harness(6200);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -73,7 +73,7 @@ test('R70: a "when I die" trigger resolves in the region the unit DIED in, not t
 
   whiteBox(h, e => { e.destroy(e.entity(mourner)!, 'dies'); });
   assert.ok(h.state.decision, 'the death trigger is asking for its target');
-  // R12: only the ally standing in the region the Mourner died in exists to it
+  // CR 101.6: only the ally standing in the region the Mourner died in exists to it
   assert.deepEqual(offered(h), [JSON.stringify({ unit: away })],
     'the ally in the death region — and ONLY it — is on the menu');
   assert.ok(!offered(h).includes(JSON.stringify({ unit: atHome })),
@@ -82,7 +82,7 @@ test('R70: a "when I die" trigger resolves in the region the unit DIED in, not t
 
 // ── 2. the facts themselves ───────────────────────────────────────────
 
-test('R70: the death event carries token, verb, owner, region and destination', () => {
+test('CR 714.9: the death event carries token, verb, owner, region and destination', () => {
   const h = new Harness(6201);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -98,7 +98,7 @@ test('R70: the death event carries token, verb, owner, region and destination', 
   assert.equal(ev.data!['to'], 'bin');
 });
 
-test('R70: a dying TOKEN says so on the event (it used to be a log-message match)', () => {
+test('CR 714.9: a dying TOKEN says so on the event (it used to be a log-message match)', () => {
   const h = new Harness(6202);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -108,12 +108,12 @@ test('R70: a dying TOKEN says so on the event (it used to be a log-message match
   });
   const ev = died(h);
   assert.equal(ev.data!['token'], true);
-  assert.equal(ev.data!['to'], 'bin', 'R69: a token does reach a bin before it is erased');
+  assert.equal(ev.data!['to'], 'bin', 'CR 410.5a: a token does reach a bin before it is erased');
   assert.ok(!ev.msg.includes('token: erased'),
     'and the old string-matched phrase is gone — which is exactly why the flag exists');
 });
 
-// R137 (2026-08-24) INVERTS the destination half of this test in place. It
+// The engine's Unstable-death route (2026-08-24; CR 801.2h differs, CT-246) inverted the destination half of this test in place. It
 // used to be named "…says its destination was the erased pile" and assert
 // `to === 'erased'`, with "nothing reached a bin" as the reason. The owner
 // ruled that an Unstable death goes through the bin exactly as a token's does,
@@ -121,7 +121,7 @@ test('R70: a dying TOKEN says so on the event (it used to be a log-message match
 // the event window, which is the only thing a listener can act on. The bin
 // assertion below is unchanged and now means something different: not "it
 // never went there" but "it does not STAY there".
-test('R137: an Unstable death says BIN, like a token, and still DIES (R70 inverted)', () => {
+test('engine (CT-246; CR 801.2h: erased instead of binned): an Unstable death says BIN, like a token, and still DIES (the earlier reading inverted)', () => {
   const h = new Harness(6203);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -133,7 +133,7 @@ test('R137: an Unstable death says BIN, like a token, and still DIES (R70 invert
   const ev = died(h);
   assert.equal(ev.type, 'died', 'Unstable replaces the BIN, not the death (Caleb 2025-04-08)');
   assert.equal(ev.data!['to'], 'bin',
-    'R137: the same answer a dying token gives — it really is in a bin while this fires');
+    'engine (CT-246; CR 801.2h differs): the same answer a dying token gives — it really is in a bin while this fires');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep took it back out again');
   const erased = h.events.filter(x => x.type === 'erased');
   assert.ok(erased.some(x => x.data?.['card'] === 'T62 Ally' && x.data?.['from'] === 'bin'),
@@ -142,7 +142,7 @@ test('R137: an Unstable death says BIN, like a token, and still DIES (R70 invert
 
 // ── 3. the recall side of the same idea ───────────────────────────────
 
-test('R70: a recall event says where the card went', () => {
+test('CR 714.9: a recall event says where the card went', () => {
   const h = new Harness(6204);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -160,7 +160,7 @@ test('R70: a recall event says where the card went', () => {
     e.recall(t);
   });
   const ev2 = h2.events.filter(x => x.type === 'despawned').at(-1)!;
-  // R69, extended to the hand 2026-08-22: a recalled token REACHES the hand
+  // CR 410.5b (extended to the hand 2026-08-22): a recalled token REACHES the hand
   // and is erased out of it by the state-based sweep, so `to` is 'hand' for it
   // too — that is the whole point of the ruling ("it would trigger any 'enters
   // hand' stuff").

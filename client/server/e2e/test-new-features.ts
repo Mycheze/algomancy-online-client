@@ -64,7 +64,7 @@ class Client {
 
 // ── spawn the server ──────────────────────────────────────────────────
 rmSync(gameFile(ROOM), { force: true });
-// R204/CT-85: the server picks its own port and tells us which — see
+// CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
 // test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
 // port unheld for as long as node took to boot.
 const server = await spawnServer();
@@ -146,7 +146,7 @@ try {
   const aLogMark = a.log.length;
   const handA = a.view.players[0].hand.length;
   const deckA = a.view.sharedDeck.length;
-  // R296: a recycle goes past the mark, so the number that moves during the
+  // CR 801.10: a recycle goes past the mark, so the number that moves during the
   // resource step — and therefore the number that could leak the opponent's
   // recycles — is the PILE, not the deck. Both are asserted below.
   const pileA = a.view.sharedRecycled?.length ?? 0;
@@ -162,7 +162,7 @@ try {
   ok(a.view.players[1].hand.length === oppHandSeen,
     "seat 0 still sees the opponent's hand as it was when the step opened");
   ok(a.view.sharedDeck.length === deckA,
-    'and a deck count that did not move at all — R296 recycles do not touch the live deck');
+    'and a deck count that did not move at all — CR 408.2 recycles do not touch the live deck');
   ok((a.view.sharedRecycled?.length ?? 0) === pileA + 1,
     "and a recycle-pile count that reflects only their OWN recycle");
   ok(!a.log.slice(aLogMark).some(l => /recycles a card/.test(l)),

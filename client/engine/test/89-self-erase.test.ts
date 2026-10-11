@@ -11,7 +11,7 @@
  * code for its OTHER half, which is exactly why nothing caught it — the shape
  * sweep in 71-card-ledger saw live code and the drill saw the card do
  * something. It was not cosmetic: the erased pile is the zone cards leave the
- * game through (R65), so a spell that should erase itself instead landed in
+ * game through (CR 407.1), so a spell that should erase itself instead landed in
  * the bin, stayed recurrable, and kept counting toward every "cards in your
  * bin" effect and every "erase X cards from your bin" cost. Collect Remains
  * was the worst of them, being itself a bin-recursion spell.
@@ -63,7 +63,7 @@ const count = (xs: string[], n: string): number => xs.filter(c => c === n).lengt
 
 /** every `erased` event that NAMES this card, by either shape the event
  * vocabulary uses: `data.card` (one card) or `data.cards` (a pile). This is
- * the same pair `E.ev` reads to keep R65's public erased pile, so anything
+ * the same pair `E.ev` reads to keep CR 407.1's public erased pile, so anything
  * that reaches the pile is visible here and vice versa. */
 function erasedEvents(h: Harness, name: string): EngineEvent[] {
   return h.events.filter(ev => {
@@ -80,7 +80,7 @@ function erasedEvents(h: Harness, name: string): EngineEvent[] {
  * exactly once, and exactly one `erased` event announced it.
  *
  * "No bin" is checked on both seats on purpose. A card belongs to its owner
- * (R65), so a bug that binned it to the wrong side would still be a bug, and
+ * (CR 102.4), so a bug that binned it to the wrong side would still be a bug, and
  * asserting only on the caster's bin would not see it.
  */
 function erasedNotBinned(h: Harness, seat: Seat, name: string): void {
@@ -142,7 +142,7 @@ test('Collect Remains: it takes the bin card AND leaves the game, instead of joi
   giveResources(h, A, 'dark', 2);                     // dd/2
   binOf(h, D).push('Good Whale');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
-  pickLabel(h, 'Good Whale');                         // R64: targeted at cast
+  pickLabel(h, 'Good Whale');                         // CR 110.1a: targeted at cast
   pass(h); pass(h);
 
   // the OTHER half still happens — the erase is a second sentence, not a
@@ -194,7 +194,7 @@ test('Suspend: the life lock lands for the battle and the spell erases itself on
   pick(h, { player: D });
   pass(h); pass(h);
 
-  // the OTHER half (R104's replacement layer) still works
+  // the OTHER half (the life lock, CR 708.10) still works
   const g = new E(h.state);
   g.loseLife(D, 7, 'test');
   assert.equal(g.s.players[D]!.life, lifeD, "the target's life total can't change");
@@ -232,7 +232,7 @@ test('Temporal Rift: ending the battle does not carry off its own disposal — i
   assert.equal(h.state.battle, null, 'the battle is over');
   assert.equal(h.state.phase, 'deploy', 'and it cascaded through round 2 into deployment');
   assert.ok(ent(h, whale), 'the negated Arc never dealt its damage');
-  // R68 is unchanged: what the Rift NEGATES is binned, exactly once
+  // CR 704.4a is unchanged: what the Rift NEGATES is binned, exactly once
   assert.equal(count(binOf(h, A), 'Luminous Arc'), 1, 'the negated Arc is binned once');
   // and the Rift itself took the other exit
   erasedNotBinned(h, D, 'Temporal Rift');
@@ -265,13 +265,13 @@ test('Skybreaker: "Erase me" is paid as the activation cost, and an erase is not
   erasedNotBinned(h, D, 'Skybreaker');
   // AN ERASE IS NOT A DEATH — this is the whole difference from the
   // `sacrificeSelf` stand-in it replaced, and it is what makes the card
-  // unrecurrable. R40 cannot reach it either: nothing entered a bin to trash.
+  // unrecurrable. The trash rule cannot reach it either (CR 801.2c): nothing entered a bin to trash.
   //
-  // ⚠ NARROWED BY R172 (2026-08-25). This assertion used to include
+  // ⚠ NARROWED 2026-08-25, when an erase became a despawn (CR 801.6a). This assertion used to include
   // `'despawned'` and expect the empty list. That was the engine's silence,
-  // not a ruling: R157 §3 says an erase is *"not a death, but it IS a
+  // not a ruling: the owner's answer (now CR 801.6a) says an erase is *"not a death, but it IS a
   // despawn"*, and `E.eraseFromPlay` now fires one — see
-  // 145-erase-routes.test.ts. The two halves R157 §3 actually states are
+  // 145-erase-routes.test.ts. The two halves CR 801.6a actually states are
   // still pinned here, and they are the halves this test was about.
   const since = h.events.slice(before);
   assert.deepEqual(
@@ -280,10 +280,10 @@ test('Skybreaker: "Erase me" is paid as the activation cost, and an erase is not
     [], 'no death and no trash — an erase is neither of those');
   assert.equal(
     since.filter(ev => ev.type === 'despawned' && ev.data?.['card'] === 'Skybreaker').length, 1,
-    'but it IS a despawn, and fires exactly one (R157 §3 / R172)');
+    'but it IS a despawn, and fires exactly one (CR 801.6a)');
 
   pass(h); pass(h);                                  // the ability resolves
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Boon left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Boon left the stack at once');
   assert.ok(binOf(h, A).includes('Channeled Boon'), 'the negated spell is binned as usual');
   finishBattle(h);
 });
@@ -320,13 +320,13 @@ test('Skybreaker donated as a Virus: "me" is the HOST, so the host is what leave
 // ── NEGATION: the ruling, pinned ─────────────────────────────────────────
 
 test('a NEGATED self-erase spell is binned, not erased — the effect it was printed in never happened', () => {
-  // THE RULING. R68: a negated effect does nothing, and "Erase me." is a
+  // THE RULING. CR 406.4b: a negated effect does nothing, and "Erase me." is a
   // sentence of the effect — so it is not owed. Mechanically this is not a
   // special case anywhere: the flag is raised by `run()`, a negated item never
   // runs its parts, so `dischargeItem` finds nothing raised and takes the bin
   // branch it always took.
   //
-  // The contrast that shows this is a decision and not an accident is R79's
+  // The contrast that shows this is a decision and not an accident is CR 723.4b's
   // {Unstable}, one branch up in the same function: a virus-carrying spell IS
   // erased on negation, because Unstable is a stamp on the CARD rather than an
   // instruction in the effect. The next test asserts that half.
@@ -344,14 +344,14 @@ test('a NEGATED self-erase spell is binned, not erased — the effect it was pri
 
   assert.ok(!h.state.players[A]!.hand.includes('Good Whale'), 'the negated spell did nothing');
   assert.equal(count(binOf(h, A), 'Collect Remains'), 1,
-    'a negated "Erase me" spell goes to the bin like any other negated card (R68)');
+    'a negated "Erase me" spell goes to the bin like any other negated card (CR 704.4a)');
   assert.equal(count(erasedOf(h, A), 'Collect Remains'), 0, 'and NOT to the erased pile');
   assert.deepEqual(erasedEvents(h, 'Collect Remains'), [], 'nothing announced an erase');
   finishBattle(h);
 });
 
 test('a FIZZLED self-erase spell is binned too — its target went, so its text never ran', () => {
-  // R5's other half of the same ruling, and it is reachable with nothing but
+  // The fizzle half of the same ruling (CR 704.6, 406.4b), and it is reachable with nothing but
   // legal actions: two Collect Remains aimed at the SAME bin card. The second
   // one cast resolves first (LIFO) and takes the card; the first then has no
   // surviving target, fizzles, and — having never run — is binned.
@@ -375,7 +375,7 @@ test('a FIZZLED self-erase spell is binned too — its target went, so its text 
 // ── the virus / {Unstable} interaction ───────────────────────────────────
 
 test('a virus rides a self-erasing spell: it is erased ONCE, announced as Unstable, with the virus alongside', () => {
-  // R79 and "Erase me" want the same destination, so the risk here is not the
+  // CR 723.4b and "Erase me" want the same destination, so the risk here is not the
   // outcome but the BOOKKEEPING: two branches both firing would double-log and
   // push the card to the public pile twice. They are exclusive, and Unstable
   // is announced, because Unstable is the stronger fact — it would have erased
@@ -393,7 +393,7 @@ test('a virus rides a self-erasing spell: it is erased ONCE, announced as Unstab
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'), 'the spell still resolved');
   // ONE erase of the card, one entry in the pile — not two of either
   erasedNotBinned(h, A, 'Collect Remains');
-  // the virus is its APPLIER's card, so it reaches THEIR pile (R65), never a bin
+  // the virus is its APPLIER's card, so it reaches THEIR pile (CR 723.4b, 102.4), never a bin
   assert.equal(count(erasedOf(h, D), 'Chitin Shredder'), 1, "the virus goes to its owner's pile");
   assert.equal(count(binOf(h, D), 'Chitin Shredder'), 0, 'and to no bin');
   finishBattle(h);
@@ -406,7 +406,7 @@ test('the erase survives a save/load: a spell mid-flight is serialised and still
   // holds. A flag parked anywhere else — a field on the engine, a module-level
   // set, a closure over the cast — would be gone the moment a game was saved,
   // sent over the wire, or rolled back and replayed by a mid-resolution
-  // suspension (R85), and the card would silently go back to binning itself.
+  // suspension, and the card would silently go back to binning itself.
   //
   // So this drives the spell onto the stack, ROUND-TRIPS THE WHOLE STATE
   // THROUGH JSON — which is exactly what a saved game and a server message

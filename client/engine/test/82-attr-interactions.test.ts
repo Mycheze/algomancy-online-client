@@ -21,7 +21,7 @@
  * The distinction that makes these tests worth having: an attribute reaches
  * effect damage through `srcAttrs`, which is the SOURCE ENTITY's live
  * `ownAttrs` (or the printed card's attrs once the body is gone, so a "when I
- * die" ping still carries them), unioned with R79's `ctx.grantedAttrs` — the
+ * die" ping still carries them), unioned with CR 721.4b's `ctx.grantedAttrs` — the
  * attributes a VIRUS donated to the effect while it sat on the stack. Three
  * different provenances, one set, and each is asserted below, because a fix
  * that only reads the printed card is a fix that breaks the virus case.
@@ -65,7 +65,7 @@ function dealFrom(
 
 /**
  * The same thing for a MULTI-recipient effect — one batch, several victims,
- * which is the shape R80 exists for and the shape {Piercing} has to get right
+ * which is the shape CR 112.8 exists for and the shape {Piercing} has to get right
  * when more than one of them overkills.
  *
  * Returns the batch's events so a test can assert on the engine's EVENT
@@ -83,7 +83,7 @@ function dealAllFrom(
       controller, sourceName: src.card, sourceId, region: g.homeRegion(controller),
       targets: [], event: null, grantedAttrs,
       eraseSelf: () => {},   // no stack item here — a direct-run ctx
-      // R340: noncombat {Piercing} excess is elective — these tests pin the
+      // CR 802.16j: noncombat {Piercing} excess is elective — these tests pin the
       // DEFAULT (lethal to the unit, the rest to its controller); anything
       // else asked is still a surprise
       choose: (_k, dec) => {
@@ -127,12 +127,12 @@ function duel(seed: number, srcCard: string, tgtCard: string): {
  * The same board with a VANILLA STAT TOKEN as the victim.
  *
  * The RAQ answers this file quotes use "a 5/6 Bubb" as their stand-in for a
- * plain 5/6 body, and this file copied that. R106 (2026-08-23) shipped stat
+ * plain 5/6 body, and this file copied that. The {Unaware} ruling (2026-08-23, now CR 802.9a) shipped stat
  * layer 6 and Bubb stopped being a plain 5/6 body: {Unaware} means it ignores
  * every stat change, so a -1/-1 counter and a +1/+1-per-prevented-damage
  * shield are both INVISIBLE on it and the two assertions that measured a stat
  * layer through Bubb had nothing left to measure. The mechanics under test
- * (Poisonous places counters instead of damage; R98's shield pays out in
+ * (Poisonous places counters instead of damage; the shield pays out in
  * counters) are unchanged — the yardstick was.
  *
  * Where a test needs to READ a stat change off the victim, it uses this. Where
@@ -162,7 +162,7 @@ test('Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright (the owner\'s e
   assert.deepEqual(effStats(h, tgt), [5, 6], 'Bubb is a 5/6 — 2 damage is nowhere near lethal');
   dealFrom(h, A, src, tgt, 2);
   assert.equal(ent(h, tgt), undefined,
-    'R21: any NONZERO damage from a {Deadly} source kills, whatever the toughness — '
+    'CR 802.3a: any NONZERO damage from a {Deadly} source kills, whatever the toughness — '
     + 'and it must hold for an effect exactly as it does in combat');
   assert.ok(h.log.some(l => /Carapace Devourer is Deadly — Bubb dies/.test(l)),
     'and it must SAY it was Deadly that did it, not merely delete the unit');
@@ -171,12 +171,12 @@ test('Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright (the owner\'s e
 test('Deadly: ZERO damage kills nothing — "deadly" is not "destroy"', () => {
   const { h, A, src, tgt } = duel(7202, 'Carapace Devourer', 'Bubb');
   dealFrom(h, A, src, tgt, 0);
-  assert.ok(ent(h, tgt), 'R98: no damage was dealt, so nothing happened — no Deadly kill');
+  assert.ok(ent(h, tgt), 'CR 802.3a: no damage was dealt, so nothing happened — no Deadly kill');
   assert.equal(ent(h, tgt)!.damage, 0);
 });
 
 test('Deadly GRANTED by a virus reaches an effect the same way a printed one does', () => {
-  // R79, Caleb 2025-03-06: "you can only do this with attributes — mostly
+  // CR 721.4b, Caleb 2025-03-06: "you can only do this with attributes — mostly
   // Deadly, Piercing, and Powerful are impacted by this, especially Deadly."
   // The Foretold is a vanilla 3/3 with no attributes at all, so a kill here can
   // only be the granted attribute.
@@ -185,7 +185,7 @@ test('Deadly GRANTED by a virus reaches an effect the same way a printed one doe
   assert.equal(ent(h, tgt), undefined, 'a virus-donated {Deadly} must kill through effect damage');
 });
 
-test('Deadly DOES kill through Poisonous — and the counter lands too (R237)', () => {
+test('Deadly DOES kill through Poisonous — and the counter lands too (CR 802.18d)', () => {
   // ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, under the heading "Not a bug, and
   // worth pinning precisely because it looks like one". It was a bug. The old
   // note read "a {Poisonous} source deals its damage as permanent -1/-1
@@ -201,11 +201,11 @@ test('Deadly DOES kill through Poisonous — and the counter lands too (R237)', 
   //   "yeah it'll get instakilled by deadly but also trigger to put counters
   //    on it"
   //
-  // BOTH. R237 (owner, 2026-08-28: "deadly works on spell effects and
-  // everything") is the ruling that landed the change; {Poisonous} is a FORM of
+  // BOTH. The owner's ruling (2026-08-28: "deadly works on spell effects and
+  // everything"), now CR 802.18d, landed the change; {Poisonous} is a FORM of
   // dealing damage, not a replacement of it.
   //
-  // a 5/6 stat token rather than the RAQ's Bubb: R106 made Bubb {Unaware}, and
+  // a 5/6 stat token rather than the RAQ's Bubb: Bubb is {Unaware} (CR 802.9a), and
   // an Unaware unit ignores the -1/-1 this test exists to observe (see
   // duelToken).
   const { h, A, src, tgt } = duelToken(7204, 'Noxious Sporefiend', 5, 6);
@@ -216,8 +216,8 @@ test('Deadly DOES kill through Poisonous — and the counter lands too (R237)', 
     '"but also trigger to put counters on it": the counter went on before it died');
 });
 
-test('Deadly + Poisonous: PREVENTION still stops both halves (R98 is untouched)', () => {
-  // The other side of the same RAQ, and the line R237 must not have broken:
+test('Deadly + Poisonous: PREVENTION still stops both halves (CR 802.3h is untouched)', () => {
+  // The other side of the same RAQ, and the line the Deadly-through-Poisonous change must not have broken (CR 802.18f, 802.3h):
   // "damage is dealt in the form of -1/-1 counters, which means if there is not
   // damage being dealt, then no counters are placed" — so a shielded victim
   // takes no counters AND takes no Deadly kill.
@@ -257,7 +257,7 @@ test('Blessed: an effect hit gains its controller that much life, before the let
   const { h, A, D, src, tgt } = duel(7207, 'Shib', 'Bubb');
   const before = h.state.players[A]!.life;
   dealFrom(h, A, src, tgt, 4);
-  assert.equal(h.state.players[A]!.life, before + 4, 'R48: the gain lands on the same state check as the damage');
+  assert.equal(h.state.players[A]!.life, before + 4, 'CR 802.22b: the gain lands on the same state check as the damage');
   assert.equal(h.state.players[D]!.life, 30, "and it is the SOURCE's controller who gains, not the victim's");
 });
 
@@ -307,7 +307,7 @@ test('Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its contro
   assert.deepEqual(units.map(u => u.n), [1], 'exactly lethal stuck to the unit');
   assert.deepEqual(players.map(p => [p.player, p.n]), [[D, 4]], 'the remainder, to that unit\'s controller');
   // "not as a trigger, just as part of resolution of the damage": one batch,
-  // so both halves carry the same R80 `total` (1 + 4).
+  // so both halves carry the same CR 112.8 `total` (1 + 4).
   assert.deepEqual([...units, ...players].map(e => e.total), [5, 5],
     'both halves belong to ONE damage resolution, not two');
 });
@@ -362,9 +362,9 @@ test('Piercing vs a damage-shielded unit: the shield changes what is dealt, neve
   // 5/6 Bubb: "Atleast 5 damage to Awoken (gets atleast +5/+5, won't create
   // 5/5), atleast 6 damage to Bubb, rest can go to Opponent HP." Assignment is
   // planned against the unit's REAL toughness as if it were unprotected, and
-  // prevention runs afterwards, at commit (R98).
-  // again a 5/6 stat token standing in for the RAQ's Bubb: R98 pays the shield
-  // out in +1/+1 counters, and R106's {Unaware} would swallow them whole.
+  // prevention runs afterwards, at commit (CR 708.11b).
+  // again a 5/6 stat token standing in for the RAQ's Bubb: the shield pays
+  // out in +1/+1 counters, and {Unaware} (CR 802.9) would swallow them whole.
   const { h, A, D, src, tgt } = duelToken(7215, 'Ruinbringer', 5, 6);
   shield(h, tgt);
   dealFrom(h, A, src, tgt, 10);
@@ -373,7 +373,7 @@ test('Piercing vs a damage-shielded unit: the shield changes what is dealt, neve
     + 'a shield does not send MORE (or less) to the face');
   const survivor = ent(h, tgt)!;
   assert.equal(survivor.damage, 0, 'and none of the 6 was actually dealt');
-  assert.deepEqual(effStats(h, tgt), [11, 12], 'R98: +1/+1 for each of the 6 prevented');
+  assert.deepEqual(effStats(h, tgt), [11, 12], '+1/+1 for each of the 6 prevented');
 });
 
 test('Piercing + Deadly: one point is all it needs, so almost the whole hit pierces', () => {
@@ -400,7 +400,7 @@ test('Piercing + Poisonous: the counters are lethal at the same number, so the r
   const evs = dealFrom(h, A, src, tgt, 4, ['Piercing']);
   assert.equal(ent(h, tgt), undefined, 'one -1/-1 counter took the 1/1 to 0 toughness');
   assert.equal(h.state.players[D]!.life, 27, '4 − 1 needed = 3 pierced');
-  // R237: the unit's share DOES fire a 'damage' event now — "Poisonous damage
+  // CR 802.18b: the unit's share DOES fire a 'damage' event now — "Poisonous damage
   // does count as damage being dealt" (RAQ 2025-03-25) — tagged with the FORM
   // it took, while the -1/-1 counters remain what actually landed.
   assert.deepEqual(damageTo(evs).units.map(u => u.n), [1],
@@ -412,7 +412,7 @@ test('Piercing + Poisonous: the counters are lethal at the same number, so the r
 });
 
 test('Piercing DONATED by a virus pierces exactly like a printed one', () => {
-  // R79, Caleb 2025-03-06, the ruling that authorises the donation and names
+  // Caleb 2025-03-06 (now CR 721.4b), the ruling that authorises the donation and names
   // this attribute: "you can only do this with attributes — mostly Deadly,
   // Piercing, and Powerful are impacted by this." The Foretold is a vanilla
   // 3/3 with no attributes at all, so the 4 that reach the face can only be
@@ -440,11 +440,11 @@ test('Piercing in a BATCH: each unit\'s excess goes to THAT unit\'s controller',
   const { players } = damageTo(evs);
   assert.deepEqual(players.map(p => [p.player, p.n]).sort(), [[A, 2], [D, 2]].sort());
   assert.deepEqual(players.map(p => p.total), [6, 6],
-    'R80: one batch of 6 dealt, however many recipients it reached');
+    'CR 112.8: one batch of 6 dealt, however many recipients it reached');
 });
 
 test('Piercing: a unit named twice in one batch is overkilled ONCE, and the rest pierces', () => {
-  // R80 coalesces a recipient named twice into a single hit, so the lethal
+  // CR 112.8 coalesces a recipient named twice into a single hit, so the lethal
   // share is priced against the total the batch will really deal it — 8 to a
   // 5/6 is 6 lethal and 2 pierced, not two independent 4s that each pierce
   // nothing.
@@ -460,7 +460,7 @@ test('Piercing: a unit named twice in one batch is overkilled ONCE, and the rest
 // ── the two paths, measured against each other ──────────────────────────
 
 test('combat and effect damage agree on how much was dealt', () => {
-  // R114 (report #84, 2026-08-23): "ALL damage is dealt to units, even if it
+  // The overkill ruling (report #84, 2026-08-23; now CR 608.6d): "ALL damage is dealt to units, even if it
   // surpasses its defense."
   //
   // This is the invariant whose ABSENCE let the two damage paths drift.
@@ -525,7 +525,7 @@ test('every damage-reading attribute is honoured by the non-combat damage batch'
   // at all here, and nothing said so.
   //
   // {Unaware} joined it on the same day, from the other end of CARD-TODO #5.
-  // R106's second half is a PAIRWISE collapse — "it looks ONLY at what is the
+  // The {Unaware} ruling's second half (CR 802.9c, 802.9e) is a PAIRWISE collapse — "it looks ONLY at what is the
   // literal printed text on all cards 'involved'" — so an Unaware SOURCE makes
   // this batch price and kill its victims at their printed defense ("Haboob
   // kills anything that has 1 defense printed at the card level"). It is read

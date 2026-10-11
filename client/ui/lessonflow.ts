@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: WHEN A LESSON OPENS.
+/* CR D8.1 — LEARN TO PLAY: WHEN A LESSON OPENS.
  *
  * A lesson is shown at the moment its rule first matters in the game, not on a
  * timer. Every trigger is a predicate over what the LEARNER can see — their

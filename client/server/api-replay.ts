@@ -13,7 +13,7 @@
  * instead of saying so would be lying to the person watching."* A saved game
  * is a CLAIM — seed plus actions reproduces this game — and the claim was true
  * when it was written, checked later by an engine that has moved. 20 of the 22
- * games in the R200 corpus diverge, every divergence traced to a deliberate
+ * games in the replay corpus diverge, every divergence traced to a deliberate
  * rules change and none to a regression. The logs are sound; the reader moved.
  *
  * Four things can be true of a file, and they are NOT ranked on one axis, so
@@ -25,7 +25,7 @@
  *   refusedAt    where this engine first refused — an UPPER BOUND on the above
  *
  * `partedAt` and `refusedAt` are different numbers and the gap between them is
- * the whole of R200: the rules move at [k], the action stays legal and quietly
+ * the whole of the divergence problem (see replay-room.ts): the rules move at [k], the action stays legal and quietly
  * means something else, the boards drift apart in silence, and several actions
  * later something finally becomes illegal. On ANBB the gap is 93 actions. A
  * viewer that tinted the board from `refusedAt` would show a third of a game

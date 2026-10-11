@@ -34,16 +34,16 @@ export const CLOSED: LedgerEntry[] = [
     id: 3, room: 'MNWK', date: '2026-08-19',
     report: "Tranquility isn't making spells more expensive",
     status: 'fixed',
-    guards: ['49-playtest-round6.test.ts::R59: Tranquility taxes spells [1] more during battle',
-      '49-playtest-round6.test.ts::R59: Tranquility is recognised as an augment'],
+    guards: ['49-playtest-round6.test.ts::CR 111.10: Tranquility taxes spells [1] more during battle',
+      '49-playtest-round6.test.ts::CR 111.10: Tranquility is recognised as an augment'],
   },
   {
     id: 4, room: 'MNWK', date: '2026-08-19',
     report: "Flight doesn't make me pick two targets when casting it. It just has me pick an ally",
     status: 'fixed',
-    guards: ['49-playtest-round6.test.ts::R58: Fight takes both units as CAST-time targets',
+    guards: ['49-playtest-round6.test.ts::CR 110.1a: Fight takes both units as CAST-time targets',
       '68-target-conformance.test.ts::a card printing N targets declares N cast-time target slots'],
-    note: 'There is no card called "Flight" — the card is FIGHT. Fixed in round 6 (R58).',
+    note: 'There is no card called "Flight" — the card is FIGHT. Fixed in round 6 (CR 110.1b).',
   },
   {
     id: 5, room: 'MNWK', date: '2026-08-19',
@@ -58,7 +58,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['23-wood-a.test.ts::"target effect" reaches a TRIGGERED ability',
       '39-light-b.test.ts::Divine Intervention: may change the targets of an effect on the stack',
       '39-light-b.test.ts::reaches a TRIGGER on the stack'],
-    note: 'R60. CLOSED in round 17. The two original DI tests only ever aimed at a SPELL, so both '
+    note: 'CR 700.1. CLOSED in round 17. The two original DI tests only ever aimed at a SPELL, so both '
       + 'would have survived a revert of the spec to `stackSpell` — the only thing actually '
       + "holding the line was Hush Mush's test, one card away. The new case puts a spell AND a "
       + 'trigger on the stack at once, each holding a target, and asserts the TRIGGER is on DI\'s '
@@ -80,8 +80,8 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ['36-cache-prophecy.test.ts::with less than the banner mana the prophecy is refused',
       '70-playtest-round15.test.ts::only option is prophesy opens a menu'],
-    note: 'The COST half was always correct: R42 says the banner costs plain mana with no '
-      + 'affinity, so no Wood was needed. The CLICK half was the real bug — offer() auto-fired '
+    note: 'The COST half followed the rule of the day: the prophecy ruling then said the banner costs plain mana with no '
+      + 'affinity, so no Wood was needed (since corrected, CR 803.7d). The CLICK half was the real bug — offer() auto-fired '
       + 'when prophesy was the only menu item. It now always opens a menu.',
   },
   {
@@ -91,13 +91,13 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['36-cache-prophecy.test.ts::no banner',
       '40-light-c.test.ts::is enforced, and not just un-offered'],
     note: 'Correct: Calming Force has no prophecy banner in the printed data or upstream oracle, '
-      + 'and R42 refuses a banner-less card. The SEPARATE LIVE HOLE this note used to describe is '
-      + 'CLOSED as of R100 (round 17): its other line "I can\'t be played from your hand" was '
+      + 'and CR 803.7 refuses a banner-less card. The SEPARATE LIVE HOLE this note used to describe is '
+      + 'CLOSED in round 17 (CR 402.6): its other line "I can\'t be played from your hand" was '
       + 'unenforced, so the engine was strictly more permissive than print. There is now a '
       + '`CardBehavior.noPlayFromHand` flag — the mirror of prophesyFromBin, defaulting permissive '
       + '— checked in doPlayCard AND at all three legalActions hand-play sites, because a refusal '
       + 'the UI still offers as a legal click is its own playtest report. Collateral worth '
-      + 'knowing: two R68 negation tests used Calming Force played from hand as their vehicle and '
+      + 'knowing: two CR 704.4 negation tests used Calming Force played from hand as their vehicle and '
       + 'had to be rerouted through a glimpse-stamped cache release.',
   },
 
@@ -106,14 +106,14 @@ export const CLOSED: LedgerEntry[] = [
     id: 10, room: 'BRDM', date: '2026-08-20',
     report: 'Tempest Wrangler (with alluring) didn\'t trigger on attack',
     status: 'fixed',
-    guards: ['53-playtest-round7.test.ts::R84 UFAB',
+    guards: ['53-playtest-round7.test.ts::CR 606.2b UFAB',
       '53-playtest-round7.test.ts::the minimal form',
-      '75-ui-reachability.test.ts::R84: the client names the compulsory block'],
+      '75-ui-reachability.test.ts::CR 606.2e: the client names the compulsory block'],
     note: 'THE RECURRENCE THAT MOTIVATED THIS LEDGER, and it took two fixes. Round 7 built an '
       + 'engine rule and tested it hard, but every scenario attacked with ONLY Alluring columns, '
       + 'so the mixed-attack shape — where a blocker can be dumped on a plain column — was never '
       + 'asserted, and the bug returned verbatim as id 57. It also turned out to be the WRONG '
-      + 'RULE: R84 replaces it per Caleb\'s rulings ({Alluring} targets ONE enemy unit, from the '
+      + 'RULE: the Alluring ruling (now CR 606.2e) replaces it per Caleb\'s rulings ({Alluring} targets ONE enemy unit, from the '
       + 'stack). And the client had no Alluring awareness at all, so the duty was invisible until '
       + 'the server refused your declaration — the block bar now names it and gates Confirm.',
   },
@@ -177,15 +177,15 @@ export const CLOSED: LedgerEntry[] = [
       + 'quote is genuine, and the two guards below genuinely test it — they just test a '
       + 'different game than the one he played. A 2026-08-25 audit of all 295 guard references '
       + 'read this entry and CLEARED it, because nothing short of the replay could show the gap. '
-      + 'The R173 guards found four blind entries by reading; this one needed forensics. '
-      + 'The region guards are KEPT — R12 is real and worth pinning — and the visibility guards '
+      + 'The guard-shape-audit guards found four blind entries by reading; this one needed forensics. '
+      + 'The region guards are KEPT — CR 101.6 is real and worth pinning — and the visibility guards '
       + 'the report was actually about are added beside them. Red-checked both ways, and the '
       + 'asymmetry is the whole point: disabling the card\'s trigger reddens BOTH sets, but '
       + 'redacting triggered items from the served stack in server/view.ts reddens ONLY the new '
       + 'ones while 28-metal-c stays 30/30 green. That is precisely the hole the original close '
       + 'left open. '
       + 'THE ORIGINAL (WRONG) NOTE FOLLOWS, kept so nobody re-derives it: '
-      + 'R12 — REGION SCOPING, and the caveat this entry carried since round 7 turns out to be '
+      + 'CR 101.6 — REGION SCOPING, and the caveat this entry carried since round 7 turns out to be '
       + 'the whole explanation rather than a loose end. Caleb Gannon, #rules-questions 2025-03-09: '
       + '"Everything in the game is region specific. So nothing will ever impact anything in '
       + 'another region. You should be able to completely ignore cards in other regions when '
@@ -232,7 +232,7 @@ export const CLOSED: LedgerEntry[] = [
       '50-ui-inspect.test.ts::waiting',
       '146-report-guards.test.ts::#18 a seat with nothing legal is never handed a Pass button',
       '146-report-guards.test.ts::#18 …and that empty list is what the server really publishes'],
-    note: 'GUARDS WIDENED 2026-08-25 (R173). Both original guards are RULES-LAYER asserts for a '
+    note: 'GUARDS WIDENED 2026-08-25 (see 154-guard-shape). Both original guards are RULES-LAYER asserts for a '
       + 'PRESENTATION-LAYER bug: one checks legalActions is empty, the other checks waitingNote\'s '
       + 'wording. The fix is neither — it is the branch in ui/main.ts::promptHtml that returns '
       + 'the "Waiting for X…" bar when the legal list is empty. Disable that branch and the '
@@ -254,7 +254,7 @@ export const CLOSED: LedgerEntry[] = [
     status: 'by-design',
     guards: ['64-formation-collapse.test.ts::a middle column emptied before blocks collapses',
       '64-formation-collapse.test.ts::after blocks are declared, an emptied column stays as a HOLE'],
-    note: 'DIVERGES FROM THE REPORT ON PURPOSE. R72: vertical gravity is untimed, but horizontal '
+    note: 'DIVERGES FROM THE REPORT ON PURPOSE. CR 602.4, 602.5: vertical gravity is untimed, but horizontal '
       + 'collapse only runs BEFORE blocks are declared, citing Manual p.22 — "This only happens '
       + 'before blocks are declared. After blocks, columns will not move to fill gaps." Tested '
       + 'both ways. CONFIRMED BY THE OWNER on 2026-08-22, having read the Manual text: "I made '
@@ -296,20 +296,20 @@ export const CLOSED: LedgerEntry[] = [
     id: 24, room: 'ZQPC', date: '2026-08-20',
     report: "Scholar of the Void doesn't say what the Beyond card it can transform into does",
     status: 'fixed',
-    guards: ['43-dark-c.test.ts::R101 — discard your hand and transform into Beyond',
+    guards: ['43-dark-c.test.ts::CR 108.3 — discard your hand and transform into Beyond',
       // ⚠ REPOINTED 2026-08-25. This used to cite
-      // "R101 — a transformed Scholar is a TOKEN", which R157 §10 OVERRULED:
+      // "R101 — a transformed Scholar is a TOKEN", which the owner's 2026-08-25 answer OVERRULED:
       // the owner ruled that a back face is not a token and that the card turns
       // back over in every zone but play. The test was correctly inverted, and
       // a guard pinning a test's TITLE then reads as a regression in a file the
       // ruling never touched. Second time today (CT-14 was the first) — see
       // CARD-TODO #42 on whether guards should cite titles at all.
-      '43-dark-c.test.ts::R157 §10 — a transformed Scholar TURNS BACK OVER on death and bins as itself',
-      '43-dark-c.test.ts::R101 — the transform is the SAME unit: same id',
+      '43-dark-c.test.ts::CR 201.4 — a transformed Scholar TURNS BACK OVER on death and bins as itself',
+      '43-dark-c.test.ts::CR 108.3 — the transform is the SAME unit: same id',
       '50-ui-inspect.test.ts::the inspector says what Scholar of the Void transforms into',
       '50-ui-inspect.test.ts::a card that has already transformed shows no row',
       '75-ui-reachability.test.ts::the details page really renders the Transforms into row'],
-    note: 'R101. Blocked for two days on something no amount of research could fix: '
+    note: 'CR 108.3. Blocked for two days on something no amount of research could fix: '
       + '"Beyond, Codex Incarnate" existed in NO data we held — not the 534-card oracle file, '
       + 'not the corpus, not the rulings export, and there was no art. The owner supplied the '
       + 'card face on 2026-08-22 (0 mana, 8/3, "Book Token Unit") and it is now a '
@@ -324,13 +324,13 @@ export const CLOSED: LedgerEntry[] = [
       + 'REPORTED symptom — you cannot see what you would become before discarding your hand — is '
       + 'fixed by a declarative "Transforms into" inspector row fed the way tokensCreatedBy is. '
       + 'BEYOND ITSELF is complete too, in the same round: its "Your units are inverted" clause '
-      + 'works only because R93 shipped stat layer 5 the same day, and its rot replacement '
-      + 'landed as R102 on the owner\'s own ruling — "In Deployment, you\'re in your own region, '
+      + 'works only because stat layer 5 (CR 802.8a) shipped the same day, and its rot replacement '
+      + '(CR 112.13d) landed on the owner\'s own ruling — "In Deployment, you\'re in your own region, '
       + 'alone. So you can only target your own units. It would trigger, ask you what you want to '
       + 'target, then put the -1/-1 counters on during deployment (which still has and uses a '
       + 'stack)." That ruling is what made it small: the first design called for a new Suspension '
       + 'variant, and the stack route needed only a new listenable `rotReplaced` EVENT, after '
-      + 'which R67\'s ordinary trigger machinery does the asking.',
+      + 'which CR 110.1a\'s ordinary trigger machinery does the asking.',
   },
   {
     id: 25, room: 'ZQPC', date: '2026-08-20',
@@ -385,7 +385,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'I can\'t discard Sacrifice Dude at "instant" speed',
     status: 'fixed',
     guards: ['58-playtest-round9.test.ts::Discard me'],
-    note: '"Sacrifice Dude" is the literal printed card name. R65: discarding is not playing.',
+    note: '"Sacrifice Dude" is the literal printed card name. CR 111.12a: discarding is not playing.',
   },
   {
     id: 30, room: 'PEMC', date: '2026-08-21',
@@ -400,7 +400,7 @@ export const CLOSED: LedgerEntry[] = [
     id: 31, room: 'PEMC', date: '2026-08-21',
     report: "I don't think there's currently a way to view erased cards",
     status: 'fixed',
-    guards: ['58-playtest-round9.test.ts::R65: erased cards are kept in a public pile',
+    guards: ['58-playtest-round9.test.ts::CR 407.1a: erased cards are kept in a public pile',
       '50-ui-inspect.test.ts::erased',
       '70-playtest-round15.test.ts::board menu offers BOTH erased piles'],
   },
@@ -472,7 +472,7 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ['37-attrs-wight.test.ts::MODDED token'],
     note: 'The real bug (branch order in destroy(), so a modded token took the token carve-out) is '
-      + 'fixed. But the owner\'s second premise is REJECTED BY RULING: R69 §2 with two direct Caleb '
+      + 'fixed. But the owner\'s second premise is REJECTED BY RULING: CR 803.8i with two direct Caleb '
       + 'rulings says Unstable replaces the BIN, not the DEATH — so death triggers DO still fire. '
       + 'CONFIRMED BY THE OWNER on 2026-08-22, having read the rulings. Settled — do not re-open.',
   },
@@ -488,7 +488,7 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ['42-dark-b.test.ts::Necromantic Rebuke: stopping at X = 0 is offered WITH a warning'],
     note: 'Behaviour was correct as printed — X=0 makes the ransom trivially met. Owner ruled '
-      + '(R74) that this warrants a warning, not a prohibition; the warning is what was added.',
+      + '(CR D7.1a) that this warrants a warning, not a prohibition; the warning is what was added.',
   },
   {
     id: 43, room: 'UZRG', date: '2026-08-21',
@@ -499,7 +499,7 @@ export const CLOSED: LedgerEntry[] = [
       '50-ui-inspect.test.ts::Necromantic Rebuke carries its paid X onto the real stack',
       '56-ui-flash.test.ts::a flashed item still knows its X',
       '146-report-guards.test.ts::#43 a cast X reaches the REAL stack wearing its number'],
-    note: 'GUARDS WIDENED 2026-08-25 (R173) after an audit found the first three are all pure '
+    note: 'GUARDS WIDENED 2026-08-25 (see 154-guard-shape) after an audit found the first three are all pure '
       + 'tests of ui/inspect.ts over the SAME hand-built xItem fixture. That is not wrong — '
       + 'ui/inspect.ts is the right home for the judgement and those are the right tests for it '
       + '— but this report is about a whole chain, and no cited guard drove any of it. '
@@ -519,11 +519,11 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Throwing Boulder was allowed to be activated without having adjacent allies, and '
       + 'sacrificing him should have been a cost to even put the ability on the stack',
     status: 'fixed',
-    guards: ['18-earth-c.test.ts::R77: Throwing Boulder with an adjacent ally',
-      '18-earth-c.test.ts::R77: with NO adjacent ally',
-      '18-earth-c.test.ts::R77: an ALLY is required',
-      '18-earth-c.test.ts::R77: out of formation'],
-    note: 'R77: a printed precondition is a GATE checked before anything is paid; a self-sacrifice '
+    guards: ['18-earth-c.test.ts::CR 111.7b: Throwing Boulder with an adjacent ally',
+      '18-earth-c.test.ts::CR 111.7b: with NO adjacent ally',
+      '18-earth-c.test.ts::CR 111.7b: an ALLY is required',
+      '18-earth-c.test.ts::CR 111.7b: out of formation'],
+    note: 'CR 111.7b: a printed precondition is a GATE checked before anything is paid; a self-sacrifice '
       + 'is a COST. Ordering is load-bearing — the gate is checked first so the cost cannot '
       + 'invalidate its own condition.',
   },
@@ -533,7 +533,7 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ["50-ui-inspect.test.ts::a triggered ability's X is the amount its event carried",
       "146-report-guards.test.ts::#45 Awoken Tomb's trigger says what X is while it is ON the stack"],
-    note: 'GUARD WIDENED 2026-08-25 (R173). The cited test builds the StackItem BY HAND with the '
+    note: 'GUARD WIDENED 2026-08-25 (see 154-guard-shape). The cited test builds the StackItem BY HAND with the '
       + 'event already attached and asserts the pure ui/inspect.ts::stackItemX reads it — so it '
       + 'never asks the engine for an item, and the reported failure is upstream of it. '
       + '⚠ The obvious proof of that is WRONG and was tried: deleting `event: ev` from '
@@ -555,7 +555,7 @@ export const CLOSED: LedgerEntry[] = [
       '142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack',
       '142-static-conformance.test.ts::the classifier accounts for every sentence in the pool',
       '142-static-conformance.test.ts::every exemption is still needed'],
-    note: 'THE CLASS GUARD NOW EXISTS — R168 / CARD-TODO #48, 2026-08-25, '
+    note: 'THE CLASS GUARD NOW EXISTS — CR 707.3 / CARD-TODO #48, 2026-08-25, '
       + '142-static-conformance.test.ts. This note used to open "⚠ THE CLASS GUARD FOR THIS '
       + 'REPORT DOES NOT EXIST" and it was right at the time, for a reason worth keeping: the '
       + 'sweep #75 cites, 88-replacement-conformance, is a REPLACEMENT sweep — it classifies '
@@ -596,7 +596,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Channel Through caused Restitution to make 2 triggers, but it should have made one',
     status: 'fixed',
     guards: ['69-damage-batch.test.ts::two hits on one unit in a batch are ONE damage event'],
-    note: 'R80: one effect resolution is ONE batch of damage.',
+    note: 'CR 112.8: one effect resolution is ONE batch of damage.',
   },
   {
     id: 50, room: 'VEAV', date: '2026-08-22',
@@ -611,7 +611,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'to spell tokens with the same NAME',
     status: 'fixed',
     guards: ['69-damage-batch.test.ts::Burst'],
-    note: 'R81.',
+    note: 'CR 803.5a.',
   },
 
   // ── UFAB, 2026-08-22 ────────────────────────────────────────────────────
@@ -623,7 +623,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['72-resolution-window.test.ts::at the OPPONENT',
       '72-resolution-window.test.ts::narrates nothing twice',
       '72-resolution-window.test.ts::shows each step as it is reached'],
-    note: 'R85. Not a delivery bug — the information did not EXIST. ctx.choose is not a coroutine: '
+    note: 'CR D6.3b. Not a delivery bug — the information did not EXIST. ctx.choose is not a coroutine: '
       + 'it throws, and resolveParts did `this.s = snap; this.events.length = evLen`, rolling the '
       + 'whole state and all narration back and replaying the part on resume. The entire card body '
       + 'is one EffectPart, so at the moment the prompt was raised the opponent\'s unit was not in '
@@ -644,7 +644,7 @@ export const CLOSED: LedgerEntry[] = [
       '146-report-guards.test.ts::#53 …and the held lines are a curtain, not an edit'],
     note: 'Not a correctness bug. ui/flash.ts already was a beat queue but was fed only by '
       + 'stackFlash; it now stages combat sub-steps too, and auto-passes are delayed. '
-      + 'GUARDS WIDENED 2026-08-25 (R173). Both original guards call combatStages() on '
+      + 'GUARDS WIDENED 2026-08-25 (see 154-guard-shape). Both original guards call combatStages() on '
       + 'HAND-WRITTEN event arrays: they prove the stager can stage, and cannot fail if the '
       + 'client stops FEEDING it — which is the reported symptom. Cutting absorbBeats(events) to '
       + 'absorbBeats([]) in applyUpdate leaves 56-ui-flash 37/37, 128-ui-pace 18/18 and '
@@ -653,7 +653,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'end-of-combat produces — does NOT cover this: it drives a real engine but still ends at '
       + 'combatStages(events) and never involves the client. It covers the stager\'s INPUT, not '
       + 'the feeding. Both halves were needed and both were built. '
-      + 'Construction note: the new tests pass a NON-EMPTY legal list on purpose — R150\'s '
+      + 'Construction note: the new tests pass a NON-EMPTY legal list on purpose — CR D5.4b\'s '
       + 'holdable() holds an update the player cannot act on, and a held update never reaches '
       + 'absorbBeats at all, so an empty list makes the result depend on how many updates ran '
       + 'earlier in the same process.',
@@ -663,17 +663,17 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Tiderunner Initiate should never have entered the Invader\'s zone. It gets played '
       + 'directly into the formation, not as a trigger that happens when it enters',
     status: 'fixed',
-    guards: ['73-play-into-formation.test.ts::R29 THE REPORT: Tiderunner is never in the invader',
+    guards: ['73-play-into-formation.test.ts::CR 602.7 THE REPORT: Tiderunner is never in the invader',
       '73-play-into-formation.test.ts::THE REPORTED SHAPE',
       '73-play-into-formation.test.ts::spawn event itself already sees it'],
-    note: 'R29. Modelled as a triggered ability on its own spawned event, so playing it spawned '
+    note: 'CR 602.7. Modelled as a triggered ability on its own spawned event, so playing it spawned '
       + 'into the region with no column (that IS the invader\'s zone), stacked a trigger, and '
       + 'handed the opponent a response window — which is how it got bounced in the reported game. '
-      + 'Root cause: R75\'s "placement happens at resolution" was written for "create a unit in my '
+      + 'Root cause: the "placement happens at resolution" ruling (now CR 602.6) was written for "create a unit in my '
       + 'formation" effects and Tiderunner was wrongly folded into that class. Fixed with a '
       + 'play-time placement primitive: CardBehavior.playsIntoFormation, a \'formation\' cast '
       + 'stage, and E.takeSpot inside spawnUnit so the unit is in the line before the spawn event '
-      + 'exists. R75 keeps placeInFormation for the genuine create-in-formation class. Trench '
+      + 'exists. That ruling keeps placeInFormation for the genuine create-in-formation class. Trench '
       + 'Stalker is the only other card in this class and is still parked on its play-from-bin '
       + 'half (see test/card-ledger.ts).',
   },
@@ -696,13 +696,13 @@ export const CLOSED: LedgerEntry[] = [
       '68-target-conformance.test.ts::every target kind a card declares is named by its printed text'],
     note: 'Nine cards had the same defect, all traceable to a false comment repeated across the '
       + 'card files claiming "the engine has no player-only scope — the Bripp precedent". It has '
-      + 'had one since R64/R67. The new conformance test needs zero exemptions.',
+      + 'had one for a long time (CR 110.3c). The new conformance test needs zero exemptions.',
   },
   {
     id: 57, room: 'UFAB', date: '2026-08-22',
     report: "Tempest Wrangler (with Alluring) didn't trigger on attacks",
     status: 'fixed',
-    guards: ['53-playtest-round7.test.ts::R84 UFAB',
+    guards: ['53-playtest-round7.test.ts::CR 606.2b UFAB',
       '53-playtest-round7.test.ts::RAQ 3/3'],
     note: 'Verbatim recurrence of id 10, two days later — see that entry for why.',
   },
@@ -745,7 +745,7 @@ export const CLOSED: LedgerEntry[] = [
       '87-replacement-layer.test.ts::a replaced token creation fires no spawned',
       '87-replacement-layer.test.ts::one resolving part is one creation batch',
     ],
-    note: 'R104. The layer is TWO families, because the seven cards split cleanly and compose '
+    note: 'CR 708.5, 708.4a. The layer is TWO families, because the seven cards split cleanly and compose '
       + 'differently. `AmountMod` is continuous and SUMMED, modelled on CostMod (Conduit of Pain, '
       + 'Flux Resonator, Proliferating Slime) — Caleb: "a replacement only happens once … The '
       + 'replacement just takes what would be 1 and makes it 2", so two different modifiers both '
@@ -789,7 +789,7 @@ export const CLOSED: LedgerEntry[] = [
       '50-ui-inspect.test.ts::the resource menu leads with your own decks elements',
       '50-ui-inspect.test.ts::a mono element deck still gets a prismite MENU',
       '75-ui-reachability.test.ts::the prismite click never counts the shortened list'],
-    note: 'R99. Deliberately a PRESENTATION default and not a rules change: GameState.'
+    note: 'CR D6.14b. Deliberately a PRESENTATION default and not a rules change: GameState.'
       + 'deckElements records each seat\'s deck element identity (the union of getCard(n).factions '
       + 'over the decklist), computed in createGame before the shuffle, constructed only — but '
       + 'legalActions still offers all seven, which is why all 19 saved games still replay and '
@@ -819,7 +819,7 @@ export const CLOSED: LedgerEntry[] = [
       '26-metal-a.test.ts::Cosmic Conspirator: a created Robot may become a Fireball',
       '87-replacement-layer.test.ts::a replaced token creation fires no spawned',
     ],
-    note: 'R104, and it was TWO defects. (1) The spell-token half was completely dead: the old '
+    note: 'CR 708.3, and it was TWO defects. (1) The spell-token half was completely dead: the old '
       + 'implementation was a `spawned` trigger, and E.createSpellToken fires no dispatchable '
       + 'event at all, so Biotoxicity\'s three Poisons went past it in silence. A replacement is '
       + 'CONSULTED at the creation call, so it needs no event — the seam is the call. (2) The '
@@ -839,7 +839,7 @@ export const CLOSED: LedgerEntry[] = [
       '50-ui-inspect.test.ts::a sacrifice cost whose clause names no stat wears no X',
       "50-ui-inspect.test.ts::Structural Collapse's bar is the same snapshot"],
     note: 'Report 43 fixed X-on-stack for the mana X and the event X, and the guess that this was '
-      + 'a third kind (R64\'s variable `costPaid.x`) was WRONG in an instructive way: Volatile '
+      + 'a third kind (CR 702.6b\'s variable `costPaid.x`) was WRONG in an instructive way: Volatile '
       + 'Toxicity\'s cost is a FIXED `sacrificeUnit` of one, so `finishVariableCost` never runs '
       + 'and `costPaid.x` is never written. Its X lives in the cost RECEIPT — the effect reads '
       + '`costPaid.sacrificed.defense` — and `stackItemX` only ever looked at `costPaid.x`, so the '
@@ -856,7 +856,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['77-playtest-round17.test.ts::[66] passEndsBattlePhase agrees with the engine',
       // ⚠ REPOINTED 2026-08-26. The old citation was
       // '[66] the pass confirm is wired to the end-of-battle question', an
-      // assert.match over the TEXT of ui/main.ts. R194 replaced it with a
+      // assert.match over the TEXT of ui/main.ts. The token-loss change replaced it with a
       // DRIVEN test and renamed it, which broke this citation in a file the
       // change never touched — CARD-TODO #42's complaint, hit for the fourth
       // time. Measured: switching promptHtml's `if (ui.confirmPass !== null)`
@@ -877,7 +877,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'be closed client-side: if the round-2 attacker DECLINES, doDeclareAttack calls '
       + 'endBattleRound with no priority window, so a defender holding tokens gets no pass to '
       + 'warn on. '
-      + '✔ CLOSED 2026-08-26 (R194). Both halves of the downgrade are answered. The gap is '
+      + '✔ CLOSED 2026-08-26 (CR D2.6). Both halves of the downgrade are answered. The gap is '
       + 'shut ENGINE-side, as CARD-TODO #55 argued it had to be: E.startRegroup now emits one '
       + 'erased event per seat naming that seat\'s own doomed tokens, before the erase loop, '
       + 'silent when nothing is lost (a line in every regroup forever would be this very '
@@ -916,7 +916,7 @@ export const CLOSED: LedgerEntry[] = [
       '77-playtest-round17.test.ts::[67] the counterattack ride dialogue respects',
       '77-playtest-round17.test.ts::[67] the Confirm button holds the block declaration',
       '75-ui-reachability.test.ts::the affordance for every offered shape is really in ui/main.ts'],
-    note: 'R87. GETD action 92 is a `declareBlocks` with `send: [25, 6, 19]` — a COUNTERATTACK — '
+    note: 'CR 610.3. GETD action 92 is a `declareBlocks` with `send: [25, 6, 19]` — a COUNTERATTACK — '
       + 'and `declareBlocks` had no `spellTokens` field, while `declareAttack` did. The initial '
       + 'diagnosis was half right and the correction matters: the LEGALITY was already there — '
       + "doDeclareBlocks's `send` loop has always accepted a spellToken and always enforced "
@@ -927,7 +927,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'the "went onto the stack without any targets" the owner saw. Both halves shipped: the '
       + 'client now interposes the same ride dialogue id 69 built for attacks, and '
       + '75-ui-reachability.test.ts gained a `declareBlocks:spellTokens` facet so the shape can '
-      + 'never go quietly unreachable again — which is exactly how R79 lost a whole round. Sources: lofavreel — "spell '
+      + 'never go quietly unreachable again — which is exactly how augmenting a virus onto a spell (CR 723.4) lost a whole round. Sources: lofavreel — "spell '
       + 'tokens can move into other regions on attack/counter-attack step. But they always need a '
       + 'unit to take them with them"; _passer — "In order to attack opponent Region, you must '
       + 'send atleast 1 of your unit". Old action shapes replay unchanged; 19/19 saved games '
@@ -980,13 +980,13 @@ export const CLOSED: LedgerEntry[] = [
     note: 'Graxxlid printed "negate target effect TARGETING ME" but its spec was a bare '
       + "`what: 'stackEffect'`, so every stack item was a candidate and the ability was offered "
       + 'whenever the stack was non-empty; the "does not target me" check happened at resolution, '
-      + 'as an info line. Fixed with an R64 `restrict`, so no legal target means the activation is '
+      + 'as an info line. Fixed with a `restrict` (CR 705.3a), so no legal target means the activation is '
       + 'never offered and `activatableUnits` stops glowing — no UI change was needed, which is '
       + 'the point: the halo is a pure read of legalActions. Source: RAQ "[Solved] Target '
       + 'requirements to put effect on stack" — "In order to play a card, you MUST be able to '
       + 'select the valid targets for the effect." The resolution-time check was KEPT, because a '
-      + 'restriction is asked at cast and never re-asked (R5/R56) and a redirect can move targets '
-      + 'afterwards. R88. Inverse of id 35. Widened the card on the way: Caleb ruled a Virus is a '
+      + 'restriction was then asked at cast and never re-asked (since amended: CR 704.5 re-checks it) and a redirect can move targets '
+      + 'afterwards. CR 110.3a. Inverse of id 35. Widened the card on the way: Caleb ruled a Virus is a '
       + 'targeted effect and IS fully interactible ("Yep! They\'re fully interactible"), and a '
       + 'virus stack item carries a `hostId` rather than target refs, so Graxxlid could never '
       + 'answer one before.',
@@ -1001,7 +1001,7 @@ export const CLOSED: LedgerEntry[] = [
       '78-round17-core.test.ts::one surviving target carries the untargeted grafts through',
       '78-round17-core.test.ts::an item that declares NO target anywhere never fizzles',
       '78-round17-core.test.ts::a required target with no legal candidate at cast still fizzles'],
-    note: 'R86. The owner was right and the ruling is exact — RAQ "[Solved] When does effect '
+    note: 'CR 722.4f. The owner was right and the ruling is exact — RAQ "[Solved] When does effect '
       + 'fizzles?": "If effect loses ALL of its targets and wants to resolve", and the '
       + 'load-bearing detail is the parenthesis in the Bellowing Boulder example, "(yielding no '
       + 'card draw from 2nd and 3rd graft)" — the UNTARGETED parts of a composite die with it. '
@@ -1014,7 +1014,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'declare a TargetRef" passed every test but made spell tokens cast into an emptied region '
       + 'stop fizzling, so the gate asks whether a part declared a target SPEC, not whether it '
       + 'holds a live ref. Separate and still open: `allOrNothing` is a declared-but-unread flag '
-      + 'that three cards hand-roll; it asks a per-PART question where R86 asks a per-ITEM one.',
+      + 'that three cards hand-roll; it asks a per-PART question where CR 704.6 asks a per-ITEM one.',
   },
   {
     id: 72, room: 'GETD', date: '2026-08-22',
@@ -1023,8 +1023,8 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['24-wood-b.test.ts::prevented damage is NOT dealt',
       '24-wood-b.test.ts::Poisonous does not bypass it',
       '24-wood-b.test.ts::{Deadly} cannot kill through it',
-      '80-round17-permissions.test.ts::R98: a REPLACED hit still counts as dealt'],
-    note: 'R98. The card-ledger entry predicted this report a day before it was filed, and the '
+      '80-round17-permissions.test.ts::CR 708.11: a REPLACED hit still counts as dealt'],
+    note: 'CR 708.11. The card-ledger entry predicted this report a day before it was filed, and the '
       + 'three seams it named were all real: there was no "damage would be dealt to a UNIT" hook '
       + 'of any kind (both existing replacement hooks are damage-to-a-PLAYER), nowhere on Entity '
       + 'to keep an until-regroup shield, and no running per-unit total to feed "+1/+1 counter '
@@ -1035,9 +1035,9 @@ export const CLOSED: LedgerEntry[] = [
       + 'counters are placed … Jollyglop doesn\'t trigger". So a fully prevented hit fires no '
       + 'damage event, lays no Poisonous counters, gets no {Deadly} kill, no {Resonant} rider and '
       + 'no {Blessed} gain. Counters are deferred to a settle step because addCounters runs '
-      + 'checkDeaths, which would resolve a death mid-batch and break R80 simultaneity. '
+      + 'checkDeaths, which would resolve a death mid-batch and break CR 112.8 simultaneity. '
       + 'SURVIVING GAP, pinned by its own test: the counters cap at LETHAL, not at the whole hit '
-      + '— R7 auto-assignment gives each blocker just enough to kill it and drops the rest, while '
+      + '— the old auto-assignment gives each blocker just enough to kill it and drops the rest, while '
       + 'the RAQ says all the damage must be assigned to the shielded unit ("potentially putting '
       + 'a lot of +/+ counters"). Changing that moves every overkill number in the engine, so it '
       + 'wants its own ruling. Bonus: fixing this widened Oorblak\'s player hook too — `info` now '
@@ -1050,9 +1050,9 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ['79-round17-layers.test.ts::Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16',
       '79-round17-layers.test.ts::worked example — a 1/4 Tough Balanced Inverted is a -6/0',
-      '79-round17-layers.test.ts::R93 layer 5: a base REWRITE is the thing inverted FROM',
-      '79-round17-layers.test.ts::R93 layer 5: {Inverted} is shared down the COLUMN'],
-    note: 'R93. {Inverted} was stat layer 5 and effStats literally ended with the comment '
+      '79-round17-layers.test.ts::CR 802.8c layer 5: a base REWRITE is the thing inverted FROM',
+      '79-round17-layers.test.ts::CR 802.1c layer 5: {Inverted} is shared down the COLUMN'],
+    note: 'CR 802.8a. {Inverted} was stat layer 5 and effStats literally ended with the comment '
       + '"// layer 5 (Inverted), 6 (Unaware) go here". The rule is that {Inverted} negates the '
       + 'NET stat change from base, and Caleb worked it out himself in #rules-questions: "1/4 '
       + 'tough balanced is 8/8 — Tough is +0/+4, Balanced is +7/0 … To become a -6/0", then '
@@ -1070,7 +1070,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'said "Tough inverted balanced would be different", which would mean interleaving '
       + '{Inverted} among the layer-4 attrs in grant order rather than being a clean layer 5 — '
       + 'he also called that case "basically impossible to make happen", so the clean layer '
-      + 'shipped and the nuance is recorded in R93.',
+      + 'shipped and the nuance was recorded (now CR 709.4d).',
   },
   {
     id: 74, room: 'WEHH', date: '2026-08-22',
@@ -1078,9 +1078,9 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: ['26-metal-a.test.ts::play a unit during the mana step as if it had',
       '26-metal-a.test.ts::a {Battle} unit stays a battle card even with the grant',
-      '80-round17-permissions.test.ts::R97: every hand play legalActions offers in the haste step'],
-    note: 'R97, and the card ledger predicted it like id 72. The rules half had to be settled '
-      + 'first: the printed "mana step" IS this engine\'s R18 haste step (Caleb: "that symbol is '
+      '80-round17-permissions.test.ts::CR 803.2b: every hand play legalActions offers in the haste step'],
+    note: 'Fixed by the timing-permission ruling, and the card ledger predicted it like id 72. The rules half had to be settled '
+      + 'first: the printed "mana step" IS this engine\'s haste step, CR 803.2a (Caleb: "that symbol is '
       + 'haste, meaning you can play it during the mana step" / "There is no priority during the '
       + 'mana step, but you can play haste cards and resources as special actions"). What was '
       + 'missing was one seat-level play permission consulted at THREE gates that must agree, and '
@@ -1090,8 +1090,8 @@ export const CLOSED: LedgerEntry[] = [
       + 'Timing" says a {Battle} card does NOT become playable in the haste step even with the '
       + 'grant — "despite gaining haste they can still only be played during battle" — because, '
       + 'Caleb, "spells like Dreadweave or Hush Mush can\'t have a legal target in the Haste '
-      + 'step". That refusal sits above every grantor. Design note: R95 OR-folds its permission '
-      + 'but R97 SUMS, because two Couriers each printing "Each turn, you may play a unit" is two '
+      + 'step". That refusal sits above every grantor. Design note: Rook\'s mod permission OR-folds '
+      + 'but CR 504.7a SUMS, because two Couriers each printing "Each turn, you may play a unit" is two '
       + 'plays. The client needed NO change — the hand menu is built from legalActions, so the '
       + 'card simply appears. Does NOT unpark Writhing Host (its grantor sits in a BIN, which '
       + 'anchored() does not walk) or Slurpr (the mod-timing twin); the ledger claimed shared '
@@ -1117,17 +1117,17 @@ export const CLOSED: LedgerEntry[] = [
       + 'statement of it we have: the test for "does this use the stack" is the printed WORD. '
       + 'REFINED BY HIM on 2026-08-23, and the refinement is the load-bearing half — "cards that '
       + 'say instead, as or if AND DON\'T MENTION TARGETS" never go on the stack, because a '
-      + 'target has to be CHOSEN and choosing is public and respondable. So R102 (Beyond, Codex '
+      + 'target has to be CHOSEN and choosing is public and respondable. So CR 109.5a (Beyond, Codex '
       + 'Incarnate) is CORRECT and not an exception: it prints "target unit". '
-      + 'FIXED BY R104, and the guard is a PERMANENT CONFORMANCE TEST rather than a sweep, for '
+      + 'FIXED BY THE REPLACEMENT-EFFECT LAYER (CR 707.3), and the guard is a PERMANENT CONFORMANCE TEST rather than a sweep, for '
       + 'exactly the reason report #48 got one: this was reported three times (#46 as one card, '
       + 'then #60 and #75 as a class) and a one-card fix is what makes a class of bug recur. '
       + '88-replacement-conformance reads printed.json, classifies every replacement clause in '
       + 'the pool (11 cards, after four rounds of narrowing: 63 → 19 → 11 → 10, plus the one '
       + '"deals X as Y" card), and fails when a new card prints "would … instead" and is built as '
       + 'a trigger. Every exemption carries its reason and the list is asserted to be exactly '
-      + 'right. It also asserts the OTHER direction, so nobody "fixes" R102 into the wrong shape. '
-      + 'THE STATIC THIRD OF THIS REPORT GOT ITS OWN SWEEP ON 2026-08-25 (R168, CARD-TODO '
+      + 'right. It also asserts the OTHER direction, so nobody "fixes" CR 109.5a into the wrong shape. '
+      + 'THE STATIC THIRD OF THIS REPORT GOT ITS OWN SWEEP ON 2026-08-25 (CR 707.3, CARD-TODO '
       + '#48): this report names THREE mechanisms — "replacement effects and triggered effects '
       + 'and static effects" — and until then only the replacement one had a class guard. '
       + '142-static-conformance.test.ts is the static half, and it found Aetherflux Golem live '
@@ -1194,7 +1194,7 @@ export const CLOSED: LedgerEntry[] = [
       'Two halves, and the second was the real cause. (a) `doDeclareBlocks` is split into '
       + '`checkBlocks` — the same legality run, verbatim and in the same order — and the '
       + 'mutation, so a refusal is available as a VALUE; ui/battle.ts then walks the plan '
-      + 'against that oracle and returns which units offended, what survives, and R84\'s '
+      + 'against that oracle and returns which units offended, what survives, and CR 606.2e\'s '
       + 'compulsory duty as `required` rather than as an offender. No block rule is restated '
       + 'client-side, so the surviving plan is legal by construction and the RULE did not '
       + 'change. (b) `declareBuiltBlocks` cleared the plan the moment it called `act()`, which '
@@ -1233,14 +1233,14 @@ export const CLOSED: LedgerEntry[] = [
       + 'and gotten 2 +1/+1 counters here',
     status: 'fixed',
     guards: [
-      "05-rulings.test.ts::R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt",
+      "05-rulings.test.ts::CR 802.3b: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt",
       '24-wood-b.test.ts::Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pays 2 counters',
       '24-wood-b.test.ts::Phytochemical Protection: the whole hit is prevented, not just the lethal part',
     ],
     note:
       'Same root cause as #84 — see that entry for the one-line fix. This half came from the '
       + '{Deadly} branch specifically: `if (deadly && recvCap > 0) poolNeed = 1` was applied as '
-      + 'a CEILING on what is dealt, so a 2-power Deadly column marked 1 damage and R98 paid '
+      + 'a CEILING on what is dealt, so a 2-power Deadly column marked 1 damage and the prevention payout paid '
       + 'out 1 counter. {Deadly}\'s 1 is the minimum share that must be paid before {Piercing} '
       + 'may carry the rest away — a FLOOR, never a cap. The RAQ it was drawn from ("at least 1 '
       + 'dmg to Awoken, rest of the damage can go to Bubb") never said the rest disappears. '
@@ -1264,7 +1264,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'Glararr he had just played; no `playCard` was offered in that window at any point, and '
       + '`apply()` refuses the cast outright with "battle cards can only be played during '
       + 'battle". Soul Siphon is `timing:\'battle\'` with both a spellEffect and a graftEffect, so '
-      + 'grafting it from hand during deployment is legal. Basis: R37 — applying a mod is not '
+      + 'grafting it from hand during deployment is legal. Basis: CR 701.2 — applying a mod is not '
       + 'playing a card. '
       + 'The enforcement audit was run anyway and came back clean: card-level timing is correct '
       + 'BY CONSTRUCTION (`CardBehavior` has no `timing` key, so the `card()` spread cannot '
@@ -1273,7 +1273,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'with 20 of every resource: 0 offered, 0 accepted. All 6 Ambush cards likewise. The '
       + 'converse is also clean — 355 of 358 deploy/haste cards are offered, and the 3 that are '
       + 'not (Delver of Mysteries, Resurrect, Covenant of the Damned) are bin-targeting spells '
-      + 'refused by R64\'s empty-candidate rule; stock the bin and all 3 appear. '
+      + 'refused by CR 110.7\'s empty-candidate rule; stock the bin and all 3 appear. '
       + '⚠ ONE REAL FINDING SURVIVES. It is CARD-TODO #54 as of 2026-08-25; this note used to say '
       + '"filed as a separate UI item" and a guard audit found NO SUCH ITEM — not in backlog.ts, '
       + 'not in card-todo.ts. It existed only inside this sentence, which is the precise way a '
@@ -1289,17 +1289,17 @@ export const CLOSED: LedgerEntry[] = [
       + 'not on resolution',
     status: 'fixed',
     guards: [
-      '97-mode-conformance.test.ts::R57: Burgeon names its half before the stack, and the opponent can read it there',
-      '97-mode-conformance.test.ts::R57: a card printing a modal bracket declares EffectDef.modes',
+      '97-mode-conformance.test.ts::CR 702.5: Burgeon names its half before the stack, and the opponent can read it there',
+      '97-mode-conformance.test.ts::CR 205.3: a card printing a modal bracket declares EffectDef.modes',
       '97-mode-conformance.test.ts::decision is ever raised mid-resolution',
-      '97-mode-conformance.test.ts::R57: Siphon Life says whether it is a burn or a heal before the response window',
+      '97-mode-conformance.test.ts::CR 702.5: Siphon Life says whether it is a burn or a heal before the response window',
       '50-ui-inspect.test.ts::a declared mode is readable off the stack, so a responder is not blind',
     ],
     note:
-      'Six caster-facing modes moved to the R57 cast-time seam — Burgeon, Wither and Bloom, '
+      'Six caster-facing modes moved to the CR 702.5 cast-time seam — Burgeon, Wither and Bloom, '
       + 'Floral Singularity, Transmutide Enigma, Spirit of Nature, Siphon Life. `EffectPart.mode` '
       + 'rides on the PART (not the item) for the same reason `costPaid` does: a composite can '
-      + 'carry two modal parts and the part is what the suspension carries (R85). '
+      + 'carry two modal parts and the part is what the suspension carries. '
       + 'THE HARM, REPRODUCED: Burgeon sat on the stack with its half unknown, the opponent spent '
       + 'a card responding, the response resolved, and only THEN was the caster asked — with the '
       + 'option labels recomputed off the post-response board. That is free information the '
@@ -1309,17 +1309,17 @@ export const CLOSED: LedgerEntry[] = [
       + 'both its guards assert that a choice IS offered and that nothing resolves silently. '
       + 'Neither asserts WHEN. Moving the mode to cast time would have left both green; so would '
       + 'moving it back. The fix even hard-coded the resolution-time reading into the card '
-      + 'comment, miscategorising a caster\'s own mode as an R6 payment. '
-      + 'NOT moved, each verified: Void Memory (the DISCARDING player\'s own pick, R67 carve-out), '
-      + 'Retribution Thing (not modal at all — "[lost or gained]" is one quantity), R6 ransoms, '
-      + 'replacement-effect modes, R1 amounts read at resolution. '
+      + 'comment, miscategorising a caster\'s own mode as a resolution-time payment (CR 702.5a). '
+      + 'NOT moved, each verified: Void Memory (the DISCARDING player\'s own pick, CR 704.1a carve-out), '
+      + 'Retribution Thing (not modal at all — "[lost or gained]" is one quantity), CR 702.5a ransoms, '
+      + 'replacement-effect modes, CR 107.8 amounts read at resolution. '
       + '⚠ TWO OF THOSE FIVE WERE WRONG, and both were the same error — reading a printed bracket '
-      + 'as something other than the owner\'s own declaration. R157 §21 (2026-08-25) moved '
-      + 'Retribution Thing; R284 (2026-09-01) moved Void Memory, which had been worse than late: '
+      + 'as something other than the owner\'s own declaration. The owner\'s 2026-08-25 answers moved '
+      + 'Retribution Thing (CR 205.3); the owner\'s bracket rule (2026-09-01, now CR 205.3a) moved Void Memory, which had been worse than late: '
       + 'it asked the WRONG PLAYER, so each victim picked the half while looking at their own hand '
       + 'and the card never missed. The line is kept as written because it is what this round '
       + 'concluded; the correction is the lesson. "Verified" here meant "the reasoning was '
-      + 'restated", and a bracket needs a RULE, not a reading — R284 is that rule. '
+      + 'restated", and a bracket needs a RULE, not a reading — CR 205.3a is that rule. '
       + 'Two direct-run paths the diagnosis missed were caught in implementation: `runSpellCopy` '
       + '(a copy inherits the original\'s declared half) and `playInline` (an inline play never '
       + 'reaches the stack and has no response window, so asking there is correct, not a relapse). '
@@ -1362,22 +1362,22 @@ export const CLOSED: LedgerEntry[] = [
       + 'Anything made by anything needs to spawn in that region (then can return during regroup)',
     status: 'fixed',
     guards: [
-      '98-spawn-region.test.ts::R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE, not at home',
-      '98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup — the second half of the ruling',
-      "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack",
-      '98-spawn-region.test.ts::R115 conformance: no card effect reaches for homeRegion() — the source scan',
-      '98-spawn-region.test.ts::R115 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then',
+      '98-spawn-region.test.ts::CR 601.5: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE, not at home',
+      '98-spawn-region.test.ts::the stranded 1/1s walk home at regroup — the second half of the ruling',
+      "98-spawn-region.test.ts::CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack",
+      '98-spawn-region.test.ts::CR 601.5 conformance: no card effect reaches for homeRegion() — the source scan',
+      '98-spawn-region.test.ts::CR 601.5 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then',
     ],
     note:
-      'NOT A CODE BUG — a RULES REVERSAL, and the engine was doing this deliberately. R28 and R52 '
+      'NOT A CODE BUG — a RULES REVERSAL, and the engine was doing this deliberately. Two earlier rulings (the home-region rule and its confirmation) '
       + 'both ruled that a created unit arrives in its CONTROLLER\'S HOME region, and '
       + '44-hybrids-ld-a carried a named, green test asserting exactly the behaviour reported here. '
       + 'The owner confirmed the reversal with its consequence put to him explicitly: a token '
       + 'minted mid-attack is STRANDED in the enemy region, in no column, and cannot block the '
       + 'counterattack; it walks home at regroup. That is a real power cut to Tidelurker, Life '
-      + 'Plant, Legion of the Depths and Pack Leader, and it is intended. R28 WITHDRAWN, R52 '
+      + 'Plant, Legion of the Depths and Pack Leader, and it is intended. The home-region rule WITHDRAWN, its confirmation '
       + 'WITHDRAWN (its unfinished-migration list cancelled — those cards were the ones already '
-      + 'right), R33 ABSORBED as the general rule. Now R115. '
+      + 'right), the carrier reading ABSORBED as the general rule. Now CR 601.5. '
       + 'The spell-vs-ability split the owner observed was a very good approximation but not the '
       + 'structure: all four resolution paths already resolve `StackItem.region` to "where the '
       + 'source is", and `spawnUnit` takes region as a required argument and writes it through. '
@@ -1397,19 +1397,19 @@ export const CLOSED: LedgerEntry[] = [
       + 'excess to the controller',
     status: 'fixed',
     guards: [
-      '05-rulings.test.ts::R114: without Piercing the excess is not lost, it lands on the unit',
-      '05-rulings.test.ts::R114: {Piercing} is still the exception — excess goes to the controller, not the unit',
+      '05-rulings.test.ts::CR 608.6d: without Piercing the excess is not lost, it lands on the unit',
+      '05-rulings.test.ts::CR 802.16b: {Piercing} is still the exception — excess goes to the controller, not the unit',
       "38-light-a.test.ts::Vroot: a blocked column pays out its whole power, not the blocker",
       '82-attr-interactions.test.ts::combat and effect damage agree on how much was dealt',
-      '100-elective-assign.test.ts::R120 (a): the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched',
-      '100-elective-assign.test.ts::R120 (b): the FIRST option is the default split, and one click reproduces the pre-R120 numbers exactly',
+      '100-elective-assign.test.ts::CR 608.6c: the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched',
+      '100-elective-assign.test.ts::CR D1.2g: the FIRST option is the default split, and one click reproduces the pre-election numbers exactly',
     ],
     note:
       'One line: `assignColumnDamage` used `poolNeed` — LETHAL NEED — as a CAP on damage dealt '
       + '(`const a = Math.min(remaining, poolNeed)`), and the leftover was returned to callers '
       + 'that discarded it unless the column had {Piercing}. The clamped number is then what the '
       + 'whole pool reads: the `damage` event\'s `n`, {Blessed} gain, {Poisonous} counters, '
-      + '{Resonant}, and R98 prevention payout. Nine cards read that amount directly (Vroot, '
+      + '{Resonant}, and the prevention payout. Nine cards read that amount directly (Vroot, '
       + 'Mirage Scuttler, Molten Tormentor, Lithoghul, Restitution, Mirrorback Ambusher, Decay '
       + 'Distributor, Jollyglop, Phytochemical Protection). '
       + 'Verified against the real game: at EGCW action 251 a 9-power column blocked by a 2/2 '
@@ -1422,9 +1422,9 @@ export const CLOSED: LedgerEntry[] = [
       + 'The only rule is that the front unit must be assigned lethal damage before assigning any '
       + 'to the back unit." The engine now auto-assigns ONE legal split (shares front-to-back, '
       + 'leftover on the back-most living unit). '
-      + '2026-08-24: the deferred player-elective mode SHIPPED as R120 — when a strike has ≥2 '
+      + '2026-08-24: the deferred player-elective mode SHIPPED (now CR 608.6a) — when a strike has ≥2 '
       + 'living victims and more pool than the front unit\'s lethal share, the dealing side is '
-      + 'asked (both directions), with the pre-R120 auto-split as the one-click first option; '
+      + 'asked (both directions), with the old auto-split as the one-click first option; '
       + 'trivial combats and {Piercing} strikes keep the silent path. 100-elective-assign.test.ts '
       + 'is the fence.',
   },
@@ -1542,12 +1542,12 @@ export const CLOSED: LedgerEntry[] = [
       '27-metal-b.test.ts::Flux Resonator: a token that spawns with NO counters gets none',
     ],
     note:
-      'FIXED: spawn counters now go through the R104 amount layer at the single site where '
+      'FIXED: spawn counters now go through the amount layer (CR 707.5a) at the single site where '
       + 'spawnUnit sets them, exactly as addCounters does. The Robot token prints "I spawn with X +1/+1 '
       + 'counters on me", and Caleb has ruled the Resonator applies to that placement twice over '
       + '(2025-03-21: tokens created under it "enter play with a +1/+1 counter" — "Yep"; '
       + '2025-05-30: "it\'s just X+1, so it happens to double a 1/1 but a 2/2 robot would spawn '
-      + 'as a 3/3"). The engine\'s E.addCounters consults the R104 amount layer, but '
+      + 'as a 3/3"). The engine\'s E.addCounters consults the amount layer (CR 708.5), but '
       + 'E.spawnUnit sets spawn counters DIRECTLY (`u.counters = opts.counters`) and never asks '
       + 'it — so every "create a Robot X" in the pool ignores an allied Flux Resonator. '
       + 'CARD-TODO #25 tracks it.',
@@ -1568,23 +1568,23 @@ export const CLOSED: LedgerEntry[] = [
       'The owner was right, and the gap was a whole CLASS with two cards in it: {Unstable} '
       + 'printed on the TYPE LINE was carried by nothing. The extractor parsed the type-line '
       + 'markers into attrs/virus/burst and dropped {Unstable} (deliberately not an Attr — it is '
-      + 'a bin replacement, not a combat attribute), so E.isUnstable unioned mods, the R96 stamp '
+      + 'a bin replacement, not a combat attribute), so E.isUnstable unioned mods, the CR 803.8c stamp '
       + 'and modded copies, and a printed-Unstable card fell through to the bin. Now: '
       + '`Printed.unstable` (extractor emits it off the {Unstable} marker; Statweaver and Oorblak '
       + 'are the whole diff), and isUnstable reads it off the FACE as the fourth way in. A census '
       + 'test pins flag⇔marker over the whole pool so the two cannot drift apart again. '
       + 'Death triggers still fire — Unstable replaces the BIN, not the death (Caleb 2025-03-13). '
-      + '⚠ Scope note (2026-08-23): this covered the leave-play path only (destroy, R65 public '
+      + '⚠ Scope note (2026-08-23): this covered the leave-play path only (destroy, CR 407.1a public '
       + 'erased pile), and the reporter\'s own "unless I\'m misunderstanding what an ACTIVE ZONE '
       + 'is" was left standing, because nothing sourced said which zones were active. '
-      + 'CLOSED BY R145 (2026-08-25), in both directions. The owner supplied the missing '
+      + 'CLOSED by the active-zone ruling (2026-08-25; now CR 803.8a), in both directions. The owner supplied the missing '
       + 'definition — "in play and the stack are active zones" — so (a) the STACK was a second '
       + 'gap of the same shape and Statweaver negated off it binned; that is fixed via '
       + 'E.itemIsUnstable, and (b) the open question here is ANSWERED, in the direction of NO: '
       + 'the hand is not an active zone, so a printed-Unstable card discarded from hand is '
       + 'binned and TRASHED like any other card, and so is one milled from the deck or binned '
       + 'from the cache. Both directions are pinned in 125-active-zone.test.ts. See '
-      + 'docs/digital-rules.md § R145.',
+      + 'CR 803.8a.',
   },
   {
     id: 90, room: 'XVUR', date: '2026-08-23',
@@ -1594,9 +1594,9 @@ export const CLOSED: LedgerEntry[] = [
       '27-metal-b.test.ts::Hooba-Bot: one attack trigger makes exactly ONE Robot'],
     note:
       'SOLVED by the owner himself (2026-08-24): "Hooba bot actually wasn\'t a bug. There was '
-      + 'an Automaton of Abundance in play." That is R104\'s batch replacement doing its printed '
+      + 'an Automaton of Abundance in play." That is CR 708.9\'s batch replacement doing its printed '
       + 'job — Hooba-Bot\'s trigger creates a Robot 2 in the BATTLE region, and an Automaton '
-      + 'that came along to the battle (the hook is region-scoped, R12) adds "an additional '
+      + 'that came along to the battle (the hook is region-scoped, CR 101.6) adds "an additional '
       + 'copy of each unique token you created", so the one-token batch yields two Robot 2s. '
       + 'Pinned as a '
       + 'test now (27-metal-b.test.ts::"Hooba-Bot + Automaton of Abundance: the reported two '
@@ -1613,9 +1613,9 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Beyond, Codex Incarnate has a typo in its text',
     status: 'fixed',
     guards: [
-      '122-cardtext-markup.test.ts::R134: {g} renders the keyword it marks',
-      '122-cardtext-markup.test.ts::R134: no card in the pool renders a stray marker word',
-      '122-cardtext-markup.test.ts::R134: an unclosed {i} reminder does not italicise the rules text after it',
+      '122-cardtext-markup.test.ts::{g} renders the keyword it marks',
+      '122-cardtext-markup.test.ts::no card in the pool renders a stray marker word',
+      '122-cardtext-markup.test.ts::an unclosed {i} reminder does not italicise the rules text after it',
     ],
     note:
       'NOT a typo in the DATA \u2014 the transcription matches the card art word for word, which '
@@ -1644,18 +1644,18 @@ export const CLOSED: LedgerEntry[] = [
       + 'Shard. So using a Prismite should do the same.',
     status: 'fixed',
     guards: [
-      '21-fixes.test.ts::R132: spending a Prismite into your 3rd element copy DOES grant the shard',
-      '21-fixes.test.ts::R132: a Prismite spent into your SECOND copy pays nothing',
-      '21-fixes.test.ts::R132: the ANBB position',
+      '21-fixes.test.ts::CR 106.8: spending a Prismite into your 3rd element copy DOES grant the shard',
+      '21-fixes.test.ts::CR 106.8: a Prismite spent into your SECOND copy pays nothing',
+      '21-fixes.test.ts::CR 106.8: the ANBB position',
     ],
     note:
-      'The owner was right and R116 is REVERSED (R132). Printed: "Erase me: Create a '
+      'The owner was right and the exchange ruling is REVERSED (CR 106.8c). Printed: "Erase me: Create a '
       + 'non-prismite resource, THEN ACTIVATE IT. Do this only during the mana step. (This does '
       + 'not use one of your activations for turn.)" The p.18 affinity bonus is owed, so '
-      + 'doExchangePrismite calls maybeGrantShard. R116 never quoted that line \u2014 it reasoned '
+      + 'doExchangePrismite calls maybeGrantShard. That ruling never quoted that line \u2014 it reasoned '
       + 'from the ENGINE\'S MODEL (a mutation of an already-activated resource) and reached for a '
-      + 'fetchland analogy to justify what the model already did. Same failure as R125 (a '
-      + 'StaticMod typed over Entity became "Rotspore only affects units") and R128 ("a unit has '
+      + 'fetchland analogy to justify what the model already did. Same failure as the Rotspore ruling (a '
+      + 'StaticMod typed over Entity became "Rotspore only affects units") and the unit-on-the-stack reading ("a unit has '
       + 'no parts to negate" became "a unit is not an effect"). The engine was already '
       + 'contradicting itself, which is the tell: the exchange fires a resourceActivated event, so '
       + 'every listener has always seen it as an activation \u2014 only the shard check was carved '
@@ -1663,7 +1663,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'charged in doActivateResource, not here. You get the Shard, not a second activation. The '
       + 'ANBB board is the argument and is pinned as a two-seat comparison: Ben reached three dark '
       + 'through prismites and was paid nothing while Rashi\'s third fire came from a plain '
-      + 'activation and paid. The R116 test is inverted in place rather than deleted, carrying the '
+      + 'activation and paid. The exchange test is inverted in place rather than deleted, carrying the '
       + 'history of both flips \u2014 it has now turned over twice.',
   },
   {
@@ -1673,8 +1673,8 @@ export const CLOSED: LedgerEntry[] = [
       + 'trigger or the other one',
     status: 'fixed',
     guards: [
-      '42-dark-b.test.ts::playtest #93: Dropslime fires from HAND',
-      '42-dark-b.test.ts::ANBB: an Unstable death and an unmodded death on the SAME damage step',
+      '42-dark-b.test.ts::Dropslime fires from HAND',
+      '42-dark-b.test.ts::an Unstable death and an unmodded death on the SAME damage step',
       '42-dark-b.test.ts::Muck Rummager sees an Unstable death',
       '43-dark-c.test.ts::Blightwalker dying while {Unstable} fires its own',
       '43-dark-c.test.ts::the Rector pays, and finds nothing',
@@ -1683,7 +1683,7 @@ export const CLOSED: LedgerEntry[] = [
       '62-death-facts.test.ts::an Unstable death says BIN, like a token',
     ],
     note:
-      'The owner was right, and R137 REVERSES the old behaviour. ANBB replays FAITHFUL, so this '
+      'The owner was right, and the trash-through-the-bin ruling REVERSES the old behaviour. ANBB replays FAITHFUL, so this '
       + 'one had exact evidence: Dropslime demonstrates BOTH halves by itself. Discarded from '
       + 'hand (unmodded) it trashed and its trigger paid out 2 damage; later spawned, grafted by '
       + 'Plague Ritual, {Unstable}, it blocked, took lethal and was ERASED \u2014 no trash, no '
@@ -1693,7 +1693,7 @@ export const CLOSED: LedgerEntry[] = [
       + '\u26a0 THE RULING DIVERGES FROM TWO SOURCES and that is recorded, not buried: Unstable\'s '
       + 'printed reminder says "(If they would enter a bin, erase them instead.)" and Caleb '
       + '2025-04-08 said "Unstable units still die, they just get erased instead of ending up in '
-      + 'the bin" \u2014 both argue for the OLD behaviour. The owner overruled them, as R106 did '
+      + 'the bin" \u2014 both argue for the OLD behaviour. The owner overruled them, as the owner\'s Unaware ruling did '
       + 'over {Unaware}. The argument that won: the engine ALREADY treats a dying TOKEN as '
       + 'entering the bin, trashing, then being swept to the erased pile (Caleb on tokens: '
       + '"technically it does enter your hand and then gets erased immediately"), so two '
@@ -1706,16 +1706,16 @@ export const CLOSED: LedgerEntry[] = [
       + 'silently UNDER-triggering on every modded-unit death in every game ever played \u2014 '
       + 'invisible because you cannot see a trigger that does not happen. '
       + 'Decided along the way: NONTOKEN MODS trash too, because a recalled or cached carrier\'s '
-      + 'mods already trash (R70), so a death skipping it would make one mod card behave two ways '
+      + 'mods already trash (CR 801.2f), so a death skipping it would make one mod card behave two ways '
       + 'depending on how its host left play \u2014 the exact shape being removed. Token mods keep '
-      + 'R69\'s carve-out. Pull Under needed a `keepBinned` seam: it hand-rolled its own toBin '
-      + 'precisely BECAUSE destroy erased without trashing, so under R137 it double-trashed \u2014 '
+      + 'CR 410.4c\'s carve-out. Pull Under needed a `keepBinned` seam: it hand-rolled its own toBin '
+      + 'precisely BECAUSE destroy erased without trashing, so under the new rule it double-trashed \u2014 '
       + 'caught by its own existing "exactly one trash" assertion, which is the suite working. '
-      + 'R51\'s ARGUMENT died here too (it justified fireOwnTrashTrigger\'s `mods: []` with "a '
+      + 'The bin-listener ruling\'s ARGUMENT died here too (it justified fireOwnTrashTrigger\'s `mods: []` with "a '
       + 'modded unit that dies never reaches a bin"); the answer survives on a new derivation and '
-      + 'the prose is repaired \u2014 R133\'s lesson recurring within 24 hours. '
+      + 'the prose is repaired \u2014 the tokens-are-not-cards lesson (CR 304.2) recurring within 24 hours. '
       + 'Spells stay out of scope: a virused spell leaving the STACK is erased and not trashed, '
-      + 'because nothing from the stack is ever trashed (R40), not because of Unstable.',
+      + 'because nothing from the stack is ever trashed (CR 801.2b), not because of Unstable.',
   },
   {
     id: 94, room: 'SMVJ', date: '2026-08-24',
@@ -1737,7 +1737,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'Presentation-only: the engine is pure and must NOT learn about wall-clock time — the '
       + 'throttle belongs in the client\'s render/animation layer, replaying the event list it '
       + 'already receives. Carried as CT-28.'
-      + ' FIXED by R150 (2026-08-25): ui/pace.ts, a 1/sec ceiling with the clock injected and '
+      + ' FIXED 2026-08-25: ui/pace.ts, a 1/sec ceiling with the clock injected and '
       + 'PACE_MS as the one named knob. The ENGINE never learns about wall-clock time — a delay '
       + 'in the reducer would make replay-room.ts and the whole suite time-dependent. Skip chip '
       + 'and S key, and an un-holdable arrival FLUSHES the backlog ahead of itself, so the '
@@ -1749,8 +1749,8 @@ export const CLOSED: LedgerEntry[] = [
       + 'of the spell.',
     status: 'fixed',
     guards: [
-      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
-      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::CR 303.10 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::CR 303.10 #96: the CASTER',
       '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
       '23-wood-a.test.ts::whose target has already left the stack fizzles',
     ],
@@ -1760,14 +1760,14 @@ export const CLOSED: LedgerEntry[] = [
       + 'The engine implements it as a `triggered` ability on the body\'s own `spawned` event '
       + '(batch-wood-a.ts, HUSH_KEY handoff through battleCounters), so the body spawns under the '
       + 'CASTER first and changes hands afterwards. That extra intermediate state is observable, '
-      + 'which is exactly what report #96 saw. R107 (owner != controller on spawnUnit) is the '
+      + 'which is exactly what report #96 saw. The owner-vs-controller split on spawnUnit (CR 102.5) is the '
       + 'primitive that makes the direct version possible — the body should ENTER under the '
       + 'negated effect\'s controller, with no handover step at all. Carried as CT-29. '
       + '\u26a0 REPLAY: SMVJ no longer replays cleanly from action 121 (209 of 375 actions '
-      + 'rejected) and that is THIS FIX working, not a regression \u2014 bisected to R143. The '
+      + 'rejected) and that is THIS FIX working, not a regression \u2014 bisected to the Hush Mush change (CR 303.10). The '
       + 'log holds an answer to a trigger-ordering question (Flourishing Flora\'s trigger vs '
       + 'the handover) that no longer exists, so everything after it shifts. Same shape as '
-      + 'ANBB after R137. R144 added ZERO further drift (209 before and after both halves).',
+      + 'ANBB after the trash-through-the-bin change. Putting deployment triggers on the stack added zero further drift (209 before and after both halves).',
   },
   {
     id: 96, room: 'SMVJ', date: '2026-08-24',
@@ -1775,8 +1775,8 @@ export const CLOSED: LedgerEntry[] = [
       + 'Rashi\'s unit',
     status: 'fixed',
     guards: [
-      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
-      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::CR 303.10 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::CR 303.10 #96: the CASTER',
       '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
       '23-wood-a.test.ts::whose target has already left the stack fizzles',
     ],
@@ -1806,11 +1806,11 @@ export const CLOSED: LedgerEntry[] = [
       + 'counting available mana under time pressure. The owner\'s own proposal is phase-scoped: '
       + 'de-emphasise or hide dormant resources during battle/deployment, show them normally in '
       + 'planning (which is when you act on them). Carried as CT-31.'
-      + ' FIXED by R151 (2026-08-25): ui/resources.ts::resourceRow is a DOM-free view model '
+      + ' FIXED 2026-08-25: ui/resources.ts::resourceRow is a DOM-free view model '
       + 'carrying a discrete `emphasis` per resource, so the muting is asserted rather than '
       + 'being an untestable CSS colour. spendable/active are READ FROM the engine (E.openMana, '
       + 'E.affinity) rather than re-derived in the UI, so a rules change cannot desync them — '
-      + 'R132 moved exactly this surface a day earlier.',
+      + 'the Prismite shard reversal (CR 106.8c) moved exactly this surface a day earlier.',
   },
   {
     id: 98, room: 'SMVJ', date: '2026-08-24',
@@ -1827,12 +1827,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'are done — R-deployment), so one player resolving a pile of start-of-combat triggers '
       + 'should not seize the other player\'s screen or block their input. Related to #101, which '
       + 'is the rules-side proposal for the same pile of Wraith triggers. Carried as CT-32.'
-      + ' FIXED by R150 (2026-08-25), and the diagnosis is the part worth keeping: this was NOT '
+      + ' FIXED 2026-08-25, and the diagnosis is the part worth keeping: this was NOT '
       + 'the presentation layer. apply.ts refuses every non-decide action from EITHER seat while '
       + 'a decision is pending, and legalActions hands the non-owning seat an empty list, so the '
       + '"Waiting for X…" bar was drawing an empty legal list faithfully — un-gating the UI '
-      + 'alone would have produced a screen full of refusals. Only reachable since R144 put '
-      + 'start-of-deployment triggers on the stack. Fixed in the server (legalForSeat + a '
+      + 'alone would have produced a screen full of refusals. Only reachable since the engine put '
+      + 'start-of-deployment triggers on the stack (CR 507.4a). Fixed in the server (legalForSeat + a '
       + 'deferral queue) because the engine gate is right in battle; that leaves hotseat still '
       + 'freezing, carried as CT-44.',
   },
@@ -1850,16 +1850,16 @@ export const CLOSED: LedgerEntry[] = [
     note:
       'A token created with X=5 still prints the GENERIC text with a literal "X", so the player '
       + 'has to remember what it was made for. The number is known at creation. NOT the same class '
-      + 'as the markup bugs (R134/R141/R142): those are a formatter failing to consume a token, '
+      + 'as the markup bugs: those are a formatter failing to consume a token, '
       + 'this is a live VALUE that should be substituted into the printed text for that instance. '
       + 'Needs a decision on where the substitution lives — on the token entity at creation, or in '
       + 'the text box reading the entity\'s stored X. Carried as CT-33.'
-      + ' FIXED by R151 (2026-08-25). The decision the note asked for went to RENDER TIME, and '
+      + ' FIXED 2026-08-25 (now CR D6.9). The decision the note asked for went to RENDER TIME, and '
       + 'Robot is why: "if the number of counters changes, so does the X value", so a Robot 3 '
       + 'that gains a counter IS a Robot 4 and an X stamped at creation starts lying at once. X '
       + 'is read from Entity.x for a spell token and from live counters for a unit token. '
       + 'Reminder text is carved out (Robot would read "so does the 3 value"). Censused first '
-      + 'per R141: the pool spells it X, X/X, +X/+X, -X/-X and [x] (a cost PIP) — only bare X '
+      + 'per the markup round\'s lesson that the pool spells one thing several ways: it spells it X, X/X, +X/+X, -X/-X and [x] (a cost PIP) — only bare X '
       + 'moves, and 4 of the 6 token cards carry one.',
   },
   {
@@ -1875,13 +1875,13 @@ export const CLOSED: LedgerEntry[] = [
       '126-assign-split.test.ts::NEGATIVE CONTROL',
     ],
     note:
-      'The UI for R120, the ELECTIVE combat damage split (built because "never decide for the '
+      'The UI for CR 608.6a, the ELECTIVE combat damage split (built because "never decide for the '
       + 'player"). The mechanic is right; the affordance is not. The owner names the fix exactly: '
       + 'a per-unit up/down stepper, constrained to sum to the damage available. NOTE the shape is '
-      + 'the one R139/BL-25 just built for counter removal (stepper + max + "All", clamped, does '
+      + 'the one BL-25 just built for counter removal (CR D7.2) (stepper + max + "All", clamped, does '
       + 'not auto-submit) — reuse that lifted, tested logic in ui/inspect.ts rather than writing a '
       + 'second stepper. Carried as CT-34.'
-      + ' FIXED by R149 (2026-08-25) — but the report\'s premise was wrong in a way worth '
+      + ' FIXED 2026-08-25 by the per-victim split prompt (CR D7.2e) — but the report\'s premise was wrong in a way worth '
       + 'keeping: E.electionWalk asks ONE victim at a time, front to back, each decision a '
       + 'single scalar with the last living victim auto-filled. No decision carries N victims, '
       + 'so the sum is forced upstream of any client and an over-allocation was never '
@@ -1896,11 +1896,11 @@ export const CLOSED: LedgerEntry[] = [
       + 'final triggers would just fizzle).',
     status: 'fixed',
     guards: [
-      '37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves',
-      '37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
+      '37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves',
+      '37-attrs-wight.test.ts::CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
       '37-attrs-wight.test.ts::does not pre-validate against a limit an earlier trigger will consume',
       '37-attrs-wight.test.ts::a subject is not a target',
-      '37-attrs-wight.test.ts::R12 — a shared deployment stack does not let a Wraith reach across regions',
+      '37-attrs-wight.test.ts::CR 706.3c, 601.1b: a shared deployment stack does not let a Wraith reach across regions',
       '67-resolving-and-stack-viruses.test.ts::a NESTED resolution that suspends does not strand the outer marker',
     ],
     note:
@@ -1920,12 +1920,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'see (like {i} or / or some other "markup" notes)',
     status: 'fixed',
     guards: [
-      '122-cardtext-markup.test.ts::R142: the /[…] box drops the slash and the brackets',
-      '122-cardtext-markup.test.ts::R142: a stat slash is NOT markup',
-      '122-cardtext-markup.test.ts::R142: {i1} does not eat the space beside the word',
-      '122-cardtext-markup.test.ts::R142: no card in the pool renders engine markup to a player',
-      '122-cardtext-markup.test.ts::R142: the keyword family is NOT suppressed',
-      '122-cardtext-markup.test.ts::R142: no printed card carries a hyphenation artifact',
+      '122-cardtext-markup.test.ts::the /[…] box drops the slash and the brackets',
+      '122-cardtext-markup.test.ts::a stat slash is NOT markup',
+      '122-cardtext-markup.test.ts::{i1} does not eat the space beside the word',
+      '122-cardtext-markup.test.ts::no card in the pool renders engine markup to a player',
+      '122-cardtext-markup.test.ts::the keyword family is NOT suppressed',
+      '122-cardtext-markup.test.ts::no printed card carries a hyphenation artifact',
     ],
     note:
       'CONFIRMED with exact evidence. The owner on what the markup is: "It\'s pure engine markup '
@@ -1959,7 +1959,7 @@ export const CLOSED: LedgerEntry[] = [
       '155-hand-affordances.test.ts::a cached card that is NOT playable now stays in the cache row and out of the hand',
     ],
     note:
-      'FIXED SAME DAY by R183 (CT-63), and additively exactly as asked — regionCacheHtml and the '
+      'FIXED SAME DAY (CT-63; now CR D6.14), and additively exactly as asked — regionCacheHtml and the '
       + 'cache dialog are untouched, and only the cards that are PLAYABLE RIGHT NOW appear beside '
       + 'the hand. The group carries the EXPIRY chip rather than the price, because the loss he '
       + 'described ("harder to just forget about") is a glimpse stamp dying silently at end of '
@@ -1970,7 +1970,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'dialog. So reaching a cached card was a two-click path whose first click looked like it '
       + 'should have been the last, which reads as "easy to forget" from the inside. Filed as '
       + 'CT-64, with the trade-off named rather than assumed: making a thumb play directly costs '
-      + 'the one-click route to INSPECTING a cached card, and the cache is public under R41 '
+      + 'the one-click route to INSPECTING a cached card, and the cache is public under CR 403.2 '
       + 'precisely so both players can look. '
       + 'ORIGINALLY: arrived mid-session on 2026-08-25 (12:15 UTC), while round 26 was running — the round '
       + 'had opened by confirming issues.jsonl was byte-identical to the 103-row snapshot, and '
@@ -2004,7 +2004,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'reconnect during the seconds it is up still leaves only the log line — a named residual, '
       + 'not a closed one. THE ORIGINAL INVESTIGATION, which is why this took two rounds: '
       + '⚠⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING RATHER THAN BY '
-      + 'READING (2026-08-26, R188). GYSR replays 306/306 FAITHFUL. Its three glimpses are at '
+      + 'READING (2026-08-26). GYSR replays 306/306 FAITHFUL. Its three glimpses are at '
       + 'actions [54], [107] and [136] — all Maw of Despair / Grox, all glimpse 2, all '
       + 'phase=battle with segmentKey null before and after. The report\'s "action 110" is [107], '
       + 'and at [107] the SEAT-1 payload carries `glimpsed` with '
@@ -2041,8 +2041,8 @@ export const CLOSED: LedgerEntry[] = [
       + 'REPLAYS and the moment can be reconstructed — do that rather than reason from the code. '
       + 'Carried as CT-71. '
       + '⚠ UPDATE 2026-08-28 (round 29): THE RULES HALF IS NOW ANSWERED AND SHIPPED. The owner '
-      + 'ruled that a reveal inside a hidden simultaneous step is public IMMEDIATELY (R222), and '
-      + 'R235 implemented it — the hold is per-event now, and the `glimpsed` event escapes it '
+      + 'ruled that a reveal inside a hidden simultaneous step is public IMMEDIATELY (since reversed: CR D6.2), and '
+      + 'a since-reversed ruling implemented it — the hold is per-event now, and the `glimpsed` event escapes it '
       + 'while everything else in the same action stays held. So the one case that WAS genuinely '
       + 'invisible is no longer invisible. ⚠ AND THE FIX THIS NOTE IMPLIES WOULD HAVE BEEN WRONG: '
       + '`heldEvents` is not the only thing withholding the reveal — mid-segment, main.ts sends '
@@ -2058,12 +2058,12 @@ export const CLOSED: LedgerEntry[] = [
     report: 'All triggers from death (and after combat) should go onto the stack VISUALLY at the '
       + 'same time. The Geode\'s trigger did, but not visually',
     status: 'fixed',
-    guards: ['160-simultaneous-trigger-beats.test.ts::R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame',
-      '160-simultaneous-trigger-beats.test.ts::R189 a play and the triggers it caused are TWO beats, and the second is three cards at once',
+    guards: ['160-simultaneous-trigger-beats.test.ts::CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame',
+      '160-simultaneous-trigger-beats.test.ts::CR D6.7 a play and the triggers it caused are TWO beats, and the second is three cards at once',
       '160-simultaneous-trigger-beats.test.ts::a second batch queues behind the first',
-      '160-simultaneous-trigger-beats.test.ts::R189 flashBatches cuts a real batch where the RULES cut it'],
+      '160-simultaneous-trigger-beats.test.ts::CR D6.7 flashBatches cuts a real batch where the RULES cut it'],
     note:
-      '✔ FIXED 2026-08-26 (R189) in ui/flash.ts alone — no engine change, so nothing resolves at '
+      '✔ FIXED 2026-08-26 (CR D6.7) in ui/flash.ts alone — no engine change, so nothing resolves at '
       + 'a different time. queueFlashes stamped EVERY item of an arriving batch STAGGER_MS after '
       + 'the one before it, unconditionally, so a death sweep (several triggers queued together '
       + 'and drained back to back) was one thing drawn as several. It now spaces GROUPS, cut '
@@ -2079,7 +2079,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'all; the moment is [135] (died/triggered x3 — Maw of Despair, Sacrifice Dude, Geode). '
       + 'AND HIS OWN CASE HAS NO PACING FIX: each of those three stopped on a DECISION of his, so '
       + 'the three flashes arrived in three separate server round-trips with his answers in '
-      + 'between, and no honest pacing rule merges three round-trips. R189 deliberately gives '
+      + 'between, and no honest pacing rule merges three round-trips. The fix (CR D6.7) deliberately gives '
       + 'those three a beat each and says so. The general form IS real and the corpus supplied '
       + 'it one game over — SMVJ [141], four death triggers in ONE action and ONE update, drawn '
       + '280ms apart. SMVJ [94] is the control in the other direction: a genuine cascade that '
@@ -2088,10 +2088,10 @@ export const CLOSED: LedgerEntry[] = [
       + 'ORIGINAL TRIAGE, still correct as far as it went: '
       + 'Note the precision of the complaint: the trigger DID reach the stack — he says so — and '
       + 'the objection is that the SCREEN staged them one after another. So this is the pacing '
-      + 'layer (ui/flash.ts beats, R150\'s holdable), not the rules layer, and the fix must not '
+      + 'layer (ui/flash.ts beats, CR D5.4b\'s holdable), not the rules layer, and the fix must not '
       + 'change when anything actually resolves. '
       + 'Same family as report #53 ("damage and all effects happened instantly"), whose guards '
-      + 'R173 had to widen because they proved the stager could stage without proving the client '
+      + 'had to be widened because they proved the stager could stage without proving the client '
       + 'fed it. Carried as CT-71.',
   },
   {
@@ -2113,16 +2113,16 @@ export const CLOSED: LedgerEntry[] = [
       + 'BOTH printed.json and AlgomancyCards-OracleText.json: Oracle of Foretelling, Premonition, '
       + 'Celestial Purge and Dematerialize ALL end their reminder with "Recycle the rest." '
       + 'Foretell is Glimpse **1** — one card revealed, one cached, no "rest" — and correctly says '
-      + 'nothing, which is R45\'s own N=1 reading. So there was no upstream data error, no message '
-      + 'to Caleb needed for this, and R45\'s doc comment was never a misquote (it quotes those '
+      + 'nothing, which is CR 801.9b\'s own N=1 reading. So there was no upstream data error, no message '
+      + 'to Caleb needed for this, and the glimpse rule\'s doc comment was never a misquote (it quotes those '
       + 'four exactly; a ✔ RE-VERIFIED note now records the check so a third triage does not '
       + 'repeat it). '
       + 'THE REAL DEFECT WAS IN THIS REPO, in ui/glossary.ts. The card inspector prints a reminder '
       + 'row for every keyword a card mentions (ui/main.ts::glossaryHits), and THAT row is "the '
-      + 'reminder text for Glimpsing" the owner actually read. It still described R45 AS IT READ '
+      + 'reminder text for Glimpsing" the owner actually read. It still described THE GLIMPSE RULE AS IT READ '
       + 'BEFORE THE 2026-08-19 CORRECTION — "cache them", all N, recycle never mentioned. On those '
       + 'four cards the panel CONTRADICTED ITSELF: printed box said "cache one … Recycle the '
-      + 'rest", reminder underneath said the opposite. Fixed as R190, reworded off E.glimpse '
+      + 'rest", reminder underneath said the opposite. Fixed then, reworded off E.glimpse '
       + 'rather than off prose. '
       + 'A SECOND DEFECT IN THE SAME PANEL, found and fixed with it: the `Recycle` row (which '
       + 'fires on all four of these cards, because their text says the word) read "the card is '
@@ -2132,12 +2132,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'printed data when the glossary was the culprit. Nothing ties a glossary entry to the '
       + 'ruling it paraphrases, so an R-number correction can land in engine.ts, apply.ts, '
       + 'digital-rules.md and a test and leave ui/glossary.ts describing the superseded rule '
-      + 'indefinitely — R45\'s correction did exactly that for seven days. That is CT-76.',
+      + 'indefinitely — the glimpse rule\'s correction did exactly that for seven days. That is CT-76.',
   },
   // ── round 29 (2026-08-28): nine reports the repo had never seen ─────────
   // The snapshot was 107 lines and the server had 116. 70-playtest-ledger
   // named #107 the moment the snapshot was refreshed, which is the whole
-  // point of it — before R173 the count was hardcoded and eleven reports
+  // point of it — before the guard-shape audit the count was hardcoded and eleven reports
   // arrived without a single test noticing.
   {
     id: 107, room: 'SBCM', date: '2026-08-27',
@@ -2170,13 +2170,13 @@ export const CLOSED: LedgerEntry[] = [
       + 'copy',
     status: 'fixed',
     guards: [
-      '198-copy-art.test.ts::R229 §1: a Borrower of Forms is DRAWN as the card it borrowed',
-      '198-copy-art.test.ts::R229 §3: an Ancient One keeps its OWN art — a projection is not an identity',
+      '198-copy-art.test.ts::CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed',
+      '198-copy-art.test.ts::CR D6.8: an Ancient One keeps its OWN art — a projection is not an identity',
     ],
     note:
-      '✔ FIXED 2026-08-28 (round 29) as R229. The board, the focus rail and the right-click '
+      '✔ FIXED 2026-08-28 (round 29; now CR D6.8). The board, the focus rail and the right-click '
       + 'menu now all read the PROJECTED face. The cause was that main.ts fed `Entity.card` to '
-      + '`art()`, while R118 deliberately never rewrites `Entity.card` — the borrowed face lives '
+      + '`art()`, while the copy layer (CR 201.5) deliberately never rewrites `Entity.card` — the borrowed face lives '
       + 'in `E.nameOf`, which the card TEXT already used. That is precisely why the name updated '
       + 'and the art did not. The class is Borrower of Forms and Apex Prime, derived twice '
       + '(copy-primitive call sites AND printed text) with both passes agreeing; the other 9 '
@@ -2195,10 +2195,10 @@ export const CLOSED: LedgerEntry[] = [
       'We should probably have a Bluff Haste toggle that stops in your haste step as if you did '
       + 'have a thing with haste, but choose not to play it',
     status: 'fixed',
-    guards: ['200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing',
-      '200-haste-step-is-unconditional.test.ts::R228 §1: seat 1 is served the same view whatever seat 0 is holding'],
+    guards: ['200-haste-step-is-unconditional.test.ts::CR 504.5a: a bluff is a real move — you may sit in the step holding nothing',
+      '200-haste-step-is-unconditional.test.ts::CR 504.5: seat 1 is served the same view whatever seat 0 is holding'],
     note:
-      '✔ FIXED 2026-08-28 (round 29) as R228 — and you got it as a RULING rather than a toggle, '
+      '✔ FIXED 2026-08-28 (round 29): the haste step always opens (CR 504.5) — and you got it as a RULING rather than a toggle, '
       + 'which is better than what you asked for. Offered the choice, you picked "always offer '
       + 'the step + Bluff Haste" over "open the step exactly when you can act", so the haste step '
       + 'is now UNCONDITIONAL. `canHaste` is deleted outright. THAT MEANS THERE IS NOTHING TO '
@@ -2222,11 +2222,11 @@ export const CLOSED: LedgerEntry[] = [
       + 'have to move my mouse several times to get it to show up',
     status: 'fixed',
     guards: [
-      '199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110',
-      '199-hover-scroll.test.ts::R230 §5: test/ui-driver.ts really cancels a cleared timeout',
+      '199-hover-scroll.test.ts::CR D6.17: the focus rail scrolling does NOT hide the tip — this is #110',
+      '199-hover-scroll.test.ts::§5: test/ui-driver.ts really cancels a cleared timeout',
     ],
     note:
-      '✔ FIXED 2026-08-28 (round 29) as R230, and you were more precise than the triage. The '
+      '✔ FIXED 2026-08-28 (round 29; now CR D6.17), and you were more precise than the triage. The '
       + 'client was hiding your tooltip because IT scrolled: the window scroll listener could not '
       + 'tell your scroll from its own, and `scrollFocusToBottom` scrolls the preview from inside '
       + 'the same mouseover handler that had just armed the 550ms timer. Measured at 3ms apart. '
@@ -2247,19 +2247,19 @@ export const CLOSED: LedgerEntry[] = [
     report:
       'Hooba Lin should not have made a token here since it does not have a formation',
     status: 'by-design',
-    guards: ['108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger',
-      '108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172)',
-      '108-formation-class.test.ts::R225 conformance: EVERY card call site of placeInFormation names its source ENTITY',
-      '108-formation-class.test.ts::R225 the primitive itself: placeInFormation given a sourceId that is in NO formation refuses'],
+    guards: ['108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger',
+      '108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3)',
+      '108-formation-class.test.ts::CR 602.6e conformance: EVERY card call site of placeInFormation names its source ENTITY',
+      '108-formation-class.test.ts::CR 602.6e the primitive itself: placeInFormation given a sourceId that is in NO formation refuses'],
     note:
-      '⚠ REVERSED 2026-10-09 by R325, for the dead-source half this report is about. The RAQ '
+      '⚠ REVERSED 2026-10-09 (RAQ; now CR 714.4), for the dead-source half this report is about. The RAQ '
       + 'thread "[Solved] Dead Unit Effect on Stack" (_passer) names Hooba-Lin among the units that '
       + '"will remember they were in formation and will work fine", and the owner ruled the same day '
       + 'that the RAQ is the authority over our rulings. So a Hooba-Lin killed under its own attack '
-      + 'trigger now makes its 1/1 in the formation it was in. R225\'s other half stands: a source '
-      + 'that is ALIVE but out of the formation still places nothing (R172 guards below). '
+      + 'trigger now makes its 1/1 in the formation it was in. The other half of the original fix stands (CR 602.6e): a source '
+      + 'that is ALIVE but out of the formation still places nothing (CR 711.3 guards below). '
       + 'The history that follows is the original fix. '
-      + '✔ FIXED 2026-08-28 (round 29) as R225, and he was right about a class rather than a '
+      + '✔ FIXED 2026-08-28 (round 29) as the source-formation fix, and he was right about a class rather than a '
       + 'card. THE CAUSE: `E.placeInFormation` was never told WHICH ENTITY "my" refers to. '
       + '`opts.source` was a display STRING, and the slots came from '
       + '`formationSlots(ctx.controller)` — the SEAT\'s grid. So a source that was dead, or alive '
@@ -2271,15 +2271,15 @@ export const CLOSED: LedgerEntry[] = [
       + 'already had the correct reading three files away — the COUNTING family reads the source '
       + '(`columnOf(self.id)`), the PLACING family read the seat. That asymmetry was the bug. '
       + 'FOUR CARDS WERE WRONG, IN TWO GRADES, and he only saw one of them: Hooba-Lin and '
-      + 'Hooba-Bot had no guard at all (dead source); and under R172 mid-battle control theft ALL '
+      + 'Hooba-Bot had no guard at all (dead source); and under CR 711.3 mid-battle control theft ALL '
       + 'FOUR placed, because Hooba-God and Hooba-Pon guarded on IN PLAY, which is the wrong '
       + 'predicate — Pon would also have CHARGED him for the play. Hooba-Nan, Rousing Spirit and '
-      + 'Riftwalker were already right. ⚠ THE RULES POSITION IS CONSISTENCY, NOT AN EXCEPTION: R1 '
-      + 'makes "if I am still in formation" look like the only recheck mechanism, but R27 already '
+      + 'Riftwalker were already right. ⚠ THE RULES POSITION IS CONSISTENCY, NOT AN EXCEPTION: CR 109.3c '
+      + 'makes "if I am still in formation" look like the only recheck mechanism, but the formation-count ruling (now CR 602.6h) already '
       + 'rules this exact phrase for COUNTS ("a unit that wasn\'t attacking gets X = 0 → no '
       + 'token"). "In my formation" is a referent computed at resolution. Hooba-Nan\'s printed '
-      + 'recheck turns out to be redundant reminder text, which is the evidence R27 was always '
-      + 'the right reading. Two runtime conformance scans now derive the class, so a fifth card '
+      + 'recheck turns out to be redundant reminder text, which is the evidence the referent reading (CR 602.6h) was always '
+      + 'the right one. Two runtime conformance scans now derive the class, so a fifth card '
       + 'inherits the guard or reddens the suite. ORCHESTRATOR VERIFIED BY BREAKING: neutering '
       + 'Hooba-Lin\'s guard reddens both grade tests AND the conformance scan — the third being '
       + 'the proof the scan computes membership rather than listing it.',
@@ -2303,7 +2303,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'picker in the client was swept: the UI has ZERO card-list dedupe anywhere, and '
       + '`eraseBin` is the single name-keyed collapse in the whole pipeline — so the class is '
       + 'closed at one site, computed rather than assumed. ⚠ THE COLLAPSE ITSELF IS CORRECT AND '
-      + 'MUST STAY: R124/R131 make two identical bin copies FUNGIBLE, so picking either is the '
+      + 'MUST STAY: CR 405.6 makes two identical bin copies FUNGIBLE, so picking either is the '
       + 'same pick. He was right that it LOOKS wrong and wrong that it IS wrong — the fix was to '
       + 'say how many copies a row stands for, not to split the row. THREE RESIDUALS noted and '
       + 'deliberately not fixed here: the second pick still shows no chip, bin-target `#2` labels '
@@ -2370,7 +2370,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['79-round17-layers.test.ts::the special case his wording misses — a SHRUNK unit survives',
       '79-round17-layers.test.ts::the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die'],
     note:
-      'NOT A BUG, AND MORE USEFUL THAN MOST BUGS — recorded as R226. This is the owner retracting '
+      'NOT A BUG, AND MORE USEFUL THAN MOST BUGS — recorded as a ruling (now CR 802.8d). This is the owner retracting '
       + '#114 and stating a rule while he does it, which makes it an interaction the rules '
       + 'authority has explicitly ruled on. The engine already agreed with him; what was missing '
       + 'was anything that could see it regress. Seven tests now pin it (79-round17-layers, seeds '
@@ -2399,10 +2399,10 @@ export const CLOSED: LedgerEntry[] = [
       'server/e2e/test-pending-ask.ts::none of the asker-only values reaches the watcher',
       'server/e2e/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
       'server/e2e/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
-      '50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub',
+      '50-ui-inspect.test.ts::CR D6.4: the pause bar names the effect an opponent is answering, off the server stub',
     ],
     note:
-      'ROUND 31. RULED AND FIXED 2026-08-29 as R247. The indicator '
+      'ROUND 31. RULED AND FIXED 2026-08-29 (now CR D6.4). The indicator '
       + 'exists for the seat DOING the choosing; the opponent sees a stack that simply sits there. '
       + 'Same family as #105 (simultaneous trigger beats) — the client tells you what you are doing '
       + 'and not what is being done to you. '
@@ -2413,14 +2413,14 @@ export const CLOSED: LedgerEntry[] = [
       + 'so there is no stack item to flash on either screen. What shipped: the waiting bar now '
       + 'breathes, which is the "lightly flashing" ask and the difference between waiting and hung. '
       + 'What is still owed: a REDACTED DECISION STUB in server/view.ts so the bar can name the '
-      + 'effect. Ruled as R247 — that a choice is pending is public, what is being chosen is not — '
+      + 'effect. Ruled (now CR D6.4) — that a choice is pending is public, what is being chosen is not — '
       + 'and a stub that leaks the option list or the candidate targets would be worse than none. '
       + 'SHIPPED as SeatView.pendingAsk: TWO fields, the seat and an optional source that is an '
       + 'EntityId — NOT a card name — so it is a value the receiving seat already holds and the '
       + 'stub carries nothing new BY CONSTRUCTION rather than by redaction. Three derived gates: '
       + 'sourceId is set for triggered and activated items only, so a hand-cast card can never be '
       + 'named; the id is looked up in the entities AS THAT SEAT RECEIVES THEM; and the same '
-      + 'frozenOpp gate R144 uses for the stack. The decision KIND is deliberately not published, '
+      + 'frozenOpp gate the deployment stack uses (CR 703.7). The decision KIND is deliberately not published, '
       + 'because it narrows what is about to happen. '
       + '⚠ THE PLAN SAID "REUSE state.decision AS A REDACTED STUB" AND THAT WOULD HAVE BROKEN THE '
       + 'CLIENT: main.ts gates the waiting bar on !s.decision and renders the decision bar '
@@ -2454,16 +2454,16 @@ export const CLOSED: LedgerEntry[] = [
       + 'reminder text provided by the game — Piercing is edited, for example',
     status: 'fixed',
     guards: [
-      '227-reminder-text.test.ts::R248: no string a renderer can reach off a glossary row carries an R-number',
-      '227-reminder-text.test.ts::R248: no module that imports the glossary touches its citation field',
-      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
-      '177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
-      '177-glossary-conformance.test.ts::R248: every authored sentence survives onto the exported row',
+      '227-reminder-text.test.ts::no string a renderer can reach off a glossary row carries an R-number',
+      '227-reminder-text.test.ts::no module that imports the glossary touches its citation field',
+      '227-reminder-text.test.ts::rendering every card in the pool leaks no R-number',
+      '177-glossary-conformance.test.ts::a row the pool prints a reminder for SHOWS that reminder, verbatim',
+      '177-glossary-conformance.test.ts::every authored sentence survives onto the exported row',
       '236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row',
       '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
     ],
     note:
-      'ROUND 31. RULED AND FIXED 2026-08-29 as R248. ⚠ NOT ABOUT PRINTED DATA — #106 established that '
+      'ROUND 31. RULED AND FIXED 2026-08-29 (now CR D6.11). ⚠ NOT ABOUT PRINTED DATA — #106 established that '
       + 'the Glimpse version of this defect lived in ui/glossary.ts, which writes its own prose. '
       + 'Check there before touching printed.json. The R-references are the sharp half: they are '
       + 'internal ruling ids leaking onto a player-facing surface. '
@@ -2488,7 +2488,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'guards above hold them. What is NOT done is the rest of the same owner message: his Q7 '
       + 'answer went on to say "Not all cards are done properly anyway" and gave two examples — '
       + 'Brough showing an [Augment] Everything is balanced clause with no {Balanced} rules text '
-      + 'attached, and "Rot cards also do not have rules text yet". Round 31 built R248 and R252 '
+      + 'attached, and "Rot cards also do not have rules text yet". Round 31 built its two fixes (now CR D6.11) '
       + 'from the FIRST paragraph of that answer and left both of these on the floor; nothing in '
       + 'any ledger captured them until the round-32 audit went looking. They are CT-129 (the card '
       + 'browser attaches glossary rows off the TYPE LINE only, so twelve cards that grant an '
@@ -2497,12 +2497,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'shown by the in-game inspector on 15 of 15 cards and by the browser on 0 of 15). '
       + 'This is the repo signature failure in its usual shape: part of a complaint fixed, marked '
       + 'closed, and the rest of the same sentence lost. '
-      + '✅ BOTH RECOVERED HALVES CLOSED THE SAME DAY as R257 — one line in cardpanel.ts '
+      + '✅ BOTH RECOVERED HALVES CLOSED THE SAME DAY (now CR D6.11c) — one line in cardpanel.ts '
       + 'glossaryFor, unioning the text scan onto the type-line filter. Brough now shows its '
       + '{Balanced} row, {Rot} went from 0 of 16 browser rows to 16 of 16, and the number of '
       + 'glossary rows unreachable anywhere in the card browser went from TEN to ZERO. The status '
       + 'returns to fixed with CT-129 and CT-130 closed alongside CT-111. '
-      + '⚠ FOOTNOTE FOR WHOEVER READS THIS NEXT: marking this partial is what exposed R260 — the '
+      + '⚠ FOOTNOTE FOR WHOEVER READS THIS NEXT: marking this partial is what exposed the partial-is-not-live bug — the '
       + 'cross-ledger guard folded partial in with live, so the only way to stay green was to call '
       + 'the whole report fixed and lose the open half, which is how these two got lost in the '
       + 'first place. The guard was fixed before the work was done, and then convicted the '
@@ -2515,46 +2515,46 @@ export const CLOSED: LedgerEntry[] = [
       + 'triggers',
     status: 'fixed',
     guards: [
-      '229-cosmic-and-control.test.ts::R250: it recalls the CASTER own attacking spell unit — the room YFUE case',
-      '229-cosmic-and-control.test.ts::R250: Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement',
-      '229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable',
-      '239-damage-triggers-after-combat.test.ts::R261: the other seat holds priority over a combat-damage trigger and can actually respond to it',
-      '239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
-      '239-damage-triggers-after-combat.test.ts::R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP',
+      '229-cosmic-and-control.test.ts::it recalls the CASTER own attacking spell unit — the room YFUE case',
+      '229-cosmic-and-control.test.ts::Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement',
+      '229-cosmic-and-control.test.ts::CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable',
+      '239-damage-triggers-after-combat.test.ts::CR 608.9b: the other seat holds priority over a combat-damage trigger and can actually respond to it',
+      '239-damage-triggers-after-combat.test.ts::CR 608.9: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
+      '239-damage-triggers-after-combat.test.ts::THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP',
     ],
     note:
-      'ROUND 33, CLOSED 2026-08-30 AS R261 — SHE WAS RIGHT, AND IT TOOK OVERRULING PART OF R3. '
-      + 'The round-31 note below said this could not be built without reopening R3/R117/R157 §5, '
+      'ROUND 33, CLOSED 2026-08-30 (now CR 608.9b) — SHE WAS RIGHT, AND IT TOOK OVERRULING PART OF THE NO-WINDOW RULING. '
+      + 'The round-31 note below said this could not be built without reopening the owner\'s no-window ruling, '
       + 'and put it to the owner instead of guessing. He answered round-32 Q1: "The ruling is '
       + 'correct, but WHERE the trigger goes is wrong ... all triggers that are caused by damage '
       + 'get moved to After combat, along with anything that triggers then", with an official RAQ '
       + 'showing damage triggers and after-combat triggers interleaved on ONE stack, each player '
       + 'ordering their own, initiative seat first. So the window she wanted DOES exist — just '
-      + 'after combat rather than mid-damage-step. R3 survives narrowed: no priority window '
+      + 'after combat rather than mid-damage-step. The no-window ruling survived, narrowed (now CR 608.3a, for an unsplit step): no priority window '
       + 'between damage SUB-STEPS is still true; only the reading that a TRIGGER resolves inside '
       + 'the damage step is gone. '
-      + '⚠ THE R3 GUARD THAT USED TO BE ON THIS ROW IS DELIBERATELY NOT LISTED ANY MORE. It read '
+      + '⚠ THE SUB-STEP GUARD THAT USED TO BE ON THIS ROW IS DELIBERATELY NOT LISTED ANY MORE. It read '
       + '"the SAME trigger fired by COMBAT DAMAGE resolves with no priority window" and it '
       + 'predicted its own death in a comment — "if this test ever goes red because a window '
-      + 'appeared, R3 has been overruled." It has. '
+      + 'appeared, the old no-window ruling has been overruled." It has. '
       + 'ROUND 31 (kept, because it is the reasoning that produced the question): PARTIAL — what '
-      + 'she wanted to DO works; the WINDOW she wanted does not exist and collides with R3. Filed '
+      + 'she wanted to DO works; the WINDOW she wanted does not exist and collides with the no-window ruling. Filed '
       + 'as a priority-window question, not a card bug. '
       + '⚠ THE REPORT OWN DIAGNOSIS WAS WRONG, AND SO WAS MINE. There is NO castability restriction '
       + 'on Cosmic Reversal and there never was: replaying YFUE through legalActions, seat 1 is '
       + 'offered the card at indices 188, 191, 193, 195, 199, 217, 219, 221, 224, 226 and 245 — '
       + 'every one with an EMPTY stack. Nothing was removed, because nothing was there. What she '
       + 'actually wanted to do — bounce the in-play spell unit — was impossible because the CARD '
-      + 'never looked at the board (report #121), and that is fixed under R250. '
+      + 'never looked at the board (report #121), and that is fixed under the 2026-08-29 owner ruling. '
       + '⚠ WHAT ACTUALLY GATED THE MOMENT IS BIGGER AND IS NOT BUILT. Eminence of the Barrens fired '
       + 'inside the COMBAT DAMAGE STEP. At [197]/[198] the state is priority null, stack empty, '
       + 'legalActions(seat 1) empty — she was never offered a window at all, rather than refused a '
       + 'spell. processTriggerQueue leaves battleMode false while battle.damageStep is set, so such '
-      + 'a trigger takes the immediate resolve branch and never reaches the stack. THAT IS R3, the '
+      + 'a trigger takes the immediate resolve branch and never reaches the stack. THAT IS THE NO-WINDOW RULING, the '
       + 'owner own ruling of 2026-07-16: "no priority window between damage sub-steps". '
       + 'The owner Q1 answer ("all triggers are respondable") is TRUE everywhere the game hands out '
       + 'priority — pinned on the same trigger of the same card — and FALSE inside the damage step. '
-      + 'Giving her that window means overruling R3, which reopens R3/R117/R157 §5. Put back to the '
+      + 'Giving her that window means overruling the no-window ruling, which reopens the rulings built on it. Put back to the '
       + 'owner rather than built.',
   },
   {
@@ -2566,24 +2566,24 @@ export const CLOSED: LedgerEntry[] = [
       + 'effects',
     status: 'fixed',
     guards: [
-      '228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints',
-      '228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card',
-      '228-spent-marker.test.ts::R249: every card in the pool with a bounded ability gets the marker it prints',
-      '228-spent-marker.test.ts::R249: no card prints both markers, and none has two bounded abilities',
+      '228-spent-marker.test.ts::CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card prints',
+      '228-spent-marker.test.ts::CR D6.10b: a spent [once] ability wears [Once] — the same code, the other card',
+      '228-spent-marker.test.ts::CR D6.10b: every card in the pool with a bounded ability gets the marker it prints',
+      '228-spent-marker.test.ts::CR D6.10b: no card prints both markers, and none has two bounded abilities',
     ],
     note:
-      'ROUND 31. RULED AND FIXED 2026-08-29 as R249, WHICH OVERTURNS ONE CLAUSE OF R135. '
+      'ROUND 31. RULED AND FIXED 2026-08-29 as the spent-marker ruling (now CR D6.10b), WHICH OVERTURNS ONE CLAUSE OF THE EARLIER TEXT-BOX RULING. '
       + '⚠ A RE-REPORT: an earlier fix swapped which of the two was '
       + 'wrong rather than making the icon follow the unit. This is the shape #46/#60/#75 had — a '
       + 'one-case fix for a two-case class — so the guard must derive which marker a unit carries '
       + 'from the card, not hardcode either. '
-      + 'THE OWNER IS RIGHT AND R135 WAS WRONG HERE, for two reasons neither he nor this entry had. '
-      + '(1) R135 rule — "a line never repeats what its own TAG already says" — is about the '
+      + 'THE OWNER IS RIGHT AND THAT RULING WAS WRONG HERE, for two reasons neither he nor this entry had. '
+      + '(1) Its rule — "a line never repeats what its own TAG already says" — is about the '
       + 'augment and graft lines, whose tags are ICONS. The note line tag is the words "spent", '
       + 'with no symbol, so there was never a duplicate to remove: the argument was borrowed from '
       + 'two lines this one is not shaped like. (2) The markers are not two spellings of one thing '
       + '— [Switch1] is the bounded GRAFT marker and its clause TRANSFERS when grafted, [once] '
-      + 'transfers nothing. R135 two other clauses stand untouched. '
+      + 'transfers nothing. Its two other clauses stand untouched. '
       + '⚠ AND THE FIX COULD NOT BE WHAT THIS ENTRY ASKED FOR. cardtext.ts own header says printed '
       + 'prose and abilities[] do not line up 1:1 and that guessing a mapping makes the box '
       + 'confidently wrong — there is no per-ability clause to read. It works because the POOL has '
@@ -2591,7 +2591,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'invariants rather than a mapping. Derived: 88 bounded cards, 64 print [Switch1], 22 print '
       + '[once], 0 print both; 113 bounded graft donors all print [Switch1]. Four emit sites, not '
       + 'the three the plan named. [Once] survives as the fallback for the two prose-budget cards, '
-      + 'which is R135 answer kept exactly where its argument still holds.',
+      + 'which is the earlier answer kept exactly where its argument still holds.',
   },
   {
     id: 121, room: 'YFUE', date: '2026-08-28',
@@ -2601,14 +2601,14 @@ export const CLOSED: LedgerEntry[] = [
       + 'it looks at the board for spell units',
     status: 'fixed',
     guards: [
-      '229-cosmic-and-control.test.ts::R250: Cosmic Reversal recalls a spell unit in play to its controller hand',
-      '229-cosmic-and-control.test.ts::R250 whole pool: every printed Spell Unit is recalled off the board',
-      '229-cosmic-and-control.test.ts::R250: an ordinary unit in the same region is left alone',
-      '229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region, like every other all',
-      '229-cosmic-and-control.test.ts::R250: the log names both halves of the sweep, whether or not it found anything',
+      '229-cosmic-and-control.test.ts::CR 801.7a: Cosmic Reversal recalls a spell unit in play to its controller hand',
+      '229-cosmic-and-control.test.ts::whole pool: every printed Spell Unit is recalled off the board',
+      '229-cosmic-and-control.test.ts::an ordinary unit in the same region is left alone',
+      '229-cosmic-and-control.test.ts::CR 601.1c: the board half is scoped to the region, like every other all',
+      '229-cosmic-and-control.test.ts::the log names both halves of the sweep, whether or not it found anything',
     ],
     note:
-      'ROUND 31. RULED AND FIXED 2026-08-29 as R250. Answerable now, and TWO findings are possible: whether the '
+      'ROUND 31. RULED AND FIXED 2026-08-29. Answerable now, and TWO findings are possible: whether the '
       + 'card is right (printed: "Recall all other spell effects and spell units"), and separately '
       + 'that the LOG gave the owner no way to tell — a correct engine that cannot be audited from '
       + 'its own log is half of report #125. BOTH TURNED OUT TO BE REAL and both are fixed. '
@@ -2618,7 +2618,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'naming any of the 14 printed Spell Units — in play a spell unit is an ordinary unit '
       + 'entity, which is exactly why the old stack-kind filter could never see one. The log now '
       + 'names what BOTH halves considered, found or not. '
-      + '⚠ R243 SCOPES IT, and that is the ruling rather than a gap: the board half is the region, '
+      + '⚠ CR 601.1c SCOPES IT, and that is the ruling rather than a gap: the board half is the region, '
       + 'so an attacker spell unit left at home is out of reach of a {Battle} spell.',
   },
 
@@ -2634,7 +2634,7 @@ export const CLOSED: LedgerEntry[] = [
       '223-client-legality.test.ts::[122] a refusal that follows a real click is still the player refusal',
     ],
     note:
-      'ROUND 31. FIXED as R245 (b)/(c). The strings are apply.ts "not the haste step" / "not your '
+      'ROUND 31. FIXED (now CR D2.4, D2.4a). The strings are apply.ts "not the haste step" / "not your '
       + 'haste step". The client generated the refused action ITSELF: main.ts runAutoPass sends '
       + 'doneHaste, and the hasteAutoAt latch documented there prevents a LOOP but not the first '
       + 'refusal. So the owner is shown an engine error for an action he never took. '
@@ -2688,10 +2688,10 @@ export const CLOSED: LedgerEntry[] = [
       + 'it stops too often, the answer is a NARROWER PROMISE and only the owner can name it: '
       + 'should a TRIGGER count as "something new is played", and should the chip keep passing once '
       + 'the player has said "I am done acting this battle"? '
-      + 'ANSWERED ON THE Q6 SHEET 2026-08-29 and RULED AS R251: three promises, not one — Pass (one '
+      + 'ANSWERED ON THE Q6 SHEET 2026-08-29 and RULED (now CR D2.2): three promises, not one — Pass (one '
       + 'resolution), Pass through stack (pass on everything on the stack NOW, priority back if '
       + 'something changes) and Pass all (no priority until the next phase). '
-      + '⚠ AND THE LOAD-BEARING DEFECT WAS NOT IN passAllRelease AT ALL — it was the R245 RE-TAKE in '
+      + '⚠ AND THE LOAD-BEARING DEFECT WAS NOT IN passAllRelease AT ALL — it was the earlier re-take in '
       + 'main.ts, which re-snapshotted at every declined window, so "new" meant "new since the last '
       + 'window I passed": a running diff with no fixed scope. Nothing could ever FINISH, which is '
       + 'exactly why the chip could only stop at the end of the battle and why the owner middle '
@@ -2700,7 +2700,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'The old chip became PASS THROUGH STACK, not Pass all. '
       + '⚠ The tokens release is KEPT in Pass all deliberately: passEndsBattlePhase is true only of '
       + 'a pass that LEAVES the phase, so it fires at the terminus Pass all aims for, not before it '
-      + '— dropping it would re-open report #66 (irreversible R11 token loss with no undo).',
+      + '— dropping it would re-open report #66 (irreversible CR 506.2 token loss with no undo).',
   },
 
   // ── DSVQ, 2026-08-29 ────────────────────────────────────────────────────
@@ -2785,7 +2785,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'about suppressing the ones it takes without asking. Held to that: auto-stack is opt-in PER '
       + 'DECISION, never a preference and never armed, latched by ui.orderAutoFor so a repaint '
       + 'cannot re-fire it. The ordering options now render as the CARDS they came from, derived '
-      + 'from the same triggerQueue filter the engine builds and answers with (R245), and are '
+      + 'from the same triggerQueue filter the engine builds and answers with (CR D1.3), and are '
       + 'refused unless lengths and labels still match — so a stale paint falls back to labels '
       + 'rather than pinning a click to the wrong trigger.',
   },
@@ -2802,7 +2802,7 @@ export const CLOSED: LedgerEntry[] = [
       '223-client-legality.test.ts::[127] the region a formation leaves from has one derivation, not three',
     ],
     note:
-      'ROUND 31. FIXED as R245 (a). ⚠ READ WITH #128, WHICH THE OWNER FILED 37 SECONDS LATER: '
+      'ROUND 31. FIXED (now CR D1.3a). ⚠ READ WITH #128, WHICH THE OWNER FILED 37 SECONDS LATER: '
       + 'the ENGINE half is retracted (it did not let her), the UI half stands — the client offered '
       + 'attacks it then refused. Same class as #122: the client model of what is legal and the '
       + 'engine disagree, and the player is the one who finds out. Room DSVQ replays 174/174 '
@@ -2835,19 +2835,19 @@ export const CLOSED: LedgerEntry[] = [
       + 'player control. Trashing did not happen here',
     status: 'fixed',
     guards: [
-      '224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all',
-      '224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner',
-      '224-mod-trash.test.ts::R244 whole pool: no nontoken mod is trashed by its host death, and the body always is',
-      '224-mod-trash.test.ts::R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods',
+      '224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all',
+      '224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner',
+      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is',
+      '224-mod-trash.test.ts::CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods',
     ],
     note:
-      'ROUND 31. RULED AS R244 and fixed the same day. CONFIRMED IN THE REPLAY LOG: "Malformed Monstrosity '
+      'ROUND 31. RULED and fixed the same day. CONFIRMED IN THE REPLAY LOG: "Malformed Monstrosity '
       + 'augments The Everywhere (Ben) — it is now Unstable" then "Rashi trashes Malformed '
       + 'Monstrosity (from play)". engine.ts attributes a mod trash to m.owner; it must follow the '
       + 'HOST controller — this drives the per-battle trashed:<seat> counter and the card own '
       + 'when-I-am-trashed trigger, so Muck Rummager and Dropslime count for the wrong player. '
-      + '⚠ THE OWNER FIRST HALF COLLIDES WITH R137 and the boundary was settled with him on '
-      + '2026-08-29: R137 STANDS FOR THE BODY (an Unstable unit that dies is still trashed — that '
+      + '⚠ THE OWNER FIRST HALF COLLIDES WITH THE TRASH-THROUGH-THE-BIN RULING and the boundary was settled with him on '
+      + '2026-08-29: THAT RULING STANDS FOR THE BODY (an Unstable unit that dies is still trashed — that '
       + 'is what closed #93 and it overruled the printed reminder and Caleb on purpose); what '
       + 'changes is that a MOD erased with its host never had a presence of its own and is not '
       + 'trashed. '
@@ -2855,9 +2855,9 @@ export const CLOSED: LedgerEntry[] = [
       + 'under keepBinned (Pull Under), which always passes binTo, so attribution and destination '
       + 'were already identical there. The attribution half bites in afterDespawn — the RECALL and '
       + 'CACHE routes — which the plan never mentioned. '
-      + '⚠ AND R137 IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: R244 overrules its "The mods ride with '
-      + 'it" section, which R137 had itself flagged as reasoning rather than a log and stated so it '
-      + 'could be overruled cleanly. R137 is amended in place with a pointer; its BODY ruling and '
+      + '⚠ AND THE UNSTABLE-TRASH RULING IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: the mods ruling overrules its "The mods ride with '
+      + 'it" section, which it had itself flagged as reasoning rather than a log and stated so it '
+      + 'could be overruled cleanly. The earlier ruling is amended in place with a pointer; its BODY ruling and '
       + 'report #93 stand. '
       + 'Blast radius, derived from printed.json over 492 cards: 203 cards can become a nontoken '
       + 'mod; 200 of 200 lose their trashed event on host death and 200 of 200 change attribution '
@@ -2881,7 +2881,7 @@ export const CLOSED: LedgerEntry[] = [
       '225-stack-readout.test.ts::§1e INVENTORY — every printed X is paid, worn by a token, forecast, or listed here',
     ],
     note:
-      'ROUND 31. RULED AND FIXED 2026-08-29 as R246. ⚠ NOT COVERED BY #85 EVEN THOUGH IT LOOKS IDENTICAL. #85 '
+      'ROUND 31. RULED AND FIXED 2026-08-29 (now CR D6.9c). ⚠ NOT COVERED BY #85 EVEN THOUGH IT LOOKS IDENTICAL. #85 '
       + 'was Soul Siphon, a PAID X, previewed in hand by 96-x-preview.test.ts. Retribution Thing '
       + 'prints "I deal X damage to target unit, where X is the life you have lost or gained in this '
       + 'battle" — a DERIVED X, computed from game state, with no cast-time choice to preview. '
@@ -2893,7 +2893,7 @@ export const CLOSED: LedgerEntry[] = [
       + '⚠ THE SEAM THIS PLAN NAMED WAS THE WRONG ONE: previewNote is keyed on a live Entity and a '
       + 'stack item is not one. The right hook was xPreviewRows, which #85 had already added for '
       + 'the hand chip — so the fix REUSES the #85 machinery rather than growing a parallel one, '
-      + 'parameterised by the item own region (one definition, R245). A committed X always wins, so '
+      + 'parameterised by the item own region (one definition, CR D1.3). A committed X always wins, so '
       + 'a forecast can never double a paid one. '
       + 'The class is held by a CENSUS over the pool plus an INVENTORY of the 18 printed Xs that are '
       + 'neither paid nor forecast, each with its reason and a liveness test — so a new X card is '
@@ -2915,14 +2915,14 @@ export const CLOSED: LedgerEntry[] = [
       '232-log-modal.test.ts::§5 the rail did not become dead space, and the modal is still painted',
     ],
     note:
-      'ROUND 32. RULED AND FIXED 2026-08-29 as R253. ⚠ THIS DOES NOT RETRACT ROUND 31 WORK. Report #125 asked for a '
+      'ROUND 32. RULED AND FIXED 2026-08-29 (now CR D6.15). ⚠ THIS DOES NOT RETRACT ROUND 31 WORK. Report #125 asked for a '
       + 'less detailed log; Q3 of docs/questions-round31.md scoped that as a Story/Everything '
       + 'toggle and the owner ratified it ("The toggle is fine, I think"). This report moves the '
       + 'SURFACE and keeps the filter — hide the panel, put the same content behind a "View game '
       + 'log" item on the generic right-click menu, in a modal. Keep the curtain, move the '
-      + 'surface. ⚠ THE EXAMPLE THIS ROW FIRST GAVE WAS WRONG: the R150 skip chip is NOT in or '
+      + 'surface. ⚠ THE EXAMPLE THIS ROW FIRST GAVE WAS WRONG: the skip chip (since removed) is NOT in or '
       + 'beside the log panel — it is in the left column topbar and the log is in the right rail, '
-      + 'sharing no ancestor below #app. CT-123 was independent and was fixed separately as R258. '
+      + 'sharing no ancestor below #app. CT-123 was independent and was fixed separately (now CR D5.5). '
       + 'The real class was THIRTEEN and all thirteen were carried, the Story/Everything toggle '
       + 'included. See CT-124 for the two brief premises the work disproved, and for the latent '
       + 'browser crash it uncovered on the way. ⚠ ONE COST, NOW ON THE QUESTION SHEET AS Q7: the '
@@ -2943,7 +2943,7 @@ export const CLOSED: LedgerEntry[] = [
       '233-burst-count-and-size.test.ts::§2c the depth chip counts the run, so you can see how many are left',
     ],
     note:
-      'ROUND 32. RULED AND FIXED 2026-08-29 as R254. THE SIZE IS X, not mana or power/defense — '
+      'ROUND 32. RULED AND FIXED 2026-08-29 (now CR D6.9d). THE SIZE IS X, not mana or power/defense — '
       + 'all burst tokens print mana 0 and 3/3 identically, and X is carried per entity. '
       + 'apply.ts:1006 groups the cast chain on the card NAME and ignores t.x, so Fireball 1, 1, 3 '
       + 'and 7 fire as one uninterruptible chain of four differently-sized spells. That is the '
@@ -2961,14 +2961,14 @@ export const CLOSED: LedgerEntry[] = [
       + 'impossible to read.',
     status: 'fixed',
     guards: [
-      '234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text',
-      '234-arrowhead-clears-text.test.ts::[R255] the head stops just short of the label, never far from the thing it points at',
-      '234-arrowhead-clears-text.test.ts::[R255] the fixtures are the bug: at the old inset the head sits on their text',
-      '234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all',
-      '234-arrowhead-clears-text.test.ts::[R255] arrowGeometry keeps aiming at the exact centre, and reports its own inset',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] every measured endpoint has an arrowhead that clears its text',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] the head stops just short of the label, never far from the thing it points at',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] the fixtures are the bug: at the old inset the head sits on their text',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] an endpoint with nothing legible in the middle is not moved at all',
+      '234-arrowhead-clears-text.test.ts::[CR D6.18] arrowGeometry keeps aiming at the exact centre, and reports its own inset',
     ],
     note:
-      'ROUND 32. RULED AND FIXED 2026-08-29 as R255, entirely inside anim.ts. Measured over CDP '
+      'ROUND 32. RULED AND FIXED 2026-08-29 (now CR D6.18), entirely inside anim.ts. Measured over CDP '
       + 'against the real style.css and a real demo board: the head band sits 7-17px back from '
       + 'the destination exact centre, and the life pill is 52x24 whose only content is the heart '
       + 'and the number, centred — at 30 life the head covers a digit from 8 of 8 approach '
@@ -2993,28 +2993,28 @@ export const CLOSED: LedgerEntry[] = [
     guards: [
       '23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered',
       '23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target',
-      '68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST',
-      '68-target-conformance.test.ts::R256: the if-clause exemptions are exactly the cards that print one',
-      '68-target-conformance.test.ts::R256: every printed occurrence of target is read, not skipped',
+      '68-target-conformance.test.ts::CR 110.3: a restrictive clause on a target noun is enforced at CAST',
+      '68-target-conformance.test.ts::CR 110.3: the if-clause exemptions are exactly the cards that print one',
+      '68-target-conformance.test.ts::CR 110.3: every printed occurrence of target is read, not skipped',
     ],
     note:
       'ROUND 32, FILED ON ARRIVAL. The only ENGINE item of the four. Printed: "Negate target '
       + 'effect that targets an allied effect, player or unit." — the restriction is on the '
-      + 'TARGET OWN targets, which is the R64/R65 restriction seam. batch-wood-a.ts enforces it at '
+      + 'TARGET OWN targets, which is the CR 110.3a restriction seam. batch-wood-a.ts enforces it at '
       + 'RESOLUTION as a no-op instead, by deliberate comment. '
       + '⚠ TWO EVIDENCE CAVEATS. (a) Action 353 is AFTER the 15:43 server restart onto 704253f, so '
-      + 'it is on the NEW engine and could be a regression from round 31 R244/R250 work — check. '
+      + 'it is on the NEW engine and could be a regression from the round-31 bin work — check. '
       + '(b) PUCG FORKED at that restart (replay-room reported 25 actions changed meaning), so '
       + 'anything before action 326 is evidence about a DIFFERENT BOARD. '
-      + '✅ RULED AND FIXED THE SAME DAY as R256, and BOTH CAVEATS TURNED OUT TO BE MOOT — it is '
+      + '✅ RULED AND FIXED THE SAME DAY (now CR 110.3), and BOTH CAVEATS TURNED OUT TO BE MOOT — it is '
       + 'not a regression and it reproduces from a clean board. git log -S: the card and its '
       + 'misleading comment landed together on 2026-08-18; Minor Kraken gained its restrict in '
-      + 'R64 on 08-21 and Graxxlid in R88 on 08-23; Boon of Protection was never revisited. The '
+      + 'Minor Kraken gained its restrict on 08-21 and Graxxlid on 08-23; Boon of Protection was never revisited. The '
       + 'precedent its own comment cited had moved out from under it and nobody noticed for four '
       + 'rounds. The pool splits on GRAMMAR — a relative clause on the target noun is a targeting '
       + 'restriction, an if-clause on the verb is a conditional effect — and this was the single '
       + 'card on the wrong side of that line. See CT-127 for the Virus arm the fix would have '
-      + 'broken, and for the break-test that convicts the pre-R64 and pre-R88 code.',
+      + 'broken, and for the break-test that convicts the code from before targeting restrictions were enforced (CR 110.3a).',
   },
   {
     id: 135, room: 'ERJZ', date: '2026-08-30',
@@ -3022,9 +3022,9 @@ export const CLOSED: LedgerEntry[] = [
       'a wrong room code shows "connecting to server" forever instead of saying the room does '
       + 'not exist',
     guards: [
-      '254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it',
-      '254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever',
-      '254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board',
+      '254-join-nonexistent-room.test.ts::CR D7.5 a code the server never minted is refused, and the refusal names it',
+      '254-join-nonexistent-room.test.ts::CR D7.5 a refused join reaches the connecting screen instead of Connecting forever',
+      '254-join-nonexistent-room.test.ts::CR D7.5 an error in the constructed waiting room lands too, where there is still no board',
     ],
     status: 'fixed',
     note:
@@ -3054,7 +3054,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'card. Only 4 pool cards use the flag; the other three pair it with suppressAttrs and may '
       + 'be legitimate. ERJZ replays FAITHFULLY at HEAD (260/260 actions, 0 refused, '
       + 'deterministic), so this is reproducible by replay at the recorded action index. Routed '
-      + 'to agent A as R269.',
+      + 'to agent A (now CR 712.4).',
   },
   {
     id: 137, room: 'ERJZ', date: '2026-08-30',
@@ -3117,17 +3117,17 @@ export const CLOSED: LedgerEntry[] = [
       + 'radiating. So the split is by where the clause is printed, derivable from printed.json. '
       + 'OWNER RULED THE GENERAL CASE 2026-08-30: when a card is played as an augment, only its '
       + '[Augment] box text is live. '
-      + '⚠ THE BRIEF WAS WRONG AND R268 AS BUILT CORRECTS IT: the rule is ASYMMETRIC, not a mirror. A card own [Augment] text is active when it is played NORMALLY too (Manual Q&A, digital-rules.md), so a unit in play radiates body PLUS box while an augment mod radiates box ONLY - a symmetric fix would have broken Prickly Protector, a 0/1 that grows when merely played. It was never one field either: E.anchored feeds SEVENTEEN channels (statics, projects, and the fifteen BEHAVIOR_CHANNELS) and every one had the same body/box collapse, sixteen of them latent with no card standing on them. Of the 181 cards printing a box, 45 declare a radiating channel, 44 print it inside the box and migrated with zero behaviour change, and exactly ONE - Infernal Wispweaver - did not. '
+      + '⚠ THE BRIEF WAS WRONG AND THE AUGMENT-BOX RULE (CR 721.1c) AS BUILT CORRECTS IT: the rule is ASYMMETRIC, not a mirror. A card own [Augment] text is active when it is played NORMALLY too (Manual Q&A, digital-rules.md), so a unit in play radiates body PLUS box while an augment mod radiates box ONLY - a symmetric fix would have broken Prickly Protector, a 0/1 that grows when merely played. It was never one field either: E.anchored feeds SEVENTEEN channels (statics, projects, and the fifteen BEHAVIOR_CHANNELS) and every one had the same body/box collapse, sixteen of them latent with no card standing on them. Of the 181 cards printing a box, 45 declare a radiating channel, 44 print it inside the box and migrated with zero behaviour change, and exactly ONE - Infernal Wispweaver - did not. '
       + 'ERJZ replays FAITHFULLY at HEAD (260/260 actions, 0 refused, '
       + 'deterministic), so this is reproducible by replay at the recorded action index. Routed '
-      + 'to agent A as R268.',
+      + 'to agent A (now CR 721.1c).',
   },
   {
     id: 140, room: 'ERJZ', date: '2026-08-30',
     report:
       'an oversized graft icon renders on Spellbind while it is on the stack',
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §3 no game icon on the stack strip is drawn at its full size',
+      '251-fizzle-label-and-mod-strips.test.ts::§3 no game icon on the stack strip is drawn at its full size',
     ],
     status: 'fixed',
     note:
@@ -3141,7 +3141,7 @@ export const CLOSED: LedgerEntry[] = [
     report:
       'modded cards on the stack show no mod on hover, unlike modded units',
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §4a a modded stack item composes the same picture as a modded unit',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.12a a modded stack item composes the same picture as a modded unit',
     ],
     status: 'fixed',
     note:
@@ -3156,10 +3156,10 @@ export const CLOSED: LedgerEntry[] = [
       'the page scrolls back to the top on any state change and drops hover, including changes '
       + 'in hidden zones',
     guards: [
-      '252-viewport-and-log.test.ts::R272 §2 a card image reserves its height, so a repaint cannot clamp the scroll',
-      '252-viewport-and-log.test.ts::R272 §3a a repaint that leaves the hovered card where it was keeps the tip',
-      '252-viewport-and-log.test.ts::R272 §3b a card that is gone from the new board takes its tip with it',
-      '252-viewport-and-log.test.ts::R272 §4 an update this seat cannot see costs exactly one paint',
+      '252-viewport-and-log.test.ts::a card image reserves its height, so a repaint cannot clamp the scroll',
+      '252-viewport-and-log.test.ts::a repaint that leaves the hovered card where it was keeps the tip',
+      '252-viewport-and-log.test.ts::a card that is gone from the new board takes its tip with it',
+      '252-viewport-and-log.test.ts::an update this seat cannot see costs exactly one paint',
     ],
     status: 'fixed',
     note:
@@ -3178,9 +3178,9 @@ export const CLOSED: LedgerEntry[] = [
       'the {Unstable} reminder belongs on the attribute line, not appended at the foot of the '
       + 'card',
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §5a a printed-Unstable card wears it on the attribute line',
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §5c the sentence a player reads there is the POOLs, not ours',
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §5d the inspector really draws that row for a modded unit',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.10c a printed-Unstable card wears it on the attribute line',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.11 the sentence a player reads there is the POOLs, not ours',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.10c the inspector really draws that row for a modded unit',
     ],
     status: 'fixed',
     note:
@@ -3196,9 +3196,9 @@ export const CLOSED: LedgerEntry[] = [
       'a Prickly Protector died although it should have had an ally in region offsetting its '
       + '-1/-1 counter',
     guards: [
-      '250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker (R270, report 144)',
-      '250-ally-count-and-absence.test.ts::a host wearing a donated Prickly Protector survives being sent out (R270)',
-      '250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival (R270)',
+      '250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker (CR 610.2e, report 144)',
+      '250-ally-count-and-absence.test.ts::a host wearing a donated Prickly Protector survives being sent out (CR 610.2e)',
+      '250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival (CR 610.2e)',
       '250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away',
     ],
     status: 'fixed',
@@ -3215,7 +3215,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'the death check. QJEY FORKED at 2026-08-30T10:48:39Z (server restart onto 8f7219d6; 23 '
       + 'of 268 actions unreplayable, rebuilt from turn 7 deploy, divergence from action 14, six '
       + 'of the lost actions are augments). This report CANNOT be settled by replay — reproduce '
-      + 'it directly. Routed to agent C as R270.',
+      + 'it directly. Routed to agent C.',
   },
   {
     id: 145, room: 'QJEY', date: '2026-08-30',
@@ -3223,9 +3223,9 @@ export const CLOSED: LedgerEntry[] = [
       'now that the game log is hidden by default, opening it should show the ENTIRE log '
       + 'without truncation',
     guards: [
-      '252-viewport-and-log.test.ts::R272 §1a a log longer than the old 80-line window is shown WHOLE',
-      '252-viewport-and-log.test.ts::R272 §1b lifting the window does not lift the story curtain with it',
-      '252-viewport-and-log.test.ts::R272 §1c the pacing curtain still holds the tail it has not told yet',
+      '252-viewport-and-log.test.ts::CR D6.15a a log longer than the old 80-line window is shown WHOLE',
+      '252-viewport-and-log.test.ts::CR D6.15a lifting the window does not lift the story curtain with it',
+      '252-viewport-and-log.test.ts::CR D6.15a the pacing curtain still holds the tail it has not told yet',
     ],
     status: 'fixed',
     note:
@@ -3241,7 +3241,7 @@ export const CLOSED: LedgerEntry[] = [
       'the focus card window reserves a large empty strip to fit a mod badge; the card beneath '
       + 'should just peek out at the graft symbol',
     guards: [
-      '251-fizzle-label-and-mod-strips.test.ts::R271 §4b [#146] the strip carries no badge, and its peek is one named number',
+      '251-fizzle-label-and-mod-strips.test.ts::CR D6.12a [#146] the strip carries no badge, and its peek is one named number',
     ],
     status: 'fixed',
     note:
@@ -3257,10 +3257,10 @@ export const CLOSED: LedgerEntry[] = [
       'the pay-X-life prompt has no arrows and no way to type a number, and "that is enough" '
       + 'does not read as a button',
     guards: [
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §2 the pay-X-life bar carries R197s arrows and its typed box',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §2b the dial goes DOWN as well as up, and never below what is already paid',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §4 one confirm walks the ramp to the dialled X and then stops',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the pay-X-life bar carries the number-entry arrows and its typed box',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the dial goes DOWN as well as up, and never below what is already paid',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2c that is enough is a full button, and the plain declines stay quiet',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2b one confirm walks the ramp to the dialled X and then stops',
     ],
     status: 'fixed',
     note:
@@ -3320,7 +3320,7 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     note:
       'ROUND 35, filed on arrival. CLIENT. Prophecy has a rulings and reminder-text area on '
-      + 'the card and nothing in it. Derive the sentence from the pool the way R267 did for '
+      + 'the card and nothing in it. Derive the sentence from the pool the way the glimpse reminder was (CR D6.11) for '
       + '{Glimpse} rather than authoring one. ZSPG replays FAITHFULLY at HEAD (236/236 actions, '
       + '0 refused, deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so '
       + 'this is reproducible by replay at the recorded action index. Routed to agent C.',
@@ -3331,19 +3331,19 @@ export const CLOSED: LedgerEntry[] = [
       'the [Haste] marker on a prophecy says WHEN YOU MAY PROPHESY the card, not when you may '
       + 'play it',
     guards: [
-      '257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step',
-      '257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it',
-      '257-prophecy-release-timing.test.ts::R277: the marker never widens the window outside the haste step',
+      '257-prophecy-release-timing.test.ts::CR 504.9: a banner marked [Haste] may be prophesied during the haste step',
+      '257-prophecy-release-timing.test.ts::CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it',
+      '257-prophecy-release-timing.test.ts::CR 803.7b: the marker never widens the window outside the haste step',
     ],
     status: 'fixed',
     note:
       'ROUND 35, filed on arrival. ENGINE, and the other half of #152. The owner: "Divine '
       + 'Intervention can be Prophecied during the haste step. That is why it has that symbol." '
-      + 'So [Haste] in a prophecy condition widens the PROPHESY window (R42 otherwise allows '
+      + 'So [Haste] in a prophecy condition widens the PROPHESY window (CR 803.7b otherwise allows '
       + 'deployment only); it says nothing about the release. ZSPG replays FAITHFULLY at HEAD '
       + '(236/236 actions, 0 refused, deterministic, no fork) on engine e8aed524a8, the exact '
       + 'commit deployed, so this is reproducible by replay at the recorded action index. '
-      + 'Routed to agent A as R277.',
+      + 'Routed to agent A (now CR 504.9).',
   },
   {
     id: 152, room: 'ZSPG', date: '2026-08-30',
@@ -3351,16 +3351,16 @@ export const CLOSED: LedgerEntry[] = [
       'a fulfilled prophecy is gated to the prophecy [Haste] marker instead of the card '
       + 'printed timing, and it cost a game',
     guards: [
-      '257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step',
-      '257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window',
-      '257-prophecy-release-timing.test.ts::R277: Divine Intervention can be released from cache in the battle it was prophesied for',
+      '257-prophecy-release-timing.test.ts::CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step',
+      '257-prophecy-release-timing.test.ts::CR 803.7i: a fulfilled prophecy on a battle card is offered at a BATTLE window',
+      '257-prophecy-release-timing.test.ts::CR 203.5b: Divine Intervention can be released from cache in the battle it was prophesied for',
     ],
     status: 'fixed',
     note:
       'ROUND 35, filed on arrival. ENGINE, GAME-BREAKING, and it violates a settled ruling '
       + 'while citing that ruling as its authority. engine.ts cachedTiming reads "if (via === '
       + 'prophecy && cc.prophecy?.release) return cc.prophecy.release;" with a comment saying a '
-      + 'release marked [Haste] overrides the printed timing "(R42, Divine Intervention)". R42 '
+      + 'release marked [Haste] overrides the printed timing "(R42, Divine Intervention)". The prophecy ruling (now CR 803.7i) '
       + 'says the opposite in so many words: "normal TIMING still applies, since it is played '
       + 'as if it were in your hand". Divine Intervention is timing: battle with prophecy { '
       + 'mana: 1, condition: "Your life is 5 or less [Haste]" }, so the override made a battle '
@@ -3370,7 +3370,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'Fireballs taking him 2 -> 1 -> 0. Its printed text is "You may change the targets of '
       + 'target effect." ZSPG replays FAITHFULLY at HEAD (236/236 actions, 0 refused, '
       + 'deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so this is '
-      + 'reproducible by replay at the recorded action index. Routed to agent A as R277.',
+      + 'reproducible by replay at the recorded action index. Routed to agent A (now CR 803.7i).',
   },
   {
     id: 153, room: 'ZSPG', date: '2026-08-30',
@@ -3393,9 +3393,9 @@ export const CLOSED: LedgerEntry[] = [
       'a card being targeted in a bin should surface to the top of that bin so both players '
       + 'can see it',
     guards: [
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §6 a targeted bin card surfaces onto the region strip, on top',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §6b the dialog marks it too, so one fact reaches both surfaces',
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §7b the opponent sees the target too, which is the half the report is really about',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D6.6d a targeted bin card surfaces onto the region strip, on top',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the dialog marks it too, so one fact reaches both surfaces',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the opponent sees the target too, which is the half the report is really about',
     ],
     status: 'fixed',
     note:
@@ -3413,8 +3413,8 @@ export const CLOSED: LedgerEntry[] = [
     report:
       'Muck Rummager trigger did not fire on cards trashed during combat',
     guards: [
-      '258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in',
-      '258-simultaneous-disposal-listeners.test.ts::R278 the class: no disposal listener in the pool goes deaf by dying in the same batch',
+      '258-simultaneous-disposal-listeners.test.ts::CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in',
+      '258-simultaneous-disposal-listeners.test.ts::CR 706.8c the class: no disposal listener in the pool goes deaf by dying in the same batch',
       '258-simultaneous-disposal-listeners.test.ts::CONTROL: Muck Rummager hears an ally trashed by combat damage it survives',
     ],
     status: 'fixed',
@@ -3425,7 +3425,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'phrased as a question has been wrong here before. ZSPG replays FAITHFULLY at HEAD '
       + '(236/236 actions, 0 refused, deterministic, no fork) on engine e8aed524a8, the exact '
       + 'commit deployed, so this is reproducible by replay at the recorded action index. '
-      + 'Routed to agent B as R278.',
+      + 'Routed to agent B as a ruling (now CR 706.8c).',
   },
   {
     id: 156, room: 'DQVZ', date: '2026-08-30',
@@ -3452,7 +3452,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'listed. ⚠ Bripp is the owner\'s own control on the other side: a card DRAWN inside the '
       + 'same moment must not appear either, so this is one question — when is the snapshot '
       + 'taken — with a test on each side of it. DQVZ replays faithfully at HEAD up to [184], '
-      + 'where R284 (today, Void Memory) refuses a passPriority; the report is at [119], well '
+      + 'where the Void Memory fix (CR 205.3a) refuses a passPriority; the report is at [119], well '
       + 'inside the faithful stretch, so it is reproducible by replay. Routed to lane C.\n\n'
       + 'HALF (a) FIXED (CT-174). ⚠ THIS NOTE\'S OWN GUESS WAS WRONG: nothing was clearing '
       + 'the aid early. Measured across all 197 DQVZ actions, seenHandView(...).show goes true '
@@ -3475,8 +3475,8 @@ export const CLOSED: LedgerEntry[] = [
       + 'SINCE LEFT — an intersection, never an addition — and both halves he named fall out '
       + 'of the one sentence. Done in the ENGINE, not at the five call sites: revealHandTo '
       + 'marks the snapshot `pending`, and E.settleSeenHands reconciles it ONCE from settle(), '
-      + 'below the R154 decision guard (so it cannot finish while the effect is still asking '
-      + 'which card to discard) and above the R261 damage hold (an Eldritch Dreamtender look '
+      + 'below the open-decision guard (so it cannot finish while the effect is still asking '
+      + 'which card to discard) and above the CR 608.9b damage hold (an Eldritch Dreamtender look '
       + 'is a combat-damage trigger). Multiset, not set: DQVZ\'s own hand holds the Statweaver '
       + 'twice, and being made to discard one must leave the other. Frozen after one pass — a '
       + 'list that kept following the hand would report every later discard and play, a live '
@@ -3489,7 +3489,7 @@ export const CLOSED: LedgerEntry[] = [
       + '"current text" box',
     status: 'fixed',
     guards: [
-      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a71 the until-regroup fields are read out of the R11 sweep',
+      '266-until-regroup-in-the-box.test.ts::CT-175 §1 the until-regroup fields are read out of the CR 506.2 sweep',
       '266-until-regroup-in-the-box.test.ts::CT-175 \u00a72 every until-regroup field changes the box',
       '266-until-regroup-in-the-box.test.ts::CT-175 \u00a73 Phytochemical Protection says so on the unit it shielded',
       '266-until-regroup-in-the-box.test.ts::CT-175 \u00a75 the until-regroup line renders on the real client',
@@ -3500,7 +3500,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'line". Stats, tempAttrs, suppressed, granted and copies all have a representation; '
       + 'unstable, damageShield/shieldPending and allured have none. ⚠ DERIVE, DO NOT '
       + 'ENUMERATE — the definition of "until regroup" already exists in exactly one place, '
-      + 'the R11 step-3 sweep in engine.ts, and whatever that block deletes is the list. HTEW '
+      + 'the CR 506.2 step-3 sweep in engine.ts, and whatever that block deletes is the list. HTEW '
       + 'replays FAITHFULLY at HEAD (206/206 actions, 0 refused, deterministic, no fork) on '
       + 'engine 5e78833e27, so this is reproducible by replay at the recorded action index. '
       + 'Routed to lane D.\n\n'
@@ -3508,10 +3508,10 @@ export const CLOSED: LedgerEntry[] = [
       + 'onto Prickly Protector) - it sets `damageShield` and cardtext.ts read that field '
       + 'nowhere. The sweep found twelve until-regroup fields and exactly three holes: '
       + 'damageShield, shieldPending and allured. ⚠ this note was WRONG about `unstable`, '
-      + 'which has been on the attribute row with origin "temp" since R271/#143. Fixed with a '
+      + 'which has been on the attribute row with origin "temp" since #143 (CR D6.10c). Fixed with a '
       + 'new "until" line origin in ui/cardtext.ts - a LINE and not a `state` note, because '
       + 'the owner was HOVERING and the hover tip renders compact, which drops the state row. '
-      + 'The guard parses its field list out of the R11 sweep itself, so the next field added '
+      + 'The guard parses its field list out of the CR 506.2 sweep itself, so the next field added '
       + 'there arrives as a red test naming it. ⚠ HTEW no longer replays 206/206 at HEAD: it '
       + 'diverges at [148] on this round\'s Earthbound Replicator decision. [132]-[141] is '
       + 'still inside the faithful stretch.',
@@ -3536,12 +3536,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'targeting me" right after the Overbloom cast — and then said "Overbloom already left '
       + 'the stack — no copy" about a stack Overbloom had never been on. Overbloom prints '
       + 'DEPLOY timing, and a deployment play is committed with commitItem(…, \'resolve\'): it '
-      + 'resolves where it stands and never reaches the stack, so R178\'s item id named '
+      + 'resolves where it stands and never reaches the stack, so the item id named '
       + 'nothing. spellPlayed now also carries the item itself (`offStack`) for exactly those '
       + 'no-stack plays, E.playedItem is the one reader, and the Replicator asks it. Derived '
       + 'from printed.json: [Overbloom] is the ONLY nonunit spell in the pool that is both '
       + 'playable outside battle and able to target a unit, out of 19 non-battle nonunit '
-      + 'spells — so this combination has never once worked since R164, and the census guard '
+      + 'spells — so this combination has never once worked since spell copies went on the stack, and the census guard '
       + 'fires if a second such card is ever added.',
   },
   /* ── ROUND 37 (2026-09-05): the first live game on the deployed site ──
@@ -3570,7 +3570,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'is not needed; the target question drew bare player names. Now a {player} option of a '
       + 'cast whose card previews per seat carries that seat\'s row on its button ("Player 2 · '
       + 'X = 7"), and once the target is declared the stack chip keeps only that seat\'s row — '
-      + 'the same self-checking narrowing R57 modes already had. Derived from a `seat` the rows '
+      + 'the same self-checking narrowing the cast-time modes (CR 702.5) already had. Derived from a `seat` the rows '
       + 'now carry (perSeatRows), never from the label.',
   },
   {
@@ -3586,7 +3586,7 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note:
       'ROUND 37, filed by mycheze (owner) from seat 0, ux/medium, action 131. CLIENT over a '
-      + 'one-line engine query: R43 already stamped the turn a card was prophesied on and '
+      + 'one-line engine query: the engine already stamped the turn a card was prophesied on (CR 803.7e) and '
       + 'prophecyMet read the delta; nothing showed it. `E.prophecyProgress` reads the same '
       + 'delta (the counting rows of PROPHECY_RULES grew a `progress`), and the cache dialog '
       + 'wears "⏳ 1/4 turns" and "— 3 turns to go". A state condition has no meter and still '
@@ -3599,15 +3599,15 @@ export const CLOSED: LedgerEntry[] = [
       + 'warning that X = 0 while the box says otherwise',
     status: 'fixed',
     guards: [
-      '260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet',
+      '260-cost-ramp-and-bin-targets.test.ts::CR D7.2c that is enough is a full button, and the plain declines stay quiet',
     ],
     note:
       'ROUND 37, filed by mycheze (owner) from seat 0, ux/medium, action 160. CLIENT, and the '
-      + 'second report on this bar: #147 (R280) built the dial, and the bar kept drawing the raw '
+      + 'second report on this bar: #147 (CR D7.2b) built the dial, and the bar kept drawing the raw '
       + 'engine pair it dials — "Pay 1 more life" and "That\'s enough — X = 0 ⚠ creates no unit" '
       + '— beside it: ELEVEN buttons, two saying X = 0 while the box said 11. MEASURED with the '
       + 'ui-driver before touching anything. On a ramp the raw pair is not drawn; the dial\'s '
-      + 'confirm carries R64\'s own stop label (warning included, so ⚠ shows exactly when X is 0) '
+      + 'confirm carries the variable cost\'s own stop label (CR 702.6b) (warning included, so ⚠ shows exactly when X is 0) '
       + 'and becomes "Pay N more life — X = N" once dialled up; quick picks at or below the '
       + 'floor go. Seven buttons.',
   },
@@ -3618,19 +3618,19 @@ export const CLOSED: LedgerEntry[] = [
       + 'card during deployment, when the opponent does not exist',
     status: 'fixed',
     guards: [
-      '293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat',
-      '293-cached-targets-are-regional.test.ts::R291 §2 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent',
-      '293-cached-targets-are-regional.test.ts::R291 §3 the control: in battle the Observer reaches the opponent',
+      '293-cached-targets-are-regional.test.ts::CR 110.5b in deployment a home region reaches only its own seat',
+      '293-cached-targets-are-regional.test.ts::CR 403.6 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent',
+      '293-cached-targets-are-regional.test.ts::CR 403.6 the control: in battle the Observer reaches the opponent',
       '38-light-a.test.ts::Prismatic Observer: sacrifice to recall a cached card (either cache, in battle) and gain 3 life',
     ],
     note:
       'ROUND 37, filed from seat 1 (the owner\'s signed-out tab), bug/gamebreaking, action 178. '
-      + 'ENGINE — R291. The premise MEASURED on the faithful replay: [176]/[177] offered the '
+      + 'ENGINE — CR 403.6. The premise MEASURED on the faithful replay: [176]/[177] offered the '
       + 'other seat\'s cached Hammer of Justice in deployment, and pushCachedCardTargets said '
       + 'why in its own comment ("not region-scoped: the cache is not in a region") — true of '
       + 'the zone, wrong about its owner. A player\'s cache is targetable exactly where that '
       + 'player is PRESENT (the presentSeats test "target player" already uses); alone in your '
-      + 'deployment region (R12) that is your own cache only; in battle both. 38-light-a\'s '
+      + 'deployment region (CR 601.1a) that is your own cache only; in battle both. 38-light-a\'s '
       + '"either cache" test was doing exactly what the report describes and moved into a battle.',
   },
   {
@@ -3665,36 +3665,36 @@ export const CLOSED: LedgerEntry[] = [
       + 'after combat',
     status: 'fixed',
     guards: [
-      '297-damage-substeps-are-steps.test.ts::R295 §1 the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes',
-      '297-damage-substeps-are-steps.test.ts::R295 §2 the boundary is a real priority window',
-      '297-damage-substeps-are-steps.test.ts::R295 §3 the control: with no {Swift} and no {Sluggish} anywhere, R261 is untouched',
-      '297-damage-substeps-are-steps.test.ts::R295 §4 damageSubs is fixed when the step opens',
-      '239-damage-triggers-after-combat.test.ts::R295: in a SPLIT damage step a death trigger resolves at the boundary, not after combat',
-      '21-fixes.test.ts::Flowstone Arcanite (R295): the Swift-step counters land at the boundary, in time to save the ally',
+      '297-damage-substeps-are-steps.test.ts::CR 802.5b the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes',
+      '297-damage-substeps-are-steps.test.ts::CR 608.3b the boundary is a real priority window',
+      '297-damage-substeps-are-steps.test.ts::CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, the unsplit step is untouched',
+      '297-damage-substeps-are-steps.test.ts::CR 608.3d damageSubs is fixed when the step opens',
+      '239-damage-triggers-after-combat.test.ts::CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary, not after combat',
+      '21-fixes.test.ts::Flowstone Arcanite (CR 802.4e): the Swift-step counters land at the boundary, in time to save the ally',
     ],
     note:
-      'Filed medium; it was game-breaking. R295. R261 quoted the owner\'s condition — "if there '
+      'Filed medium; it was game-breaking. Fixed by the split-step rule (CR 608.3b). The earlier after-combat ruling quoted the owner\'s condition — "if there '
       + 'are no units in combat with sluggish or [swift]" — and then implemented the sentence '
       + 'after it, so the trigger hold became unconditional. A split damage step is several '
       + 'steps: each sub-step\'s triggers stack and resolve, with priority, before the next '
       + 'deals damage. KAWJ should have been 6, then Adversary at 8/8 for 8 — the guard asserts '
       + 'that number. Mutation-checked: disabling the `struckNow && moreLater` handover turns '
       + 'six of 297\'s seven tests red — everything except §3, the unsplit control, which is '
-      + 'exactly the half of R261 that did not change — and takes four of 239\'s with it.',
+      + 'exactly the half of the after-combat ruling that did not change — and takes four of 239\'s with it.',
   },
   {
     id: 166, room: 'BTUX', date: '2026-09-15',
     report: 'My unit has Blessed and I should have gained life from it dealing damage!',
     status: 'fixed',
     guards: [
-      '298-column-attrs-outside-combat.test.ts::R294 §1 the report: an ability fired by a unit in a {Blessed} column gains its controller life',
-      '298-column-attrs-outside-combat.test.ts::R294 §1b the control: the same board with no {Blessed} in the column gains nothing',
-      '298-column-attrs-outside-combat.test.ts::R294 §2 every source-side attribute rides the same line',
-      '298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all',
-      '298-column-attrs-outside-combat.test.ts::R294 §5 Unstable and Burst are not in the attribute set',
+      '298-column-attrs-outside-combat.test.ts::CR 802.22e the report: an ability fired by a unit in a {Blessed} column gains its controller life',
+      '298-column-attrs-outside-combat.test.ts::CR 802.22e the control: the same board with no {Blessed} in the column gains nothing',
+      '298-column-attrs-outside-combat.test.ts::CR 712.8a every source-side attribute rides the same line',
+      '298-column-attrs-outside-combat.test.ts::CR 712.8b outside battle there are no columns at all',
+      '298-column-attrs-outside-combat.test.ts::CR 712.8e Unstable and Burst are not in the attribute set',
     ],
     note:
-      'R294. Soul Reaver\'s activated ability fired off Refuse Reclaimer, whose column-mate '
+      'CR 802.22e. Soul Reaver\'s activated ability fired off Refuse Reclaimer, whose column-mate '
       + 'Flzzz prints {Blessed}; `dealEffectDamageAll` read the SOURCE with `ownAttrs` while '
       + 'reading the recipient\'s {Vulnerable} with `effAttrs` two lines below. Both sides read '
       + '`effAttrs` now. Narrow by construction: a column only exists in combat, so nothing '
@@ -3707,14 +3707,14 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Formless didn\'t properly remove attributes from the column',
     status: 'fixed',
     guards: [
-      '299-formless-column.test.ts::R293 §1 the report: Formless takes {Blessed} off the whole column, not just its target',
-      '299-formless-column.test.ts::R293 §1b and therefore nobody gains life when the column connects',
-      '299-formless-column.test.ts::R293 §1c the control: without Formless the same column DOES gain',
-      '299-formless-column.test.ts::R293 §2 the base rewrite still hits the TARGET alone',
-      '299-formless-column.test.ts::R293 §4 a unit that joins the column afterwards keeps its own attributes',
+      '299-formless-column.test.ts::CR 712.3 the report: Formless takes {Blessed} off the whole column, not just its target',
+      '299-formless-column.test.ts::CR 712.3 and therefore nobody gains life when the column connects',
+      '299-formless-column.test.ts::CR 712.3 the control: without Formless the same column DOES gain',
+      '299-formless-column.test.ts::CR 712.3 the base rewrite still hits the TARGET alone',
+      '299-formless-column.test.ts::CR 712.3b a unit that joins the column afterwards keeps its own attributes',
     ],
     note:
-      'R293. The printed reminder says "(This removes attributes from its column.)" and the '
+      'CR 712.3. The printed reminder says "(This removes attributes from its column.)" and the '
       + 'engine stamped the target only, so BTUX\'s attacking column kept the {Blessed} Flzzz '
       + 'was sharing in, dealt 17 and gained 17 life. Every unit in the target\'s column is '
       + 'stamped now; the base rewrite is still the target\'s alone. The stamp is per unit and '
@@ -3730,13 +3730,13 @@ export const CLOSED: LedgerEntry[] = [
     report: 'From the home page (Debeli): "You can\'t recycle for the multicolored one you start with to decide later"',
     status: 'fixed',
     guards: [
-      '308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, then a Shard, after the elements',
-      '308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one',
-      '308-recycle-for-prismite.test.ts::R299 a recycled Shard is mana only',
-      '308-recycle-for-prismite.test.ts::R299 what stays illegal',
+      '308-recycle-for-prismite.test.ts::CR 106.6a every hand card offers a Prismite, then a Shard, after the elements',
+      '308-recycle-for-prismite.test.ts::CR 106.6b a recycled Prismite behaves like a starting one',
+      '308-recycle-for-prismite.test.ts::a recycled Shard is mana only',
+      '308-recycle-for-prismite.test.ts::CR 106.8d what stays illegal',
     ],
     note:
-      'R299. Filed as ux, but it was an engine refusal: `doRecycle` accepted only an element of '
+      'CR 106.6a. Filed as ux, but it was an engine refusal: `doRecycle` accepted only an element of '
       + 'the game, so the Prismite could not be made from hand at all. The designer allows it '
       + '("Yep you can grab prismites", rules-questions 2025-05-09). legalActions offers it after '
       + 'the elements and the hand menu lists "Recycle → Prismite" below them, above "more '
@@ -3755,11 +3755,11 @@ export const CLOSED: LedgerEntry[] = [
     guards: [
       '23-wood-a.test.ts::Hooba-Nan alone: behind it AND a new column past each end',
       '23-wood-a.test.ts::Hooba-Nan on the edge of the line',
-      '66-formation-placement.test.ts::R304 adjacency: past the edge of the ATTACKING line is a slot',
+      '66-formation-placement.test.ts::CR 603.3 adjacency: past the edge of the ATTACKING line is a slot',
     ],
     note:
-      'R304. Filed from a fresh room (one action), so there was no game to replay; the behaviour '
-      + 'was R75 doing what it said. R75 read "adjacent slots (which only exist if it\'s in a '
+      'CR 603.3. Filed from a fresh room (one action), so there was no game to replay; the behaviour '
+      + 'was the earlier adjacency reading doing what it said. That reading took "adjacent slots (which only exist if it\'s in a '
       + 'formation)" as closing the ends of the line, while its own placement rule opened them. The '
       + 'owner overruled it the next day: "The columns to the left and right, even when empty, DO '
       + 'technically exist … You put it on the edge and it makes 2 units." adjacentSlots now offers '
@@ -3835,13 +3835,13 @@ export const CLOSED: LedgerEntry[] = [
       + 'this battle',
     status: 'fixed',
     guards: [
-      '337-spell-tokens-are-played.test.ts::R305: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent',
-      '337-spell-tokens-are-played.test.ts::R305: a Crystal cast counts as a played spell, so it raises the tax on the next spell',
-      '337-spell-tokens-are-played.test.ts::R305: an unaffordable token cast is not offered, and is refused if forced',
+      '337-spell-tokens-are-played.test.ts::CR 702.7a: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent',
+      '337-spell-tokens-are-played.test.ts::CR 702.7a: a Crystal cast counts as a played spell, so it raises the tax on the next spell',
+      '337-spell-tokens-are-played.test.ts::CR 702.7a: an unaffordable token cast is not offered, and is refused if forced',
     ],
     note:
-      'R305. UYRX replays FAITHFUL: Reconfigure was played, then Crystal 4 cast untaxed. That was '
-      + 'R59 working as written ("a spell token is cast from play, not played"), and token casts were '
+      'CR 702.7a. UYRX replays FAITHFUL: Reconfigure was played, then Crystal 4 cast untaxed. That was '
+      + 'the old cost-modifier reading working as written ("a spell token is cast from play, not played"), and token casts were '
       + 'never priced at all. The owner: spell tokens ARE played, taxed + counted. doCastSpellToken now '
       + 'prices through manaToPlay (a Burst group at one instant, summed), offers only what the seat '
       + 'can pay, and The Silent reads the token-inclusive ledger. A "card" noun still excludes '
@@ -3881,7 +3881,7 @@ export const CLOSED: LedgerEntry[] = [
       '350-blocker-gone-still-blocked.test.ts::§2 classic board: the same column reads the same',
     ],
     note:
-      'The ENGINE was right and the BOARD lied. EGBM replays 393/393 faithful: at [334] Spawntender blocked the original Hooba-God; at [343] Cosmic Reversal recalled it; at [345] combat printed "Column 4 is blocked (blockers gone) - no damage through" (R185). The battle panel drew the column "unblocked" because it read an empty blocker list as no block. It now reads key presence and says "blocker gone" on both boards, to both seats. The 4 damage kareds took was the token copy, left unblocked by choice, plus Visionary Construct. CT-190.',
+      'The ENGINE was right and the BOARD lied. EGBM replays 393/393 faithful: at [334] Spawntender blocked the original Hooba-God; at [343] Cosmic Reversal recalled it; at [345] combat printed "Column 4 is blocked (blockers gone) - no damage through" (CR 608.4c). The battle panel drew the column "unblocked" because it read an empty blocker list as no block. It now reads key presence and says "blocker gone" on both boards, to both seats. The 4 damage kareds took was the token copy, left unblocked by choice, plus Visionary Construct. CT-190.',
   },
   {
     id: 179, room: 'XSEN', date: '2026-09-29',
@@ -3899,7 +3899,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Owner: "Pass through stack *still* isn\'t working right"',
     status: 'by-design',
     note:
-      'R251 (the owner\'s round-31 Q6: "Pass through the stack assumes a pass is given to all '
+      'CR D2.2 (the owner\'s round-31 Q6: "Pass through the stack assumes a pass is given to all '
       + 'effects that are currently on the stack, but gives priority if something changes"). '
       + 'Replayed 317/317 faithful: Tides of the Cosmos cast Rotwall and Amphivore; when '
       + 'Amphivore resolved at [181], Throw off a Cliff ("delete target unit with 4+ defense") '
@@ -3945,22 +3945,22 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner: a much improved cast sequence for a group of Burst tokens; \"click them in the order you want them to resolve NOT in the order you want to put them on the stack. We have to be consistent and do it the same in the whole app\"",
     status: 'fixed',
     guards: [
-      "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order",
+      "358-burst-order.test.ts::CR 803.5d: the caster picks each Fireball in RESOLVE order",
       "358-burst-order-ui.test.ts::\u00a71 clicking a Fireball asks which resolves first",
     ],
     note:
-      "R309, efb7454 (deployed 2026-10-01): the caster picks each token in resolve order and aims it as picked, the group all or nothing, no auto-order (owner: \"Just force them to choose\"). Re-broken 2026-10-04 by ignoring `ordered`: four of the 358 tests went red.",
+      "CR 803.5d, D1.2h, efb7454 (deployed 2026-10-01): the caster picks each token in resolve order and aims it as picked, the group all or nothing, no auto-order (owner: \"Just force them to choose\"). Re-broken 2026-10-04 by ignoring `ordered`: four of the 358 tests went red.",
   },
   {
     id: 184, room: "FXAE", date: "2026-10-01",
     report: "Owner (gamebreaking): \"Vengeance (or maybe all prophecy cards) can't be prophecied from the cache when a card is glimpsed\"",
     status: 'fixed',
     guards: [
-      "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache",
-      "36-cache-prophecy.test.ts::R308: the real card",
+      "36-cache-prophecy.test.ts::CR 403.8: a GLIMPSED card with a banner may be prophesied where it stands in the cache",
+      "36-cache-prophecy.test.ts::CR 801.9h: the real card",
     ],
     note:
-      "R308, 66f5fb3 (deployed 2026-10-01): a glimpsed card may be prophesied from the cache in the same window and for the same cost as from hand. Re-broken 2026-10-04 by removing the cache branch of the legal-action list: three R308 tests went red.",
+      "CR 801.9h, 66f5fb3 (deployed 2026-10-01): a glimpsed card may be prophesied from the cache in the same window and for the same cost as from hand. Re-broken 2026-10-04 by removing the cache branch of the legal-action list: three glimpse-prophecy tests went red.",
   },
   {
     id: 185, room: "FXAE", date: "2026-10-01",
@@ -3992,7 +3992,7 @@ export const CLOSED: LedgerEntry[] = [
       "133-x-cost-semantics.test.ts::Unstable Apparition makes a Fireball X off the paid X of an X spell",
     ],
     note:
-      "Real, and wider than X = 4: Unstable Apparition read the played spell's PRINTED mana, the letter X, as 0, so no X spell ever made a Fireball - and the [once] was spent, so a later spell that turn made none either. R157 section 1 and R158 already ruled the paid X is the cost; the sister cards (Channeled Amalgam, Arcane Concentrator) were fixed on 2026-08-25 and this one was missed. It reads eventCardCost now; the stack caption already did, so it had been promising a Fireball the engine never made. One card: no other trigger reads a just-cast spell's cost from printed mana. No game to replay (filed from the card browser); reproduced in the engine at X = 0..5.",
+      "Real, and wider than X = 4: Unstable Apparition read the played spell's PRINTED mana, the letter X, as 0, so no X spell ever made a Fireball - and the [once] was spent, so a later spell that turn made none either. The owner\'s rulings already said the paid X is the cost (now CR 111.11); the sister cards (Channeled Amalgam, Arcane Concentrator) were fixed on 2026-08-25 and this one was missed. It reads eventCardCost now; the stack caption already did, so it had been promising a Fireball the engine never made. One card: no other trigger reads a just-cast spell's cost from printed mana. No game to replay (filed from the card browser); reproduced in the engine at X = 0..5.",
   },
   {
     id: 188, room: "UVYZ", date: "2026-10-03",
@@ -4045,13 +4045,13 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner, at [66]: \"Glimpse cards shouldn't be shown to an opponent *during* Deployment. They should be a part of the recap only.\"",
     status: 'fixed',
     guards: [
-      "203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing",
-      "203-reveal-waits-for-the-barrier.test.ts::R310 §1: the haste step holds a Glimpse the same way",
-      "203-reveal-waits-for-the-barrier.test.ts::R310 §3: the reveal plays in the recap",
-      "371-glimpse-in-the-recap.test.ts::R310 §1: the opponent",
+      "203-reveal-waits-for-the-barrier.test.ts::CR D6.2: inside deployment the opponent is sent nothing",
+      "203-reveal-waits-for-the-barrier.test.ts::CR D6.2: the haste step holds a Glimpse the same way",
+      "203-reveal-waits-for-the-barrier.test.ts::CR D5.2: the reveal plays in the recap",
+      "371-glimpse-in-the-recap.test.ts::CR D5.2: the opponent",
     ],
     note:
-      "Not a bug: R235 (owner, 2026-08-28: \"Immediately - the card says REVEAL\") made the glimpse the one event that escaped the hidden-step hold. The owner reversed it (R310): a glimpse in any hidden step (resource, haste, deployment) is held, arrives at the barrier and pops in the recap at its frame; battle glimpses stay instant. Side leak closed: the draft deck and recycle counts moved live under a hidden glimpse. Same round, R312: the glimpser's own undo now stops at a glimpse (undo plus the seeded deck order was a free peek).",
+      "Not a bug at the time: the owner's 2026-08-28 ruling (\"Immediately - the card says REVEAL\") made the glimpse the one event that escaped the hidden-step hold. The owner reversed it (CR D6.2): a glimpse in any hidden step (resource, haste, deployment) is held, arrives at the barrier and pops in the recap at its frame; battle glimpses stay instant. Side leak closed: the draft deck and recycle counts moved live under a hidden glimpse. Same round, CR D4.3: the glimpser's own undo now stops at a glimpse (undo plus the seeded deck order was a free peek).",
   },
   {
     id: 193, room: "KEMX", date: "2026-10-04",
@@ -4082,14 +4082,14 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner, at [105]: \"I'm not able to virus a card from my cached cards. The cache functions 100% like the hand *except* for the fact that it's not considered your hand. This issue has come up a bunch and I need it to stop being an issue\"",
     status: 'fixed',
     guards: [
-      "369-cache-is-the-hand.test.ts::R311: every card in the pool offers the same modes from the cache as from the hand, in every window",
-      "369-cache-is-the-hand.test.ts::R311: the sweep is not vacuous",
-      "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity",
-      "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto a spell on the stack",
-      "370-cached-virus-in-battle.test.ts::R311: a glimpsed Ambush card ambushes out of the cache",
+      "369-cache-is-the-hand.test.ts::CR 403.3b: every card in the pool offers the same modes from the cache as from the hand, in every window",
+      "369-cache-is-the-hand.test.ts::CR 702.2d: the sweep is not vacuous",
+      "370-cached-virus-in-battle.test.ts::CR 723.2a: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity",
+      "370-cached-virus-in-battle.test.ts::CR 723.2a: a glimpsed Virus in the cache goes onto a spell on the stack",
+      "370-cached-virus-in-battle.test.ts::CR 803.6i: a glimpsed Ambush card ambushes out of the cache",
     ],
     note:
-      "Real, and gamebreaking: at [105] Moebius's Corruption sat in the cache on a live glimpse and the battle window offered nothing (the owner spent Umbral Decay instead). The printed Virus battle rule read from === 'hand', and every play mode walked its own hand loop, so the cache had been bolted on one mode per report. R311: one source enumerator (hand + permitted cache) feeds every play, ambush, battle augment, haste grant and erase grant; Ambush and the grants from the cache ride playCached with additive optional fields, so old logs replay identically (117-game box corpus unchanged). 369 sweeps the whole pool in four windows. Discard-me stays hand-only by the owner's choice.",
+      "Real, and gamebreaking: at [105] Moebius's Corruption sat in the cache on a live glimpse and the battle window offered nothing (the owner spent Umbral Decay instead). The printed Virus battle rule read from === 'hand', and every play mode walked its own hand loop, so the cache had been bolted on one mode per report. CR 702.2d: one source enumerator (hand + permitted cache) feeds every play, ambush, battle augment, haste grant and erase grant; Ambush and the grants from the cache ride playCached with additive optional fields, so old logs replay identically (117-game box corpus unchanged). 369 sweeps the whole pool in four windows. Discard-me stays hand-only by the owner's choice.",
   },
   {
     id: 196, room: "EMCU", date: "2026-10-04",
@@ -4117,7 +4117,7 @@ export const CLOSED: LedgerEntry[] = [
       "380-no-action-ends-dead.test.ts::then the turn draw and the draft",
     ],
     note:
-      "Real. No room on the row; the game is most likely SGSZ (2026-10-02, a signed-out draft whose log matches the report): at [98] the turn draw took Player 1's hand from 3 to 5 and the Horror to 2/0, and it stood through the draft and planning, then lived to block once a play shrank the hand. The turn flip runs at the foot of a settle pass, after its death check, and no planning action settles again. R313: apply() ends every completed action at a full safe point whenever a unit is lethal; nothing lethal, nothing runs, so other games replay unchanged. Owner, on review: constructed's draw 4 / bottom 2 is one step, so a seat's units are judged on the net hand once its 2 are back.",
+      "Real. No room on the row; the game is most likely SGSZ (2026-10-02, a signed-out draft whose log matches the report): at [98] the turn draw took Player 1's hand from 3 to 5 and the Horror to 2/0, and it stood through the draft and planning, then lived to block once a play shrank the hand. The turn flip runs at the foot of a settle pass, after its death check, and no planning action settles again. CR 713.3: apply() ends every completed action at a full safe point whenever a unit is lethal; nothing lethal, nothing runs, so other games replay unchanged. Owner, on review: constructed's draw 4 / bottom 2 is one step, so a seat's units are judged on the net hand once its 2 are back.",
   },
   {
     id: 198, room: "UTVU", date: "2026-10-06",
@@ -4138,11 +4138,11 @@ export const CLOSED: LedgerEntry[] = [
     report: "Owner, at [234]: \"Twin Flame (and things with two targets) should be allowed to target Gatekeeper of Souls AND other things. As long as Gatekeeper of Souls is one of the targets, it's fine\"",
     status: 'fixed',
     guards: [
-      "382-gatekeeper-multi-target.test.ts::R314: a two-target spell aims at the Gatekeeper first and then at anything else",
-      "382-gatekeeper-multi-target.test.ts::R314: two Gatekeepers",
+      "382-gatekeeper-multi-target.test.ts::CR 110.12: a two-target spell aims at the Gatekeeper first and then at anything else",
+      "382-gatekeeper-multi-target.test.ts::CR 110.12: two Gatekeepers",
     ],
     note:
-      "Real. UTVU replays 305/305 faithful and shows it: Gember's Twin Flame went onto the Gatekeeper alone. compelledTargets narrowed EVERY slot to the Gatekeeper, the duplicate filter then emptied the second slot, and the spell stopped at one target. R314: a Gatekeeper already among the effect's chosen targets compels nothing more; with two Gatekeepers each is still owed a target. UTVU itself now diverges at that Twin Flame (the second slot is asked for), as a rules fix to the reported play should.",
+      "Real. UTVU replays 305/305 faithful and shows it: Gember's Twin Flame went onto the Gatekeeper alone. compelledTargets narrowed EVERY slot to the Gatekeeper, the duplicate filter then emptied the second slot, and the spell stopped at one target. CR 110.12: a Gatekeeper already among the effect's chosen targets compels nothing more; with two Gatekeepers each is still owed a target. UTVU itself now diverges at that Twin Flame (the second slot is asked for), as a rules fix to the reported play should.",
   },
   {
     id: 200, room: "UTVU", date: "2026-10-06",

@@ -50,14 +50,14 @@ test('an item that resolves with no response window announces itself', () => {
   assert.ok(flashed.length >= 1, 'something was announced');
   assert.equal(flashed[0]!.card, 'Ignis Sprite');
   assert.equal(flashed[0]!.controller, seat);
-  // R286 — ITS SPAWN TRIGGER IS FLASHED AGAIN, and the round trip is worth
-  // recording. R144(a) put deployment triggers on the real stack, and this
+  // ITS SPAWN TRIGGER IS FLASHED AGAIN, and the round trip is worth
+  // recording. An earlier ruling put deployment triggers on the real stack, and this
   // assertion was inverted then on the reasoning that the trigger "has a real
   // stackPushed/resolved pair of its own, so flashing it as well would draw it
   // twice". ⚠ THE ROW IT FEARED ALMOST NEVER EXISTS: settle() drains the
   // deployment stack inside the same action, so the client's next frame sees
   // an empty stack and the log line was the only trace left — a beat traded
-  // for a line, in the exact family round 8 filed the report about. R286 puts
+  // for a line, in the exact family round 8 filed the report about. A later fix puts
   // every no-response-window push back on the strip (`E.pushItem`) and makes
   // the double-draw impossible one layer up instead, where it can be measured:
   // `stackRows` drops a flash whose id is already a live row.
@@ -65,7 +65,7 @@ test('an item that resolves with no response window announces itself', () => {
     'the spawn trigger gets its beat back — nobody could respond to it, and the '
     + 'stack it went on had drained before any client could look at it');
   assert.ok(events.some(ev => ev.type === 'stackPushed'),
-    'it is still on the real stack, exactly as R144(a) put it — the flash is a '
+    'it is still on the real stack (CR 706.3c) — the flash is a '
     + 'surface, not a rules claim');
   assert.ok(!events.some(ev => ev.type === 'stackPushed' && ev.msg),
     'and outside battle the push is SILENT: "X → stack." announces a window to '
@@ -135,20 +135,20 @@ test('one flash appears now and leaves after HOLD_MS', () => {
 });
 
 test('a batch arrives as a sequence, not a fan', () => {
-  // three flashes that are NOT one trigger batch (R189) — three separate
+  // three flashes that are NOT one trigger batch (CR D6.7) — three separate
   // things, so three groups, one item each
   const q = queueFlashes([], [flashEv(1), flashEv(2), flashEv(3)], 0);
   assert.deepEqual(q.map(f => f.at), [0, STAGGER_MS, STAGGER_MS * 2],
     'distinct arrivals, one tempo-step apart — this is the whole claim of this test');
   assert.equal(visibleFlashes(q, 0).length, 1);
   assert.equal(visibleFlashes(q, STAGGER_MS).length, 2, 'the next arrives before the first has gone');
-  // ⚠ THIS NUMBER MOVED WITH R242 AND THE MOVE IS DELIBERATE. It used to be 3:
+  // ⚠ THIS NUMBER MOVED WITH THE ONE-TEMPO RULE (CR D5.4) AND THE MOVE IS DELIBERATE. It used to be 3:
   // at STAGGER_MS = 280 a whole batch of separate items piled up inside one
   // HOLD_MS and sat there together. The tempo is a full second now (the
   // client-wide ceiling — see ui/flash.ts's header), so consecutive SEPARATE
   // things hand over instead of piling: #1 has had its 1200ms beat by the time
   // #3 lands. Items that are genuinely SIMULTANEOUS still share an arrival and
-  // still pile — that is R189's grouping, and 218 §2 is the test of it.
+  // still pile — that is CR D6.7's grouping, and 218 §2 is the test of it.
   assert.equal(visibleFlashes(q, STAGGER_MS * 2).length, 2,
     'a sequence hands over; only a simultaneous batch piles');
 });
@@ -223,11 +223,11 @@ test('a flashed item still knows its X — the beat is the only chance to read i
   giveResources(h, seat, 'wood', 4);
   giveResources(h, seat, 'metal', 3);
   h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'Floral Singularity') });
-  // R35: X is chosen and paid as the card is cast
+  // CR 107.2a: X is chosen and paid as the card is cast
   const dec = h.state.decision!;
   const want = 3;
   h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.value === want) });
-  // R57: the Singularity's "[create X 1/1s or become base X/X]" is a modal
+  // CR 702.3d: the Singularity's "[create X 1/1s or become base X/X]" is a modal
   // bracket, declared in the same cast window right after X. Answering IT is
   // what completes the cast, so this is the call whose events carry the beat.
   const mode = h.state.decision!;
@@ -248,11 +248,11 @@ test('a flashed item still knows its X — the beat is the only chance to read i
   assert.equal(stackXMark(row.item), `X=${want}`, 'and the card wears the tag');
 });
 
-/* ── R68: a negated item still gets its beat ────────────────────────────
+/* ── CR 704.4: a negated item still gets its beat ────────────────────────────
  *
  * Negation used to set `item.negated = true` and LEAVE the item on the stack,
  * so it sat there greyed out — slow (each corpse cost a full priority round to
- * pop), but you could see that your spell had been answered. R68 removes it
+ * pop), but you could see that your spell had been answered. CR 704.4 removes it
  * the instant the negation resolves, which is the right rule and takes the
  * only picture of it away with it.
  *
@@ -351,7 +351,7 @@ test('the beat and the flight to the bin both happen, and neither eats the other
     } else events = events.concat(h.do({ type: 'passPriority', seat: h.state.priority! }));
   }
 
-  // R68: gone from the rules stack immediately, and in the bin already
+  // CR 704.4, 704.4a: gone from the rules stack immediately, and in the bin already
   assert.equal(h.state.stack.some(i => i.id === godray.id), false, 'off the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Godray'), 'and binned at that same instant');
   // …and it emitted only `negated`, never a second `resolved` for the victim
@@ -383,7 +383,7 @@ test('the beat and the flight to the bin both happen, and neither eats the other
   assert.equal(flight.toAnchor, `@bin:${A}`, 'and landing in its owner\'s bin');
 });
 
-/* ── R78: the item that is RESOLVING is on the strip, and reads as pending ──
+/* ── CR D6.12: the item that is RESOLVING is on the strip, and reads as pending ──
  *
  * Bena: "to my opponent, it looks like something already resolved and there's
  * something confusing about seeing 'xyz resolves' while your opponent is
@@ -480,7 +480,7 @@ test('it clears the instant the resolution finishes', () => {
   assert.deepEqual(stackRows([item(1)], [], 0, item(9)).map(r => r.item.id), [1, 9]);
   assert.deepEqual(stackRows([item(1)], [], 0, null).map(r => r.item.id), [1]);
   assert.deepEqual(stackRows([], [], 0, null), [], 'and nothing is left behind');
-  // the default keeps every pre-R78 caller honest
+  // the default keeps every older caller honest
   assert.deepEqual(stackRows([item(1)], [], 0).map(r => r.resolving), [false]);
 });
 
@@ -508,7 +508,7 @@ test('a resolving item is a PHANTOM stack slot — its card goes nowhere yet', (
 
 test('end to end: the strip holds the spell while its controller is still choosing', () => {
   // Recall asks "choose a unit to recall" DURING resolution, which is exactly
-  // the window the report is about: pre-R78 the item was off the stack, "X
+  // the window the report is about: before the resolving state existed, the item was off the stack, "X
   // resolves." was already in the log, and the board had not changed.
   const h = new Harness(5680);
   toDeployment(h);
@@ -534,7 +534,7 @@ test('end to end: the strip holds the spell while its controller is still choosi
   if (h.state.stack.length) h.do({ type: 'passPriority', seat: h.state.priority! });
 
   // mid-resolution: off the rules stack, and the engine says so
-  assert.equal(h.state.stack.some(i => i.id === id), false, 'R78: s.stack is what is WAITING');
+  assert.equal(h.state.stack.some(i => i.id === id), false, 'CR D6.3: s.stack is what is WAITING');
   assert.equal(h.state.resolving?.id, id, 'and this is what is happening');
   assert.ok(h.state.decision, 'its controller is being asked something');
 
@@ -561,7 +561,7 @@ test('end to end: the strip holds the spell while its controller is still choosi
   );
 });
 
-/* ── R80: narrative beats — a combat step told one stage at a time ─────── */
+/* ── CR D5.4: narrative beats — a combat step told one stage at a time ─────── */
 
 /* UFAB: "Neither of us had anything to do during the end of that combat, but
  * damage and all effects happened instantly. We should have been able to see,

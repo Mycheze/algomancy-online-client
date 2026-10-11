@@ -287,7 +287,7 @@ export function pickVerbs(dec: Decision, s: GameState, subjects = optionSubjects
  * inside a CAST suspension at stage 'itemCost', and the item's first pending
  * cost atom is 'playSacrifice' — the atom `playAtTiming` attaches only for
  * `unitsToPlay` > 0, i.e. only for a bracketed sacrifice some OTHER card's
- * cost modifier hangs on this play (R122). CT-177's census over printed.json
+ * cost modifier hangs on this play (CR 111.10). CT-177's census over printed.json
  * finds exactly two cards that impose a bracketed cost on somebody else's
  * play — Vengeance (a sacrifice: this atom) and Arbiter of Armistice (life,
  * charged with the mana, never a pick) — and test/354 re-derives it, so a new

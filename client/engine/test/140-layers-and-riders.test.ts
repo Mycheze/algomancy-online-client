@@ -1,4 +1,4 @@
-/* R166 — LAYERS AND RIDERS.
+/* LAYERS AND RIDERS.
  *
  * Four rows of `docs/16-divergence-inventory.md` §2b, and the Origon half of
  * §2c. Each is a card answered one layer, one event fact, or one permission
@@ -10,7 +10,7 @@
  *    the older of two items. Both halves are the same mistake in different
  *    clothes: the card is about the seat and about the spell just played, and
  *    the code was about this Origon and about whatever turned up first.
- *    R164 added a third: a spell COPY is a real stack item carrying the
+ *    Spell copies added a third (CR 710.8): a spell COPY is a real stack item carrying the
  *    original's card name and controller, pushed ABOVE it, so a reverse scan
  *    reaches the copy first. Origon and Hexbane Shiitake — the pool's two
  *    cards that locate a spell by (card, controller) — both name the spell
@@ -74,8 +74,8 @@ function resolve(
 
 /** a 'spellPlayed' event as `commitItem` builds it, for a trigger run by hand.
  *
- *  R191: `item` — the id of the item that was played — is part of that event
- *  and has been since R178, and Origon and Hexbane Shiitake now read it
+ *  CR 706.13: `item` — the id of the item that was played — is part of that event,
+ *  and Origon and Hexbane Shiitake now read it
  *  instead of scanning the stack for (card, controller). A fixture without it
  *  is not the event the engine emits, so it is passed here. */
 const spellPlayedEvent = (card: string, seat: Seat, region: number, item: number): EngineEvent =>
@@ -119,7 +119,7 @@ test('Origon negates the TOP of two identical stack items, not the bottom', () =
     'the negation names the top item');
 });
 
-test('Origon negates the spell that was PLAYED, not the R164 copy standing above it', () => {
+test('Origon negates the spell that was PLAYED, not the CR 706.13 copy standing above it', () => {
   const h = new Harness(14002);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -130,7 +130,7 @@ test('Origon negates the spell that was PLAYED, not the R164 copy standing above
     id: 7101, kind: 'spell', card: 'Fight', label: 'Fight', controller: A,
     region, negated: false, parts: [{ effectKey: 'spell:Fight', targets: [] }],
   };
-  // R164: a copy carries the ORIGINAL's card name and controller and is pushed
+  // CR 710.8: a copy carries the ORIGINAL's card name and controller and is pushed
   // ABOVE it, so `(card, controller)` matches two live items and a reverse scan
   // reaches the COPY first.
   const dup: StackItem = { ...structuredClone(played), id: 7102, label: 'Fight (copy)', copy: true };
@@ -143,7 +143,7 @@ test('Origon negates the spell that was PLAYED, not the R164 copy standing above
     '"negate IT" points at the spell that was played; RAQ: "the 1st copy wasn\'t \'played\'"');
 });
 
-test('Hexbane Shiitake exchanges control for the spell that was PLAYED, not for its R164 copy', () => {
+test('Hexbane Shiitake exchanges control for the spell that was PLAYED, not for its CR 706.13 copy', () => {
   const h = new Harness(14003);
   toDeployment(h);
   const A = h.state.deployPlayer!;      // plays the spell
@@ -182,19 +182,19 @@ test('Origon that arrives mid-battle leaves alone a seat whose first spell of th
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   // A's GENUINE first spell of this battle, played with no Origon anywhere.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
-  pick(h, { unit: atk });               // R35 cast cost
+  pick(h, { unit: atk });               // CR 702.4 cast cost
   pass(h); pass(h);
   assert.ok(!h.log.some(m => m.includes('is negated')), 'nothing was in play to negate it');
   assert.equal(h.state.battleCounters[h.state.battle!.region]?.[`spellsPlayedAny:${A}`], 1,
     "the seat's own ledger counted it");
   // NOW an Origon turns up — spawned into the battle by an effect, taken with
-  // E.giveControl, augmented on under R95: the card does not care which.
+  // E.giveControl, augmented on under CR 723.5: the card does not care which.
   const orig = spawnInto(h, D, 'Origon', h.state.battle!.region);
   assert.ok(h.state.entities[orig], 'Origon is in play in the battle region');
   // A's SECOND spell. It is not "their first spell in this battle" — the
   // subject of that sentence is the PLAYER, not the Origon.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Torrential Reclamation') });
-  pick(h, 0);                           // X = 0 at cast (R35)
+  pick(h, 0);                           // X = 0 at cast (CR 107.2a)
   pass(h); pass(h);
   assert.ok(!h.log.some(m => m.includes('is negated')),
     "an Origon that arrived after the fact must not negate the seat's SECOND spell");
@@ -230,7 +230,7 @@ test('Molten Tormentor does NOT pay out on a {Deadly} hit below its defense', ()
   const mt = g.entity(id)!;
   assert.deepEqual(g.effStats(mt), [7, 6], 'a 7/6');
   g.dealEffectDamage(hitCtx(g, A, mt.region, ['Deadly']), mt, 3);
-  assert.ok(!g.entity(id), 'R21: the {Deadly} hit killed it, three damage on a defense of six');
+  assert.ok(!g.entity(id), 'CR 802.3a: the {Deadly} hit killed it, three damage on a defense of six');
   assert.equal(tormentorTriggers(g), 0,
     'it did not survive the damage, so "whenever I survive damage" must not have fired — '
     + 'reading marked damage alone said it did, and then it died anyway');
@@ -255,7 +255,7 @@ test('Burgeon doubling a {Tough} unit\'s defense gives the printed number', () =
   const g = new E(h.state);
   const u = g.entity(id)!;
   assert.deepEqual(g.printedStats(u), [0, 4], 'printed 0/4');
-  assert.deepEqual(g.effStats(u), [0, 8], 'R19 layer 4: {Tough} doubles the defense to 8');
+  assert.deepEqual(g.effStats(u), [0, 8], 'CR 802.6 layer 4: {Tough} doubles the defense to 8');
   resolve(getCard('Burgeon').spellEffect!, g,
     { controller: A, sourceName: 'Burgeon', targets: [u], mode: 'defense' });
   assert.deepEqual(g.effStats(u), [0, 16],
@@ -281,7 +281,7 @@ test('Burgeon doubling a plain unit\'s defense still doubles it', () => {
 
 test('Surly Stalker doubling itself while its column shares {Tough} gives the printed number', () => {
   // TWO PRINTED CARDS, no virus donation: Surly Stalker prints no stat-layer
-  // attribute, but R19 shares one up and down a column, and Rampart Guardian
+  // attribute, but CR 802.1c shares one up and down a column, and Rampart Guardian
   // prints {Tough}. Attacking together is all it takes.
   const h = new Harness(14030);
   toDeployment(h);
@@ -292,7 +292,7 @@ test('Surly Stalker doubling itself while its column shares {Tough} gives the pr
   h.do({ type: 'declareAttack', seat: A, columns: [[id, rg]] });
   const g = new E(h.state);
   const u = g.entity(id)!;
-  assert.deepEqual(g.effStats(u), [4, 8], 'R19: the column shares {Tough}, so a 4/4 reads 4/8');
+  assert.deepEqual(g.effStats(u), [4, 8], 'CR 802.1c: the column shares {Tough}, so a 4/4 reads 4/8');
   resolve(getCard('Surly Stalker').abilities![0]!.effect, g,
     { controller: A, sourceId: id, sourceName: 'Surly Stalker' });
   assert.deepEqual(g.effStats(u), [8, 16],
@@ -342,7 +342,7 @@ test('Divine Intervention can keep one target while changing another', () => {
     + 'lead the menu; without it the permission is a requirement');
   assert.equal(menus['retarget:0:0']!.filter(l => l.includes('The Foretold')).length, 1,
     'the kept target is offered once, not twice under two labels');
-  // R307 / CT-189: this used to move the second target ONTO the first and
+  // CR 110.6 / CT-189: this used to move the second target ONTO the first and
   // assert [keep, keep] — one unit as two targets of one effect, the very
   // thing the owner's Twin Flame report is about. The kept first target is a
   // sibling of the second slot, so it is not on that slot's menu at all.

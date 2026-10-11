@@ -1,4 +1,4 @@
-/* R176 — `stripCode` can SEE. Measured, not assumed.
+/* `stripCode` can SEE. Measured, not assumed.
  *
  * WHY THIS FILE EXISTS
  *

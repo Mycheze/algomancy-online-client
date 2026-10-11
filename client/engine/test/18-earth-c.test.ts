@@ -27,7 +27,7 @@ function decide(h: Harness, match: (label: string, value: unknown) => boolean): 
   h.do({ type: 'decide', seat: dec.seat, choice: idx });
 }
 
-test('Roving Quillback: after the blocking step, 1 damage per blocked column to each opponent (R13 sticky blocks, R25)', () => {
+test('Roving Quillback: after the blocking step, 1 damage per blocked column to each opponent (CR 608.4c sticky blocks, CR 601.4d)', () => {
   const h = new Harness(1800);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -138,13 +138,13 @@ test('Skybreaker: paying "Erase me" negates all spell effects on the stack', () 
   assert.ok(!h.state.players[D]!.bin.includes('Skybreaker'), 'erased, not binned');
   assert.ok((h.state.players[D]!.erased ?? []).includes('Skybreaker'), 'the erased pile');
   pass(h); pass(h);                                     // resolve the ability → Boon negated
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Boon left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Boon left the stack at once');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the Boon was negated — no +4/+4');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'negated spell → bin');
   finishBattle(h);
 });
 
-test('Squish: target ally deals its defense to another unit (amount at resolution, R1)', () => {
+test('Squish: target ally deals its defense to another unit (amount at resolution, CR 107.8)', () => {
   const h = new Harness(1805);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -155,9 +155,9 @@ test('Squish: target ally deals its defense to another unit (amount at resolutio
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
   pick(h, { unit: whale });                             // slot 0: the ally
-  pick(h, { unit: vict });                              // slot 1: "another target unit" (R67, cast-time)
+  pick(h, { unit: vict });                              // slot 1: "another target unit" (CR 110.1a, cast-time)
   pass(h); pass(h);                                     // resolve
-  assignDefault(h);   // R340: the whale is {Piercing} — 3 over lethal, elect the default
+  assignDefault(h);   // CR 802.16j: the whale is {Piercing} — 3 over lethal, elect the default
   assert.ok(!ent(h, vict), 'the drifter took 5 (= whale defense) and died');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
   assert.equal(ent(h, whale)!.damage, 0, 'the ally itself is unharmed');
@@ -165,7 +165,7 @@ test('Squish: target ally deals its defense to another unit (amount at resolutio
   finishBattle(h);
 });
 
-test('Stoneborn Progenitor: one of your units survives damage → a 2/2 (once per turn, R9)', () => {
+test('Stoneborn Progenitor: one of your units survives damage → a 2/2 (once per turn, CR 109.9)', () => {
   const h = new Harness(1806);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -180,7 +180,7 @@ test('Stoneborn Progenitor: one of your units survives damage → a 2/2 (once pe
   assert.equal(made.length, 1, 'surviving damage → one 2/2');
   assert.deepEqual(effStats(h, made[0]!.id), [2, 2]);
   assert.ok(ent(h, stone), 'the Progenitor survived the block');
-  // bounded: a second surviving-damage event the same turn does nothing (R9)
+  // bounded: a second surviving-damage event the same turn does nothing (CR 109.9)
   const e = new E(h.state);
   e.dealEffectDamage(
     { controller: A, sourceName: 'Unit Token', region: h.state.entities[stone]!.region, targets: [], event: null,
@@ -196,7 +196,7 @@ test('Stoneborn Progenitor: one of your units survives damage → a 2/2 (once pe
 test('Swirling Shardform: spawning creates two dormant Shards', () => {
   // This test used to assert the PRISMITE approximation, which is how the bug
   // survived to the table: a prismite is exchangeable for any element during
-  // planning (R17) and a Shard is not, so the "approximation" was handing out
+  // planning (CR 106.8a, 106.9) and a Shard is not, so the "approximation" was handing out
   // the strongest resource in the game. See 48-playtest-hotfix.
   const h = new Harness(1807);
   toDeployment(h);
@@ -270,12 +270,12 @@ test('The Bonesculptor: play one ability-free unit from your bin each deployment
   assert.deepEqual(h.state.players[p]!.bin, ['Ignis Sprite', 'Channeled Boon'], 'it left the bin');
   assert.ok(h.state.players[p]!.resources.some(r => r.kind === 'water' && r.state === 'expended'),
     'its cost was paid');
-  // once per deployment: the bounded budget blocks a second activation (R9)
+  // once per deployment: the bounded budget blocks a second activation (CR 109.9)
   assert.throws(() => h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 }),
     /already used this turn/);
 });
 
-test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not offered (R64)', () => {
+test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not offered (CR 110.3a)', () => {
   const h = new Harness(1811);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -291,7 +291,7 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
   pass(h); pass(h);
   assert.ok(!ent(h, big), '5 defense ≥ 4 → deleted');
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'));
-  // R64: "with 4 or more defense" gates the candidate list — a 2/2 is not on
+  // CR 110.3a: "with 4 or more defense" gates the candidate list — a 2/2 is not on
   // it, and neither is the 1/1 attacker. Only the second Whale is offered.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Throw off a Cliff') });
   notOffered(h, { unit: small }, '2 defense < 4');
@@ -304,7 +304,7 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
   finishBattle(h);
 });
 
-/* ── Throwing Boulder (R77) ───────────────────────────────────────────────
+/* ── Throwing Boulder (CR 111.7b) ───────────────────────────────────────────────
  *
  * Playtest XCYX, 2026-08-22: "Throwing Boulder was allowed to be activated
  * without having adjacent allies. It didn't resolve, but it shouldn't have been
@@ -316,7 +316,7 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
  * activated, and then resolved into nothing.
  */
 
-test('R77: Throwing Boulder with an adjacent ally — offered, and it connects', () => {
+test('CR 111.7b: Throwing Boulder with an adjacent ally — offered, and it connects', () => {
   const h = new Harness(1812);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -328,7 +328,7 @@ test('R77: Throwing Boulder with an adjacent ally — offered, and it connects',
     a.type === 'activateAbility' && a.entityId === boulder), 'it is offered');
   h.do({ type: 'activateAbility', seat: A, entityId: boulder, abilityIndex: 0, via: 'augment' });
   pick(h, { player: D });
-  // R49/R57/R73: the sacrifice is the COST, paid on the way to the stack —
+  // CR 111.7a: the sacrifice is the COST, paid on the way to the stack —
   // the Boulder is already gone while its ability is still waiting to resolve
   assert.ok(!ent(h, boulder), 'sacrificed to put the ability on the stack');
   assert.ok(h.state.players[A]!.bin.includes('Throwing Boulder'), '→ bin');
@@ -339,7 +339,7 @@ test('R77: Throwing Boulder with an adjacent ally — offered, and it connects',
   finishBattle(h);
 });
 
-test('R77: with NO adjacent ally the ability is not offered, and apply() refuses it', () => {
+test('CR 111.7b: with NO adjacent ally the ability is not offered, and apply() refuses it', () => {
   const h = new Harness(1813);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -348,7 +348,7 @@ test('R77: with NO adjacent ally the ability is not offered, and apply() refuses
   h.do({ type: 'declareAttack', seat: A, columns: [[b]] });                 // attacking alone
   assert.ok(!legalActions(h.state, A).some(a =>
     a.type === 'activateAbility' && a.entityId === b),
-    'an ability you cannot use is not offered (R64)');
+    'an ability you cannot use is not offered (CR 705.3a)');
   assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: b, abilityIndex: 0, via: 'augment' }),
     (err: unknown) => err instanceof IllegalAction,
     '…and it is refused, rather than activated and then resolving into nothing');
@@ -357,7 +357,7 @@ test('R77: with NO adjacent ally the ability is not offered, and apply() refuses
   finishBattle(h);
 });
 
-test('R77: an ALLY is required — an adjacent enemy does not unlock it', () => {
+test('CR 111.7b: an ALLY is required — an adjacent enemy does not unlock it', () => {
   const h = new Harness(1818);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -372,8 +372,8 @@ test('R77: an ALLY is required — an adjacent enemy does not unlock it', () => 
   finishBattle(h);
 });
 
-test('R77: out of formation there are no adjacent slots at all, so it is never offered', () => {
-  // R75: "adjacent slots … only exist if it's in a formation". During
+test('CR 111.7b: out of formation there are no adjacent slots at all, so it is never offered', () => {
+  // The owner (now CR 603.2b): "adjacent slots … only exist if it's in a formation". During
   // deployment the Boulder is standing in its region, not in a line.
   const h = new Harness(1819);
   toDeployment(h);
@@ -399,7 +399,7 @@ test('Towering Colossus: "Enemies gain +2/+2" — attackers entering its region 
   const tc = spawn(h, D, 'Towering Colossus');
   const dTok = spawn(h, D, 'Unit Token');
   const aTok = spawn(h, A, 'Unit Token');
-  assert.deepEqual(effStats(h, aTok), [1, 1], 'still at home — another region, unaffected (R12)');
+  assert.deepEqual(effStats(h, aTok), [1, 1], 'still at home — another region, unaffected (CR 601.1a)');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[aTok]] });
   assert.deepEqual(effStats(h, aTok), [3, 3], "entering the Colossus's region: the enemy 1/1 is a live 3/3");
@@ -420,7 +420,7 @@ test('Tranquility: 3/4 body registers and plays', () => {
 });
 
 test('Tranquility: the [Augment] tax is DONATED — it radiates from the mod too', () => {
-  // UN-PARKED (R59). This used to be a todo reading "needs canPayCard/payCard
+  // UN-PARKED (CR 111.10). This used to be a todo reading "needs canPayCard/payCard
   // to consult in-play cost modifiers"; CostMod is that hook, and 49-playtest-
   // round6 covers the unit form end to end. What belongs here is the donated
   // half: costModsFor() anchors a mod's CostMod on its HOST (E.anchored), so

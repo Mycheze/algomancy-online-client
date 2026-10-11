@@ -43,7 +43,7 @@ test('a playback holds the screen through an arrival, and says "done" once, when
   assert.match(ui.html(), /promptbar playbar/, 'the frame is on screen as a playback');
   assert.match(ui.html(), /1\/1/);
   // the opponent's planning click: an update this seat COULD act on, which
-  // under R150's rule would flush the queue — it must wait behind the playback
+  // under CR D5.4c's rule would flush the queue — it must wait behind the playback
   ui.push({ t: 'update', view: v, legal: legalActions(h.state, SEAT), events: [] });
   assert.match(ui.html(), /promptbar playbar/, 'an arrival during the playback does not end it');
   assert.ok(!ui.sent().some(m => m['t'] === 'playbackdone'), 'and nothing has said "done" yet');

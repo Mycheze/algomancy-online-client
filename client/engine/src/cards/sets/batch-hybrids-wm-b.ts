@@ -7,95 +7,94 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded
- * [Switch1]/[once] budgets per card), R12/R25 ("each player/opponent" and
- * region-scoped listeners read the event region), R27 ("in my formation"
- * counts are live at resolution), R115 (created UNITS arrive where their
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.1a (mid-resolution payments/choices via ctx.choose), CR 803.4 (bounded
+ * [Switch1]/[once] budgets per card), CR 601.1d, 601.4d ("each player/opponent" and
+ * region-scoped listeners read the event region), CR 602.6h ("in my formation"
+ * counts are live at resolution), CR 601.5 (created UNITS arrive where their
  * SOURCE is — ctx.region — exactly where spell tokens always stayed),
- * R31 (combat-damage-sub-step triggers resolve immediately).
+ * CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - RESOLUTION-TIME COSTS: only Abduct's "unless its controller pays [x]"
- *    ransom is left, and an R6 ransom is a mid-resolution choice by design —
+ *    ransom is left, and a CR 702.5a ransom is a mid-resolution choice by design —
  *    it is the OPPONENT's decision, made after the spell resolved. This entry
- *    used to name AURIC ASCENDANT's "Recall another ally" beside it; R196 made
+ *    used to name AURIC ASCENDANT's "Recall another ally" beside it; the engine made
  *    that a real `castCost` (`kind: 'recallUnit'`), paid in the cast window,
  *    so with no other ally the ability is not offered at all rather than
  *    resolving without effect. Volatile Toxicity's "/[Sacrifice a unit]" has
- *    been a true CAST COST since R35.
+ *    been a true CAST COST (CR 702.4).
  *  - X SPELLS (Abduct, Floral Singularity): X is chosen and paid AT CAST
- *    (R35) and stored on the item. Abduct's "with cost [x] or less" is a real
- *    TARGETING restriction — R64 put the item's X on TargetCtx (dsl.ts names
+ *    (CR 107.2a) and stored on the item. Abduct's "with cost [x] or less" is a real
+ *    TARGETING restriction (CR 110.3a) — the engine put the item's X on TargetCtx (dsl.ts names
  *    Abduct in that field's doc), so only units it can legally reach are
  *    offered. This entry used to say it was "still checked at RESOLUTION
  *    (TargetSpec cannot read x at cast time)".
  * ✔ GAIN CONTROL (Abduct, Mindwarp Sporefrog) IS E.giveControl, and it is no
  *    longer an approximation. This entry used to read "flipping Entity
- *    .controller … walks to its new controller's home at regroup". R112 made
- *    it whole: the unit's MODS change controller with it, the unit leaves any
+ *    .controller … walks to its new controller's home at regroup". It is whole
+ *    now (CR 711): the unit's MODS change controller with it, the unit leaves any
  *    formation it fought in (it fights for neither side for the rest of the
  *    battle), and it moves to the new controller's home IMMEDIATELY when that
  *    seat is not present in the region it is standing in — mods and all —
- *    rather than waiting for regroup. Its owner is unchanged, so recall/death
- *    still send the card to the owner's hand/bin (R65).
- * ✔ ROTSPORE HERALD's "Everything is deadly" is LITERAL as of R125. This entry
+ *    rather than waiting for regroup. Its owner is unchanged (CR 102.4), but recall/death send the card to its controller's hand/bin (CR 400.4).
+ * ✔ ROTSPORE HERALD's "Everything is deadly" is LITERAL (CR 707.7). This entry
  *    used to end "whether everything should reach non-unit sources needs a
  *    ruling, not a guess" — the owner ruled 2026-08-24 that it reaches all
  *    spells and spell tokens, "literally everything in its region". The card
  *    carries BOTH attribute channels now: a `statics` mod with no kind filter
  *    (so units AND spell tokens in the region wear {Deadly}, both sides,
- *    itself included) and an R94 `effectAttrs` mod (so a resolving SPELL,
+ *    itself included) and an `effectAttrs` mod (so a resolving SPELL,
  *    which has no entity and would otherwise read only printed attrs, is
  *    deadly-fied through `EffectCtx.grantedAttrs`). COMBAT reads the first
  *    via column attrs. All four reads pinned in 107-semantics-statics,
  *    including the REGION boundary — a Herald elsewhere deadly-fies nothing.
  *  - TEMPORAL RIFT's "End this battle": every remaining stack item is
- *    negated, which under R68 is itself the removal — the item leaves the
+ *    negated, which under CR 704.4, 704.4a is itself the removal — the item leaves the
  *    stack and its card is binned by negate() — then the battle round ends
  *    via the engine's endBattleRound.
  * ✔ TEMPORAL RIFT's "Erase this spell" is REAL as of CARD-TODO #15. This entry
  *    used to say "resolution has no erase-own-card hook"; it has one now —
  *    `ctx.eraseSelf()` raises `StackItem.eraseSelf` and `E.dischargeItem`
- *    sends the card to the erased pile (R65) instead of the bin. The Rift's own
+ *    sends the card to the erased pile (CR 407.1) instead of the bin. The Rift's own
  *    item is already off the stack when its effect runs (resolveTop pops it),
  *    so neither the negate sweep nor endBattleRound can dispose of it first —
  *    see the ordering note on the card. ⚠ A NEGATED Rift is still binned: the
- *    erase is a sentence of the effect, and R68 says a negated effect does
+ *    erase is a sentence of the effect, and CR 406.4b says a negated effect does
  *    nothing.
- *  - DEMATERIALIZE's "target effect" is R60's 'stackEffect' — the SUPERSET:
+ *  - DEMATERIALIZE's "target effect" is 'stackEffect' (CR 700.1) — the SUPERSET:
  *    spells, spell units, spell tokens and ambushes PLUS triggered and
  *    activated abilities and viruses, because the pool's other cards spell out
  *    "target SPELL effect" when they mean the narrow one. (This entry used to
  *    read "= the engine's 'stackSpell' targets … triggered/activated items are
  *    not targetable".) Glimpse 3 is real
- *    (R45, E.glimpse): three are revealed, ONE of the glimpser's choice is
+ *    (CR 801.9, E.glimpse): three are revealed, ONE of the glimpser's choice is
  *    cached (playable until end of turn, ignoring affinity) and the other two
  *    are recycled — it used to keep one card, permanently, in hand.
  *  - AETHERCAP SIPHONER: NO LONGER an approximation. This entry used to read
  *    '"spawns with" its three -1/-1 counters via an on-spawn self trigger —
  *    the counters land immediately after the spawn event rather than being on
- *    the unit as it spawns'. R165 made that a DECLARATION on the card
+ *    the unit as it spawns'. Per CR 301.8 that is now a DECLARATION on the card
  *    (`spawnsWithCounters: -3`) which E.spawnUnit applies before the event, so
  *    the card is the 1/1 it prints at the moment every watcher reads it.
  *  - GALACTIC GERMINATION's "target formation" is proxied by targeting a
  *    UNIT: the formation is the battle grid side (attacking columns or
- *    blocking columns) containing it, counted live at resolution (R27); a
+ *    blocking columns) containing it, counted live at resolution (CR 107.8); a
  *    target in no formation creates nothing. The 1/1s arrive at ctx.region
- *    (R115) — cast in the enemy region, they stay there.
+ *    (CR 304.8a) — cast in the enemy region, they stay there.
  *  - FLORAL SINGULARITY's "become base X/X" is a REAL layer-2 replacement
- *    (R66's E.setBase): the number on the card changes, so a later base-setter
+ *    (E.setBase, CR 206.5): the number on the card changes, so a later base-setter
  *    overwrites an earlier one instead of stacking, and counters / statics /
  *    until-regroup deltas still apply on top. This entry used to describe the
  *    old approximation ("until-regroup temp stats … no base-setting layer
  *    exists"), which the card stopped using.
- *  - "EACH ENEMY" / "each unit" / "all tokens" are region-scoped (R12/R25):
+ *  - "EACH ENEMY" / "each unit" / "all tokens" are region-scoped (CR 601.1b, 601.4d):
  *    only the event region's units/players are touched.
  *
- * UNPARKED by the R49/R50/R51 engine wave:
+ * UNPARKED by the costs, events and zone-trigger engine wave:
  *  - Invasive Species: "At the start of deployment, recall all your other
- *    units" is a plain triggered ability on R50's 'startOfDeployment' event,
- *    which fires inside a settle() window after R38's rot damage.
+ *    units" is a plain triggered ability on the 'startOfDeployment' event,
+ *    which fires inside a settle() window after the rot damage (CR 507.4).
  *
  * PARKED (needs engine machinery that does not exist yet):
  *  - no whole card is parked in this batch any more; the remaining gaps are
@@ -108,7 +107,7 @@ import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
+/** Glimpse N for a seat (CR 801.9) — reveal the top N, cache exactly ONE of the
  * glimpser's choice (playable until end of turn ignoring affinity; mana and
  * timing still apply) and recycle the rest to the bottom of the deck. N > 1
  * raises the choose-one decision inside E.glimpse, so this CAN suspend. */
@@ -121,7 +120,7 @@ function glimpse(g: E, seat: Seat, n: number): void {
 // "[Augment] After combat, put a -1/-1 counter on each unit, then I deal 2
 // damage to each player." — rg/4 3/5 Infernal Fungus Unit. Text-box
 // [Augment], live when played normally (Manual Q&A). "Each unit" / "each
-// player" are region-scoped (R12/R25): every unit in the battle region gets
+// player" are region-scoped (CR 601.1b, 601.4d): every unit in the battle region gets
 // the counter (both sides, the carrier included), then every present player
 // takes 2 from me. Counter deaths land before the player damage.
 card('Infernal Grovekeeper', {
@@ -131,7 +130,7 @@ card('Infernal Grovekeeper', {
     effect: {
       run: (g, ctx) => {
         for (const u of g.unitsIn(ctx.region).slice()) g.addCounters(u, -1);
-        g.dealEffectDamageAll(ctx,   // R80: "each player" is one batch
+        g.dealEffectDamageAll(ctx,   // CR 112.8: "each player" is one batch
           g.s.regions[ctx.region]!.presentSeats.map(s => ({ target: { player: s as Seat }, n: 2 })));
       },
     },
@@ -143,7 +142,7 @@ card('Infernal Grovekeeper', {
 // ([Augment] statics transfer with the card; `augmentable` marks it an
 // augment despite granting no type-line attrs).
 //
-// R125 — EVERYTHING MEANS EVERYTHING (owner, 2026-08-24): *"Rotspore also
+// CR 707.7 — EVERYTHING MEANS EVERYTHING (owner, 2026-08-24): *"Rotspore also
 // applies to all spells and spell tokens. Literally everything in its region.
 // I think you're underestimating most cards. All the cards in Algomancy are
 // pretty literal."* So the card is read at its word and the scope is the
@@ -154,7 +153,7 @@ card('Infernal Grovekeeper', {
 // source two different ways (see `dealEffectDamageAll`): a source with an
 // entity in play reads live `ownAttrs` — which is the `statics` mod below,
 // now unfiltered by kind — while a resolving SPELL has no entity at all and
-// reads its printed attrs plus `EffectCtx.grantedAttrs`, which is R94's
+// reads its printed attrs plus `EffectCtx.grantedAttrs`, which is the
 // `effectAttrs` channel. One card, one sentence, two mechanisms: a spell that
 // deals 1 damage in this region kills whatever it hits, and so does a
 // Fireball token standing here.
@@ -164,7 +163,7 @@ card('Infernal Grovekeeper', {
 // underestimation the ruling corrects.
 card('Rotspore Herald', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -180,11 +179,11 @@ card('Rotspore Herald', {
 
 // "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X
 // is the defense of the sacrificed unit." — rg/2 4/2 {Battle} Infernal
-// Blight Spell. The bracketed sacrifice is a CAST COST (R35): chosen and
+// Blight Spell. The bracketed sacrifice is a CAST COST (CR 702.4): chosen and
 // paid before the spell reaches the stack (a grafted rider pays — or
 // declines — at composite cast time). X = the sacrificed unit's defense
 // SNAPSHOTTED at payment (effStats then); the spell tokens appear at the
-// resolution region (R115). Unbounded
+// resolution region (CR 601.5). Unbounded
 // graft ([Switch]).
 const toxicityBrew: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
@@ -205,20 +204,20 @@ card('Volatile Toxicity', {
 // ─────────────────────── WATER / METAL (bm) ───────────────────────────
 
 // "[once] [one], Recall another ally: I gain {g}flying and +2/+0 until
-// regroup." — bm/2 2/1 Mystic Avatar Unit. [once] = bounded (R9).
+// regroup." — bm/2 2/1 Mystic Avatar Unit. [once] = bounded (CR 109.9).
 //
-// R196 — BOTH HALVES OF THE COST ARE PAID IN THE CAST WINDOW NOW. The [one]
+// CR 111.7 — BOTH HALVES OF THE COST ARE PAID IN THE CAST WINDOW NOW. The [one]
 // always was (`AbilityCost.mana`, charged by `E.payActivationCost`); the
 // RECALL was picked at RESOLUTION, so the item reached the stack without
-// naming which ally was going away and the opponent answered blind. R157 §21
+// naming which ally was going away and the opponent answered blind. CR 705.1
 // settles it: everything before the colon is a COST, fixed when the item goes
 // on the stack. `castCost: { kind: 'recallUnit' }` is that half.
 //
 // ⚠ IT CHANGES WHEN THE [once] IS SPENT, and deliberately. This run used to
-// carry a "no other ally to recall — no effect" branch that R113 put in the
+// carry a "no other ally to recall — no effect" branch in the
 // SPENDS family (you activated it and whiffed). A cost cannot whiff: with no
 // other ally the recall is unpayable, so `abilityUnusable` never offers the
-// ability, the [one] is never paid and the use is never spent. That is R49's
+// ability, the [one] is never paid and the use is never spent. That is CR 705.4's
 // reading and it is the same one `canPayCastCost` gives Deformant's "me and
 // another ally" — an ability you cannot pay for is not offered, not fizzled.
 //
@@ -233,7 +232,7 @@ card('Auric Ascendant', {
       castCost: { kind: 'recallUnit' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // R113: an ACTIVATED [once] with no "you may" in it. The cost is paid;
+        // CR 109.9a: an ACTIVATED [once] with no "you may" in it. The cost is paid;
         // a carrier removed in response does not hand the use back.
         if (!self) { g.ev('info', 'Auric Ascendant: the carrier is gone — no {Flying}, no +2/+0.'); return; }
         g.addTempAttr(self, 'Flying');
@@ -244,12 +243,12 @@ card('Auric Ascendant', {
 });
 
 // "Negate target effect. Its controller Glimpses 3." — bm/2 2/1 {Battle}
-// Cosmic Technology Spell. R60: "target effect" is the SUPERSET ('stackEffect'
+// Cosmic Technology Spell. CR 700.1: "target effect" is the SUPERSET ('stackEffect'
 // — abilities and viruses too), which is what the spec six lines below says;
 // the "⚠ = stack spells/spell units/spell tokens/ambushes" line that used to
-// sit here contradicted it. The Glimpse is the real R45 one. It goes to
+// sit here contradicted it. The Glimpse is the real CR 801.9 one. It goes to
 // the negated item's controller, whoever that is (it can be the caster's own
-// effect). R40: negating is not trashing — the negated card comes off the
+// effect). CR 801.2b: negating is not trashing — the negated card comes off the
 // STACK — so no 'trashed' fires for the card Dematerialize answers.
 card('Dematerialize', {
   spellEffect: {
@@ -271,7 +270,7 @@ card('Dematerialize', {
 
 // "End this battle. Erase this spell. (Negate all effects, this battle is
 // over.)" — bmm/4 1/2 {Battle} Temporal Arcane Spell. ⚠ header: every
-// remaining stack item is negated — which under R68 is itself the removal,
+// remaining stack item is negated — which under CR 704.4 is itself the removal,
 // card and all — then endBattleRound() runs — in round 1 with no sent
 // counterattackers that cascades straight through round 2 into regroup.
 //
@@ -298,11 +297,11 @@ card('Temporal Rift', {
     run: (g, ctx) => {
       ctx.eraseSelf();
       if (!g.s.battle) { g.ev('info', 'Temporal Rift: no battle to end.'); return; }
-      // R68: negate() is the removal — it splices the item off the stack and
+      // CR 704.4, 704.4a: negate() is the removal — it splices the item off the stack and
       // bins its card itself, so the sweep runs over a copy and hand-rolls
       // nothing. This used to push the card a SECOND time and then clear the
       // stack by hand.
-      // R128: "(Negate all effects, this battle is over.)" really is all of
+      // CR 700.1, 704.4b: "(Negate all effects, this battle is over.)" really is all of
       // them — a {Battle} unit mid-cast never arrives. Confirmed, not narrowed.
       for (const it of [...g.s.stack]) g.negate(it.id);
       g.ev('info', 'Temporal Rift: all effects are negated — the battle is over.');
@@ -315,7 +314,7 @@ card('Temporal Rift', {
 // {i1}or defense] until regroup." — bm/4 5/4 Jellyfish Oracle Unit. Text-box
 // [Augment]; "ally" reads from the carrier's side (host perspective when
 // donated). The doubled AMOUNT is still the unit's live effective stat at
-// resolution (R1) — but R57 moves WHICH HALF into the cast window, where the
+// resolution (CR 109.3b) — but CR 205.3a moves WHICH HALF into the cast window, where the
 // trigger's `item.event` already names the unit that spawned, so the labels
 // can show the numbers without the opponent's response having moved them.
 const enigmaSpawnedUnit = (g: E, item: { event?: EngineEvent | null }): Entity | undefined => {
@@ -338,7 +337,7 @@ card('Transmutide Enigma', {
         options: (g, item) => {
           const u = enigmaSpawnedUnit(g, item);
           const [p, t] = u ? g.effStats(u) : [0, 0];
-          // R284 `half`: printed "[power {i1}or defense]"
+          // CR D6.10a `half`: printed "[power {i1}or defense]"
           return [
             { label: u ? `Double its power (+${p}/+0)` : 'Double its power', value: 'power', half: 0 },
             { label: u ? `Double its defense (+0/+${t})` : 'Double its defense', value: 'defense', half: 1 },
@@ -353,7 +352,7 @@ card('Transmutide Enigma', {
           return;
         }
         const [p, t] = g.effStats(u);
-        const mode = ctx.mode;   // R57: declared at cast
+        const mode = ctx.mode;   // CR 702.5: declared at cast
         if (mode === 'power') g.addTemp(u, p, 0);
         else g.addTemp(u, 0, t);
       },
@@ -365,14 +364,14 @@ card('Transmutide Enigma', {
 
 // "Gain control of target unit with cost [x] or less unless its controller
 // pays [x]." — gm/X 2/2 {Battle} Alien Spell. X is chosen and paid AT CAST
-// (R35), which is why the cost bar can be a real TARGETING RESTRICTION
-// (R64: TargetCtx carries the item's X) — only units it can actually take are
-// offered, and the resolution check stays for R5/R56; the ransom is a mid-resolution
-// pay-or-decline (R6) for the target's controller, skipped when they cannot
+// (CR 107.2a), which is why the cost bar can be a real TARGETING RESTRICTION
+// (CR 110.3a: TargetCtx carries the item's X) — only units it can actually take are
+// offered, and the resolution check stays for CR 704.5, 704.6; the ransom is a mid-resolution
+// pay-or-decline (CR 702.5a) for the target's controller, skipped when they cannot
 // pay (x more than their open mana). Control flip per the header's
-// E.giveControl (R112): the unit and its mods change controller.
+// E.giveControl (CR 711.2): the unit and its mods change controller.
 //
-// R157 §1 (an X card's cost is the X paid for it) does NOT reach the cost bar
+// CR 111.11 does NOT reach the cost bar
 // here, and that was checked rather than assumed: the bar is read off a UNIT
 // IN PLAY, and all eleven `mana: 'X'` cards in the pool are `kind: 'spell'` —
 // none of them can ever be a unit. `manaOf` is the right read.
@@ -380,10 +379,10 @@ card('Abduct', {
   spellEffect: {
     targets: {
       what: 'unit', prompt: 'Abduct: gain control of target unit (cost [x] or less)',
-      restrict: unitRestrict((g, u, ctx) => g.costOf(u) <= (ctx.x ?? 0)),   // R336: the face's cost
+      restrict: unitRestrict((g, u, ctx) => g.costOf(u) <= (ctx.x ?? 0)),   // CR 710.1a: the face's cost
     },
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
+      const x = ctx.x ?? 0;   // chosen and paid at cast (CR 107.2a)
       const t = ctx.targets[0];
       if (!isEnt(t)) return;
       const u = t as Entity;
@@ -418,15 +417,15 @@ card('Abduct', {
 
 // "/[Create X 1/1 units {i1}or your units become base X/X until regroup]."
 // — ggm/X 2/2 Cosmic Flower Spell (deploy timing). X is chosen and paid AT
-// CAST (R35). Modal: the caster picks. Created UNITS arrive at the source's
-// region (R115) — home for a deploy cast. "Become base X/X" is a layer-2 REWRITE
-// (E.setBase) of every one of your units in the resolution region (R12) —
+// CAST (CR 107.2a). Modal: the caster picks. Created UNITS arrive at the source's
+// region (CR 601.5) — home for a deploy cast. "Become base X/X" is a layer-2 REWRITE
+// (E.setBase) of every one of your units in the resolution region (CR 601.1b) —
 // counters and other layer-3 changes keep applying on top, and X = 0 defense
 // kills anything that is not propped up (E.setBase runs the death check).
 card('Floral Singularity', {
   spellEffect: {
     creates: ['Unit Token'],
-    // R57: which half, declared in the cast window. X is fixed by then
+    // CR 702.5: which half, declared in the cast window. X is fixed by then
     // (collectX runs first), so the labels can name it — and an X = 0 cast is
     // a guaranteed no-op either way, so it is not worth a question.
     modes: {
@@ -438,7 +437,7 @@ card('Floral Singularity', {
       options: (_g, item) => {
         const x = item.x ?? 0;
         if (x <= 0) return [];
-        // R284 `half`: printed "[Create X 1/1 units {i1}or your units become
+        // CR D6.10a `half`: printed "[Create X 1/1 units {i1}or your units become
         // base X/X until regroup]"
         return [
           { label: `Create ${x} 1/1 unit token(s)`, value: 'create', half: 0 },
@@ -447,9 +446,9 @@ card('Floral Singularity', {
       },
     },
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
+      const x = ctx.x ?? 0;   // chosen and paid at cast (CR 107.2a)
       if (x <= 0) { g.ev('info', 'Floral Singularity: X = 0 — no effect.'); return; }
-      const mode = ctx.mode;   // R57: declared at cast
+      const mode = ctx.mode;   // CR 702.5: declared at cast
       if (mode === 'create') {
         for (let i = 0; i < x; i++) {
           g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
@@ -468,7 +467,7 @@ card('Floral Singularity', {
 // Text-box [Augment], live when played normally.
 //
 // "ALL TOKENS" IS UNQUALIFIED BY KIND, and the engine has THREE token shapes,
-// not two (the R125 reading: the printed text carries no qualifier, so do not
+// not two (the CR 300.5c reading: the printed text carries no qualifier, so do not
 // invent one out of whichever shapes the sweep happened to know about):
 //   · kind 'unit'      — a unit token, deleted through destroy() so formation
 //                        cleanup and death bookkeeping run (a deleted token is
@@ -481,12 +480,12 @@ card('Floral Singularity', {
 //                        them by the X-full), and it used to walk out of
 //                        "delete all tokens" untouched because the sweep could
 //                        only see bodies. A mod carries `region: host.region`
-//                        (attachMod), so R12 scopes it for free; it is deleted
+//                        (attachMod), so CR 601.1c scopes it for free; it is deleted
 //                        the way Reclaim the Fallen and eraseUnit take a mod
 //                        off a host — unlink from `host.mods`, then delete —
 //                        because a mod is not a body and has no death of its
 //                        own to run.
-// Region-scoped throughout (R12 — other regions don't exist for this).
+// Region-scoped throughout (CR 601.1a — other regions don't exist for this).
 card('Ominous Growth', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -504,16 +503,16 @@ card('Ominous Growth', {
             deleted++;
           }
         }
-        // the third shape: a TOKEN MOD riding on a host (R71's Wraith). The
+        // the third shape: a TOKEN MOD riding on a host (CR 721.6's Wraith). The
         // host survives — the token is the augment, not the unit wearing it.
         for (const m of Object.values(g.s.entities)) {
           if (m.kind !== 'mod' || !m.token || m.region !== ctx.region) continue;
           const host = m.modOf !== undefined ? g.entity(m.modOf) : undefined;
-          // R208 / CT-86: through `E.eraseMod` — the unlink-and-delete pair
+          // CR 720.9 / CT-86: through `E.eraseMod` — the unlink-and-delete pair
           // this used to hand-roll is a primitive now, and this is one of five
           // sites that had its own copy. ⚠ The 'info' line below is unchanged
-          // on purpose: whether an erased mod reaches the R65 public pile is
-          // round-27's Q3, unanswered. (These are TOKEN mods, so R69 may
+          // on purpose: whether an erased mod reaches the public erased pile was
+          // round-27's Q3; CR 407.2 now answers it. (These are TOKEN mods, so CR 410.4c may
           // exempt them from that question entirely — a token has no card of
           // its own to file. Named here so it is not re-derived.)
           g.eraseMod(m);
@@ -533,9 +532,9 @@ card('Ominous Growth', {
 // Unit. Text-box [Augment]; "me" = the carrier (host perspective when
 // donated). ANY player's unit token in my region triggers it (no "your").
 //
-// R129 — WHICH TOKENS THIS ONE MEANS: only UNIT tokens, and the printed word
+// CR 304.11h — WHICH TOKENS THIS ONE MEANS: only UNIT tokens, and the printed word
 // "unit" is why. The engine dispatches 'tokenCreated' for SPELL tokens now
-// (Mycelial Mentor's half of R129), so a card that means every token listens
+// (Mycelial Mentor's case, CR 300.5c), so a card that means every token listens
 // to BOTH events; this one deliberately listens to 'spawned' alone and its
 // `when` reads `data.unit`, neither of which a spell token ever produces. A
 // Poison is not a body, has no stats and could not take the +1/+1 the second
@@ -566,21 +565,21 @@ card('The World Shepherd', {
 
 // "[Switch1] /[Put a -1/-1 counter on each enemy or{i1} put a +1/+1 counter
 // on each of your units.]" — gm/3 1/2 {Battle} Arcane Druid Spell. Modal:
-// R57 — the controller declares the half in the CAST window (`EffectDef.modes`),
+// CR 702.5 — the controller declares the half in the CAST window (`EffectDef.modes`),
 // so the item reaches the stack saying which one it is and the opponent
 // responds to a fully declared effect. It used to be a mid-resolution
 // ctx.choose with a silent auto-pick of 'bloom' during end-of-turn resolution;
 // that auto-pick is gone, because E.finishTurnEnd resumes out of settle() and
 // the cast window already suspends there for targets. "Each enemy" / "your
-// units" are the resolution region's units (R12/R25). Bounded graft
-// ([Switch1], R9) — and because `modes` is declared per EFFECT, a Wither and
+// units" are the resolution region's units (CR 601.1b, 601.4d). Bounded graft
+// ([Switch1], CR 722.5) — and because `modes` is declared per EFFECT, a Wither and
 // Bloom grafted onto a carrier that already has one asks twice.
 const witherOrBloom: EffectDef = {
   modes: {
     key: 'mode',
     prompt: () =>
       'Wither and Bloom: a -1/-1 counter on each enemy, or a +1/+1 counter on each of your units?',
-    // R284 `half`: printed "[Put a -1/-1 counter on each enemy or{i1} put a
+    // CR D6.10a `half`: printed "[Put a -1/-1 counter on each enemy or{i1} put a
     // +1/+1 counter on each of your units.]" — neither VALUE appears in the
     // printed words, which is the other reason `half` is declared and not
     // guessed from the text.
@@ -590,7 +589,7 @@ const witherOrBloom: EffectDef = {
     ],
   },
   run: (g, ctx) => {
-    const mode = ctx.mode;   // R57: declared at cast
+    const mode = ctx.mode;   // CR 702.5: declared at cast
     const pool = mode === 'wither'
       ? g.unitsIn(ctx.region).filter(u => u.controller !== ctx.controller)
       : g.unitsOf(ctx.controller, ctx.region);
@@ -612,10 +611,10 @@ card('Wither and Bloom', {
 // nontoken spell, you may move a counter from me onto another target unit."
 // — gb/3 4/4 Cosmic Fungus Blight Unit.
 //
-// R165: the spawn clause is `spawnsWithCounters: -3` — a DECLARATION about the
+// CR 707.5: the spawn clause is `spawnsWithCounters: -3` — a DECLARATION about the
 // body, applied by E.spawnUnit before the 'spawned' event fires. It used to be
 // an ordinary on-spawn self trigger, which is a contradiction in terms: a
-// trigger cannot run before the event that raised it (R147), so this card
+// trigger cannot run before the event that raised it, so this card
 // stood on the board as a 4/4 for the whole of its own spawn and only became
 // the 1/1 it prints a resolution later. Iyngstra ("gain life equal to their
 // defense") gained 4, and the caster was stopped and asked to ORDER their own
@@ -631,15 +630,15 @@ card('Wither and Bloom', {
 // must not differ about whether there is.
 //
 // Nothing else about the number moved: it is still SIGNED, still
-// silent (no countersChanged — R130: nobody PUTS a spawn's own counters on
-// it), and it still reaches R104's amount layer, so an allied Flux Resonator
+// silent (no countersChanged — CR 707.5a: nobody PUTS a spawn's own counters on
+// it), and it still reaches the amount layer (CR 708.5), so an allied Flux Resonator
 // still makes it -4 exactly as the addCounters call it replaced did.
 //
 // The [Augment] clause transfers: "me" = the carrier, "you" = its
 // controller; "a counter" is one of the NET counters (the engine's signed
 // counter model — pairs cancel, Manual), so a -1/-1 moves while net
 // negative and a +1/+1 moves while net positive; nothing moves at net 0.
-// R64: "another target unit" is a declared target chosen as the trigger goes
+// CR 110.1a, 110.4d: "another target unit" is a declared target chosen as the trigger goes
 // on the stack (min 0 carries the "may"), and "another" excludes the carrier.
 card('Aethercap Siphoner', {
   spawnsWithCounters: -3,
@@ -655,7 +654,7 @@ card('Aethercap Siphoner', {
       },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // R166: each of these three is a reachable decline, and test/65 is
+        // each of these three is a reachable decline, and test/65 is
         // right that a decline has to SAY so — `min: 0` means "no target" is
         // the ordinary answer, not an error.
         if (!self || self.counters === 0) {
@@ -683,17 +682,17 @@ card('Aethercap Siphoner', {
 // "Create a 1/1 unit for each unit in target formation." — bg/3 5/1
 // {Battle} Alien Fungus Spell.
 //
-// R184: it TARGETS A FORMATION, for real. This used to be proxied by a target
+// CR 110.3d: it TARGETS A FORMATION, for real. This used to be proxied by a target
 // UNIT, and the grid side containing that unit was taken as the formation —
 // which counted correctly (the owner confirmed on 2026-08-25 that "target
 // formation" is THE WHOLE SIDE, so the count was never the problem) but lied
 // about everything else: the log said it targeted a unit, a retarget effect
 // offered units, and no restriction or listener could read a formation as one.
 // `TargetRef` has a formation arm now and this card uses it; the COUNT is
-// unchanged, read live at resolution off `E.formationUnits` (R27/R72 — the
+// unchanged, read live at resolution off `E.formationUnits` (CR 107.8, 602.5 — the
 // grid moves between cast and resolution, so nothing is snapshotted).
 //
-// The 1/1 unit tokens arrive in the caster's region at resolution (R115) —
+// The 1/1 unit tokens arrive in the caster's region at resolution (CR 304.8a) —
 // this is a {Battle} spell, so cast in the enemy region the 1/1s are minted
 // THERE, in no column.
 card('Galactic Germination', {
@@ -719,8 +718,8 @@ card('Galactic Germination', {
 });
 
 // "[Augment] At the start of deployment, recall all your other units." —
-// bg/1 4/4 Alien Parasite Unit. UNPARKED by R50's 'startOfDeployment' event,
-// which fires inside a settle() window right after R38's rot damage.
+// bg/1 4/4 Alien Parasite Unit. UNPARKED by the 'startOfDeployment' event,
+// which fires inside a settle() window right after the rot damage (CR 507.4).
 //
 // Text-box [Augment]: live while the card is a unit in play, donated to the
 // host when it augments — so "your other units" is always the HOLDER's
@@ -728,13 +727,13 @@ card('Galactic Germination', {
 // included. There is no "may": it recalls unconditionally, which is the whole
 // drawback of a 1-mana 4/4.
 //
-// Region-scoped (R12/R25) via ctx.region, which at the start of deployment is
+// Region-scoped (CR 601.1b, 601.4d) via ctx.region, which at the start of deployment is
 // the controller's home region — where all of their units are.
 //
 // Recall order is the entity-table order, taken as a snapshot BEFORE the first
 // recall so the list cannot shift underneath the loop; each recall puts a
 // nontoken unit in its owner's hand and erases a token (E.recall), and a
-// recalled unit's mods go to their owners' bins and are trashed there (R40).
+// recalled unit's mods go to their owners' bins and are trashed there (CR 801.2f).
 card('Invasive Species', {
   augmentText: [{
     type: 'triggered', events: ['startOfDeployment'],
@@ -757,16 +756,16 @@ card('Invasive Species', {
 
 // "After combat, [Switch1] Recall up to one target unit with cost less than
 // or equal to the number of units in my formation." — bg/2 3/2 Mystic
-// Fungus Unit. Bounded trigger + bounded graft cause ([Switch1], R9). "Up
+// Fungus Unit. Bounded trigger + bounded graft cause ([Switch1], CR 722.5). "Up
 // to one" = a min-0 target spec (the chooser may pick nobody). The
-// formation size is live at resolution (R27: surviving units in the grid
-// side containing me). R64: the cost bar is a TARGETING RESTRICTION — the
+// formation size is live at resolution (CR 602.6h: surviving units in the grid
+// side containing me). CR 110.3a: the cost bar is a TARGETING RESTRICTION — the
 // TargetSpec can express it now, so only recallable units are offered; the
 // resolution check stays, because the formation can shrink under the spell.
 // Not in any formation → the bar is 0 (only cost-0 units are recallable).
-// R157 §1 does not reach this bar either — same reason as Abduct's above: it
+// CR 111.11 does not reach this bar either — same reason as Abduct's above: it
 // is read off a UNIT IN PLAY, and no `mana: 'X'` card in the pool is a unit.
-// R325: the formation it stands in — or, gone before this resolves, the one it
+// CR 714.4: the formation it stands in — or, gone before this resolves, the one it
 // remembers standing in (RAQ, Dead Unit Effect on Stack: Lumengrove Lurker is
 // named among the effects that "remember they were in formation")
 const formationSize = (g: E, sourceId?: number): number =>
@@ -775,7 +774,7 @@ const lurkerRecall: EffectDef = {
   targets: {
     what: 'unit', min: 0,
     prompt: 'Lumengrove Lurker: recall up to one target unit (cost ≤ units in my formation)',
-    restrict: unitRestrict((g, u, ctx) => g.costOf(u) <= formationSize(g, ctx.sourceId)),   // R336: the face's cost
+    restrict: unitRestrict((g, u, ctx) => g.costOf(u) <= formationSize(g, ctx.sourceId)),   // CR 202.7: the face's cost
   },
   run: (g, ctx) => {
     const t = ctx.targets[0];
@@ -805,11 +804,11 @@ card('Lumengrove Lurker', {
 // control of me." — bg/3 5/6 Alien Frog Parasite {Virus} Unit. Text-box
 // [Augment]: as a virus on an enemy host, "you" = the HOST's controller and
 // "me" = the host — combat damage to them hands the host over. "You are
-// dealt combat damage" = the combat life-loss event for my controller (R1;
+// dealt combat damage" = the combat life-loss event for my controller (CR 109.3a;
 // Resonant riders and effect damage don't count); it fires during a damage
-// sub-step, so the flip resolves immediately (R31). "Target opponent" is
+// sub-step, so the flip goes on the stack after it (CR 608.9). "Target opponent" is
 // auto-picked in 1v1 (one opponent); with more seats the controller picks.
-// Control flip through E.giveControl (R112). {Virus} play
+// Control flip through E.giveControl (CR 711.1). {Virus} play
 // mode is engine-level.
 card('Mindwarp Sporefrog', {
   augmentText: [{
@@ -817,9 +816,9 @@ card('Mindwarp Sporefrog', {
     label: 'target opponent gains control of me (you were dealt combat damage)',
     when: (g, self, ev) => ev.data?.why === 'combat' && ev.data?.seat === self.controller,
     effect: {
-      // R67: "target opponent" is a DECLARED target, chosen as the trigger
+      // CR 110.1a: "target opponent" is a DECLARED target, chosen as the trigger
       // goes on the stack. 'opponent' is measured from the EFFECT's
-      // controller (R58), which is the Sporefrog's controller — the seat
+      // controller (CR 110.3c), which is the Sporefrog's controller — the seat
       // about to give it away — so the kind already excludes them.
       targets: { what: 'opponent', prompt: 'Mindwarp Sporefrog: target opponent gains control of me' },
       run: (g, ctx) => {

@@ -26,7 +26,7 @@
  * is running in `item.card` and the body it runs on in `sourceId`
  * (engine.ts queueTrigger / apply.ts activateAbility). For a unit's own text
  * the two agree; for an augment mod's text, or a face lent by an Ancient One
- * (R118), they do not — and that disagreement is exactly the Franken-card.
+ * (CR 710.7), they do not — and that disagreement is exactly the Franken-card.
  * Graft parts name their card in the key (`graft:<name>`), so their strips
  * survive the graft's entity leaving play.
  *
@@ -143,7 +143,7 @@ export function roleSentence(item: StackItem, label: (t: TargetRef) => string,
       const m = /^\{(\d+)(\+?)\}$/.exec(bit);
       if (!m) return text(bit);
       const i = Number(m[1]);
-      // a target that has left since the cast (R5) leaves a dash, not a hole
+      // a target that has left since the cast (CR 704.6b) leaves a dash, not a hole
       if (m[2]) return p.targets.slice(i).map(label).join(', ') || text('—');
       const t = p.targets[i];
       return t ? label(t) : text('—');
@@ -160,7 +160,7 @@ export function roleSentence(item: StackItem, label: (t: TargetRef) => string,
  *
  * The targets of a still-live part that are no longer there to be hit — by the
  * ENGINE's own test (`E.targetStillLegal`, the one resolution uses to fizzle
- * an item under R5), so the strip cannot mark a target lost that the rules
+ * an item under CR 704.6), so the strip cannot mark a target lost that the rules
  * would still hit, or miss one they would skip. A negated item is left out:
  * it is already off the stack and does nothing either way.
  */
@@ -190,7 +190,7 @@ export function lostTargets(item: StackItem, state: GameState): TargetRef[] {
  * right question only for an item that has not reached its turn. The strip
  * also draws two rows that have:
  *
- *  - the RESOLVING row (R78). It is part-way through its own effect, stopped
+ *  - the RESOLVING row (CR D6.12). It is part-way through its own effect, stopped
  *    on a question (Purge's Glimpse 3, Dematerialize's) — the target left
  *    because THIS item removed it, and during the suspension nobody else can
  *    act, so nothing else can have. It reports nothing.
@@ -203,7 +203,7 @@ export function lostTargets(item: StackItem, state: GameState): TargetRef[] {
  *
  * Known trade-off: a LATER part of a multi-part resolving item whose target an
  * earlier part removed would also go unmarked. Never seen in the corpus, and
- * the engine still fizzles that part by R5 whatever the strip says.
+ * the engine still fizzles that part by CR 704.6b whatever the strip says.
  */
 export function lostTargetsForRow(
   row: Pick<StackRow, 'item' | 'resolving' | 'flashing' | 'fizzled'>, state: GameState,
@@ -220,7 +220,7 @@ export function lostTargetsForRow(
  * The chips a stack card wears, in the shape a unit's are (main.ts
  * unitBadges → badgeSpan): every attribute the item will resolve with —
  * `E.stackItemAttrs`, the engine's own assembly that resolution calls, so the
- * source's attributes, a virus's or a {Modular} mod's (R79/R105) and the
+ * source's attributes, a virus's or a {Modular} mod's (CR 721.4b, 724.4a) and the
  * continuous grants (Emberflame Enlightener's Powerful, Envoy of Lightning's
  * Electric, Rotspore Herald's Deadly) — then one chip per virus riding it,
  * which nothing on the board named before. Plain text, so the strip's tooltip

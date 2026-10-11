@@ -2,8 +2,8 @@
   {
     "id": "F-U10-1",
     "rule": "combat.formations.placement.counting",
-    "title": "R27 counts 'my formation' by OWNER, not by control",
-    "summary": "R27 words Embermaw Fledgling's X ('the number of attacking units in my formation') as the surviving units its controller OWNS in the battle columns. A unit its controller controls but does not own (raised from the enemy bin by Wake the Dead, or lent by Uglk; R250 makes such units ordinary allies) attacks in the same formation and should be counted. If the engine counts by owner, it undercounts. Suspected from the ruling's wording only; a probe should attack with a borrowed unit beside Embermaw Fledgling and read X.",
+    "title": "The owner ruling of 2026-08-18 (“Formation-counting amounts are live at resolution”) counts 'my formation' by OWNER, not by control",
+    "summary": "The owner ruling of 2026-08-18 (“Formation-counting amounts are live at resolution”) words Embermaw Fledgling's X ('the number of attacking units in my formation') as the surviving units its controller OWNS in the battle columns. A unit its controller controls but does not own (raised from the enemy bin by Wake the Dead, or lent by Uglk; the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) makes such units ordinary allies) attacks in the same formation and should be counted. If the engine counts by owner, it undercounts. Suspected from the ruling's wording only; a probe should attack with a borrowed unit beside Embermaw Fledgling and read X.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -17,7 +17,7 @@
     "id": "F-U10-2",
     "rule": "combat.columns.adjacency.positions",
     "title": "Throwing Boulder's 'adjacent enemy' test cannot show what its title claims",
-    "summary": "18-earth-c 'R77: an ALLY is required — an adjacent enemy does not unlock it' sets up the enemy as a blocker facing the Boulder. Under R75 adjacency (the three positions inside the unit's own formation) a facing blocker is not adjacent at all, so the Boulder has no adjacent unit of any kind and the test passes whether or not the gate checks that the neighbour is an ALLY. Either the test is vacuous, or the engine treats the facing enemy as adjacent, which R75 does not allow. A real guard needs an enemy unit inside the Boulder's own formation, for example a unit stolen into it, or a probe of the adjacency query with a facing blocker.",
+    "summary": "18-earth-c 'the owner ruling of 2026-08-22 (“\"Activate this ability only if …\"…”): an ALLY is required — an adjacent enemy does not unlock it' sets up the enemy as a blocker facing the Boulder. Under the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) adjacency (the three positions inside the unit's own formation) a facing blocker is not adjacent at all, so the Boulder has no adjacent unit of any kind and the test passes whether or not the gate checks that the neighbour is an ALLY. Either the test is vacuous, or the engine treats the facing enemy as adjacent, which the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) does not allow. A real guard needs an enemy unit inside the Boulder's own formation, for example a unit stolen into it, or a probe of the adjacency query with a facing blocker.",
     "evidence": [
       {
         "file": "client/engine/test/18-earth-c.test.ts",
@@ -25,7 +25,7 @@
       },
       {
         "file": "client/engine/test/18-earth-c.test.ts",
-        "quote": "R77: an ALLY is required — an adjacent enemy does not unlock it"
+        "quote": "CR 111.7b: an ALLY is required — an adjacent enemy does not unlock it"
       }
     ],
     "ct": "CT-241"
@@ -59,7 +59,7 @@
     "id": "F-U10-6",
     "rule": "combat.formations.placement.source-gone",
     "title": "A lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation",
-    "summary": "Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies R75's 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6). (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -79,7 +79,7 @@
     "id": "F-U10-7",
     "rule": "combat.formations.placement.source-gone",
     "title": "A source that left play places nothing when its remembered formation is now empty",
-    "summary": "R325/RAQ: Hooba-Lin killed with its attack trigger on the stack \"will remember [it was] in formation and will work fine\". With a lone Hooba-Lin attacking, formationSeatOf returns its last-known seat but formationSlots returns no slot for a grid with no living unit, so the 1/1 is created outside the formation (\"no open position in the formation\"). Applies to every R75 placer reading a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin).",
+    "summary": "The owner ruling of 2026-10-09 (“An effect whose source has left…”)/RAQ: Hooba-Lin killed with its attack trigger on the stack \"will remember [it was] in formation and will work fine\". With a lone Hooba-Lin attacking, formationSeatOf returns its last-known seat but formationSlots returns no slot for a grid with no living unit, so the 1/1 is created outside the formation (\"no open position in the formation\"). Applies to every the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) placer reading a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin).",
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",

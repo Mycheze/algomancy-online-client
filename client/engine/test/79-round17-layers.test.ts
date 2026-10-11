@@ -2,7 +2,7 @@
  * playtest report #73 landed on, each one a thing the engine had a comment
  * for and no code in.
  *
- *   · STAT LAYER 5, {Inverted} (R93) — playtest #73: "Inverted isn't working
+ *   · STAT LAYER 5, {Inverted} (CR 802.8a) — playtest #73: "Inverted isn't working
  *     on my Malformed Monstrosity. -7/-7 should become +7/+7, making it a
  *     17/16". effStats() literally ended on "// layer 5 (Inverted), 6
  *     (Unaware) go here"; three cards in the pool (Its Dark Bubb, Reality
@@ -30,7 +30,7 @@ function spawnToken(h: Harness, seat: Seat, p: number, t: number): EntityId {
   return u.id;
 }
 
-/* ── R94: an EFFECT reads its source's LIVE attributes ─────────────────────
+/* ── CR 802.1: an EFFECT reads its source's LIVE attributes ─────────────────────
  *
  * `dealEffectDamageAll` opened on `this.card(ctx.sourceName)?.attrs` — the
  * PRINTED card — so a unit that GAINED {Powerful} hit twice as hard with its
@@ -42,7 +42,7 @@ function spawnToken(h: Harness, seat: Seat, p: number, t: number): EntityId {
  * effect on stack to deal 8 damage to enemy face."
  */
 
-test('R94: a unit\'s own damage ability reads the {Powerful} it was GRANTED, not its printed attrs', () => {
+test('CR 802.10c: a unit\'s own damage ability reads the {Powerful} it was GRANTED, not its printed attrs', () => {
   // Roving Quillback: "[Augment] Whenever blockers are declared, I deal 1
   // damage to each opponent per blocked column" — a unit-sourced NONCOMBAT
   // effect, printed with no attributes. Emberflame Enlightener's units half
@@ -71,7 +71,7 @@ test('R94: a unit\'s own damage ability reads the {Powerful} it was GRANTED, not
 
 /* ── STAT LAYER 5: {Inverted} ──────────────────────────────────────────────
  *
- * R93. "Invert the stat changes of inverted units. For example, -1/+2 would
+ * CR 802.8a. "Invert the stat changes of inverted units. For example, -1/+2 would
  * become +1/-2." (Its Dark Bubb's own reminder text.)
  *
  * The operation is on the NET CHANGE FROM BASE. Caleb Gannon derived it in
@@ -85,7 +85,7 @@ test('R94: a unit\'s own damage ability reads the {Powerful} it was GRANTED, not
  * so `2·base − current`, applied once, after layer 4.
  */
 
-test('R93 layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16', () => {
+test('CR 802.8a layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16', () => {
   // Playtest report #73, room GETD, 2026-08-22: "Inverted isn't working on my
   // Malformed Monstrosity. -7/-7 should become +7/+7, making it a 17/16".
   // Monstrosity is printed 10/9 with a self-affecting -7/-7 static, so it
@@ -106,7 +106,7 @@ test('R93 layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 invert
   assert.deepEqual(effStats(h, mm), [17, 16], "playtest #73: '-7/-7 should become +7/+7, making it a 17/16'");
 });
 
-test('R93 layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Inverted is a -6/0', () => {
+test('CR 802.8b layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Inverted is a -6/0', () => {
   // The example he did the arithmetic for himself, twice, both ways. It is
   // the reason layer 5 is a single net-delta negation rather than a walk back
   // down layer 4 undoing each attribute: he checked that they agree.
@@ -121,7 +121,7 @@ test('R93 layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Inverted is 
   // problem with the arithmetic — Caleb walked this exact stack knowing it
   // ("(3 cards to shrink my unit from a 1/4 to a 1/1)") — it just means the
   // number has to be read before the death check, which is what effStats is.
-  // The attrs go on in TYPE-LINE ORDER, which is layer 4's order (R19).
+  // The attrs go on in TYPE-LINE ORDER, which is layer 4's order (CR 802.1j).
   const grant = (attr: 'Tough' | 'Balanced' | 'Inverted') => {
     const e = new E(h.state);
     e.addTempAttr(e.entity(u)!, attr);
@@ -138,9 +138,9 @@ test('R93 layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Inverted is 
   assert.deepEqual(effStats(h, u), [-6, 0], "calebgannon: 'To become a -6/0'");
 });
 
-test('R93 layer 5: a base REWRITE is the thing inverted FROM, never inverted itself', () => {
+test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never inverted itself', () => {
   // Layer 2 redefines what base IS ("Your units are base 3/3" — Aberrant
-  // Statweaver, R66), so it is not a "stat change" and {Inverted} must not
+  // Statweaver, CR 206.5), so it is not a "stat change" and {Inverted} must not
   // touch it. spikeydog_40883 in rules-questions: "Its base stats aren't being
   // inverted. Just the modifications to those stats by counters, stat-altering
   // augments, or attributes."
@@ -185,8 +185,8 @@ test('R93 layer 5: a base REWRITE is the thing inverted FROM, never inverted its
   assert.deepEqual(effStats(h, u), [2, 2], "'Does inverted reverse the affect of +1/+1 Counters?' — 'yes'");
 });
 
-test('R93 layer 5: {Inverted} applies ONCE however many sources grant it', () => {
-  // R19's rule for layer 4 is "an attribute is either present or not", and
+test('CR 709.4c layer 5: {Inverted} applies ONCE however many sources grant it', () => {
+  // CR 709.4c's rule for layer 4 is "an attribute is either present or not", and
   // layer 5 reads the same deduped list. Two Reality Benders on one host must
   // not cancel each other out into a double negation.
   const h = new Harness(7903);
@@ -206,7 +206,7 @@ test('R93 layer 5: {Inverted} applies ONCE however many sources grant it', () =>
   assert.deepEqual(effStats(h, u), [7, 7], 'a second {Inverted} does not invert back — duplicates do not stack');
 });
 
-test('R93 layer 5: {Inverted} is shared down the COLUMN, like every other attribute', () => {
+test('CR 802.1c layer 5: {Inverted} is shared down the COLUMN, like every other attribute', () => {
   // Asked and answered verbatim —
   //   spikeydog_40883: "So, all attributes are shared between the units in
   //                     the same column? Including stuff like Inverted or Tough?"
@@ -235,7 +235,7 @@ test('R93 layer 5: {Inverted} is shared down the COLUMN, like every other attrib
   finishBattle(h);
 });
 
-test('R93 layer 5: hitting 0 mid-calculation is not death — the equation resolves first', () => {
+test('CR 802.1k layer 5: hitting 0 mid-calculation is not death — the equation resolves first', () => {
   // calebgannon, asked whether a unit that passes through 0 toughness partway
   // through the layer walk dies there: "Not if it hits 0 mid calculation" /
   // "Doesn't instantly die", and the gloss he agreed with — "imagine it as one
@@ -261,7 +261,7 @@ test('R93 layer 5: hitting 0 mid-calculation is not death — the equation resol
   assert.deepEqual(effStats(h, u), [2, 2], 'a 1/1 with a -1/-1 counter, inverted, is a 2/2');
 });
 
-test('R93 layer 5: Its Dark Bubb — the whole card is the attribute, and it works now', () => {
+test('CR 802.8a layer 5: Its Dark Bubb — the whole card is the attribute, and it works now', () => {
   // "{Inverted} Slime Unit", d/4, 4/6, with reminder text and nothing else:
   // "(Invert the stat changes of inverted units. For example, -1/+2 would
   // become +1/-2.)" card('Its Dark Bubb', {}) is the CORRECT definition — the
@@ -278,7 +278,7 @@ test('R93 layer 5: Its Dark Bubb — the whole card is the attribute, and it wor
     'the reminder text, literally: a -2/-2 becomes a +2/+2');
 });
 
-/* ── R226: {Tough} + {Inverted} — the two-attribute case ───────────────────
+/* ── CR 802.8d: {Tough} + {Inverted} — the two-attribute case ───────────────────
  *
  * Playtest report #114 (FHDY, 2026-08-27): "Why did my Nectar Oracle die
  * there? It should have been an inverted and tough 1/3. I don't think that
@@ -318,10 +318,10 @@ test('R93 layer 5: Its Dark Bubb — the whole card is the attribute, and it wor
  *
  * So: "tough + inverted kills the unit" is right for every board where the
  * unit has not been SHRUNK, and is the special case of `t = −2Δ` at Δ ≥ 0.
- * Ruling R226.
+ * CR 802.8d.
  */
 
-test('R226: report #114 — the owner\'s Nectar Ridge Oracle, and the damage was never load-bearing', () => {
+test('CR 713.4: report #114 — the owner\'s Nectar Ridge Oracle, and the damage was never load-bearing', () => {
   // The real FHDY shape, both seats: the OPPONENT's Rampart Guardian ({Tough},
   // {Virus}) lands on the attacking Oracle, and then the owner's OWN Reality
   // Bender ({Inverted}, {Virus}) finishes it. He did not lose the unit to the
@@ -372,7 +372,7 @@ test('R226: report #114 — the owner\'s Nectar Ridge Oracle, and the damage was
   finishBattle(h);
 });
 
-test('R226: the special case his wording misses — a SHRUNK unit survives, at 2·|Δ|', () => {
+test('CR 802.8d: the special case his wording misses — a SHRUNK unit survives, at 2·|Δ|', () => {
   // "+0/+X is just -0/-X where X is its exact defense" is exact only while the
   // net layer-3 change is zero or positive. Shrink the unit first and the same
   // two attributes are a BUFF: final defense is −2Δ, so Δ = −1 gives 2.
@@ -412,9 +412,9 @@ test('R226: the special case his wording misses — a SHRUNK unit survives, at 2
   }
 });
 
-test('R226: the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die', () => {
+test('CR 802.8d: the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die', () => {
   // The consequence report #114 could not see, and the one that actually
-  // matters at the table. Attributes are shared down a column (R19, and
+  // matters at the table. Attributes are shared down a column (CR 802.1c, and
   // calebgannon verbatim: "So, all attributes are shared between the units in
   // the same column? Including stuff like Inverted or Tough?" / "Yes"), so
   // two viruses that never touch the same body still compose on both bodies.
@@ -450,8 +450,8 @@ test('R226: the column wipe — {Inverted} on the front unit, {Tough} on the BAC
   finishBattle(h);
 });
 
-test('R226: {Unaware} beats both — layer 6 returns the printed numbers', () => {
-  // The documented escape. R106 made {Unaware} stat layer 6 and it RETURNS
+test('CR 802.9a: {Unaware} beats both — layer 6 returns the printed numbers', () => {
+  // The documented escape. {Unaware} is stat layer 6 (CR 802.1j) and it RETURNS
   // printedStats, discarding layers 2-5 wholesale, so it does not "undo" the
   // Tough/Inverted pair so much as never reach it. Bubb is the [Augment]
   // donor; Trashling and Haboob carry the same attribute.
@@ -472,14 +472,13 @@ test('R226: {Unaware} beats both — layer 6 returns the printed numbers', () =>
     "layer 6 returns printed: 'it looks ONLY at what is the literal printed text'");
 });
 
-test('R226: the TWO-attribute case, in either grant order — a 1/4 Tough Inverted is a 1/0', () => {
+test('CR 709.4d: the TWO-attribute case, in either grant order — a 1/4 Tough Inverted is a 1/0', () => {
   // The gap this file had. Caleb's THREE-attribute example (Tough Balanced
   // Inverted → -6/0) is pinned above and is the one he did the arithmetic for;
   // the pair that actually turns up in games was pinned nowhere, and report
   // #114 is what happens when a player meets it for the first time.
   //
-  // ORDER-INDEPENDENCE is the substantive claim here, not decoration. R93
-  // shipped {Inverted} as a clean layer 5 over an ⚠ OPEN note in effStats:
+  // ORDER-INDEPENDENCE is the substantive claim here, not decoration. {Inverted} shipped as a clean layer 5 over an ⚠ OPEN note in effStats:
   // Caleb said "Tough inverted balanced would be different" from "tough
   // balanced inverted", which would make {Inverted} an interleaved member of
   // layer 4's type-line order instead. With only these TWO attributes the two
@@ -507,7 +506,7 @@ test('R226: the TWO-attribute case, in either grant order — a 1/4 Tough Invert
     'Inverted then Tough is the SAME — layer 5 is a layer, not a step in the type-line order');
 });
 
-test('R226: the rest of the class — the Omniphage kills itself, and Beyond aims {Tough} at its own board', () => {
+test('CR 802.8d: the rest of the class — the Omniphage kills itself, and Beyond aims {Tough} at its own board', () => {
   // The two class members that reach the interaction without anybody playing
   // a virus at anything.
   const h = new Harness(7913);
@@ -543,7 +542,7 @@ test('R226: the rest of the class — the Omniphage kills itself, and Beyond aim
   assert.ok(ent(h2, beyond), 'Beyond itself is untouched — it never gained {Tough}');
 });
 
-test('R226: the class is FIVE cards, computed from the pool and not typed from the report', () => {
+test('CR 802.8d: the class is FIVE cards, computed from the pool and not typed from the report', () => {
   // docs/13 §7.2, "derive, never enumerate". The interaction needs {Tough} and
   // {Inverted} on one unit (or one column), so the class is every card that
   // can put either attribute onto a body. Recomputed here from printed data
@@ -555,7 +554,7 @@ test('R226: the class is FIVE cards, computed from the pool and not typed from t
     };
     return !!c.attrs?.includes(attr)
       || !!c.augmentAttrs?.includes(attr)
-      || radiantList(n, 'statics').some(s => s.attrs?.includes(attr));   // R268: body + box
+      || radiantList(n, 'statics').some(s => s.attrs?.includes(attr));   // CR 721.1: body + box
   }).sort();
 
   assert.deepEqual(grantors('Tough'), ['Rampart Guardian', 'The Omniphage'],

@@ -1,8 +1,8 @@
-/* R238 — ZEPHYRZOA HEARS A HIT THAT COST NO LIFE.
+/* CR 608.8a — ZEPHYRZOA HEARS A HIT THAT COST NO LIFE.
  *
  * ── WHY THIS FILE EXISTS, AND IT IS NOT A HAPPY REASON ────────────────
  *
- * R238 ruled (the owner, 2026-08-28) that a REPLACED combat hit was still
+ * The owner ruled on 2026-08-28 (now CR 608.8a) that a REPLACED combat hit was still
  * dealt: "blightsea pollup says it deals damage as, so its still damage. Just
  * not as life." Nine cards were migrated from `lifeLost` to the new
  * `combatFaceDamage` event. **Zephyrzoa was the tenth and was left behind**,
@@ -43,14 +43,14 @@ function settle(h: Harness): void {
   }
 }
 
-test('R238: Zephyrzoa fires on a hit that was REPLACED and cost no life', () => {
+test('CR 608.8a: Zephyrzoa fires on a hit that was REPLACED and cost no life', () => {
   const h = new Harness(5380);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
 
   const zep = spawn(h, A, 'Zephyrzoa');        // 1/1, its own [Augment] is live
   const ally = spawn(h, A, 'Unit Token');      // 1/1 — the column needs power
-  // ⚠ ON THE DEFENDER'S SIDE, and that is not incidental. The R38 hook is
+  // ⚠ ON THE DEFENDER'S SIDE, and that is not incidental. The CR 608.8a hook is
   // REGION-scoped (`a.region === info.region`), not seat-scoped — the printed
   // text says "columns" with no owner. A Polyp left standing at home is in the
   // wrong region and replaces nothing, which is exactly how the first draft of
@@ -75,17 +75,17 @@ test('R238: Zephyrzoa fires on a hit that was REPLACED and cost no life', () => 
     'the Polyp replaced the face hit, so no life was lost — if this fails the '
     + 'replacement did not fire and the rest of this test proves nothing');
 
-  // 2. AND ZEPHYRZOA STILL HEARD IT. Under the pre-R238 `lifeLost` subscription
+  // 2. AND ZEPHYRZOA STILL HEARD IT. Under the old `lifeLost` subscription
   //    both of these fail, because no lifeLost event is emitted on this board.
   assert.deepEqual(h.state.players[A]!.hand.slice().sort(), ['Gublin', 'Shib'],
-    'R238: the hit was DEALT, so Zephyrzoa recalled the whole bin');
+    'CR 608.8a: the hit was DEALT, so Zephyrzoa recalled the whole bin');
   assert.equal(ent(h, zep), undefined,
-    'R238: and erased itself — the full printed consequence, not just the trigger');
+    'CR 608.8a: and erased itself — the full printed consequence, not just the trigger');
 
   finishBattle(h);
 });
 
-test('R238 CONTROL: the same column with no Polyp still costs life, and still fires', () => {
+test('CR 608.8a CONTROL: the same column with no Polyp still costs life, and still fires', () => {
   // The negative half. A guard that only ever sees the replaced case cannot
   // tell "hears replaced hits" from "hears nothing but happens to pass", and a
   // migration that broke the ORDINARY path would sail through the test above.

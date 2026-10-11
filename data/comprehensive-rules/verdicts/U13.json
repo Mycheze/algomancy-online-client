@@ -49,7 +49,7 @@
   },
   {
     "key": "combat.after.triggers.batch",
-    "textHash": "d65bc507ff1c740e",
+    "textHash": "cc863441b5e322f8",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U13-r2",
@@ -243,7 +243,7 @@
   },
   {
     "key": "combat.after.triggers.split-last",
-    "textHash": "7c119ccfae586909",
+    "textHash": "e18544f1151b9a71",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1004,7 +1004,7 @@
   },
   {
     "key": "combat.counterattack.round-two.other-region-absent",
-    "textHash": "e8ffa1337ed9549f",
+    "textHash": "db9d4b8af00d693d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1511,7 +1511,7 @@
   },
   {
     "key": "combat.counterattack.tokens",
-    "textHash": "aacb855b2b51357c",
+    "textHash": "4ed958398874c96e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U13-r2",

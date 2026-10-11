@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: THE MENU.
+/* CR D8.1 — LEARN TO PLAY: THE MENU.
  *
  * Opened by anything carrying `data-learn` (the home screen's button), off the
  * board, as a layer beside #app — ui/helplayer.ts's pattern, including its

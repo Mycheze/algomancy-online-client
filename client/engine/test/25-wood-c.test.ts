@@ -52,12 +52,12 @@ test('Ralph: [one] gives target opponent control of it, creates three 1/1s where
   const tokens = unitsOf(h, A).filter(u => u.card === 'Unit Token');
   assert.equal(tokens.length, 3, '"if you do": three 1/1 units for the giver');
   assert.ok(tokens.every(u => u.region === h.state.battle!.region),
-    'R115: created units arrive where the SOURCE is — Ralph was attacking, so they are in the battle region');
+    'CR 601.5: created units arrive where the SOURCE is — Ralph was attacking, so they are in the battle region');
   assert.notEqual(h.state.battle!.region, home(h, A), 'and that is not home');
   pass(h);                                            // priority → D
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: D, entityId: ralph, abilityIndex: 0 }),
-    /already used/, '[Switch1]: the per-card budget survives the control change (R9)');
+    /already used/, '[Switch1]: the per-card budget survives the control change (CR 109.9d)');
   finishBattle(h);
 });
 
@@ -80,10 +80,10 @@ test('Rebalance: each present player gives an opponent control of one of their u
   assert.equal(ent(h, tok)!.controller, D, 'the unchosen unit stayed put');
   assert.ok(!h.state.battle!.columns.flat().includes(atk), 'the handed-over attacker left the formation');
   finishBattle(h);
-  assert.equal(ent(h, lurk)!.region, home(h, A), 'regroup takes the Lurker to its NEW controller (R11)');
+  assert.equal(ent(h, lurk)!.region, home(h, A), 'regroup takes the Lurker to its NEW controller (CR 506.2)');
 });
 
-test('R112: a stolen unit takes its MODS with it — they change controller too', () => {
+test('CR 711.2: a stolen unit takes its MODS with it — they change controller too', () => {
   // Bena 2026-08-23: "A stolen unit's mods are part of the unit, so yes, they
   // go with them to the unit's new controller. That's the whole point of some
   // of the viruses which force units to flip flop controllers."
@@ -121,7 +121,7 @@ test('Saprophytic Oracle: a nontoken death mints a 1/1 at home; token deaths do 
   e.settle();
   const minted = unitsOf(h, p).filter(u => u.card === 'Unit Token');
   assert.equal(minted.length, 1, 'nontoken death → one 1/1 unit');
-  assert.equal(minted[0]!.region, home(h, p), 'the 1/1 arrives at ctx.region — in deployment that IS home (R115)');
+  assert.equal(minted[0]!.region, home(h, p), 'the 1/1 arrives at ctx.region — in deployment that IS home (CR 601.5)');
   const e2 = new E(h.state);
   e2.destroy(minted[0]!, 'dies');                     // the token itself dies…
   e2.settle();
@@ -129,11 +129,11 @@ test('Saprophytic Oracle: a nontoken death mints a 1/1 at home; token deaths do 
     '…and mints nothing ("nontoken", no loop)');
 });
 
-// R70: "nontoken" used to be decided by STRING-MATCHING the death log for
+// CR 714.9: "nontoken" used to be decided by STRING-MATCHING the death log for
 // "token: erased". A token whose death logs anything else walked straight
 // through it — the redesigned Wraith is exactly such a token, and it minted a
 // 1/1 off a token death. The flag is on the event now.
-test('Saprophytic Oracle: a dying WRAITH is a token death too (R70, no message matching)', () => {
+test('Saprophytic Oracle: a dying WRAITH is a token death too (CR 714.9, no message matching)', () => {
   const h = new Harness(2504);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -189,7 +189,7 @@ test('Spewing Mushroom: attacking creates a Poison X where X is its power AT RES
   pass(h); pass(h);                                   // resolve the trigger
   const poison = tokensOf(h, A).filter(t => t.card === 'Poison');
   assert.equal(poison.length, 1, 'one Poison token');
-  assert.equal(poison[0]!.x, 3, 'X = live power 3 (R1 amounts at resolution)');
+  assert.equal(poison[0]!.x, 3, 'X = live power 3 (CR 107.8 amounts at resolution)');
   assert.equal(poison[0]!.region, h.state.battle!.region, 'spell tokens appear where the effect resolves');
   finishBattle(h);
 });
@@ -201,7 +201,7 @@ test('Sporebloom Siren: its Poisonous trade marks the killer; the death trigger 
   const siren = spawn(h, A, 'Sporebloom Siren');      // 2/2 {Poisonous}
   const lurk = spawn(h, D, 'Crevice Lurker');         // 2/3 — blocks, takes -2 counters
   const tok = spawn(h, D, 'Unit Token');              // clean bystander
-  // R121 WIDENED BY R261: the blocker here is Crevice Lurker, which taxes every
+  // CR 111.10g WITH CR 608.9d: the blocker here is Crevice Lurker, which taxes every
   // ability triggered during battle. Combat-death triggers used to slip past
   // that tax because they resolved inside the damage step; they are stacked
   // after combat now and are taxed like anything else, so without this [1] the
@@ -214,7 +214,7 @@ test('Sporebloom Siren: its Poisonous trade marks the killer; the death trigger 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lurk] } });
   pass(h); pass(h);   // combat: siren poisons the Lurker (-2) and dies to its 2 power
-  resolveAfterCombat(h);   // R261: the R31 death trigger is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: the combat death trigger is stacked after combat
   assert.ok(!ent(h, siren), 'the Siren died in the trade');
   assert.ok(h.state.players[A]!.bin.includes('Sporebloom Siren'), 'Siren → bin');
   assert.ok(!ent(h, lurk), 'the countered Lurker was DELETED by the death trigger');
@@ -241,7 +241,7 @@ test('Stellarspore Harvester: after combat it steals a target unit carrying a -1
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const harv = spawn(h, A, 'Stellarspore Harvester'); // 3/5
-  // R121 made Crevice Lurker (the original prop here) a live taxer that
+  // Crevice Lurker (the original prop here) is a live taxer (CR 111.10g) that
   // would gate this very trigger — the countered body is a vanilla 3/3 now.
   const lurk = spawn(h, D, 'The Foretold');           // 3/3, gets a -1/-1 counter
   new E(h.state).addCounters(ent(h, lurk)!, -1);      // white-box: 2/2 now
@@ -254,7 +254,7 @@ test('Stellarspore Harvester: after combat it steals a target unit carrying a -1
   pass(h); pass(h);   // the trigger resolves from the stack (after-window)
   assert.equal(ent(h, lurk)!.controller, A, 'the countered Lurker was stolen');
   finishBattle(h);
-  assert.equal(ent(h, lurk)!.region, home(h, A), 'regroup takes it to its new controller (R11)');
+  assert.equal(ent(h, lurk)!.region, home(h, A), 'regroup takes it to its new controller (CR 506.2)');
 });
 
 test('Stellarspore Harvester: [Augment] death gives your countered units to target opponent', () => {
@@ -265,7 +265,7 @@ test('Stellarspore Harvester: [Augment] death gives your countered units to targ
   const mine = spawn(h, A, 'Crevice Lurker');         // A's unit with a -1/-1 counter
   new E(h.state).addCounters(ent(h, mine)!, -1);
   const bubb = spawn(h, D, 'Bubb');                   // 5/6 — kills the Harvester
-  // R121 WIDENED BY R261: the countered unit here happens to be Crevice Lurker,
+  // CR 111.10g WITH CR 608.9d: the countered unit here happens to be Crevice Lurker,
   // which taxes every ability triggered during battle. A combat-death trigger
   // is stacked after combat now and is taxed like anything else, so without
   // this [1] the Harvester's trigger would be PREVENTED for want of mana.
@@ -276,11 +276,11 @@ test('Stellarspore Harvester: [Augment] death gives your countered units to targ
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
   pass(h); pass(h);   // combat: Bubb's 5 kills the 3/5
-  // R261: the died trigger is held and stacked in the after-combat window. On
-  // the way to the stack it passes the R121 gate — widened by R261, and the
+  // CR 608.9b, 608.9d: the died trigger is held and stacked in the after-combat window. On
+  // the way to the stack it passes the CR 111.10g gate — which CR 608.9d extends to combat triggers, and the
   // countered unit in this fixture happens to be the taxing Crevice Lurker —
   // and then declares its target, exactly as any other battle trigger does.
-  pick(h, true);                                      // R121: pay the Lurker's [1]
+  pick(h, true);                                      // CR 111.10g: pay the Lurker's [1]
   pick(h, { player: D });
   resolveAfterCombat(h);
   assert.ok(!ent(h, harv), 'the Harvester died in combat');
@@ -315,7 +315,7 @@ test('Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Sylvan Sprouting') });
   const tokens = unitsOf(h, p).filter(u => u.card === 'Unit Token');
   assert.equal(tokens.length, 4, '4 wood affinity → 4 units (expended resources still give affinity)');
-  assert.ok(tokens.every(u => u.region === home(h, p)), 'created units arrive at ctx.region — home for a deploy spell (R115)');
+  assert.ok(tokens.every(u => u.region === home(h, p)), 'created units arrive at ctx.region — home for a deploy spell (CR 601.5)');
 });
 
 test('Verdant Necrophage: spawning creates a Poison 6', () => {
@@ -340,7 +340,7 @@ test('Verdant Necrophage: [Augment] its death lets each opponent recall a UNIT f
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
   pass(h); pass(h);   // combat kills the Necrophage
-  // R261: the death trigger is stacked in the after-combat window and asks D
+  // CR 608.9b: the death trigger is stacked in the after-combat window and asks D
   // which unit to recall as it resolves there.
   pass(h); pass(h);
   pick(h, 1);                                         // bin index 1 = Ralph
@@ -368,13 +368,13 @@ test('Verdant Vengeance: damage to target unit equals your in-region unit count 
   finishBattle(h);
 });
 
-test('Wandering Blightshell: a -1/-1 counter you put on an enemy draws a card — once per turn (R9)', () => {
+test('Wandering Blightshell: a -1/-1 counter you put on an enemy draws a card — once per turn (CR 109.9)', () => {
   const h = new Harness(2515);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const shell = spawn(h, A, 'Wandering Blightshell'); // 1/2 — must share the region
   const lurk = spawn(h, D, 'The Foretold');           // 3/3 vanilla victim
-  // (was Crevice Lurker — R121 made it a live taxer that would gate the draw)
+  // (was Crevice Lurker — a live taxer (CR 111.10g) that would gate the draw)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[shell]] });
   const region = h.state.battle!.region;
@@ -420,7 +420,7 @@ test('Warbloom Herald: the buff over an empty region says so — it never resolv
   // item left the stack, the board was unchanged and the log said nothing.
   // The fuzz sweep is not a revert-proof guard for one card, so this is it,
   // built on the plain printed trigger rather than a graft: the amount is live
-  // at RESOLUTION (R1), so removing the lone attacker in response is enough.
+  // at RESOLUTION (CR 109.3b), so removing the lone attacker in response is enough.
   const h = new Harness(2526);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -458,7 +458,7 @@ test('Woodland Warding: negates enemy effects aimed at your side, spares the res
   pick(h, { unit: lurk });                            // enemy effect aimed at D's unit
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Woodland Warding') });
   pass(h); pass(h);                                   // Warding (top) resolves
-  // R68: the negated one is GONE from the stack; the spared one is still on it
+  // CR 704.4: the negated one is GONE from the stack; the spared one is still on it
   assert.ok(!h.state.stack.some(i => i.label.includes('Verdant Vengeance')),
     'the effect targeting an allied unit is negated and off the stack');
   assert.ok(h.state.players[A]!.bin.includes('Verdant Vengeance'), 'binned from the stack');

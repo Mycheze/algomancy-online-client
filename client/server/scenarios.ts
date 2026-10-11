@@ -9,19 +9,19 @@
  *
  * A room's state is a function of `(seed, mode, els, decks, scenario, actions)`.
  * Injecting a hand-built `GameState` into a room would break `replay-room.ts`,
- * `replay-probe.ts` and the R200 divergence diff permanently, for exactly the
+ * `replay-probe.ts` and the replay divergence diff permanently, for exactly the
  * games we most want to re-examine. So a scenario is instead a **deterministic
  * mutation applied inside the deal**, and its id is recorded in the room file
  * beside `seed`.
  *
- * ⚠ CORRECTION TO docs/14 §2, found while building this (R216). The doc says
+ * ⚠ CORRECTION TO docs/14 §2, found while building this. The doc says
  * "`fresh()` is the single choke point — `rebuild()` calls it — so a scenario
  * room rebuilds, replays, undoes, saves and diffs like any other." That is
  * true of `rooms.ts` and FALSE of the repository. There are four deal sites in
  * `server/`, not one:
  *
  *   rooms.ts:fresh()        the live room (and rebuild(), and restore)
- *   replay-room.ts:runOnce() the forensic replay + the R200 divergence diff
+ *   replay-room.ts:runOnce() the forensic replay + the replay-versioning divergence diff
  *   stats.ts:summarizeGame() the post-game screen and the accounts fold
  *   replay-probe.ts          a HISTORICAL engine, dynamically imported
  *
@@ -32,7 +32,7 @@
  * sites all call it. The fourth CANNOT: it loads `createGame` out of a
  * worktree at an old commit, and this module's mutation is written against
  * TODAY's engine. `replay-probe.ts` refuses a scenario room by name rather
- * than probing it wrong (see `probe()`), which is the R200 lesson exactly —
+ * than probing it wrong (see `probe()`), which is the replay-versioning lesson exactly —
  * a wrong answer about a divergence is worse than no answer.
  *
  * ── PURITY (docs/14 §2's ⚠, and the reason it is there) ──────────────────
@@ -132,7 +132,7 @@ export interface ScenarioSide {
  * name "my attacker" and "their unit" without guessing at numbers. */
 export interface ScenarioIds { you: EntityId[]; opponent: EntityId[] }
 
-/* ⚠ R218 — A BATCH FILE MAY IMPORT ONLY *TYPES* FROM THIS MODULE.
+/* ⚠ A BATCH FILE MAY IMPORT ONLY *TYPES* FROM THIS MODULE (see 14-scenario-tester.md).
  *
  * `scenarios.ts` imports every batch (see BATCHES above), so a batch importing
  * a VALUE back out of it closes a cycle and the server dies at BOOT with
@@ -180,7 +180,7 @@ export interface Scenario {
    */
   prologue?: (ids: ScenarioIds, state: GameState) => Action[];
   /**
-   * R218 — WHAT THE HAND HOLDS ONCE THE PROLOGUE IS DONE, when the prologue
+   * WHAT THE HAND HOLDS ONCE THE PROLOGUE IS DONE, when the prologue
    * SPENDS one.
    *
    * `you.hand` / `opponent.hand` say what the board patch DEALS. Most prologues
@@ -224,7 +224,7 @@ export interface Scenario {
 // deliberately the next agent's job: 20 working scenarios beat 120 unplayable
 // ones, and the plumbing is the risky part.
 
-/* R218 — BATCH FILES.
+/* BATCH FILES (see 14-scenario-tester.md).
  *
  * Scenarios are authored in parallel, several at a time, and one shared object
  * literal is the worst possible merge surface for that: every author edits the
@@ -261,13 +261,12 @@ export const BATCHES: readonly Record<string, Scenario>[] =
 
 const CORE: Record<string, Scenario> = {
   /**
-   * WHY THIS CARD (R216).
+   * WHY THIS CARD (CR 720.6b).
    *
    * `docs/13-assessment.md` §1③ names the biggest hole in the round-28
    * correctness sample by name: "the donated `[Augment]` path for ten of the
    * eleven augment cards in the sample. Only one is checked on a host, and
-   * 'me'/'you' resolve differently there under R131." R212 found the same
-   * thing independently.
+   * 'me'/'you' resolve differently there under CR 720.6c, 720.6b."
    *
    * Lithoghul is the sharpest case in that family that a human can settle in
    * ninety seconds:
@@ -297,8 +296,8 @@ const CORE: Record<string, Scenario> = {
   'lithoghul-donated': {
     id: 'lithoghul-donated',
     card: 'Lithoghul',
-    why: 'donated [Augment] text on an ENEMY host — R131 "me"/"you", named by '
-      + 'docs/13 §1③ and R212 as the single biggest untested hole. Three tests '
+    why: 'donated [Augment] text on an ENEMY host — the "me"/"you" reading, named by '
+      + 'docs/13 §1③ as the single biggest untested hole. Three tests '
       + 'name Lithoghul; none has ever let its donated text resolve.',
     expect:
       // plain English, deliberately: the printed notation is "{Virus}", and the
@@ -335,10 +334,10 @@ const CORE: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // The R18 haste step only engages when somebody holds a payable haste
+      // The haste step only engages when somebody holds a payable haste
       // card, and neither side does here.
       //
-      // ⚠ R218 — THIS COMMENT USED TO CLAIM `dealScenario` SKIPS THE HASTE STEP
+      // ⚠ THIS COMMENT USED TO CLAIM `dealScenario` SKIPS THE HASTE STEP
       // IF IT IS OPEN. IT DOES NOT. `runPrologue` does no such thing, and batch
       // A hit it: any scenario whose board holds a `{Haste}` card must put its
       // own `doneHaste` in the prologue or the deal throws "not your attack
@@ -475,11 +474,11 @@ function patchSide(e: E, seat: Seat, side: ScenarioSide, out: EntityId[]): void 
 }
 
 /**
- * R228: the haste step is ALWAYS offered now, so it stands between
+ * CR 504.5: the haste step is ALWAYS offered now, so it stands between
  * `donePlanning` and every battle action in every prologue ever written.
  *
- * Before R228 the step only appeared when somebody held a payable haste card,
- * which made its presence a property of the SCENARIO — so R218 made each
+ * Before the haste step became unconditional (CR 504.5) the step only appeared when somebody held a payable haste card,
+ * which made its presence a property of the SCENARIO — so the scenario-authoring round made each
  * scenario put its own `doneHaste` in, and warned (correctly, at the time)
  * that `runPrologue` skips nothing. That reasoning is now inverted: the step
  * is unconditional, so a `doneHaste` in a prologue carries no information
@@ -511,7 +510,7 @@ function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: E
   if (!sc.prologue) return s;
   for (const a of sc.prologue(ids, s)) {
     try {
-      // R228, above: the unconditional haste step is walked through here
+      // CR 504.5, above: the unconditional haste step is walked through here
       if (a.type !== 'doneHaste') s = closeHasteStep(s, events);
       const r = apply(s, a);
       s = r.state;
@@ -528,7 +527,7 @@ function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: E
       throw err;
     }
   }
-  // R228 again, for the prologue that simply ENDS in the haste step: a
+  // CR 504.5 again, for the prologue that simply ENDS in the haste step: a
   // scenario that declares a battle or deployment position must be left in
   // one, and the last thing between `donePlanning` and that position is now
   // always this step. A scenario that declares `phase: 'planning'` is left

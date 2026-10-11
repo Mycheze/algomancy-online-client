@@ -1,6 +1,6 @@
-/* R80/R81 — playtest round 15 (game VEAV, 2026-08-22).
+/* CR 112.8, 803.5a — playtest round 15 (game VEAV, 2026-08-22).
  *
- * R80: ONE EFFECT'S DAMAGE IS ONE BATCH.
+ * CR 112.8: ONE EFFECT'S DAMAGE IS ONE BATCH.
  *
  *   "Channel Through caused Restitution to make 2 triggers, but it should
  *    have done just one trigger."
@@ -13,7 +13,7 @@
  * Through committed its distributed damage one point at a time. A unit given
  * two of those points was dealt damage TWICE.
  *
- * R81: BURST GROUPS BY NAME.
+ * CR 803.5a: BURST GROUPS BY NAME.
  *
  *   "The game is trying to force me to cast my Fireball here (since it has
  *    Burst), but Burst only applies to spell tokens with the same NAME."
@@ -48,7 +48,7 @@ const hitsOn = (evs: EngineEvent[], id: EntityId): EngineEvent[] =>
 
 // ── the batch itself ─────────────────────────────────────────────────────
 
-test('R80: two hits on one unit in a batch are ONE damage event for the total', () => {
+test('CR 112.8: two hits on one unit in a batch are ONE damage event for the total', () => {
   const h = new Harness(6900);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -66,7 +66,7 @@ test('R80: two hits on one unit in a batch are ONE damage event for the total', 
   assert.equal(h.state.entities[u]!.damage, 3);
 });
 
-test('R80: every event in a batch carries the WHOLE batch as `total`', () => {
+test('CR 112.8: every event in a batch carries the WHOLE batch as `total`', () => {
   const h = new Harness(6901);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -87,7 +87,7 @@ test('R80: every event in a batch carries the WHOLE batch as `total`', () => {
   assert.deepEqual(evs.map(x => x.data?.total), [6, 6, 6], 'and all hear the same total');
 });
 
-test('R80: a single-target deal is a batch of one — total equals n', () => {
+test('CR 112.8: a single-target deal is a batch of one — total equals n', () => {
   const h = new Harness(6902);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -105,7 +105,7 @@ test('R80: a single-target deal is a batch of one — total equals n', () => {
 
 // ── what the table actually reported ─────────────────────────────────────
 
-test('R80: Channel Through gives a twice-hit unit ONE damage event (the Restitution report)', () => {
+test('CR 112.8: Channel Through gives a twice-hit unit ONE damage event (the Restitution report)', () => {
   const h = new Harness(6903);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -118,8 +118,8 @@ test('R80: Channel Through gives a twice-hit unit ONE damage event (the Restitut
   pass(h);                                              // priority → D
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
-  pick(h, 1);                                           // X = 1, paid at cast (R35)
-  pick(h, { player: A });                               // R83: slot 0, target opponent
+  pick(h, 1);                                           // X = 1, paid at cast (CR 107.2a)
+  pick(h, { player: A });                               // CR 110.2b: slot 0, target opponent
   pick(h, { unit: ally });                              // the one cast-time ally target
   pass(h); pass(h);                                     // resolve (both distributed points auto-aim)
   const hits = hitsOn(h.events.slice(mark), victim);
@@ -129,7 +129,7 @@ test('R80: Channel Through gives a twice-hit unit ONE damage event (the Restitut
   finishBattle(h);
 });
 
-test('R80: Awoken Tomb reads its OWN share as X, not the batch total', () => {
+test('CR 112.8: Awoken Tomb reads its OWN share as X, not the batch total', () => {
   const h = new Harness(6904);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -142,7 +142,7 @@ test('R80: Awoken Tomb reads its OWN share as X, not the batch total', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 1);
-  pick(h, { player: A });                               // R83: slot 0, target opponent
+  pick(h, { player: A });                               // CR 110.2b: slot 0, target opponent
   pick(h, { unit: ally });
   pass(h); pass(h);                                     // Channel Through resolves
   while (h.state.stack.length) pass(h);                 // and the Tomb's trigger after it
@@ -153,7 +153,7 @@ test('R80: Awoken Tomb reads its OWN share as X, not the batch total', () => {
   finishBattle(h);
 });
 
-test('R80: Ember of Life counts the WHOLE effect (the 12-units report)', () => {
+test('CR 112.8: Ember of Life counts the WHOLE effect (the 12-units report)', () => {
   const h = new Harness(6905);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -177,7 +177,7 @@ test('R80: Ember of Life counts the WHOLE effect (the 12-units report)', () => {
   assert.equal(made, 5, '2 + 3 = 5 units, from the batch total — not 2 from the first fragment');
 });
 
-test('R80: "each unit" damage kills simultaneously — every unit hears the same total', () => {
+test('CR 112.8: "each unit" damage kills simultaneously — every unit hears the same total', () => {
   const h = new Harness(6906);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -196,9 +196,9 @@ test('R80: "each unit" damage kills simultaneously — every unit hears the same
   finishBattle(h);
 });
 
-// ── R83: what Channel Through targets, and what it merely divides ────────
+// ── CR 110.2b: what Channel Through targets, and what it merely divides ────────
 
-test('R83: Channel Through declares X allies AND the opponent at cast', () => {
+test('CR 110.2b: Channel Through declares X allies AND the opponent at cast', () => {
   const h = new Harness(6908);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -224,7 +224,7 @@ test('R83: Channel Through declares X allies AND the opponent at cast', () => {
   finishBattle(h);
 });
 
-test('R83: the distribution is NOT a target — nothing new reaches the stack', () => {
+test('CR 110.2b: the distribution is NOT a target — nothing new reaches the stack', () => {
   const h = new Harness(6909);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -257,7 +257,7 @@ test('R83: the distribution is NOT a target — nothing new reaches the stack', 
   // and the options are bare entity ids, not TargetRefs — a target is a
   // {unit: id} the client can draw an arrow to; this is a division of damage
   assert.deepEqual(h.state.decision!.options.map(o => o.value).sort(), [f1, f2].sort());
-  // answer both points onto the trigger-free Whale: R80 makes that ONE hit of
+  // answer both points onto the trigger-free Whale: CR 112.8 makes that ONE hit of
   // 2, and there is still nothing on the stack for any of it
   pick(h, f1);
   pick(h, f1);
@@ -266,9 +266,9 @@ test('R83: the distribution is NOT a target — nothing new reaches the stack', 
   finishBattle(h);
 });
 
-// ── R81: Burst ───────────────────────────────────────────────────────────
+// ── CR 803.5a: Burst ───────────────────────────────────────────────────────────
 
-test('R81: Burst casts all your tokens OF THAT NAME, and leaves the others alone', () => {
+test('CR 803.5a: Burst casts all your tokens OF THAT NAME, and leaves the others alone', () => {
   const h = new Harness(6907);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

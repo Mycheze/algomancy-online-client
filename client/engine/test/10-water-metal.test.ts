@@ -38,7 +38,7 @@ test('Bloated Manablub: dying in battle → each opponent loses 3 life (region-s
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [wall] } });
   pass(h); pass(h);                                         // combat: the 2/1 dies to the 7
-  assignDefault(h);                                         // R319: the {Piercing} Whale elects
+  assignDefault(h);                                         // CR 802.16c: the {Piercing} Whale elects
   assert.ok(!ent(h, blub), 'Manablub died in combat');
   // its despawn/die trigger is on the stack (battle); resolve it
   pass(h); pass(h);

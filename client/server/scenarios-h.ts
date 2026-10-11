@@ -19,7 +19,7 @@
 import type { Seat } from '../engine/src/types.ts';
 import type { Scenario } from './scenarios.ts';
 
-// R218: a batch may import only TYPES from scenarios.ts — restate the seats
+// a batch may import only TYPES from scenarios.ts (see 14-scenario-tester.md) — restate the seats
 const YOU: Seat = 0;
 const OPPONENT: Seat = 1;
 
@@ -80,7 +80,7 @@ export const BATCH_H: Record<string, Scenario> = {
     needsLiveOpponent: false,
   },
   /**
-   * CT-189 / R307. The owner's own board-pick-stack, with the two retarget
+   * CT-189 / CR 110.6, 110.9. The owner's own board-pick-stack, with the two retarget
    * cards in hand instead of Fireball: the opponent's Twin Flame is on the
    * stack aimed at your Bubb and your Chitin Shredder.
    */
@@ -127,14 +127,14 @@ export const BATCH_H: Record<string, Scenario> = {
   /**
    * Report #176 (EGBM) / CT-190. The opponent attacks with two columns; your
    * Dreadwave Devourer (a spell unit) blocks the first; their Cosmic Reversal
-   * recalls every spell unit — your blocker with it. R185: the column stays
+   * recalls every spell unit — your blocker with it. CR 606.3a: the column stays
    * blocked. The board used to call it "unblocked".
    */
   'blocker-gone': {
     id: 'blocker-gone',
     card: 'Luminous Arc',
     why: 'Report #176: a column whose blocker was removed was drawn "unblocked", though the engine '
-      + '(R185) keeps it blocked and it deals no damage.',
+      + 'keeps it blocked and it deals no damage.',
     expect:
       'The opponent attacked with Bubb and Chitin Shredder. Your Good Whale blocked the Bubb, then\n'
       + 'their Luminous Arc killed it.\n'

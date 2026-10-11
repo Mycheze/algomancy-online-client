@@ -4,14 +4,14 @@
     "kind": "b-engine-only",
     "rule": "effects.virus.spell-host.not-hosts",
     "tier": 3,
-    "summary": "Which stack items a Virus may be augmented onto rests on R79's own judgement calls. Caleb names spells (and spell tokens); R79 excludes triggered and activated abilities, Viruses, units being cast and Ambushes, and marks each exclusion \"not sourced\" and \"Bena to rule\".",
+    "summary": "Which stack items a Virus may be augmented onto rests on the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s own judgement calls. Caleb names spells (and spell tokens); the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) excludes triggered and activated abilities, Viruses, units being cast and Ambushes, and marks each exclusion \"not sourced\" and \"Bena to rule\".",
     "sides": [
       {
-        "source": "R79",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
       },
       {
-        "source": "R79",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
       }
     ],
@@ -22,28 +22,28 @@
     "kind": "c-owner-call-only",
     "rule": "effects.virus.spell-host.spell-unit",
     "tier": 3,
-    "summary": "Caleb says a spell carrying a Virus \"gets erased on resolution\". R79 makes an exception for spell units, which enter play with the Virus as an augment instead, and says no ruling asks for it.",
+    "summary": "Caleb says a spell carrying a Virus \"gets erased on resolution\". The owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) makes an exception for spell units, which enter play with the Virus as an augment instead, and says no ruling asks for it.",
     "sides": [
       {
-        "source": "R79",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "> and the spell gets erased on resolution**. You can augment spells during"
       },
       {
-        "source": "R79",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "*arrives*. Erasing its card would delete a unit on its way into play, which no"
       }
     ],
-    "resolution": "The rule states R79's exception, basis owner. Its reasoning: {Unstable} replaces a bin entry (R69), and a resolving spell unit does not go to a bin. Owner sign-off needed; question for the owner only if he reads Caleb's \"the spell gets erased\" as covering spell units."
+    "resolution": "The rule states the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s exception, basis owner. Its reasoning: {Unstable} replaces a bin entry (owner ruling of 2026-08-22, “A token entering a ZONE is…”), and a resolving spell unit does not go to a bin. Owner sign-off needed; question for the owner only if he reads Caleb's \"the spell gets erased\" as covering spell units."
   },
   {
     "id": "D-U17-5",
     "kind": "g-other",
     "rule": "effects.graft.applying.not-by-rook",
     "tier": 4,
-    "summary": "R95 left open whether Rook's battle permission covers grafting. Rook's printed text says \"augment\".",
+    "summary": "The owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”) left open whether Rook's battle permission covers grafting. Rook's printed text says \"augment\".",
     "sides": [
       {
-        "source": "R95",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,"
       },
       {
@@ -51,7 +51,7 @@
         "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
       }
     ],
-    "resolution": "Printed text answers it (R219: \"If the printed text answers it, it is not a question\"). The rule states that Rook does not permit grafting in battle. Graft 101 point 1 (grafting only in deployment) agrees."
+    "resolution": "Printed text answers it (the owner ruling of 2026-08-26 (“an erased card goes to the…”): \"If the printed text answers it, it is not a question\"). The rule states that Rook does not permit grafting in battle. Graft 101 point 1 (grafting only in deployment) agrees."
   },
   {
     "id": "D-U17-6",
@@ -65,18 +65,18 @@
         "quote": "Caleb is considering change of ruling for graft-targeting-fizzle, so even if it loses all targets it will still happen."
       },
       {
-        "source": "R86",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
       }
     ],
-    "resolution": "A possible future change, not a ruling. The rule states the current answer (R86). Revisit if Caleb rules."
+    "resolution": "A possible future change, not a ruling. The rule states the current answer (owner ruling of 2026-08-23, “An effect fizzles when it loses…”). Revisit if Caleb rules."
   },
   {
     "id": "D-U17-7",
     "kind": "a-sources-disagree",
     "rule": "effects.graft.multiplier.costs",
     "tier": 4,
-    "summary": "The Amphivore thread says an unpayable multiplied cost means \"you don't get the effect\". R110 read that as only that graft; Graft 101 point 11 says the whole graft effect stays off the stack, and R334 applies that to the multiplied case.",
+    "summary": "The Amphivore thread says an unpayable multiplied cost means \"you don't get the effect\". The owner ruling of 2026-08-23 (“\"Trigger two/three copies of this graft…”) read that as only that graft; Graft 101 point 11 says the whole graft effect stays off the stack, and the owner ruling of 2026-10-09 (“A grafted [cost] is mandatory, and…”) applies that to the multiplied case.",
     "sides": [
       {
         "source": "RAQ 1353859961855148103#5",
@@ -87,25 +87,25 @@
         "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
       },
       {
-        "source": "R334",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "This narrows R110. R110 skipped \"that effect\", meaning only the graft whose cost failed, and the engine treated grafted costs as opt-in riders. That opt-in was never backed by a ruling. Now:"
       }
     ],
-    "resolution": "Both are designer sources; Graft 101 point 11 is explicit and the Amphivore line fits it. The rule states the whole composite stays off the stack (R334). No owner question."
+    "resolution": "Both are designer sources; Graft 101 point 11 is explicit and the Amphivore line fits it. The rule states the whole composite stays off the stack (owner ruling of 2026-10-09, “A grafted [cost] is mandatory, and…”). No owner question."
   },
   {
     "id": "D-U17-8",
     "kind": "g-other",
     "rule": "effects.graft.multiplier",
     "tier": 4,
-    "summary": "Sources silent on a graft multiplier grafted under another multiplier (for example a Lost Guardian grafted under an Amphivore). R110 calls it unruled.",
+    "summary": "Sources silent on a graft multiplier grafted under another multiplier (for example a Lost Guardian grafted under an Amphivore). The owner ruling of 2026-08-23 (“\"Trigger two/three copies of this graft…”) calls it unruled.",
     "sides": [
       {
-        "source": "R110",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "Two multipliers in one composite (a doubler grafted under a doubler) multiply;"
       },
       {
-        "source": "R110",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "unruled, and unreachable in the pool without someone trying. Tests: 17-earth-b"
       }
     ],
@@ -116,10 +116,10 @@
     "kind": "c-owner-call-only",
     "rule": "effects.virus.permission.region",
     "tier": 3,
-    "summary": "That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in R95. Players are not authority; Rook's printed text names no region.",
+    "summary": "That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”). Players are not authority; Rook's printed text names no region.",
     "sides": [
       {
-        "source": "R95",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
       },
       {
@@ -134,7 +134,7 @@
     "kind": "a-sources-disagree",
     "rule": "effects.graft.applying.deployment-only",
     "tier": 4,
-    "summary": "Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and R105 let any card, a graft card included, be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.",
+    "summary": "Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) let any card, a graft card included, be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.",
     "sides": [
       {
         "source": "RAQ 1355115946032889914#0",
@@ -145,7 +145,7 @@
         "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
       },
       {
-        "source": "R105",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
       }
     ],

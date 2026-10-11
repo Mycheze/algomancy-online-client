@@ -4,7 +4,7 @@
     "kind": "a-sources-disagree",
     "rule": "turn.planning.order",
     "tier": 2,
-    "summary": "The printed rules have the initiative player take the resource step and the haste step first, then the non-initiative player, who gets to see what the initiative player did. R18 (its standing half) has both players act at once, interleaved in any order, inside a hidden simultaneous segment.",
+    "summary": "The printed rules have the initiative player take the resource step and the haste step first, then the non-initiative player, who gets to see what the initiative player did. The owner ruling of 2026-08-18 (“Haste step engine model […]”) (its standing half) has both players act at once, interleaved in any order, inside a hidden simultaneous segment.",
     "seeAlso": [
       {
         "id": "D-U08-11",
@@ -29,11 +29,11 @@
         "quote": "Teams always act together in all situations and phases of"
       },
       {
-        "source": "R18",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "no stack, no responses), players may interleave plays in any order, and a player with no"
       },
       {
-        "source": "R18",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
       },
       {
@@ -53,11 +53,11 @@
         "quote": "treat all other players as if they don’t exist."
       },
       {
-        "source": "R286",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "playing different games during deployment"
       }
     ],
-    "resolution": "Settled by the authority order: Manual p.27 (\"IT FIRST, THEN NIT\"), Manual p.38 and Rulebook 2023 p.5 have the initiative side take the resource step, the haste step and deployment first, and the non-initiative side \"wait and see\". They outrank R18's hidden simultaneous segment, so turn.planning.order, turn.general.initiative and turn.deploy.order state print. The client's simultaneous hidden steps are F-U08-1 (CT-247, filed as an owner decision: keep them as a digital convention in Annex D, or change the engine). turn.deploy.order.simultaneous states the client today; if the owner keeps it, it belongs in Annex D. The argument that the order is moot because each player is in a separate region during deployment (Manual p.42) does not make the two the same: under print the non-initiative player chooses after the initiative player has finished."
+    "resolution": "Settled by the authority order: Manual p.27 (\"IT FIRST, THEN NIT\"), Manual p.38 and Rulebook 2023 p.5 have the initiative side take the resource step, the haste step and deployment first, and the non-initiative side \"wait and see\". They outrank the owner ruling of 2026-08-18 (“Haste step engine model […]”)’s hidden simultaneous segment, so turn.planning.order, turn.general.initiative and turn.deploy.order state print. The client's simultaneous hidden steps are F-U08-1 (CT-247, filed as an owner decision: keep them as a digital convention in Annex D, or change the engine). turn.deploy.order.simultaneous states the client today; if the owner keeps it, it belongs in Annex D. The argument that the order is moot because each player is in a separate region during deployment (Manual p.42) does not make the two the same: under print the non-initiative player chooses after the initiative player has finished."
   },
   {
     "id": "D-U08-2",
@@ -75,18 +75,18 @@
         "quote": "After the resource step is the very short haste step, where players can only play"
       },
       {
-        "source": "R97",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "2. `legalActions`' `phase === 'planning' && s.hasteDone` branch — the client's affordance."
       }
     ],
-    "resolution": "This document reads the p.18 sentence as the end of the resource step and places the haste step as the last step of the planning phase (turn.haste.what), per p.27 and the engine's phase model quoted in R97. No rules consequence found: nothing in the pack depends on whether the haste step is \"in\" planning."
+    "resolution": "This document reads the p.18 sentence as the end of the resource step and places the haste step as the last step of the planning phase (turn.haste.what), per p.27 and the engine's phase model quoted in the owner ruling of 2026-08-23 (“A card may be granted permission…”). No rules consequence found: nothing in the pack depends on whether the haste step is \"in\" planning."
   },
   {
     "id": "D-U08-3",
     "kind": "a-sources-disagree",
     "rule": "turn.haste.what",
     "tier": 2,
-    "summary": "Rulebook 2023 p.7 has a single \"mana step\" in which players take resources and play haste cards. The Manual splits it into a resource step and a later haste step. R97 equates the printed \"mana step\" with the haste step alone, but the Prismite card says its exchange may be done \"only during the mana step\", and R17 and the engine place the exchange in the resource step.",
+    "summary": "Rulebook 2023 p.7 has a single \"mana step\" in which players take resources and play haste cards. The Manual splits it into a resource step and a later haste step. The owner ruling of 2026-08-23 (“A card may be granted permission…”) equates the printed \"mana step\" with the haste step alone, but the Prismite card says its exchange may be done \"only during the mana step\", and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) and the engine place the exchange in the resource step.",
     "seeAlso": [
       {
         "id": "D-U02-6",
@@ -103,15 +103,15 @@
         "quote": "After the resource step is the very short haste step, where players can only play"
       },
       {
-        "source": "R97",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
       },
       {
-        "source": "R132",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "during the mana step. {i}(This does not use one of your activations for turn.)\""
       },
       {
-        "source": "R17",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
       },
       {
@@ -119,21 +119,21 @@
         "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
       }
     ],
-    "resolution": "Settled by the designer: each card's printed \"mana step\" is the step that card was written for. Caleb (Discord rules-questions, 2024-03-27, calebgannon) was asked about both cards that print it. Of Dispatch Courier (\"shouldn't this say \"haste step\"\") he said \"Yes\". Of the Prismite he said \"That should be mana step\" and \"Unless I used resource step in the rulebook\"; told that the rules say resource step, \"good catch\". So Courier's mana step is the haste step (R97 is right for it, turn.haste.grants) and the Prismite's is the resource step (the Manual p.18 paragraph that describes the exchange; concepts.resources.prismite.exchange and turn.resource.actions.exchange). Rulebook 2023 p.7's single \"mana step\" (resources and haste cards together, as in Caleb's 2023 \"you can play haste cards and resources as special actions\", R97) is the older name for the two steps the Manual later split. The engine agrees: it refuses an exchange once the player has finished the resource step (413). Register fix (wording only): R97's \"the printed mana step IS this engine's haste step\" holds for Dispatch Courier, not for every card that prints the words, and R17's \"during planning\" is wider than the card. The first synthesis of this item read the Prismite's mana step as both steps; it had not seen the 2024-03-27 exchange, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export."
+    "resolution": "Settled by the designer: each card's printed \"mana step\" is the step that card was written for. Caleb (Discord rules-questions, 2024-03-27, calebgannon) was asked about both cards that print it. Of Dispatch Courier (\"shouldn't this say \"haste step\"\") he said \"Yes\". Of the Prismite he said \"That should be mana step\" and \"Unless I used resource step in the rulebook\"; told that the rules say resource step, \"good catch\". So Courier's mana step is the haste step (the owner ruling of 2026-08-23 (“A card may be granted permission…”) is right for it, turn.haste.grants) and the Prismite's is the resource step (the Manual p.18 paragraph that describes the exchange; concepts.resources.prismite.exchange and turn.resource.actions.exchange). Rulebook 2023 p.7's single \"mana step\" (resources and haste cards together, as in Caleb's 2023 \"you can play haste cards and resources as special actions\", the owner ruling of 2026-08-23 (“A card may be granted permission…”)) is the older name for the two steps the Manual later split. The engine agrees: it refuses an exchange once the player has finished the resource step (413). Register fix (wording only): The owner ruling of 2026-08-23 (“A card may be granted permission…”)’s \"the printed mana step IS this engine's haste step\" holds for Dispatch Courier, not for every card that prints the words, and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”)’s \"during planning\" is wider than the card. The first synthesis of this item read the Prismite's mana step as both steps; it had not seen the 2024-03-27 exchange, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export."
   },
   {
     "id": "D-U08-4",
     "kind": "a-sources-disagree",
     "rule": "turn.haste.grants",
     "tier": 4,
-    "summary": "The RAQ write-up on Dispatch Courier says the unit is played \"despite gaining\" haste; R123 says a play \"as if it had [Haste]\" is timing only and the unit never carries the attribute.",
+    "summary": "The RAQ write-up on Dispatch Courier says the unit is played \"despite gaining\" haste; the owner ruling of 2026-08-24 (“playing cards out of a BIN…”) says a play \"as if it had [Haste]\" is timing only and the unit never carries the attribute.",
     "sides": [
       {
         "source": "RAQ 1465292396664193171#0",
         "quote": "No, despite gaining :haste: they can still only be played during :battle:."
       },
       {
-        "source": "R123",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "it had [Haste]\" is TIMING ONLY — the played unit never carries the attribute."
       }
     ],
@@ -147,7 +147,7 @@
     "summary": "That the haste step happens every turn, even when nobody can play anything, is the owner's call. The Manual says only that the step ends when everyone has played what they want, \"which can be none\".",
     "sides": [
       {
-        "source": "R224",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "\"Always offer the step.\""
       },
       {
@@ -162,7 +162,7 @@
     "kind": "c-owner-call-only",
     "rule": "turn.draw.state-checks.constructed",
     "tier": 3,
-    "summary": "That a player's units are not checked for death between the draw of 4 and the recycle of 2 in constructed is the owner's call (2026-10-06, quoted in R313). No designer source rules on it.",
+    "summary": "That a player's units are not checked for death between the draw of 4 and the recycle of 2 in constructed is the owner's call (2026-10-06, quoted in the owner ruling of 2026-10-06 (“No action ends with a dead…”)). No designer source rules on it.",
     "seeAlso": [
       {
         "id": "D-U16-15",
@@ -171,11 +171,11 @@
     ],
     "sides": [
       {
-        "source": "R313",
+        "source": "owner ruling, adopted 2026-10-06",
         "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
       },
       {
-        "source": "R313",
+        "source": "owner ruling, adopted 2026-10-06",
         "quote": "actions, but a seat's units are not checked while that seat still owes its"
       }
     ],
@@ -189,11 +189,11 @@
     "summary": "That a [Haste] at the end of a prophecy condition lets the card be prophesied in the haste step is the owner's reading of the marker; no designer source explains the marker.",
     "sides": [
       {
-        "source": "R277",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
       }
     ],
-    "resolution": "Owner call (R277). Only one card in the pool carries the marker (Divine Intervention, per R277)."
+    "resolution": "Owner call (owner ruling of 2026-08-30, “the [Haste] on a prophecy banner…”). Only one card in the pool carries the marker (Divine Intervention, per the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”))."
   },
   {
     "id": "D-U08-10",

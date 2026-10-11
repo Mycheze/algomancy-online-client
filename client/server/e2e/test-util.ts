@@ -10,7 +10,7 @@
  * `npm test` (suite.test.ts) rather than one file at a time by hand:
  *
  *   - spawnServer(): boots the real server and tells you what port it got.
- *     See R204 / CT-85 below — this replaced freePort(), which was the flake.
+ *     See the port-flake fix / CT-85 below — this replaced freePort(), which was the flake.
  *   - gamesDir(): saved rooms live in server/games/, which on the deploy box
  *     is LIVE DATA. rooms.ts already honours ALGO_GAMES_DIR; the tests that
  *     read a saved room back hard-coded server/games/ and so ignored it.
@@ -36,7 +36,7 @@ export async function mintRoom(port: number): Promise<string> {
 
 /* ── booting the server under test ──────────────────────────────────────
  *
- * R204 / CT-85. There used to be a `freePort()` here. It bound :0, read the
+ * The port-flake fix / CT-85. There used to be a `freePort()` here. It bound :0, read the
  * assigned number back, CLOSED the socket, and returned the bare number; the
  * caller then spawned main.ts with PORT=<that number>. Between the close and
  * the child's bind, the port belongs to nobody, and anything else on the box

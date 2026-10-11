@@ -121,7 +121,7 @@
  *  · Arbiter of Vitality, for the reason in round 4 above. Its clause is an
  *    imperative with no subject, identical in shape to Buffer Overflow's
  *    one-shot spell; the only thing separating them is the [Augment] marker.
- *    It is R162 `amountMultipliers`, so it is in 88's REPLACEMENT_KEYS and
+ *    It is CR 708.6 `amountMultipliers`, so it is in 88's REPLACEMENT_KEYS and
  *    guarded there.
  *  · Gatekeeper of Souls' `mustBeTargeted` opens with "When", so it is read as
  *    a trigger.
@@ -139,7 +139,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight). registry.ts registers
 // only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
@@ -211,7 +211,7 @@ const ASLONGAS = /^as long as [^,]+,\s*/i;
 const CLASS_SUBJ = /^(?:i|my |your |our |all |other units|enemies|everything|columns|cards |spells\b|spells |abilities\b|x )/i;
 /** a present-tense STATE predicate — a fact, not an action */
 const STATE_VERB = /\b(?:gains?|has|have|are|is|costs?|can'?t?|cannot|can|spawns? with|stays?|loses? all)\b/i;
-/** the standing-PERMISSION shape (R95/R97/R29): "you/players may|can …" with a
+/** the standing-PERMISSION shape (CR 707.10, 602.7): "you/players may|can …" with a
  *  scope that recurs rather than a one-off window. The scope marker is what
  *  separates Rook's "You may augment cards … as if they were [Virus]" from
  *  Tides of the Cosmos' "You may play them now, for free." */
@@ -277,27 +277,27 @@ const PRINTED_KEYS = new Set([
  * a card that really was fixed — the failure direction that gets noticed.
  */
 const CONTINUOUS_KEYS: Record<string, string> = {
-  statics: 'R106 stat/attr/base/suppression layer — "Your other units gain +1/+1"',
-  projects: 'R118 continuous FACE projection — "I have all abilities of adjacent allies"',
-  costMods: 'R59 continuous cost modifier — "Spells cost [one] more to play during battle"',
-  effectAttrs: 'R94 continuous attribute grant onto resolving effects — "Your units and spells gain powerful"',
-  modPermissions: 'R95 continuous permission to apply a mod — "You may augment cards from hand and bin …"',
-  playPermissions: 'R97 continuous permission to PLAY at a refused timing — "Each turn, you may play a unit … as if it had [Haste]"',
-  binPlayPermissions: 'R123 the same, granted by a card sitting in its owner\'s bin',
-  mustBeTargeted: 'R64 "I must be targeted if able" — a standing targeting restriction',
-  prophesyFromBin: 'R42 "I can be prophesied from your bin"',
-  playsFromBin: 'R123 "…and played from your bin."',
-  noPlayFromHand: 'R100 "I can\'t be played from your hand."',
-  playsIntoFormation: 'R29 "You may play me into an open spot in your formation"',
+  statics: 'CR 206.4 stat/attr/base/suppression layer — "Your other units gain +1/+1"',
+  projects: 'CR 710.7 continuous FACE projection — "I have all abilities of adjacent allies"',
+  costMods: 'CR 111.10 continuous cost modifier — "Spells cost [one] more to play during battle"',
+  effectAttrs: 'CR 707.7 continuous attribute grant onto resolving effects — "Your units and spells gain powerful"',
+  modPermissions: 'CR 720.2b continuous permission to apply a mod — "You may augment cards from hand and bin …"',
+  playPermissions: 'CR 803.2b continuous permission to PLAY at a refused timing — "Each turn, you may play a unit … as if it had [Haste]"',
+  binPlayPermissions: 'CR 504.7 the same, granted by a card sitting in its owner\'s bin',
+  mustBeTargeted: 'CR 110.12 "I must be targeted if able" — a standing targeting restriction',
+  prophesyFromBin: 'CR 803.7c "I can be prophesied from your bin"',
+  playsFromBin: 'CR 405.9 "…and played from your bin."',
+  noPlayFromHand: 'CR 702.2b "I can\'t be played from your hand."',
+  playsIntoFormation: 'CR 602.7 "You may play me into an open spot in your formation"',
   xMin: '"X can\'t be 0." — the smallest legal cast X',
-  amountMods: 'R104 continuous AMOUNT modifier',
-  amountMultipliers: 'R162 continuous MULTIPLICATIVE amount modifier',
-  replaceRotDamage: 'R38 replacement hook',
-  replaceCombatDamageToPlayer: 'R38 replacement hook',
-  replaceLifeGain: 'R104 replacement hook',
-  replaceCounters: 'R104 replacement hook',
-  replaceTokenCreation: 'R104 replacement hook',
-  replaceTokenBatch: 'R104 replacement hook',
+  amountMods: 'CR 708.5 continuous AMOUNT modifier',
+  amountMultipliers: 'CR 708.6 continuous MULTIPLICATIVE amount modifier',
+  replaceRotDamage: 'CR 112.13d replacement hook',
+  replaceCombatDamageToPlayer: 'CR 608.8a replacement hook',
+  replaceLifeGain: 'CR 708.1 replacement hook',
+  replaceCounters: 'CR 708.1 replacement hook',
+  replaceTokenCreation: 'CR 708.1 replacement hook',
+  replaceTokenBatch: 'CR 708.9 replacement hook',
   replaceCardStep: 'replacement hook (Worldbender)',
 };
 
@@ -310,19 +310,19 @@ const CONTINUOUS_KEYS: Record<string, string> = {
  */
 const INERT_KEYS: Record<string, string> = {
   lessonOnly:
-    'R297 — marks a Learn to Play card (the Tutorial Bot\'s Training Construct). A fact about '
+    'CR D8.1 — marks a Learn to Play card (the Tutorial Bot\'s Training Construct). A fact about '
     + 'which deals may hold the card, read only by DECK_LIST\'s filter and the client; it is '
     + 'not a layer and reaches no stack.',
   spawnsWithCounters:
-    'R165 — a DECLARATION of what the body arrives holding ("I spawn with three -1/-1 counters '
-    + 'on me"), applied by spawnUnit through the R104 amount layer BEFORE it fires \'spawned\'. '
+    'CR 707.5 — a DECLARATION of what the body arrives holding ("I spawn with three -1/-1 counters '
+    + 'on me"), applied by spawnUnit through the CR 707.5a amount layer BEFORE it fires \'spawned\'. '
     + 'Inert rather than continuous on purpose: it is not a standing layer, it is a one-time '
     + 'property of the arrival, and it must reach no stack — a card\'s own printed arrival size '
-    + 'is not an effect anyone may respond to. That is exactly what R165 fixed: Aethercap '
+    + 'is not an effect anyone may respond to. That is exactly what was fixed (CR 707.5): Aethercap '
     + 'Siphoner queued a real stack item for it while Powerforge Synergist did not, so the same '
     + 'printed sentence was negatable on one card and not the other.',
   asYouPlay:
-    'R178 — a COST-SHAPED, NON-STACK, optional decision offered as ANOTHER card is played ("As '
+    'CR 109.6 — a COST-SHAPED, NON-STACK, optional decision offered as ANOTHER card is played ("As '
     + 'you play a nonunit spell, you may sacrifice me…" — Maelstrom Charger, the only card in '
     + 'the pool printing one). INERT is the designer\'s own answer rather than a convenience: '
     + 'RAQ "[Solved] Maelstrom Charger - all you need to know." — "Meal copying is not an effect '
@@ -331,7 +331,7 @@ const INERT_KEYS: Record<string, string> = {
     + 'Lurker doesn\'t affect it." It is collected as a stage of the CAST WINDOW '
     + '(E.collectAsYouPlay) and is never an item. ⚠ Not continuous either: it is asked once, per '
     + 'play, and answered — nothing about it is standing. The COPY it can buy DOES reach the '
-    + 'stack, but that is R164\'s clone of the PLAYED SPELL\'s own item — the one thing the '
+    + 'stack, but that is CR 710.8\'s clone of the PLAYED SPELL\'s own item — the one thing the '
     + 'designer says the opponent may interact with — and not this channel putting an item there.',
   augmentable:
     'a FLAG, not a layer — "this card may be applied as an augment even though it declares no '
@@ -344,7 +344,7 @@ const INERT_KEYS: Record<string, string> = {
   graftEffect: 'the [Switch] rider, transferred on graft — again the played card\'s own resolution',
   xPreview: 'UI-only PURE query; dsl.ts: "Never called by the engine, apply(), or any replay-affecting path"',
   xPreviewRows: 'UI-only PURE query, same contract as xPreview (#85)',
-  previewNote: 'UI-only PURE query — "what will this be worth in a battle", added when R243 made '
+  previewNote: 'UI-only PURE query — "what will this be worth in a battle", added when a ruling made '
     + '"all" region-scoped and left a static reading the opposition worth nothing in a home '
     + 'region. Same contract as xPreview: never called by the engine, apply() or any '
     + 'replay-affecting path, and it must not mutate. The card is HANDED the seats '
@@ -360,7 +360,7 @@ const STACK_KEYS: Record<string, string> = {
 
 const behaviourKeys = (name: string): string[] => {
   const c = getCard(name) as unknown as Record<string, unknown>;
-  // R268: `augmentBox` is not a channel — it is the [Augment] half of the text
+  // CR 721.1: `augmentBox` is not a channel — it is the [Augment] half of the text
   // box, holding the same continuous channels under the same names. FLATTENED
   // rather than classified, so every message below still names the real
   // channel ("declares costMods") instead of the container, and so a channel
@@ -406,9 +406,9 @@ const NO_LAYER: Record<string, string> = {
     + 'layer, which is what the inventory entry asks for.',
   'Instrument of Reassignment':
     '"X can\'t be 0." — this X is the ACTIVATED ABILITY\'s X ("[x], Sacrifice another nontoken '
-    + 'unit: Create a Robot X"), and as of R196 it is a real CAST COST (`castCost: { kind: '
+    + 'unit: Create a Robot X"), and under CR 705.3b it is a real CAST COST (`castCost: { kind: '
     + '"payMana", n: "X", xMin: 1 }`), so the printed floor IS `xMin` — the field that forbids, '
-    + 'as against R157 §22/R161\'s warning-only `xZeroWarning`. ⚠ This entry used to say the X '
+    + 'as against CR 107.2b/CR 109.9c\'s warning-only `xZeroWarning`. ⚠ This entry used to say the X '
     + 'was "chosen at resolution" and that `xMin` was a cast-cost field this ability could not '
     + 'use, with the floor enforced by a hand-rolled `for (let x = 1; x <= open; x++)` option '
     + 'list. That option list is gone. Verified in batch-metal-b.ts.',
@@ -428,7 +428,7 @@ const NO_LAYER: Record<string, string> = {
  */
 const STACK_ANYWAY: Record<string, string> = {
   'Ancient One':
-    '"I have all abilities of adjacent allies." — R118/R127. The continuous half IS declared '
+    '"I have all abilities of adjacent allies." — CR 710.7. The continuous half IS declared '
     + '(`projects`, facets statics/activated/behavior). The `augmentText` beside it is the '
     + 'TRIGGERED half of the same sentence, and it belongs on the stack: what is projected is a '
     + 'neighbour\'s triggered ability, and a projected trigger fires and is responded to exactly '
@@ -473,10 +473,10 @@ test('the classifier finds the continuous clauses, and only those', () => {
     'Aberrant Statweaver', 'Beyond, Codex Incarnate', 'Brough', 'Rotspore Herald',
     'Emberflame Enlightener', 'Envoy of Lightning', 'Harbinger of Immolation', 'The Everywhere',
     'Ancient One',
-    // R59 cost layer
+    // CR 111.10 cost layer
     'Arbiter of Armistice', 'Crevice Lurker', 'Stasis Sentry', 'The Silent', 'Tranquility',
     'Vengeance',
-    // R29/R42/R95/R97/R100/R123 permissions and play-route facts
+    // CR 602.7, 803.7c, 707.10, 803.2b, 702.2b, 405.9 permissions and play-route facts
     'Angel of Anguish', 'Calming Force', 'Dispatch Courier', 'Rook', 'Slurpr',
     'The Bonesculptor', 'Tiderunner Initiate', 'Trench Stalker',
     // "I spawn with N counters" — see NO_LAYER
@@ -624,12 +624,12 @@ test('the tally: how much of the pool is a standing fact, printed on every run',
 
 // ── the card this ruling fixed ──────────────────────────────────────────
 
-test('R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence', () => {
+test('CR 721.1e: Aetherflux Golem is a STATIC, like the two cards printing its sentence', () => {
   // The named regression test for the one card CARD-TODO #48 filed. It would
-  // have failed before R168: the card declared `augmentText` (a triggered
+  // have failed before the fix: the card declared `augmentText` (a triggered
   // ability adding two +1/+1 counters) and no `statics` at all.
-  // R268: "[Augment] I gain +2/+2." is printed INSIDE the box, so the StaticMod
-  // is declared in `augmentBox`. What R168 settled — that it is a static and
+  // CR 721.1: "[Augment] I gain +2/+2." is printed INSIDE the box, so the StaticMod
+  // is declared in `augmentBox`. What the fix settled (CR 721.1e) — that it is a static and
   // not a trigger — is unchanged, which is what this reads.
   const golemStatics = radiantList('Aetherflux Golem', 'statics');
   assert.ok(golemStatics.length, 'Aetherflux Golem declares a StaticMod');
@@ -645,7 +645,7 @@ test('R168: Aetherflux Golem is a STATIC, like the two cards printing its senten
   assert.equal(s.dt, 2, '+2 defense');
 });
 
-// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+// ── POOL SIGHT ─────────────────────────────────────────────────── (see 180-pool-sight)
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
 // card entry point and it registers 494 of the 495 cards: two of the three
@@ -657,7 +657,7 @@ test('R168: Aetherflux Golem is a STATIC, like the two cards printing its senten
 // The floor is what stops that being reintroduced by an import change nobody
 // reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
 // floor for the whole suite and the guard that catches a ninth sweep.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496,
     `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `

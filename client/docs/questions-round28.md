@@ -120,7 +120,7 @@ that never appeared. But making them agree changes **when a priority window
 opens**, which is a rules-visible change, so it wants a ruling rather than a
 patch.
 
-ANSWER: **ALWAYS OFFER THE STEP** — 2026-08-28, recorded as **R224**. The step opens
+ANSWER: **ALWAYS OFFER THE STEP** — 2026-08-28, recorded as a numbered ruling (now **CR 504.5**). The step opens
 unconditionally, and the "Bluff Haste" toggle asked for separately in report #109
 becomes the fix rather than a new feature.
 ⚠ THIS QUESTION'S PREMISE WAS WRONG IN BOTH HALVES, measured 2026-08-28.

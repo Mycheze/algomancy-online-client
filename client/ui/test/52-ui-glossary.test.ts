@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
-import '../../engine/src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
+import '../../engine/src/index.ts';   // the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495
 import {
   EXPANSION_GUIDE, GLOSSARY, KEYWORDS, MECHANICS, glossaryHits, matcherFor,
 } from '../glossary.ts';
@@ -55,8 +55,8 @@ test('every attribute printed on a real card has reminder text', () => {
 /* ── the keys, against the engine's own vocabulary ─────────────────────────
  *
  * A glossary entry can silently contradict the engine — which is exactly how
- * {Alluring} came to teach a rule (R76) that had been replaced (R84) and how
- * {Pure} went on saying "not implemented" for two days after R61 implemented
+ * {Alluring} came to teach a rule that had been replaced (by the targeting reading, now CR 802.15a) and how
+ * {Pure} went on saying "not implemented" for two days after the engine implemented
  * it. The KEYS can be checked cheaply, and are, in both directions below.
  *
  * The TEXT cannot be checked automatically: no machine can read "its column
@@ -64,13 +64,13 @@ test('every attribute printed on a real card has reminder text', () => {
  * agrees. The few sentences that a ruling has already caught out are pinned by
  * name at the bottom of this file; everything else is on the author.
  *
- * ⚠ THAT LAST PARAGRAPH IS NOW ONLY HALF TRUE (R206 / CT-76, 2026-08-26), and
+ * ⚠ THAT LAST PARAGRAPH IS NOW ONLY HALF TRUE (CT-76, 2026-08-26), and
  * it was quoted in the ticket as the statement of the gap. It cost FIFTEEN
  * wrong rows out of 43 — five of them on a list that said they had already
  * been checked — so `177-glossary-conformance.test.ts` takes two bites out of
  * "everything else is on the author":
  *   · every row now carries `ruling`, and its citations must RESOLVE to a
- *     `## R<n>` in digital-rules.md that is not withdrawn/superseded/narrowed;
+ *     `## R<n>` in the retired ruling register that is not withdrawn/superseded/narrowed;
  *   · for the 15 attributes that carry a PRINTED reminder, the row is compared
  *     against the card's own words, derived from printed.json.
  * What is still on the author is the prose of the rows that have neither —
@@ -94,7 +94,7 @@ function attrUnion(): string[] {
 const CARD_FLAGS: Record<string, 'burst' | 'virus' | 'ambush'> = {
   Burst: 'burst', Virus: 'virus', Ambush: 'ambush',
 };
-const RULES_CONCEPTS = ['Unstable'];   // R69: what having mods does to a card
+const RULES_CONCEPTS = ['Unstable'];   // CR 803.8e: what having mods does to a card
 
 test('every attribute the ENGINE knows has reminder text, printed or not', () => {
   // stronger than the pool sweep above: an attribute added to the union with
@@ -147,11 +147,11 @@ test('every glossary heading is a word the game actually says', () => {
 /**
  * The row's COMPLETE statement of the rule.
  *
- * R248 (report #118) split every row in two: an exported row's `text` is the
+ * The reminder ruling (report #118; now CR D6.11) split every row in two: an exported row's `text` is the
  * pool's own printed reminder wherever the pool prints one, and the authored
  * generalisation moved to `rule`. Every assertion below is about a sentence
  * the ruling behind it forced into the row — {Pure}'s combat implementation
- * (R61), {Alluring}'s targeting (R84) — and none of those is in a printed
+ * (CR 802.25b), {Alluring}'s targeting (CR 802.15a) — and none of those is in a printed
  * reminder, so this reads the field that carries them. `text` where nothing
  * displaced it, which is all four of the other rows checked here.
  */
@@ -161,9 +161,9 @@ const entry = (term: string) => {
   return e!.rule ?? e!.text;
 };
 
-test('R84: Alluring TARGETS one enemy unit — it does not conscript every blocker', () => {
-  // it taught R76's invented rule ("Defenders that are able to block it must
-  // block it") for as long as R76 stood, and for a day after it was replaced
+test('CR 802.15a: Alluring TARGETS one enemy unit — it does not conscript every blocker', () => {
+  // it taught the old Alluring ruling's invented rule ("Defenders that are able to block it must
+  // block it") for as long as that ruling stood, and for a day after it was replaced
   const t = entry('Alluring');
   assert.match(t, /target/i, 'the whole attribute is that it targets');
   assert.match(t, /one enemy unit/i, 'and it is ONE enemy unit, not the defence');
@@ -172,7 +172,7 @@ test('R84: Alluring TARGETS one enemy unit — it does not conscript every block
   assert.doesNotMatch(t, /defenders/i, 'the superseded wording is back');
 });
 
-test('R79: the Virus and Augment entries admit a spell on the stack is a host', () => {
+test('CR 723.4: the Virus and Augment entries admit a spell on the stack is a host', () => {
   assert.match(entry('Virus'), /stack/i,
     'a virus may be augmented onto a spell on the stack (Caleb 2025-04-06)');
   assert.match(entry('Augment'), /stack/i, 'and the mechanic entry has to say so too');
@@ -180,21 +180,21 @@ test('R79: the Virus and Augment entries admit a spell on the stack is a host', 
     'a spell takes the type-line attributes and nothing else (Caleb 2025-04-24)');
 });
 
-test('R81: Burst groups by NAME, not by "every burst token you control"', () => {
+test('CR 803.5a: Burst groups by NAME, not by "every burst token you control"', () => {
   assert.match(entry('Burst'), /same name/i);
 });
 
-test('R69/R79: Unstable is a BIN replacement, and a virused spell is Unstable', () => {
+test('Unstable is a BIN replacement, and a virused spell is Unstable', () => {
   const t = entry('Unstable');
   assert.match(t, /bin/i, 'it replaces the bin, not the death');
-  assert.match(t, /spell/i, 'R79: a spell carrying a virus is a modded card too');
+  assert.match(t, /spell/i, 'CR 803.8f: a spell carrying a virus is a modded card too');
 });
 
-test('R61: Pure no longer claims to be unimplemented', () => {
+test('Pure no longer claims to be unimplemented', () => {
   const t = entry('Pure');
-  assert.match(t, /combat/i, 'R61 implemented it at the combat choke points');
+  assert.match(t, /combat/i, 'it was implemented at the combat choke points (CR 802.25b)');
   assert.doesNotMatch(t, /parked with the attribute-suppression layer/i,
-    'that was the reason it was unimplemented, and it stopped being true at R61');
+    'that was the reason it was unimplemented, and it stopped being true when Pure was implemented');
 });
 
 /* ── matching ──────────────────────────────────────────────────────────── */
@@ -230,7 +230,7 @@ test('the battle MARKER counts, written either way; the word does not', () => {
   // the corpus writes it both ways — {Battle} on a type line, [Battle] in a
   // text box (Good Whale). Missing one half is how this shipped broken once.
   assert.deepEqual(terms(['{Battle} Cosmic Spell']), ['Battle']);
-  // R142 collapsed the double space this used to copy verbatim from Good
+  // The extractor's layout scrub collapsed the double space this used to copy verbatim from Good
   // Whale's printed text; the glossary never cared, but the literal should
   // still be what the card actually says.
   assert.deepEqual(terms(['[Battle] Ambush [4bb]']), ['Ambush', 'Battle']);
@@ -297,10 +297,10 @@ test('every entry compiles to a usable matcher', () => {
   }
 });
 
-// R214 — this file sweeps the whole pool, and `cards/registry.ts` registers
+// this file sweeps the whole pool (see 180-pool-sight), and `cards/registry.ts` registers
 // only 494 of the 495 cards (`Alluring Attribute` is registered by apply.ts).
 // The shared floor and its rationale live in test/180-pool-sight.test.ts.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496 && allCardNames().includes('Alluring Attribute'),
     `this sweep sees ${n} cards, not the full 496 — it reaches src/cards/registry.ts but not `

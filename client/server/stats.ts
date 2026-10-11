@@ -26,7 +26,7 @@ import { sanitizeDraftDeal } from '../engine/src/draftdeal.ts';
 // how a board fact that goes through the layer stack (effective power and
 // toughness) is asked of a state we are only replaying.
 import { E } from '../engine/src/engine.ts';
-// R216 — the third deal site (see scenarios.ts). The post-game screen and
+// CR D8.4 — the third deal site (see scenarios.ts). The post-game screen and
 // the accounts fold both replay a game to count it; a scenario room counted
 // without its board is a made-up game in somebody's profile.
 import { dealScenario } from './scenarios.ts';
@@ -144,7 +144,7 @@ export interface GameSummary {
   /**
    * Actions the CURRENT engine refused.
    *
-   * These games are old: the rules have moved under them (R34 alone re-ordered
+   * These games are old: the rules have moved under them (the identical-trigger change alone re-ordered
    * simultaneous triggers), and once one action is refused the rest of the log
    * is talking about a board that no longer exists, so the refusals cascade.
    * A diverged replay therefore under-counts everything and, worse, stops
@@ -178,7 +178,7 @@ export interface GameRecord {
    * being able to say who won. A fact recorded at the time cannot rot.
    */
   winner?: Seat | null;
-  /** R216: the scenario this game was dealt with, if any. */
+  /** CR D8.4: the scenario this game was dealt with, if any. */
   scenario?: string;
   /** BL-43: a live draft's custom rules and the deal they resolved to. The
    * summary deals from `deal`; a file naming a deal this build cannot read is
@@ -498,7 +498,7 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     // `state.decks` is undefined entirely in shared and draft. Reading the raw
     // field would score every seat as having an empty deck, which hands out
     // "win with 0 cards in your deck" for every win ever played.
-    // R296: the recycle pile is part of what is LEFT — you are only decked
+    // CR 408.2b: the recycle pile is part of what is LEFT — you are only decked
     // when the deck has run out AND there is nothing behind the mark to
     // shuffle back in. Counting the deck alone would hand out the "won with
     // an empty deck" badge at the moment of every reshuffle.
@@ -556,7 +556,7 @@ function tallyEvents(
         // single non-combat effect", so take it rather than summing our own.
         //
         // ⚠ But only when the effect reached something that is not YOURS.
-        // R38 rot emits a `damage` event with `controller` set to its own
+        // CR 112.13b rot emits a `damage` event with `controller` set to its own
         // VICTIM (engine.ts's rotStep), so without this guard a player with
         // 30 rot on them earns "deal 30 damage with a single effect" by
         // being slowly killed by their own counters. The same guard keeps a
@@ -578,8 +578,8 @@ function tallyEvents(
         }
       }
     } else if (e.type === 'combatFaceDamage' && typeof d['by'] === 'number' && typeof d['n'] === 'number') {
-      // R238: damage DEALT to a face in one combat sub-step, which is NOT the
-      // life lost — a hit the R38 rot hooks replace costs no life and still
+      // CR 608.8a: damage DEALT to a face in one combat sub-step, which is NOT the
+      // life lost — a hit the rot hooks replace costs no life and still
       // counts as dealt (Caleb, 2024-10-24).
       //
       // That distinction is the whole reason `combatDamageDealt` is counted

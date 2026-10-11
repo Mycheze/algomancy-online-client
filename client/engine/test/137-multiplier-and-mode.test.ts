@@ -1,6 +1,6 @@
-/* R162 — THE MULTIPLICATIVE AMOUNT LAYER, and 'shared' is constructed.
+/* CR 708.6, 901.7b — THE MULTIPLICATIVE AMOUNT LAYER, and 'shared' is constructed.
  *
- * Three of the owner's answers of 2026-08-25 (R157) land here.
+ * Three of the owner's answers of 2026-08-25 land here.
  *
  * §2, verbatim: *"Shared mode isn't a real thing. You invented it for testing.
  * So I guess it'd be constructed?"* — Worldbender took the constructed branch
@@ -25,7 +25,7 @@
  *   - n ≥ 3. `v × 2 × n` is LINEAR, so three Arbiters sextuple where a purely
  *     multiplicative reading would give 2^n = ×8. The owner wrote the formula
  *     out while answering about TWO.
- *   - composition with an ADDITIVE `AmountMod`. R157 §23 records the interim
+ *   - composition with an ADDITIVE `AmountMod`. CR 708.6a now states the
  *     decision — multiplier AFTER the additive layer, `(v + Σdelta) × factor`.
  *
  * Seeds 13700-13799.
@@ -79,7 +79,7 @@ const tally = (h: Harness): { hand: number; life: number }[] =>
   h.state.players.map(p => ({ hand: p.hand.length, life: p.life }));
 
 test("Worldbender in 'shared': the default mode takes the CONSTRUCTED branch — +3 cards and 3 life", () => {
-  // R157 §2. `new Harness(seed)` with no mode IS shared — the mode the engine
+  // CR 901.7b. `new Harness(seed)` with no mode IS shared — the mode the engine
   // defaults to and the one the card used to do nothing in.
   const h = new Harness(13700);
   assert.equal(h.state.mode, 'shared', 'the default mode, which is the point');
@@ -120,7 +120,7 @@ test("Worldbender in 'shared': the negative control — no Worldbender, nothing 
 });
 
 test("Worldbender in 'shared': it replaces the step EVERY turn, and two of them replace it ONCE", () => {
-  // "First true consumes" (the R104 rule `replaceCardStep` documents) has to
+  // "First true consumes" (the CR 708.4a rule `replaceCardStep` documents) has to
   // hold on the new call site too, or two copies would draw 6 and pay 6.
   const h = new Harness(13701);
   const A: Seat = 0;
@@ -173,7 +173,7 @@ test('Arbiter of Vitality: TWO QUADRUPLE — "quadruple it!! So always n*2*v"', 
     'and the log says ×4, so a reader can see which number was used');
 });
 
-test('R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
+test('CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
   // ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, and it was right to, so the old
   // expectation is kept here rather than deleted:
   //
@@ -181,7 +181,7 @@ test('R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
   //      (⚠ n ≥ 3 unconfirmed)'
   //     assert.equal(life, 28, '2 × 2 × 3 = 12 lost — not 16 (2^3 × 2)');
   //
-  // It pinned R157 §23's formula *"always n*2*v"* AS WRITTEN, and flagged in
+  // It pinned the owner's first formula *"always n*2*v"* AS WRITTEN, and flagged in
   // its own title that n ≥ 3 had never actually been put to the owner — the
   // formula was written while he was answering a question about TWO. Round-32
   // Q4 put it to him and the answer was one sentence: *"Make it exponential."*
@@ -189,7 +189,7 @@ test('R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
   //
   // ⚠ WHAT DID NOT CHANGE, and why the round-31 tests below still pass: at
   // n = 2 the two readings are ARITHMETICALLY IDENTICAL (2 + 2 = 2 × 2 = 4).
-  // R157 §23's own worked example is untouched. n = 3 is the smallest board
+  // The two-Arbiter worked example is untouched. n = 3 is the smallest board
   // that can tell them apart, which is why this is the only test that moved.
   const h = new Harness(13712);
   toDeployment(h);
@@ -199,9 +199,9 @@ test('R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
   assert.equal(h.state.players[p]!.life, 24, '2 × 2^3 = 16 lost — not 12 (the old n*2*v)');
 });
 
-test('R264: TWO Arbiters are the case the two readings AGREE on, and it still quadruples', () => {
-  // The control for the test above. If this ever moves, R264 has been applied
-  // somewhere it does not reach: the owner answered R157 §23 about two, and
+test('CR 708.6: TWO Arbiters are the case the two readings AGREE on, and it still quadruples', () => {
+  // The control for the test above. If this ever moves, the exponential rule (CR 708.6) has been applied
+  // somewhere it does not reach: the owner's 2026-08-25 answer was about two, and
   // that answer is not reopened by "make it exponential" — it is the fixed
   // point both formulas share.
   const h = new Harness(13713);
@@ -213,7 +213,7 @@ test('R264: TWO Arbiters are the case the two readings AGREE on, and it still qu
     '2 × 4 = 8 lost, and 2+2 = 2×2 = 4 — the sum and the product agree at n = 2');
 });
 
-test('R264: ONE Arbiter is the other fixed point, so neither reading is being applied twice', () => {
+test('CR 708.6: ONE Arbiter is the other fixed point, so neither reading is being applied twice', () => {
   const h = new Harness(13714);
   toDeployment(h);
   const p = arbiters(h, 1);
@@ -253,9 +253,9 @@ test('Arbiter of Vitality: a gain is multiplied for EITHER player — "all" is u
 
 // ── §23's UNRULED half: composing with an additive AmountMod ─────────────
 
-test('the multiplier applies AFTER an additive AmountMod on the SAME quantity (⚠ INTERIM, unruled)', () => {
-  // R157 §23 answers how multipliers compose with EACH OTHER and explicitly
-  // does not answer how one composes with R104's additive family. The interim
+test('the multiplier applies AFTER an additive AmountMod on the SAME quantity (CR 708.6a)', () => {
+  // The multiplier rule (CR 708.6) answers how multipliers compose with EACH OTHER,
+  // and CR 708.6a how one composes with the additive family. The
   // decision is `(v + Σdelta) × factor`, written down in `E.lifeAmount`.
   //
   // No printed card adds to a life amount yet, so the additive half is a
@@ -271,7 +271,7 @@ test('the multiplier applies AFTER an additive AmountMod on the SAME quantity (�
   spawn(h, p, 'Proliferating Slime');
   h.state.players[p]!.life = 40;
 
-  // R268: Proliferating Slime's whole printed text is its [Augment] line, so
+  // CR 721.1: Proliferating Slime's whole printed text is its [Augment] line, so
   // its AmountMod lives in `augmentBox`. This has to be the LIVE array (the
   // stand-in is pushed and spliced), not `radiantList`'s copy.
   const mods = getCard('Proliferating Slime').augmentBox!.amountMods!;
@@ -339,7 +339,7 @@ test('a board with no multiplier on it pays nothing: amounts are untouched', () 
   assert.ok(!h.log.some(m => m.includes('×')), 'and nothing is logged as a multiplication');
 });
 
-test('R62: a suppressed Arbiter multiplies nothing', () => {
+test('CR 712.1a: a suppressed Arbiter multiplies nothing', () => {
   // Every other radiating query drops a suppressed holder; so does this one.
   const h = new Harness(13724);
   toDeployment(h);
@@ -353,7 +353,7 @@ test('R62: a suppressed Arbiter multiplies nothing', () => {
 
 // ── §25: Arbiter of Armistice has no {Switch} ────────────────────────────
 
-test('R157 §25: Arbiter of Armistice\'s printed type line has no {Switch}, and nothing else moved', () => {
+test('CR 200.2: Arbiter of Armistice\'s printed type line has no {Switch}, and nothing else moved', () => {
   // Owner, verbatim: "That's an error on your part. The card does not have a
   // [Switch] thing. It just adds an additional cost to all spells cast in
   // battle to pay 2 life."
@@ -372,7 +372,7 @@ test('R157 §25: Arbiter of Armistice\'s printed type line has no {Switch}, and 
 });
 
 test('the two malformed type lines are repaired, and no type line is malformed any more', () => {
-  // ⚠ RULED 2026-08-28 (R240), AND THE ORIGINAL REPAIR WAS HALF WRONG — which
+  // ⚠ RULED BY THE OWNER 2026-08-28, AND THE ORIGINAL REPAIR WAS HALF WRONG — which
   // is the point worth keeping. This sweep found Interdiction Rift by a LAYOUT
   // signature (`}` glued to a letter) and therefore repaired the layout: it
   // inserted the missing space and left `AI` standing, because a brace-gluing
@@ -381,7 +381,7 @@ test('the two malformed type lines are repaired, and no type line is malformed a
   //
   // So the derivation reached the RIGHT CARD FOR THE WRONG REASON, and a
   // derivation that does that is not validated by having hit its target. That
-  // is the generalisable lesson of R240 and it is why 209 pins this line from
+  // is the generalisable lesson of the Interdiction Rift correction and it is why 209 pins this line from
   // three sides — against the registered card, against the upstream file, and
   // against the override table's silence — plus a singleton-subtype sweep that
   // catches a stray token INDEPENDENTLY of the spacing.

@@ -1,4 +1,4 @@
-/* R311 — THE CACHE PLAYS LIKE THE HAND, FOR EVERY MODE. The whole-pool sweep.
+/* CR 403.3b — THE CACHE PLAYS LIKE THE HAND, FOR EVERY MODE. The whole-pool sweep.
  *
  * Owner, report #195 (game KEMX, 2026-10-04, marked gamebreaking): *"I'm not
  * able to virus a card from my cached cards. The cache functions 100% like the
@@ -9,8 +9,8 @@
  * and each time a cache route was added it was added for one mode. In KEMX the
  * cache held a glimpsed Möbius's Corruption at a battle priority window and
  * `legalActions` offered nothing for it; the battle Virus window was
- * `from === 'hand'`. Ambush, the R97 haste grant (Dispatch Courier) and the
- * R123 erase-funded play (Writhing Host) were hand-only the same way.
+ * `from === 'hand'`. Ambush, the CR 702.2d haste grant (Dispatch Courier) and the
+ * CR 504.7 erase-funded play (Writhing Host) were hand-only the same way.
  *
  * This test does not list modes. For EVERY card in the pool, in four windows
  * (deployment; a battle priority window with an enemy unit in the battle and
@@ -23,14 +23,14 @@
  *
  * The exemptions are DERIVED FROM CARD DATA, never a name list:
  *  - "Discard me" (`c.discardMe`) is hand-only: discarding is a hand action.
- *  - R100's "I can't be played from your hand" (`c.noPlayFromHand`) refuses
+ *  - "I can't be played from your hand" (`c.noPlayFromHand`, CR 402.6) refuses
  *    the hand, exactly as printed — so the cache may play it and the hand not.
  * Grants that print their own zones (Rook's "from hand and bin") are not on
  * the board here, so they do not enter the comparison; 29-hybrids-wm-a pins
  * that Rook still refuses the cache.
  *
  * Every cache offer the sweep sees is also APPLIED, so an offer the reducer
- * refuses (the "legalActions lied" split R97's cache leg had in reverse) is a
+ * refuses (the "legalActions lied" split the haste grant's cache leg had in reverse) is a
  * failure too.
  *
  * Seeds: 3690-3699.
@@ -99,7 +99,7 @@ function battleWindow(): Window {
   return { name: 'battle priority', state: h.state, seat: D };
 }
 
-/** the R18 haste step, with `setup` run on the seat in the deployment before */
+/** the CR 504 haste step, with `setup` run on the seat in the deployment before */
 function hasteWindow(seed: number, name: string, setup: (h: Harness, P: Seat) => void): Window {
   const h = sterile(seed);
   toDeployment(h);
@@ -165,7 +165,7 @@ function offersFor(w: Window, card: string): Seen {
 function exempt(card: string, seen: Seen): { hand: string[]; cache: string[] } {
   const c = getCard(card);
   const hand = [...seen.hand].filter(m => !(c.discardMe && m === 'play:discardMe'));   // discarding is a hand action
-  const cache = [...seen.cache].filter(m => !(c.noPlayFromHand && (m === 'play' || m === 'play:erase')));   // R100 names the hand
+  const cache = [...seen.cache].filter(m => !(c.noPlayFromHand && (m === 'play' || m === 'play:erase')));   // CR 402.6 names the hand
   return { hand: hand.sort(), cache: cache.sort() };
 }
 
@@ -184,7 +184,7 @@ const POOL = allCardNames();
 const census = { virusInBattle: new Set<string>(), ambush: new Set<string>(), hasteGrant: new Set<string>(),
   erase: new Set<string>(), compared: 0 };
 
-test('R311: every card in the pool offers the same modes from the cache as from the hand, in every window', () => {
+test('CR 403.3b: every card in the pool offers the same modes from the cache as from the hand, in every window', () => {
   const mismatches: string[] = [];
   const refusals: string[] = [];
   for (const w of WINDOWS) {
@@ -217,12 +217,12 @@ test('R311: every card in the pool offers the same modes from the cache as from 
   assert.deepEqual(refusals, [], `legalActions offered cache plays the reducer refused:\n  ${refusals.join('\n  ')}`);
 });
 
-test('R311: the sweep is not vacuous: it saw cached Virus, Ambush, haste-grant and erase-grant plays', () => {
+test('CR 702.2d: the sweep is not vacuous: it saw cached Virus, Ambush, haste-grant and erase-grant plays', () => {
   assert.ok(census.compared >= POOL.length * WINDOWS.length, 'the sweep ran first and compared every card in every window');
   assert.ok(census.virusInBattle.has("Möbius's Corruption"),
     `the KEMX card: a cached Möbius's Corruption is offered onto the spell on the stack (saw ${[...census.virusInBattle].slice(0, 5).join(', ')})`);
   assert.ok(census.virusInBattle.size >= 5, `several Virus cards reached the battle window from the cache (${census.virusInBattle.size})`);
   assert.ok(census.ambush.size >= 1, 'at least one Ambush card ambushed out of the cache');
-  assert.ok(census.hasteGrant.size >= 5, `the R97 grant reached cached units (${census.hasteGrant.size})`);
-  assert.ok(census.erase.size >= 5, `the R123 erase reached cached units (${census.erase.size})`);
+  assert.ok(census.hasteGrant.size >= 5, `the CR 702.2d grant reached cached units (${census.hasteGrant.size})`);
+  assert.ok(census.erase.size >= 5, `the CR 504.7 erase reached cached units (${census.erase.size})`);
 });

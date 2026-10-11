@@ -1,4 +1,4 @@
-/* R297 — SOLO PLAY: THE BOT SEAT.
+/* CR D8.1 — SOLO PLAY: THE BOT SEAT.
  *
  * A bot is a POLICY: given the true state, its seat, and that seat's legal
  * action list, it picks one action. It never builds an action the engine did

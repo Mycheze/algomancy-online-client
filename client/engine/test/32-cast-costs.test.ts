@@ -1,4 +1,4 @@
-/* Playtest fixes: cast-time additional costs and cast-time X (R35), plus the
+/* Playtest fixes: cast-time additional costs and cast-time X (CR 702.3), plus the
  * single-unit counterattack auto-formation.
  *
  *  - Bracketed [Sacrifice a unit] costs on SPELLS are chosen and PAID AT
@@ -83,16 +83,16 @@ test('cast cost stays paid when the spell is negated (no refund)', () => {
   const handBefore = h.state.players[A]!.hand.length;
   pass(h); pass(h);                                  // Tithe resolves: A cannot pay [1]…
   pick(h, false);                                    // …declines → Immolate negated, D draws
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Immolate left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Immolate left the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Immolate'), 'negated → bin');
-  assert.ok(!ent(h, atk), 'the sacrifice is NOT refunded (R35: costs are paid at cast)');
+  assert.ok(!ent(h, atk), 'the sacrifice is NOT refunded (CR 702.4b: costs are paid at cast)');
   assert.equal(h.state.players[A]!.hand.length, handBefore, 'and nothing was drawn');
 });
 
-// R334 (CT-216) INVERTS this test's second half. It was "— or declines": a
+// The mandatory grafted cost (CR 722.6, CT-216) INVERTS this test's second half. It was "— or declines": a
 // grafted rider was opt-in, on no ruling. RAQ "Graft 101" point 11: the
 // grafted [cost] "is non-optional (you MUST pay it, you can't opt out)".
-test('grafted Immolate: the carrier must pay the cost at composite cast time — no decline (R334)', () => {
+test('grafted Immolate: the carrier must pay the cost at composite cast time — no decline (CR 722.6)', () => {
   const h = new Harness(3204);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -104,7 +104,7 @@ test('grafted Immolate: the carrier must pay the cost at composite cast time —
   h.do({ type: 'activateAbility', seat: p, entityId: evoker, abilityIndex: 0 });
   assert.equal(h.state.decision!.seat, p, 'the carrier controller pays');
   assert.ok(!h.state.decision!.options.some(o => /don.t pay|decline|skip/i.test(o.label)),
-    'R334: a grafted [cost] is not optional — no decline is offered');
+    'CR 722.6: a grafted [cost] is not optional — no decline is offered');
   const handBefore = h.state.players[p]!.hand.length;
   pick(h, { unit: fodder });
   assert.ok(!ent(h, fodder), 'the rider cost was paid at cast');
@@ -273,7 +273,7 @@ test('forcedAction: NOT forced with two sent units, nor in round 1 with one unit
   assert.equal(forcedAction(h.state), null, 'two counterattackers → a real formation choice');
 });
 
-/* ── R73: "[Sacrifice me]" — a self-scoped sacrifice cast cost ───────────
+/* ── "[Sacrifice me]" — a self-scoped sacrifice cast cost (CR 111.8 differs, F-U04-5) ──
  *
  * (Bena's ruling 2026-08-22, from the game-BRDM report about Eldritch
  * Dreamtender: "Technically, Eldritch Dreamtender needs to be sacrificed for
@@ -306,7 +306,7 @@ registerSynthetic({
   }],
 });
 
-test('R73: [Sacrifice me] is charged with NO decision — that is what makes it unrespondable', () => {
+test('[Sacrifice me] is charged with NO decision — that is what makes it unrespondable', () => {
   const h = new Harness(3230);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -326,9 +326,9 @@ test('R73: [Sacrifice me] is charged with NO decision — that is what makes it 
   assert.ok(iPay !== -1 && iRes !== -1 && iPay < iRes, 'paid before it resolved');
 });
 
-test('R73: a source that is already dead makes the cost UNPAYABLE, so the part is skipped', () => {
+test('a source that is already dead makes the cost UNPAYABLE, so the part is skipped', () => {
   // Deliberately NOT `unitsOf(seat, region).length >= 1`: another live unit
-  // standing there must not stand in for the source. R5 then skips the part,
+  // standing there must not stand in for the source. The part is then skipped (CR 111.8 has the same outcome),
   // which is the right answer for a trigger whose source died between firing
   // and settling.
   const h = new Harness(3231);

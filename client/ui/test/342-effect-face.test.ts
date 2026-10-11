@@ -131,7 +131,7 @@ test('the engine facts this rests on: text card in `card`, body in `sourceId`, g
   assert.match(engine, /effectKey: `graft:\$\{mod\.card\}`/, 'a graft part names its card in its key');
 });
 
-test('TARGET MISSING is the engine\'s own R5 test, not a guess (owner, 2026-09-30)', () => {
+test('TARGET MISSING is the engine\'s own CR 704.6 test, not a guess (owner, 2026-09-30)', () => {
   const h = new Harness(34210, ['Ben', 'Rashi']);
   const a = spawn(h, A, 'Bubb');
   const b = spawn(h, A, 'Chombot');

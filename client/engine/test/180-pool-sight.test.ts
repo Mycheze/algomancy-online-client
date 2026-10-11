@@ -1,4 +1,4 @@
-/* R214 — POOL SIGHT: how big the card pool is, and which files can see it.
+/* POOL SIGHT: how big the card pool is, and which files can see it.
  *
  * ── WHAT WAS WRONG ─────────────────────────────────────────────────────
  *
@@ -24,14 +24,14 @@
  *   63-card-art        WAS HIDING A FAILURE. `Alluring Attribute: (no image
  *                      field)`. Correct finding; now exempted with a predicate
  *                      (ART_EXEMPT) rather than by not looking.
- *   71-card-ledger     WAS HIDING TWO. The "no dead cards" ledger and the R155
+ *   71-card-ledger     WAS HIDING TWO. The "no dead cards" ledger and the
  *                      inert-shape sweep both flag its `when: () => false`.
  *                      Now in NOT_A_GAP with the reason apply.ts already gave.
  *   68-target-conform. THE WORST ONE, and it failed nothing. `enemyUnit` is
  *                      declared by EXACTLY ONE card in the pool — this one —
  *                      so 68's KIND_PHRASES entry for it had zero live
  *                      subjects and had never once been exercised. Both
- *                      68's own comment ("R84 {Alluring} … prints this") and
+ *                      68's own comment ("CR 802.15a {Alluring} … prints this") and
  *                      apply.ts's ("its own `text` is the attribute written
  *                      out as rules text, which is what test/68's target
  *                      conformance reads the declared kind off") assert that
@@ -57,7 +57,7 @@
  * no cycle. It is deal-safe too: `createGame` shuffles `DECK_LIST`, which
  * filters out every Token/Attribute face, so moving where the synthetic
  * registers cannot change a seeded deal. That change belongs to whoever owns
- * `src/apply.ts`; R214 deliberately did not make it from a shared tree.
+ * `src/apply.ts`; the 2026-08-26 pool fix deliberately did not make it from a shared tree.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -78,7 +78,7 @@ const INDEX = path.join(ENGINE, 'src', 'index.ts');
 const SYNTHETICS: { name: string; module: string }[] = [
   { name: 'Unit Token', module: 'src/cards/registry.ts' },
   { name: 'Beyond, Codex Incarnate', module: 'src/cards/registry.ts' },
-  // R297: Learn to Play's Tutorial Bot card, lessonOnly (never in a deal but a lesson's)
+  // CR D8.1: Learn to Play's Tutorial Bot card, lessonOnly (never in a deal but a lesson's)
   { name: 'Training Construct', module: 'src/cards/registry.ts' },
   { name: 'Alluring Attribute', module: 'src/apply.ts' },
 ];
@@ -221,7 +221,7 @@ function reaches(start: string, target: string): boolean {
  * The one pool-touching test file that is BLIND ON PURPOSE, with the reason
  * re-checked rather than believed.
  *
- * `161-glimpse-reminders.test.ts` (R209) is the only file in the suite
+ * `161-glimpse-reminders.test.ts` is the only file in the suite
  * that already knew about the 494/495 split: it pins `POOL === 494` and its
  * comment names all three `registerSynthetic` sites. Its subject is the eleven
  * cards whose printed text says "Glimpse", and its argument for not caring is
@@ -231,7 +231,7 @@ function reaches(start: string, target: string): boolean {
 const BLIND_ON_PURPOSE: { file: string; why: string; harmless: () => string | null }[] = [
   {
     file: '161-glimpse-reminders.test.ts',
-    why: 'R209 pins POOL === 494 deliberately and says why in a comment that names all three '
+    why: 'It pins POOL === 494 deliberately and says why in a comment that names all three '
        + 'registerSynthetic sites. Its derivation filters the pool for printed "Glimpse", and '
        + 'the card it cannot see prints no such word, so 494 and 495 give the same eleven.',
     harmless: () => {
@@ -341,7 +341,7 @@ test('§4 the import walker finds a blind file, a sighted one, and a bare import
 
 test('§4 the pool floor the eight sweeps carry can actually fail', () => {
   // The floor is `allCardNames().length >= 496`. Proving it can go red means
-  // proving it is evaluated against a pool that CAN be 495 (R297 put a fourth
+  // proving it is evaluated against a pool that CAN be 495 (Training Construct, CR D8.1b, put a fourth
   // synthetic in registry.ts, so a blind sweep now sees 495, not 494) — which §2 already
   // showed is one import line away. Here it is as the assertion itself, run
   // against the number a blind sweep really sees.
@@ -369,7 +369,7 @@ test('§4 every one of the eight fixed sweeps carries the floor', () => {
   const missing: string[] = [];
   for (const f of FIXED) {
     const abs = testFile(f);
-    assert.ok(fs.existsSync(abs), `${f} is gone — R214's eight sweeps have been renamed`);
+    assert.ok(fs.existsSync(abs), `${f} is gone — the eight sweeps have been renamed`);
     const src = fs.readFileSync(abs, 'utf8');
     const floored = /allCardNames\(\)\.length,?\s*(?:>=\s*496|496)/.test(src)
       || /n >= 496/.test(src) || /names\.length, 496/.test(src);
@@ -378,5 +378,5 @@ test('§4 every one of the eight fixed sweeps carries the floor', () => {
   assert.deepEqual(missing, [],
     'a pool-size floor has been removed:\n  ' + missing.join('\n  ')
     + '\n\nThat sweep is now free to go back to covering 494 cards while reading as though it '
-    + 'covers the pool, which is the state R214 found all eight of them in.');
+    + 'covers the pool, which is the state the pool-sight fix found all eight of them in.');
 });

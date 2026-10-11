@@ -10,7 +10,7 @@
  * World Shepherd), modal counter sweeps (Wither and Bloom), counter movement
  * (Aethercap Siphoner), formation-counting creation/recall (Galactic
  * Germination, Lumengrove Lurker) and the start-of-deployment mass recall
- * (Invasive Species, R50).
+ * (Invasive Species, CR 507.4).
  * States are built explicitly (give/spawn/giveResources) so parallel card
  * registration can't shift assertions. Seeds: 3000-3099.
  */
@@ -25,7 +25,7 @@ import {
   resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
-/** R41: the cache zone — optional field, so read it through here. */
+/** CR 403.1: the cache zone — optional field, so read it through here. */
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
 /** run engine mutations white-box; a trigger's decision may suspend —
@@ -99,7 +99,7 @@ test('Volatile Toxicity: sacrifice a unit → Poison X and Fireball X, X = its d
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  // a plain 0/4 body: this used to be a Stasis Sentry, which is a live R59
+  // a plain 0/4 body: this used to be a Stasis Sentry, which is a live CR 111.10
   // cost modifier now and taxed the very spell the test is about
   const fodder = spawn(h, D, 'Resonant Form');                // 2/4 — X will be 4
   giveResources(h, D, 'fire', 1);
@@ -108,7 +108,7 @@ test('Volatile Toxicity: sacrifice a unit → Poison X and Fireball X, X = its d
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
-  pick(h, { unit: fodder });                                  // cast cost (R35): the 2/4 dies NOW, X = 4
+  pick(h, { unit: fodder });                                  // cast cost (CR 107.8a): the 2/4 dies NOW, X = 4
   assert.ok(!ent(h, fodder), 'the unit is sacrificed at cast');
   assert.ok(h.state.players[D]!.bin.includes('Resonant Form'), 'sacrificed nontoken → bin');
   pass(h); pass(h);                                           // resolve
@@ -128,11 +128,11 @@ test('Auric Ascendant: [once] [one] + recall another ally → Flying and +2/+0 u
   const ally = spawn(h, p, 'Unit Token');                     // the recall cost
   giveResources(h, p, 'metal', 2);                            // [one] ×2 (second activation attempt)
   h.do({ type: 'activateAbility', seat: p, entityId: auric, abilityIndex: 0 });
-  pick(h, { recall: ally });                                  // R196: the recall is a COST
+  pick(h, { recall: ally });                                  // CR 111.2: the recall is a COST
   assert.ok(!ent(h, ally), 'the ally left play (recalled)');
   assert.ok(ownAttrs(h, auric).has('Flying'), 'gained {Flying}');
   assert.deepEqual(effStats(h, auric), [4, 1], '+2/+0 until regroup');
-  // [once]: a second activation this turn is illegal (R9)
+  // [once]: a second activation this turn is illegal (CR 109.9)
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: p, entityId: auric, abilityIndex: 0 }),
     /already used/);
@@ -162,22 +162,22 @@ test('Dematerialize: negates a target stack effect; its controller Glimpses 3 �
   const deckLen = h.q.deckOf(A).length;
   const trashesBefore = h.events.filter(ev => ev.type === 'trashed').length;
   pass(h); pass(h);                                           // resolve Dematerialize
-  // R45: the GLIMPSER chooses — here the negated effect's controller, A
+  // CR 801.9a, 801.9d: the GLIMPSER chooses — here the negated effect's controller, A
   const dec = h.state.decision!;
   assert.equal(dec.seat, A, "the negated effect's controller glimpses, so A chooses");
   assert.deepEqual(dec.options.map(o => o.card), top3, 'the three revealed cards are the options');
   h.do({ type: 'decide', seat: A, choice: 1 });               // cache the middle one
   assert.ok(h.log.some(m => m.includes('is negated')), 'the Fireball is negated');
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[1]],
-    'exactly ONE of the three is cached (R45), the glimpser\'s pick');
+    'exactly ONE of the three is cached (CR 801.9a), the glimpser\'s pick');
   assert.deepEqual(h.state.players[A]!.hand, handA, 'nothing reaches hand');
-  assert.equal(h.q.deckOf(A).length, deckLen - 3, 'R296: all three left the deck — two of them past the mark');
+  assert.equal(h.q.deckOf(A).length, deckLen - 3, 'CR 408.2: all three left the deck — two of them past the mark');
   assert.deepEqual(h.q.recycleOf(A).slice(-2), [top3[0], top3[2]],
-    'recycled PAST THE MARK, in revealed order (R296)');
+    'recycled PAST THE MARK, in revealed order (CR 408.2)');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn, ignoring affinity');
   assert.equal(h.events.filter(ev => ev.type === 'trashed').length, trashesBefore,
-    'R40: negating is not trashing — the negated card comes off the STACK');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Fireball left the stack at once');
+    'CR 801.2b: negating is not trashing — the negated card comes off the STACK');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Fireball left the stack at once');
   assert.equal(h.state.players[D]!.life, lifeD, 'the negated Fireball dealt nothing');
   finishBattle(h);
 });
@@ -225,7 +225,7 @@ test('Transmutide Enigma: another ally spawning in battle gets power or defense 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   let tok = 0;
   whiteBox(h, e => { tok = e.spawnUnit(D, 'Unit Token', e.s.battle!.region, { token: true, tokenStats: [2, 3] }).id; });
-  // R57: which half is declared as the trigger goes on the stack — the labels
+  // CR 205.3a: which half is declared as the trigger goes on the stack — the labels
   // read the spawned unit's stats from BEFORE the response window, not after.
   assert.equal(h.state.decision?.kind, 'mode');
   assert.equal(h.state.stack.length, 0, 'asked before it reaches the stack');
@@ -243,8 +243,8 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   const h = new Harness(3008);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  // R326 (2026-10-09): the cost-3 target used to be a Stasis Sentry, whose
-  // R157 §20 tax priced the X = 0 cast at [3]. The RAQ reversed §20 (a Sentry
+  // RAQ, 2026-10-09 (now CR 107.5): the cost-3 target used to be a Stasis Sentry, whose
+  // earlier tax reading priced the X = 0 cast at [3]. The RAQ reversed that reading (a Sentry
   // forces X itself to 3), so a plain cost-3 unit stands in and the test is
   // about Abduct alone again.
   const sentry = spawn(h, A, 'Rune Channeler');               // cost 3 — the real target
@@ -254,7 +254,7 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry], [atk]] });
   pass(h);                                                    // priority → D
-  // X = 0 chosen at cast (R35) — A ransoms the token for [0]
+  // X = 0 chosen at cast (CR 107.2a) — A ransoms the token for [0]
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
   pick(h, 0);                                                 // X = 0
   pick(h, { unit: atk });
@@ -287,7 +287,7 @@ test('Floral Singularity: create X 1/1s at the source\'s region, or your units b
       const ctx: EffectCtx = {
         controller: p, sourceName: 'Floral Singularity', region: e.homeRegion(p),
         targets: [], x, event: null,
-        // R57: the modal half is a CAST-TIME declaration now (EffectPart.mode),
+        // CR 702.5: the modal half is a CAST-TIME declaration now (EffectPart.mode),
         // not a mid-resolution ctx.choose — a direct-run ctx hands it over the
         // same way the engine does, on the ctx.
         mode,
@@ -300,7 +300,7 @@ test('Floral Singularity: create X 1/1s at the source\'s region, or your units b
   runFloral(2, 'create');
   const toks = unitsOf(h, p).filter(u => u.token);
   assert.equal(toks.length, 2, 'two 1/1 unit tokens created');
-  assert.ok(toks.every(u => u.region === homeOf(h, p)), 'created units arrive at ctx.region — home, since this ctx resolves at home (R115)');
+  assert.ok(toks.every(u => u.region === homeOf(h, p)), 'created units arrive at ctx.region — home, since this ctx resolves at home (CR 601.5)');
   assert.deepEqual(effStats(h, toks[0]!.id), [1, 1], 'they are 1/1s');
   runFloral(3, 'base');
   assert.deepEqual(effStats(h, auric), [3, 3], 'the 2/1 became base 3/3 until regroup');
@@ -365,7 +365,7 @@ test('Wither and Bloom: modal — -1/-1 on each enemy, or +1/+1 on each of your 
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wither and Bloom') });
-  // R57: the modal bracket is declared in the cast window — this used to be
+  // CR 702.5: the modal bracket is declared in the cast window — this used to be
   // asked after both passes, i.e. after the opponent had already responded to
   // a spell that would not say which half it was.
   assert.equal(h.state.decision?.kind, 'mode');
@@ -397,8 +397,8 @@ test('Aethercap Siphoner: spawns with three -1/-1; a nontoken spell moves one on
   giveResources(h, p, 'wood', 2);
   giveResources(h, p, 'metal', 1);                            // Floral Singularity ggm / X
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Floral Singularity') });
-  pick(h, 0);                                                 // X = 0 at cast (R35) — a harmless no-op
-  // R64: "another target unit" is declared as the trigger goes on the stack,
+  pick(h, 0);                                                 // X = 0 at cast (CR 107.2a) — a harmless no-op
+  // CR 110.1a, 110.4d: "another target unit" is declared as the trigger goes on the stack,
   // and "another" means the Siphoner is not on the menu
   notOffered(h, { unit: siph }, '"another target unit" excludes me');
   pick(h, { unit: tok });                                     // move a counter onto the token
@@ -408,7 +408,7 @@ test('Aethercap Siphoner: spawns with three -1/-1; a nontoken spell moves one on
 
 // ── Galactic Germination ─────────────────────────────────────────────────
 
-test('Galactic Germination: a 1/1 per unit in target formation — arriving in the BATTLE region (R115)', () => {
+test('Galactic Germination: a 1/1 per unit in target formation — arriving in the BATTLE region (CR 601.5)', () => {
   const h = new Harness(3014);
   toDeployment(h);
   const D = h.state.initiative, A = 1 - D;                    // D will attack (initiative)
@@ -420,7 +420,7 @@ test('Galactic Germination: a 1/1 per unit in target formation — arriving in t
   toNextBattle(h, D);
   h.do({ type: 'declareAttack', seat: D, columns: [[u1], [u2]] });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Galactic Germination') });
-  // R184: it targets the FORMATION itself now, not a unit standing in it.
+  // CR 110.3d: it targets the FORMATION itself now, not a unit standing in it.
   // The count is unchanged — that is the whole point (the owner ruled on
   // 2026-08-25 that "target formation" is the WHOLE SIDE, which is what the
   // old unit proxy already counted).
@@ -431,14 +431,14 @@ test('Galactic Germination: a 1/1 per unit in target formation — arriving in t
   assert.equal(made.length, 2, 'two 1/1s — one per unit in the attacking formation');
   assert.notEqual(homeOf(h, D), battle, 'home is NOT the battle region here');
   assert.equal(unitsOf(h, D).filter(u => u.card === 'Unit Token' && u.region === homeOf(h, D)).length, 0,
-    'R115: a {Battle} spell cast in the enemy region creates its units THERE, not at home');
+    'CR 601.5: a {Battle} spell cast in the enemy region creates its units THERE, not at home');
   assert.deepEqual(effStats(h, made[0]!.id), [1, 1], 'they are 1/1s');
   finishBattle(h);
 });
 
 // ── Invasive Species ─────────────────────────────────────────────────────
 
-test('Invasive Species: at the start of deployment, recall all your OTHER units (R50)', () => {
+test('Invasive Species: at the start of deployment, recall all your OTHER units (CR 507.4)', () => {
   const h = new Harness(3017);
   toDeployment(h);
   const P = h.state.deployPlayer!, O = 1 - P;
@@ -534,15 +534,15 @@ test('Mindwarp Sporefrog: its controller dealt combat damage → the opponent ga
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);   // combat: D takes 1 → the flip is announced (R31)
-  // R67: "target opponent" is declared as the trigger goes on the stack. In
+  pass(h); pass(h);   // combat: D takes 1 → the flip is announced (CR 608.9)
+  // CR 110.1a: "target opponent" is declared as the trigger goes on the stack. In
   // 1v1 there is only one, but it is a real target now — offered, and the
   // 'opponent' kind measures from the SPOREFROG's controller, so D (who is
   // giving it away) is not on the menu.
   assert.equal(h.state.decision!.kind, 'targets');
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ player: A }]);
   pick(h, { player: A });
-  resolveAfterCombat(h);   // R261: the flip lands after combat, not in the damage step
+  resolveAfterCombat(h);   // CR 608.9b: the flip lands after combat, not in the damage step
   assert.equal(ent(h, frog)!.controller, A, 'the opponent gains control of the Sporefrog');
   finishBattle(h);                                            // → regroup → deploy
   assert.equal(ent(h, frog)!.region, homeOf(h, A), 'regroup walks it to its new home');

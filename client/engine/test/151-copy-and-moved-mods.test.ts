@@ -1,4 +1,4 @@
-/* R178 — THREE THINGS THE DESIGNER SAYS, AND THE ENGINE SAID OTHERWISE.
+/* THREE THINGS THE DESIGNER SAYS, AND THE ENGINE SAID OTHERWISE (CR 706.9, 109.6, 720.10).
  *
  * 1. WHEN "targeting me" is asked (Earthbound Replicator). RAQ "[Solved]
  *    Earthbound Replicator. No, it's not infinity" (_passer):
@@ -7,12 +7,12 @@
  *       or Enigmatic Warder mod), you don't get a copy"*
  *    The card asked at RESOLUTION, against the item's live targets, so a
  *    retarget landing in between wrongly EARNED a copy and a retarget away
- *    wrongly CANCELLED one. It is a condition, so R1 puts it in `when`, and
+ *    wrongly CANCELLED one. It is a condition, so CR 109.3a puts it in `when`, and
  *    the `spellPlayed` event carries the declared targets because that event
  *    fires before `pushItem` and there is no stack to consult yet.
  *
  * 2. WHICH item the trigger acts on — the third bottom-up `.find()` after
- *    R166's two (Origon, Hexbane Shiitake). With two same-card same-seat
+ *    the earlier two (Origon, Hexbane Shiitake). With two same-card same-seat
  *    spells on the stack it copied the OLDER one. The event carries the item
  *    id now, so it is identity rather than any kind of scan.
  *
@@ -30,7 +30,7 @@
  *       can decide to Sac none/one/two for 0/1/2 copies of spell effect. This
  *       works with Ancient One adjacent to Maelstrom Charger."*
  *    It was an ordinary `triggered` ability, so it reached the stack (and
- *    could be negated before the copy was ever made) and R121's pay-to-trigger
+ *    could be negated before the copy was ever made) and CR 111.10g's pay-to-trigger
  *    gate taxed it. It is `CardBehavior.asYouPlay` now — a stage of the CAST
  *    WINDOW (E.collectAsYouPlay), never an item.
  *
@@ -99,7 +99,7 @@ function resolveAll(h: Harness, choose: (o: DecisionOption) => boolean = () => t
 
 // ═══════════════ 1. "targeting me" is asked AT THE PLAY ═══════════════════
 
-test('R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy', () => {
+test('CR 706.9 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy', () => {
   const h = new Harness(15100);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -117,9 +117,9 @@ test('R178 Earthbound Replicator: a spell played at something ELSE and retargete
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Burgeon') });
   pick(h, { unit: atk });                                       // aimed at A's OWN attacker
-  pick(h, 'power');                                             // R57: the half, at cast
+  pick(h, 'power');                                             // CR 702.5: the half, at cast
   assert.equal(h.state.stack.length, 1,
-    'R1: "targeting me" is asked in `when`, at the moment of the play — I was not a target, '
+    'CR 109.3a: "targeting me" is asked in `when`, at the moment of the play — I was not a target, '
     + 'so NOTHING queued. This used to fire on every nonunit spell and decide at resolution.');
 
   toPriority(h, D);
@@ -137,7 +137,7 @@ test('R178 Earthbound Replicator: a spell played at something ELSE and retargete
   finishBattle(h);
 });
 
-test('R178 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy', () => {
+test('CR 706.9 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy', () => {
   const h = new Harness(15101);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -173,7 +173,7 @@ test('R178 Earthbound Replicator: a spell played AT ME and retargeted away still
 
 // ═══════════════ 2. WHICH of two identical spells ════════════════════════
 
-test('R178 Earthbound Replicator: with two identical spells on the stack it copies the TOP one', () => {
+test('CR 706.13 Earthbound Replicator: with two identical spells on the stack it copies the TOP one', () => {
   const h = new Harness(15102);
   toDeployment(h);
   const A = h.state.initiative as Seat;
@@ -183,7 +183,7 @@ test('R178 Earthbound Replicator: with two identical spells on the stack it copi
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
 
-  // TWO GENUINE PLAYS of the same card by the same seat — not a copy. R164
+  // TWO GENUINE PLAYS of the same card by the same seat — not a copy. CR 706.13
   // already excludes copies from this lookup, so a copy fixture could not
   // prove the ordering; only two real items can.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Burgeon') });
@@ -201,14 +201,14 @@ test('R178 Earthbound Replicator: with two identical spells on the stack it copi
   assert.equal(copy.parts[0]!.mode, 'defense',
     'the trigger belongs to the spell that was just played — the TOP one. A bottom-up '
     + '`.find()` matched the older item and copied \'power\' instead; this is the third '
-    + 'instance of the bug R166 fixed on Origon and Hexbane Shiitake, and the event carries '
+    + 'instance of the bug already fixed on Origon and Hexbane Shiitake, and the event carries '
     + 'the item id now, so it is identity rather than a scan.');
   resolveAll(h); finishBattle(h);
 });
 
 // ═══════════════ 3. Maelstrom Charger is not an ability ══════════════════
 
-test('R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack', () => {
+test('CR 702.3g Maelstrom Charger: the option is asked in the cast window and never reaches the stack', () => {
   const h = new Harness(15110);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -246,7 +246,7 @@ test('R178 Maelstrom Charger: the option is asked in the cast window and never r
   finishBattle(h);
 });
 
-test('R178 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where it prevents a real trigger', () => {
+test('CR 705.6 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where it prevents a real trigger', () => {
   const h = new Harness(15111);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -261,7 +261,7 @@ test('R178 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where it 
   let fb = 0;
   whiteBox(h, e => { fb = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });
   assert.equal(new E(h.state).openMana(D), 0, 'setup: D cannot pay a [1] tax on anything');
-  // the CONTROL: the same board taxes a real trigger to death. R121 —
+  // the CONTROL: the same board taxes a real trigger to death. CR 111.10g —
   // "choosing to not pay this prevents the abilities from triggering", and
   // with no mana at all there is not even an offer.
   assert.equal(new E(h.state).abilityTax(D, 'Maelstrom Charger', h.state.battle!.region, 'trigger').total, 1,
@@ -279,7 +279,7 @@ test('R178 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where it 
   resolveAll(h); finishBattle(h);
 });
 
-test('R178 Maelstrom Charger: two Chargers are two questions and two copies (none/one/two)', () => {
+test('CR 702.3g Maelstrom Charger: two Chargers are two questions and two copies (none/one/two)', () => {
   const h = new Harness(15112);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -306,7 +306,7 @@ test('R178 Maelstrom Charger: two Chargers are two questions and two copies (non
   finishBattle(h);
 });
 
-test('R178 Maelstrom Charger: declining the sacrifice says so and copies nothing', () => {
+test('CR 702.3g Maelstrom Charger: declining the sacrifice says so and copies nothing', () => {
   const h = new Harness(15113);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -330,7 +330,7 @@ test('R178 Maelstrom Charger: declining the sacrifice says so and copies nothing
 
 // ═══════════════ 4. MOVE A MOD, and everything follows it ════════════════
 
-test('R178 Rotbeast: a moved augment takes {Unstable} and its static with it', () => {
+test('CR 720.7d Rotbeast: a moved augment takes {Unstable} and its static with it', () => {
   const h = new Harness(15120);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -339,7 +339,7 @@ test('R178 Rotbeast: a moved augment takes {Unstable} and its static with it', (
   whiteBox(h, e => { e.attachMod(e.entity(rot)!, 'Aetherflux Golem', A, 'augment'); });
 
   assert.deepEqual(effStats(h, rot), [3, 6], 'setup: "[Augment] I gain +2/+2" buffs its host');
-  assert.ok(unstable(h, rot), 'setup: a modded card is Unstable (R69) — DERIVED from mods.length');
+  assert.ok(unstable(h, rot), 'setup: a modded card is Unstable (CR 803.8e) — DERIVED from mods.length');
   assert.ok(!unstable(h, enemy), 'setup: the enemy carries nothing and is stable');
 
   toNextBattle(h, A);
@@ -368,7 +368,7 @@ test('R178 Rotbeast: a moved augment takes {Unstable} and its static with it', (
   finishBattle(h);
 });
 
-test('R178 Reconfigure: the moved unit\'s own mods re-parent through the same primitive', () => {
+test('CR 720.10 Reconfigure: the moved unit\'s own mods re-parent through the same primitive', () => {
   const h = new Harness(15121);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -399,7 +399,7 @@ test('R178 Reconfigure: the moved unit\'s own mods re-parent through the same pr
   finishBattle(h);
 });
 
-test('R178 Maelstrom Charger: an Ancient One beside one offers the option and sacrifices ITSELF', () => {
+test('CR 710.7 Maelstrom Charger: an Ancient One beside one offers the option and sacrifices ITSELF', () => {
   const h = new Harness(15114);
   toDeployment(h);
   const A = h.state.initiative as Seat;

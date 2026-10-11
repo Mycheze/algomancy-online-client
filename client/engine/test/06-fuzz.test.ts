@@ -48,7 +48,7 @@ test('replay determinism holds in draft mode too', () => {
  * drifts the moment anything upstream of it changes, so it pins the symptom
  * while the constructed test pins the cause.
  */
-test('fuzz seed 1993: no stuck state at the block step (R76)', () => {
+test('fuzz seed 1993: no stuck state at the block step (CR 606.2f)', () => {
   // Two Alluring columns and enough able blockers to cover both. Every
   // declaration legalActions could think of blocked ONE column, and Alluring is
   // compulsory for BOTH, so every option was refused: no legal action for

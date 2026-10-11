@@ -3,7 +3,7 @@
     "id": "F-U06-1",
     "rule": "types.spell-units.played-by-effect",
     "title": "Wake the Dead plays a spell unit out of a bin without casting its spell",
-    "summary": "R165 rules that Wake the Dead's \"Play up to two units\" is a real play, and the Hooba-Pon RAQ says playing a spell unit means its spell part happens and the body arrives only if the spell resolves. R165 itself records, under \"Left open\", that Wake the Dead spawns a spell unit's body and skips the spell. Nothing later in the register or the ledgers closes it. Suspected still live; a test should play a spell unit (Leaping Lillik, Spawntender) through Wake the Dead and assert that its spell effect happens. The verifier measured it (round 1 probe: Jelly played from a bin by Wake the Dead): the body arrives, no target is asked, no spell-played event fires, and the victim stays 7/5. Affects types.spell-units.is-a-spell and types.spell-units.is-a-unit too.",
+    "summary": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) rules that Wake the Dead's \"Play up to two units\" is a real play, and the Hooba-Pon RAQ says playing a spell unit means its spell part happens and the body arrives only if the spell resolves. The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) itself records, under \"Left open\", that Wake the Dead spawns a spell unit's body and skips the spell. Nothing later in the register or the ledgers closes it. Suspected still live; a test should play a spell unit (Leaping Lillik, Spawntender) through Wake the Dead and assert that its spell effect happens. The verifier measured it (round 1 probe: Jelly played from a bin by Wake the Dead): the body arrives, no target is asked, no spell-played event fires, and the victim stays 7/5. Affects types.spell-units.is-a-spell and types.spell-units.is-a-unit too.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -52,7 +52,7 @@
     "id": "F-U06-3",
     "rule": "types.spell-units.played-by-effect",
     "title": "Wake the Dead plays a spell unit from a bin without its spell part",
-    "summary": "Wake the Dead ('Play up to two units in any bin…') offers spell units (isUnitCard) but spawns their bodies directly: the spell part never happens, nothing goes on the stack, no 'spellPlayed' fires and nothing can negate it. The designer (RAQ Hooba-Pon thread) rules that a spell unit played via 'play a unit' casts its spell and spawns only if it resolves. Probe: Jelly from A's bin, victim stays 7/5, no target asked. digital-rules R165 lists it as 'Left open, and filed rather than fixed'.",
+    "summary": "Wake the Dead ('Play up to two units in any bin…') offers spell units (isUnitCard) but spawns their bodies directly: the spell part never happens, nothing goes on the stack, no 'spellPlayed' fires and nothing can negate it. The designer (RAQ Hooba-Pon thread) rules that a spell unit played via 'play a unit' casts its spell and spawns only if it resolves. Probe: Jelly from A's bin, victim stays 7/5, no target asked. digital-rules the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) lists it as 'Left open, and filed rather than fixed'.",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-dark-a.ts",
@@ -77,7 +77,7 @@
     "id": "F-U06-4",
     "rule": "types.spell-units.played-by-effect",
     "title": "A spell unit played by Wake the Dead skips its spell part and is not a played spell",
-    "summary": "Wake the Dead 'plays' units from a bin via spawnUnit(asPlay) inline: a spell unit (Jelly) arrives with no stack item, no target, no spell effect and no spellPlayed event, so Origon/Riftbreaker/'play a spell' watchers never see it. Designer (Hooba-Pon RAQ) and Manual p.43 say a played spell unit casts its spell and is a spell. Already filed as open in R165 (known; engineDiffers F-U06-1). Measured by probe u06-r2-probes.test.ts.",
+    "summary": "Wake the Dead 'plays' units from a bin via spawnUnit(asPlay) inline: a spell unit (Jelly) arrives with no stack item, no target, no spell effect and no spellPlayed event, so Origon/Riftbreaker/'play a spell' watchers never see it. Designer (Hooba-Pon RAQ) and Manual p.43 say a played spell unit casts its spell and is a spell. Already filed as open in the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) (known; engineDiffers F-U06-1). Measured by probe u06-r2-probes.test.ts.",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-dark-a.ts",

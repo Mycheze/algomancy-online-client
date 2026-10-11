@@ -1,23 +1,23 @@
 /**
- * R153 / CARD-TODO #43 — THE DISPOSAL TAIL IS ONE PRIMITIVE.
+ * CR 410.7 / CARD-TODO #43 — THE DISPOSAL TAIL IS ONE PRIMITIVE.
  *
  * When something leaves PLAY for a bin, exactly one sequence runs: push the
  * nontoken mods into their owners' bins (remembering the slot each landed at),
  * push the body into its bin (same), announce the departure, trash the body and
- * then each mod ANCHORED on the entity it was (R70), sweep the lot back out
- * highest-index-first if the body is {Unstable} (R137/R140/R145) or just the
- * body if it is a token (R69), file the TOKEN mods on the public erased pile
- * (R65) since they never reached a bin to be swept from, and delete the mod
+ * then each mod ANCHORED on the entity it was (CR 714.9), sweep the lot back out
+ * highest-index-first if the body is {Unstable} (the engine's route; CR 405.5 erases instead, CT-246) or just the
+ * body if it is a token (CR 410.5), file the TOKEN mods on the public erased pile
+ * (CR 407.3a) since they never reached a bin to be swept from, and delete the mod
  * entities last so the announce window can still read them.
  *
  * That is `E.disposeToBin`. It exists because the sequence was hand-copied and
  * every copy drifted: Hooba-Mon's `exchangeInPlace` logged a despawn it never
  * fired, deleted its mods with no bin and no trash, and skipped a token body's
- * bin entirely — three separate defects, two repair rounds (R146, R152), one
+ * bin entirely — three separate defects, two repair rounds, one
  * sequence. `E.destroy` and `exchangeInPlace` now call the same method.
  *
  * WHAT THIS FILE IS FOR, and how it differs from 42-dark-b's Hooba-Mon block:
- * 42-dark-b pins the RULINGS (R137/R140/R145/R146/R152) from the card's side
+ * 42-dark-b pins the engine's Unstable-disposal behaviour (which differs from CR 405.5/410.4d, CT-246) from the card's side
  * and must keep passing untouched. This file pins the SHARING — that there is
  * one implementation and both routes go through it — plus the disposal cases a
  * card-level test reaches most cheaply through Hooba-Mon. Seeds are 12900+, so
@@ -85,7 +85,7 @@ const verbsFor = (h: Harness, card: string): string[] => h.events
  * Every case below is this same drive; only the host's build differs.
  */
 function exchangeAway(h: Harness, A: Seat, host: EntityId, pick: string): void {
-  binOf(h, A).push(pick);          // a real card: a bin never holds a token (R152)
+  binOf(h, A).push(pick);          // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   pickRef(h, { bin: { seat: A, card: pick } });
@@ -100,7 +100,7 @@ function exchangeAway(h: Harness, A: Seat, host: EntityId, pick: string): void {
 // nothing to make the body {Unstable} and no tokenhood, the tail stops at the
 // trash. A test suite that only ever exercised the erase branches would not
 // notice a sweep that had started firing unconditionally.
-test('R153 (i): a plain exchanged body is binned and trashed, and is NOT swept', () => {
+test('CR 410.7 (i): a plain exchanged body is binned and trashed, and is NOT swept', () => {
   const h = new Harness(12900);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -112,7 +112,7 @@ test('R153 (i): a plain exchanged body is binned and trashed, and is NOT swept',
   assert.equal(ent(h, hooba), undefined, 'the body left play');
   assert.ok(binOf(h, A).includes('Hooba-Mon'), 'and is sitting in its owner’s bin');
   assert.equal(trashesOf(h, 'Hooba-Mon').length, 1,
-    'a bin entered FROM PLAY is a trash, exactly once (R40)');
+    'a bin entered FROM PLAY is a trash, exactly once (CR 801.2)');
   assert.equal(countIn(erasedOf(h, A), 'Hooba-Mon'), 0,
     'nothing made it Unstable and it is not a token — the sweep must not run');
   assert.deepEqual(verbsFor(h, 'Hooba-Mon'), ['trashed'], 'trash, and nothing after it');
@@ -126,20 +126,20 @@ test('R153 (i): a plain exchanged body is binned and trashed, and is NOT swept',
 //
 // Two facts a hand-copy got wrong and one it could still get wrong:
 //
-//  · R152(1) — the despawn used to be LOGGED and never FIRED, so every
+//  · CR 410.2 — the despawn used to be LOGGED and never FIRED, so every
 //    "whenever a unit despawns" ability in the game was blind to an exchange.
 //    A THIRD-PARTY watcher is the only honest proof of firing: a log line is
 //    what the broken version already produced.
-//  · R244 (2026-08-29, report #129) — a nontoken mod ERASED WITH ITS HOST is
+//  · the owner's ruling of 2026-08-29 (report #129, CR 720.8a) — a nontoken mod ERASED WITH ITS HOST is
 //    NOT trashed. This bullet used to read "…enters a bin from play and is
-//    TRASHED there"; the owner overruled R137's mods paragraph on the ground
+//    TRASHED there"; the owner overruled the earlier ruling's mods paragraph on the ground
 //    that a mod is PART of the unit it sits on and never had a presence of its
 //    own. The BODY is untouched by that and is still trashed (see 224).
-//  · and the zone it reaches is ITS OWN OWNER'S, not the body's. The mod here
-//    is GRAFTED BY THE OPPONENT, so the two answers are different seats and the
-//    assertion can tell them apart. R244 moved the attribution, never the
-//    destination, so this is the half of the old bullet that still stands.
-test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the HOST CONTROLLER zone', () => {
+//  · and the zone it reaches is the HOST CONTROLLER's (CR 400.4, 410.4a), not the
+//    mod owner's. The mod here is GRAFTED BY THE OPPONENT, so owner and controller
+//    are different seats and the assertion can tell them apart. The old bullet
+//    said the owner's; that destination half was later reversed.
+test('CR 410.7 (ii): nontoken mods — the despawn fires, and each mod goes to the HOST CONTROLLER zone', () => {
   const h = new Harness(12901);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -147,7 +147,7 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the H
   const host = spawn(h, A, 'Rune Channeler');
   giveResources(h, A, 'dark', 6);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
-  // an OPPONENT-owned mod on A's unit: `byPlayer` is the owner, and R250 §4
+  // an OPPONENT-owned mod on A's unit: `byPlayer` is the owner, and CR 410.4a
   // says the mod goes where its CONTROLLER's cards go — which for a mod is the
   // host's seat, not the owner's (this used to be the other way round). Chitin Shredder is
   // chosen for having NO text at all: a mod with a "when I am trashed" trigger
@@ -156,7 +156,7 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the H
   withE(h, e => { e.attachMod(e.entity(host)!, 'Chitin Shredder', D, 'graft'); });
   // Demon of the Depths: "[Augment] Whenever one of your units despawns, I deal
   // 1 damage to any target." Its carrier has to stand in the battle region for
-  // R12 to let it hear the event, so it attacks in its own column.
+  // CR 601.1d to let it hear the event, so it attacks in its own column.
   const carrier = spawn(h, A, 'Good Whale');
   withE(h, e => { e.attachMod(e.entity(carrier)!, 'Demon of the Depths', A, 'augment'); });
 
@@ -171,20 +171,20 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the H
 
   assert.equal(ent(h, host), undefined, 'the host left play');
   assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,
-    'R244: erased with its {Unstable} host, so not trashed at all (this was 1 under R137)');
+    'CR 720.8a: erased with its {Unstable} host, so not trashed at all (this was 1 under the earlier reading)');
   assert.equal(countIn(erasedOf(h, A), 'Chitin Shredder'), 1,
-    'R250 §4: the zone it reaches is the HOST CONTROLLER’s');
+    'CR 400.4: the zone it reaches is the HOST CONTROLLER’s');
   assert.equal(countIn(erasedOf(h, D), 'Chitin Shredder'), 0,
-    'and NOT the mod owner’s — this reverses R244 destination half, which said '
+    'and NOT the mod owner’s — this reverses the destination half of the earlier ruling, which said '
     + '"the destination never moved"');
   assert.equal(trashesOf(h, 'Hooba-Mon').length, 0,
     'Hooba-Mon is a nontoken mod on this line too and takes the same route');
-  // R152(1): FIRED, not merely logged — a log line is what the broken version
+  // CR 410.2: FIRED, not merely logged — a log line is what the broken version
   // already produced, so only a listener having run proves anything
   assert.ok(h.events.some(ev => ev.type === 'despawned' && ev.data!['card'] === 'Rune Channeler'),
     'the departure was announced…');
   assert.equal(h.state.players[D]!.life, lifeD - 1,
-    '…and a third-party despawn watcher actually RAN. A log line is what the R146 code already '
+    '…and a third-party despawn watcher actually RAN. A log line is what the old code already '
     + 'produced (it logged the despawn and never fired it), so only a listener having run proves '
     + 'anything here.');
 });
@@ -193,10 +193,10 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the H
 // (iii) an {Unstable} body — swept with its mods, HIGHEST INDEX FIRST
 // ══════════════════════════════════════════════════════════════════════
 //
-// A body wearing mods is {Unstable} by derivation (R69/R79), so R137's sweep
+// A body wearing mods is {Unstable} by derivation (CR 803.8e, 720.7), so the engine's sweep (CR 405.5 erases instead of binning, CT-246)
 // takes it and every nontoken mod back out of the bin it was just trashed in.
 //
-// R140 is why the order is descending, and TWO MODS OF THE SAME CARD is the
+// CR 405.6 is why the order is descending, and TWO MODS OF THE SAME CARD is the
 // only shape that can tell the difference — the case this test exists for.
 // They land at consecutive slots in one bin. Erase the LOWER one first and the
 // higher one slides down under the index recorded for it; the sweep then finds
@@ -204,7 +204,7 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the H
 // deliberately does not fall back to a name search, because falling back is how
 // an innocent older copy gets eaten) and the second mod SURVIVES in the bin,
 // recurrable. Descending order never disturbs an index still to be used.
-test('R153 (iii): an Unstable body is swept with its mods — including TWO MODS OF ONE CARD in one bin', () => {
+test('CR 410.7 (iii): an Unstable body is swept with its mods — including TWO MODS OF ONE CARD in one bin', () => {
   const h = new Harness(12902);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -223,7 +223,7 @@ test('R153 (iii): an Unstable body is swept with its mods — including TWO MODS
   const bin = binOf(h, A), erased = erasedOf(h, A);
   assert.equal(countIn(bin, 'Nothyr'), 0,
     'BOTH copies left the bin — erasing the lower slot first would strand the second one here');
-  assert.equal(countIn(erased, 'Nothyr'), 2, 'and both reached the public erased pile (R65)');
+  assert.equal(countIn(erased, 'Nothyr'), 2, 'and both reached the public erased pile (CR 410.4d)');
   assert.equal(countIn(bin, 'Rune Channeler'), 0, 'the Unstable body is not left in the bin either');
   assert.ok(erased.includes('Rune Channeler'), 'it reached the erased pile');
   assert.ok(!bin.includes('Hooba-Mon') && erased.includes('Hooba-Mon'),
@@ -231,10 +231,10 @@ test('R153 (iii): an Unstable body is swept with its mods — including TWO MODS
   // ORDER is the other half: each was trashed on the way IN and swept
   // afterwards, never "skipped the trash"
   assert.deepEqual(verbsFor(h, 'Rune Channeler'), ['trashed', 'erased'],
-    'R137 ordering for the body: bin → trashed → swept');
+    'engine ordering for the body (CT-246; CR 801.2h erases it unbinned): bin → trashed → swept');
   assert.deepEqual(verbsFor(h, 'Nothyr'), ['erased', 'erased'],
-    'and for both mods: swept out of the bin, and NOT trashed on the way — R244, the half '
-    + 'that overruled R137’s mods paragraph. The body two assertions up still is.');
+    'and for both mods: swept out of the bin, and NOT trashed on the way — CR 720.8a, the half '
+    + 'that overruled the earlier ruling’s mods paragraph. The body two assertions up still is.');
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -242,17 +242,17 @@ test('R153 (iii): an Unstable body is swept with its mods — including TWO MODS
 // ══════════════════════════════════════════════════════════════════════
 //
 // The one way to reach the token sweep WITHOUT the Unstable sweep: a token
-// carrying no mod at all, whose FACE is Hooba-Mon (R118 layer 0) so its own
+// carrying no mod at all, whose FACE is Hooba-Mon (a copy, CR 710.1) so its own
 // text-box [Augment] is what exchanges. A token host WEARING Hooba-Mon as a
 // real mod is Unstable by derivation and takes the branch above instead — which
 // is why 42-dark-b's token-host test does not reach this branch and this one
 // does. Modelled directly: a unit token whose card IS Hooba-Mon.
 //
-// R152, Bena 2026-08-25: "a token is a normal thing that just ceases to exist
+// CR 713.5, Bena 2026-08-25: "a token is a normal thing that just ceases to exist
 // in all zones other than in play/stack whenever SBAs are checked." A normal
 // thing that CEASES TO EXIST, in that order — bin, trash, THEN removal. It is
 // not a thing that was never in the bin.
-test('R153 (iv): a TOKEN body with no mods takes the token sweep — binned, NOT trashed (R306), then erased', () => {
+test('CR 410.7 (iv): a TOKEN body with no mods takes the token sweep — binned, NOT trashed (CR 801.2d), then erased', () => {
   const h = new Harness(12903);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -263,37 +263,37 @@ test('R153 (iv): a TOKEN body with no mods takes the token sweep — binned, NOT
   assert.equal(ent(h, host)!.mods.length, 0,
     'the branch under test needs a token with NO mods — otherwise it is Unstable by derivation');
   assert.ok(!new E(h.state).isUnstable(ent(h, host)!),
-    'and genuinely not Unstable by any of the four routes (R96/R118)');
+    'and genuinely not Unstable by any of the four routes (CR 803.8)');
 
   exchangeAway(h, A, host, 'Skittering Blight');
 
   assert.equal(ent(h, host), undefined, 'the token host left play');
-  // R306 (owner, 2026-09-28) reverses what this line used to pin: R133's
+  // The owner's 2026-09-28 ruling (CR 801.2d) reverses what this line used to pin: the token ruling's
   // "Tokens are trashed, yes" is withdrawn. The token still ENTERS the bin (the
-  // sweep below takes it OUT of one — R69's zone fact stands); it is just not
+  // sweep below takes it OUT of one — CR 410.5a's zone fact stands); it is just not
   // trashed there, because a token is not a card.
   assert.equal(trashesOf(h, 'Hooba-Mon').length, 0,
-    'a token is not a card, so entering the bin does not trash it (R306)');
+    'a token is not a card, so entering the bin does not trash it (CR 801.2d)');
   assert.ok(!binOf(h, A).includes('Hooba-Mon'), 'and then ceased to exist there');
-  assert.ok(erasedOf(h, A).includes('Hooba-Mon'), 'the sweep files it on the erased pile (R65)');
+  assert.ok(erasedOf(h, A).includes('Hooba-Mon'), 'the sweep files it on the erased pile (CR 407.3)');
   assert.deepEqual(verbsFor(h, 'Hooba-Mon'), ['erased'],
-    'THE ORDER IS THE RULING: bin → swept, with no trash between (R306)');
+    'THE ORDER IS THE RULING: bin → swept, with no trash between (CR 410.5a)');
   const sweep = h.events.find(ev => ev.type === 'erased' && ev.data!['card'] === 'Hooba-Mon');
-  assert.equal(sweep?.data!['from'], 'bin', 'it was erased FROM THE BIN — it really did enter one (R69)');
+  assert.equal(sweep?.data!['from'], 'bin', 'it was erased FROM THE BIN — it really did enter one (CR 410.5a)');
 });
 
 // ══════════════════════════════════════════════════════════════════════
 // (v) TOKEN mods — the erased pile with no bin visit at all
 // ══════════════════════════════════════════════════════════════════════
 //
-// R69: a token mod has no card of its own, so it never enters a bin and there
+// CR 410.4c: a token mod has no card of its own, so it never enters a bin and there
 // is nothing to trash. It therefore has no `eraseFromZone` to announce it, and
-// R65 still requires it to be VISIBLE somewhere — which is the single bulk
+// CR 407.3a still requires it to be VISIBLE somewhere — which is the single bulk
 // 'erased' event at the bottom of the disposal. This test asserts that event
 // specifically (by its reason), not merely that the name turned up on the pile:
 // the body's own sweep would put a name there too, and a "the pile mentions
 // Wraith" assertion cannot tell the two apart.
-test('R153 (v): a TOKEN mod reaches the erased pile through the bulk event, never a bin', () => {
+test('CR 410.7 (v): a TOKEN mod reaches the erased pile through the bulk event, never a bin', () => {
   const h = new Harness(12904);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -305,10 +305,10 @@ test('R153 (v): a TOKEN mod reaches the erased pile through the bulk event, neve
   exchangeAway(h, A, host, 'Skittering Blight');
 
   assert.ok(!binOf(h, A).includes('Wraith'),
-    'a token mod has no card of its own, so no bin entry (R69)');
+    'a token mod has no card of its own, so no bin entry (CR 410.4c)');
   assert.equal(trashesOf(h, 'Wraith').length, 0, 'and therefore nothing to trash');
   assert.ok(erasedOf(h, A).includes('Wraith'),
-    'it still has to be visible somewhere — the erased pile (R65)');
+    'it still has to be visible somewhere — the erased pile (CR 407.3a)');
   const bulk = h.events.filter(ev => ev.type === 'erased'
     && (ev.data!['cards'] as string[] | undefined)?.includes('Wraith'));
   assert.equal(bulk.length, 1,
@@ -331,7 +331,7 @@ test('R153 (v): a TOKEN mod reaches the erased pile through the bulk event, neve
 // This is behavioural, not a source scan: the method is replaced with a
 // counting wrapper and both routes are driven. Re-inline the sequence at either
 // call site — even perfectly — and the counter for that route stays at zero.
-test('R153 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.disposeToBin', () => {
+test('CR 410.7 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.disposeToBin', () => {
   const real = E.prototype.disposeToBin;
   let calls = 0;
   const wrapped = function (this: E, ...args: Parameters<E['disposeToBin']>): void {
@@ -350,7 +350,7 @@ test('R153 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.d
     assert.equal(ent(h1, victim), undefined, 'the unit really died');
     assert.equal(calls, 1,
       'E.destroy must run its disposal through E.disposeToBin — it looks like the tail has been '
-      + 're-inlined into destroy(). There is one implementation (R153/CT-43); call it.');
+      + 're-inlined into destroy(). There is one implementation (CR 410.7/CT-43); call it.');
 
     // ── route 2: Hooba-Mon's exchange ───────────────────────────────
     const h2 = new Harness(12906);
@@ -362,7 +362,7 @@ test('R153 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.d
     assert.equal(ent(h2, hooba), undefined, 'the exchange really happened');
     assert.equal(calls, 1,
       'E.exchangeInPlace (Hooba-Mon, Necromorph) must run its disposal through '
-      + 'E.disposeToBin. A hand-copy of the sequence is what R146 and R152 each spent a round '
+      + 'E.disposeToBin. A hand-copy of the sequence is what two separate rounds were spent '
       + 'repairing — push/announce/trash/sweep/erased-pile/delete has eight ordering constraints '
       + 'and not one of them is visible from a call site.');
   } finally {
@@ -375,7 +375,7 @@ test('R153 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.d
 // that runs. A re-inlined copy that ALSO called disposeToBin — the most likely
 // shape of a bad merge — would satisfy the spy and double every trash. So each
 // call site is also read for the parts of the tail that must not be there.
-test('R153 conformance: neither call site keeps a second copy of the tail', () => {
+test('CR 410.7 conformance: neither call site keeps a second copy of the tail', () => {
   const src = (p: string): string => fs.readFileSync(path.resolve(HERE, '..', p), 'utf8');
 
   // destroy(): its own source, taken off the prototype so a moved method or a
@@ -385,10 +385,10 @@ test('R153 conformance: neither call site keeps a second copy of the tail', () =
   for (const banned of ['eraseFromZone(', 'noteTrashed(', 'bin.push(']) {
     assert.ok(!destroySrc.includes(banned),
       `E.destroy contains \`${banned}\` again — that is the disposal tail coming back into it. `
-      + 'It belongs in E.disposeToBin (R153/CT-43), which destroy() already calls.');
+      + 'It belongs in E.disposeToBin (CR 410.7/CT-43), which destroy() already calls.');
   }
 
-  // exchangeInPlace(): R157 §3 moved it out of batch-dark-b.ts and onto E, so
+  // exchangeInPlace(): the exchange ruling moved it out of batch-dark-b.ts and onto E, so
   // that Necromorph could stop calling destroy() and share it. It is a real
   // method now, so it is read off the prototype exactly as destroy() is —
   // which is strictly better than the file slice this used to take: a moved
@@ -398,12 +398,12 @@ test('R153 conformance: neither call site keeps a second copy of the tail', () =
   for (const banned of ['eraseFromZone(', 'noteTrashed(', '.bin']) {
     assert.ok(!exchangeSrc.includes(banned),
       `E.exchangeInPlace contains \`${banned}\` again — the hand-copy of destroy()'s disposal tail `
-      + 'is back. R146 and R152 were two rounds of repairing that copy; R153 removed it. '
+      + 'is back. Two rounds were spent repairing that copy before it was removed. '
       + 'Everything it did lives in E.disposeToBin.');
   }
 
   // and NEITHER card may grow one back. Both exchanges are one call to the
-  // primitive now (R157 §3); the file slices below are what would catch a
+  // primitive now (CR 410.2a); the file slices below are what would catch a
   // "just this once" re-inline at either call site.
   for (const rel of ['src/cards/sets/batch-dark-b.ts', 'src/cards/sets/batch-dark-c.ts']) {
     const code = src(rel)
@@ -413,7 +413,7 @@ test('R153 conformance: neither call site keeps a second copy of the tail', () =
     assert.match(code, /g\.exchangeInPlace\(/, `${rel} no longer calls E.exchangeInPlace`);
     assert.ok(!code.includes('disposeToBin('),
       `${rel} calls E.disposeToBin directly — an exchange is E.exchangeInPlace, which does the `
-      + 'slot swap, the despawn and the disposal together (R157 §3).');
+      + 'slot swap, the despawn and the disposal together (CR 410.2a).');
   }
 });
 
@@ -423,15 +423,15 @@ test('R153 conformance: neither call site keeps a second copy of the tail', () =
 // into disposeToBin: they run the MODS half and nothing else, because their
 // body goes to a hand or a cache rather than a bin.
 //
-// ⚠ R244 NARROWED WHAT THIS TEST CAN CLAIM, and the narrowing is the ruling.
+// ⚠ THE OWNER'S MOD-TRASH RULING (CR 720.8, 720.8a) NARROWED WHAT THIS TEST CAN CLAIM, and the narrowing is the ruling.
 // It used to compare a death against an exchange and call the agreement "the
-// same mod card behaves the same however its host left play" (R137). That
+// same mod card behaves the same however its host left play". That
 // sentence is no longer true across ALL routes: a recalled or cached carrier
 // leaves its mod behind in a bin, where it stays and IS trashed, while an
 // erased carrier takes its mod with it and no trash happens. What is still
 // true — and is what CT-43 was actually about — is that the two routes
 // through `disposeToBin` must not drift apart from each other.
-test('R153: a nontoken mod is binned and trashed the same whether its host dies or is exchanged', () => {
+test('CR 410.7: a nontoken mod is binned and trashed the same whether its host dies or is exchanged', () => {
   const shape = (seed: number, leave: (h: Harness, host: EntityId, A: Seat) => void) => {
     const h = new Harness(seed);
     toDeployment(h);
@@ -454,16 +454,16 @@ test('R153: a nontoken mod is binned and trashed the same whether its host dies 
   const exchanged = shape(12908, (h, host, A) => exchangeAway(h, A, host, 'Skittering Blight'));
 
   assert.deepEqual(exchanged, died,
-    'the mod must not care HOW its host left play (R137). If these differ, one of the two routes '
+    'the mod must not care HOW its host left play (CR 410.4d). If these differ, one of the two routes '
     + 'has stopped using E.disposeToBin — which is the whole defect CT-43 is about.');
   assert.deepEqual(died.verbs, ['erased'],
-    'and the shared answer is: swept, never trashed (R244). test/224-mod-trash.test.ts holds the '
+    'and the shared answer is: swept, never trashed (CR 720.8a). test/224-mod-trash.test.ts holds the '
     + 'recall/cache half, where the mod is left behind in a bin and IS trashed.');
 });
 
 // Guard on the guard: the primitive has to still BE the shape these tests
 // assume, or every assertion above degrades into "some method ran".
-test('R153: E.disposeToBin exists and takes (entity, mods, announce, opts)', () => {
+test('CR 410.7: E.disposeToBin exists and takes (entity, mods, announce, opts)', () => {
   assert.equal(typeof E.prototype.disposeToBin, 'function', 'the primitive is gone');
   assert.equal(E.prototype.disposeToBin.length, 3,
     'disposeToBin(u, mods, announce, opts = {}) — three required parameters. The `announce` '
@@ -477,21 +477,21 @@ test('R153: E.disposeToBin exists and takes (entity, mods, announce, opts)', () 
   }
 });
 
-// ── R65, the branch that never had an announcement ─────────────────────────
+// ── CR 407.3a, the branch that never had an announcement ─────────────────────────
 //
-// Found 2026-08-25 while closing CT-43: the R65 rule is that EVERY erase
+// Found 2026-08-25 while closing CT-43: the CR 407.3a rule is that EVERY erase
 // reaches the public erased pile, and a TOKEN mod is erased whichever way its
-// host leaves play (R69 — it has no card of its own, so it can never bin).
+// host leaves play (CR 720.7c — it has no card of its own, so it can never bin).
 // `disposeToBin` says so for a death and for Hooba-Mon's exchange. `leavePlay`
 // deleted it in total silence, so the SAME Wraith on the SAME host was public
 // when the host died and invisible when the host was recalled or cached —
-// R137's defect one object over.
+// the same defect one object over.
 //
 // This is deliberately asserted over all three routes together: a per-route
 // test would have passed on `destroy` alone, which is exactly how the gap
 // survived. Nothing about zones, entities or timing changed with the fix; it
 // only announces what was already happening.
-test('R65: a TOKEN mod reaches the erased pile however its host leaves play', () => {
+test('CR 407.3a: a TOKEN mod reaches the erased pile however its host leaves play', () => {
   const seen: Record<string, { pile: number; events: number }> = {};
   for (const how of ['destroy', 'recall', 'cache'] as const) {
     const h = new Harness(99);
@@ -513,14 +513,14 @@ test('R65: a TOKEN mod reaches the erased pile however its host leaves play', ()
     });
   }
   // recall and cache each announce exactly the token mod; a death also erases
-  // the Unstable body it was riding (a modded card is Unstable — R69/R96), so
+  // the Unstable body it was riding (a modded card is Unstable — CR 803.8e), so
   // it legitimately files two.
   assert.equal(seen['recall']!.pile, 1, 'a RECALLED host left its token mod off the erased pile');
   assert.equal(seen['cache']!.pile, 1, 'a CACHED host left its token mod off the erased pile');
   assert.ok(seen['destroy']!.pile >= 1, 'a dying host must still file its token mod');
   for (const how of ['destroy', 'recall', 'cache'] as const) {
     assert.ok(seen[how]!.events >= 1,
-      `${how} produced no 'erased' event at all — R65 is about the ERASE, not the verb that `
+      `${how} produced no 'erased' event at all — CR 407.3a is about the ERASE, not the verb that `
       + 'caused it, so every route has to say so out loud.');
   }
 });
@@ -536,7 +536,7 @@ test('R65: a TOKEN mod reaches the erased pile however its host leaves play', ()
 //
 // Asserted against the BOARD rather than against a fixed string: the point is
 // agreement between the two, not any particular phrasing.
-test('R156: a keepBinned death does not claim an erase that never happened', () => {
+test('a keepBinned death does not claim an erase that never happened', () => {
   const h = new Harness(99);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -544,7 +544,7 @@ test('R156: a keepBinned death does not claim an erase that never happened', () 
   const victim = spawn(h, O, 'Tidal Menace');
   withE(h, e => {
     const u = e.entity(victim)!;
-    e.attachMod(u, 'Nothyr', O, 'augment');           // nontoken mod ⇒ Unstable (R69)
+    e.attachMod(u, 'Nothyr', O, 'augment');           // nontoken mod ⇒ Unstable (CR 803.8e)
     assert.ok(e.isUnstable(u), 'the premise: a modded body is Unstable');
     const at = e.events.length;
     e.destroy(u, 'is deleted', { binTo: P, keepBinned: true });   // Pull Under's own call
@@ -569,7 +569,7 @@ test('R156: a keepBinned death does not claim an erase that never happened', () 
 
 // the negative control: WITHOUT keepBinned the same board really is erased, so
 // the test above cannot pass by the message simply never saying ERASED again.
-test('R156 control: the same death WITHOUT keepBinned still reports the erase', () => {
+test('control: the same death WITHOUT keepBinned still reports the erase', () => {
   const h = new Harness(99);
   toDeployment(h);
   const P = h.state.deployPlayer!;

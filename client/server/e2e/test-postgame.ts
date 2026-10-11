@@ -62,7 +62,7 @@ writeFileSync(join(GAMES, `${FINISHED}.json`), JSON.stringify({
   ],
 }));
 
-// R204/CT-85: the server picks its own port and tells us which — see
+// CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
 // test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
 // port unheld for as long as node took to boot.
 const server = await spawnServer();
@@ -165,7 +165,7 @@ try {
   }));
   // restart so the room is restored from that file
   await server.stop();
-  // R204/CT-85: this used to bind PORT + 1 — a port nothing had ever checked
+  // CT-85: this used to bind PORT + 1 — a port nothing had ever checked
   // was free, chosen by arithmetic on a port that WAS. It also never rejected
   // on the child's exit, so when the bind failed the only symptom was
   // `server2 startup timeout` fifteen seconds later, naming nothing. Both are

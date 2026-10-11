@@ -2,7 +2,7 @@
  *
  * Behaviour only; printed data comes from printed.json (never hand-copied).
  * Spec for the expansion's new mechanics: docs/08-light-and-dark.md,
- * rulings R38-R48 in docs/digital-rules.md.
+ * and the Comprehensive Rules.
  *
  * Cards in this batch:
  *   Arbiter of Armistice
@@ -24,29 +24,29 @@
  *   Triskaidekaphage
  *   Vroot
  *
- * Mechanics touched: cache (R41), debt (R39), glimpse (R45), prophecy
- * (R42-R44). Graft markers: [Switch] = unbounded graft, [Switch1] = bounded
- * (once per turn, R9). R37: applying a mod is NOT playing a card.
+ * Mechanics touched: cache (CR 403.1), debt (CR 112.14), glimpse (CR 801.9), prophecy
+ * (CR 803.7). Graft markers: [Switch] = unbounded graft, [Switch1] = bounded
+ * (once per turn, CR 722.5). CR 701.2: applying a mod is NOT playing a card.
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - LIFE AS A COST (R49). Blob of the Dark Order and Glararr now declare a
+ *  - LIFE AS A COST (CR 111.6b). Blob of the Dark Order and Glararr now declare a
  *    real ACTIVATION cost ({ life: n }): it gates the activation and is paid
  *    before the ability reaches the stack. Flesh Tithe's "[Pay X life]" is a
  *    real CAST COST too — `{ kind: 'payLife', n: 'X' }`, paid a point at a time
- *    at cast, and the amount paid IS the spell's X. It obeys the same R49 ruling either way: each point is
+ *    at cast, and the amount paid IS the spell's X. It obeys the same CR 111.6b rule either way: each point is
  *    re-checked, so a life cost you cannot survive is never payable.
  *  - "MY COLUMN DEALS COMBAT DAMAGE" (Vroot) is read off the combat events: a
  *    'damage' event with no `source` tag against the directly opposing column,
  *    or the aggregated combat 'lifeLost' with my column connecting — and,
- *    since R117, only in a SUB-STEP MY OWN COLUMN STRIKES IN
- *    (E.strikesInCurrentSubStep; R157 §5 made that "a", not "the", because a
+ *    per CR 608.9a, only in a SUB-STEP MY OWN COLUMN STRIKES IN
+ *    (E.strikesInCurrentSubStep; "a", not "the", per CR 608.2c, because a
  *    {Swift}{Sluggish} column strikes in two). A column that both kills
  *    blockers and pierces through fires once per damage instance.
- *    R157 §4 (owner, 2026-08-25) made this ONE shared predicate,
+ *    It is ONE shared predicate (CR 608.9a),
  *    E.columnDealtCombatDamage, over the four cards printing the clause;
  *    Vroot's own reading — the LIVE COLUMN's total power, not the anchor's —
  *    was already the right one and is now the only one. What is STILL
- *    approximate is R117's own residue: face damage arrives as one aggregated
+ *    approximate is the residue of that reading: face damage arrives as one aggregated
  *    `lifeLost` per seat per sub-step, so two of my columns connecting in the
  *    SAME sub-step are indistinguishable here.
  *
@@ -55,7 +55,7 @@
  *    the two missing pieces itself: "a STRING on Entity to hold the named card
  *    (budgets are numeric-only) plus a StaticMod matching on a card NAME rather
  *    than an entity id". The string is `Entity.named`; the StaticMod is the one
- *    on the card. Everything else the note asked for already existed — R62's
+ *    on the card. Everything else the note asked for already existed — CR 712.1's
  *    continuous `StaticMod.suppressAbilities`, read through E.suppressionOf /
  *    E.abilitiesSuppressed, whose `staticsFor` walk is scoped to
  *    `anchor.region === target.region`. That scope IS "(as long as I am in
@@ -64,7 +64,7 @@
  *    without ever reaching across regions, which is the rule Caleb said would
  *    never be violated. See the card for the full note.)
  *
- * UNPARKED by the R49/R50 engine wave:
+ * UNPARKED by the engine wave that stamped the play events' source zone:
  *  - Stalwart Sentinel reads the play events' new `data.from` zone instead of
  *    scanning this apply() call's log (which was unsound — a cast that
  *    suspends on targets fires 'spellPlayed' in a LATER apply() call).
@@ -73,7 +73,7 @@
  *  - Keeper of Tithes hears the new 'endOfHaste' event.
  *
  * PARKED (needs primitives that do not exist; each registers crash-free):
- *  - (none left in this batch — The Everywhere was the last one, and R91
+ *  - (none left in this batch — The Everywhere was the last one, and its 'name a card' decision
  *    unparked it to the approximation described above.)
  */
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
@@ -86,12 +86,12 @@ import { selfOf, isEnt, eraseFromPlay, isOwnArrival } from './helpers.ts';
 /* A local `payLife(g, seat, n, why)` helper used to sit here, documented as
  * "pay `n` life as a COST at resolution (header note)". It was DEAD — zero
  * call sites — and had been since all three life-cost cards in this batch
- * moved to real R49/R64 `castCost: { kind: 'payLife' }` costs, which the file
+ * moved to real CR 111.2, 702.4 `castCost: { kind: 'payLife' }` costs, which the file
  * header records. `tsconfig` has `strict` but not `noUnusedLocals`, which is
- * why it survived. Deleted by R174; `E.canPayLife` / `E.payActivationCost` are
- * the live route and enforce R49's "only while you have MORE than N life". */
+ * why it survived. Deleted (see 147-comment-conformance); `E.canPayLife` / `E.payActivationCost` are
+ * the live route and enforce CR 111.6b's "only while you have MORE than N life". */
 
-/** R25: "each opponent" is the seats PRESENT IN THE EFFECT'S REGION, not every
+/** CR 601.4d: "each opponent" is the seats PRESENT IN THE EFFECT'S REGION, not every
  * seat at the table. Vroot only ever fires on combat damage, so its region
  * always holds both players in 1v1 — but the two readings are not the same
  * clause, and every other batch in the expansion uses this one. */
@@ -109,11 +109,11 @@ const opponentsOf = (g: E, region: number, seat: Seat): Seat[] =>
  * business, not this text's. Zephyrzoa and Eldritch Dreamtender print "to an
  * opponent" and take 'face' alone; Blightmound adds 'poison'.
  *
- * R117 (owner, 2026-08-23): the clause fires in the sub-step MY OWN COLUMN
- * strikes in — and, R157 §5, in EVERY such sub-step, so a {Swift}{Sluggish}
+ * CR 608.9a (owner, 2026-08-23): the clause fires in the sub-step MY OWN COLUMN
+ * strikes in — and in EVERY such sub-step, so a {Swift}{Sluggish}
  * column pays out twice because it really does strike twice.
  *
- * R157 §4 (owner, 2026-08-25): the power gate is the LIVE COLUMN's total, not
+ * CR 608.9a: the power gate is the LIVE COLUMN's total, not
  * the anchor's own — "0 power units do no damage. But the other thing in the
  * column can still contribute to the shared column power." Vroot's own reading
  * was already this one; it is now the only one in the pool.
@@ -124,7 +124,7 @@ function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean
 
 /**
  * Did the play event `ev` come from somewhere OTHER than the player's hand?
- * R49: both play events now carry `data.from` — the zone the card was played
+ * CR 410.6, 410.6b: both play events now carry `data.from` — the zone the card was played
  * out of, stamped on the StackItem by doPlayCard / doPlayCached. A play event
  * with no `from` at all is not a played card (an effect-created token), so it
  * is not "played from elsewhere" either.
@@ -141,20 +141,20 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 // ───────────────────────────── the cards ──────────────────────────────
 
 // "Cards played during battle gain [Pay 2 life]." — ll/2 2/2 {Haste}
-// {Switch} Holy Unit. R60: the life half of the cost-modifier layer (R59
-// brought the mana half in for Tranquility). Scoped exactly as printed:
+// {Switch} Holy Unit. CR 111.10d: the life half of the cost-modifier layer (the mana
+// half came in for Tranquility, CR 111.10). Scoped exactly as printed:
 //  · "cards", not "spells" — a unit played during battle is taxed too, and
-//    a spell TOKEN is not: casting one IS playing a spell (R305), but a token
-//    is not a card (R133). Before R305 no token was ever priced, so this
+//    a spell TOKEN is not: casting one IS playing a spell (CR 701.1c), but a token
+//    is not a card (CR 304.2). Until spell-token casts were priced, this
 //    needed no guard; now `doCastSpellToken` asks `lifeToPlay` like any play,
 //    and `CARD_PLAY_KINDS` is the printed noun;
-//  · "played", so applying a mod is exempt (R37 — purpose 'mod');
+//  · "played", so applying a mod is exempt (CR 701.2a — purpose 'mod');
 //  · "during battle", so the haste step and deployment are free;
 //  · everyone's cards, not just the opponent's — including my own.
-// Region-scoped like every other cost mod (R12): the Arbiter taxes the
+// Region-scoped like every other cost mod (CR 111.10): the Arbiter taxes the
 // battle it is standing in, not one happening elsewhere.
 //
-// ✔ TRANSCRIPTION: CLOSED by R157 §25 (owner, 2026-08-25, verbatim): *"That's
+// ✔ TRANSCRIPTION: CLOSED by the owner (2026-08-25, verbatim; see CR 200.2): *"That's
 // an error on your part. The card does not have a [Switch] thing. It just adds
 // an additional cost to all spells cast in battle to pay 2 life."* This note
 // used to read "⚠ still open, and NOT a park: the type line carries a bare
@@ -172,14 +172,14 @@ card('Arbiter of Armistice', {
   costMods: [{
     life: (g, _self, ctx) =>
       (g.s.phase === 'battle' && ctx.purpose === 'play'
-        && CARD_PLAY_KINDS.has(ctx.card.kind)) ? 2 : 0,          // "Cards" — R133/R305
+        && CARD_PLAY_KINDS.has(ctx.card.kind)) ? 2 : 0,          // "Cards" — CR 304.2, 701.1c
   }],
 });
 
 // "[Augment] Pay 1 life: I gain piercing until regroup." — l/3 3/4 Horror
 // Unit. An ACTIVATED ability inside the [Augment] text box: usable on the card
 // itself when played normally (via 'augment') and on a host when donated
-// (via { mod }) — "I" is then the host. R49: the 1 life is a real ACTIVATION
+// (via { mod }) — "I" is then the host. CR 111.6b: the 1 life is a real ACTIVATION
 // cost now — it gates the activation (you may not activate at 1 life) and is
 // paid before the ability reaches the stack, so it cannot be responded to.
 card('Blob of the Dark Order', {
@@ -199,8 +199,8 @@ card('Blob of the Dark Order', {
 
 // "When you gain or lose life during battle, [Switch1] Put three +1/+1
 // counters on me." — ll/3 2/2 Spirit Unit. Both life channels, either
-// direction, but only YOUR life and only during battle (R1: the condition is
-// checked at event time). [Switch1] = bounded (R9, one firing per turn however
+// direction, but only YOUR life and only during battle (CR 109.3a: the condition is
+// checked at event time). [Switch1] = bounded (CR 722.5, one firing per turn however
 // often life moves) and a graft cause.
 const colonyCounters: EffectDef = {
   run: (g, ctx) => {
@@ -222,12 +222,12 @@ card('Colony of the Interworld', {
 // card. It gains 'Prophecy — Three Turns Pass'." — ll/1 {Battle} Cosmic Spell.
 // Target is a PLAYER, and not you — the 'opponent' kind says exactly that, so
 // no unit is ever on the menu. The card leaves their hand for THEIR cache
-// with a granted prophecy (R42/R43: normalizeProphecy handles the wording, and
+// with a granted prophecy (CR 803.7a, 803.7: normalizeProphecy handles the wording, and
 // the three-turn clock starts counting forward from now). They are the ones
 // who may eventually release it — this is a delay, not a steal.
 card('Divine Foresight', {
   spellEffect: {
-    // R64: "target opponent" — a player, and not you
+    // CR 110.3c: "target opponent" — a player, and not you
     targets: { what: 'opponent', prompt: "Divine Foresight: look at target opponent's hand" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
@@ -262,18 +262,18 @@ card('Divine Foresight', {
 
 // "[Switch1] [Pay X life], create an X/X unit." — l/4 Horror Spell (deploy).
 // The leading [Switch1] makes the whole text a bounded graft as well as the
-// spell's own effect (Arcane Echo's shape). R64: the bracket is an ADDITIONAL
+// spell's own effect (Arcane Echo's shape). CR 702.6b: the bracket is an ADDITIONAL
 // COST — the life is paid at cast, a point at a time, and X is however much
-// was paid. R49 is re-asked before each point, so the cost can never be lethal
+// was paid. CR 111.6b is re-asked before each point, so the cost can never be lethal
 // and no cap has to be computed up front.
 const fleshTithe: EffectDef = {
   castCost: { kind: 'payLife', n: 'X' },
-  xZeroWarning: 'X = 0 creates no unit',   // R74
+  xZeroWarning: 'X = 0 creates no unit',   // CR D7.1a
   creates: ['Unit Token'],
   run: (g, ctx) => {
     const x = ctx.x ?? 0;
     if (x <= 0) { g.ev('info', 'Flesh Tithe: X = 0 — no life paid, no unit.'); return; }
-    // R115: a created unit arrives where its SOURCE is — during deployment
+    // CR 601.5: a created unit arrives where its SOURCE is — during deployment
     // that IS home; grafted onto a battle cause it is the battle region
     g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
       { token: true, tokenStats: [x, x] });
@@ -287,14 +287,13 @@ card('Flesh Tithe', {
 // "Pay 9 life: [Switch1] Erase target unit." — l/5 4/5 Horror Unit. An
 // activated ability with a life cost and a bounded graft cause. Erase = out of
 // the game entirely: no bin, no died/despawned triggers, mods erased with it.
-// R49: the 9 life is a real ACTIVATION cost — it GATES the activation (at 9
+// CR 111.6b: the 9 life is a real ACTIVATION cost — it GATES the activation (at 9
 // life or less the ability is not offered and apply() refuses it) and is paid
 // as the ability is activated, before it reaches the stack.
 //
 // The [Switch1] is both a graft CAUSE and the card's transferable
 // `graftEffect` (the Sprouter pattern), which was missing. As a RIDER the 9
-// life rides along as a bracketed cast cost (R35/R49): a grafted rider pays in
-// the cast window and may be declined, so the erase can never happen unpaid.
+// life rides along as a bracketed cast cost: a grafted cost must be paid and cannot be declined, and if it cannot be paid the whole composite stays off the stack (CR 111.15), so the erase can never happen unpaid.
 const glararrErase = (castCost?: { kind: 'payLife'; n: number }): EffectDef => ({
   targets: { what: 'unit', prompt: 'Glararr: pay 9 life — erase target unit' },
   ...(castCost ? { castCost } : {}),
@@ -317,7 +316,7 @@ card('Glararr', {
 });
 
 // "(Only flying units can block flying units.) When I spawn, you gain 3 debt
-// and draw a card." — ll/2 3/4 {Flying} Horror Unit. R39: debt is paid
+// and draw a card." — ll/2 3/4 {Flying} Horror Unit. CR 112.14, 112.14b: debt is paid
 // automatically at the very end of your next resource step, 1 mana each, and
 // the remainder carries over — gaining it costs nothing right now, which is
 // exactly why the card is a 3/4 flier plus a card for [2].
@@ -336,12 +335,12 @@ card('Greed Angel', {
 
 // "When I attack or block, create a token that's a copy of me in my
 // formation." — lll/8 2/2 Hooba God Unit. The copy is a unit token; "in my
-// formation" is R75 — the controller chooses the slot at resolution rather
+// formation" is CR 602.6 — the controller chooses the slot at resolution rather
 // than the copy silently taking my own column's back slot (and getting nothing
 // at all when that slot was full). The copy is created after attackers/blockers
 // are declared, so it never re-triggers this on its own.
 //
-// R118: "a copy of ME" reads the FACE, not `Entity.card` — the ruling names
+// CR 710.5: "a copy of ME" reads the FACE, not `Entity.card` — the original ruling named
 // this card by name ('"Create a copy of me" (Echo of Despair, Hooba-God,
 // Swarmling) reads the FACE, and carries no counters and no mods'). A
 // Hooba-God wearing an identity face (Apex Prime, Borrower of Forms) IS that
@@ -357,21 +356,21 @@ card('Hooba-God', {
     effect: {
       creates: ['Hooba-God'],
       run: (g, ctx) => {
-        // R325: gone before this resolves, it is copied from its last-known
+        // CR 714.6, 714.4: gone before this resolves, it is copied from its last-known
         // state and placed in the formation it remembers (RAQ, Dead Unit)
         const self = selfOf(g, ctx);
         const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
         if (!self && !lk) { g.ev('info', 'Hooba-God: it is no longer in play — no copy is created.'); return; }
         const src = (self ?? lk!).id;
-        // R225: IN PLAY was the wrong predicate. "In my formation" names the
+        // CR 602.6e: IN PLAY was the wrong predicate. "In my formation" names the
         // grid I am standing in, and a Hooba-God that is in the region beside
-        // the line (R172 mid-battle control theft) is in play and in no
+        // the line (CR 711.3 mid-battle control theft) is in play and in no
         // formation — it named one anyway and the copy joined the SEAT's grid.
         if (g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-God: it is not in a formation — no copy is created.');
           return;
         }
-        const me = self ? g.nameOf(self) : lk!.face;   // R118 layer 0: what I AM (or was)
+        const me = self ? g.nameOf(self) : lk!.face;   // the face (layer 0, CR 710.5): what I AM (or was)
         const copy = g.spawnUnit(ctx.controller, me, self?.region ?? ctx.region, { token: true });
         g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God', sourceId: src });
       },
@@ -381,10 +380,10 @@ card('Hooba-God', {
 
 // "[Augment] At the end of [Haste], if X is not 0, create an X/X unit, where X
 // is the number of expended resources you have." — l/5 3/3 Horror Unit.
-// R50: the haste step now ends with an 'endOfHaste' event fired inside a
+// CR 504.6: the haste step now ends with an 'endOfHaste' event fired inside a
 // settle() window, so this is an ordinary triggered ability. Text-box
 // [Augment], so "you" is the HOLDER's controller — the host when donated.
-// R1/R27: X is counted at RESOLUTION, off the live resource list; a resource
+// CR 109.3b: X is counted at RESOLUTION, off the live resource list; a resource
 // spent DURING the haste step is expended by then and counts, which is the
 // whole point of the card.
 card('Keeper of Tithes', {
@@ -396,7 +395,7 @@ card('Keeper of Tithes', {
       run: (g, ctx) => {
         const x = g.player(ctx.controller).resources.filter(r => r.state === 'expended').length;
         if (x <= 0) { g.ev('info', 'Keeper of Tithes: no expended resources — X is 0, no unit.'); return; }
-        // R115: a created unit arrives where its SOURCE is (ctx.region)
+        // CR 601.5: a created unit arrives where its SOURCE is (ctx.region)
         g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
           { token: true, tokenStats: [x, x] });
       },
@@ -405,11 +404,11 @@ card('Keeper of Tithes', {
 });
 
 // "When I attack or block, [Switch1] Glimpse 2." — l/2 2/1 Spirit Unit.
-// R45: glimpse reveals the top 2, caches ONE of the glimpser's choice and
+// CR 801.9: glimpse reveals the top 2, caches ONE of the glimpser's choice and
 // recycles the rest to the bottom of the deck; the cached card is playable
 // until end of turn, ignoring affinity but still paying its mana and obeying
 // its timing. E.glimpse() raises the choose-one decision itself.
-// [Switch1] = bounded (R9) and a graft cause.
+// [Switch1] = bounded (CR 722.5) and a graft cause.
 const seerGlimpse: EffectDef = {
   run: (g, ctx) => { g.glimpse(ctx.controller, 2); },
 };
@@ -426,7 +425,7 @@ card('Lifebound Seer', {
 // "Any number of target players each lose 1 life. Draw a card." — l/1
 // {Battle} Nature Spell. "Any number" in 1v1 is up to both players, so
 // count 2 / min 0 — and min 0 genuinely means "up to", so the draw still
-// happens when no player is targeted at all. R64: the kind is 'player', which
+// happens when no player is targeted at all. CR 110.3c: the kind is 'player', which
 // offers the present seats and nothing else — 'any' let a unit fill one of the
 // two slots, and that slot then lost no life.
 card('Penance', {
@@ -443,7 +442,7 @@ card('Penance', {
 });
 
 // "Sacrifice me: [Switch1] Recall up to one target cached card. You gain 3
-// life." — l/1 3/1 Cosmic Unit. R41: the cache is PUBLIC, so BOTH caches are
+// life." — l/1 3/1 Cosmic Unit. CR 403.6: the cache is PUBLIC, so BOTH caches are
 // legal targets — the card exists to answer an opponent's nearly-fulfilled
 // prophecy (Caleb 2025-12-06). "Recall" puts the card in its owner's HAND, so
 // the entry (and any prophecy stamped on it) is gone. "Up to one" is min 0:
@@ -463,7 +462,7 @@ const observerRecall: EffectDef = {
       const i = g.cacheIndexOf(seat, uid);
       const cc = i === -1 ? undefined : g.uncache(seat, i);
       if (cc) {
-        g.toHand(seat, cc.card, 'cache');   // R179
+        g.toHand(seat, cc.card, 'cache');   // CR 402.4
         g.ev('info', `${cc.card} is recalled from ${g.pname(seat)}'s cache to their hand.`);
       }
     }
@@ -482,7 +481,7 @@ card('Prismatic Observer', {
 // "I deal X damage to target unit, where X is the life you've [lost or gained]
 // in this battle." — l/1 {Battle} Nature Spell.
 //
-// R157 §21 / R161 — THE BRACKET IS A MODE, and it is the GENERAL rule about
+// CR 205.3 / CR 205.3a — THE BRACKET IS A MODE, and it is the GENERAL rule about
 // bracketed text, not this card's answer. Owner, 2026-08-25, verbatim: *"All
 // text on cards that's in [square brackets] like that is either an additional
 // cost or a modal choice. The additional cost must be paid in order to put it
@@ -493,18 +492,18 @@ card('Prismatic Observer', {
 // note that "[lost or gained]" is bracketed like a symbol but is not one. The
 // bracket is exactly what makes it a choice: you name the ledger in the cast
 // window and X reads ONLY that one. It is Siphon Life's shape ("[gains or
-// loses]", R57) card for card, and for the same reason — an opponent
+// loses]", CR 702.5) card for card, and for the same reason — an opponent
 // responding to a spell whose X is "one of these two numbers, decided later"
 // is responding to an undeclared effect (97-mode-conformance).
 //
 // The two ledgers are the engine's own per-battle counters: `lifeLost:<seat>`
-// from E.loseLife and, since R49, `lifeGained:<seat>` from E.gainLife; both
-// reset each battle phase (R14). R1: the mode is fixed at cast, the AMOUNT is
+// from E.loseLife and `lifeGained:<seat>` from E.gainLife; both
+// reset each battle phase (CR 505.6). CR 107.8: the mode is fixed at cast, the AMOUNT is
 // still read at resolution, so a mode chosen while the ledger said 3 deals
 // whatever that ledger says when it resolves.
 //
 // A ledger that is empty is not an illegal choice — it is X = 0, which the
-// pool treats as a legal pointless cast everywhere else (R157 §22). Both
+// pool treats as a legal pointless cast everywhere else (CR 107.2b). Both
 // options are therefore always offered; only a cast with NO battle behind it
 // (both ledgers 0) has nothing to distinguish them, and that is a real cast
 // too, so the question is still asked rather than silently auto-picked.
@@ -519,7 +518,7 @@ card('Retribution Thing', {
           + `(${g.battleCounter(r, `lifeLost:${item.controller}`)}) or GAINED `
           + `(${g.battleCounter(r, `lifeGained:${item.controller}`)})?`;
       },
-      // R284 `half`: printed "[lost or gained]"
+      // CR D6.10a `half`: printed "[lost or gained]"
       options: (g, item) => [
         { label: `Lost (${g.battleCounter(item.region, `lifeLost:${item.controller}`)})`, value: 'lost', half: 0 },
         { label: `Gained (${g.battleCounter(item.region, `lifeGained:${item.controller}`)})`, value: 'gained', half: 1 },
@@ -528,7 +527,7 @@ card('Retribution Thing', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const which = ctx.mode === 'gained' ? 'lifeGained' : 'lifeLost';   // R57: declared at cast
+      const which = ctx.mode === 'gained' ? 'lifeGained' : 'lifeLost';   // CR 702.5: declared at cast
       const x = g.battleCounter(ctx.region, `${which}:${ctx.controller}`);
       if (x <= 0) {
         g.ev('info', `Retribution Thing: you have ${ctx.mode === 'gained' ? 'gained' : 'lost'} `
@@ -548,7 +547,7 @@ card('Retribution Thing', {
 });
 
 // "When I spawn, [Switch1] You gain 3 life." — l/1 2/1 {Battle} Friend Unit.
-// A battle-timed 2/1 that pays for itself; [Switch1] = bounded (R9) and a
+// A battle-timed 2/1 that pays for itself; [Switch1] = bounded (CR 722.5) and a
 // graft cause, so grafts hung on it ride the spawn.
 const sprintLife: EffectDef = {
   run: (g, ctx) => { g.gainLife(ctx.controller, 3, 'Shard Sprite'); },
@@ -565,9 +564,9 @@ card('Shard Sprite', {
 // "[Augment][once] When you play a unit or spell from anywhere other than your
 // hand, put two +1/+1 counters on me." — l/1 1/1 Nature Unit. Text-box
 // [Augment]: live when played normally, donated on augment ("me" = the host,
-// "you" = the host's controller). R37: applying a mod is NOT playing a card, so
+// "you" = the host's controller). CR 701.2a: applying a mod is NOT playing a card, so
 // grafting or augmenting out of the cache deliberately does not feed this.
-// R49: the play events carry the source ZONE (`data.from`), so this is an
+// CR 410.6: the play events carry the source ZONE (`data.from`), so this is an
 // exact read rather than the old log scan. A unit play is heard on 'spawned'
 // (its own spawn, never a token), everything else on 'spellPlayed' — so a
 // spell unit is counted exactly once.
@@ -585,7 +584,7 @@ card('Stalwart Sentinel', {
       const name = ev.data?.['card'] as string | undefined;
       if (!name) return false;
       if (ev.type === 'spawned') {
-        if (isOwnArrival(self, ev)) return false;            // R347: never its own play (CT-277)
+        if (isOwnArrival(self, ev)) return false;            // CR 701.1e: never its own play (CT-277)
         if (getCard(name).kind !== 'unit') return false;      // spellUnits are heard on 'spellPlayed'
         const u = g.entity(ev.data?.['unit'] as EntityId);
         if (!u || u.token) return false;                      // created tokens are not played cards
@@ -605,13 +604,13 @@ card('Stalwart Sentinel', {
 // abilities. (As long as I am in their region.)" — l/4 3/3 {Haste} Spirit
 // Unit.
 //
-// R91 — UNPARKED, as an approximation (see the batch header). The park note
+// CR 712.6 — UNPARKED, as an approximation (see the batch header). The park note
 // said "a 'name a card' PLAYER ACTION. That is the only thing left", and that
 // was a stale claim about the engine on the day it was written: `ctx.choose`
 // takes an arbitrary option list, and `DecisionOption.card` exists precisely so
 // the client renders a real card scan instead of a text label (types.ts: "when
 // the option IS a card (hand looks, deck tops, bin picks), its name — the
-// client renders the real scan"). Naming is a Decision, and R50's 'endOfHaste'
+// client renders the real scan"). Naming is a Decision, and CR 504.6's 'endOfHaste'
 // fires inside a settle() window that is allowed to raise one — the same seam
 // Keeper of Tithes above uses for its end-of-[Haste] trigger.
 //
@@ -619,7 +618,7 @@ card('Stalwart Sentinel', {
 // made by the HOLDER's controller (text-box [Augment], so "I" is the host when
 // this is donated), it hits every copy of the named card rather than one unit
 // ("my last named CARD"), it is REGION-SCOPED, and "loses all abilities" is
-// R62's suppression layer — the same one Suppression Field and Monke use.
+// CR 712.1a's suppression layer — the same one Suppression Field and Monke use.
 //
 // The region scoping is not a choice. Caleb, rules-questions, twice and
 // emphatically:
@@ -643,9 +642,9 @@ card('Stalwart Sentinel', {
 //
 //   · `Entity.named` (types.ts) is the STRING the old note asked for, because
 //     `Entity.budgets` is numeric-only. It is a memory — "my LAST named card" —
-//     so regroup's R11 step-3 sweep deliberately does NOT clear it. A later
+//     so regroup's CR 506.2 step-3 sweep deliberately does NOT clear it. A later
 //     naming overwrites it, which is exactly what "last" means.
-//   · the `statics` entry is R62's CONTINUOUS half (`StaticMod.suppressAbilities`,
+//   · the `statics` entry is CR 712.1a's CONTINUOUS half (`StaticMod.suppressAbilities`,
 //     read through E.suppressionOf / E.abilitiesSuppressed), matching on the
 //     remembered card NAME instead of an entity id. Nothing about a
 //     name-matching static needed engine work: `affects(g, self, target)`
@@ -672,7 +671,7 @@ card('The Everywhere', {
         // It used to be `unitsIn(r).map(u => u.card)` — the names of the UNITS
         // standing on the board right now — with a comment claiming that was
         // "every card name in play". That is a qualifier the printed text does
-        // not carry (R125's lesson: the shape of the mechanism that happened to
+        // not carry (CR 707.7's lesson: the shape of the mechanism that happened to
         // exist got promoted into a rule about the card), and it cost the card
         // its best line of play: the silence below is CONTINUOUS and matches on
         // a NAME, so naming a card that is not on the board yet is exactly how
@@ -684,7 +683,7 @@ card('The Everywhere', {
         // today's options are a strict subset (a Robot / Unit Token standing
         // there is still nameable) and nothing that used to be legal is gone.
         // Read through `E.nameOf` for the same reason the static below does:
-        // R118 layer 0 means a copy answers to its FACE, and the face is the
+        // Layer 0 (CR 201.5) means a copy answers to its FACE, and the face is the
         // name that has to be nameable for the silence to bite.
         const pool = allCardNames().filter(n => {
           const c = getCard(n);
@@ -731,7 +730,7 @@ card('The Everywhere', {
           g.ev('info', 'The Everywhere names a card that is not in play — nothing is silenced.');
           return;
         }
-        // R12 is not enforced here and must not be: which copies are actually
+        // CR 601.1d is not enforced here and must not be: which copies are actually
         // silenced is the STATIC's business, and its answer changes as units
         // move. This line only reports the board as it stands right now.
         const here = g.unitsIn(self.region).filter(u => g.nameOf(u) === named).length;
@@ -743,15 +742,15 @@ card('The Everywhere', {
       },
     },
   }],
-  // R62's CONTINUOUS half, which is what "(As long as I am in their region.)"
+  // CR 712.6's CONTINUOUS half, which is what "(As long as I am in their region.)"
   // is: a StaticMod matching on the remembered card NAME instead of an entity
   // id. `staticsFor` supplies the region scope and the anchoring for free —
   // it walks `anchor.region === target.region` and reads augment-donated
   // statics from their host — so the printed duration clause IS the walk's
   // existing scope, evaluated live, and the [Augment] case falls out with no
-  // extra code (the Transmogrifant precedent). Suppression is a veto (R62), so
+  // extra code (the Transmogrifant precedent). Suppression is a veto, so
   // nothing votes the silence back on.
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -791,17 +790,17 @@ card('Triskaidekaphage', {
 // combat events; a column that both kills blockers and pierces through pays
 // out once per damage instance.
 //
-// ⚠ R195 — "THAT MUCH" IS MY COLUMN'S, NOT THE TABLE'S. On the 'units'
+// ⚠ CR 608.9a — "THAT MUCH" IS MY COLUMN'S, NOT THE TABLE'S. On the 'units'
 // channel the 'damage' event's `n` is already exactly what my column dealt to
 // that unit. On the 'face' channel it is NOT: `lifeLost` is aggregated per
 // seat per sub-step, so `data.n` is what EVERY connecting column of my side
 // dealt. Measured before the fix: a 4-power Vroot column and a separate 1/1
 // column, both unblocked, handed the opponent 5 life back for a column that
 // dealt 4. `E.faceDamageDealtBy` reads my column's own share off the event's
-// R195 breakdown.
+// per-column breakdown.
 card('Vroot', {
   augmentText: [{
-    type: 'triggered', events: ['damage', 'combatFaceDamage'],   // R238
+    type: 'triggered', events: ['damage', 'combatFaceDamage'],   // CR 608.8a
     label: 'each opponent gains that much life',
     when: (g, self, ev) => myColumnDealtCombatDamage(g, self, ev),
     effect: {

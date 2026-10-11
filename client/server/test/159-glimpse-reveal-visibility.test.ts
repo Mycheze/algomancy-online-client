@@ -1,7 +1,7 @@
 /* CT-71 / report #104 (GYSR): "Glimpse is supposed to REVEAL the cards, but
  * opponents cannot see them right now."
  *
- * R45 says Glimpse N REVEALS N; R41 says the cache is public. Both of those
+ * CR 801.9 says Glimpse N REVEALS N; CR 403.2 says the cache is public. Both of those
  * are claims about what the SEAT THAT IS NOT GLIMPSING is shown, and until
  * this file nothing tested them past the engine's own event list — the
  * existing guards (14-water-a, 36-cache-prophecy, 38-light-a, 41-dark-a,
@@ -19,7 +19,7 @@
  * `apply`/Harness — never a hand-rolled `{type:'glimpsed'}` literal. A guard
  * that builds its own input proves only that view.ts copies objects.
  *
- * ── R188 → R235 → R310: THE ONE PLACE IT WAS HELD, AND THE RULINGS ────
+ * ── THE GLIMPSE HOLD: THE ONE PLACE IT WAS HELD, AND THE RULINGS ────
  *
  * Report #104's moment (GYSR action ~110, Grox's [Battle] glimpse) is NOT
  * broken: the reveal reaches the other seat on the wire and on screen. The
@@ -27,12 +27,12 @@
  * `Oracle of Foretelling`, and only because its printed timing is `deploy`:
  * deployment is a HIDDEN SIMULTANEOUS SEGMENT, so `server/rooms.ts` parked the
  * event in `heldEvents[opponent]` and it surfaced at the barrier instead.
- * R188 left that as a rules question for the owner and this file pinned the
+ * The glimpse investigation left that as a rules question for the owner and this file pinned the
  * behaviour either answer shared, so that the fix would be one test to change.
  *
- * R235 (owner, 2026-08-28) first answered "immediately — the card says
+ * The owner (2026-08-28) first answered "immediately — the card says
  * REVEAL", and the hold gained a per-event exemption for `glimpsed`.
- * ⚠ **R310 (owner, 2026-10-04, report #192) REVERSED IT:** "Glimpse cards
+ * ⚠ **The owner (2026-10-04, report #192) REVERSED IT (now CR D6.2):** "Glimpse cards
  * shouldn't be shown to an opponent *during* Deployment. They should be a part
  * of the recap only." The exemption is deleted; inside a hidden step a glimpse
  * is held like every other event and reaches the opponent at the barrier, in
@@ -54,7 +54,7 @@ import {
   finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from '../../engine/test/util.ts';
 import { redactEvent, redactLog, viewFor, visibleToSeat } from '../view.ts';
-// R310: read as a namespace so the test can say what it no longer exports
+// read as a namespace so the test can say what it no longer exports
 import * as VIEW from '../view.ts';
 import type { CardName, EngineEvent, Seat } from '../../engine/src/types.ts';
 
@@ -107,9 +107,9 @@ function assertOpponentSeesReveal(
     `${label}: and a full log resync still carries the reveal to that seat`);
 }
 
-// ── Oracle of Foretelling — Glimpse 5, and the R188 question ─────────────
+// ── Oracle of Foretelling — Glimpse 5, and the glimpse-timing question ─────────────
 
-test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (R41/R45)', () => {
+test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (CR D6.2c, 801.9)', () => {
   const h = new Harness(15901);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -120,11 +120,11 @@ test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (R41
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Oracle of Foretelling');
 });
 
-test('Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (R310)', () => {
+test('Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (CR D6.2)', () => {
   // Its printed timing is `deploy`, so EVERY Oracle reveal is inside a hidden
-  // simultaneous segment — this card is never in the easy case. R188 found the
-  // opponent's copy held (rooms.ts heldEvents) until the barrier; R235 let it
-  // past the hold; R310 (report #192) puts it back: the opponent sees it in
+  // simultaneous segment — this card is never in the easy case. The glimpse investigation found the
+  // opponent's copy held (rooms.ts heldEvents) until the barrier; a later ruling, since reversed, let it
+  // past the hold; the 2026-10-04 ruling (CR D6.2, report #192) puts it back: the opponent sees it in
   // the recap. What this file can see without a Room is the other half — the
   // event is not PRIVATE, so the barrier's flush really does deliver it — and
   // that view.ts no longer exports an exemption for a runner to call. The hold
@@ -143,12 +143,12 @@ test('Oracle of Foretelling: its reveal is inside the hidden deployment segment,
     'and it is NOT private to the glimpser — only the hold delays it, so the recap can show it');
   assert.ok(visibleToSeat(ev, D), 'view.ts delivers it to the opponent unchanged when it is released');
   assert.equal('escapesHold' in VIEW, false,
-    'R310: view.ts exports no exemption from the hidden hold any more (R235 is reversed)');
+    'view.ts exports no exemption from the hidden hold any more (the earlier exemption ruling is reversed)');
 });
 
 // ── Premonition — Glimpse X ({Battle}) ──────────────────────────────────
 
-test('Premonition: the Glimpse X reveal is public to the opponent (R41/R45)', () => {
+test('Premonition: the Glimpse X reveal is public to the opponent (CR D6.2c, 801.9)', () => {
   const h = new Harness(15903);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -163,15 +163,15 @@ test('Premonition: the Glimpse X reveal is public to the opponent (R41/R45)', ()
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Premonition');
   assert.equal(h.state.decision!.seat, A, 'the glimpser is the one being asked');
   h.do({ type: 'decide', seat: A, choice: 0 });
-  // R41: and the card it caches is public in the OPPONENT's view.
+  // CR D6.6: and the card it caches is public in the OPPONENT's view.
   assert.deepEqual(viewFor(h.state, D, null).players[A]!.cache?.map(c => c.card), [revealed[0]],
-    'Premonition: the cached card is public in the opponent\'s view (R41)');
+    'Premonition: the cached card is public in the opponent\'s view (CR D6.6)');
   finishBattle(h);
 });
 
 // ── Celestial Purge — the OPPONENT of the caster glimpses ───────────────
 
-test('Celestial Purge: the victim\'s Glimpse 3 reveal is public to the caster (R41/R45)', () => {
+test('Celestial Purge: the victim\'s Glimpse 3 reveal is public to the caster (CR D6.2c, 801.9)', () => {
   const h = new Harness(15904);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -188,16 +188,16 @@ test('Celestial Purge: the victim\'s Glimpse 3 reveal is public to the caster (R
   // here the GLIMPSER is D, so the seat that must be shown the reveal is A —
   // the caster, who is the one pricing what they just did.
   assertOpponentSeesReveal(h, A, since(h, mark), revealed, 'Celestial Purge');
-  assert.equal(h.state.decision!.seat, D, 'the victim chooses (R45)');
+  assert.equal(h.state.decision!.seat, D, 'the victim chooses (CR 801.9a, 801.9d)');
   h.do({ type: 'decide', seat: D, choice: 1 });
   assert.deepEqual(viewFor(h.state, A, null).players[D]!.cache?.map(c => c.card), [revealed[1]],
-    'Celestial Purge: the victim\'s cached card is public in the caster\'s view (R41)');
+    'Celestial Purge: the victim\'s cached card is public in the caster\'s view (CR D6.6)');
   finishBattle(h);
 });
 
 // ── Dematerialize — negate, then the negated item's controller glimpses ──
 
-test('Dematerialize: the negated controller\'s Glimpse 3 reveal is public to the opponent (R41/R45)', () => {
+test('Dematerialize: the negated controller\'s Glimpse 3 reveal is public to the opponent (CR D6.2c, 801.9)', () => {
   const h = new Harness(15905);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -218,16 +218,16 @@ test('Dematerialize: the negated controller\'s Glimpse 3 reveal is public to the
   // A's spell is negated and A glimpses 3 — D, who cast Dematerialize, must
   // see what their own spell revealed.
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Dematerialize');
-  assert.equal(h.state.decision!.seat, A, 'the negated item\'s controller chooses (R45)');
+  assert.equal(h.state.decision!.seat, A, 'the negated item\'s controller chooses (CR 801.9a, 801.9d)');
   h.do({ type: 'decide', seat: A, choice: 2 });
   assert.deepEqual(viewFor(h.state, D, null).players[A]!.cache?.map(c => c.card), [revealed[2]],
-    'Dematerialize: the cached card is public in the opponent\'s view (R41)');
+    'Dematerialize: the cached card is public in the opponent\'s view (CR D6.6)');
   finishBattle(h);
 });
 
 // ── Foretell — Glimpse 1 (no decision to raise) ─────────────────────────
 
-test('Foretell: the Glimpse 1 reveal is public to the opponent (R41/R45)', () => {
+test('Foretell: the Glimpse 1 reveal is public to the opponent (CR D6.2c, 801.9)', () => {
   const h = new Harness(15906);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -240,8 +240,8 @@ test('Foretell: the Glimpse 1 reveal is public to the opponent (R41/R45)', () =>
   const mark = h.events.length;
   pass(h); pass(h);                                   // resolve — N=1 raises no decision
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Foretell');
-  assert.equal(h.state.decision, null, 'Glimpse 1 asks nothing (R45)');
+  assert.equal(h.state.decision, null, 'Glimpse 1 asks nothing (CR 801.9b)');
   assert.deepEqual(viewFor(h.state, D, null).players[A]!.cache?.map(c => c.card), revealed,
-    'Foretell: the cached card is public in the opponent\'s view (R41)');
+    'Foretell: the cached card is public in the opponent\'s view (CR D6.6)');
   finishBattle(h);
 });

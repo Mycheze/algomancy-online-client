@@ -1,4 +1,4 @@
-/* R312 — SEEING HIDDEN CARDS ENDS YOUR UNDO.
+/* CR D4.3 — SEEING HIDDEN CARDS ENDS YOUR UNDO.
  *
  * The owner, 2026-10-04: an action that showed you hidden cards cannot be
  * taken back, nor anything before it — "once you've seen the cards, it
@@ -34,7 +34,7 @@
  *
  * Only the seat that SAW. Your opponent's glimpse off a shared deck changes
  * the deck you will draw from, but you were shown nothing — in a hidden step
- * every event of theirs is held from you until the barrier (R310), and their
+ * every event of theirs is held from you until the barrier (CR D6.1a), and their
  * half of the board is frozen in your view — so it does not lock your undo.
  * That falls out of the measurement: the reordering changes their view and
  * not yours. The other half of the same principle is enforced by the undo
@@ -81,7 +81,7 @@ const REORDERINGS: readonly Reorder[] = [
 /** Reorder, in place, every card `seat` cannot see: all decks and recycle
  * piles, and the hands of every seat not in `keep` (whose hands are known —
  * the viewer's own, and the actor's, whose move names an index into it). The
- * R85 resume snapshot is the world a pending answer re-runs from, so it is
+ * suspension's resume snapshot is the world a pending answer re-runs from, so it is
  * reordered the same way. Packs are left alone: an open pack is the viewer's
  * own, and nothing reaches into the other one. */
 function reorderHidden(s: GameState, keep: ReadonlySet<Seat>, by: Reorder): void {
@@ -96,7 +96,7 @@ function reorderHidden(s: GameState, keep: ReadonlySet<Seat>, by: Reorder): void
 
 /** the events of one action that reach `seat` now: all of its own (bar
  * another seat's private lines); none of the other seat's inside a hidden
- * step (R310 holds them all); everything visible to it outside one */
+ * step (CR D6.1a holds them all); everything visible to it outside one */
 function reaching(events: readonly EngineEvent[], seat: Seat, actor: Seat, holding: boolean): EngineEvent[] {
   return seat === actor || !holding ? events.filter(e => visibleToSeat(e, seat)) : [];
 }
@@ -147,7 +147,7 @@ function dependsOnHidden(before: GameState, action: Action, after: GameState, ev
   return false;
 }
 
-/** R312: what this action showed each seat of the hidden cards. */
+/** CR D4.3e: what this action showed each seat of the hidden cards. */
 export function seenBy(before: GameState, action: Action, after: GameState, events: readonly EngineEvent[],
   c: SeenContext): Seen {
   const out: (string | null)[] = [];
@@ -165,7 +165,7 @@ export function seenBy(before: GameState, action: Action, after: GameState, even
 export const sawHidden = (s: Seen | undefined, seat: Seat): boolean => typeof s?.[seat] === 'string';
 
 /**
- * R312: the index of the most recent action at or after `from` that showed
+ * CR D4.3a: the index of the most recent action at or after `from` that showed
  * `seat` hidden cards, or -1. An undo walks back no further than just after
  * it: that action stands, and so does everything before it.
  */

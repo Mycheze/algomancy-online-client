@@ -208,7 +208,7 @@ console.log('\n[submissions]');
 // ── 6. the live server ────────────────────────────────────────────────
 
 console.log('\n[server: no cards until both are in]');
-// R204/CT-85: the server picks its own port and tells us which — see
+// CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
 // test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
 // port unheld for as long as node took to boot.
 const server = await spawnServer();

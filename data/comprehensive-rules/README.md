@@ -9,8 +9,8 @@
 
 Built by the scripts in `client/engine/scripts/cr/` from four kinds of input:
 the printed text (`data/rules/`, the card pool), the designer's own answers
-(the RAQ threads in the Discord export), our R-rulings
-(`client/docs/digital-rules.md`), and the engine's tests. Every path below is
+(the RAQ threads in the Discord export), the owner's calls (recorded in the
+rule records themselves, `sources.owner`), and the engine's tests. Every path below is
 named in `client/engine/scripts/paths.mjs` (`CR_*`); `bot/paths.py` names the
 directory and the document. Do not spell them again.
 
@@ -26,9 +26,8 @@ data/comprehensive-rules/
   rules/*.json                         the rule records, one file per section   CR_RULES_DIR
   rules/glossary.json                  the glossary: pointer rows (term → rule)  CR_RULES_DIR
   ledger.json                          rule key -> number        reviewed    CR_LEDGER
-  supersession.json                    ruling -> ruling edges    reviewed    CR_SUPERSESSION
-  classification.json                  ruling -> scope, sections reviewed    CR_CLASSIFICATION
   verdicts/<unit>.json                 the verifier's verdicts   reviewed    CR_VERDICTS_DIR
+  verdicts/README.md                   why R-numbers survive in them (frozen history)
   discrepancies/<unit>.json            what did not reconcile    records     CR_DISCREPANCIES_DIR
   discrepancies.md                     the report, four tiers    generated   CR_DISCREPANCIES_MD
   owner-questions.md                   its tier 1: the owner's questions  generated  CR_OWNER_QUESTIONS
@@ -59,7 +58,7 @@ The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
 |---|---|---|
 | **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `owner-questions.md`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
 | **records** | `rules/*.json`, `discrepancies/*.json`, `findings/*.json` (one file per drafting unit) | written by the draft/verify rounds (findings also by `harness.mjs finalize`); the document's source. |
-| **committed reviewed state** | `ledger.json`, `supersession.json`, `classification.json`, `verdicts/*.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
+| **committed reviewed state** | `ledger.json`, `verdicts/*.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
 | **gitignored** | `build/` | scratch, rebuilt on every run |
 
 ### The discrepancy tiers
@@ -70,8 +69,8 @@ Each `discrepancies/<unit>.json` row carries a `tier`:
    support two readings and no higher source decides. Such a row carries a
    `question` (`topic`, `ask`, `readings[{label, text, table}]`, `follows`,
    `recommend`), and `owner-questions.md` is rendered from those rows alone.
-2. **Register and test fixes**: settled by the authority order, with a fix on
-   our side (a register mark, a test title, a glossary row, an engine CT ticket,
+2. **Record and test fixes**: settled by the authority order, with a fix on
+   our side (a record's owner call, a test title, a glossary row, an engine CT ticket,
    or a rule to redraft).
 3. **Engine-only and owner-only rules**: no printed or designer source; the
    rule awaits sign-off.
@@ -91,15 +90,23 @@ From strongest to weakest:
 1. A RAQ `[Solved]` write-up by `_passer`, or `calebgannon`'s own words.
 2. Printed text, read literally. Where Caleb states an intent that differs from
    print, follow Caleb.
-3. Our R-rulings.
-4. Owner calls with no designer source: still the engine's law, but
-   basis = owner.
+3. The owner's calls, recorded in the record they settle (`sources.owner`:
+   the quote, the date he adopted the call, and where it is written). Where no
+   printed or designer source speaks, an owner call is the engine's law, basis
+   = owner. Until 2026-10 these lived in a separate register of numbered
+   rulings, `R1`–`R350`; it was retired and its final state archived at
+   `refs/archive/r-register-final`. The calls absorbed from it carry
+   `from: "register@<sha>"`, and their quotes are the REGISTER'S write-up of
+   his decision — often not his own words, sometimes a fragment of a longer
+   sentence. The editions say so ("Owner ruling, adopted … — quoted from the
+   retired ruling register"), and `cr:check` verifies each one, verbatim,
+   against the register at that commit (when the archive ref is present).
 
 Other players are not authority. A thread that is still open is not a ruling.
 `client/ui/glossary.ts` is OUR text (typed `ours`) and never counts as
 authority. When two readings are equally available, take the permissive one.
 
-When a ruling and the engine disagree, the rule states the RULING (current
+When an owner call and the engine disagree, the rule states the CALL (current
 law under this order) and carries an inline marker "engine differs, see
 <finding id>"; the divergence is filed as a CT ticket in
 `client/ledgers/card-todo.ts`, not fixed here.
@@ -107,7 +114,11 @@ law under this order) and carries an inline marker "engine differs, see
 ## THE ANTI-HALLUCINATION CONTRACT (the owner's main worry; every agent follows it)
 1. **No claim without checkable evidence.** Every rule record carries at least one evidence item that a script can
    check:
-   - (a) a verbatim quote (≤200 chars, from one line) from a printed, designer or R-ruling source; or
+   - (a) a verbatim quote (≤200 chars, from one line) from a printed or designer source, or an owner call in
+     the words that record it (`sources.owner`). A call made since 2026-10 is quoted in his own words and is
+     its own evidence (`cr:check` checks its shape, and that an owner-basis rule carries one); a call absorbed
+     from the retired register (`from: "register@<sha>"`) is checked verbatim against the register at that
+     commit, read from git (`refs/archive/r-register-final`; a clone without it gets a notice, not a pass); or
    - (b) an engine code quote PLUS a test that was executed and asserts the claim. For an Annex D rule
      (key `annexd.*`, the digital conventions) the code quote may also come from `client/ui/` or
      `client/server/` source, never their tests; a game rule's still has to be engine source.
@@ -115,7 +126,7 @@ law under this order) and carries an inline marker "engine differs, see
    it: an existing guard, or a new CR example test written by the verifier. CR example tests are promoted into
    `client/engine/test/NNN-cr-<unit>.test.ts`, numbers reserved below. A rule with no executed demonstration
    ships marked `untested`.
-3. **Separation.** The DRAFTER reads rulings, RAQ claims, printed text and tests, and never `client/engine/src`.
+3. **Separation.** The DRAFTER reads owner calls, RAQ claims, printed text and tests, and never `client/engine/src`.
    The VERIFIER gets the rule records with the drafter's notes and confidence stripped out, reads the engine,
    RUNS the tests, and may write probe tests. The verifier is the only path from code into the document.
 4. **Mutants.** Every verify batch has 2–3 falsified rules planted in it by the orchestrator's harness. A batch
@@ -142,16 +153,17 @@ One JSON object per rule, in `rules/<section>.json`:
 | `sources.printed[]` | `{ ref, quote }`; `ref` is `Manual p.N`, `Rulebook 2023 p.N` or `card: <Name>` |
 | `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }` |
 | `sources.ours[]` | `{ ref, quote }` from our own text (the glossary) — never authority |
-| `sources.rulings[]` | current R-rulings only |
-| `sources.history[]` | `{ ruling, relation }` — superseded or narrowed rulings, and how |
+| `sources.owner[]` | `{ quote, adopted, from }` — the owner's call, the date he adopted it (YYYY-MM-DD), and where it is written: `comment <id>` (a review comment, his own words), `questions-round27 Q2` (a question sheet), or `register@<sha>` for a call absorbed from the retired register (the register's write-up, verified against it; a sheet pointer may precede it: `questions-round27 Q2; register@72de434`) |
 | `sources.engine[]` | engine symbols (the verifier's citations) |
 | `sources.tests[]` | test files that demonstrate the rule |
 | `basis` | `printed` \| `designer` \| `owner` \| `engine` \| `mixed` |
+| `scope` | `game` (holds at a table) \| `digital` (true of this client only). Every `annexd.*` rule is digital; a digital rule in the main document carries a small "Digital client" tag, and Annex P lists them |
+| `digitalClause?` | on a game rule, the clause of its text (verbatim) that only the client does; the editions tag it where it stands |
 | `confidence` | `high` \| `medium` \| `low` |
 | `notes` | the drafter's reasoning; stripped before verification |
-| `engineDiffers?` | `[findingId]` (`F-U12-3`) — the ruling is stated; the engine does otherwise |
+| `engineDiffers?` | `[findingId]` (`F-U12-3`) — the rule is stated; the engine does otherwise |
 | `untested?` | `true` when no executed test or probe demonstrates it — set by `harness.mjs finalize`, cleared when a probe is promoted |
-| `sourceHashes` | `{"R114": bodyHash, "RAQ <id>#<i>": textHash}` of what was cited — filled by `harness.mjs stamp` |
+| `sourceHashes` | `{"RAQ <id>#<i>": textHash}` of the designer claims quoted — filled by `harness.mjs stamp` (an owner call needs none: its words are in the record) |
 
 A verdict pins the record by `recordHash` (schema.mjs): its text, plus its
 examples and their test bindings. An example bound to a promoted
@@ -201,19 +213,15 @@ step 3. The gate (step 4) runs inside `npm --prefix client run check`.
 ### 1. Extract the sources
 
 ```bash
-npm --prefix client run cr:extract      # -> build/extract.json: rulings, supersession
-                                        #    CANDIDATES, RAQ claims, glossary, cards,
+npm --prefix client run cr:extract      # -> build/extract.json: RAQ claims, glossary, cards,
                                         #    printed pages, enums, test titles, engine symbols
 node client/engine/scripts/cr/extract-printed-pages.mjs
                                         # ONLY for a new Manual/Rulebook PDF: rewrites
                                         # sources/printed-pages.json (needs poppler-utils)
 ```
 
-The supersession candidates come out of the extract (there is no separate
-script). They are proposals: each is decided by hand in `supersession.json`.
-Every ruling gets a row in `classification.json`, and every RAQ claim, RAQ
-thread and printed page a row in `source-classification.json`. The gate is red
-until all three are complete.
+Every RAQ claim, RAQ thread and printed page gets a row in
+`source-classification.json`. The gate is red until it is complete.
 
 ### 2. Pack a drafting unit
 
@@ -224,7 +232,7 @@ node client/engine/scripts/cr/pack.mjs U12 --seed <dir>   # also copy a pilot's 
 ```
 
 A pack holds everything the drafter of one unit may read: its current
-rulings, the history of the superseded ones, its RAQ claims, its printed
+owner calls already on its records, its RAQ claims, its printed
 pages, its keyword cards, our glossary rows (marked as not authority) and its
 test titles. It never includes engine source.
 
@@ -250,7 +258,7 @@ loop, using the harness commands below:
 `C-verify`, `C-revise`, `C-test`, `C-promote` and `C-waveend`, plus the Stage
 A, B and D briefs. The first edition's briefs lived only in that session's
 `/tmp` scratchpad and are gone; the contract they implemented is the one
-written out in this file and in ruling R343 of `client/docs/digital-rules.md`.
+written out in this file.
 Two briefs are now kept in `client/engine/scripts/cr/briefs/`, both written for
 the 2026-10-11 polish round: `C-verify.md` (a fresh verifier in a scratch
 mirror, for a round-4 `--keys` batch) and `C-equiv.md` (the example-rewording
@@ -337,6 +345,25 @@ So a corpus rebuild that changes a quoted thread needs, in one commit:
    rule does not (the Tides edit added "Having Rook would allow you to use
    Augments"), that is a new claim for `raq.ts` and the engine, not a re-stamp.
 
+## The CR is the engine's spec
+
+This document is the rulebook the client implements: where it and the engine
+disagree, the engine has a bug (a finding, a CT ticket), unless a higher source
+says the document is wrong. The rest of the repository cites it as `CR 608.2b`
+(lists `CR 702.3, 704.6b`); `client/engine/test/184-ruling-register.test.ts`
+fails on a CR number that names no live rule, and on any number of the retired
+register coming back. A player never sees a rule number in the updates list or a
+reminder (`323-recent-updates` and `227` ban them there); in the rules reference,
+`286` bans only the retired register's R-numbers, not CR numbers.
+
+What keeps it honest is the contract above — every rule rests on a checkable
+quote or a verified, executed demonstration; a verifier who never saw the
+drafter's notes, with planted mutants; mechanical quote checks — and the
+gate, `409-comprehensive-rules`, which proves the committed document is what
+the scripts produce. The owner decides only where no printed or designer
+source does, and his decision goes into the rule it settles, in his words,
+dated.
+
 ## How to answer the owner questions
 
 `owner-questions.md` lists the tier-1 discrepancies. In each of them, the
@@ -347,17 +374,17 @@ table, the reading the document follows today, and a recommendation.
 1. **Answer outside the generated file.** Reply with one line per question
    (for example "2: A"). `owner-questions.md` is regenerated, so anything
    written in it is lost.
-2. **Record the answer as a ruling.** Add a new `## R<n>` to
-   `client/docs/digital-rules.md` (basis owner, unless a RAQ thread or Caleb
-   decides it). Classify it in `classification.json` and decide any candidate
-   edges in `supersession.json`. 409 stays red until both are done.
+2. **Record the answer in the records it settles.** In each rule the
+   question names (the row's `rule` and its `seeAlso`), add the answer to
+   `sources.owner` as `{quote: <his words, one line>, adopted: <the date he
+   answered>, from: "comment <id>"}` (basis owner, unless a RAQ thread or Caleb
+   decides it), set the rule's `scope`, and redraft its text to state the
+   answer. If the engine does otherwise, add `engineDiffers`, a finding and a
+   CT ticket. If the answer makes a filed CT ticket moot, close that ticket.
 3. **Close the discrepancy.** In `discrepancies/<unit>.json`, drop the row's
-   `question`, move it to tier 2 (or 4), and write a `resolution` that names the
-   ruling.
-4. **Redraft the rules it names** (the row's `rule` and its `seeAlso`). Cite the
-   new ruling and run `harness.mjs stamp --unit <unit>`. If the engine does
-   otherwise, add `engineDiffers`, a finding and a CT ticket. If the answer
-   makes a filed CT ticket moot, close that ticket.
+   `question`, move it to tier 2 (or 4), and write a `resolution` that says
+   what the owner decided and which rules now state it.
+4. **Stamp** (`harness.mjs stamp --unit <unit>`, for any designer quote you added).
 5. **Re-verify.** A record whose text changed renders as "not verified (the
    text changed after verification)" until a verify round confirms it again.
 6. **Then** `cr:render`, `cr:check` and 409.
@@ -384,30 +411,29 @@ glossary rows that share its rule key.
    is right and says it badly)? A misreading is still a wording fix.
 2. **Check authority.** A comment is a lead, not a source, even from a judge or
    the owner. Find the source that settles it, in the authority order above.
-   - A higher source agrees: cite it. No ruling is needed.
-   - No higher source speaks to it: the owner's comment is an owner ruling.
-     Write it as one (step 4).
+   - A higher source agrees: cite it. No owner call is needed.
+   - No higher source speaks to it: the owner's comment is an owner call.
+     Record it as one (step 4).
    - A higher source contradicts it: change nothing. Reply quoting the source,
      and ask.
 3. **Sweep the claim, not the rule.** The anchored record is one instance of a
    claim. Find every record that carries the same claim, in any words:
    - `grep -rniE` the claim's distinctive words and their synonyms over
      `rules/`, `rules/glossary.json`, `findings/`, `discrepancies/`,
-     `client/ui/glossary.ts`, `client/ui/does-lines.json` and
-     `client/docs/digital-rules.md`;
+     `client/ui/glossary.ts` and `client/ui/does-lines.json`;
    - also the quote the bad text came from (`sources.*.quote`), since a premise
      spreads through its citations;
-   - also the cr:comments "shares its key" list, and every rule that cites a
-     ruling you are about to amend.
+   - also the cr:comments "shares its key" list, and every rule that carries
+     the owner call you are about to amend.
    Fix every instance in its record: rule text, glossary rows, finding titles
    and summaries (a finding states what the ENGINE does, never as the game's
    rule), discrepancy resolutions, and closed or dropped `question`s.
-4. **Record the ruling** as a new `## R<n>` (one heading; demote any inside).
-   Write each sentence a rule will cite on one line. Classify it, and decide
-   its supersession candidates. A scoped edge makes every citation of that
-   ruling need a scope label (`R265 (its units half)`); `cr:check` lists them
-   (`ruling-scope-required`), and they are part of the sweep.
-5. **Redraft and stamp.** Cite the ruling or the source in each record you
+4. **Record the call in the records.** Add `{quote: <his words, one line>,
+   adopted: <the comment's date>, from: "comment <id>"}` to `sources.owner` of
+   every record the sweep changed, set `scope`, and drop any owner entry the
+   call replaces (the old entry's words are history; `changelog.md` and git
+   keep it). There is no register step.
+5. **Redraft and stamp.** Cite the owner call or the source in each record you
    changed, then run `harness.mjs stamp` for each unit, `cr:render` (numbers a
    new key), and `cr:check`.
 6. **Re-verify.** Run the polish round over the changed keys: `plant --round 4

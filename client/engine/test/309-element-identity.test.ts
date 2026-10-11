@@ -43,7 +43,7 @@ import '../src/cards/registry.ts';
 // side-effecting, and load-bearing for a POOL SWEEP: registry.ts registers two
 // synthetics and apply.ts the third, so a registry-only import is shown 494 of
 // 495 cards. A sweep that silently misses one card is the thing this file is
-// against. R209; `147-comment-conformance` §3 checks it for every sweeping file.
+// against; `147-comment-conformance` §3 checks it for every sweeping file.
 import '../src/apply.ts';
 import { allCardNames, getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 

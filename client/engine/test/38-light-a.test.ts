@@ -3,7 +3,7 @@
  * registration cannot shift assertions; seeds are 3800-3899.
  *
  * Covers: the life half of the cost-modifier layer (Arbiter of Armistice,
- * R60), pay-life activations
+ * CR 111.10d), pay-life activations
  * (Blob of the Dark Order, Glararr, Flesh Tithe), life-movement triggers
  * (Colony of the Interworld, Shard Sprite, Triskaidekaphage, Vroot), the cache
  * (Divine Foresight's granted prophecy, Prismatic Observer's recall, Lifebound
@@ -11,7 +11,7 @@
  * Angel, including the automatic resource-step payment), self-copying in
  * formation (Hooba-God), the per-battle life-loss ledger (Retribution Thing),
  * multi-player targeting (Penance) and Keeper of Tithes. The Everywhere is
- * fully built: R91 landed the naming and the region-scoped suppression, and on
+ * fully built: the naming and the region-scoped suppression (CR 712.6) landed first, and on
  * 2026-08-23 the last approximated clause — the CONTINUOUS duration, "(As long
  * as I am in their region.)" — landed as `Entity.named` plus a name-matching
  * `StaticMod.suppressAbilities`. Its `{ todo: true }` and its card-ledger entry
@@ -55,7 +55,7 @@ test('Arbiter of Armistice: registers and plays as its printed 2/2 haste body', 
 // marker in the rules text — the only such card in the pool.
 
 test('Arbiter of Armistice: cards played during battle cost 2 life — everyone\'s', () => {
-  // The Arbiter taxes the battle it is STANDING IN (R12 region scoping), so
+  // The Arbiter taxes the battle it is STANDING IN (CR 111.10 region scoping), so
   // these all put it in the defending seat's home region — the battle region.
   const h = new Harness(3830);
   toDeployment(h);
@@ -93,7 +93,7 @@ test('Arbiter of Armistice: an unpayable life tax makes the card uncastable', ()
   h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
   giveResources(h, D, 'fire', 4);
   const bolt = give(h, D, 'Flame of History');
-  h.state.players[D]!.life = 2;   // R49: pay N life only while you have MORE
+  h.state.players[D]!.life = 2;   // CR 111.6b: pay N life only while you have MORE
   assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
     'not offered at exactly 2 life');
   assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: bolt }), IllegalAction,
@@ -117,7 +117,7 @@ test('Arbiter of Armistice: the tax is on PLAYING, in BATTLE — not haste, not 
   const atk = spawn(h, D, 'Ignis Sprite');
   h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
   pass(h);
-  // R37: applying a mod is not PLAYING a card, so a Virus augment is exempt
+  // CR 701.2a: applying a mod is not PLAYING a card, so a Virus augment is exempt
   const target = unitsOf(h, A)[0]!;
   giveResources(h, A, 'fire', 6);
   const life1 = h.state.players[A]!.life;
@@ -139,10 +139,10 @@ test('Blob of the Dark Order: [Augment] pay 1 life for {Piercing} until regroup'
   assert.ok(ownAttrs(h, blob).has('Piercing'), 'it gains Piercing');
   toNextBattle(h, A);
   finishBattle(h);
-  assert.ok(!ownAttrs(h, blob).has('Piercing'), 'until regroup only (R11 step 3)');
+  assert.ok(!ownAttrs(h, blob).has('Piercing'), 'until regroup only (CR 506.2 step 3)');
 });
 
-test('Blob of the Dark Order: R49 — at 1 life the cost is unpayable and the activation is ILLEGAL', () => {
+test('Blob of the Dark Order: CR 111.6b — at 1 life the cost is unpayable and the activation is ILLEGAL', () => {
   const h = new Harness(3803);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -151,7 +151,7 @@ test('Blob of the Dark Order: R49 — at 1 life the cost is unpayable and the ac
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: A, entityId: blob, abilityIndex: 0, via: 'augment' }),
     /cannot pay the activation cost/,
-    'R49: a life cost you cannot survive is not payable — the activation is refused');
+    'CR 111.6b: a life cost you cannot survive is not payable — the activation is refused');
   assert.equal(h.state.players[A]!.life, 1, 'no life paid');
   assert.equal(h.state.winner, null, 'and nobody died paying a cost');
   assert.ok(!ownAttrs(h, blob).has('Piercing'), 'the unpaid cost buys nothing');
@@ -187,7 +187,7 @@ test('Colony of the Interworld: +3 counters when your life moves in battle, once
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                          // combat: D loses 1 life
   assert.equal(h.state.players[D]!.life, 32, 'and then lost life too');
-  assert.equal(ent(h, colony)!.counters, 3, '[Switch1] is bounded — one firing this turn (R9)');
+  assert.equal(ent(h, colony)!.counters, 3, '[Switch1] is bounded — one firing this turn (CR 722.5)');
   finishBattle(h);
 });
 
@@ -211,7 +211,7 @@ test('Divine Foresight: an opponent caches a chosen card with Prophecy — Three
   assert.deepEqual(h.state.players[D]!.hand, ['Shard Sprite'], 'it left their hand');
   const cc = cacheOf(h, D)[0]!;
   assert.equal(cc.card, 'Greed Angel', "into THEIR cache (it is still their card)");
-  assert.equal(cc.prophecy!.norm, '3 turns pass', 'with the granted prophecy, normalised (R43)');
+  assert.equal(cc.prophecy!.norm, '3 turns pass', 'with the granted prophecy, normalised (CR 803.7)');
   assert.equal(cc.prophecy!.fulfilled, undefined, 'and counting forward from now');
   assert.ok(h.state.seenHand[A], 'the look is remembered client-side');
   finishBattle(h);
@@ -225,8 +225,8 @@ test('Flesh Tithe: pay X life, create an X/X unit', () => {
   const A = h.state.deployPlayer!;
   giveResources(h, A, 'light', 4);                           // l/4
   const before = unitsOf(h, A).length;
-  // R64: "[Pay X life]" is an additional cost — paid at cast, a point at a
-  // time (R49 re-asked each time), and what was paid IS X.
+  // CR 702.6b: "[Pay X life]" is an additional cost — paid at cast, a point at a
+  // time (CR 111.6b re-asked each time), and what was paid IS X.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Flesh Tithe') });
   assert.equal(h.state.decision!.seat, A, 'the caster pays as they cast');
   for (let i = 0; i < 5; i++) pick(h, { payLife1: true });
@@ -266,7 +266,7 @@ test('Glararr: pay 9 life to erase target unit (no bin, no death trigger)', () =
   assert.ok(h.log.some(l => l.includes('is ERASED')));
 });
 
-test('Glararr: R49 — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL', () => {
+test('Glararr: CR 111.6b — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL', () => {
   const h = new Harness(3809);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -276,7 +276,7 @@ test('Glararr: R49 — at exactly 9 life the cost cannot be paid and the activat
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: A, entityId: gl, abilityIndex: 0 }),
     /cannot pay the activation cost/,
-    'R49: paying your LAST life is refused too (life > n, not >=)');
+    'CR 111.6b: paying your LAST life is refused too (life > n, not >=)');
   assert.equal(h.state.players[A]!.life, 9, 'no life paid');
   assert.equal(h.state.winner, null);
   assert.ok(ent(h, victim), 'and nothing is erased');
@@ -284,7 +284,7 @@ test('Glararr: R49 — at exactly 9 life the cost cannot be paid and the activat
     'legalActions does not offer an unpayable activation');
 });
 
-test('Glararr: its [Switch1] is a transferable graft too, and the rider pays the 9 life (R49)', () => {
+test('Glararr: its [Switch1] is a transferable graft too, and the rider pays the 9 life (CR 111.15)', () => {
   const h = new Harness(3833);
   assert.ok(isGraftable('Glararr'),
     'a [Switch1]-printed card must be graftable — it was the only one in the pool that was not');
@@ -308,7 +308,7 @@ test('Glararr: its [Switch1] is a transferable graft too, and the rider pays the
     'and at 30 life it is payable');
   h2.state.players[A]!.life = 9;
   assert.ok(!h2.q.canPayCastCost(A, def.castCost!, h2.q.homeRegion(A), 0),
-    'R49: at exactly 9 life the rider cannot pay and is skipped');
+    'CR 111.6b: at exactly 9 life the rider cannot pay and is skipped');
   assert.ok(ent(h2, victim), 'nothing was erased along the way');
 });
 
@@ -335,7 +335,7 @@ test('Greed Angel: 3 debt and a card on spawn; the debt is paid at the next reso
   const A = h.state.deployPlayer!;
   const hand = h.state.players[A]!.hand.length;
   spawn(h, A, 'Greed Angel');
-  assert.equal(h.q.debt(A), 3, 'R39: 3 debt on the player');
+  assert.equal(h.q.debt(A), 3, 'CR 112.14: 3 debt on the player');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, 'and a card drawn');
   endDeployment(h);                                          // → next turn's planning
   giveResources(h, A, 'light', 5);
@@ -357,7 +357,7 @@ test('Greed Angel: unpayable debt carries over instead of costing life', () => {
   const life = h.state.players[A]!.life;
   h.do({ type: 'donePlanning', seat: A });
   assert.equal(h.q.debt(A), 3, 'the whole debt carries over');
-  assert.equal(h.state.players[A]!.life, life, 'and there is no other penalty (R39)');
+  assert.equal(h.state.players[A]!.life, life, 'and there is no other penalty (CR 112.14b)');
 });
 
 // ── Hooba-God ────────────────────────────────────────────────────────────
@@ -370,7 +370,7 @@ test('Hooba-God: attacking creates a copy token in its formation column', () => 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hg]] });
   pass(h); pass(h);                                          // resolve the attack trigger
-  pick(h, 1);                                                // R75: behind me
+  pick(h, 1);                                                // CR 602.6: behind me
   const copies = unitsOf(h, A).filter(u => u.card === 'Hooba-God');
   assert.equal(copies.length, 2, 'the original plus one copy');
   const copy = copies.find(u => u.id !== hg)!;
@@ -380,10 +380,10 @@ test('Hooba-God: attacking creates a copy token in its formation column', () => 
   finishBattle(h);
 });
 
-test('R75: a full column no longer strands the copy — it opens a column at an end', () => {
+test('CR 602.6a: a full column no longer strands the copy — it opens a column at an end', () => {
   // this used to assert "no room in the formation": the copy was created and
   // then left standing in the region, because Hooba-God only ever looked at
-  // its own column. R75 offers the two ENDS of the line as well.
+  // its own column. CR 602.6a offers the two ENDS of the line as well.
   const h = new Harness(3813);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -460,7 +460,7 @@ test('Keeper of Tithes: with nothing expended X is 0 and no unit is created', ()
 
 // ── Lifebound Seer ───────────────────────────────────────────────────────
 
-test('Lifebound Seer: Glimpse 2 when it attacks — ONE cached, the other recycled (R45)', () => {
+test('Lifebound Seer: Glimpse 2 when it attacks — ONE cached, the other recycled (CR 801.9)', () => {
   const h = new Harness(3815);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -476,10 +476,10 @@ test('Lifebound Seer: Glimpse 2 when it attacks — ONE cached, the other recycl
   assert.deepEqual(dec.options.map(o => o.card), top, 'both revealed cards are offered');
   h.do({ type: 'decide', seat: A, choice: 1 });              // cache the second
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top[1]], 'exactly ONE is cached');
-  assert.deepEqual(h.q.recycleOf(A).slice(-1), [top[0]], 'R296: the other is recycled past the mark');
+  assert.deepEqual(h.q.recycleOf(A).slice(-1), [top[0]], 'CR 408.2: the other is recycled past the mark');
   assert.equal(h.q.deckOf(A).length, deckBefore - 2, 'and both left the deck');
   assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing reaches hand');
-  assert.ok(h.events.some(e => e.type === 'glimpsed'), 'the reveal is public (R41)');
+  assert.ok(h.events.some(e => e.type === 'glimpsed'), 'the reveal is public (CR D6.2c)');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn');
   assert.equal(cacheOf(h, A)[0]!.prophecy, undefined, 'glimpse attaches no prophecy');
   finishBattle(h);
@@ -536,7 +536,7 @@ test('Prismatic Observer: sacrifice to recall a cached card (either cache, in ba
   const bait = 'Shard Sprite';
   withE(h, e => { e.cacheCard(D, bait, 'hand', { prophecy: 'Two Turns Pass' }); });
   const uid = cacheOf(h, D)[0]!.uid!;
-  // R291: the enemy cache is a target only where the enemy IS. This used to
+  // CR 403.6: the enemy cache is a target only where the enemy IS. This used to
   // fire during deployment; the Observer attacks into D's region now, and
   // 293-cached-targets-are-regional holds the deployment refusal.
   toNextBattle(h, A);
@@ -544,11 +544,11 @@ test('Prismatic Observer: sacrifice to recall a cached card (either cache, in ba
   if (h.state.priority !== A) pass(h);
   const life = h.state.players[A]!.life;
   h.do({ type: 'activateAbility', seat: A, entityId: obs, abilityIndex: 0 });
-  // R57: you pick the target BEFORE the sacrifice-self cost is paid, so a
+  // CR 111.7: you pick the target BEFORE the sacrifice-self cost is paid, so a
   // misclick during battle no longer eats the unit before you have seen the
   // list. The cost is still paid at cast, before the ability resolves.
   assert.ok(ent(h, obs), 'still alive while you choose');
-  pick(h, { cached: { seat: D, uid } });                     // R41: the enemy cache is targetable
+  pick(h, { cached: { seat: D, uid } });                     // CR 403.6: the enemy cache is targetable
   assert.ok(!ent(h, obs), 'sacrificed as a cost, before the ability resolves');
   pass(h); pass(h);                                          // in battle the ability resolves off the stack
   assert.equal(cacheOf(h, D).length, 0, 'the entry (and its prophecy) is gone');
@@ -587,7 +587,7 @@ test('Retribution Thing: the "lost" mode makes X the life you have lost in this 
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Retribution Thing') });
   pick(h, { unit: atk });
-  pick(h, 'lost');                                           // R157 §21: named at cast
+  pick(h, 'lost');                                           // CR 205.3: named at cast
   pass(h); pass(h);
   assert.ok(!ent(h, atk), '7 damage this battle kills the 7/5');
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'));
@@ -595,7 +595,7 @@ test('Retribution Thing: the "lost" mode makes X the life you have lost in this 
   finishBattle(h);
 });
 
-test('R157 §21: the printed "[lost or gained]" is a MODE, so X is one ledger and never the sum', () => {
+test('CR 205.3: the printed "[lost or gained]" is a MODE, so X is one ledger and never the sum', () => {
   const h = new Harness(3832);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -607,11 +607,11 @@ test('R157 §21: the printed "[lost or gained]" is a MODE, so X is one ledger an
   withE(h, e => { e.loseLife(A, 2, 'test'); e.gainLife(A, 3, 'test'); });
   const region = h.state.battle!.region;
   assert.equal(h.q.battleCounter(region, `lifeLost:${A}`), 2);
-  assert.equal(h.q.battleCounter(region, `lifeGained:${A}`), 3, 'R49: the gain ledger exists now');
+  assert.equal(h.q.battleCounter(region, `lifeGained:${A}`), 3, 'the gain ledger exists now');
   const [, tough] = effStats(h, victim);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Retribution Thing') });
   pick(h, { unit: victim });
-  // this used to read X as the SUM (5). The owner's R157 §21 says every
+  // this used to read X as the SUM (5). The owner's ruling, now CR 205.3, says every
   // [bracketed] clause is a cost or a cast-time mode, so the caster names one
   // ledger and reads only that — see 136-triggers-and-modes for both halves.
   assert.equal(h.state.decision?.kind, 'mode', 'the bracket is a cast-time choice');
@@ -655,7 +655,7 @@ test('Stalwart Sentinel: +2 counters for a card played from the cache, not from 
 
 // ── The Everywhere ───────────────────────────────────────────────────────
 
-/** deployment → the next turn's END-OF-HASTE decision. R50 fires 'endOfHaste'
+/** deployment → the next turn's END-OF-HASTE decision. CR 504.6 fires 'endOfHaste'
  * inside a settle() window that may suspend, which is where The Everywhere
  * names its card — so the usual toNextBattle() plumbing would walk straight
  * past (and then trip over) the pending decision. `attacker` pins round 1. */
@@ -681,7 +681,7 @@ test('The Everywhere: plays as a 3/3 haste body and augments crash-free', () => 
   assert.deepEqual(effStats(h, host), [1, 1], 'the donated text grants no stats');
 });
 
-test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION (R12/R62/R91)', () => {
+test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION (CR 101.6, 712.6)', () => {
   const h = new Harness(3841);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -690,7 +690,7 @@ test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN 
   const mine2 = spawn(h, A, 'Triskaidekaphage');
   const theirs = spawn(h, D, 'Triskaidekaphage');
   toNaming(h, A);
-  // R91: "name a card" IS a decision — the half the park note said did not exist
+  // CR 712.6: "name a card" IS a decision — the half the park note said did not exist
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, "the holder's controller names the card");
   assert.ok(h.state.decision!.options.some(o => o.value === 'Triskaidekaphage'),
@@ -717,7 +717,7 @@ test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN 
   assert.equal(h.state.players[A]!.life, lifeA, 'life never became 13');
 });
 
-test('The Everywhere: naming a card that is not in play silences nobody (R91)', () => {
+test('The Everywhere: naming a card that is not in play silences nobody (CR 712.6)', () => {
   const h = new Harness(3842);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -795,9 +795,9 @@ test('The Everywhere: the silence LIFTS when I leave — continuous, not until-r
   // moves everyone, and the NAME survives as a memory ("my LAST named card"),
   // ready to bite again the moment I am back in their region.
   assert.equal(ent(h, theirs)!.suppressed, undefined,
-    'no until-regroup stamp was ever written — R11 step 3 has nothing to sweep');
+    'no until-regroup stamp was ever written — CR 506.2 step 3 has nothing to sweep');
   assert.equal(ent(h, ev)!.named, 'Triskaidekaphage',
-    'the memory is deliberately NOT cleared by the R11 step-3 regroup sweep');
+    'the memory is deliberately NOT cleared by the CR 506.2 step-3 regroup sweep');
 });
 
 test('The Everywhere: a second naming replaces the first — it is my LAST named card', () => {
@@ -887,14 +887,14 @@ test('Vroot: when my column deals combat damage, each opponent gains that much l
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                          // combat: 4 to D
-  resolveAfterCombat(h);   // R261: the column-damage trigger pays out after combat
+  resolveAfterCombat(h);   // CR 608.9b: the column-damage trigger pays out after combat
   assert.equal(h.state.players[D]!.life, 30, 'lost 4, gained 4 back — the drawback cancels the hit');
   assert.ok(h.log.some(l => l.includes('Vroot')), 'the gain is attributed to Vroot');
   finishBattle(h);
 });
 
 test('Vroot: a blocked column pays out its whole power, not the blocker’s toughness (report #84, EGCW 251)', () => {
-  // R114: "ALL damage is dealt to units, even if it surpasses its defense."
+  // The designer (CR 608.6d): "ALL damage is dealt to units, even if it surpasses its defense."
   // Vroot reads the amount straight off the combat 'damage' event, so the
   // lethal-capped assignment used to pay out 2 (the blocker's toughness)
   // where the column swung for 9. A non-Piercing column keeps every point.
@@ -912,7 +912,7 @@ test('Vroot: a blocked column pays out its whole power, not the blocker’s toug
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
   pass(h); pass(h);
-  resolveAfterCombat(h);   // R261: the column-damage trigger pays out after combat
+  resolveAfterCombat(h);   // CR 608.9b: the column-damage trigger pays out after combat
   assert.ok(!ent(h, chump), 'the 2/2 blocker died');
   assert.equal(h.state.players[D]!.life, 39,
     'the column dealt all 9 to the blocker, so D gains 9 — not the 2 that killed it');

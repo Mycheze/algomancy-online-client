@@ -243,7 +243,7 @@
   },
   {
     "key": "attr.deadly.no-cap",
-    "textHash": "d012f805db1906db",
+    "textHash": "1b6a12db8eb199b3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -281,7 +281,7 @@
   },
   {
     "key": "attr.deadly.noncombat",
-    "textHash": "26adbbb1d35e23fb",
+    "textHash": "1a4db183b27dfc7c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -363,7 +363,7 @@
   },
   {
     "key": "attr.deadly.poisonous",
-    "textHash": "ae9974cfc10ae3bf",
+    "textHash": "d8fe22dcfb15ffa5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -507,7 +507,7 @@
   },
   {
     "key": "attr.deadly.spells",
-    "textHash": "cbb30dea0c407fe1",
+    "textHash": "8e73326283927bfe",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -663,7 +663,7 @@
   },
   {
     "key": "attr.feeble.lured",
-    "textHash": "b022f723cbf5e12d",
+    "textHash": "44588d9c8f09e57c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -702,7 +702,7 @@
   },
   {
     "key": "attr.feeble.own",
-    "textHash": "0f5f6355a6a692ca",
+    "textHash": "c4aa66bda906d808",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -945,7 +945,7 @@
   },
   {
     "key": "attr.flying.lured",
-    "textHash": "3a03d024d81cc79b",
+    "textHash": "1c80922de43f2fc4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1160,7 +1160,7 @@
   },
   {
     "key": "attr.general.application-order",
-    "textHash": "f824b0d13c2112bc",
+    "textHash": "c453a9ff3e223605",
     "verdict": "partial",
     "round": 3,
     "verifier": "U19-r3",
@@ -1281,7 +1281,7 @@
   },
   {
     "key": "attr.general.noncombat-not-shared",
-    "textHash": "94f7e84042c49f36",
+    "textHash": "0c03587c19588653",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1325,7 +1325,7 @@
   },
   {
     "key": "attr.general.present-or-not",
-    "textHash": "e0123cff75143282",
+    "textHash": "476708fb6878db5d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1540,7 +1540,7 @@
   },
   {
     "key": "attr.general.shared.all-purposes",
-    "textHash": "6d75bb1b79ef2da2",
+    "textHash": "6d6061cc661a790c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
@@ -1602,7 +1602,7 @@
   },
   {
     "key": "attr.general.shared.combat-only",
-    "textHash": "07322b8da06426f7",
+    "textHash": "61e235f48e41df86",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1746,7 +1746,7 @@
   },
   {
     "key": "attr.general.stat-attributes",
-    "textHash": "b6b90d7ac1c949f8",
+    "textHash": "b962d6b9ecb88d4d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1805,7 +1805,7 @@
   },
   {
     "key": "attr.general.stats-then-death",
-    "textHash": "302ffbc22712ea35",
+    "textHash": "7754791c5cdfd40c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1897,7 +1897,7 @@
   },
   {
     "key": "attr.inverted.attributes",
-    "textHash": "a49f16b6d989247c",
+    "textHash": "d4464e650f21bda7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1935,7 +1935,7 @@
   },
   {
     "key": "attr.inverted.base",
-    "textHash": "568b82553a3123e1",
+    "textHash": "7c8fe8065e8df119",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1973,7 +1973,7 @@
   },
   {
     "key": "attr.inverted.net",
-    "textHash": "c989664b25daf008",
+    "textHash": "f12d6cece00f9d80",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2027,7 +2027,7 @@
   },
   {
     "key": "attr.inverted.tough",
-    "textHash": "fff48db40d21e610",
+    "textHash": "7e8640d068454c6f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2537,7 +2537,7 @@
   },
   {
     "key": "attr.sluggish.after-triggers",
-    "textHash": "551e224c8887932f",
+    "textHash": "05fde2419227ee32",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2831,7 +2831,7 @@
   },
   {
     "key": "attr.swift.split",
-    "textHash": "bb9009ea7053485f",
+    "textHash": "b5e10a0f270d9979",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
@@ -3978,7 +3978,7 @@
   },
   {
     "key": "attr.vulnerable.receipt",
-    "textHash": "4d895e30a054c237",
+    "textHash": "c5c76814017c6120",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",

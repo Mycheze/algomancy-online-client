@@ -1,4 +1,4 @@
-/* ROUND 35 / R282 — A TYPE-LINE ATTRIBUTE IS RULES TEXT, AND THE BOX SAID IT
+/* ROUND 35 / CR 204.4, D6.10 — A TYPE-LINE ATTRIBUTE IS RULES TEXT, AND THE BOX SAID IT
  * HAD NONE.
  *
  * I asked the owner whether four cards with an EMPTY oracle text — Whispering
@@ -28,7 +28,7 @@
  *
  * ⚠ AND THE REMINDER IS NEVER COPIED INTO THIS FILE. `ui/glossary.ts` is a
  * rules document whose rows are corrected on their own schedule (fifteen of
- * them were wrong at once — see its header, R206), so every expectation below
+ * them were wrong at once — see its header), so every expectation below
  * reads the sentence back out of `GLOSSARY` at run time. A test carrying its
  * own copy of a reminder would go red for a CORRECTION, which is the opposite
  * of a guard.
@@ -43,7 +43,7 @@ import { fileURLToPath } from 'node:url';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { getCard } from '../../engine/src/cards/dsl.ts';
-import '../../engine/src/index.ts';                 // R214: the WHOLE pool, not registry.ts alone
+import '../../engine/src/index.ts';                 // the WHOLE pool, not registry.ts alone (see 180-pool-sight)
 import { attrReminders, entityTextBox, printedTextBox } from '../cardtext.ts';
 import { GLOSSARY } from '../glossary.ts';
 import { cardPanelHtml, glossaryFor } from '../cardpanel.ts';
@@ -76,9 +76,9 @@ function printedPool(): Printed[] {
  * THE SUBJECTS: a card whose printed text box is empty and whose rules content
  * is therefore entirely on the type line.
  *
- * The prophecy carve-out is R279's, not a special case of mine: the extractor
+ * The prophecy carve-out is CR D6.10d's, not a special case of mine: the extractor
  * splits a printed banner OUT of `text` into `CardDef.prophecy`, so The
- * Foretold reads as "no printed text" here while its box is in fact full. R279
+ * Foretold reads as "no printed text" here while its box is in fact full. CR D6.10d
  * already puts that line back.
  */
 const subjects = (): Printed[] => printedPool().filter(c =>
@@ -126,7 +126,7 @@ test('the cards with no ability text and a type-line attribute are found by scan
  * 1. THE BOX — off the table
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R282: a card whose only rules content is a type-line attribute stops saying no rules text', () => {
+test('CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text', () => {
   const found = subjects();
   assert.ok(found.length >= 15, 'non-vacuity: there are subjects to check');
 
@@ -141,7 +141,7 @@ test('R282: a card whose only rules content is a type-line attribute stops sayin
     + 'every one of them, and each has a printed attribute that IS its rules text');
 });
 
-test('R282: the box prints the marker and the reminder the glossary states for it', () => {
+test('CR D6.10: the box prints the marker and the reminder the glossary states for it', () => {
   const found = subjects();
   assert.ok(found.length >= 15, 'non-vacuity: there are subjects to check');
 
@@ -169,7 +169,7 @@ test('R282: the box prints the marker and the reminder the glossary states for i
   }
 });
 
-test('R282: a card with no attribute and no text still says nothing, and the guard does not reach it', () => {
+test('CR D6.10: a card with no attribute and no text still says nothing, and the guard does not reach it', () => {
   // THE CONTROL. Tidal Menace is a genuine vanilla: no text, no attributes,
   // nothing to explain. A fix that made every empty box say something would
   // pass every test above and be wrong here.
@@ -185,7 +185,7 @@ test('R282: a card with no attribute and no text still says nothing, and the gua
   }
 });
 
-test('R282: a card that prints its own text box is left exactly as it was', () => {
+test('CR D6.10: a card that prints its own text box is left exactly as it was', () => {
   // The other half of the same worry, and the reason this is scoped to boxes
   // that are otherwise EMPTY. Report #118 was the owner saying the reminders
   // under a unit are already too verbose; a reminder line added to every card
@@ -207,7 +207,7 @@ test('R282: a card that prints its own text box is left exactly as it was', () =
  * 2. THE BOX — on the table (the in-game surfaces)
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R282: the same line is there for a live unit on the board, which is the hover box', () => {
+test('CR D6.10: the same line is there for a live unit on the board, which is the hover box', () => {
   const found = subjects().filter(c => c.kind === 'unit');
   assert.ok(found.length >= 15, `only ${found.length} subjects are units`);
   const name = found[0]!.name;
@@ -227,7 +227,7 @@ test('R282: the same line is there for a live unit on the board, which is the ho
 
   const box = entityTextBox(e, u!);
   assert.ok(box.attrs.some(a => a.attr === attr),
-    `${name}: the attribute row is where R271 and R279 put a printed marker; it must still be there`);
+    `${name}: the attribute row is where CR D6.10c and CR D6.10d put a printed marker; it must still be there`);
   assert.ok(box.lines.length > 0,
     `${name}: the long-hover tooltip and the focus viewer render this box with NO glossary block `
     + 'beneath them — an empty box there is a card that looks blank on the table');
@@ -235,7 +235,7 @@ test('R282: the same line is there for a live unit on the board, which is the ho
     `${name}: the live box does not carry the {${attr}} reminder`);
 });
 
-test('R282: the printed box and the live box say the same thing about an untouched unit', () => {
+test('CR D6.10: the printed box and the live box say the same thing about an untouched unit', () => {
   // ui/cardtext.ts exists so that "a card does not change shape as it hits the
   // table". Two entry points, one answer.
   const name = subjects().filter(c => c.kind === 'unit')[0]!.name;
@@ -251,13 +251,13 @@ test('R282: the printed box and the live box say the same thing about an untouch
 });
 
 /* ════════════════════════════════════════════════════════════════════════
- * 3. CT-164 / R279 — ONE STATEMENT, NOT TWO
+ * 3. CT-164 — ONE STATEMENT, NOT TWO
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R282: the browser panel states the reminder once, not once in the box and once under it', () => {
+test('CR D6.10: the browser panel states the reminder once, not once in the box and once under it', () => {
   // The owner, report #149: "the text is often redundant." The pinned panel
   // draws the text box and then a glossary block underneath it, and the
-  // glossary block has ALWAYS drawn a row for a type-line attribute (R257).
+  // glossary block has ALWAYS drawn a row for a type-line attribute (CR D6.11c).
   // Putting the same sentence in the box above it is exactly the shape he
   // reported — so the row gives way to the box, and keeps only what the box
   // does not say (`rule`, the repository's fuller statement, where there is
@@ -291,7 +291,7 @@ test('R282: the browser panel states the reminder once, not once in the box and 
     + 'text box and once in the glossary block under it. That is report #149 exactly.');
 });
 
-test('R282: the rendered panel still explains every term the in-game inspector does', () => {
+test('CR D6.11c: the rendered panel still explains every term the in-game inspector does', () => {
   // 236-browser-glossary-reach reads `glossaryFor(r)` alone. Once the box
   // carries a reminder the panel can be complete while that function is not,
   // so the same invariant is re-asserted here over the MARKUP the panel

@@ -95,7 +95,7 @@
   },
   {
     "key": "combat.attack-window.general.gravity",
-    "textHash": "9cae8f466d806992",
+    "textHash": "0ef77e7ff70a359e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -321,7 +321,7 @@
   },
   {
     "key": "combat.attack.declaring.lured",
-    "textHash": "0adc89ba78e9f48d",
+    "textHash": "8025b28c34b0798b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -529,7 +529,7 @@
   },
   {
     "key": "combat.attack.declaring.spell-tokens",
-    "textHash": "55ca0d1effbdb754",
+    "textHash": "f5f71e6ca4c34515",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U11-r4",
@@ -828,7 +828,7 @@
   },
   {
     "key": "combat.attack.effects.alone",
-    "textHash": "7a0d7f5788f3eb59",
+    "textHash": "fd8f8be01c86df3d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -921,7 +921,7 @@
   },
   {
     "key": "combat.attack.effects.presence",
-    "textHash": "39edf7dcb5e76a1f",
+    "textHash": "a8f03b2e32a901d2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1164,7 +1164,7 @@
   },
   {
     "key": "combat.block-window.after-blocking-triggers",
-    "textHash": "1e2f4f057030fe7a",
+    "textHash": "94eb6fd650aef999",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1296,7 +1296,7 @@
   },
   {
     "key": "combat.block-window.general.locked",
-    "textHash": "71b166eb99e60d04",
+    "textHash": "59aba6d4bf6cb29a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1340,7 +1340,7 @@
   },
   {
     "key": "combat.block-window.general.promotion",
-    "textHash": "654641b368153fe0",
+    "textHash": "1c619e124d9705f2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1379,7 +1379,7 @@
   },
   {
     "key": "combat.block-window.late-blocker",
-    "textHash": "d9f4cb3ecc7937a3",
+    "textHash": "2f4ef0128c7810fc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1439,7 +1439,7 @@
   },
   {
     "key": "combat.block-window.late-blocker.defender-only",
-    "textHash": "96a0f72d5ca08444",
+    "textHash": "392e06fb7a7c0a2c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1482,7 +1482,7 @@
   },
   {
     "key": "combat.block-window.late-blocker.no-prior-blocks",
-    "textHash": "c8289fe8bc396f7e",
+    "textHash": "587b7a3c8baf05b9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1743,7 +1743,7 @@
   },
   {
     "key": "combat.blocks.blocked.stays",
-    "textHash": "0659a9d370178d67",
+    "textHash": "d25c59bbddb3529b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -1904,7 +1904,7 @@
   },
   {
     "key": "combat.blocks.counterattack.tokens",
-    "textHash": "e9676bfdbd555bfc",
+    "textHash": "56fb74794bc57991",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U11-r4",
@@ -1942,7 +1942,7 @@
   },
   {
     "key": "combat.blocks.empty-attack",
-    "textHash": "63ae0f08782f1073",
+    "textHash": "53a1d5c44e2f82f5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2028,7 +2028,7 @@
   },
   {
     "key": "combat.blocks.general.empty-columns",
-    "textHash": "22ebe7c5b98f1d93",
+    "textHash": "dea28ffc9adc83aa",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2331,7 +2331,7 @@
   },
   {
     "key": "combat.blocks.side",
-    "textHash": "34e421abaf91c371",
+    "textHash": "9f4f1f2d2d4d0f7a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2429,7 +2429,7 @@
   },
   {
     "key": "combat.blocks.side.any-number",
-    "textHash": "1ed7f93af2a97d60",
+    "textHash": "ebc5190f387b7d38",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2535,7 +2535,7 @@
   },
   {
     "key": "combat.blocks.side.counts-as-blocked",
-    "textHash": "e0b5afedd47d5b4f",
+    "textHash": "674dde8d5ec4d367",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2579,7 +2579,7 @@
   },
   {
     "key": "combat.blocks.side.either-side",
-    "textHash": "e37b5249223c0b80",
+    "textHash": "f3f621925f72669d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2618,7 +2618,7 @@
   },
   {
     "key": "combat.blocks.side.no-damage",
-    "textHash": "10023ba4444fd6bf",
+    "textHash": "09dad16be5470b59",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2671,7 +2671,7 @@
   },
   {
     "key": "combat.blocks.side.reach",
-    "textHash": "e5d16d3f80134879",
+    "textHash": "b78b6142a76eda19",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2764,7 +2764,7 @@
   },
   {
     "key": "combat.blocks.who",
-    "textHash": "08981be79da0772e",
+    "textHash": "59f8c59eb64c02aa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2808,7 +2808,7 @@
   },
   {
     "key": "combat.blocks.who.able",
-    "textHash": "7a6ed0b99065aaf5",
+    "textHash": "3e6c1bf47512e3ce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2851,7 +2851,7 @@
   },
   {
     "key": "combat.blocks.who.always-legal",
-    "textHash": "27a88143199c7355",
+    "textHash": "9424030cf93ccb1d",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U11-r4",
@@ -2967,7 +2967,7 @@
   },
   {
     "key": "combat.blocks.who.lured",
-    "textHash": "a6bb96a2c1ec3c25",
+    "textHash": "c46b947ad2f1d712",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",

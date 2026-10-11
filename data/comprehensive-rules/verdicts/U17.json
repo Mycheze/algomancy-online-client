@@ -1,7 +1,7 @@
 [
   {
     "key": "effects.augment.by-effect",
-    "textHash": "e8cb84ecd5fb79bf",
+    "textHash": "75629cb68a4bbf20",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U17-r2",
@@ -119,7 +119,7 @@
   },
   {
     "key": "effects.augment.hosts.spell",
-    "textHash": "2aa13865c09b0550",
+    "textHash": "59fabd2cef7029f7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -173,7 +173,7 @@
   },
   {
     "key": "effects.augment.hosts.spell-token",
-    "textHash": "374292d710bec6ba",
+    "textHash": "7c3fbd86ec9fa543",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -549,7 +549,7 @@
   },
   {
     "key": "effects.augment.what.despawn",
-    "textHash": "356aeac2cca00967",
+    "textHash": "7a234674bc15f510",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -594,7 +594,7 @@
   },
   {
     "key": "effects.augment.what.kind-kept",
-    "textHash": "7e367bc898c5d161",
+    "textHash": "e19ad62ff1e31e61",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -1397,7 +1397,7 @@
   },
   {
     "key": "effects.graft.composite.fizzle",
-    "textHash": "5833b50b17d5df14",
+    "textHash": "2be9944b6ae494fa",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U17-r4",
@@ -1909,7 +1909,7 @@
   },
   {
     "key": "effects.graft.costs.unpayable",
-    "textHash": "80006b85ae88346d",
+    "textHash": "3541144bda22a92b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -2083,7 +2083,7 @@
   },
   {
     "key": "effects.graft.multiplier.bounded",
-    "textHash": "94240255d8e37b8b",
+    "textHash": "c3cef27de50c3221",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -2128,7 +2128,7 @@
   },
   {
     "key": "effects.graft.multiplier.costs",
-    "textHash": "c2a16bd2420e345c",
+    "textHash": "7f30188392220893",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -2222,7 +2222,7 @@
   },
   {
     "key": "effects.graft.multiplier.targets",
-    "textHash": "9a2c41b9d9157104",
+    "textHash": "6ff05c23bcf2361e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -2623,7 +2623,7 @@
   },
   {
     "key": "effects.mods.cost.cache",
-    "textHash": "552d3c1eaa1397ee",
+    "textHash": "191f8997014ba83f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -2692,7 +2692,7 @@
   },
   {
     "key": "effects.mods.cost.not-taxed",
-    "textHash": "dadf2fbad344b804",
+    "textHash": "64dba2808709c192",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U17-r2",
@@ -2760,7 +2760,7 @@
   },
   {
     "key": "effects.mods.erase-off-host",
-    "textHash": "84a7e665476582ab",
+    "textHash": "4cd5fef6b6377b82",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U17-r2",
@@ -3029,7 +3029,7 @@
   },
   {
     "key": "effects.mods.moving.once",
-    "textHash": "beb18e3f9bfbd865",
+    "textHash": "b9ed8ad49d7b5858",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3083,7 +3083,7 @@
   },
   {
     "key": "effects.mods.not-played",
-    "textHash": "843a8fe8195842e2",
+    "textHash": "dd5e80009a30eaa4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3370,7 +3370,7 @@
   },
   {
     "key": "effects.mods.one-card.other",
-    "textHash": "a378f522d85b75c2",
+    "textHash": "358b44569bfd3e62",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3598,7 +3598,7 @@
   },
   {
     "key": "effects.mods.special-action.tides",
-    "textHash": "b64fdc3f95202f80",
+    "textHash": "95c032a0f384b7ba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3803,7 +3803,7 @@
   },
   {
     "key": "effects.mods.trash",
-    "textHash": "915fca6cff73c189",
+    "textHash": "53c84bce00042272",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3857,7 +3857,7 @@
   },
   {
     "key": "effects.mods.trash.erased-with-host",
-    "textHash": "85bc42ea8dca3ce3",
+    "textHash": "f9668198978197f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3944,7 +3944,7 @@
   },
   {
     "key": "effects.mods.unstable.cache",
-    "textHash": "406b5ddcf4f47df8",
+    "textHash": "b945924f795cad88",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -3983,7 +3983,7 @@
   },
   {
     "key": "effects.mods.unstable.copy",
-    "textHash": "45fb3c75c70fb3fb",
+    "textHash": "7a67256aa1635295",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4037,7 +4037,7 @@
   },
   {
     "key": "effects.mods.unstable.leave-play",
-    "textHash": "2b3534ca9396f710",
+    "textHash": "830f8d65cd3dbcb2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4094,7 +4094,7 @@
   },
   {
     "key": "effects.mods.unstable.moves",
-    "textHash": "04f3fd3fc0b615de",
+    "textHash": "185c03212e10034d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4132,7 +4132,7 @@
   },
   {
     "key": "effects.mods.unstable.token-mod",
-    "textHash": "a17941ad270bbeb4",
+    "textHash": "3343ae2f3ecd6fc7",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U17-r4",
@@ -4315,7 +4315,7 @@
   },
   {
     "key": "effects.mods.zones.cache",
-    "textHash": "a4a21c74cafee5cd",
+    "textHash": "134978dfe7f1f8d6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4378,7 +4378,7 @@
   },
   {
     "key": "effects.modular.any-card",
-    "textHash": "72ad9b29ab3f52c6",
+    "textHash": "5b16ab13de9f2cd7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4432,7 +4432,7 @@
   },
   {
     "key": "effects.modular.any-card.cost",
-    "textHash": "41ea17efd3e579a7",
+    "textHash": "7747784cc8d2070e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4471,7 +4471,7 @@
   },
   {
     "key": "effects.modular.any-card.no-op",
-    "textHash": "8016d81bd604d038",
+    "textHash": "7cb199bf77f24978",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4509,7 +4509,7 @@
   },
   {
     "key": "effects.modular.effects",
-    "textHash": "d2d305dae97027e3",
+    "textHash": "e9d48d9737576795",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U17-r4",
@@ -4557,7 +4557,7 @@
   },
   {
     "key": "effects.modular.effects.attributes",
-    "textHash": "cba1feac539982bc",
+    "textHash": "53d2c8842091b815",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4640,7 +4640,7 @@
   },
   {
     "key": "effects.modular.effects.text",
-    "textHash": "58c0d4188be518e4",
+    "textHash": "9ab1b8198d493ac7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4687,7 +4687,7 @@
   },
   {
     "key": "effects.modular.unstable",
-    "textHash": "0e44ead7c911daed",
+    "textHash": "fb62b05a337cc28c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4743,7 +4743,7 @@
   },
   {
     "key": "effects.modular.unstable.unmodded",
-    "textHash": "089a10501eac0280",
+    "textHash": "01355a906513c575",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -4966,7 +4966,7 @@
   },
   {
     "key": "effects.virus.battle.cache",
-    "textHash": "23479ba03c5527d8",
+    "textHash": "bc4000ba38e4f079",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -5245,7 +5245,7 @@
   },
   {
     "key": "effects.virus.permission.confers",
-    "textHash": "e63fe196423f9a1b",
+    "textHash": "a616a5d3cc3407b7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -5401,7 +5401,7 @@
   },
   {
     "key": "effects.virus.spell-host",
-    "textHash": "0b764f5188c3b9b0",
+    "textHash": "8330d92ef804bef3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -5455,7 +5455,7 @@
   },
   {
     "key": "effects.virus.spell-host.erased",
-    "textHash": "aef949ad2cca9aff",
+    "textHash": "6789d4bf0104de54",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -5505,7 +5505,7 @@
   },
   {
     "key": "effects.virus.spell-host.not-hosts",
-    "textHash": "b145e1c5440d9f5d",
+    "textHash": "621069a263d6c2db",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U17-r2",
@@ -5548,7 +5548,7 @@
   },
   {
     "key": "effects.virus.spell-host.resolving",
-    "textHash": "e9069748ed5cbb9e",
+    "textHash": "1ff5462010230fbb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -5587,7 +5587,7 @@
   },
   {
     "key": "effects.virus.spell-host.spell-unit",
-    "textHash": "64e4e136dae4124d",
+    "textHash": "d8ba1f2dc1415b8e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",
@@ -5635,7 +5635,7 @@
   },
   {
     "key": "effects.virus.spell-host.which",
-    "textHash": "bf140897228b37a1",
+    "textHash": "c2001d6b0b554541",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U17-r2",
@@ -5736,7 +5736,7 @@
   },
   {
     "key": "effects.virus.stack.negated",
-    "textHash": "6b1b1c8a0a669079",
+    "textHash": "a51c567a18e19df8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U17-r1",

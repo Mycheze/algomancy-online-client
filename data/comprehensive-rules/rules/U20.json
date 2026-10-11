@@ -28,23 +28,23 @@
           "quote": "Needs two blockers — a single unit cannot block it."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "= 2 if the column is {Evasive}, else 1"
+          "quote": "= 2 if the column is {Evasive}, else 1",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "07-cards.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The checkable sources (the RAQ and R84) state the two-blocker requirement, not the sentence itself.",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The checkable sources (the RAQ and the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”)) state the two-blocker requirement, not the sentence itself.",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8"
     }
   },
@@ -76,13 +76,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "= 2 if the column is {Evasive}, else 1"
+          "quote": "= 2 if the column is {Evasive}, else 1",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "07-cards.test.ts",
@@ -90,10 +90,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"Two blockers\": a blocking column has two slots, so this is a front and a back blocker.",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8",
       "RAQ 1460216519731577027#1": "55c986c1a23d77e4a10f36d1cede0466b0a50f5641466726505fc0923b8a6a54"
     }
@@ -116,29 +116,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "a single {Pure} blocker switches {Evasive} off and can cover it alone."
+          "quote": "a single {Pure} blocker switches {Evasive} off and can cover it alone.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R61 bullet \"Declaring blocks — one Pure card in either column and neither evasion rule survives it\". The printed Pure reminder supports it too (Just a Unit). The attacking-side half (a Pure card in the Evasive column itself) has no test.",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e",
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) bullet \"Declaring blocks — one Pure card in either column and neither evasion rule survives it\". The printed Pure reminder supports it too (Just a Unit). The attacking-side half (a Pure card in the Evasive column itself) has no test.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.sneaky",
@@ -164,24 +163,23 @@
           "quote": "Sneaky units can't be blocked if attacking alone."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R20",
-          "quote": "Sneaky's \"attacking alone\""
+          "quote": "Sneaky's \"attacking alone\"",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). R20 quotes the phrase \"unblockable if attacking alone\" and reads it; no designer source.",
-    "sourceHashes": {
-      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
-    }
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”) quotes the phrase \"unblockable if attacking alone\" and reads it; no designer source.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.sneaky.alone",
@@ -201,24 +199,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R20",
-          "quote": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+          "quote": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "\"Alone\" = the only attacking unit in the formation is R20's reading (an owner/engine call, marked ⚠ in R20): D-U20-3.",
-    "sourceHashes": {
-      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
-    }
+    "notes": "\"Alone\" = the only attacking unit in the formation is the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)’s reading (an owner/engine call, marked ⚠ in the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)): D-U20-3.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.sneaky.spell-tokens",
@@ -238,24 +235,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R20",
-          "quote": "formation** (spell tokens riding along don't count as company)"
+          "quote": "formation** (spell tokens riding along don't count as company)",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.sneaky.two-sneaky",
@@ -273,24 +269,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R20",
-          "quote": "attacking are NOT alone — both blockable."
+          "quote": "attacking are NOT alone — both blockable.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.sneaky.side-block",
@@ -310,24 +305,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it"
+          "quote": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.sneaky.pure",
@@ -347,16 +341,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R76",
-          "relation": "its 'able' sub-findings (a Pure blocker still sees through lone Sneaky) survive in R84; its Alluring rule was replaced by R84"
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -365,11 +354,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "No test found that blocks a lone Sneaky attacker with a Pure unit.",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring",
@@ -396,24 +384,23 @@
           "quote": "When an alluring column attacks, target enemy can't attack and must block it this combat if able."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "2. **Two effects on that target: it can't attack, and it must block that column"
+          "quote": "2. **Two effects on that target: it can't attack, and it must block that column",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "15-water-b.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). R84 rests on Caleb's Discord words, which are not in a RAQ thread in the register, so the checkable basis is the ruling.",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) rests on Caleb's Discord words, which are not in a RAQ thread in the register, so the checkable basis is the ruling.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.trigger",
@@ -423,7 +410,7 @@
     "examples": [
       {
         "text": "Two attacking columns, one Alluring, against one possible blocker: the Alluring trigger targets that blocker, which then must block the Alluring column.",
-        "test": "53-playtest-round7.test.ts::R84: the minimal form"
+        "test": "53-playtest-round7.test.ts::CR 802.15a: the minimal form"
       }
     ],
     "see": [
@@ -434,21 +421,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "1. **It targets ONE enemy unit.** Asked \"Does alluring stop a whole enemy from"
+          "quote": "1. **It targets ONE enemy unit.** Asked \"Does alluring stop a whole enemy from",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to"
+          "quote": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "its target is chosen as it goes onto the stack (R67), by the attacker, from the"
+          "quote": "its target is chosen as it goes onto the stack (R67), by the attacker, from the",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts",
@@ -456,11 +445,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.one-per-column",
@@ -470,7 +458,7 @@
     "examples": [
       {
         "text": "Two Alluring units attack in one column. Alluring triggers once.",
-        "test": "53-playtest-round7.test.ts::R84: {Alluring} does not stack"
+        "test": "53-playtest-round7.test.ts::CR 802.15b: {Alluring} does not stack"
       }
     ],
     "see": [],
@@ -478,28 +466,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "5. **It does not stack.** *\"Nah alluring doesn't stack\"* … *\"It's just one"
+          "quote": "5. **It does not stack.** *\"Nah alluring doesn't stack\"* … *\"It's just one",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "alluring is shared to the column\"* — so it is one target per COLUMN."
+          "quote": "alluring is shared to the column\"* — so it is one target per COLUMN.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.per-column",
@@ -509,11 +497,11 @@
     "examples": [
       {
         "text": "Two Alluring columns attack. Each triggers, and both triggers may target the same defending unit.",
-        "test": "53-playtest-round7.test.ts::R84: two Alluring COLUMNS are two triggers, and may name the same unit"
+        "test": "53-playtest-round7.test.ts::CR 802.15c: two Alluring COLUMNS are two triggers, and may name the same unit"
       },
       {
         "text": "Two Alluring columns target two different units. Each of those units must block its column.",
-        "test": "53-playtest-round7.test.ts::R84: two Alluring columns naming DIFFERENT units compel both"
+        "test": "53-playtest-round7.test.ts::CR 802.15c: two Alluring columns naming DIFFERENT units compel both"
       }
     ],
     "see": [],
@@ -521,24 +509,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "Two Alluring columns may name the **same** unit, and it cannot block both."
+          "quote": "Two Alluring columns may name the **same** unit, and it cannot block both.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.source",
@@ -548,7 +535,7 @@
     "examples": [
       {
         "text": "Tempest Wrangler attacks in a column with a vanilla unit. The trigger is Tempest Wrangler's.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.15d {Alluring} still originates from the unit that prints it"
       }
     ],
     "see": [
@@ -558,29 +545,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "> column and having it originate from the actual unit with Alluring is fine."
+          "quote": "> column and having it originate from the actual unit with Alluring is fine.",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "alluring is shared to the column\"* — so it is one target per COLUMN."
+          "quote": "alluring is shared to the column\"* — so it is one target per COLUMN.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.cannot-attack",
@@ -590,7 +576,7 @@
     "examples": [
       {
         "text": "A lured unit cannot be sent out to counterattack when blocks are declared.",
-        "test": "53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack"
+        "test": "53-playtest-round7.test.ts::CR 604.2e: a lured unit cannot be sent out to counterattack"
       }
     ],
     "see": [
@@ -601,28 +587,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "2. **Two effects on that target: it can't attack, and it must block that column"
+          "quote": "2. **Two effects on that target: it can't attack, and it must block that column",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "lasts the rest of the battle phase and is cleared at regroup with every other"
+          "quote": "lasts the rest of the battle phase and is cleared at regroup with every other",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.must-block",
@@ -632,7 +618,7 @@
     "examples": [
       {
         "text": "The defender has two units able to block and tries to leave the Alluring column unblocked by putting both on other columns. That is not allowed: the lured unit must block the Alluring column.",
-        "test": "53-playtest-round7.test.ts::R84 UFAB"
+        "test": "53-playtest-round7.test.ts::CR 606.2b UFAB"
       }
     ],
     "see": [
@@ -647,27 +633,28 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "- **If `blocks[ci]` is non-empty, `A` must be one of its members.**"
+          "quote": "- **If `blocks[ci]` is non-empty, `A` must be one of its members.**",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "- **Must block** is `columns`, and only in the round that stamped it. The"
+          "quote": "- **Must block** is `columns`, and only in the round that stamped it. The",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1460216519731577027#2": "d7698cffd19e07f01e242174c16a8c42a56a6e360df249219dc77b641e0d1bee"
     }
   },
@@ -695,17 +682,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "- **If `blocks[ci]` is empty, that is legal only if `A` could not have satisfied"
+          "quote": "- **If `blocks[ci]` is empty, that is legal only if `A` could not have satisfied",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}"
+          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts",
@@ -713,10 +701,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8"
     }
   },
@@ -751,23 +739,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "| A, B, C | forgo it, **or** A+B, **or** A+C — **B+C is illegal** |"
+          "quote": "| A, B, C | forgo it, **or** A+B, **or** A+C — **B+C is illegal** |",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1460216519731577027#1": "55c986c1a23d77e4a10f36d1cede0466b0a50f5641466726505fc0923b8a6a54",
       "RAQ 1460216519731577027#2": "d7698cffd19e07f01e242174c16a8c42a56a6e360df249219dc77b641e0d1bee"
     }
@@ -780,7 +768,7 @@
     "examples": [
       {
         "text": "The attacker's Alluring unit is killed while its trigger is on the stack. The trigger does nothing, and the targeted unit may attack and block freely.",
-        "test": "53-playtest-round7.test.ts::R84: killing the allurer while the trigger is ON the stack fizzles it"
+        "test": "53-playtest-round7.test.ts::CR 802.15i: killing the allurer while the trigger is ON the stack fizzles it"
       }
     ],
     "see": [],
@@ -788,28 +776,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "standing in an attack column, and that column must still be {Alluring}. Nothing"
+          "quote": "standing in an attack column, and that column must still be {Alluring}. Nothing",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "you kill the allurer while the effect is on the stack\"*."
+          "quote": "you kill the allurer while the effect is on the stack\"*.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb (quoted in R84): \"this would stop the trigger if you kill the allurer while the effect is on the stack\". R84 says this is a check inside the effect, not the general fizzle rule.",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "Caleb (quoted in the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”)): \"this would stop the trigger if you kill the allurer while the effect is on the stack\". The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) says this is a check inside the effect, not the general fizzle rule.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.after-resolution",
@@ -819,7 +807,7 @@
     "examples": [
       {
         "text": "After the trigger resolves, the Alluring attacker is killed in the attack window. The lured unit may block another column, but it still cannot be sent to counterattack.",
-        "test": "53-playtest-round7.test.ts::R84: killing the allurer AFTER it resolves frees the block but not the attack"
+        "test": "53-playtest-round7.test.ts::CR 802.15j: killing the allurer AFTER it resolves frees the block but not the attack"
       }
     ],
     "see": [],
@@ -827,28 +815,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "4. **Once it has resolved, killing the allurer does not undo it.** Asked whether"
+          "quote": "4. **Once it has resolved, killing the allurer does not undo it.** Asked whether",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "effect fizzle: *\"You can't attack but you can block other things.\"*"
+          "quote": "effect fizzle: *\"You can't attack but you can block other things.\"*",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.two-duties",
@@ -866,13 +854,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "**Discharging either duty excuses the rest**, and the \"must be among its"
+          "quote": "**Discharging either duty excuses the rest**, and the \"must be among its",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts",
@@ -880,11 +868,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R84 marks this '⚠ a judgement call' (Bena's call, 2026-08-22): D-U20-5.",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) marks this '⚠ a judgement call' (Bena's call, 2026-08-22): D-U20-5.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.lone-sneaky",
@@ -894,7 +881,7 @@
     "examples": [
       {
         "text": "A lone Sneaky and Alluring unit attacks. The defender declares no blocks, and that is legal.",
-        "test": "53-playtest-round7.test.ts::R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state"
+        "test": "53-playtest-round7.test.ts::CR 802.15m: a lone {Sneaky} + {Alluring} attacker is not a stuck state"
       }
     ],
     "see": [
@@ -904,20 +891,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "rather than about who is compelled: a lone {Sneaky} + {Alluring} attacker"
+          "quote": "rather than about who is compelled: a lone {Sneaky} + {Alluring} attacker",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "compels nobody (R20 forbids blocking it, so nobody is able), and an {Alluring}"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R76",
-          "relation": "first found the lone Sneaky + Alluring case; its Alluring rule was replaced by R84, which keeps this 'able' sub-finding"
+          "quote": "compels nobody (R20 forbids blocking it, so nobody is able), and an {Alluring}",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -926,11 +909,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The Pure exception is R76's sub-finding (\"except a {Pure} one, which sees through Sneaky\"), which R84 says survives.",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The Pure exception is the owner ruling of 2026-08-22 (“Alluring duties are discharged TOGETHER, and…”)’s sub-finding (\"except a {Pure} one, which sees through Sneaky\"), which the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) says survives.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.pure-column",
@@ -940,7 +922,7 @@
     "examples": [
       {
         "text": "An Alluring column with Just a Unit in it attacks. No Alluring trigger is put on the stack.",
-        "test": "53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers"
+        "test": "53-playtest-round7.test.ts::CR 802.15n: an Alluring column that is itself {Pure} never even triggers"
       }
     ],
     "see": [
@@ -950,29 +932,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "*itself* Pure ignores its own Alluring and compels nobody — under R84 that is"
+          "quote": "*itself* Pure ignores its own Alluring and compels nobody — under R84 that is",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "column that is itself {Pure} compels nobody (R61) — under the new model that is"
+          "quote": "column that is itself {Pure} compels nobody (R61) — under the new model that is",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e",
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.pure-target",
@@ -982,11 +963,11 @@
     "examples": [
       {
         "text": "A lured Pure unit must block a Flying Alluring column.",
-        "test": "53-playtest-round7.test.ts::R84 + R61: a {Pure} lured unit is able against a Flying Alluring column"
+        "test": "53-playtest-round7.test.ts::a {Pure} lured unit is able against a Flying Alluring column"
       },
       {
         "text": "A lured Pure unit blocks an Evasive Alluring column alone.",
-        "test": "53-playtest-round7.test.ts::R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone"
+        "test": "53-playtest-round7.test.ts::a {Pure} lured unit discharges an EVASIVE Alluring column alone"
       }
     ],
     "see": [
@@ -996,28 +977,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "- **Alluring** (R84) — a Pure blocker is \"able\" against anything, so a *lured*"
+          "quote": "- **Alluring** (R84) — a Pure blocker is \"able\" against anything, so a *lured*",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "an Evasive Alluring column by itself (which makes \"could it have satisfied"
+          "quote": "an Evasive Alluring column by itself (which makes \"could it have satisfied",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.alluring.tax-and-negate",
@@ -1047,23 +1028,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to"
+          "quote": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Whether Containment Protocol (\"triggered effects\") negates attribute triggers is an unanswered RAQ question (D-U20-6); R84's Caleb quote makes the trigger negatable in general.",
+    "notes": "Whether Containment Protocol (\"triggered effects\") negates attribute triggers is an unanswered RAQ question (D-U20-6); the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”)’s Caleb quote makes the trigger negatable in general.",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1366446116274442291#0": "8377357b3934e6a3da06ecc08116930b252d309294440fba64594ce8378308dd"
     }
   },
@@ -1100,27 +1081,14 @@
           "quote": "Excess damage from piercing sources is dealt to the recipient's controller."
         }
       ],
-      "rulings": [],
-      "history": [
-        {
-          "ruling": "R7",
-          "relation": "Piercing half ('automatic, not elective') reversed by R319"
-        },
-        {
-          "ruling": "R103",
-          "relation": "its 'automatic, not elective' half reversed by R340"
-        },
-        {
-          "ruling": "R319",
-          "relation": "its closing note that noncombat Piercing is automatic reversed by R340"
-        }
-      ],
+      "owner": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1159,29 +1127,33 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its order of operations)",
-          "quote": "1. {Powerful} doubles the source's damage first (already in the per-hit loop)."
+          "quote": "1. {Powerful} doubles the source's damage first (already in the per-hit loop).",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R103 (its order of operations)",
-          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side"
+          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R103 (its order of operations)",
-          "quote": "3. Damage earlier hits in the same batch already assigned to that victim counts"
+          "quote": "3. Damage earlier hits in the same batch already assigned to that victim counts",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R103 (its order of operations)",
-          "quote": "4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1"
+          "quote": "4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R23",
-          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts",
@@ -1190,11 +1162,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
       "RAQ 1372451771632320512#3": "ea23f808b78cd79313aac3fbff1c8949a14188079fda3436adcefe3e6b8dea75"
     }
   },
@@ -1226,24 +1197,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R114 (its designer line)",
-          "quote": "> \"ALL damage is dealt to units, even if it surpasses its defense. The only exception is"
+          "quote": "> \"ALL damage is dealt to units, even if it surpasses its defense. The only exception is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R319 (its combat ruling)",
-          "quote": "So a Piercing strike is assigned like any other: each unit in front must be"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R7",
-          "relation": "'Piercing is automatic, not elective' reversed by R319"
-        },
-        {
-          "ruling": "R114",
-          "relation": "'its leftover is returned to the caller and hits the face' amended by R319: only what no unit is given goes to the controller"
+          "quote": "So a Piercing strike is assigned like any other: each unit in front must be",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1253,11 +1216,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R114": "72fe8ffddaac70bf365e990d2627680e698af427677f651cb92ec5a4dfe63d34",
-      "R319": "0dae2a17d049496f72aaa046c437f57fa624c4e4ec1214658772a1945e77cdd0",
       "RAQ 1353888077625561108#4": "9083a13fdb5ec98a8f7f7b0e98f72b49be2459e8228849f2829b47a014e262ca",
       "RAQ 1353888077625561108#5": "a01c3a3894e4ff28fa3d3a9550ca0ba2ae9e1a110d97c5c8c241953b6ceb0fed"
     }
@@ -1270,11 +1232,11 @@
     "examples": [
       {
         "text": "A 10-power Piercing attacker is blocked by a lone Vulnerable 3/8. The attacker may put all 10 into it (dealt as 20), and none reaches the player.",
-        "test": "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
+        "test": "399-raq-fix-combat.test.ts::CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
       },
       {
         "text": null,
-        "test": "399-raq-fix-combat.test.ts::R319: a Piercing split may keep part of the excess on the back unit and send the rest"
+        "test": "399-raq-fix-combat.test.ts::CR 802.16c: a Piercing split may keep part of the excess on the back unit and send the rest"
       }
     ],
     "see": [
@@ -1293,20 +1255,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R319 (its combat ruling)",
-          "quote": "any of the excess on the units (the last one included) — whatever no unit is"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R7",
-          "relation": "'Piercing is automatic, not elective' reversed by R319"
-        },
-        {
-          "ruling": "R21",
-          "relation": "'a Deadly Piercing column sends everything past 1-per-blocker through' amended by R319: that is the default only"
+          "quote": "any of the excess on the units (the last one included) — whatever no unit is",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1315,10 +1268,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R319": "0dae2a17d049496f72aaa046c437f57fa624c4e4ec1214658772a1945e77cdd0",
       "RAQ 1353888077625561108#5": "a01c3a3894e4ff28fa3d3a9550ca0ba2ae9e1a110d97c5c8c241953b6ceb0fed",
       "RAQ 1372451771632320512#4": "c0cb696285859a76caf8c5a328ef57f3dbb7330ef74a4ddfe29d70ba791f50ca"
     }
@@ -1346,14 +1299,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1388,20 +1341,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R13 (its conclusion)",
-          "quote": "**Piercing** column's damage carries entirely to the defending player (assignment"
+          "quote": "**Piercing** column's damage carries entirely to the defending player (assignment",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R185",
-          "quote": "the column stays blocked."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R13",
-          "relation": "its reason ('piercing excess is automatic per R7') corrected by R319; its ⚠ resolved by the RAQ"
+          "quote": "the column stays blocked.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1411,11 +1360,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R13": "f9107a61224155c76ba3c104e88ff9f8a8b0967f8f840846f01d4ba43328a18b",
-      "R185": "a2baa6ebf7628aa9c8a0d6542c2ed9993d9d44ba4ad0db5d8e342b3e7135306d",
       "RAQ 1365594171867664445#1": "41fb2d1e14c747d46e906f02dbce574711b100fd92a19711d509a39f0e43a878"
     }
   },
@@ -1431,7 +1379,7 @@
       },
       {
         "text": "A Piercing side-blocker deals no combat damage to the attacking player.",
-        "test": "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player"
+        "test": "400-raq-fix-blocks.test.ts::CR 606.4f a Piercing side-blocker deals no combat damage to the attacking player"
       }
     ],
     "see": [
@@ -1447,20 +1395,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its attackers-gone half)",
-          "quote": "**A blocking column whose attackers are all dead deals nothing, Piercing"
+          "quote": "**A blocking column whose attackers are all dead deals nothing, Piercing",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R321",
-          "quote": "A side-block deals **no combat damage**, Piercing included"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R72",
-          "relation": "its no-side-block note replaced by R321"
+          "quote": "A side-block deals **no combat damage**, Piercing included",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1471,11 +1415,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The side-block half is sourced by R321, which quotes _passer; the RAQ #2 claim line (not in the pack) was dropped.",
+    "notes": "The side-block half is sourced by the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”), which quotes _passer; the RAQ #2 claim line (not in the pack) was dropped.",
     "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969",
       "RAQ 1365594171867664445#3": "cd8215d0e5a46b53cfab6842a14326b1b194278f18d210e223711d1025228e1f"
     }
   },
@@ -1491,7 +1434,7 @@
       },
       {
         "text": "A 10-power Deadly and Piercing column is blocked by one unit: 1 kills it and the other 9 may pierce.",
-        "test": "134-column-and-substep.test.ts::R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce"
+        "test": "134-column-and-substep.test.ts::CR 802.3b — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce"
       }
     ],
     "see": [
@@ -1506,13 +1449,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its order of operations)",
-          "quote": "4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1"
+          "quote": "4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -1521,10 +1464,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
       "RAQ 1353888077625561108#6": "6d01b38c9afcd84e60f587ef5271145274a2679eb3584062c18f27d111c6b292"
     }
   },
@@ -1556,13 +1499,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its order of operations)",
-          "quote": "**as if it were unprotected**."
+          "quote": "**as if it were unprotected**.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -1570,10 +1513,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
       "RAQ 1353888077625561108#10": "a4d0326fd643a0bb1dd88780908e596b730f6c6354bbf2bedf7bdc9505a3188d"
     }
   },
@@ -1598,29 +1541,28 @@
           "quote": "as part of the same damage, never as a separate trigger"
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its not-a-trigger ruling)",
-          "quote": "> \"It redirects excess damage to that unit's controller (not as a trigger, just"
+          "quote": "> \"It redirects excess damage to that unit's controller (not as a trigger, just",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R340",
-          "quote": "and the excess landing in the same R80 batch with nothing on the stack in between."
+          "quote": "and the excess landing in the same R80 batch with nothing on the stack in between.",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R103 is the owner's ruling; only its \"automatic\" half was reversed (by R340). In combat the excess is part of the simultaneous combat damage (608.7).",
-    "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
-      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“{Piercing} pierces on NON-COMBAT damage too…”) is the owner's ruling; only its \"automatic\" half was reversed (by the owner ruling of 2026-10-10 (“{Piercing} is elective outside combat too […]”)). In combat the excess is part of the simultaneous combat damage (608.7).",
+    "sourceHashes": {}
   },
   {
     "key": "attr.piercing.noncombat",
@@ -1630,11 +1572,11 @@
     "examples": [
       {
         "text": "Squish makes Bubb, in a column with Good Whale (Piercing), deal 6 to a 1/1. The dealing player may keep all 6 on the 1/1, or send up to 5 to its controller.",
-        "test": "405-raq-noncombat-piercing.test.ts::R340 Squish: Bubb with Good Whale's Piercing"
+        "test": "405-raq-noncombat-piercing.test.ts::CR 802.16j Squish: Bubb with Good Whale's Piercing"
       },
       {
         "text": null,
-        "test": "405-raq-noncombat-piercing.test.ts::R340 control: no Piercing, no question"
+        "test": "405-raq-noncombat-piercing.test.ts::CR 802.16j control: no Piercing, no question"
       }
     ],
     "see": [
@@ -1649,28 +1591,21 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R340",
-          "quote": "victim in R319: the unit must be given lethal first, and then the dealing player"
+          "quote": "victim in R319: the unit must be given lethal first, and then the dealing player",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         },
         {
-          "ref": "R340",
-          "quote": "may keep any of the excess on it. Whatever it is not given goes to its"
+          "quote": "may keep any of the excess on it. Whatever it is not given goes to its",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         },
         {
-          "ref": "R340",
-          "quote": "Asked whether \"can be\" means automatic or a choice, the owner: **\"Elective, like"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R103",
-          "relation": "its 'automatic, not elective' half reversed by R340"
-        },
-        {
-          "ruling": "R319",
-          "relation": "its closing note that noncombat Piercing is unchanged (automatic) reversed by R340"
+          "quote": "Asked whether \"can be\" means automatic or a choice, the owner: **\"Elective, like",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1680,10 +1615,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The RAQ says the excess \"can be\" dealt to the player; the owner read \"can be\" as elective (R340).",
+    "notes": "The RAQ says the excess \"can be\" dealt to the player; the owner read \"can be\" as elective (owner ruling of 2026-10-10, “{Piercing} is elective outside combat too […]”).",
     "sourceHashes": {
-      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583",
       "RAQ 1402292180499955884#5": "fd2d00aa9bff849f20a909c4db14eb469425e48a93976cd94657d46050352ef7"
     }
   },
@@ -1695,7 +1630,7 @@
     "examples": [
       {
         "text": "A Battle makes an opponent's Piercing unit fight. The opponent, who controls that unit, places its excess.",
-        "test": "405-raq-noncombat-piercing.test.ts::R340 Battle: the question belongs to the Piercing unit's controller, not the caster"
+        "test": "405-raq-noncombat-piercing.test.ts::CR 802.16k Battle: the question belongs to the Piercing unit's controller, not the caster"
       }
     ],
     "see": [
@@ -1705,17 +1640,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R340",
-          "quote": "**Who decides.** The dealing player is the controller of the source unit (R318:"
+          "quote": "**Who decides.** The dealing player is the controller of the source unit (R318:",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         },
         {
-          "ref": "R340",
-          "quote": "When the source is not a unit in play (a spell, or a unit that has died), the"
+          "quote": "When the source is not a unit in play (a spell, or a unit that has died), the",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "405-raq-noncombat-piercing.test.ts",
@@ -1723,11 +1659,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.piercing.recipients",
@@ -1750,14 +1685,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1785,13 +1720,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "> The whole card gets the attributes while it's in the column. And so when it"
+          "quote": "> The whole card gets the attributes while it's in the column. And so when it",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "405-raq-noncombat-piercing.test.ts",
@@ -1799,10 +1734,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
       "RAQ 1402292180499955884#5": "fd2d00aa9bff849f20a909c4db14eb469425e48a93976cd94657d46050352ef7"
     }
   },
@@ -1837,16 +1772,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "With the kill delivered, R103 step 4's 1-point floor becomes the *right*"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R103",
-          "relation": "its Oorblak divergence (Deadly floor not read on the redirect path) replaced by R237"
+          "quote": "With the kill delivered, R103 step 4's 1-point floor becomes the *right*",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
       "engine": [],
@@ -1856,10 +1786,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R237 is cited for the Deadly floor on the redirect path (1 is lethal for a Deadly hit). The round-1 verifier measured with two Oorblaks that the engine redirects the Piercing excess a second time (both die, 2 reach the player); the RAQ says a replacement applies once. Filed by U12 as F-U12-1. Whether the attacker may keep excess on a redirect target (the elective keep of 608) is not addressed: D-U20-23.",
+    "notes": "The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) is cited for the Deadly floor on the redirect path (1 is lethal for a Deadly hit). The round-1 verifier measured with two Oorblaks that the engine redirects the Piercing excess a second time (both die, 2 reach the player); the RAQ says a replacement applies once. Filed by U12 as F-U12-1. Whether the attacker may keep excess on a redirect target (the elective keep of 608) is not addressed: D-U20-23.",
     "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
       "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
     },
     "engineDiffers": [
@@ -1874,7 +1804,7 @@
     "examples": [
       {
         "text": "A 6-damage Electric and Piercing hit lands on a lone 1/2 with no neighbour. The dealing player chooses how much of the 4 excess stays on it; the rest goes to its controller.",
-        "test": "405-raq-noncombat-piercing.test.ts::R340 Electric + Piercing: where the chain dead-ends, the Piercing half is elective too"
+        "test": "405-raq-noncombat-piercing.test.ts::CR 802.16q Electric + Piercing: where the chain dead-ends, the Piercing half is elective too"
       }
     ],
     "see": [
@@ -1884,24 +1814,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its Electric and Piercing composition)",
-          "quote": "says where excess goes NEXT; Piercing says where it goes when there is no next."
+          "quote": "says where excess goes NEXT; Piercing says where it goes when there is no next.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R340",
-          "quote": "closure asks the question at both places the method pierces: a plain hit"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R317",
-          "relation": "its closing sentence (with Piercing the dead-end excess 'still goes to that unit's controller') amended by R340: elective"
-        },
-        {
-          "ruling": "R103",
-          "relation": "its Electric dead end ('used to lose the remainder') amended by R317"
+          "quote": "closure asks the question at both places the method pierces: a plain hit",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1910,12 +1832,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
-      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.piercing.pure",
@@ -1940,17 +1860,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "- **Combat damage** — both columns' attribute sets are empty for that"
+          "quote": "- **Combat damage** — both columns' attribute sets are empty for that",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
@@ -1958,11 +1879,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.electric",
@@ -1996,14 +1916,14 @@
           "quote": "Excess damage from electric sources can be directed to an adjacent unit, recursively."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "{/n} in the quote is the oracle's line-break markup.",
     "sourceHashes": {}
@@ -2037,13 +1957,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [
-        {
-          "ruling": "R4",
-          "relation": "'excess passes immediately along the chosen path' amended by R317: each hop is optional, and a dead end is dealt"
-        }
-      ],
+      "owner": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts",
@@ -2051,6 +1965,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2065,7 +1980,7 @@
     "examples": [
       {
         "text": null,
-        "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
+        "test": "05-rulings.test.ts::CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically"
       }
     ],
     "see": [],
@@ -2078,24 +1993,23 @@
           "quote": "never revisiting one"
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R206 (its Electric row)",
-          "quote": "A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it"
+          "quote": "A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "No designer or printed statement; R206's Electric row records the engine's visited chain as the rule. D-U20-8.",
-    "sourceHashes": {
-      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3"
-    }
+    "notes": "No designer or printed statement; the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s Electric row records the engine's visited chain as the rule. D-U20-8.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.electric.chooser",
@@ -2105,7 +2019,7 @@
     "examples": [
       {
         "text": null,
-        "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
+        "test": "05-rulings.test.ts::CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically"
       }
     ],
     "see": [],
@@ -2113,29 +2027,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R4 (its who-chooses and atomic halves)",
-          "quote": "The **Electric source's controller** chooses the path. There are **no formation changes"
+          "quote": "The **Electric source's controller** chooses the path. There are **no formation changes",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R317 (its optional-hop and dead-end ruling)",
-          "quote": "So at every hop the source's controller chooses the next unit **or keeps the excess"
+          "quote": "So at every hop the source's controller chooses the next unit **or keeps the excess",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Known divergence (CONTROL decision 6): the engine asks the effect's controller. The two coincide for every Electric card in the pool today, since the only Electric sources are spells and spell effects: F-U20-1.",
-    "sourceHashes": {
-      "R317": "9a76ea5c4f235e7d5a611428e77bd37486f4a761bd264bfccd411b535cf4ec84",
-      "R4": "4c55019bf37d05d4b2efe4dde848afd6fbe78b81e0dafbef0609b55a78494d15"
-    },
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U20-1"
     ]
@@ -2161,16 +2074,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R317 (its optional-hop and dead-end ruling)",
-          "quote": "on the unit it is on**, even when there is only one neighbour. And the same"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R4",
-          "relation": "'excess passes immediately along the chosen path' amended by R317"
+          "quote": "on the unit it is on**, even when there is only one neighbour. And the same",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2179,10 +2087,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R317": "9a76ea5c4f235e7d5a611428e77bd37486f4a761bd264bfccd411b535cf4ec84",
       "RAQ 1372451771632320512#1": "688b18f2903bd9172e8c1df3c27c97393578377067c398494b7c7c155ee802ca"
     }
   },
@@ -2209,20 +2117,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R317 (its optional-hop and dead-end ruling)",
-          "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's \"ALL"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R103",
-          "relation": "says an Electric dead end 'used to lose the remainder (R4)'; amended by R317"
-        },
-        {
-          "ruling": "R4",
-          "relation": "its path amended by R317: a dead end is dealt"
+          "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's \"ALL",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2231,10 +2130,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "RAQ 1372451771632320512#2 is not in the pack's raq.md; it was read from the full RAQ register. Our glossary row still says the excess is \"lost\" (D-U20-9).",
     "sourceHashes": {
-      "R317": "9a76ea5c4f235e7d5a611428e77bd37486f4a761bd264bfccd411b535cf4ec84",
       "RAQ 1372451771632320512#2": "35c0da814c914558c5f5c60ee610436617efabaae0e1b7cc814d46f6d71d9cd2"
     }
   },
@@ -2261,8 +2160,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [
         "engine.ts:adjacentInFormation"
       ],
@@ -2271,6 +2169,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The printed reminder supplies \"adjacent\" only. That adjacency means formation adjacency, and that a unit outside a formation has none, is engine behaviour measured by the round-1 verifier (adjacentInFormation answers nothing outside a battle; probe passed). D-U20-21.",
     "sourceHashes": {}
@@ -2283,7 +2182,7 @@
     "examples": [
       {
         "text": "An Electric chain of three units is dealt in one damage event; the units it kills die together afterwards.",
-        "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
+        "test": "05-rulings.test.ts::CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically"
       }
     ],
     "see": [
@@ -2293,28 +2192,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R4 (its who-chooses and atomic halves)",
-          "quote": "during damage distribution**: initial damage happens, then excess passes immediately along"
+          "quote": "during damage distribution**: initial damage happens, then excess passes immediately along",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R4 (its who-chooses and atomic halves)",
-          "quote": "the chosen path (it is excess damage, resolved atomically within the damage event)."
+          "quote": "the chosen path (it is excess damage, resolved atomically within the damage event).",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R4": "4c55019bf37d05d4b2efe4dde848afd6fbe78b81e0dafbef0609b55a78494d15"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.electric.lethal",
@@ -2339,28 +2238,28 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its one lethal arithmetic)",
-          "quote": "read by both {Electric} and {Piercing}. That is deliberate: the previous inline"
+          "quote": "read by both {Electric} and {Piercing}. That is deliberate: the previous inline",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R80",
-          "quote": "**Electric got slightly better on the way.** Overflow is planned against damage"
+          "quote": "**Electric got slightly better on the way.** Overflow is planned against damage",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
-      "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860",
       "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
     }
   },
@@ -2390,14 +2289,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2427,23 +2326,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R94",
-          "quote": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the"
+          "quote": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b",
       "RAQ 1397256636921417748#1": "7ea9c270c116479b5fb4c23e3bfc75ed2df10b8bfa9a5712ca2eeaf02e9e41eb"
     }
   },
@@ -2475,14 +2374,14 @@
           "quote": "Poisonous sources damage units in the form of -1/-1 counters."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2514,13 +2413,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —"
+          "quote": "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts",
@@ -2528,11 +2427,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.poisonous.is-damage",
@@ -2542,7 +2440,7 @@
     "examples": [
       {
         "text": null,
-        "test": "206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\""
+        "test": "206-deadly-everywhere.test.ts::CR 802.18b: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\""
       }
     ],
     "see": [
@@ -2557,13 +2455,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "> *\"Poisonous damage does count as damage. **If it was replacing the damage it"
+          "quote": "> *\"Poisonous damage does count as damage. **If it was replacing the damage it",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "206-deadly-everywhere.test.ts",
@@ -2571,10 +2469,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R166 still describes Poisonous as replacing the damage: D-U20-10.",
+    "notes": "The owner ruling of 2026-08-25 (“four cards answered a layer, an…”) still describes Poisonous as replacing the damage: D-U20-10.",
     "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
       "RAQ 1354148437355925554#0": "2c5e71d0b404519886a6dc5e831e2c8be50d5833f89d3e45576fd42fac56a76d"
     }
   },
@@ -2597,24 +2495,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its Poisonous arithmetic)",
-          "quote": "**{Poisonous} pierces on the same arithmetic.** `checkDeaths` kills on"
+          "quote": "**{Poisonous} pierces on the same arithmetic.** `checkDeaths` kills on",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.poisonous.deadly",
@@ -2624,7 +2521,7 @@
     "examples": [
       {
         "text": "Deadly and Poisonous damage kills the unit, and the -1/-1 counter lands on it before it dies.",
-        "test": "82-attr-interactions.test.ts::Deadly DOES kill through Poisonous — and the counter lands too (R237)"
+        "test": "82-attr-interactions.test.ts::Deadly DOES kill through Poisonous — and the counter lands too (CR 802.18d)"
       }
     ],
     "see": [
@@ -2634,13 +2531,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "> **Caleb Gannon:** *\"**yeah it'll get instakilled by deadly but also trigger to"
+          "quote": "> **Caleb Gannon:** *\"**yeah it'll get instakilled by deadly but also trigger to",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts",
@@ -2648,11 +2545,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb's words (2023-08-23) as quoted in R237, not in a RAQ thread in the register.",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "notes": "Caleb's words (2023-08-23) as quoted in the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”), not in a RAQ thread in the register.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.poisonous.powerful",
@@ -2662,7 +2558,7 @@
     "examples": [
       {
         "text": "A Powerful Poisonous effect hit of 2 becomes 4 counters and kills a 4/3.",
-        "test": "206-deadly-everywhere.test.ts::R237: {Powerful} doubles a {Poisonous} effect hit too"
+        "test": "206-deadly-everywhere.test.ts::CR 802.18e: {Powerful} doubles a {Poisonous} effect hit too"
       }
     ],
     "see": [
@@ -2672,24 +2568,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "damage dealt. Caleb 2023-08-23 says a damage-doubler doubles the counters, so"
+          "quote": "damage dealt. Caleb 2023-08-23 says a damage-doubler doubles the counters, so",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "206-deadly-everywhere.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.poisonous.prevention",
@@ -2715,13 +2610,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevention ruling)",
-          "quote": "> means **if there is not damage being dealt, then no counters are placed.**"
+          "quote": "> means **if there is not damage being dealt, then no counters are placed.**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts",
@@ -2730,10 +2625,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
       "RAQ 1354148437355925554#1": "0cee7d451013b6afaa95e382f1b150732182e144830830fbfe16e51ceaef2394"
     }
   },
@@ -2758,8 +2653,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "42-dark-b.test.ts",
@@ -2767,6 +2661,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Read literally: the reminder names units. The 42-dark-b Blightmound test is about its trigger, not this rule.",
     "sourceHashes": {}
@@ -2789,24 +2684,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "poisonous branch, and Caleb 2025-11-27: *\"Poisonous still triggers resonant\"*."
+          "quote": "poisonous branch, and Caleb 2025-11-27: *\"Poisonous still triggers resonant\"*.",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb's words quoted in R237; no test found that combines the two.",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "notes": "Caleb's words quoted in the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”); no test found that combines the two.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.poisonous.pure",
@@ -2831,24 +2725,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.resonant",
@@ -2878,23 +2771,23 @@
           "quote": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "The printed reminder: *\"Whenever a resonant source deals damage to a unit, it deals"
+          "quote": "The printed reminder: *\"Whenever a resonant source deals damage to a unit, it deals",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The RAQ register quotes the printed sentence in the claim's source line, which is the checkable quote used here.",
     "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
       "RAQ 1362838395298119912#1": "8e8ca4f0df1888f765d57b6930bfbf7b893963245763d666d16f8ae3550cf284"
     }
   },
@@ -2906,11 +2799,11 @@
     "examples": [
       {
         "text": "The Resonant trigger from combat damage waits on the stack after combat, as its source's trigger, and can be negated.",
-        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
+        "test": "399-raq-fix-combat.test.ts::the Resonant rider waits on the stack after combat"
       },
       {
         "text": "A Resonant effect deals 1 to a unit; the trigger then deals 1 to its controller as damage from the source.",
-        "test": "399-raq-fix-combat.test.ts::R315: effect damage riders too"
+        "test": "399-raq-fix-combat.test.ts::CR 802.19a: effect damage riders too"
       }
     ],
     "see": [
@@ -2925,23 +2818,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
+          "quote": "the resonant source**, put on the stack as that source's trigger — not life loss",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "399-raq-fix-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
       "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec"
     }
   },
@@ -2969,14 +2862,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3002,28 +2895,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "The amount is what the unit **received** (\"that much damage\"): after {Vulnerable},"
+          "quote": "The amount is what the unit **received** (\"that much damage\"): after {Vulnerable},",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "after prevention. A fully prevented hit has no rider (R98)."
+          "quote": "after prevention. A fully prevented hit has no rider (R98).",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R315's own reading of \"that much\"; no designer statement on Vulnerable. No test pins the Vulnerable case.",
-    "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”)’s own reading of \"that much\"; no designer statement on Vulnerable. No test pins the Vulnerable case.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.resonant.modifiers",
@@ -3057,23 +2950,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "So everything that prices damage from that source prices the rider: {Powerful}"
+          "quote": "So everything that prices damage from that source prices the rider: {Powerful}",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
       "RAQ 1362838395298119912#1": "8e8ca4f0df1888f765d57b6930bfbf7b893963245763d666d16f8ae3550cf284",
       "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec"
     }
@@ -3101,16 +2994,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R316",
-          "quote": "## R316 — Additive damage modifiers apply before {Powerful} doubles"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R104",
-          "relation": "its order putting the additive modifier after Powerful reversed by R316"
+          "quote": "## R316 — Additive damage modifiers apply before {Powerful} doubles",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3119,10 +3007,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128",
       "RAQ 1362838395298119912#3": "5d2874b098ec7b0da74051103612b657047dddc39cc12900bbbd2b931fc71940"
     }
   },
@@ -3147,23 +3035,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "- Effect damage: `dealEffectDamageAll` queues the rider for each damaged unit,"
+          "quote": "- Effect damage: `dealEffectDamageAll` queues the rider for each damaged unit,",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
       "RAQ 1362838395298119912#5": "e2ff175d1cc6f7353843ac0cd09fd77a21f93090d3ab9449a07fdc9839f4ee7a"
     }
   },
@@ -3188,14 +3076,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Read literally from the printed reminder (\"deals damage to a unit\"). No test found.",
     "sourceHashes": {
@@ -3214,7 +3102,7 @@
       },
       {
         "text": null,
-        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
+        "test": "399-raq-fix-combat.test.ts::the Resonant rider waits on the stack after combat"
       }
     ],
     "see": [
@@ -3229,13 +3117,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -3243,10 +3131,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Caleb's intent beats the printed word \"Abilities\" on Crevice Lurker (authority order, D-U20-11). Containment Protocol specifically is an unanswered RAQ question (D-U20-6).",
     "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
       "RAQ 1366446116274442291#1": "039f665cd92e9cd0724ac39fa41c823da1d0e33e0db6533eaa91ea679d61c759"
     }
   },
@@ -3258,7 +3146,7 @@
     "examples": [
       {
         "text": null,
-        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
+        "test": "399-raq-fix-combat.test.ts::the Resonant rider waits on the stack after combat"
       }
     ],
     "see": [
@@ -3268,16 +3156,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its trigger ruling)",
-          "quote": "the hit, and `commitUnitDamage` queues the rider. R261 holds it to after combat,"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R261",
-          "relation": "its unconditional hold narrowed by R295: in a split damage step, triggers resolve at the sub-step boundary"
+          "quote": "the hit, and `commitUnitDamage` queues the rider. R261 holds it to after combat,",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3286,11 +3169,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.resonant.source-gone",
@@ -3310,16 +3192,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R325",
-          "quote": "formation it stood in), it reads the source's **last-known state**: what the"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R315",
-          "relation": "its ⚠ that a gone source reads its printed card superseded by R325"
+          "quote": "formation it stood in), it reads the source's **last-known state**: what the",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3328,11 +3205,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R325 is general (a unit's effect whose source has left play); it names Resonant only through R315's superseded ⚠. No Resonant-specific test.",
-    "sourceHashes": {
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“An effect whose source has left…”) is general (a unit's effect whose source has left play); it names Resonant only through the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”)’s superseded ⚠. No Resonant-specific test.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.resonant.pure",
@@ -3357,24 +3233,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.thieving",
@@ -3399,24 +3274,23 @@
           "quote": "Whenever a thieving source deals combat damage to an opponent, draw a card."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R24",
-          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1).",
-    "sourceHashes": {
-      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.thieving.draw",
@@ -3434,24 +3308,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R24",
-          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.thieving.per-column",
@@ -3474,23 +3347,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R24",
-          "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+          "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef",
       "RAQ 1460213341011050536#0": "fa52e9624ac82c44375508088e6d95241f0f446c0e79fb8e24e0fff0f169533d"
     }
   },
@@ -3512,24 +3385,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R24",
-          "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+          "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.thieving.replaced",
@@ -3550,28 +3422,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R238",
-          "quote": "- **{Thieving} and {Lethal}** already read `L.playerHits` (pre-replacement) and"
+          "quote": "- **{Thieving} and {Lethal}** already read `L.playerHits` (pre-replacement) and",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q5; register@72de434"
         },
         {
-          "ref": "R238",
-          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q5; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R238: Caleb was shown Lethal only; the extension to Thieving is the client's inference, confirmed in general form by the owner (R238). No test for Thieving through a Polyp.",
-    "sourceHashes": {
-      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb"
-    }
+    "notes": "The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”): Caleb was shown Lethal only; the extension to Thieving is the client's inference, confirmed in general form by the owner (owner ruling of 2026-08-28, “a REPLACED combat hit was still…”). No test for Thieving through a Polyp.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.thieving.combat-only",
@@ -3589,24 +3461,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R24",
-          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Read literally from the reminder (\"combat damage\"). No test found.",
-    "sourceHashes": {
-      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.reaping",
@@ -3631,16 +3502,11 @@
           "quote": "When a reaping source kills one or more units, draw a card. It loses reaping until regroup."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R283",
-          "quote": "> *(When a reaping source kills one or more units, draw a card. It loses"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R184",
-          "relation": "its premise that Reaping prints no reminder, and its per-body payout, corrected by R283"
+          "quote": "> *(When a reaping source kills one or more units, draw a card. It loses",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3649,11 +3515,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). R283 quotes the sentence (verified on the Seismomancy scan).",
-    "sourceHashes": {
-      "R283": "f530dc585388e4e771d8623dca670b1ca23a5e81b59810b6375158976bca2e60"
-    }
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”) quotes the sentence (verified on the Seismomancy scan).",
+    "sourceHashes": {}
   },
   {
     "key": "attr.reaping.draw",
@@ -3675,16 +3540,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R283",
-          "quote": "*\"kills ONE OR MORE units, draw A CARD\"* — singular, for any number of bodies."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R184",
-          "relation": "its per-body payout amended by R283: one draw per kill"
+          "quote": "*\"kills ONE OR MORE units, draw A CARD\"* — singular, for any number of bodies.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3695,11 +3555,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R283": "f530dc585388e4e771d8623dca670b1ca23a5e81b59810b6375158976bca2e60"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.reaping.any-kill",
@@ -3725,29 +3584,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R184 (its kill-rider half)",
-          "quote": "source act, see who is gone. That covers damage, counters, stat swaps, deletes"
+          "quote": "source act, see who is gone. That covers damage, counters, stat swaps, deletes",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R21 (its Deadly half)",
-          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "156-reaping-and-formation.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R184 reads the printed \"kills\" by snapshotting who is alive before the source acts (Caleb 2024-09-10 for Afflicting, as quoted in R184).",
-    "sourceHashes": {
-      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635",
-      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) reads the printed \"kills\" by snapshotting who is alive before the source acts (Caleb 2024-09-10 for Afflicting, as quoted in the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”)).",
+    "sourceHashes": {}
   },
   {
     "key": "attr.reaping.loses",
@@ -3765,22 +3623,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R283",
-          "quote": "> *(When a reaping source kills one or more units, draw a card. It loses"
+          "quote": "> *(When a reaping source kills one or more units, draw a card. It loses",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "low",
-    "notes": "Printed. R283 says this second sentence is deliberately not built because no source in the pool can kill twice: all four Reaping cards are spells and nothing can give a unit Reaping. 263 §4 guards that premise, not this rule, so it is not cited as a test. D-U20-11; latent divergence F-U20-4.",
-    "sourceHashes": {
-      "R283": "f530dc585388e4e771d8623dca670b1ca23a5e81b59810b6375158976bca2e60"
-    },
+    "notes": "Printed. The owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”) says this second sentence is deliberately not built because no source in the pool can kill twice: all four Reaping cards are spells and nothing can give a unit Reaping. 263 §4 guards that premise, not this rule, so it is not cited as a test. D-U20-11; latent divergence F-U20-4.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U20-4"
     ]
@@ -3817,14 +3674,14 @@
           "quote": "Damage dealt by a blessed source causes its controller to gain that much life."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -3837,15 +3694,15 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a player gains too"
+        "test": "37-attrs-wight.test.ts::CR 802.22a {Blessed}: combat damage to a player gains too"
       },
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a UNIT gains as well"
+        "test": "37-attrs-wight.test.ts::CR 802.22a {Blessed}: combat damage to a UNIT gains as well"
       },
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Blessed}: effect damage gains its controller exactly that much life"
+        "test": "37-attrs-wight.test.ts::CR 802.22a {Blessed}: effect damage gains its controller exactly that much life"
       }
     ],
     "see": [],
@@ -3858,8 +3715,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -3867,6 +3723,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -3879,7 +3736,7 @@
     "examples": [
       {
         "text": "A player at low life is dealt lethal damage by an opponent at the same moment their own Blessed source deals damage. They gain the life first, and survive if it is enough.",
-        "test": "37-attrs-wight.test.ts::R48 {Blessed}: the gain lands BEFORE the lethal check"
+        "test": "37-attrs-wight.test.ts::CR 802.22b {Blessed}: the gain lands BEFORE the lethal check"
       }
     ],
     "see": [],
@@ -3887,28 +3744,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R48",
-          "quote": "Blessed life gain happens on the same game-state check as the damage, not as"
+          "quote": "Blessed life gain happens on the same game-state check as the damage, not as",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R48",
-          "quote": "a trigger on the stack, so it applies before the lethal check and a blessed"
+          "quote": "a trigger on the stack, so it applies before the lethal check and a blessed",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R48 cites Caleb (2024-09-15, 2025-03-18: \"similar to lifelink in mtg\"); those words are not in a RAQ thread in the register.",
-    "sourceHashes": {
-      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Blessed is simultaneous; Afflicting fires on…”) cites Caleb (2024-09-15, 2025-03-18: \"similar to lifelink in mtg\"); those words are not in a RAQ thread in the register.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.blessed.own-damage",
@@ -3926,13 +3783,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R48",
-          "quote": "source cannot kill its own controller through its own damage (Caleb"
+          "quote": "source cannot kill its own controller through its own damage (Caleb",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
@@ -3940,11 +3797,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.blessed.damage-only",
@@ -3964,24 +3820,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevention ruling)",
-          "quote": "**no {Blessed} gain** — every one of those is keyed on damage having been dealt."
+          "quote": "**no {Blessed} gain** — every one of those is keyed on damage having been dealt.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "156-reaping-and-formation.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.blessed.column",
@@ -3991,7 +3846,7 @@
     "examples": [
       {
         "text": "Lithoghul attacks in a column with Flzzz (Blessed) and uses an ability to deal 3 damage. Lithoghul has Blessed from its column, so its controller gains 3 life.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.22e the report"
       }
     ],
     "see": [
@@ -4001,24 +3856,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "> The whole card gets the attributes while it's in the column. And so when it"
+          "quote": "> The whole card gets the attributes while it's in the column. And so when it",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.blessed.pure",
@@ -4043,24 +3897,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.afflicting",
@@ -4091,14 +3944,14 @@
           "quote": "When an afflicting source kills one or more units, those units' controllers gain a rot."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "42-dark-b.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -4111,7 +3964,7 @@
     "examples": [
       {
         "text": "Umbral Decay kills a unit with its counters. That unit's controller gains a rot.",
-        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
+        "test": "37-attrs-wight.test.ts::CR 802.23c {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
       },
       {
         "text": "Umbral Decay's target survives, shrunk. Nobody gains a rot.",
@@ -4128,8 +3981,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -4137,6 +3989,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -4149,7 +4002,7 @@
     "examples": [
       {
         "text": "An Afflicting source kills two units of one player at once. That player gains one rot.",
-        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: ONE rot per controller per kill event"
+        "test": "37-attrs-wight.test.ts::CR 802.23b {Afflicting}: ONE rot per controller per kill event"
       }
     ],
     "see": [],
@@ -4157,24 +4010,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R48",
-          "quote": "kills anything. ⚠ One rot per affected controller per kill event, however"
+          "quote": "kills anything. ⚠ One rot per affected controller per kill event, however",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R48: Bena's reading of the reminder text; no designer statement. D-U20-13.",
-    "sourceHashes": {
-      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Blessed is simultaneous; Afflicting fires on…”): Bena's reading of the reminder text; no designer statement. D-U20-13.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.afflicting.any-kill",
@@ -4184,7 +4036,7 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
+        "test": "37-attrs-wight.test.ts::CR 802.23c {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
       },
       {
         "text": "Umbral Decay's counter kill gives a rot and draws nothing.",
@@ -4196,17 +4048,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R48",
-          "quote": "its source kills units by -1/-1 counters as well as by damage (Caleb"
+          "quote": "its source kills units by -1/-1 counters as well as by damage (Caleb",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R184 (its kill-rider half)",
-          "quote": "source act, see who is gone. That covers damage, counters, stat swaps, deletes"
+          "quote": "source act, see who is gone. That covers damage, counters, stat swaps, deletes",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -4214,12 +4067,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb 2024-09-10 (counters), quoted in R48; the any-kill reading is R184's diff.",
-    "sourceHashes": {
-      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635",
-      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
-    }
+    "notes": "Caleb 2024-09-10 (counters), quoted in the owner ruling of 2026-08-19 (“Blessed is simultaneous; Afflicting fires on…”); the any-kill reading is the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”)’s diff.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.afflicting.combat",
@@ -4229,7 +4080,7 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a plain COMBAT kill counts too"
+        "test": "37-attrs-wight.test.ts::CR 802.23d {Afflicting}: a plain COMBAT kill counts too"
       }
     ],
     "see": [],
@@ -4242,13 +4093,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R48 (its Afflicting half)",
-          "quote": "its source kills units by -1/-1 counters as well as by damage (Caleb"
+          "quote": "its source kills units by -1/-1 counters as well as by damage (Caleb",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -4256,11 +4107,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R48 (Caleb 2024-09-10) makes Afflicting fire on kills by damage as well as by counters; the bound test (titled R48) shows a plain combat kill counts. R61 was dropped: it is about Pure. Whether the combat payout is per sub-step or per battle is not stated by any source.",
-    "sourceHashes": {
-      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Blessed is simultaneous; Afflicting fires on…”) (Caleb 2024-09-10) makes Afflicting fire on kills by damage as well as by counters; the bound test (titled the owner ruling of 2026-08-19 (“Blessed is simultaneous; Afflicting fires on…”)) shows a plain combat kill counts. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) was dropped: it is about Pure. Whether the combat payout is per sub-step or per battle is not stated by any source.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.afflicting.pure",
@@ -4285,24 +4135,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.lethal",
@@ -4332,14 +4181,14 @@
           "quote": "Any combat damage from a lethal unit will kill a player."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -4356,7 +4205,7 @@
       },
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Lethal}: any combat damage from a lethal unit kills the player"
+        "test": "37-attrs-wight.test.ts::CR 802.24a {Lethal}: any combat damage from a lethal unit kills the player"
       }
     ],
     "see": [
@@ -4371,8 +4220,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts",
@@ -4380,6 +4228,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"Kill a player\" is not defined further by any source; 104 has elimination at 0 life.",
     "sourceHashes": {}
@@ -4405,24 +4254,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R166",
-          "quote": "{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,"
+          "quote": "{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Read literally from the reminder. No test found for noncombat damage from a Lethal unit.",
-    "sourceHashes": {
-      "R166": "e7769ee2095ba744eee715fd650e38a8d8392b72e244ff467d95b1d32b4f4756"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.lethal.replaced",
@@ -4432,7 +4280,7 @@
     "examples": [
       {
         "text": "Blightsea Polyp turns a Lethal column's combat damage into 1 rot. The player is still killed.",
-        "test": "37-attrs-wight.test.ts::R48 {Lethal} still kills THROUGH the Blightsea replacement"
+        "test": "37-attrs-wight.test.ts::CR 802.24c {Lethal} still kills THROUGH the Blightsea replacement"
       }
     ],
     "see": [
@@ -4443,17 +4291,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevention ruling)",
-          "quote": "unmake it: Caleb ruled (2024-10-24) the damage still counts as having been DEALT, so"
+          "quote": "unmake it: Caleb ruled (2024-10-24) the damage still counts as having been DEALT, so",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R238",
-          "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**"
+          "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q5; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -4461,40 +4310,37 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb answered \"Yes\" (2024-10-24) when shown Rot Jelly (now Blightsea Polyp) and Gublin (R238); the exchange was in the main rules channel, not a RAQ thread.",
-    "sourceHashes": {
-      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb",
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
-    }
+    "notes": "Caleb answered \"Yes\" (2024-10-24) when shown Rot Jelly (now Blightsea Polyp) and Gublin (owner ruling of 2026-08-28, “a REPLACED combat hit was still…”); the exchange was in the main rules channel, not a RAQ thread.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.lethal.prevented",
     "parent": "attr.lethal",
     "order": 4,
-    "text": "[Removed: no source states how Lethal meets prevention of damage to a player, and no card in the pool prevents damage to a player; R98's prevention ruling is about damage to units. See D-U20-22.]",
+    "text": "[Removed: no source states how Lethal meets prevention of damage to a player, and no card in the pool prevents damage to a player; the owner ruling of 2026-08-23 on prevented damage is about damage to units. See D-U20-22.]",
     "examples": [],
     "see": [],
     "sources": {
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevention ruling)",
-          "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
+          "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "low",
-    "notes": "Removed after verification round 1: the R98 span is about replacement, and the engine has no prevention seam for player damage. D-U20-22 records the silence. R98 is kept only as the record of what prevention does for units; it says nothing of Lethal.",
-    "sourceHashes": {
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
-    }
+    "notes": "Removed after verification round 1: The owner ruling of 2026-08-23 (“PREVENTED damage was never dealt […]”) span is about replacement, and the engine has no prevention seam for player damage. D-U20-22 records the silence. The owner ruling of 2026-08-23 (“PREVENTED damage was never dealt […]”) is kept only as the record of what prevention does for units; it says nothing of Lethal.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure",
@@ -4524,14 +4370,14 @@
           "quote": "Pure cards and cards they are interacting with ignore all other attributes."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -4544,7 +4390,7 @@
     "examples": [
       {
         "text": "An Alluring column that is itself Pure ignores its own Alluring and never triggers.",
-        "test": "53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers"
+        "test": "53-playtest-round7.test.ts::CR 802.15n: an Alluring column that is itself {Pure} never even triggers"
       },
       {
         "text": "A Pure unit that is also Feeble can block.",
@@ -4563,24 +4409,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "attributes\", its own other attributes included."
+          "quote": "attributes\", its own other attributes included.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.combat-interaction",
@@ -4605,28 +4450,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "**attack-column / block-column pair**, which is exactly that interaction. So"
+          "quote": "**attack-column / block-column pair**, which is exactly that interaction. So",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "- **Combat damage** — both columns' attribute sets are empty for that"
+          "quote": "- **Combat damage** — both columns' attribute sets are empty for that",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"Ignored\" here covers the attributes R61 lists; for the stat-layer attributes see attr.pure.stat-attributes and D-U20-14.",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "notes": "\"Ignored\" here covers the attributes the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) lists; for the stat-layer attributes see attr.pure.stat-attributes and D-U20-14.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.combat-damage",
@@ -4640,7 +4485,7 @@
       },
       {
         "text": "A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
-        "test": "53-playtest-round7.test.ts::R117 threads {Pure}"
+        "test": "53-playtest-round7.test.ts::threads {Pure}"
       }
     ],
     "see": [
@@ -4651,21 +4496,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
@@ -4673,11 +4520,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.blocking",
@@ -4704,32 +4550,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "- **Declaring blocks** — one Pure card in either column and neither evasion"
+          "quote": "- **Declaring blocks** — one Pure card in either column and neither evasion",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "Pure unit's own Feeble does not stop it blocking, either."
+          "quote": "Pure unit's own Feeble does not stop it blocking, either.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R61 quotes the playtest report: \"Pure units should be able to block evasive or flying units.\"",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "notes": "The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) quotes the playtest report: \"Pure units should be able to block evasive or flying units.\"",
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.stat-attributes",
@@ -4760,22 +4607,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
+          "quote": "Stats are not attributes: a Pure 2/3 still dies to 3 damage.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): it contradicted attr.general.pure (802.1n), which states print. The printed reminder ignores \"all other attributes\", and the Manual names Tough as an attribute (\"4. Attributes like Tough\"); R289's \"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)\" is our ruling and print outranks it (D-U19-2, settled; CT-260 asks the owner whether to change the engine). R61's first sentence still holds: printed stats are not attributes. The engine keeps the three on: F-U19-1. The 431 example that asserted the old reading is no longer bound here.",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    },
+    "notes": "POLISH (2026-10-10): it contradicted attr.general.pure (802.1n), which states print. The printed reminder ignores \"all other attributes\", and the Manual names Tough as an attribute (\"4. Attributes like Tough\"); the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s \"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”))\" is our ruling and print outranks it (D-U19-2, settled; CT-260 asks the owner whether to change the engine). The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s first sentence still holds: printed stats are not attributes. The engine keeps the three on: F-U19-1. The 431 example that asserted the old reading is no longer bound here.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U19-1"
     ]
@@ -4807,14 +4653,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): the same contradiction as attr.pure.stat-attributes, found beside it. attr.general.pure (802.1n) states print (\"Tough, Balanced, Inverted and Unaware do not apply\"); this rule stated R106 (\"The collapse survives {Pure}\"), which print outranks (D-U19-2). Outside combat R289 already switches Unaware off (attr.pure.noncombat.recipient). The engine keeps the collapse on in combat: F-U19-2 (CT-260).",
+    "notes": "POLISH (2026-10-10): the same contradiction as attr.pure.stat-attributes, found beside it. attr.general.pure (802.1n) states print (\"Tough, Balanced, Inverted and Unaware do not apply\"); this rule stated the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”) (\"The collapse survives {Pure}\"), which print outranks (D-U19-2). Outside combat the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) already switches Unaware off (attr.pure.noncombat.recipient). The engine keeps the collapse on in combat: F-U19-2 (CT-260).",
     "sourceHashes": {},
     "engineDiffers": [
       "F-U19-2"
@@ -4836,16 +4682,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "**THE INTERACTION UNIT OUTSIDE COMBAT IS THE EFFECT AND EACH RECIPIENT.**"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R289",
-          "relation": "its sentence that the recipient is read with its own attributes only (not its column's) superseded by R294"
+          "quote": "**THE INTERACTION UNIT OUTSIDE COMBAT IS THE EFFECT AND EACH RECIPIENT.**",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -4854,11 +4695,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.noncombat.source",
@@ -4876,28 +4716,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "- **A Pure source deals plain damage to everyone.** Its own {Powerful},"
+          "quote": "- **A Pure source deals plain damage to everyone.** Its own {Powerful},",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "{Unaware} are all off, against units and against players alike — \"its own"
+          "quote": "{Unaware} are all off, against units and against players alike — \"its own",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.noncombat.recipient",
@@ -4919,24 +4759,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
+          "quote": "- **A Pure recipient takes plain damage from anyone.** The source's attributes",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.noncombat.others",
@@ -4954,28 +4793,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "- **A non-Pure recipient beside a Pure one in the same batch is hit with the"
+          "quote": "- **A non-Pure recipient beside a Pure one in the same batch is hit with the",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "layer ON.** Pure is a fact about the pairing, not about the batch: a"
+          "quote": "layer ON.** Pure is a fact about the pairing, not about the batch: a",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.column",
@@ -4995,16 +4834,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "adjacent) share all of their attributes.\"* So both sides of a non-combat damage"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R289",
-          "relation": "its sentence that the recipient is read with its own attributes only superseded by R294"
+          "quote": "adjacent) share all of their attributes.\"* So both sides of a non-combat damage",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -5013,11 +4847,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Follows from R294 (both sides read column-shared attributes) applied to Pure; no source or test names Pure here. Pure in combat is per column pair already (802.25c).",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "notes": "Follows from the owner ruling of 2026-09-16 (“A unit in a column HAS…”) (both sides read column-shared attributes) applied to Pure; no source or test names Pure here. Pure in combat is per column pair already (802.25c).",
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.not-targeting",
@@ -5037,24 +4870,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "**NOT TOUCHED, and why.** Targeting. No printed target restriction in the pool"
+          "quote": "**NOT TOUCHED, and why.** Targeting. No printed target restriction in the pool",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "431-cr-attributes-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R289: no target restriction in the pool names an attribute, so there is nothing for Pure to switch off at targeting.",
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
-    }
+    "notes": "The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”): no target restriction in the pool names an attribute, so there is nothing for Pure to switch off at targeting.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.modular",
@@ -5084,14 +4916,14 @@
           "quote": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "43-dark-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -5123,8 +4955,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -5133,6 +4964,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -5145,11 +4977,11 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for"
+        "test": "91-modular.test.ts::CR 724.2: the {Modular} menu offers every card you can pay for"
       },
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: a card in the BIN is offered beside the hand"
+        "test": "91-modular.test.ts::CR 724.2: a card in the BIN is offered beside the hand"
       }
     ],
     "see": [],
@@ -5157,32 +4989,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R105",
-          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R105",
-          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R105 rests on Caleb (2025-02-07, 2025-04-24) per its header; the verbatim \"apply ANYTHING\" line is not attributed in the text, so the basis is the ruling.",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) rests on Caleb (2025-02-07, 2025-04-24) per its header; the verbatim \"apply ANYTHING\" line is not attributed in the text, so the basis is the ruling.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.modular.not-played",
@@ -5192,7 +5025,7 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: \"you still pay their costs\""
+        "test": "91-modular.test.ts::CR 724.3: \"you still pay their costs\""
       }
     ],
     "see": [
@@ -5207,23 +5040,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R37",
-          "quote": "Applying a modification — attaching a Virus, graft, or augment,"
+          "quote": "Applying a modification — attaching a Virus, graft, or augment,",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The RAQ and R37 say it of all mods; Modular is one more way to apply one.",
+    "notes": "The RAQ and the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”) say it of all mods; Modular is one more way to apply one.",
     "sourceHashes": {
-      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
       "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
     }
   },
@@ -5235,7 +5068,7 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part"
+        "test": "91-modular.test.ts::CR 724.4: a GRAFT mod still contributes its [Switch] effect as an extra part"
       }
     ],
     "see": [
@@ -5250,24 +5083,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "| a `[Switch]` graft effect | joins the item as an **extra part** | Manual p.33 — a graft's effect transfers, and the composite resolves as one ability."
+          "quote": "| a `[Switch]` graft effect | joins the item as an **extra part** | Manual p.33 — a graft's effect transfers, and the composite resolves as one ability.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.modular.attributes",
@@ -5277,7 +5109,7 @@
     "examples": [
       {
         "text": "A Powerful mod applied to Spellbind carrying Twin Flame turns its 2 damage into 4.",
-        "test": "91-modular.test.ts::R105: a type-line [Augment] mod really donates"
+        "test": "91-modular.test.ts::CR 724.4a: a type-line [Augment] mod really donates"
       }
     ],
     "see": [
@@ -5287,24 +5119,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |"
+          "quote": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.modular.text-augment",
@@ -5314,7 +5145,7 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+        "test": "91-modular.test.ts::CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing"
       }
     ],
     "see": [],
@@ -5322,24 +5153,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "*\"spells cannot gain static abilities like that, so the only useful thing you can do is give them attributes\"* (Caleb 2025-04-24)"
+          "quote": "*\"spells cannot gain static abilities like that, so the only useful thing you can do is give them attributes\"* (Caleb 2025-04-24)",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb (2025-04-24) as quoted in R105.",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "notes": "Caleb (2025-04-24) as quoted in the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”).",
+    "sourceHashes": {}
   },
   {
     "key": "attr.modular.unstable",
@@ -5349,15 +5179,15 @@
     "examples": [
       {
         "text": "A graft card in the bin is applied to Spellbind, resolves with it, and is erased, so it cannot be applied this way again.",
-        "test": "91-modular.test.ts::R105: the flashback line"
+        "test": "91-modular.test.ts::CR 724.5: the flashback line"
       },
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too"
+        "test": "91-modular.test.ts::CR 724.5: a NEGATED modded Spellbind is erased too"
       },
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
+        "test": "91-modular.test.ts::CR 724.5a: an UNMODDED {Modular} spell is not Unstable"
       }
     ],
     "see": [
@@ -5373,28 +5203,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "The owner ruled, and gave the design reason, which is the part worth keeping:"
+          "quote": "The owner ruled, and gave the design reason, which is the part worth keeping:",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R105",
-          "quote": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is"
+          "quote": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.35 says \"when it dies or is erased\"; a resolving spell does neither, and R105 extends it to the stack exit on the owner's call (\"A modded Spellbind should also have unstable\"). D-U20-15.",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "notes": "Manual p.35 says \"when it dies or is erased\"; a resolving spell does neither, and the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) extends it to the stack exit on the owner's call (\"A modded Spellbind should also have unstable\"). D-U20-15.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.modular.not-shared",
@@ -5409,24 +5239,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "And, asked about a third: *\"Modular is also special. But doesn't matter yet cause"
+          "quote": "And, asked about a third: *\"Modular is also special. But doesn't matter yet cause",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Unreachable today: the only Modular card (Spellbind) is a spell and never stands in a column. R294 says Modular is in the engine's shared attribute set and is harmless only because no unit prints it; 298 §5c guards that premise, not the non-sharing. Latent divergence: F-U20-3.",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    },
+    "notes": "Unreachable today: the only Modular card (Spellbind) is a spell and never stands in a column. The owner ruling of 2026-09-16 (“A unit in a column HAS…”) says Modular is in the engine's shared attribute set and is harmless only because no unit prints it; 298 §5c guards that premise, not the non-sharing. Latent divergence: F-U20-3.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U20-3"
     ]

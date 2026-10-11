@@ -1,6 +1,6 @@
-/* R252 / report #118 — THE REMINDER A PLAYER READS IS THE GAME'S, PART TWO.
+/* CR D6.11 / report #118 — THE REMINDER A PLAYER READS IS THE GAME'S, PART TWO.
  *
- * R248 answered report #118 for the fifteen glossary rows a CARD reminds you
+ * The first reminder ruling (CR D6.11) answered report #118 for the fifteen glossary rows a CARD reminds you
  * about: the printed `{i}(…)` span became `text`, the repo's generalisation
  * moved to `rule`. The owner then read the card browser again and objected to
  * the two rows under Aetherflux Golem, verbatim:
@@ -11,9 +11,9 @@
  * Two things were in that, and only one of them was undone work.
  *
  *   · The trailing "R79, R95, R161" was ui/cardpanel.ts printing the `ruling`
- *     FIELD, and R248 deleted that render hours before the report was written.
+ *     FIELD, and a fix deleted that render hours before the report was written.
  *     227-reminder-text.test.ts already guards it three ways. Nothing here.
- *   · {Virus} and {Augment} carry NO printed reminder on any card, so R248's
+ *   · {Virus} and {Augment} carry NO printed reminder on any card, so that ruling's
  *     swap had nothing to swap in and left our sentence on screen. THAT is
  *     this file.
  *
@@ -109,14 +109,14 @@ function rebuild(sentence: string): { ok: boolean; from?: number } {
   return { ok: walk(0, -1), from: start?.ln };
 }
 
-test('R252: the manual extraction is loaded, and it is the file the JSON cites', () => {
+test('CR D6.11: the manual extraction is loaded, and it is the file the JSON cites', () => {
   assert.equal(MANUAL_SOURCE.file, 'data/rules/Algomancy-Manual.txt',
     'ui/manual-reminders.json must cite the file this test verifies it against');
   assert.ok(MANUAL.length > 100_000, `only ${MANUAL.length} bytes of manual — the read is broken`);
   assert.ok(FRAGMENTS.length > 1_500,
     `only ${FRAGMENTS.length} fragments — the column split is broken, not the manual`);
-  // R267: SIX, was seven. {Ambush} left — six cards print a reminder for it,
-  // in the convention R248's scan could not see, and R252's own PRINTED BEATS
+  // CR D6.11: SIX, was seven. {Ambush} left — six cards print a reminder for it,
+  // in the convention the earlier reminder scan could not see, and CR D6.11's own PRINTED BEATS
   // MANUAL hands it to the cards. That is the first time this number has gone
   // DOWN, and the direction is the interesting one: it did not shrink because
   // the manual changed, it shrank because we could finally read the pool.
@@ -126,7 +126,7 @@ test('R252: the manual extraction is loaded, and it is the file the JSON cites',
     + 'direction.');
 });
 
-test('R252: every quoted sentence rebuilds out of the manual word for word', () => {
+test('CR D6.11: every quoted sentence rebuilds out of the manual word for word', () => {
   const bad: string[] = [];
   for (const [term, m] of MANUAL_REMINDERS) {
     const r = rebuild(m.text);
@@ -168,7 +168,7 @@ test('POSITIVE CONTROL: the rebuild rejects a paraphrase and an invention', () =
  * So the rule is asserted rather than promised.
  */
 
-test('R252: every quoted row sits under a manual heading that names its term', () => {
+test('CR D6.11: every quoted row sits under a manual heading that names its term', () => {
   const bad: string[] = [];
   for (const [term, m] of MANUAL_REMINDERS) {
     if (!new RegExp(`\\b${term}S?\\b`, 'i').test(m.heading)) {
@@ -208,7 +208,7 @@ test('POSITIVE CONTROL: the heading rule rejects the two rows that were left out
  * 3. PRECEDENCE, and the citation that admits which channel spoke
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R252: printed beats manual, and no row is claimed by both channels', () => {
+test('CR D6.11: printed beats manual, and no row is claimed by both channels', () => {
   const both = [...MANUAL_REMINDERS.keys()].filter(t => PRINTED_REMINDERS.has(t));
   assert.deepEqual(both, [],
     'a card now prints a reminder for a term this file quotes the manual for. That is not a '
@@ -216,10 +216,10 @@ test('R252: printed beats manual, and no row is claimed by both channels', () =>
     + 'is now dead weight claiming to be the source, so delete it from ui/manual-reminders.json.');
 });
 
-test('R252: a row cites Manual exactly when the manual supplied its sentence', () => {
+test('CR D6.11: a row cites Manual exactly when the manual supplied its sentence', () => {
   // both directions, mirroring 177's rule for `printed`: a citation nobody
   // checks is worse than none, because it reads as checked.
-  const claims = GLOSSARY.filter(e => (e.ruling ?? []).includes('Manual')).map(e => e.term).sort();
+  const claims = GLOSSARY.filter(e => (e.cites ?? []).includes('Manual')).map(e => e.term).sort();
   assert.deepEqual(claims, [...MANUAL_REMINDERS.keys()].sort(),
     'the rows citing the Manual and the rows quoting it must be the same rows');
 });
@@ -228,12 +228,12 @@ test('R252: a row cites Manual exactly when the manual supplied its sentence', (
  * 4. THE SWAP: the player reads the manual, the repo keeps its rule
  * ════════════════════════════════════════════════════════════════════════
  *
- * The R248 invariant, applied to the second channel. 177 §7 owns the general
+ * The CR D6.11 invariant, applied to the second channel. 177 §7 owns the general
  * form; this is the same assertion stated over the manual so that a failure
  * names the manual, and so that the owner's two examples are pinned by name.
  */
 
-test('R252: every manual row shows the manual sentence and keeps its own rule', () => {
+test('CR D6.11: every manual row shows the manual sentence and keeps its own rule', () => {
   const authored = new Map(AUTHORED_GLOSSARY.map(e => [e.term, e.text]));
   const bad: string[] = [];
   for (const [term, m] of MANUAL_REMINDERS) {
@@ -250,18 +250,18 @@ test('R252: every manual row shows the manual sentence and keeps its own rule', 
   assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
 });
 
-test('R252: the two rows report #118 names read as the game words them', () => {
+test('CR D6.11: the two rows report #118 names read as the game words them', () => {
   // the report, end to end. Aetherflux Golem is a {Virus} unit with an
   // [Augment] line, so its panel draws exactly these two rows.
   const virus = GLOSSARY.find(e => e.term === 'Virus')!;
   assert.equal(virus.text, 'Virus cards can also be applied as augments from your hand during battle.');
-  assert.match(virus.rule ?? '', /enemy/i, 'R157: a virus may be augmented onto an enemy unit');
-  assert.match(virus.rule ?? '', /hand/i, 'R95: and only out of your hand');
+  assert.match(virus.rule ?? '', /enemy/i, 'CR 723.2: a virus may be augmented onto an enemy unit');
+  assert.match(virus.rule ?? '', /hand/i, 'CR 723.2: and out of your hand');
 
   const augment = GLOSSARY.find(e => e.term === 'Augment')!;
   assert.match(augment.text, /^The Augment mechanic allows players to take all of the text/);
-  assert.match(augment.rule ?? '', /deployment/i, 'R206: modding is a deployment action');
-  assert.match(augment.rule ?? '', /spell token/i, 'R89: your own spell token is a legal host');
+  assert.match(augment.rule ?? '', /deployment/i, 'CR 720.2: modding is a deployment action');
+  assert.match(augment.rule ?? '', /spell token/i, 'CR 721.4a: your own spell token is a legal host');
 
   // and neither sentence a player reads carries an R-number. 227 derives this
   // over every row; it is restated here because it is half of what #118 said.
@@ -273,8 +273,8 @@ test('R252: the two rows report #118 names read as the game words them', () => {
  * ════════════════════════════════════════════════════════════════════════
  *
  * The honest size of the second hole, as a number. For these the authored row
- * is still the only statement of the rule this repository has (R206 / CT-80) —
- * R184 was decided by reading one of them — so they are NOT candidates for
+ * is still the only statement of the rule this repository has (CT-80) —
+ * the Reaping ruling was decided by reading one of them — so they are NOT candidates for
  * shortening, and a future round that wants to shorten one has to move a pin
  * here first and say why.
  */
@@ -289,7 +289,7 @@ const OCCURRENCES: Readonly<Record<string, number>> = {
   Reaping: 0, Unaware: 0,
   // zones and mechanics that postdate it, or that it has no word for
   //
-  // R267: {Rot} and {Glimpse} LEFT this list, and neither because the manual
+  // CR D6.11: {Rot} and {Glimpse} LEFT this list, and neither because the manual
   // changed. {Glimpse} is printed on four cards in the pool, in the convention
   // the scan could not see; {Rot}'s words are on a card the designer posted
   // that our pool does not carry (ui/card-library-reminders.json). A zero here
@@ -299,7 +299,7 @@ const OCCURRENCES: Readonly<Record<string, number>> = {
   // present, but not quotable:
   Sneaky: 1,      // once, as flavour prose about the Water element
   Tough: 8,       // only as a worked example, in the Q&A stat-layer answer
-  // R267: {Unstable} also left. R252 §4 read the manual's PERMADEATH paragraph,
+  // CR D6.11: {Unstable} also left. The Manual-channel audit read the manual's PERMADEATH paragraph,
   // ruled it inadmissible because the heading does not name the term, and
   // stopped — without asking whether a CARD printed one. Abyssal Evocation and
   // Spell Excavation both do. The §2 control it used to serve is now served by
@@ -310,10 +310,10 @@ const OCCURRENCES: Readonly<Record<string, number>> = {
   Prismite: 1,    // named in setup; the affinity-for-every-element rule is not stated
 };
 
-test('R252: the rows no channel speaks for are pinned, and so is what the manual does say', () => {
+test('CR D6.11: the rows no channel speaks for are pinned, and so is what the manual does say', () => {
   const silent = AUTHORED_GLOSSARY.map(e => e.term)
     .filter(t => !PRINTED_REMINDERS.has(t) && !MANUAL_REMINDERS.has(t)
-      && !LIBRARY_REMINDERS.has(t));          // R267: the third channel
+      && !LIBRARY_REMINDERS.has(t));          // CR D6.11: the third channel
   assert.deepEqual(silent.slice().sort(), Object.keys(OCCURRENCES).sort(),
     'the set of rows with neither a printed nor a manual reminder has changed. If it SHRANK, a '
     + 'row found a source and the pin below should go with it; if it GREW, a row lost one.');
@@ -328,7 +328,7 @@ test('R252: the rows no channel speaks for are pinned, and so is what the manual
     + 'was reviewed. Re-read the new occurrences before assuming the row is still unquotable.');
 
   // and the sweep is not vacuous
-  // R267: EIGHTEEN, was 21 — {Glimpse}, {Unstable} and {Rot} each found a
+  // CR D6.11: EIGHTEEN, was 21 — {Glimpse}, {Unstable} and {Rot} each found a
   // channel. Every one of the three moved because the SEARCH got better, not
   // because the game said anything new, which is the whole finding.
   assert.equal(silent.length, 18);
@@ -336,7 +336,7 @@ test('R252: the rows no channel speaks for are pinned, and so is what the manual
     'a row with no reminder in ANY channel must carry no `rule`, because nothing displaced it');
 });
 
-test('R252: the manual has no per-attribute glossary, which is WHY the hole is this size', () => {
+test('CR D6.11: the manual has no per-attribute glossary, which is WHY the hole is this size', () => {
   // The reason fourteen of those counts are zero is structural, not accidental:
   // the manual defines attributes by pointing at the cards. If that sentence
   // ever stops being true, the whole judgement in ui/manual-reminders.json is

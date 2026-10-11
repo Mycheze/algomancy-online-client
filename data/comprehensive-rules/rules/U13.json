@@ -31,14 +31,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.20 lists it as step 6 of both phases; p.27 as the sixth item of each battle list.",
     "sourceHashes": {}
@@ -71,24 +71,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R194",
-          "quote": "A declined attack fights no combat, so there is no"
+          "quote": "A declined attack fights no combat, so there is no",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "165-token-loss-warning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.20 skips combat and after combat in unattacked regions; R194 states the same for a declined attack (it is why a decline opens no window).",
-    "sourceHashes": {
-      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
-    }
+    "notes": "Manual p.20 skips combat and after combat in unattacked regions; the owner ruling of 2026-08-26 (“a warning is not worth a…”) states the same for a declined attack (it is why a decline opens no window).",
+    "sourceHashes": {}
   },
   {
     "key": "combat.after.what-it-is.each-round",
@@ -123,14 +122,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.20 gives Phase 1 and Phase 2 each a step 6 After Combat Step; p.27 labels Phase 1 'NIT REGIONS' and Phase 2 'IT REGIONS'.",
     "sourceHashes": {}
@@ -170,14 +169,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.30 names the After Combat step among the steps followed by a priority window, and gives the general window procedure.",
     "sourceHashes": {}
@@ -213,14 +212,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "77-playtest-round17.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -257,13 +256,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts",
@@ -271,11 +270,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The 'first round if none were sent' half is R15's 'even if that set is empty (= no round-2 battle)'; the regroup half is Manual p.20/p.27.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "notes": "The 'first round if none were sent' half is the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”)’s 'even if that set is empty (= no round-2 battle)'; the regroup half is Manual p.20/p.27.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.after.triggers",
@@ -301,13 +299,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R261 (its unsplit hold)",
-          "quote": "> Both the initiative player and non-initiative player have their triggers put onto the"
+          "quote": "> Both the initiative player and non-initiative player have their triggers put onto the",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "07-cards.test.ts",
@@ -315,10 +313,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "No source says in so many words 'triggers when the step begins'; the RAQ and R261's owner quote put after-combat triggers on the stack during after combat, respondable there. Confidence medium for the 'begins' wording.",
+    "notes": "No source says in so many words 'triggers when the step begins'; the RAQ and the owner ruling of 2026-08-30 (“Combat-damage triggers resolve AFTER combat, on…”)’s owner quote put after-combat triggers on the stack during after combat, respondable there. Confidence medium for the 'begins' wording.",
     "sourceHashes": {
-      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
       "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708"
     }
   },
@@ -345,8 +343,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -354,6 +351,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Also stated at 601.7 (U10); this is its home in the after-combat section.",
     "sourceHashes": {
@@ -393,14 +391,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -415,11 +413,11 @@
     "examples": [
       {
         "text": "One player's combat-damage trigger and after-combat trigger are put in order together, in one choice.",
-        "test": "239-damage-triggers-after-combat.test.ts::R261 THE RAQ BATCH"
+        "test": "239-damage-triggers-after-combat.test.ts::CR 608.9b THE RAQ BATCH"
       },
       {
         "text": "The initiative player's triggers go on the stack first and sit at the bottom.",
-        "test": "239-damage-triggers-after-combat.test.ts::R261 RAQ STACK ORDER"
+        "test": "239-damage-triggers-after-combat.test.ts::CR 609.3c RAQ STACK ORDER"
       }
     ],
     "see": [
@@ -444,13 +442,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R261 (its unsplit hold)",
-          "quote": "> Instead, all triggers that are caused by damage get moved to \"After combat\", along with"
+          "quote": "> Instead, all triggers that are caused by damage get moved to \"After combat\", along with",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "239-damage-triggers-after-combat.test.ts",
@@ -458,10 +456,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Same batch as 608.9b, stated from the after-combat side. RAQ 1540678747953569832#1 is not in the U13 pack; read from the extract (U12 cites it too).",
     "sourceHashes": {
-      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
       "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708",
       "RAQ 1540678747953569832#1": "ce36c3bfc3d1d8aba0f94ddfc9de4ab45798548219bbceaf78a06074b7d3d5c6"
     }
@@ -482,7 +480,7 @@
       },
       {
         "text": "In a split damage step a death trigger from an earlier sub-step resolves at the boundary, not after combat.",
-        "test": "239-damage-triggers-after-combat.test.ts::R295: in a SPLIT damage step a death trigger resolves at the boundary"
+        "test": "239-damage-triggers-after-combat.test.ts::CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary"
       }
     ],
     "see": [
@@ -502,15 +500,7 @@
         }
       ],
       "ours": [],
-      "rulings": [
-        "R295"
-      ],
-      "history": [
-        {
-          "ruling": "R261",
-          "relation": "its unconditional hold was narrowed by R295 to an unsplit damage step"
-        }
-      ],
+      "owner": [],
       "engine": [],
       "tests": [
         "408-raq-new-threads.test.ts",
@@ -518,10 +508,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "RAQ 1540678747953569832#2 and R295 are not in the U13 pack; read from the extract and digital-rules.md.",
+    "notes": "RAQ 1540678747953569832#2 and the owner ruling of 2026-09-16 (“A split damage step is several…”) are not in the U13 pack; read from the extract and digital-rules.md.",
     "sourceHashes": {
-      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
       "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228",
       "RAQ 1540678747953569832#3": "c8218df1e839008921539cfa4041b3584d8fb1dcd806017d5d7bbb8f10d0b352"
     }
@@ -558,14 +548,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -598,8 +588,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts",
@@ -607,6 +596,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "'Optional' rests on Manual p.20's 'the opportunity to send'; 21-fixes declares blocks with no send.",
     "sourceHashes": {}
@@ -643,24 +633,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R32",
-          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "22-playtest3.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "'In no region' is R32's clarification of the Manual's 'leave the region ... treated as if they don't exist'.",
-    "sourceHashes": {
-      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
-    }
+    "notes": "'In no region' is the owner ruling of 2026-08-18 (“Sent counterattackers don't exist anywhere […]”)’s clarification of the Manual's 'leave the region ... treated as if they don't exist'.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.sent.no-statics",
@@ -689,17 +678,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R32",
-          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R270",
-          "quote": "whole absence model (a counterattacking Statweaver must not go on rewriting"
+          "quote": "whole absence model (a counterattacking Statweaver must not go on rewriting",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts",
@@ -707,12 +697,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "'Not even to itself' is R270's: the alternative of radiating onto itself was considered and rejected ('its own text included').",
-    "sourceHashes": {
-      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a",
-      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
-    }
+    "notes": "'Not even to itself' is the owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”)’s: the alternative of radiating onto itself was considered and rejected ('its own text included').",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.sent.not-targetable",
@@ -737,29 +725,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R32",
-          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R270",
-          "quote": "engine honours that: it is not targetable, not sacrificeable, not returned by"
+          "quote": "engine honours that: it is not targetable, not sacrificeable, not returned by",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "No test in the pack asserts the targeting half directly; R270 describes it as current engine behaviour.",
-    "sourceHashes": {
-      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a",
-      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
-    }
+    "notes": "No test in the pack asserts the targeting half directly; the owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”) describes it as current engine behaviour.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.sent.not-counted",
@@ -784,24 +771,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R270",
-          "quote": "only ally counterattacks away is present, is swept, and loses that ally from"
+          "quote": "only ally counterattacks away is present, is swept, and loses that ally from",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "250-ally-count-and-absence.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R270 calls this 'not obviously the intended one' and asks the owner; the Manual's 'treated as if they don't exist' gives this reading. See D-U13-6.",
-    "sourceHashes": {
-      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”) calls this 'not obviously the intended one' and asks the owner; the Manual's 'treated as if they don't exist' gives this reading. See D-U13-6.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.sent.tokens",
@@ -826,24 +812,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R32",
-          "quote": "and its spell tokens can't be cast. It reappears in the enemy region when"
+          "quote": "and its spell tokens can't be cast. It reappears in the enemy region when",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "22-playtest3.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.sent.no-death-check",
@@ -867,28 +852,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R270",
-          "quote": "A sent counterattacker is not death-checked"
+          "quote": "A sent counterattacker is not death-checked",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R270",
-          "quote": "attackers), which is the first moment their stats can honestly be read again."
+          "quote": "attackers), which is the first moment their stats can honestly be read again.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "250-ally-count-and-absence.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R270 is an owner call; no printed or designer source addresses state checks on absent units. See D-U13-5.",
-    "sourceHashes": {
-      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”) is an owner call; no printed or designer source addresses state checks on absent units. See D-U13-5.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.tokens",
@@ -898,7 +883,7 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens, and they ride out with the counterattackers"
+        "test": "78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens, and they ride out with the counterattackers"
       },
       {
         "text": null,
@@ -918,13 +903,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R87",
-          "quote": "Spell tokens travel with a formation, in either direction, and they need a unit"
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a unit",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
@@ -933,11 +918,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R87 quotes _passer, lofavreel, tecera and calebgannon; only the R87 text is in the pack (no RAQ claim id), so the designer words are cited through the ruling.",
-    "sourceHashes": {
-      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes _passer, lofavreel, tecera and calebgannon; only the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) text is in the pack (no RAQ claim id), so the designer words are cited through the ruling.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.round-two",
@@ -971,14 +955,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1006,13 +990,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R32",
-          "quote": "and its spell tokens can't be cast. It reappears in the enemy region when"
+          "quote": "and its spell tokens can't be cast. It reappears in the enemy region when",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts",
@@ -1020,11 +1004,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "That the tokens reappear too follows from R32 ('its spell tokens') and R87 (tokens ride out with counterattackers); no test in the pack asserts the token half directly.",
-    "sourceHashes": {
-      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
-    }
+    "notes": "That the tokens reappear too follows from the owner ruling of 2026-08-18 (“Sent counterattackers don't exist anywhere […]”) ('its spell tokens') and the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) (tokens ride out with counterattackers); no test in the pack asserts the token half directly.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.round-two.attackers",
@@ -1053,13 +1036,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "of their units. If a round-1 battle happened, round-2 attackers are **exactly the"
+          "quote": "of their units. If a round-1 battle happened, round-2 attackers are **exactly the",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "32-cast-costs.test.ts",
@@ -1067,11 +1050,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whether every sent unit must go into the formation is D-U13-4.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.round-two.none-sent",
@@ -1101,13 +1083,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts",
@@ -1115,11 +1097,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.21 moves to IT's region only 'if there was a counter-attack'; R15 states the empty case outright.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "notes": "Manual p.21 moves to IT's region only 'if there was a counter-attack'; the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) states the empty case outright.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.round-two.no-round-one",
@@ -1145,17 +1126,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R15",
-          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -1163,11 +1145,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The printed NOTE gives the permission; 'any of its units' is R15. The RAQ thread R15 names as resolving it is still open (D-U13-2).",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "notes": "The printed NOTE gives the permission; 'any of its units' is the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”). The RAQ thread the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) names as resolving it is still open (D-U13-2).",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.round-two.may-decline",
@@ -1192,17 +1173,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R194",
-          "quote": "* So a round-2 decline is the whole difference between a live Fireball and"
+          "quote": "* So a round-2 decline is the whole difference between a live Fireball and",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R194",
-          "quote": "nothing, and it takes every window away at once."
+          "quote": "nothing, and it takes every window away at once.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts",
@@ -1211,11 +1193,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The printed round-2 step reads 'The NIT puts their attacking units into formation' (Manual p.20), which can be read as mandatory; question for the owner in D-U13-4. R36 (lone counterattacker auto-forms) is contradicted by test 32's flipped title (D-U13-3, F-U13-1).",
-    "sourceHashes": {
-      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
-    }
+    "notes": "The printed round-2 step reads 'The NIT puts their attacking units into formation' (Manual p.20), which can be read as mandatory; question for the owner in D-U13-4. The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (lone counterattacker auto-forms) is contradicted by test 32's flipped title (D-U13-3, F-U13-1).",
+    "sourceHashes": {}
   },
   {
     "key": "combat.counterattack.round-two.no-counter",
@@ -1245,8 +1226,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts",
@@ -1254,6 +1234,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1282,14 +1263,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual's rule is general (every window); no source makes an exception for round 2.",
     "sourceHashes": {}
@@ -1302,7 +1283,7 @@
     "examples": [
       {
         "text": "Tidelurker's 2/2, created mid-attack in the enemy region, stays there and cannot block the counterattack.",
-        "test": "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
+        "test": "98-spawn-region.test.ts::CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
       },
       {
         "text": "A spell token the initiative player keeps at home cannot be cast in any round-1 window, and can be cast in round 2's windows.",
@@ -1326,8 +1307,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts",
@@ -1336,6 +1316,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1372,14 +1353,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1416,12 +1397,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "No test in the pack exercises a team game. Which initiative region a counterattacker enters in a team game is not stated (D-U13-7).",
     "sourceHashes": {},

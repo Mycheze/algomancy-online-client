@@ -259,7 +259,7 @@
   },
   {
     "key": "card.banner.cost",
-    "textHash": "575d33587f854878",
+    "textHash": "ae44c322b1c67d69",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -360,7 +360,7 @@
   },
   {
     "key": "card.banner.prophecy",
-    "textHash": "c68b479b62484b1b",
+    "textHash": "5de62d26ad7b1bf5",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -521,7 +521,7 @@
   },
   {
     "key": "card.banner.timing.prophecy-haste",
-    "textHash": "8601bdba30433c7d",
+    "textHash": "40fef48cc13e7526",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -572,7 +572,7 @@
   },
   {
     "key": "card.banner.what",
-    "textHash": "3395bcb76660832a",
+    "textHash": "fb939fd9d961c956",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -900,7 +900,7 @@
   },
   {
     "key": "card.cost-orb.x",
-    "textHash": "bd625b69c1ba9862",
+    "textHash": "77d5850de0664ed5",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U05-r4",
@@ -947,7 +947,7 @@
   },
   {
     "key": "card.cost-orb.x-outside-cast",
-    "textHash": "cb6c25c244e562ac",
+    "textHash": "42d73dea98f8d833",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U05-r4",
@@ -1037,7 +1037,7 @@
   },
   {
     "key": "card.general.printed-card-governs",
-    "textHash": "19996d96de8fb845",
+    "textHash": "711a66753adf476f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1087,7 +1087,7 @@
   },
   {
     "key": "card.name.another",
-    "textHash": "bb6d2b16e31170b9",
+    "textHash": "b27207d190d7ec05",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1125,7 +1125,7 @@
   },
   {
     "key": "card.name.copy",
-    "textHash": "157941708f30fb9e",
+    "textHash": "98976e71741525b4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -1218,7 +1218,7 @@
   },
   {
     "key": "card.name.front-face",
-    "textHash": "fda5ac55fb165231",
+    "textHash": "9a88eb33504db990",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1256,7 +1256,7 @@
   },
   {
     "key": "card.name.unique-token",
-    "textHash": "0dd8f39feb4f5f13",
+    "textHash": "47d5dc65d24cebae",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1717,7 +1717,7 @@
   },
   {
     "key": "card.text-box.brackets",
-    "textHash": "e016962345f6d19a",
+    "textHash": "2e5370f1f4b8cdc3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1803,7 +1803,7 @@
   },
   {
     "key": "card.text-box.brackets.symbols",
-    "textHash": "30b1c8b73af23953",
+    "textHash": "bdc2bde822fd5bb9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1890,7 +1890,7 @@
   },
   {
     "key": "card.text-box.brackets.who-and-when",
-    "textHash": "b60e26925b713852",
+    "textHash": "83e9f824dd327a60",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -2049,7 +2049,7 @@
   },
   {
     "key": "card.timing.battle",
-    "textHash": "6a69f6fc2ff2545d",
+    "textHash": "9e5322b6f7004c39",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2166,7 +2166,7 @@
   },
   {
     "key": "card.timing.haste",
-    "textHash": "c5068e1cd83ea99a",
+    "textHash": "096ae7ae75ebb9bd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2287,7 +2287,7 @@
   },
   {
     "key": "card.timing.ignore.only-when-said",
-    "textHash": "26dd231fcdf79e12",
+    "textHash": "e7f74ae06a34dabc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2435,7 +2435,7 @@
   },
   {
     "key": "card.timing.per-line",
-    "textHash": "179f585f31208972",
+    "textHash": "ea8c58db26d661ca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2612,7 +2612,7 @@
   },
   {
     "key": "card.type-line.attributes",
-    "textHash": "0c3e0b06bb514409",
+    "textHash": "70f06e4dea94999b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2783,7 +2783,7 @@
   },
   {
     "key": "card.type-line.icons-not-attributes",
-    "textHash": "8d2bfafd9c77fcdc",
+    "textHash": "1b79354fe612831d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2827,7 +2827,7 @@
   },
   {
     "key": "card.type-line.order",
-    "textHash": "049f0ff0f71ff5e9",
+    "textHash": "a71a9b6187d68df3",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U05-r4",

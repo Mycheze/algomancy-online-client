@@ -1,14 +1,14 @@
 /* Per-card tests for the fire/water/earth hybrid batch (batch-hybrids-fwe):
  * despawn-amount snapshots (A Pile of Runes), the engine Ambush mode + a
  * bounded damage-mirror (Mirrorback Ambusher), first-spell negation (Origon,
- * R14 counters), after-combat recalls/sacrifices (Unfinished Creation,
+ * CR 505.6 counters), after-combat recalls/sacrifices (Unfinished Creation,
  * Unstable Form), battle life-loss draws (Astral Painseeker), spell-cost
  * sacrifices (Death Greeter), X-spell machinery with white-box x (Channel
- * Through, Torrential Reclamation — X is chosen and paid at cast, R35),
+ * Through, Torrential Reclamation — X is chosen and paid at cast, CR 107.2a),
  * survive-damage punishment (Molten Tormentor), an [Augment]-text activated
  * ability (Slag Spewer), defense-bar sacrifices (Structural Collapse),
  * despawn pings (Demon of the Depths) and a pay-to-draw death trigger
- * (Tempest Oracle) and Stasis Sentry's continuous cost tax (R59 — un-parked;
+ * (Tempest Oracle) and Stasis Sentry's continuous cost tax (CR 111.10 — un-parked;
  * it used to carry a todo saying the cost layer did not exist).
  * States are built explicitly (give/spawn/giveResources) so parallel card
  * registration can't shift assertions. Seeds: 1900-1999.
@@ -74,17 +74,17 @@ test('Mirrorback Ambusher: [once] dealt combat damage → deals that much to tar
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [amb] } });
-  pass(h); pass(h);   // combat: R114 — the 1/1 is DEALT all 2, not the 1 that
+  pass(h); pass(h);   // combat: CR 608.6d — the 1/1 is DEALT all 2, not the 1 that
                       // kills it; it dies, and the trigger mirrors what it took
   assert.ok(!ent(h, amb), 'the 1/1 died to combat damage');
   pick(h, { unit: sentry });                                  // the trigger targets the attacker
-  resolveAfterCombat(h);   // R261: the mirror lands after combat, not in the damage step
+  resolveAfterCombat(h);   // CR 608.9b: the mirror lands after combat, not in the damage step
   assert.equal(ent(h, sentry)!.damage, 3,
     '1 from the block + 2 mirrored (the whole hit the 1/1 took, not its 1 toughness)');
   finishBattle(h);
 });
 
-test('Mirrorback Ambusher: Ambush [2be] recalls an ally and takes its position (R22)', () => {
+test('Mirrorback Ambusher: Ambush [2be] recalls an ally and takes its position (CR 803.6e)', () => {
   const h = new Harness(1903);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -107,7 +107,7 @@ test('Mirrorback Ambusher: Ambush [2be] recalls an ally and takes its position (
 
 // ── Origon ───────────────────────────────────────────────────────────────
 
-test('Origon: negates each player’s FIRST spell in this battle only (R14)', () => {
+test('Origon: negates each player’s FIRST spell in this battle only (CR 505.6)', () => {
   const h = new Harness(1904);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -120,15 +120,15 @@ test('Origon: negates each player’s FIRST spell in this battle only (R14)', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   // A's FIRST spell this battle → Origon negates it
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
-  pick(h, { unit: atk });                                     // cast cost (R35): paid before the push
+  pick(h, { unit: atk });                                     // cast cost (CR 702.4): paid before the push
   pass(h); pass(h);                                           // resolve the negation trigger
-  assert.equal(h.state.stack.length, 0, 'R68: the negated spell left the stack with the trigger');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated spell left the stack with the trigger');
   assert.ok(h.log.some(m => m.includes('Structural Collapse is negated')), 'first spell negated');
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
-  assert.ok(!ent(h, atk), 'the cast COST was still paid (R35) — negation does not refund it');
+  assert.ok(!ent(h, atk), 'the cast COST was still paid (CR 702.4b) — negation does not refund it');
   // A's SECOND spell resolves normally (X = 0 chosen at cast → harmless no-op)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Torrential Reclamation') });
-  pick(h, 0);                                                 // X = 0 at cast (R35)
+  pick(h, 0);                                                 // X = 0 at cast (CR 107.2a)
   pass(h); pass(h);
   assert.ok(h.state.players[A]!.bin.includes('Torrential Reclamation'), 'second spell resolved → bin');
   assert.equal(h.log.filter(m => m.includes('is negated')).length, 1, 'only the first was negated');
@@ -138,7 +138,7 @@ test('Origon: negates each player’s FIRST spell in this battle only (R14)', ()
 // ── Stasis Sentry ────────────────────────────────────────────────────────
 
 test('Stasis Sentry: spells with base cost \u2264 [three] cost [three] in battle', () => {
-  // UN-PARKED (R59). This was a todo reading "a continuous cost-modification
+  // UN-PARKED (CR 111.10). This was a todo reading "a continuous cost-modification
   // layer does not exist"; CostMod is that layer.
   const h = new Harness(1904);
   toDeployment(h);
@@ -157,13 +157,13 @@ test('Stasis Sentry: spells with base cost \u2264 [three] cost [three] in battle
   const pricey = 'Flame Shield';                              // printed 4
   assert.equal(getCard(pricey).mana, 4);
   assert.equal(e.manaToPlay(D, pricey), 4, 'a spell already above [three] is untouched');
-  // R157 item 20: an X spell is NOT exempt. With the X still open this is the
+  // CR 111.10i: an X spell is NOT exempt. With the X still open this is the
   // castability quote, priced at the cheapest legal X (xMin = 0), which the
   // Sentry raises to [3]. The per-X behaviour lives in 133-x-cost-semantics.
   assert.equal(e.manaToPlay(D, 'Torrential Reclamation'), 3,
-    'R157 #20: X below three is taxed up to three, so the cheapest cast is [3]');
+    'the smallest X is three, so the cheapest cast is [3]');
   assert.equal(e.manaToPlay(D, 'Torrential Reclamation', { x: 5 }), 5,
-    'R157 #20: "sort of exempt, but only if X >= 3"');
+    'the owner, 2026-08-25: "sort of exempt, but only if X >= 3"');
   assert.equal(e.manaToPlay(D, 'Bubb'), getCard('Bubb').mana as number, 'a unit is not a spell');
   finishBattle(h);
 });
@@ -257,7 +257,7 @@ test('Death Greeter: your spell in battle → each player sacrifices a unit with
 
 // ── Channel Through ──────────────────────────────────────────────────────
 
-test('Channel Through: X is chosen at cast (R35) — X=0 is a no-op, X=1 works', () => {
+test('Channel Through: X is chosen at cast (CR 107.2a) — X=0 is a no-op, X=1 works', () => {
   const h = new Harness(1909);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -268,20 +268,20 @@ test('Channel Through: X is chosen at cast (R35) — X=0 is a no-op, X=1 works',
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tokA]] });
   pass(h);                                                    // priority → D
-  // X = 0 chosen at cast → nothing happens. R83: the opponent is a cast-time
+  // X = 0 chosen at cast → nothing happens. CR 110.2b: the opponent is a cast-time
   // target in its own right (slot 0), so it is asked for even at X = 0.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
-  pick(h, 0);                                                 // X = 0 at cast (R35)
-  pick(h, { player: A });                                     // R83: target opponent
+  pick(h, 0);                                                 // X = 0 at cast (CR 107.2a)
+  pick(h, { player: A });                                     // CR 110.2b: target opponent
   pass(h); pass(h);
   assert.ok(ent(h, tokA) && ent(h, tokD), 'X = 0: nobody was damaged');
   // X = 1: 2 damage to the targeted ally, 2 distributed onto the (auto-picked)
   // unit of the targeted opponent — both 1/1s die
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
-  pick(h, 1);                                                 // X = 1 at cast (R35), paid now
-  pick(h, { player: A });                                     // R83: slot 0 is the opponent
-  pick(h, { unit: tokD });                                    // R64: the ally is a CAST-TIME target
+  pick(h, 1);                                                 // X = 1 at cast (CR 107.2a), paid now
+  pick(h, { player: A });                                     // CR 110.2b: slot 0 is the opponent
+  pick(h, { unit: tokD });                                    // CR 110.1a: the ally is a CAST-TIME target
   pass(h); pass(h);
   assert.ok(!ent(h, tokD), 'the targeted ally took 2 and died');
   assert.ok(!ent(h, tokA), 'the distributed 2 killed the opponent’s 1/1');
@@ -302,7 +302,7 @@ test('Molten Tormentor: surviving N damage → each opponent sacrifices N units'
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [torm] } });
   pass(h); pass(h);                                           // combat: torm dealt 1, survives
-  resolveAfterCombat(h);   // R261: the survival trigger is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: the survival trigger is stacked after combat
   assert.ok(!ent(h, tokA1), 'the blocked attacker died in combat');
   assert.ok(!ent(h, tokA2), 'the surviving attacker was sacrificed (N = 1)');
   assert.equal(ent(h, torm)!.damage, 1, 'the Tormentor survived 1 damage');
@@ -323,13 +323,13 @@ test('Slag Spewer: [once] [one] + erase a mod → 2 damage to any target', () =>
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'A Pile of Runes'), hostId: spewer });
   const modId = ent(h, spewer)!.mods[0]!;
   h.do({ type: 'activateAbility', seat: p, entityId: spewer, abilityIndex: 0, via: 'augment' });
-  pick(h, { unit: victim });                                  // R57: the target first…
-  pick(h, { eraseMod: modId });                               // …then R196's mod-erase COST
+  pick(h, { unit: victim });                                  // CR 705.3c: the target first…
+  pick(h, { eraseMod: modId });                               // …then CR 111.2's mod-erase COST
   assert.ok(!ent(h, victim), 'the 2 damage killed the 1/1');
   assert.equal(ent(h, spewer)!.mods.length, 0, 'the mod was consumed');
   assert.ok(!ent(h, modId), 'the mod entity is erased outright');
   assert.ok(!h.state.players[p]!.bin.includes('A Pile of Runes'), 'erased, not binned');
-  // [once]: a second activation this turn is illegal (R9)
+  // [once]: a second activation this turn is illegal (CR 109.9)
   giveResources(h, p, 'fire', 1);
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: p, entityId: spewer, abilityIndex: 0, via: 'augment' }),
@@ -352,7 +352,7 @@ test('Structural Collapse: sacrifice a unit → opponents sacrifice up to its de
   h.do({ type: 'declareAttack', seat: A, columns: [[t1], [t2], [t3]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Structural Collapse') });
-  pick(h, { unit: sentry });                                  // cast cost (R35): the 2/4 dies NOW (bar = 4)
+  pick(h, { unit: sentry });                                  // cast cost (CR 702.4): the 2/4 dies NOW (bar = 4)
   assert.ok(!ent(h, sentry), 'the caster’s unit is sacrificed at cast');
   pass(h); pass(h);                                           // resolve
   pick(h, t1);                                                // A picks sacrifices toward the bar…
@@ -404,7 +404,7 @@ test('Demon of the Depths: an allied despawn → 1 damage to any target (chains 
 
 // ── Tempest Oracle ───────────────────────────────────────────────────────
 
-test('Tempest Oracle: on despawn, may pay [one] to draw a card and lose 1 life (R6)', () => {
+test('Tempest Oracle: on despawn, may pay [one] to draw a card and lose 1 life (CR 111.9)', () => {
   const h = new Harness(1915);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -428,8 +428,8 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   const A = h.state.initiative, D = 1 - A;
   const a1 = spawn(h, A, 'Unit Token');
   const a2 = spawn(h, A, 'Unit Token');
-  // R326 (2026-10-09): the recalled ally used to be a Stasis Sentry, which
-  // under R157 §20 made this an X = 1 cast paid at [3]. The RAQ reversed that —
+  // The RAQ ruling of 2026-10-09 (now CR 107.5): the recalled ally used to be a Stasis Sentry, which
+  // under the earlier price reading made this an X = 1 cast paid at [3]. The RAQ reversed that —
   // a Sentry forces X itself to 3 — so a plain ally stands in, and the test is
   // about Torrential Reclamation's own X = 1 again.
   const sentry = spawn(h, D, 'Good Whale');                   // the recalled ally
@@ -441,8 +441,8 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   pass(h);                                                    // priority → D
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Torrential Reclamation') });
-  pick(h, 1);                                                 // X = 1 at cast (R35), paid now
-  // R64: "X target nontoken allies" are declared at cast — D's own token is
+  pick(h, 1);                                                 // X = 1 at cast (CR 107.2a), paid now
+  // CR 110.1a: "X target nontoken allies" are declared at cast — D's own token is
   // not offered, and neither is anything of A's.
   notOffered(h, { unit: a1 }, "A's unit is not D's ally");
   pick(h, { unit: sentry });                                  // D recalls the Sentry

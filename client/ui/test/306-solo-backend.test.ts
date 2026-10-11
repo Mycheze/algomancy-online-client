@@ -1,4 +1,4 @@
-/* R297 — ui/solo.ts: the in-browser room the Learn to Play game runs in.
+/* CR D8.1 — ui/solo.ts: the in-browser room the Learn to Play game runs in.
  *
  * The claims are about what reaches the LEARNER, read off the messages the
  * room actually pushes — never off its internals:

@@ -1,17 +1,17 @@
-/* R191 — THE ITEM THE EVENT NAMES, AND EVENTS THAT TELL THE TRUTH.
+/* CR 706.13 — THE ITEM THE EVENT NAMES, AND EVENTS THAT TELL THE TRUTH.
  *
  * Two tickets, one class: a record that says something which is not so.
  *
  * CARD-TODO #69 — ORIGON and HEXBANE SHIITAKE located "the spell that was just
- * played" with R166's `[...g.s.stack].reverse().find(i => i.card === name &&
+ * played" with the `[...g.s.stack].reverse().find(i => i.card === name &&
  * i.controller === seat && !i.copy)`, each under a paragraph explaining why a
  * reverse scan happens to be right. It is right only while the push order
  * keeps the played item above every other item with the same (card,
  * controller) — a heuristic, and the paragraph of justification was the tell.
- * `spellPlayed` has carried `item`, the played item's id, since R178, and
- * Earthbound Replicator was converted then; these are the other two.
+ * `spellPlayed` has carried `item`, the played item's id, since Earthbound
+ * Replicator was converted (151-copy-and-moved-mods); these are the other two.
  *
- *   ⚠ THE `!i.copy` GUARD IS A SEPARATE QUESTION AND IT SURVIVES. R164 makes a
+ *   ⚠ THE `!i.copy` GUARD IS A SEPARATE QUESTION AND IT SURVIVES. CR 710.8 makes a
  *   copy a real stack item carrying the ORIGINAL's card name and controller,
  *   and RAQ (_passer, two [Solved] threads) says a copy was not played:
  *   *"he won't make 2nd copy, since 1st copy wasn't 'played'. Sorry. No
@@ -29,7 +29,7 @@
  *   (c) is the server's (a fork that records a silent state change), and its
  *       guard is in `server/e2e/test-forensics.ts`: a test in engine/test cannot
  *       import `server/rooms.ts` without dragging `ws` into this project's
- *       typecheck, which is the whole reason `server/types.ts` exists (R181).
+ *       typecheck, which is the whole reason `server/types.ts` exists (see CLAUDE.md § The gates).
  *
  * Seeds 16200-16299.
  */
@@ -61,11 +61,11 @@ function resolve(
 }
 
 /** a 'spellPlayed' event as `commitItem` builds it — `item` included, because
- *  commitItem includes it (R178) and these cards read it. */
+ *  commitItem includes it (CR 706.13) and these cards read it. */
 const played = (card: string, seat: Seat, region: number, item: number): EngineEvent =>
   ({ type: 'spellPlayed', msg: '', data: { card, seat, region, item } });
 
-/** a plain spell item on the stack; `copy` marks an R164 copy of one */
+/** a plain spell item on the stack; `copy` marks a CR 710.8 copy of one */
 const item = (id: number, seat: Seat, region: number, copy = false): StackItem => ({
   id, kind: 'spell', card: 'Fight', label: copy ? `Fight (copy ${id})` : `Fight (${id})`,
   controller: seat, region, negated: false,
@@ -100,7 +100,7 @@ test('Origon negates the item the play event NAMES, with a second identical spel
     'and the negation says so by id');
 });
 
-test('Origon: an R164 copy on top of the played spell is still not what "negate it" points at', () => {
+test('Origon: a CR 710.8 copy on top of the played spell is still not what "negate it" points at', () => {
   // The `!i.copy` guard, kept as an assertion when the scan went. The copy
   // carries the original's card name and controller and sits above it, so it
   // was reachable by (card, controller); it must stay unreachable.
@@ -145,7 +145,7 @@ test('Hexbane Shiitake exchanges for the item the play event NAMES, with a secon
     'and the identical spell above it was never in question');
 });
 
-test('Hexbane Shiitake: an R164 copy on top is never what the exchange is for', () => {
+test('Hexbane Shiitake: a CR 710.8 copy on top is never what the exchange is for', () => {
   const h = new Harness(16203);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -162,7 +162,7 @@ test('Hexbane Shiitake: an R164 copy on top is never what the exchange is for', 
   assert.equal(g.s.stack.find(i => i.id === 8231)!.controller, D,
     '"that spell" is the one that was played');
   assert.equal(g.s.stack.find(i => i.id === 8232)!.controller, A,
-    'a copy was not played, so it is not what is exchanged for (RAQ, R164)');
+    'a copy was not played, so it is not what is exchanged for (RAQ, CR 706.13)');
 });
 
 test('no play event ever names a COPY, so an identity lookup cannot reach one', () => {
@@ -255,7 +255,7 @@ test('afterDespawn dispatches the DESPAWN event even when another event is appen
       const out = real(type, msg, data);
       // the future edit, made here on purpose: one more line, appended after
       // the despawn announcement and before the dispatch reads for it
-      if (type === 'despawned') real('info', 'R191 test: an unrelated line, appended after the despawn');
+      if (type === 'despawned') real('info', 'decoy: an unrelated line, appended after the despawn');
       return out;
     };
     e.recall(e.entity(marked)!);
@@ -264,6 +264,6 @@ test('afterDespawn dispatches the DESPAWN event even when another event is appen
   assert.equal(h.state.players[P]!.hand.length, handBefore + 2,
     'the recalled card AND the card Entropic Entity drew: the despawn listener saw the '
     + 'despawn event, not the line appended after it');
-  assert.ok(h.log.some(l => l.includes('R191 test: an unrelated line')),
+  assert.ok(h.log.some(l => l.includes('decoy: an unrelated line')),
     'and the decoy really was appended — otherwise this test proves nothing');
 });

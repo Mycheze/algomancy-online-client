@@ -1,16 +1,16 @@
 /* Per-card tests for batch-earth-a (project rule: a test for every card).
- * Covers the Rockfall death graft (A Fast Pile of Rocks, R25 per-seat picks),
- * the R168 static +2/+2 (Aetherflux Golem — was a counters approximation), the two
+ * Covers the Rockfall death graft (A Fast Pile of Rocks, CR 601.4d per-seat picks),
+ * the CR 721.1e static +2/+2 (Aetherflux Golem — was a counters approximation), the two
  * fight effects (Battle / Fight — cast-time first target + mid-resolution
  * second pick), type-line and text-box augments (Bubb, Deathglow Strider,
  * Lithoghul), activated abilities living in [Augment] text (Enigmatic
  * Warder, Graxxlid — via: 'augment'), the column-combat-damage trigger
  * (Flowstone Arcanite, both the lifeLost and unit-damage channels), a
  * region-wide sweep (Haboob), the pay-to-fight damage trigger (Eminence of
- * the Barrens, R6 payment), Hooba-Lan's real dormant Shard (unparked — see
+ * the Barrens, CR 111.9 payment), Hooba-Lan's real dormant Shard (unparked — see
  * E.createShard), the Manual p.18 affinity bonus the Earth Resource face
- * reprints as reminder text (R116/R54 — the rule lives in maybeGrantShard, not
- * on the card), and Crevice Lurker's R121 ability-cost tax + pay-to-trigger
+ * reprints as reminder text (CR 106.7c — the rule lives in maybeGrantShard, not
+ * on the card), and Crevice Lurker's CR 111.10f, 111.10g ability-cost tax + pay-to-trigger
  * gate (taxed and refused activations, the pay/decline/no-mana trigger gate,
  * the kept [once], the untaxed mod application, the donated form, two-Lurker
  * summing, and a JSON round-trip of the pending question).
@@ -41,7 +41,7 @@ test('A Fast Pile of Rocks: dies in combat → Rockfall 4 (each present player p
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
   pass(h); pass(h);                                   // combat: pile & blocker trade
   assert.ok(!ent(h, pile) && !ent(h, blocker), 'pile and its blocker died in combat');
-  // R261: the death trigger is stacked in the after-combat window instead of
+  // CR 608.9b: the death trigger is stacked in the after-combat window instead of
   // resolving inside the damage step. Rockfall still asks each present player
   // mid-resolution, A still auto-picks its only other unit, and the damage is
   // still 4 — only the beat it happens on moved.
@@ -64,7 +64,7 @@ test('Aetherflux Golem: +2/+2 for itself when played normally; +2/+2 to the host
   giveResources(h, p, 'earth', 2);                    // ee / 1
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Aetherflux Golem'), hostId: host });
   assert.deepEqual(effStats(h, host), [3, 3], 'host 1/1 + donated +2/+2 = 3/3');
-  // R168: a LAYER, not two +1/+1 counters. This line used to read
+  // CR 707.4b: a LAYER, not two +1/+1 counters. This line used to read
   // `assert.equal(ent(h, host)!.counters, 2, 'modelled as two +1/+1 counters
   // (approximation)')`. The approximation is gone — counter-matters cards no
   // longer see counters the Golem never printed, the +2/+2 cannot be negated
@@ -113,12 +113,12 @@ test('Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no sta
   assert.deepEqual(effStats(h, host), [1, 1], 'attr-only donation: stats unchanged');
 });
 
-// ── Crevice Lurker — R121: the ability-cost tax + pay-to-trigger gate ──
+// ── Crevice Lurker — CR 111.10f, 111.10g: the ability-cost tax + pay-to-trigger gate ──
 // "[Augment] Abilities cost [one] more to activate or trigger during battle.
 // (Choosing to not pay this prevents the abilities from triggering.)"
 // Designer: it "taxes the cost to activate or trigger abilities" and can stop
-// e.g. Ruinbringer's after-combat trigger like a negate can. R12 region
-// scope; R37: applying a mod is not taxed; R108/R113: a declined trigger
+// e.g. Ruinbringer's after-combat trigger like a negate can. CR 111.10 region
+// scope; CR 720.4a: applying a mod is not taxed; CR 109.9b: a declined trigger
 // keeps its [once].
 
 /** a seat's open resources — the taxed activations spend real mana */
@@ -138,13 +138,13 @@ test('Crevice Lurker: 2/3 body, attaches cleanly as an augment', () => {
   assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment, attaches cleanly');
 });
 
-test('Crevice Lurker: R121 — in battle an activated [1] costs [2], and with only [1] open it is not activatable', () => {
+test('Crevice Lurker: CR 111.10f, 111.6 — in battle an activated [1] costs [2], and with only [1] open it is not activatable', () => {
   const h = new Harness(1620);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const lurker = spawn(h, A, 'Crevice Lurker');
   const auric = spawn(h, D, 'Auric Ascendant');       // "[once] [one], Recall another ally: …"
-  // R196: the recall is a real cast COST, so an Auric with no other ally is
+  // CR 705.4: the recall is a real cast COST, so an Auric with no other ally is
   // not offered at all. This test is about the TAX, so give it something to
   // pay the other half with — otherwise it measures the wrong refusal.
   const ally = spawn(h, D, 'Unit Token');
@@ -160,12 +160,12 @@ test('Crevice Lurker: R121 — in battle an activated [1] costs [2], and with on
   assert.equal(offers().length, 1, 'with [2] open the taxed activation is offered');
   h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
   assert.equal(openMana(h, D), 0, 'the activation spent [1] printed + [1] tax');
-  pick(h, { recall: ally });                          // R196: the recall half of the cost
+  pick(h, { recall: ally });                          // CR 111.2: the recall half of the cost
   pass(h); pass(h);                                   // resolve
   finishBattle(h);
 });
 
-test('Crevice Lurker: R121 — outside battle the same activation costs its printed [1]', () => {
+test('Crevice Lurker: CR 505.1b — outside battle the same activation costs its printed [1]', () => {
   const h = new Harness(1621);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -179,7 +179,7 @@ test('Crevice Lurker: R121 — outside battle the same activation costs its prin
   if (h.state.decision) h.do({ type: 'decide', seat: p, choice: 0 });
 });
 
-test('Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack', () => {
+test('Crevice Lurker: CR 111.10g — a taxed trigger ASKS its controller, and paying [1] puts it on the stack', () => {
   const h = new Harness(1622);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -200,7 +200,7 @@ test('Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [
   finishBattle(h);
 });
 
-test('Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113)', () => {
+test('Crevice Lurker: CR 111.10h — declining prevents the trigger and does NOT spend its [once] (CR 109.9b)', () => {
   // The [once] proof needs a bounded trigger that can fire TWICE in one
   // battle — an attack/block trigger gets one event per battle, so the pair
   // here is Astral Painseeker ("When a player loses life during battle,
@@ -224,7 +224,7 @@ test('Crevice Lurker: R121 — declining prevents the trigger and does NOT spend
   pick(h, false);                                     // decline — the draw does not happen
   assert.equal(h.state.players[D]!.hand.length, hand0, 'prevented: no draw');
   assert.ok(!('ability:Astral Painseeker#0' in ent(h, seeker)!.budgets),
-    'the declined trigger kept its [Switch1] (R108/R113)');
+    'the declined trigger kept its [Switch1] (CR 109.9b)');
   pass(h);                                            // A passes; D responds with a second activation
   h.do({ type: 'activateAbility', seat: D, entityId: blob, abilityIndex: 0, via: 'augment' });
   assert.equal(h.state.decision?.kind, 'payOrDecline',
@@ -234,11 +234,11 @@ test('Crevice Lurker: R121 — declining prevents the trigger and does NOT spend
   while (h.state.stack.length) { pass(h); }           // resolve the draw and both Blob activations
   assert.equal(h.state.players[D]!.hand.length, hand0 + 1, 'paid: the draw resolves');
   assert.equal(ent(h, seeker)!.budgets['ability:Astral Painseeker#0'], 1,
-    'paying SPENDS the [Switch1] (R113: put on the stack = spent, resolve or not)');
+    'paying SPENDS the [Switch1] (CR 109.9a: put on the stack = spent, resolve or not)');
   finishBattle(h);
 });
 
-test('Crevice Lurker: R121 — zero open mana: the trigger is prevented with a log line and no prompt', () => {
+test('Crevice Lurker: CR 111.10g — zero open mana: the trigger is prevented with a log line and no prompt', () => {
   const h = new Harness(1624);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -250,12 +250,12 @@ test('Crevice Lurker: R121 — zero open mana: the trigger is prevented with a l
   assert.ok(h.log.some(l => l.includes('prevented') && l.includes('Crevice Lurker')),
     `the prevention is announced in the log; got:\n${h.log.slice(-6).join('\n')}`);
   assert.ok(!('ability:Pestilent Titan#0' in ent(h, titan)!.budgets),
-    'no offer could be made at all — the [once] is kept (R113)');
+    'no offer could be made at all — the [once] is kept (CR 109.9b)');
   finishBattle(h);
   assert.equal(h.state.players[A]!.rot, 0, 'the plague never happened');
 });
 
-test('Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)', () => {
+test('Crevice Lurker: CR 720.4a — applying an augment during battle is NOT taxed (a mod is not an activation)', () => {
   const h = new Harness(1625);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -267,12 +267,12 @@ test('Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R
   pass(h);                                            // priority → D
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Soul Reaver'), hostId: host });
   assert.equal(openMana(h, D), 0, 'exactly the printed [3] — the tax does not touch a mod application');
-  pass(h); pass(h);                                   // the Virus item resolves off the stack (R79)
+  pass(h); pass(h);                                   // the Virus item resolves off the stack (CR 723.3)
   assert.equal(ent(h, host)!.mods.length, 1);
   finishBattle(h);
 });
 
-test("Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax", () => {
+test("Crevice Lurker: CR 707.9 — donated as an augment, the HOST's region carries the tax", () => {
   const h = new Harness(1626);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -290,14 +290,14 @@ test("Crevice Lurker: R121 — donated as an augment, the HOST's region carries 
   finishBattle(h);
 });
 
-test('Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the tax is +2', () => {
+test('Crevice Lurker: CR 111.10a — two Lurkers compound: CostMod deltas SUM, so the tax is +2', () => {
   const h = new Harness(1627);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const l1 = spawn(h, A, 'Crevice Lurker');
   const l2 = spawn(h, A, 'Crevice Lurker');
   const auric = spawn(h, D, 'Auric Ascendant');
-  const ally = spawn(h, D, 'Unit Token');             // R196: the recall half of the cost
+  const ally = spawn(h, D, 'Unit Token');             // CR 111.2: the recall half of the cost
   giveResources(h, D, 'water', 2);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[l1], [l2]] });
@@ -313,7 +313,7 @@ test('Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the 
   finishBattle(h);
 });
 
-test('Crevice Lurker: R121 — the pending pay-decision survives a JSON round-trip and keeps driving', () => {
+test('Crevice Lurker: CR 111.10 — the pending pay-decision survives a JSON round-trip and keeps driving', () => {
   const h = new Harness(1628);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -367,7 +367,7 @@ test('Earth Resource: activating your 3rd earth pays the p.18 affinity Shard, ev
   // Manual p.18 GENERAL RULE reprinted on the card as reminder text, and it is
   // implemented in apply.ts::maybeGrantShard for all seven elements — see the
   // conformance sweep in 12-fire-a, which exists so nobody "implements" it
-  // onto the three printed Resource faces and drops the other four. R116, R54.
+  // onto the three printed Resource faces and drops the other four. CR 106.7c.
   const h = new Harness(1621);
   giveResources(h, 0, 'earth', 2, 'open');
   giveResources(h, 0, 'earth', 1, 'dormant');
@@ -378,7 +378,7 @@ test('Earth Resource: activating your 3rd earth pays the p.18 affinity Shard, ev
   h.do({ type: 'activateResource', seat: 0, index: dormant() });
   assert.equal(shards().length, 1, 'at [e][e][e], a Shard');
   assert.equal(shards()[0]!.state, 'dormant', '"(It spawns dormant.)"');
-  assert.equal(h.q.affinity(0, 'earth'), 3, 'R54: the Shard adds no earth affinity of its own');
+  assert.equal(h.q.affinity(0, 'earth'), 3, 'CR 106.9: the Shard adds no earth affinity of its own');
 
   giveResources(h, 0, 'earth', 1, 'dormant');
   h.do({ type: 'activateResource', seat: 0, index: dormant() });
@@ -395,7 +395,7 @@ test('Earth Resource: two open earth is not [e][e][e] — no Shard', () => {
   assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0);
 });
 
-test('Eminence of the Barrens: dealt damage → may pay [one] to fight another target unit (R6)', () => {
+test('Eminence of the Barrens: dealt damage → may pay [one] to fight another target unit (CR 111.9)', () => {
   const h = new Harness(1607);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -409,7 +409,7 @@ test('Eminence of the Barrens: dealt damage → may pay [one] to fight another t
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [emin] } });
   pass(h); pass(h);   // combat: tok deals 1 to Eminence → the trigger asks for its target
   pick(h, { unit: bubbA });                           // trigger target: "another target unit"
-  // R261: targeting is unmoved (it happens on the way to the stack) but the
+  // CR 608.9b, 608.9: targeting is unmoved (it happens on the way to the stack) but the
   // trigger now RESOLVES in the after-combat window, where the pay-or-decline
   // is asked.
   pass(h); pass(h);
@@ -417,7 +417,7 @@ test('Eminence of the Barrens: dealt damage → may pay [one] to fight another t
   assert.ok(!ent(h, bubbA), 'Bubb died to the 6-power fight');
   assert.equal(ent(h, emin)!.damage, 6, '1 combat + 5 from the fight');
   assert.equal(h.state.players[D]!.resources.filter(r => r.state === 'expended').length, 1, 'the [one] was paid');
-  // "whenever": the fight's 5 damage re-triggered the ability — but R64 makes
+  // "whenever": the fight's 5 damage re-triggered the ability — but CR 110.4d makes
   // "ANOTHER target unit" a real restriction, so with only the Eminence left
   // there is nothing legal to aim at and the trigger says so instead of
   // offering a target it would then refuse.
@@ -448,7 +448,7 @@ test("Enigmatic Warder: [two] activated ([Augment] text, via: 'augment') redirec
   finishBattle(h);
 });
 
-test('Fight: BOTH units are cast-time targets, ally first (R58)', () => {
+test('Fight: BOTH units are cast-time targets, ally first (CR 110.1a)', () => {
   const h = new Harness(1609);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -475,7 +475,7 @@ test('Fight: BOTH units are cast-time targets, ally first (R58)', () => {
 
 test('Flowstone Arcanite: column deals combat damage → +1/+1 counter on each of your units (once/turn)', () => {
   // unblocked: connects to the player (the lifeLost channel); the ally's
-  // later hit does NOT double-fire ([Switch1] budget, R9)
+  // later hit does NOT double-fire ([Switch1] budget, CR 722.5)
   const h = new Harness(1610);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -521,22 +521,22 @@ test('Graxxlid: [once][one] negates an effect targeting it; that controller draw
   h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: boonId });
   pass(h); pass(h);                                   // Graxxlid resolves
-  assert.ok(!h.state.stack.some(i => i.id === boonId), 'R68: the negated Boon left the stack');
+  assert.ok(!h.state.stack.some(i => i.id === boonId), 'CR 704.4: the negated Boon left the stack');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.equal(h.state.players[A]!.hand.length, handA + 1, "the Boon's controller drew a card");
   assert.deepEqual(effStats(h, grax), [2, 3], 'no buff landed');
   pass(h);                                            // priority → D
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' }),
-    /already used/, '[once]: spent for the turn (R9)');
+    /already used/, '[once]: spent for the turn (CR 109.9)');
   finishBattle(h);
 });
 
 /* Report #70 (GETD, 2026-08-22): "Graxxlid is lighting up like I can activate
  * its ability despite there being no legal targets on the stack". The empty
  * stack was already covered (58-playtest-round9); the reported case is the
- * harder one — a stack with plenty on it, none of it aimed at Graxxlid. R64's
- * `restrict` is what makes those two the same question. */
+ * harder one — a stack with plenty on it, none of it aimed at Graxxlid. The
+ * `restrict` hook (CR 110.3a, 705.3a) is what makes those two the same question. */
 test('Graxxlid (report #70): a stack item that does NOT target me is not a legal target, so the ability is not offered', () => {
   const h = new Harness(1613);
   toDeployment(h);
@@ -594,7 +594,7 @@ test('Graxxlid: a Virus being applied to me IS an effect targeting me', () => {
   h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: virus });
   pass(h); pass(h);                                   // Graxxlid resolves
-  assert.ok(!h.state.stack.some(i => i.id === virus), 'R68: the negated virus left the stack');
+  assert.ok(!h.state.stack.some(i => i.id === virus), 'CR 704.4: the negated virus left the stack');
   assert.equal(h.state.players[A]!.hand.length, handA + 1, "the virus's controller drew a card");
   assert.ok(!ent(h, grax)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'),
     'and {Vulnerable} never landed on Graxxlid');
@@ -650,7 +650,7 @@ test('Lithoghul: dealt damage → deals that much damage to its controller', () 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lith] } });
   pass(h); pass(h);                                   // → combat damage
-  resolveAfterCombat(h);   // R261: the "dealt damage" trigger is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: the "dealt damage" trigger is stacked after combat
   assert.ok(!ent(h, atk), 'the attacker died to the 4-power block');
   assert.equal(ent(h, lith)!.damage, 1, 'Lithoghul took 1 combat damage (pre-regroup)');
   assert.equal(h.state.players[D]!.life, lifeD - 1, 'its controller took the mirrored 1');

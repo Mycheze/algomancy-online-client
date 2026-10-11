@@ -1,4 +1,4 @@
-/* R218 — scenario batch B. See scenarios.ts for the type and the worked
+/* scenario batch B (see 14-scenario-tester.md). See scenarios.ts for the type and the worked
  * example (`lithoghul-donated`), and docs/14-scenario-tester.md for why any of
  * this exists. Authored as a batch so parallel authors never share a file.
  *
@@ -43,7 +43,7 @@ const OPPONENT = 1 as Seat;
 
 export const BATCH_B: Record<string, Scenario> = {
   /**
-   * WHY THIS CARD (R218).
+   * WHY THIS CARD (see 14-scenario-tester.md).
    *
    * `unreached.ts` — "BOARD — a REPLACEMENT ('if you would create one or more
    * unit tokens, instead …'). It needs a token creation by the HOST's
@@ -63,7 +63,7 @@ export const BATCH_B: Record<string, Scenario> = {
    *     onto a host. The card is an [Augment] and `self` is the ANCHOR — the
    *     host, once it is a mod — so the whole donated path, including "YOU
    *     would create" reading off the HOST's controller, has never run. That
-   *     is R212 / docs/13 §1③'s hole in the exact family it was named for.
+   *     is docs/13 §1③'s hole in the exact family it was named for.
    *  3. THE OBSERVABLE IS A COUNT OF BODIES, and the two wrong answers land on
    *     different numbers than the right one. Four wood resources make Sylvan
    *     Sprouting create FOUR identical 1/1s in one batch:
@@ -95,7 +95,7 @@ export const BATCH_B: Record<string, Scenario> = {
       + 'four are all the same token, so "an additional copy of each unique token" is one copy.\n'
       + 'EIGHT tokens means it copied every spawn instead of every unique token (the old bug).\n'
       + 'FOUR means the augment did nothing at all.\n'
-      + '(The Foretold picks up {Unstable} when you augment it. That is R79, not this card — it\n'
+      + '(The Foretold picks up {Unstable} when you augment it. That is the modded-card rule, not this card — it\n'
       + 'only matters if the host later leaves play, and nothing here makes it.)',
     initiative: YOU,
     you: {
@@ -109,7 +109,7 @@ export const BATCH_B: Record<string, Scenario> = {
       // 8 + 4 = 12 open against a bill of 5 + 3. The wood count is NOT
       // over-provisioning: it is the scenario's arithmetic. Sylvan Sprouting
       // creates one token per wood AFFINITY, affinity counts expended
-      // resources too (R1), so paying for the augment first cannot change the
+      // resources too (CR 105.4a, 107.8), so paying for the augment first cannot change the
       // four. Metal is what is deliberately generous.
       resources: { metal: 8, wood: 4 },
     },
@@ -126,7 +126,7 @@ export const BATCH_B: Record<string, Scenario> = {
       { type: 'declareAttack', seat: OPPONENT, columns: [] },
     ],
     phase: 'deploy',
-    // deployment is simultaneous (R50) — nobody "holds priority" in it
+    // deployment is simultaneous (CR 507.3a) — nobody "holds priority" in it
     priority: null,
     // the bot's only move here is `doneDeploying`, which it takes on open and
     // which ends nothing while seat 0 is still deploying. Driven end to end
@@ -135,7 +135,7 @@ export const BATCH_B: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218).
+   * WHY THIS CARD (see 14-scenario-tester.md).
    *
    * `unreached.ts` — "CHOICE — 'you MAY discard your hand and transform me.'
    * The trigger fires and resolves; the offer is declined."
@@ -144,7 +144,7 @@ export const BATCH_B: Record<string, Scenario> = {
    *     hand and transform me into Beyond, Codex Incarnate." A 1-mana 0/2
    *     becomes an 8/3, and the price is your whole hand.
    *  2. WHAT IS AND IS NOT COVERED. 43-dark-c has hand-built coverage of both
-   *     branches and 135-exchange-and-zones covers R157 §10 (it bins as its
+   *     branches and 135-exchange-and-zones covers CR 201.4 (it bins as its
    *     FRONT face). What has never happened is the clause in a GAME: the
    *     drill's `progressAction` answers this decision the other way every
    *     time, so no play-through has ever turned the card over. That is
@@ -157,7 +157,7 @@ export const BATCH_B: Record<string, Scenario> = {
    *     (still a Scholar, or a hand that survived, or a hand discarded with no
    *     transform) is visible without reading a log line.
    *  4. It also PLAYS the card through the real path — Scholar is {Haste}
-   *     timing, so the R18 haste step opens for it, which is a window nothing
+   *     timing, so the haste step opens for it, which is a window nothing
    *     else in this batch exercises.
    */
   'scholar-transforms': {
@@ -192,7 +192,7 @@ export const BATCH_B: Record<string, Scenario> = {
     },
     opponent: { hand: [], play: [], resources: { earth: 2 } },
     prologue: () => [
-      // both seats finish planning, which opens the R18 haste step — and it
+      // both seats finish planning, which opens the haste step — and it
       // opens ONLY because seat 0 is holding a payable {Haste} card, so this
       // prologue and the scenario's hand are one fact, not two.
       { type: 'donePlanning', seat: YOU },
@@ -208,7 +208,7 @@ export const BATCH_B: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218).
+   * WHY THIS CARD (see 14-scenario-tester.md).
    *
    * `unreached.ts` — "CHOICE — 'negate up to one target effect UNLESS its
    * controller erases X cards from their bin.' The controller is offered the
@@ -216,7 +216,7 @@ export const BATCH_B: Record<string, Scenario> = {
    *
    *  1. Printed: "[Erase X cards from your bin] Negate up to one target effect
    *     unless its controller erases X cards from their bin." Two erases, one
-   *     paid by you at cast (R64 — X is fixed there) and one offered to the
+   *     paid by you at cast (CR 702.6b — X is fixed there) and one offered to the
    *     other side at resolution. The promise that has never been observed is
    *     the NEGATE, because the escape is always taken.
    *  2. WHY THE TARGET IS YOUR OWN SPELL, which is the one thing about this
@@ -318,7 +318,7 @@ export const BATCH_B: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218).
+   * WHY THIS CARD (see 14-scenario-tester.md).
    *
    * `unreached.ts` — "BOARD — 'gain control of target unit IF IT HAS a -1/-1
    * counter on it' at the after-combat step. The minus counters the fixture
@@ -326,7 +326,7 @@ export const BATCH_B: Record<string, Scenario> = {
    * target."
    *
    *  1. Printed: "After combat, gain control of target unit if it has a -1/-1
-   *     counter on it." R157 §15 / R161 is the owner's own ruling on it,
+   *     counter on it." The owner ruled on it (now CR 110.3a),
    *     verbatim: *"The wording is such that you can target any enemy, it only
    *     checks whether you gain control of it on resolution."* So the menu is
    *     every unit in the battle, and the counter is looked for once, at
@@ -350,7 +350,7 @@ export const BATCH_B: Record<string, Scenario> = {
     card: 'Stellarspore Harvester',
     why: 'the after-combat control theft, whose precondition the drill has never been able to '
       + 'build — a -1/-1 counter still standing on a still-legal target when the after-combat '
-      + 'step arrives. R157 §15 ruled the condition is checked at RESOLUTION ONLY, so this is '
+      + 'step arrives. The owner ruled the condition is checked at RESOLUTION ONLY, so this is '
       + 'also the owner re-reading his own ruling on a live board.',
     expect:
       'Your Stellarspore Harvester is attacking and they have already declined the block. The\n'
@@ -367,8 +367,8 @@ export const BATCH_B: Record<string, Scenario> = {
     you: {
       hand: [],
       // 3/5. It has to ATTACK: the after-combat event is scoped to the battle
-      // region (R12), and a Harvester standing at home never hears it. That is
-      // the R199 family's whole lesson and it is why this board has a real
+      // region (CR 601.1d), and a Harvester standing at home never hears it. That is
+      // the battle-position family's whole lesson and it is why this board has a real
       // attack in it rather than a declined one.
       play: [{ card: 'Stellarspore Harvester' }],
       // nothing to pay for — the clause is a trigger, not a cost. Kept anyway
@@ -401,14 +401,14 @@ export const BATCH_B: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218).
+   * WHY THIS CARD (see 14-scenario-tester.md).
    *
    * `unreached.ts` — "BOARD — 'cards your opponents play during battle gain
    * [Sacrifice a unit]'. It grants a COST to somebody else's cards; the drill
    * never has the opponent play a card while the augment is on."
    *
    *  1. Printed: "[Augment] Cards your opponents play during battle gain
-   *     '[Sacrifice a unit]'." R122's third CostMod channel: an IMPOSED
+   *     '[Sacrifice a unit]'." The third CostMod channel (CR 111.10): an IMPOSED
    *     bracketed additional cost on somebody else's PLAYS, paid in the cast
    *     window before the card reaches the stack.
    *  2. ⚠ THIS ONE HONESTLY NEEDS THE SECOND TAB, and there is no version of
@@ -453,8 +453,8 @@ export const BATCH_B: Record<string, Scenario> = {
     initiative: YOU,
     you: {
       hand: [],
-      // 7/9. It has to ATTACK for the same R12 reason the Harvester does: a
-      // cost modifier radiates in the region its carrier stands in, and the
+      // 7/9. It has to ATTACK for the same region reason the Harvester does: a
+      // cost modifier (CR 111.10) radiates in the region its carrier stands in, and the
       // battle is being fought in the opponent's.
       play: [{ card: 'Vengeance' }],
       resources: { light: 2 },
@@ -485,7 +485,7 @@ export const BATCH_B: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218).
+   * WHY THIS CARD (see 14-scenario-tester.md).
    *
    * `unreached.ts` — "BOARD — 'skip your draft step' only exists in a drafted
    * game; the drill plays constructed." It is also one of the FIVE entries
@@ -498,7 +498,7 @@ export const BATCH_B: Record<string, Scenario> = {
    *     as `replaceCardStep`, and the arithmetic is the OWNER'S OWN, from
    *     playtest report #87 (room XVUR): *"The way it works in constructed and
    *     cube: instead of drawing 4 and recycling 2, you draw 2 for turn + 1
-   *     for Worldbender and lose 3 life."* R162 then folded 'shared' — which
+   *     for Worldbender and lose 3 life."* CR 901.7b puts 'shared' — which
    *     is the mode every scenario room is dealt in — into that same branch.
    *  2. WHAT THE SUITE COVERS. 28-metal-c has seven tests, including both
    *     format branches and a byte-for-byte replay. What no fixture does is
@@ -518,7 +518,7 @@ export const BATCH_B: Record<string, Scenario> = {
     id: 'worldbender-card-step',
     card: 'Worldbender',
     why: 'the replaced card step, never observed in a play-through: the drill never crosses a '
-      + 'turn boundary with it in play. Scenario rooms are dealt in mode shared, which R162 '
+      + 'turn boundary with it in play. Scenario rooms are dealt in mode shared, which an owner ruling '
       + 'folded into the CONSTRUCTED branch — so this is also the live check on that ruling '
       + '(3 cards and 3 life, not the draft branch\'s 1 card and no life).',
     expect:

@@ -1,6 +1,6 @@
-/* THE RESTART FORK FALSE ALARM — R191's keys must survive a new process.
+/* THE RESTART FORK FALSE ALARM — the reference keys must survive a new process.
  *
- * R191 writes, per action, a REFERENCE KEY (what the action pointed at when it
+ * A saved game records, per action, a REFERENCE KEY (what the action pointed at when it
  * was taken) and a restore compares it with what the same action means after
  * the rebuild: a difference is a game that "was restored onto changed rules".
  * The key names an entity by the action that created it — and that action was

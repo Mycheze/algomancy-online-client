@@ -3,19 +3,19 @@
  * parallel card registration can't shift assertions; seeds are 2600-2699.
  *
  * Covers: base-setting statics in play AND virus-donated (Aberrant
- * Statweaver — layer 2, R66; see test 59 for the layer itself), the
+ * Statweaver — layer 2, CR 206.5; see test 59 for the layer itself), the
  * adjacent-ally ability mimic (Ancient One — triggered via its bookkeeping
- * when(), statics and ACTIVATED via R118's `CardDef.projects`), token copying
+ * when(), statics and ACTIVATED via `CardDef.projects`, CR 710.7), token copying
  * (Arcane Echo), token duplication with the loop guard (Automaton of
  * Abundance), pay-to-erase death feeding (Biomass
- * Devourer, R31 immediate combat triggers), base-stat exchange until regroup
- * (Body Swap), erase-and-become (Borrower of Forms — a full R118 face: name,
+ * Devourer, combat-damage triggers, CR 608.9), base-stat exchange until regroup
+ * (Body Swap), erase-and-become (Borrower of Forms — a full copy, CR 710.2: name,
  * stats, counters, attributes, text and activated abilities, permanently),
  * counters on spawn/mod + despawn cleanup (Celestial Fluxmorph), X-at-
  * resolution activation (Celestial Shifter), stack sweeps (Containment
  * Protocol), the Robot-swap half of Cosmic Conspirator, the `includeSelf`
- * cast-cost board wipe (Deformant), counter-fueled damage (Discharge), the R97 haste-step play
- * grant (Dispatch Courier), token theft + recast (Download, R8), combat
+ * cast-cost board wipe (Deformant), counter-fueled damage (Discharge), the CR 803.2b haste-step play
+ * grant (Dispatch Courier), token theft + recast (Download, CR 711.1), combat
  * hand disruption (Eldritch Dreamtender) and mod-stacking counters
  * (Evolutionary Experiment).
  */
@@ -91,7 +91,7 @@ test('Ancient One: has the triggered abilities of adjacent allies (in formation)
   finishBattle(h);
 });
 
-test('R118: Ancient One radiates an adjacent ally\'s STATIC, and stops when the column breaks', () => {
+test('CR 710.7: Ancient One radiates an adjacent ally\'s STATIC, and stops when the column breaks', () => {
   const h = new Harness(2620);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -111,7 +111,7 @@ test('R118: Ancient One radiates an adjacent ally\'s STATIC, and stops when the 
   const e = new E(h.state);
   assert.equal(e.projections(ent(h, bystander)!).filter(p => p.from === 'Glowhaven Elder').length, 2,
     'two radiators, and the text box names the card the clause is printed on for both');
-  // R118: the projection is CONTINUOUS, not a stamp — kill the neighbour
+  // CR 710.7: the projection is CONTINUOUS, not a stamp — kill the neighbour
   // mid-combat and the borrowed static is gone in the same instant
   withE(h, g => g.destroy(g.entity(elder)!, 'dies'));
   assert.deepEqual(effStats(h, bystander), [1, 1],
@@ -119,7 +119,7 @@ test('R118: Ancient One radiates an adjacent ally\'s STATIC, and stops when the 
   finishBattle(h);
 });
 
-test('R118: Ancient One projects an adjacent ally\'s face WITHOUT taking its name or its body', () => {
+test('CR 710.7: Ancient One projects an adjacent ally\'s face WITHOUT taking its name or its body', () => {
   const h = new Harness(2621);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -142,7 +142,7 @@ function activations(h: Harness, seat: Seat, id: EntityId): unknown[] {
     .map(a => (a as { via?: unknown }).via ?? 'own');
 }
 
-test('R118: Ancient One offers an adjacent ally\'s ACTIVATED ability, and loses it when the column breaks', () => {
+test('CR 710.7: Ancient One offers an adjacent ally\'s ACTIVATED ability, and loses it when the column breaks', () => {
   const h = new Harness(2628);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -175,7 +175,7 @@ test('R118: Ancient One offers an adjacent ally\'s ACTIVATED ability, and loses 
   assert.equal(new E(h.state).nameOf(ent(h, ancient)!), 'Ancient One',
     'borrowing an ABILITY is not becoming the card');
 
-  // R118: the projection is continuous, so the offer has to be too
+  // CR 710.7: the projection is continuous, so the offer has to be too
   giveResources(h, A, 'metal', 3);
   withE(h, g => g.destroy(g.entity(evoker)!, 'dies'));
   assert.deepEqual(activations(h, A, ancient), [],
@@ -187,7 +187,7 @@ test('R118: Ancient One offers an adjacent ally\'s ACTIVATED ability, and loses 
   finishBattle(h);
 });
 
-test('R118: the R9 [once] budget is keyed by FACE — two projected faces do not share one', () => {
+test('the [once] budget is keyed by FACE — two projected faces do not share one', () => {
   const h = new Harness(2629);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -198,7 +198,7 @@ test('R118: the R9 [once] budget is keyed by FACE — two projected faces do not
   const drone = spawn(h, A, 'Deferral Drone');              // [once] gain 4 debt: next card costs [3] less
   spawn(h, D, 'Unit Token');
   toNextBattle(h, A);
-  // R75 adjacency: same row, horizontally adjacent columns — a column only
+  // CR 603.2a adjacency: same row, horizontally adjacent columns — a column only
   // holds two, so the three stand side by side rather than stacked
   h.do({ type: 'declareAttack', seat: A, columns: [[blep], [ancient], [drone]] });
   assert.deepEqual(activations(h, A, ancient),
@@ -216,11 +216,11 @@ test('R118: the R9 [once] budget is keyed by FACE — two projected faces do not
   assert.deepEqual(Object.keys(ent(h, ancient)!.budgets), ['augment:Debt Blep#0'],
     'and the key names the FACE the ability came from, never the physical Ancient One');
   assert.deepEqual(activations(h, A, blep), ['augment'],
-    'and the Blep\'s own use is its own: R9 budgets live on the entity that used them');
+    'and the Blep\'s own use is its own: CR 803.4 budgets live on the entity that used them');
   finishBattle(h);
 });
 
-test('R118: an activateAbility carrying via:{face} replays byte for byte', () => {
+test('an activateAbility carrying via:{face} replays byte for byte', () => {
   const h = new Harness(2630);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -248,7 +248,7 @@ test('R118: an activateAbility carrying via:{face} replays byte for byte', () =>
 
 // ── Arcane Echo ──────────────────────────────────────────────────────────
 
-test('Arcane Echo: creates a copy of a chosen token (the unit copy arrives in the BATTLE region, R115)', () => {
+test('Arcane Echo: creates a copy of a chosen token (the unit copy arrives in the BATTLE region, CR 601.5)', () => {
   const h = new Harness(2603);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -258,7 +258,7 @@ test('Arcane Echo: creates a copy of a chosen token (the unit copy arrives in th
   let robot = 0;
   withE(h, e => { robot = e.spawnUnit(D, 'Robot', e.homeRegion(D), { token: true, counters: 2 }).id; });
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  // R64: "target token" is chosen AT CAST, before anyone may respond
+  // CR 110.1a: "target token" is chosen AT CAST, before anyone may respond
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arcane Echo') });
   assert.equal(h.state.decision!.seat, A, 'the target is asked for as it is cast');
   pick(h, { unit: robot });
@@ -268,7 +268,7 @@ test('Arcane Echo: creates a copy of a chosen token (the unit copy arrives in th
   assert.ok(copies[0]!.token, 'the copy is a token');
   assert.equal(copies[0]!.counters, 2, 'with the same X (counters)');
   assert.equal(copies[0]!.region, h.state.battle!.region,
-    'R115: the copy arrives where the SOURCE is — this spell was cast in the battle region');
+    'CR 601.5: the copy arrives where the SOURCE is — this spell was cast in the battle region');
   assert.notEqual(h.state.battle!.region, new E(h.state).homeRegion(A), 'which is not the caster\'s home');
   assert.ok(ent(h, robot), 'the original is untouched');
   assert.ok(h.state.players[A]!.bin.includes('Arcane Echo'), 'the spell resolved → bin');
@@ -290,15 +290,15 @@ test('Automaton of Abundance: your unit tokens are duplicated; nontokens are not
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, 1, 'nontoken spawns are not duplicated');
 });
 
-test('R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras', () => {
-  // R104, and the exact defect playtest report #60 named: "Automaton of
+test('CR 201.3: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras', () => {
+  // CR 708.9, and the exact defect playtest report #60 named: "Automaton of
   // Abundance fires per spawn so N identical tokens yield N copies instead of
   // one per unique." Manufacture creates a Robot 3, a Robot 2 and a Robot 1 in
   // ONE resolution, which is one creation batch — that half is unchanged.
   //
   // WHAT "UNIQUE" MEANS IS REVERSED. This used to key on the card NAME alone
   // (three Robots = one unique token = one extra) on the argument that
-  // `Entity.card` is the engine's definition of identity. R157 §24, owner
+  // `Entity.card` is the engine's definition of identity. Now CR 201.3; the owner,
   // 2026-08-25: *"'Unique' means unique (name, X) pair — you get two extras."*
   // Three different X are three unique tokens, so three extras.
   const h = new Harness(2620);
@@ -341,10 +341,10 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
   h.do({ type: 'declareAttack', seat: A, columns: [[front, dev]] });
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk] } });
-  pass(h); pass(h);                                         // combat: both 1/1s die → two triggers (R31)
-  // R34: the two triggers are IDENTICAL (same card/ability/label) — no
+  pass(h); pass(h);                                         // combat: both 1/1s die → two triggers (CR 608.9)
+  // CR D1.2d: the two triggers are IDENTICAL (same card/ability/label) — no
   // ordering decision; they enqueue in event order (A's own token's death first)
-  // R261: both are held through the damage step and stacked together in the
+  // CR 608.9b: both are held through the damage step and stacked together in the
   // after-combat window. The order they resolve in is unchanged, and so is
   // everything below.
   pass(h); pass(h);                                         // after-combat: the first resolves
@@ -360,16 +360,16 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
   finishBattle(h);
 });
 
-// R140 — THE INNOCENT COPY, and this is the card where getting it wrong is
+// CR 405.6 — THE INNOCENT COPY, and this is the card where getting it wrong is
 // worst: Biomass Devourer ERASES what it finds, so a miss removes a card from
 // the game permanently. The fixture is the ruling's: an innocent copy of some
 // card name already resting in the bin, a second copy of that name dying and
-// being swept straight back out ({Unstable}, R137), and the only correct
+// being swept straight back out ({Unstable}: the engine bins then sweeps it; CR 801.2h never bins it, CT-246), and the only correct
 // answer is NEITHER. `bin.lastIndexOf(name)` cannot tell them apart — a bin
-// holds bare card NAMES — so the card is told WHICH copy died: R140 stamps
-// (binSeat, binNth) onto the 'died' event, the same bin identity R131 already
+// holds bare card NAMES — so the card is told WHICH copy died: the engine stamps
+// (binSeat, binNth) onto the 'died' event (CR 405.6), the same bin identity it already
 // put on 'trashed'.
-test('R140: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept', () => {
+test('CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept', () => {
   const h = new Harness(2694);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -378,7 +378,7 @@ test('R140: Biomass Devourer does NOT erase an innocent older copy when the dead
   giveResources(h, A, 'metal', 2);                       // the [two] is payable, so that is not what stops it
   const victim = spawn(h, A, 'Good Whale');
   withE(h, e => {
-    e.entity(victim)!.unstable = true;                   // R96 stamp → R137: bin, trash, then the sweep
+    e.entity(victim)!.unstable = true;                   // CR 803.8c stamp → bin, trash, then the sweep (CR 801.2h erases instead, CT-246)
     e.destroy(e.entity(victim)!, 'dies');
   });
   assert.equal(h.state.decision, null,
@@ -389,12 +389,12 @@ test('R140: Biomass Devourer does NOT erase an innocent older copy when the dead
   assert.equal(h.q.openMana(A), 2, 'the [two] was never asked for');
 });
 
-// R140, the second miss the same stamp closes and one that needs no sweep at
+// CR 405.6, the second miss the same stamp closes and one that needs no sweep at
 // all: a death event's `seat` is the CONTROLLER while the card bins to its
 // OWNER. Searching by name found the controller's bin first, so a stolen unit
 // dying erased a same-named card out of the THIEF's bin and left the dead
 // card's own copy sitting in its owner's. The stamp names the bin.
-test('R140: a stolen unit dies — the erase reaches the OWNER\'s bin, not the controller\'s', () => {
+test('CR 405.6: a stolen unit dies — the erase reaches the OWNER\'s bin, not the controller\'s', () => {
   const h = new Harness(2695);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -402,7 +402,7 @@ test('R140: a stolen unit dies — the erase reaches the OWNER\'s bin, not the c
   const dev = spawn(h, A, 'Biomass Devourer');
   giveResources(h, A, 'metal', 2);
   const victim = spawn(h, D, 'Good Whale');              // owned by D
-  withE(h, e => e.giveControl(e.entity(victim)!, A));    // R112: controlled by A, still owned by D
+  withE(h, e => e.giveControl(e.entity(victim)!, A));    // CR 711.1: controlled by A, still owned by D
   assert.equal(ent(h, victim)!.controller, A, 'A controls it');
   assert.equal(ent(h, victim)!.owner, D, 'but D still owns it');
   withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → D's bin (the owner's)
@@ -451,7 +451,7 @@ test('Borrower of Forms: erases the target and takes its stats and counters', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: whale });
-  pass(h); pass(h);                                         // R147: ONE resolution — erase, spawn, copy
+  pass(h); pass(h);                                         // CR 303.11: ONE resolution — erase, spawn, copy
   assert.ok(!ent(h, whale), 'the target was erased');
   assert.ok(!h.state.players[D]!.bin.includes('Good Whale'), 'erased, not binned');
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
@@ -461,8 +461,8 @@ test('Borrower of Forms: erases the target and takes its stats and counters', ()
   assert.deepEqual(effStats(h, bof.id), [9, 7], '"become" is permanent — survives regroup');
 });
 
-/** R118: cast Borrower of Forms at `target` and resolve it. Returns the
- * spawned Borrower body, already wearing the borrowed face — R147: the copy is
+/** CR 710.2: cast Borrower of Forms at `target` and resolve it. Returns the
+ * spawned Borrower body, already wearing the borrowed face — CR 303.11: the copy is
  * part of the one resolution that spawns the body, so there is no second
  * resolution to pass through here. */
 function borrow(h: Harness, A: Seat, target: EntityId): Entity {
@@ -473,7 +473,7 @@ function borrow(h: Harness, A: Seat, target: EntityId): Entity {
   return unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
 }
 
-test('R118: Borrower of Forms takes the NAME, the attributes and the card TEXT', () => {
+test('CR 710.1: Borrower of Forms takes the NAME, the attributes and the card TEXT', () => {
   const h = new Harness(2622);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -484,13 +484,13 @@ test('R118: Borrower of Forms takes the NAME, the attributes and the card TEXT',
   const bof = borrow(h, A, siren);
   const e = new E(h.state);
   assert.equal(e.nameOf(bof), 'Sporebloom Siren', 'the GAME name is the borrowed one');
-  assert.equal(bof.card, 'Borrower of Forms', 'R118 ruling 1: the PHYSICAL card never changes');
+  assert.equal(bof.card, 'Borrower of Forms', 'CR 710.1: the PHYSICAL card never changes');
   assert.ok(e.ownAttrs(bof).has('Poisonous'), 'the attributes came with the face');
   assert.deepEqual(effStats(h, bof.id), [2, 2], 'and so did the body');
   finishBattle(h);
 });
 
-test('R118: a Borrower that became something else still bins as BORROWER OF FORMS (ruling 1)', () => {
+test('CR 201.5: a Borrower that became something else still bins as BORROWER OF FORMS (ruling 1)', () => {
   const h = new Harness(2623);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -507,12 +507,12 @@ test('R118: a Borrower that became something else still bins as BORROWER OF FORM
     'and the copied card, which nobody ever owned, does not');
 });
 
-// R336 / CT-225 INVERTS this test. It pinned R118 ruling 2's second half —
+// CR 710.2a / CT-225 INVERTS this test. It pinned the old copy ruling's second half —
 // "but it IS Unstable … the copy is still considered modded" (the owner). The
 // RAQ write-up ("Borrower of Forms", the authority — owner 2026-10-09) says a
 // freshly resolved copy of a modded unit is NOT Unstable. The text half of the
 // ruling stands: the copy still inherits the mods' text.
-test('R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}', () => {
+test('CR 710.2a: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}', () => {
   const h = new Harness(2624);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -529,13 +529,13 @@ test('R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {U
   assert.deepEqual(ref.modText, ['Glowhaven Elder (augmented)'],
     'the owner: "inherit the mods text" — the TEXT, not the mod entity');
   assert.equal(bof.mods.length, 0, 'no mod ENTITY was cloned');
-  assert.ok(!new E(h.state).isUnstable(bof), 'R336: a fresh copy of a modded unit is not Unstable');
+  assert.ok(!new E(h.state).isUnstable(bof), 'CR 710.2a: a fresh copy of a modded unit is not Unstable');
   withE(h, e => e.destroy(e.entity(bof.id)!, 'dies'));
   assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'),
     'so it dies to the bin like any unmodded unit');
 });
 
-test('R118: the Borrower\'s face is PERMANENT and its layer-1 numbers are the borrowed BASE', () => {
+test('CR 710.2: the Borrower\'s face is PERMANENT and its layer-1 numbers are the borrowed BASE', () => {
   const h = new Harness(2625);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -555,7 +555,7 @@ test('R118: the Borrower\'s face is PERMANENT and its layer-1 numbers are the bo
   assert.equal(new E(h.state).nameOf(ent(h, bof.id)!), 'Unit Token', 'name included');
 });
 
-test('R118: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps it permanently', () => {
+test('CR 710.2: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps it permanently', () => {
   const h = new Harness(2631);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -567,7 +567,7 @@ test('R118: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps i
   assert.equal(new E(h.state).nameOf(bof), 'Omniwield Evoker');
   giveResources(h, A, 'metal', 3);                          // the [three]
   // the borrowed face IS the Borrower's identity, so its abilities are its
-  // own — the same `via: undefined` a pre-R118 log carries
+  // own — the same `via: undefined` a pre-copy-layer log carries
   assert.deepEqual(activations(h, A, bof.id), ['own'],
     'the erased unit\'s activated ability is offered on the body that became it');
   h.do({ type: 'activateAbility', seat: A, entityId: bof.id, abilityIndex: 0 });
@@ -585,7 +585,7 @@ test('R118: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps i
   finishBattle(h);
 });
 
-/* ── R147: the body ENTERS as the copy ─────────────────────────────────────
+/* ── CR 303.11: the body ENTERS as the copy ─────────────────────────────────────
  *
  * CARD-TODO #37. Every test below needs the caster's own ally-spawn watchers
  * to be standing WHERE THE BODY ARRIVES, and a spell unit's body arrives in
@@ -598,7 +598,7 @@ test('R118: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps i
  * nobody was looking.
  */
 
-/** R147: set up "A defends at home, D attacks", leaving A holding priority in
+/** CR 303.11: set up "A defends at home, D attacks", leaving A holding priority in
  * the attack window with `metal` to spend. Returns the battle region. */
 function defendingCaster(h: Harness, A: Seat, D: Seat, metal = 7): number {
   const raider = spawn(h, D, 'Unit Token');
@@ -609,7 +609,7 @@ function defendingCaster(h: Harness, A: Seat, D: Seat, metal = 7): number {
   return h.state.battle!.region;
 }
 
-test('R147: the Oracle\'s "defense > power" watcher sees the COPIED body, not Borrower of Forms', () => {
+test('CR 303.11: the Oracle\'s "defense > power" watcher sees the COPIED body, not Borrower of Forms', () => {
   const h = new Harness(2640);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -622,7 +622,7 @@ test('R147: the Oracle\'s "defense > power" watcher sees the COPIED body, not Bo
   pick(h, { unit: crab });
   const hand = h.state.players[A]!.hand.length;
   pass(h); pass(h);                                         // resolve the spell
-  // R143's preference: check the QUEUEING, which is the instant the watcher
+  // As in the CR 303.10 tests: check the QUEUEING, which is the instant the watcher
   // read the body — not the card, which lands a whole resolution later.
   assert.ok(h.log.some(l => l.includes('Trigger: Nectar Ridge Oracle')),
     'Borrower of Forms enters as a 2/3 Bumblecrab, so the Oracle triggers');
@@ -632,7 +632,7 @@ test('R147: the Oracle\'s "defense > power" watcher sees the COPIED body, not Bo
   finishBattle(h);
 });
 
-test('R147: becoming the copy is NOT a trigger — no spurious trigger-ordering question', () => {
+test('CR 303.11: becoming the copy is NOT a trigger — no spurious trigger-ordering question', () => {
   const h = new Harness(2641);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -650,7 +650,7 @@ test('R147: becoming the copy is NOT a trigger — no spurious trigger-ordering 
   finishBattle(h);
 });
 
-/** R147: what a `spawned` watcher SEES, at the instant the event fires.
+/** CR 303.11: what a `spawned` watcher SEES, at the instant the event fires.
  * `E.fireEvent` is the single door every listener goes through, so patching it
  * reads the body at exactly the moment the whole board reads it — which is the
  * only moment in question, since "afterwards" is what already worked. */
@@ -675,7 +675,7 @@ function watchBorrowerSpawn(h: Harness, fn: () => void): { name: string; stats: 
   return seen;
 }
 
-test('R147: the body wears the borrowed IDENTITY from the instant it enters play', () => {
+test('CR 303.11: the body wears the borrowed IDENTITY from the instant it enters play', () => {
   const h = new Harness(2642);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -688,13 +688,13 @@ test('R147: the body wears the borrowed IDENTITY from the instant it enters play
   });
   assert.ok(seen, 'the body spawned and the spawn event fired');
   assert.equal(seen!.name, 'Sporebloom Siren',
-    'R147: it ENTERS as the thing it copied — it is never a plain Borrower of Forms in play');
+    'CR 303.11: it ENTERS as the thing it copied — it is never a plain Borrower of Forms in play');
   assert.deepEqual(seen!.stats, [2, 2], 'with the borrowed body, not the Borrower\'s own 2/2… ');
   assert.ok(seen!.attrs.has('Poisonous'), '…and the borrowed attributes');
   finishBattle(h);
 });
 
-test('R147 (negative control): a Borrower whose target is gone spawns no body at all', () => {
+test('CR 303.11 (negative control): a Borrower whose target is gone spawns no body at all', () => {
   const h = new Harness(2643);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -706,15 +706,15 @@ test('R147 (negative control): a Borrower whose target is gone spawns no body at
   withE(h, e => e.destroy(e.entity(crab)!, 'dies'));         // the form walks away in response
   pass(h); pass(h);
   assert.ok(!unitsOf(h, A).some(u => u.card === 'Borrower of Forms'),
-    'R5: the whole item fizzles, so there is no body to wear anything');
-  assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'), 'and the card is binned (R40)');
+    'CR 704.6: the whole item fizzles, so there is no body to wear anything');
+  assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'), 'and the card is binned (CR 406.4)');
   assert.ok(!h.log.some(l => l.includes('Trigger: Nectar Ridge Oracle')),
     'nothing spawned, so nothing was watched');
   assert.equal(h.state.decision, null, 'and nothing is left half-asked');
   finishBattle(h);
 });
 
-test('R147: two Borrowers of Forms in ONE region each keep their own borrowed face', () => {
+test('CR 303.11: two Borrowers of Forms in ONE region each keep their own borrowed face', () => {
   const h = new Harness(2644);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -752,7 +752,7 @@ test('Celestial Fluxmorph: counters on spawn and on being modded; all removed at
   const fm = spawn(h, A, 'Celestial Fluxmorph');            // spawn trigger: +1 to each of your units
   assert.deepEqual(effStats(h, t1), [2, 2]);
   assert.deepEqual(effStats(h, fm), [2, 2], 'itself included');
-  // "or become modded": Dispatch Courier serves as the mod (its R97 grant is
+  // "or become modded": Dispatch Courier serves as the mod (its CR 803.2b grant is
   // a play permission, so it adds no stats to the host)
   giveResources(h, A, 'metal', 2);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dispatch Courier'), hostId: fm });
@@ -774,7 +774,7 @@ test('Celestial Shifter: [x] makes it base X/X until regroup (X paid at ACTIVATI
   const sh = spawn(h, A, 'Celestial Shifter');              // 2/2
   giveResources(h, A, 'metal', 5);
   h.do({ type: 'activateAbility', seat: A, entityId: sh, abilityIndex: 0, via: 'augment' });
-  // R196: the [x] is a `payMana` cast COST, paid a point at a time in the cast
+  // CR 705.3b: the [x] is a `payMana` cast COST, paid a point at a time in the cast
   // window — "pay 1 more" plus "that's enough", the shape every variable cost
   // in the pool has, instead of one X=0..5 menu at resolution.
   for (let k = 0; k < 5; k++) pick(h, { payMana1: true });
@@ -800,7 +800,7 @@ test('Containment Protocol: negates all triggered and activated effects on the s
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
   pass(h); pass(h);                                         // resolve the Protocol first
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect was negated');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated trigger left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated trigger left the stack at once');
   assert.ok(ent(h, dTok), 'the token was never recalled');
   finishBattle(h);
 });
@@ -808,7 +808,7 @@ test('Containment Protocol: negates all triggered and activated effects on the s
 // ── Cosmic Conspirator ───────────────────────────────────────────────────
 
 test('Cosmic Conspirator: a created Robot may become a Fireball of the same X, and no Robot ever exists', () => {
-  // R104. The old implementation really created the Robot, fired a `spawned`
+  // CR 708.3. The old implementation really created the Robot, fired a `spawned`
   // for it, asked, and then erased it — so a token the card says was never
   // created was on the board and in the event stream. The replacement is
   // consulted BEFORE anything exists, which is what "you would create" means,
@@ -915,7 +915,7 @@ test('Deformant: sacrifice me + an ally, delete all units costing our counter to
   finishBattle(h);
 });
 
-test('R77: Deformant is not offered with no other ally to sacrifice', () => {
+test('CR 705.3a: Deformant is not offered with no other ally to sacrifice', () => {
   const h = new Harness(2620);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -1006,7 +1006,7 @@ test('Deformant: the counter total is read off the RECEIPT as of payment, not of
 
 test('Deformant: all or nothing — it never half-pays when the second sacrifice is unavailable', () => {
   // `canPayCastCost` demands BOTH halves up front, which is what stops the
-  // source dying for a cost whose remainder cannot be paid. R110 applies the
+  // source dying for a cost whose remainder cannot be paid. CR 111.14 applies the
   // same all-or-nothing rule to a multiplied graft cost.
   const h = new Harness(2623);
   toDeployment(h);
@@ -1043,9 +1043,9 @@ test('Discharge: remove X +1/+1 counters from allies, deal X to target unit', ()
   giveResources(h, A, 'metal', 1);                          // m/1
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
-  // R64: the bracketed cost is paid AT CAST — X is fixed and the counters are
+  // CR 702.4, 702.6b: the bracketed cost is paid AT CAST — X is fixed and the counters are
   // gone before the spell is ever on the stack for anyone to answer.
-  // The VARIABLE cost comes first (R64): X sizes the spell, so it is settled
+  // The VARIABLE cost comes first (CR 702.3a): X sizes the spell, so it is settled
   // with the mana X, before targets are asked for.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Discharge') });
   pick(h, { counterFrom: a1 }); pick(h, { counterFrom: a1 }); pick(h, { counterFrom: a2 });
@@ -1079,7 +1079,7 @@ test('Dispatch Courier: plays as a 2/1 and attaches as an augment', () => {
 });
 
 test('Dispatch Courier: "play a unit during the mana step as if it had [Haste]"', () => {
-  // R97, report #74 (WEHH): "Dispatch Courier didn't give me the option to
+  // CR 803.2b, report #74 (WEHH): "Dispatch Courier didn't give me the option to
   // play a card with haste". All three gates in one run — the step OPENS
   // (canHaste), the play is OFFERED (legalActions) and it is ACCEPTED
   // (playAtTiming), for a card whose printed timing is deploy.
@@ -1138,7 +1138,7 @@ test('Dispatch Courier: a {Battle} unit stays a battle card even with the grant'
 });
 
 test('Dispatch Courier: no Courier, no OFFER — the grant is what makes the play legal', () => {
-  // R228 moved the negative control from the WINDOW to the OFFER. The step
+  // Making the haste step unconditional (CR 504.5) moved the negative control from the WINDOW to the OFFER. The step
   // opens for everyone now (the window can no longer report what is in a
   // hand), so the thing that must still turn on the grantor is the play
   // itself: with no Courier on the board, the deploy unit is neither offered
@@ -1149,7 +1149,7 @@ test('Dispatch Courier: no Courier, no OFFER — the grant is what makes the pla
   const idx = give(h, A, 'Dispatch Courier');
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.deepEqual(h.state.hasteDone, [false, false], 'the step opens regardless (R228)');
+  assert.deepEqual(h.state.hasteDone, [false, false], 'the step opens regardless (CR 504.5)');
   assert.deepEqual(h.legal(A).map(a => a.type), ['doneHaste'],
     'but with no grantor there is nothing to do in it');
   assert.throws(() => h.do({ type: 'playCard', seat: A, handIndex: idx }),
@@ -1171,14 +1171,14 @@ test('Download: steals a chosen enemy token; a stolen Fireball recasts with new 
     fb = e.createSpellToken(D, 'Fireball', 3, e.homeRegion(D)).id;
   });
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  // R64: "target token" is a CAST-TIME target — the playtest report was
+  // CR 110.1a: "target token" is a CAST-TIME target — the playtest report was
   // "Download didn't have me target anything".
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
   assert.equal(h.state.decision!.options.length, 2, 'both enemy tokens offered — and only those');
   notOffered(h, { unit: atk }, 'your own attacker is not an enemy token');
   pick(h, { unit: fb });
   pass(h); pass(h);                                         // resolve
-  assert.equal(ent(h, fb)!.controller, A, 'the Fireball swapped sides (R8)');
+  assert.equal(ent(h, fb)!.controller, A, 'the Fireball swapped sides (CR 711.1)');
   assert.equal(ent(h, fb)!.owner, D, 'owner unchanged');
   // "you may choose new targets": the new controller casts it fresh
   h.do({ type: 'castSpellToken', seat: A, entityId: fb });
@@ -1190,7 +1190,7 @@ test('Download: steals a chosen enemy token; a stolen Fireball recasts with new 
 
 // ── Eldritch Dreamtender ─────────────────────────────────────────────────
 
-test('Eldritch Dreamtender: connects → sacrifices itself to discard from that hand; both are TRASHES (R40)', () => {
+test('Eldritch Dreamtender: connects → sacrifices itself to discard from that hand; both are TRASHES (CR 801.2a)', () => {
   const h = new Harness(2616);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -1202,8 +1202,8 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   const dHand = h.state.players[D]!.hand.slice();
   pass(h); pass(h);                                         // combat: 1 to D → the trigger
   assert.equal(h.state.players[D]!.life, 29);
-  // R261: the connect trigger is stacked in the after-combat window instead of
-  // resolving inside the damage step. R73's shape is untouched — the sacrifice
+  // CR 608.9b: the connect trigger is stacked in the after-combat window instead of
+  // resolving inside the damage step. The engine's cast-cost reading of the sacrifice (CR 111.8 differs, F-U04-5) is untouched — the sacrifice
   // is still paid on the way to the stack, the discard is still chosen at
   // resolution — and every assertion below is the one that was here.
   pass(h); pass(h);                                         // after-combat: it resolves
@@ -1216,7 +1216,7 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   assert.equal(h.state.players[D]!.hand.length, dHand.length - 1, 'one card discarded');
   assert.ok(h.state.players[D]!.bin.includes(dHand[0]!), 'to its owner\'s bin');
   assert.ok(h.state.seenHand[A], 'the look is remembered client-side');
-  // R40: the discard is routed through E.discardFromHand, so it TRASHES —
+  // CR 801.2e: the discard is routed through E.discardFromHand, so it TRASHES —
   // attributed to the hand's owner (the bin the card enters is theirs), NOT
   // to the Dreamtender's controller who chose the card.
   const trashes = h.events.filter(ev => ev.type === 'trashed');
@@ -1226,7 +1226,7 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   assert.equal(discard!.data!['from'], 'hand');
   // and the self-sacrifice is a trash too, by the Dreamtender's own owner
   const sac = trashes.find(ev => ev.data?.['card'] === 'Eldritch Dreamtender');
-  assert.ok(sac, 'sacrificing is trashing (R40)');
+  assert.ok(sac, 'sacrificing is trashing (CR 801.2a)');
   assert.equal(sac!.data!['seat'], A);
   assert.equal(sac!.data!['from'], 'play');
   finishBattle(h);
@@ -1240,8 +1240,8 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   // effect.run — at resolution, after a whole priority window with the unit
   // still on the board.
   //
-  // R73 (Bena, 2026-08-22) makes it a real cast cost:
-  // `{ kind: 'sacrificeUnits', from: 'self', n: 1 }`. R64/R67 already settle
+  // The owner's ruling (Bena, 2026-08-22) makes it a real cast cost (CR 111.8 differs, F-U04-5):
+  // `{ kind: 'sacrificeUnits', from: 'self', n: 1 }`. CR 706.2, 702.5 already settle
   // bracketed costs in the cast window for triggered items too, so the payment
   // now lands BEFORE the trigger is a thing anyone can answer.
   const h = new Harness(2618);
@@ -1253,19 +1253,19 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                         // combat damage → trigger
-  // R261 moved the window, not the ordering: the trigger is stacked after
+  // Stacking after combat (CR 608.9b) moved the window, not the ordering: the trigger is stacked after
   // combat, and the sacrifice is paid as it goes ON the stack there — so the
   // Dreamtender is in the bin before the first priority window, one pass
-  // before anyone could answer the trigger, which is exactly R73's claim.
+  // before anyone could answer the trigger, which is exactly the engine's reading; CR 111.8 differs (F-U04-5).
   assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');
   assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'), 'and it is in the bin');
   pass(h); pass(h);                                         // after-combat: it resolves
   assert.equal(h.state.decision!.seat, A, 'only now is the discard chosen');
   // the log order is the proof: the payment lands between the trigger being
   // QUEUED and the trigger RESOLVING — i.e. in the cast window, which is where
-  // a bracketed cost belongs (R64/R67)
+  // a bracketed cost belongs (CR 111.2, 702.5)
   //
-  // Read through `logFor(h, A)` and not `h.log` (R203 / CT-84). Both lines are
+  // Read through `logFor(h, A)` and not `h.log` (CT-84). Both lines are
   // PUBLIC and this test is about ordering, not secrecy — but the Dreamtender
   // also prints "look at that player's hand", and 174-secrecy-is-seat-aware
   // will not let an assertion name a private-look card while reading the
@@ -1282,11 +1282,11 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   finishBattle(h);
 });
 
-test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)', () => {
+test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (CR 111.8)', () => {
   // The other deliberate consequence of the ruling: the printed "sacrifice me.
   // If you do, …" loses its if-you-do. A choice-free cost on a spell/trigger's
   // OWN effect is charged outright — the decline option only exists for an
-  // optional grafted rider. The dead-source half of R73 (an unpayable cost
+  // optional grafted rider. The dead-source half of that reading (an unpayable cost
   // skips the part) is pinned on the primitive in test/32-cast-costs.
   const h = new Harness(2619);
   toDeployment(h);
@@ -1297,7 +1297,7 @@ test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever of
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
-  pass(h); pass(h);   // R261: the trigger is stacked after combat; this resolves it
+  pass(h); pass(h);   // CR 608.9b: the trigger is stacked after combat; this resolves it
   // the only decision raised is the discard — never "pay the cost?"
   assert.ok(!h.state.decision!.options.some(o => /Don't pay|Decline/.test(o.label)),
     'no way to keep the Dreamtender and still look at the hand');
@@ -1318,21 +1318,21 @@ test('Evolutionary Experiment: +2 counters when applied as a mod and on every la
   assert.equal(ent(h, host)!.counters, 2, 'its own application counts as "applied as a mod"');
   assert.deepEqual(effStats(h, host), [3, 3]);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Evolutionary Experiment'), hostId: host });
-  // R34: both donated texts fire on the second mod, but they are IDENTICAL
+  // CR D1.2d: both donated texts fire on the second mod, but they are IDENTICAL
   // (same card/ability/label) — no ordering decision, both resolve in order
-  assert.equal(h.state.decision, null, 'identical triggers skip the ordering decision (R34)');
+  assert.equal(h.state.decision, null, 'identical triggers skip the ordering decision (CR D1.2d)');
   assert.equal(ent(h, host)!.counters, 6, '2 + (2 from each of the two mods)');
   assert.deepEqual(effStats(h, host), [7, 7]);
 });
 
-// ── R148 / CT-38: Download routes its steal through E.giveControl ─────────
+// ── CT-38: Download routes its steal through E.giveControl ─────────
 //
 // "Target token" is not only spell tokens — `pushUnitTargets` offers UNIT
 // tokens too, and a unit token can be augmented. Download used to flip
 // `tok.controller` by hand and unslot it locally, which stole the body and
 // left its augments answering to the seat it was taken from. The spell-token
 // case above never saw it, because a spell token has no mods.
-test('Download steals a MODDED unit token: the augment changes controller with it, and it leaves the blocker grid (R148/CT-38)', () => {
+test('Download steals a MODDED unit token: the augment changes controller with it, and it leaves the blocker grid (CR 720.6e/CT-38)', () => {
   const h = new Harness(2696);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -1360,9 +1360,9 @@ test('Download steals a MODDED unit token: the augment changes controller with i
   pick(h, { unit: robot });
   pass(h); pass(h);                                         // resolve
 
-  assert.equal(ent(h, robot)!.controller, A, 'the Robot swapped sides (R8)');
+  assert.equal(ent(h, robot)!.controller, A, 'the Robot swapped sides (CR 711.1)');
   assert.equal(ent(h, robot)!.owner, D, 'owner unchanged');
-  assert.equal(ent(h, mod)!.controller, A, 'and its augment swapped sides WITH it (R112)');
+  assert.equal(ent(h, mod)!.controller, A, 'and its augment swapped sides WITH it (CR 711.2)');
   assert.ok(!Object.values(h.state.battle!.blocks).some(col => col.includes(robot)),
     'a stolen blocker leaves the grid it was declared in');
   // CT-39: the typed event, with the seats and the region of the handover

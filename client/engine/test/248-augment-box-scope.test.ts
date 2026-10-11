@@ -1,8 +1,8 @@
 /*
- * 248 · R268 — A MOD RADIATES ITS [Augment] BOX AND NOTHING ELSE
+ * 248 · CR 721.1 — A MOD RADIATES ITS [Augment] BOX AND NOTHING ELSE
  *
  * A card that is PLAYED reads its whole text box: its body text, and (Manual
- * Q&A, quoted at engine.ts::fireEvent and in the R127 write-up) its own
+ * Q&A, quoted at engine.ts::fireEvent and in the Ancient One write-up, now CR 710.7) its own
  * `[Augment]` line too. A card that is APPLIED as an augment reads ONLY the
  * `[Augment]` line. That is the owner's ruling of 2026-08-30, filed as a
  * general rule and not as a card fix:
@@ -188,7 +188,7 @@ function boardWith(name: string, as: 'unit' | 'mod'): Harness {
 
 test('§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod', () => {
   // the derived population: cards printing BOTH a body and a box, whose BODY
-  // declares a continuous channel. That is the whole set in which R268 can be
+  // declares a continuous channel. That is the whole set in which CR 721.1 can be
   // observed at all, and it is computed, never typed.
   const population = BOTH_HALVES.filter(n => bodyChannels(n).includes('statics'));
   assert.ok(population.length >= 1,
@@ -214,7 +214,7 @@ test('§3 GUARD: a card that prints both halves radiates its body clause from pl
     if (expected === 0) {
       assert.equal(asMod, 0,
         `${name} declares its static in the BODY — outside its [Augment] box — and it is still `
-        + `radiating (${asMod} projection(s)) while the card is an augment mod. R268: applying a `
+        + `radiating (${asMod} projection(s)) while the card is an augment mod. CR 721.1: applying a `
         + 'card as an augment brings ONLY its [Augment] box; the body text does nothing.');
     }
   }
@@ -226,7 +226,7 @@ test('§3 GUARD: a card that prints both halves radiates its body clause from pl
 
 test('§4 PIN: a text-box [Augment] static still transfers to the host it is applied to', () => {
   // Prickly Protector — "[Augment] I gain +1/+1 for each other ally" — is the
-  // reason `staticsFor` reads statics off mods in the first place. R268 moves
+  // reason `staticsFor` reads statics off mods in the first place. The augment-box change moves
   // where the clause is DECLARED; it must not change what it does.
   const h = new Harness(2681);
   toDeployment(h);
@@ -240,7 +240,7 @@ test('§4 PIN: a text-box [Augment] static still transfers to the host it is app
 });
 
 test('§5 PIN: a card played normally still reads its own [Augment] box', () => {
-  // The Manual Q&A the whole ruling hangs off: R268 is NOT symmetric. The box
+  // The Manual Q&A the whole ruling hangs off: CR 721.1 is NOT symmetric. The box
   // is live in both modes; only the BODY is mod-silent.
   const h = new Harness(2682);
   toDeployment(h);

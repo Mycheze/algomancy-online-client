@@ -4,7 +4,7 @@
     "kind": "g-other",
     "rule": "combat.counterattack.round-two.no-round-one",
     "tier": 2,
-    "summary": "R15's heading says it was resolved by the RAQ thread 'Temporal Rift vs NIT sending counter-attack', but that thread is still open ([Considered]), so the claim it relies on is not a ruling. The rule stands anyway, on the Manual's NOTE.",
+    "summary": "The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”)’s heading says it was resolved by the RAQ thread 'Temporal Rift vs NIT sending counter-attack', but that thread is still open ([Considered]), so the claim it relies on is not a ruling. The rule stands anyway, on the Manual's NOTE.",
     "seeAlso": [
       {
         "id": "D-U09-5",
@@ -25,18 +25,18 @@
         "quote": "The NIT can still declare attacks even if the IT decides not to attack."
       },
       {
-        "source": "R15",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "## R15 ⚠ — Round-2 attackers when round 1 had no battle (⚠ resolved by RAQ \"Temporal Rift vs NIT sending counter-attack\")"
       }
     ],
-    "resolution": "The rule cites the printed NOTE as its authority and R15 for 'any of its units'. Register fix: R15's heading mark should cite the Manual p.20 NOTE rather than an open thread (or say the thread is open)."
+    "resolution": "The rule cites the printed NOTE as its authority and the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) for 'any of its units'. Register fix: The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”)’s heading mark should cite the Manual p.20 NOTE rather than an open thread (or say the thread is open)."
   },
   {
     "id": "D-U13-3",
     "kind": "f-register-chain-wrong",
     "rule": "combat.counterattack.round-two.may-decline",
     "tier": 2,
-    "summary": "R36 ('A lone sent counterattacker auto-forms in round 2') is still presented as current, but the guard test was flipped on 2026-08-24 to assert the opposite: a single sent counterattacker is NOT auto-formed and declining is legal. No ruling records the reversal.",
+    "summary": "The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) ('A lone sent counterattacker auto-forms in round 2') is still presented as current, but the guard test was flipped on 2026-08-24 to assert the opposite: a single sent counterattacker is NOT auto-formed and declining is legal. No ruling records the reversal.",
     "seeAlso": [
       {
         "id": "D-U23-17",
@@ -45,7 +45,7 @@
     ],
     "sides": [
       {
-        "source": "R36",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "that could ride along, the only-unit formation is auto-declared (a forced"
       },
       {
@@ -61,14 +61,14 @@
         "quote": "// There used to be a second branch here: a round-2 counterattack with"
       }
     ],
-    "resolution": "R36 is a digital convention (Annex D, U23); the game rule here states what the current test asserts. Register fix: mark R36 as reversed and record the 2026-08-24 audit that reversed it: F-U13-1 (CT-251). The Annex D sub-rule annexd.general.player-decides.forced.lone-counterattacker states R36 with an engine-differs marker (F-U23-4 (CT-251)) and goes when R36 is marked."
+    "resolution": "The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) is a digital convention (Annex D, U23); the game rule here states what the current test asserts. Register fix: mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as reversed and record the 2026-08-24 audit that reversed it: F-U13-1 (CT-251). The Annex D sub-rule annexd.general.player-decides.forced.lone-counterattacker states the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) with an engine-differs marker (F-U23-4 (CT-251)) and goes when the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) is marked."
   },
   {
     "id": "D-U13-4",
     "kind": "a-sources-disagree",
     "rule": "combat.counterattack.round-two.may-decline",
     "tier": 1,
-    "summary": "The printed round-2 procedure reads as if the sent counterattackers are always put into formation; R194 and the engine's test let the non-initiative player decline the round-2 attack after sending units.",
+    "summary": "The printed round-2 procedure reads as if the sent counterattackers are always put into formation; the owner ruling of 2026-08-26 (“a warning is not worth a…”) and the engine's test let the non-initiative player decline the round-2 attack after sending units.",
     "sides": [
       {
         "source": "Manual p.20",
@@ -79,7 +79,7 @@
         "quote": "▪ Second, the counterattacking units are put"
       },
       {
-        "source": "R194",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "* So a round-2 decline is the whole difference between a live Fireball and"
       },
       {
@@ -103,7 +103,7 @@
           "table": "A sent unit always attacks; the round-2 decline goes."
         }
       ],
-      "follows": "A (R194 and the engine).",
+      "follows": "A (the owner ruling of 2026-08-26 (“a warning is not worth a…”) and the engine).",
       "recommend": "A, the permissive reading. Under A the player may also attack with only some of the sent units, which no source addresses."
     }
   },
@@ -115,7 +115,7 @@
     "summary": "That a sent counterattacker is not checked for death while away, and is checked on its return, is an owner call. No printed or designer source speaks to state checks on an absent unit.",
     "sides": [
       {
-        "source": "R270",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "A sent counterattacker is not death-checked"
       },
       {
@@ -123,14 +123,14 @@
         "quote": "the region and are treated as if they don’t exist until"
       }
     ],
-    "resolution": "The rule states R270, basis owner. It is consistent with the Manual's 'treated as if they don't exist'. It awaits owner sign-off like every owner-only rule."
+    "resolution": "The rule states the owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”), basis owner. It is consistent with the Manual's 'treated as if they don't exist'. It awaits owner sign-off like every owner-only rule."
   },
   {
     "id": "D-U13-6",
     "kind": "g-other",
     "rule": "combat.counterattack.sent.not-counted",
     "tier": 2,
-    "summary": "R270 leaves open, as a question for the owner, whether a unit away counterattacking still counts as an ally in the region it left. The Manual's own words give one reading: it does not.",
+    "summary": "The owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”) leaves open, as a question for the owner, whether a unit away counterattacking still counts as an ally in the region it left. The Manual's own words give one reading: it does not.",
     "seeAlso": [
       {
         "id": "D-U16-7",
@@ -139,11 +139,11 @@
     ],
     "sides": [
       {
-        "source": "R270",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "rule on: **does a unit that is out counterattacking still count as an ally in"
       },
       {
-        "source": "R270",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "the region it left?** Under the Manual's \"doesn't exist\" it does not — but a"
       },
       {
@@ -151,11 +151,11 @@
         "quote": "the region and are treated as if they don’t exist until"
       },
       {
-        "source": "R270",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "That is the current answer and `test/250-ally-count-and-absence.test.ts` pins"
       }
     ],
-    "resolution": "Printed text outranks an owner call and reads one way only, so this is not a question for the owner. The rules (combat.counterattack.sent.not-counted, effects.state.absent.home) state the current answer, not counted, which the Manual supports. Register fix: R270's open question can be closed by citing Manual p.20."
+    "resolution": "Printed text outranks an owner call and reads one way only, so this is not a question for the owner. The rules (combat.counterattack.sent.not-counted, effects.state.absent.home) state the current answer, not counted, which the Manual supports. Register fix: The owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”)’s open question can be closed by citing Manual p.20."
   },
   {
     "id": "D-U13-7",

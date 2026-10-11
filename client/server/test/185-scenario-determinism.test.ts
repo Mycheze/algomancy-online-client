@@ -1,4 +1,4 @@
-/* R216 — THE SCENARIO MUTATION IS PURE, TOTAL, AND ACTUALLY THERE.
+/* CR D8.4 — THE SCENARIO MUTATION IS PURE, TOTAL, AND ACTUALLY THERE.
  *
  * `docs/14-scenario-tester.md` §2 rests the whole design on one property:
  *
@@ -29,8 +29,8 @@
  * ── WHAT THIS FILE DOES NOT COVER ────────────────────────────────────────
  *
  * The byte-identical REBUILD — the property docs/14 §8.1 says decides whether
- * the design is right at all — needs `rooms.ts`, and `rooms.ts` pulls in `ws`
- * (R181). It is proved against the real server instead, in
+ * the design is right at all — needs `rooms.ts`, and `rooms.ts` pulls in `ws`.
+ * It is proved against the real server instead, in
  * `server/e2e/test-scenario.ts` §4: play a scenario room, kill the server, restore
  * from the file, and compare the pushed views byte for byte.
  */
@@ -114,7 +114,7 @@ test('§1 the board really produces the SITUATION the clause needs — a legal d
  * the point of the vertical slice is to find that out now rather than at 40
  * cards an hour.
  *
- * R131: the augment is worn by the OPPONENT's unit, so "you" is the host's
+ * CR 720.6b: the augment is worn by the OPPONENT's unit, so "you" is the host's
  * controller. `batch-earth-a.ts`'s own comment calls that "the whole point of
  * the card", and no test in the suite had ever let it resolve —
  * `16-earth-a` and `105-semantics-playwatch` spawn Lithoghul as its own body,
@@ -143,7 +143,7 @@ test('§1 the scenario plays to its printed outcome: the HOST\'S CONTROLLER take
 
   assert.equal(s.entities[host.id]!.damage, 6, 'the Arc dealt its 6 to the host');
   assert.equal(s.players[OPPONENT]!.life, 24,
-    'R131: the augment is worn by THEIR unit, so "you" is its controller — they take the 6');
+    'CR 720.6b: the augment is worn by THEIR unit, so "you" is its controller — they take the 6');
   assert.equal(s.players[YOU]!.life, 30,
     'and not the augment\'s owner. If this reads 24 the "me"/"you" resolution on donated text '
     + 'has flipped, which is the family docs/13 §1③ names as the biggest untested hole.');

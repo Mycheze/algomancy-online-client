@@ -15,7 +15,7 @@
  *   §3 ui/main.ts sendAutoPass  — before the automatic pass
  *
  * Items with no `sourceId` (spells, cards played) are never "the same source",
- * so every mixed or unsourced sequence keeps the one-second tempo that R242
+ * so every mixed or unsourced sequence keeps the one-second tempo that CR D5.4
  * (test/218) pins. Nothing a player must answer is held (pace.ts `holdable`),
  * so nothing a player answers gets faster.
  *
@@ -45,7 +45,7 @@ const flashEv = (id: number, sourceId?: number): EngineEvent =>
   ({ type: 'stackFlash', msg: '', data: { item: item(id, sourceId) } });
 const triggeredEv = (): EngineEvent => ({ type: 'triggered', msg: 'a trigger goes on the queue.' });
 
-/** n triggers queued together and drained together (one R189 group) */
+/** n triggers queued together and drained together (one CR D6.7 group) */
 const batch = (sources: (number | undefined)[]): EngineEvent[] => [
   ...sources.map(() => triggeredEv()),
   ...sources.map((src, i) => flashEv(i + 1, src)),
@@ -56,7 +56,7 @@ test('§0 the run tempo is a third of the one tempo, derived and not typed', () 
   assert.equal(PACE_SAME_SOURCE_MS, 333);
   const src = readFileSync(join(UI, 'pace.ts'), 'utf8');
   assert.match(src, /export const PACE_SAME_SOURCE_MS = Math\.round\(PACE_MS \/ 3\);/);
-  // the three R242 knobs are untouched
+  // the three CR D5.4 knobs are untouched
   assert.equal(PACE_MS, 1000);
   assert.equal(STAGGER_MS, PACE_MS);
 });
@@ -91,7 +91,7 @@ test('§1b mixed sources keep the one-second spacing', () => {
   const q = queueFlashes([], batch([1, 2, 3, 4]), 0);
   assert.deepEqual(q.map(f => f.until), [0, 1, 2, 3].map(i => HOLD_MS + i * STAGGER_MS));
   const next = queueFlashes([], [...batch([1, 2, 3, 4]), triggeredEv(), flashEv(99)], 0);
-  assert.equal(next.find(f => f.item.id === 99)!.at, 4 * STAGGER_MS, 'R242 §2e unchanged');
+  assert.equal(next.find(f => f.item.id === 99)!.at, 4 * STAGGER_MS, 'CR D5.4a unchanged');
 });
 
 test('§1c items with no sourceId keep the one-second spacing', () => {

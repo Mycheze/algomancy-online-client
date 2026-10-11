@@ -55,7 +55,7 @@
  *  3. Requiring the word "WOULD": 11 cards, and now they are nearly all real.
  *     "Would" is the game's word for a thing that has not happened yet, which
  *     is precisely what a replacement intercepts. The one survivor that is not
- *     a replacement is Phytochemical Protection, and R98 is explicit about why
+ *     a replacement is Phytochemical Protection, and CR 708.11 is explicit about why
  *     — PREVENTION IS NOT REPLACEMENT ("if there is not damage being dealt,
  *     then no counters are placed"), so it needs no "instead" and gets none.
  *  4. Requiring "would" AND "instead" in the SAME SENTENCE: 10 cards, all
@@ -74,7 +74,7 @@
  * ── WHAT IT ASSERTS ─────────────────────────────────────────────────────
  *
  * For a replacement clause that names NO target:
- *   (a) the card declares a member of the R104 replacement layer, and
+ *   (a) the card declares a member of the CR 708.2 replacement layer, and
  *   (b) if EVERY sentence it prints is a replacement clause, the card declares
  *       no triggered and no activated abilities AT ALL — the only two things
  *       that can reach the stack from a unit in play.
@@ -87,7 +87,7 @@
  *
  * For a replacement clause that DOES name a target, the assertion inverts:
  * the card must declare a triggered ability, because a target has to be chosen
- * and choosing is public and respondable. That is R102 (Beyond, Codex
+ * and choosing is public and respondable. That is CR 109.5a (Beyond, Codex
  * Incarnate), and this file is what stops somebody "fixing" it into the other
  * shape.
  */
@@ -96,7 +96,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight). registry.ts registers
 // only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
@@ -150,12 +150,12 @@ function replacementClauses(name: string): string[] {
 
 // ── the declaration side ────────────────────────────────────────────────
 
-/** R104: the whole replacement layer, as a list. A card that prints a
+/** the whole replacement layer, as a list. A card that prints a
  *  replacement must be built out of one of these. Adding a hook to
  *  `CardBehavior` and forgetting this line makes the sweep report a card that
  *  really was fixed, which is the failure direction that gets noticed. */
 const REPLACEMENT_KEYS = [
-  // R162: the MULTIPLICATIVE amount family, beside R104's additive one. Same
+  // CR 708.6: the MULTIPLICATIVE amount family, beside CR 708.5's additive one. Same
   // reason as the comment above — a hook added to CardBehavior and left out of
   // this line makes the sweep report a card that really was fixed.
   'amountMods', 'amountMultipliers', 'replaceLifeGain', 'replaceCounters',
@@ -165,7 +165,7 @@ const REPLACEMENT_KEYS = [
 
 const declaresReplacement = (name: string): boolean => {
   const c = getCard(name) as unknown as Record<string, unknown>;
-  // R268: nine of the eleven cards in this class print their whole text inside
+  // CR 721.1: nine of the eleven cards in this class print their whole text inside
   // an [Augment] box, so the hook is declared in `augmentBox`. Reading only the
   // body half turned this sweep's population into "nobody builds replacements".
   const box = (c.augmentBox ?? {}) as Record<string, unknown>;
@@ -206,7 +206,7 @@ const EXEMPT: Record<string, string> = {
 
 /**
  * Cards whose replacement clause NAMES A TARGET, and which therefore DO use
- * the stack. R102, and the reason it is not an exception: "A target has to be
+ * the stack. CR 109.5a, and the reason it is not an exception: "A target has to be
  * chosen, and a choice is public and respondable — there is nowhere else for
  * it to happen." Listed rather than derived so that a new one has to be
  * justified out loud.
@@ -214,9 +214,9 @@ const EXEMPT: Record<string, string> = {
 const TARGETED: Record<string, string> = {
   'Beyond, Codex Incarnate':
     '"If you would take damage from rot, put that many -1/-1 counters on TARGET unit '
-    + 'instead." — R102. The hook (`replaceRotDamage`) returns true and fires a '
+    + 'instead." — CR 112.13d. The hook (`replaceRotDamage`) returns true and fires a '
     + '`rotReplaced` EVENT; an ordinary `self: true` triggered ability listens for it '
-    + 'and the existing R67 machinery does the asking. The owner ruled it in as many '
+    + 'and the existing CR 110.1a machinery does the asking. The owner ruled it in as many '
     + 'words: "It would trigger, ask you what you want to target, then put the -1/-1 '
     + 'counters on during deployment (which still has and uses a stack)."',
 };
@@ -232,7 +232,7 @@ test('the classifier finds the replacement clauses, and only those', () => {
     // playtest ledger #60's list, verbatim
     'Automaton of Abundance', 'Cosmic Conspirator', 'Nullbringer', 'Counter Thief',
     'Flux Resonator', 'Proliferating Slime', 'Conduit of Pain',
-    // the three the engine already had (R38/R98/R102)
+    // the three the engine already had (CR 112.13d)
     'Skittering Blight', 'Blightsea Polyp', 'Oorblak', 'Beyond, Codex Incarnate',
   ];
   const missed = known.filter(n => !REPLACEMENT_CARDS.includes(n));
@@ -262,7 +262,7 @@ test('a replacement that names NO target is built out of the replacement layer',
     + '\n\nThe owner, playtest ledger #75: "All cards that say instead, as or if [and '
     + 'don\'t mention targets] shouldn\'t go onto the stack." Build it with an AmountMod '
     + '(the quantity changes) or a named replaceX hook (the thing itself changes) — see '
-    + 'R104. Do NOT reach for a trigger; that is the bug being reported.');
+    + 'CR 708.5, 708.4a. Do NOT reach for a trigger; that is the bug being reported.');
 });
 
 test('a card whose whole text is an untargeted replacement declares NO ability at all', () => {
@@ -288,7 +288,7 @@ test('a card whose whole text is an untargeted replacement declares NO ability a
     + 'uses the stack and cannot be responded to.');
 });
 
-test('a replacement that DOES name a target still uses the stack (R102 stays R102)', () => {
+test('a replacement that DOES name a target still uses the stack (the targeted shape stays)', () => {
   // The other direction, and the reason it is a test: "target" is the owner's
   // switch, so a well-meaning sweep of "no replacement may be a trigger" would
   // break Beyond, Codex Incarnate. This is what stops that.
@@ -341,7 +341,7 @@ test('every exemption is still needed — one that outlives its cause fails here
 });
 
 test('the layer is NARROW on purpose: every replaceX hook has a consulting site in the engine', () => {
-  // `replaceRotDamage`'s own comment argues for this and R104 keeps it:
+  // `replaceRotDamage`'s own comment argues for this and the replacement layer keeps it:
   // "Deliberately a one-off hook, not a replacement framework". A hook nothing
   // consults is worse than no hook — it reads as implemented. This is the
   // greppability of the layer, asserted.
@@ -365,7 +365,7 @@ test('the tally: how much of the pool is a replacement, printed on every run', (
   assert.ok(REPLACEMENT_CARDS.length > 0, 'the classifier found nothing at all');
 });
 
-// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+// ── POOL SIGHT ─────────────────────────────────────────────────── (see 180-pool-sight)
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
 // card entry point and it registers 494 of the 495 cards: two of the three
@@ -377,7 +377,7 @@ test('the tally: how much of the pool is a replacement, printed on every run', (
 // The floor is what stops that being reintroduced by an import change nobody
 // reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
 // floor for the whole suite and the guard that catches a ninth sweep.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496,
     `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `

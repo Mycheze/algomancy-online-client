@@ -31,7 +31,7 @@ import type { Seat } from '../src/types.ts';
  * E may REPLACE its state object on a mid-part rollback, so h.state is
  * re-pointed afterwards. */
 
-/** the cache entries of a seat (R41: public information, so tests just read) */
+/** the cache entries of a seat (CR 403.2: public information, so tests just read) */
 const cacheOf = (h: Harness, seat: Seat) => h.state.players[seat]!.cache ?? [];
 
 /** empty a hand so a choice list is exactly what the test put there */
@@ -49,7 +49,7 @@ test('Banishment: erases units that spawned this turn, and spares the older ones
   const old = spawn(h, D, 'Unit Token');                    // spawned LAST turn
   giveResources(h, A, 'light', 3);                          // l/3
   toNextBattle(h, A);
-  // R12/R25: the spell sweeps the region it resolves in — the battle region,
+  // CR 101.6, 601.4d: the spell sweeps the region it resolves in — the battle region,
   // which is the defender's home. Both of D's units sit there.
   const fresh = spawn(h, D, 'Unit Token');
   assert.equal(ent(h, old)!.spawnedTurn, h.state.turn - 1, 'the old one carries last turn\'s stamp');
@@ -114,10 +114,10 @@ test("Blurf: end of turn — caches the deck top with 'Prophecy: 1 turn passes' 
   assert.equal(cache[0]!.prophecy!.norm, '1 turn passes',
     "the inconsistently printed 'Prophecy: 1 turn passes' normalises onto the turns row");
   assert.equal(cache[0]!.prophecy!.turn, h.state.turn - 1,
-    'stamped on the turn it was cached — it counts forward from there (R43)');
+    'stamped on the turn it was cached — it counts forward from there (CR 803.7)');
   assert.ok(cache[0]!.prophecy!.fulfilled,
     'cached at the very end of a turn, so the turn flip immediately satisfies "1 turn passes"');
-  assert.equal(h.state.players[A]!.debt, cost, "debt equal to the cached card's cost (R39)");
+  assert.equal(h.state.players[A]!.debt, cost, "debt equal to the cached card's cost (CR 112.14)");
 });
 
 // ── Debt Blep ────────────────────────────────────────────────────────────
@@ -130,12 +130,12 @@ test('Debt Blep: [once] gain 2 debt for +3/+3 until regroup — and only once a 
   assert.deepEqual(effStats(h, blep), [1, 1]);
 
   h.do({ type: 'activateAbility', seat: A, entityId: blep, abilityIndex: 0, via: 'augment' });
-  assert.equal(h.state.players[A]!.debt, 2, 'the debt cost was paid (at resolution, R39)');
+  assert.equal(h.state.players[A]!.debt, 2, 'the debt cost was paid (at resolution, CR 112.14)');
   assert.deepEqual(effStats(h, blep), [4, 4], '+3/+3 until regroup');
 
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: A, entityId: blep, abilityIndex: 0, via: 'augment' }),
-    IllegalAction, '[once] is a per-turn budget (R9)');
+    IllegalAction, '[once] is a per-turn budget (CR 109.9)');
   assert.equal(h.state.players[A]!.debt, 2, 'no second debt');
 });
 
@@ -194,7 +194,7 @@ test('Divine Intervention: "you may" — declining leaves the targets alone', ()
 
 /*
  * Playtest ledger #6 (MNWK, 2026-08-19), "I'm unable to cast Divine
- * Intervention at all", was closed by R60: the printed line is "You may change
+ * Intervention at all", was closed by a ruling (now CR 700.1): the printed line is "You may change
  * the targets of TARGET EFFECT", and "effect" is the SUPERSET — every spell,
  * spell unit, spell token and ambush, PLUS the triggered and activated
  * abilities. The engine spells that as `what: 'stackEffect'`, against
@@ -213,7 +213,7 @@ test('Divine Intervention: "you may" — declining leaves the targets alone', ()
  * pass by accident: it asserts the trigger is on the menu (which 'stackSpell'
  * would not offer) and then retargets it.
  */
-test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not just a spell (R60)', () => {
+test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not just a spell (CR 700.1)', () => {
   const h = new Harness(3905.5);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -240,7 +240,7 @@ test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not j
   // THE ASSERTION THAT CLOSES #6: under a 'stackSpell' spec only the Noxious
   // Demise item is a candidate and this menu does not contain the trigger.
   assert.ok(offered(h).includes(JSON.stringify({ stack: trigItem.id })),
-    `R60: the triggered ability is a legal "target effect" — menu was [${offered(h)}]`);
+    `CR 700.1: the triggered ability is a legal "target effect" — menu was [${offered(h)}]`);
   pick(h, { stack: trigItem.id });
 
   pass(h); pass(h);                                         // resolve Divine Intervention
@@ -260,14 +260,14 @@ test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not j
 
 // ── Flzzz ────────────────────────────────────────────────────────────────
 
-test('Flzzz: whenever you gain life, each opponent in the region loses that much (R25)', () => {
+test('Flzzz: whenever you gain life, each opponent in the region loses that much (CR 601.4d)', () => {
   const h = new Harness(3906);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
   const flz = spawn(h, A, 'Flzzz');
   assert.ok(h.q.ownAttrs(ent(h, flz)!).has('Blessed'), '{Blessed} comes from the printed attribute');
 
-  // R25: out of battle a home region lists only its owner, so there is no
+  // CR 601.4d: out of battle a home region lists only its owner, so there is no
   // opponent present to drain. This is the standing region-scoped reading that
   // every other "each opponent" in the expansion uses.
   let before = h.state.players[D]!.life;
@@ -297,7 +297,7 @@ test("Flzzz: {Blessed} combat damage feeds its own drain", () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[flz]] });
   finishBattle(h);
-  assert.equal(h.state.players[A]!.life, aLife + 1, 'Blessed: 1 damage dealt → 1 life gained (R48)');
+  assert.equal(h.state.players[A]!.life, aLife + 1, 'Blessed: 1 damage dealt → 1 life gained (CR 802.22a)');
   assert.equal(h.state.players[D]!.life, dLife - 1 - 1,
     'the 1 combat damage plus 1 more from the drain the gain triggered');
 });
@@ -313,12 +313,12 @@ test('Glutton of Absolution: 3 debt when it attacks — bounded to once a turn',
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[glut]] });
   pass(h); pass(h);                                         // resolve the trigger
-  assert.equal(h.state.players[A]!.debt, 3, 'attacking gains 3 debt (R39)');
+  assert.equal(h.state.players[A]!.debt, 3, 'attacking gains 3 debt (CR 112.14)');
   finishBattle(h);
   assert.equal(h.state.players[A]!.debt, 3, 'blocking in round 2 does not add — [Switch1] is bounded');
 });
 
-test('Glutton of Absolution: the debt is paid off at the next resource step (R39)', () => {
+test('Glutton of Absolution: the debt is paid off at the next resource step (CR 502.4)', () => {
   const h = new Harness(3909);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -350,11 +350,11 @@ test("Grob: on attack, up to one unit's controller caches it with 'One Battle Pa
   pass(h); pass(h);                                         // resolve it
   assert.ok(!ent(h, victim), 'the unit left play');
   const cache = cacheOf(h, D);
-  assert.equal(cache.length, 1, "into its OWNER's cache (R46)");
+  assert.equal(cache.length, 1, "into its controller's cache (CR 400.4)");
   assert.equal(cache[0]!.card, 'Good Whale');
   assert.equal(cache[0]!.prophecy!.norm, '1 battle passes', 'with the granted prophecy attached');
   finishBattle(h);
-  // R43: in 1v1 BOTH battle rounds tick, so one full battle phase fulfils it
+  // CR 803.7: in 1v1 BOTH battle rounds tick, so one full battle phase fulfils it
   assert.ok(cacheOf(h, D)[0]!.prophecy!.fulfilled, 'fulfilled once a battle has passed');
 });
 
@@ -462,8 +462,8 @@ test('Life Channel: the [Switch1] graft rider reads the ledger straight', () => 
   finishBattle(h);
 });
 
-test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {
-  // R157 §1: an X card's cost is the X actually PAID, and a card in a HAND has
+test('Living Vault: an X-cost card in hand is offered at pay [0] (CR 107.3a)', () => {
+  // CR 107.3a: an X card's cost is the X actually PAID, and a card in a HAND has
   // had no X paid — so its cost is 0, not "unknown". `printedMana` used to
   // return null for X and the option filter dropped it, so an X card was never
   // offered AT ALL. That was a THIRD answer to one question: manaOf said 0,
@@ -598,15 +598,15 @@ test('Proph: draws when you play a card from your CACHE, and not from your hand'
   assert.equal(unitsOf(h, A).filter(u => u.card === 'The Foretold').length, 2,
     'both copies really arrived');
 
-  // [Switch1] is a per-turn budget (R9): a second cache play draws nothing
+  // [Switch1] is a per-turn budget (CR 722.5): a second cache play draws nothing
   h.state.sharedDeck.unshift('The Foretold');
   withE(h, e => { e.cacheTopOfDeck(A, 1, { playable: true }); });
   hand = h.state.players[A]!.hand.length;
   h.do({ type: 'playCached', seat: A, index: 0 });
-  assert.equal(h.state.players[A]!.hand.length, hand, '[Switch1]: once per turn (R9)');
+  assert.equal(h.state.players[A]!.hand.length, hand, '[Switch1]: once per turn (CR 722.5)');
 });
 
-test('Proph: R37 — augmenting out of the cache is APPLYING a mod, not playing a card', () => {
+test('Proph: CR 701.2a — augmenting out of the cache is APPLYING a mod, not playing a card', () => {
   const h = new Harness(3932);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -619,7 +619,7 @@ test('Proph: R37 — augmenting out of the cache is APPLYING a mod, not playing 
   h.do({ type: 'augment', seat: A, from: 'cache', index: 0, hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'the mod really attached');
   assert.equal(h.state.players[A]!.hand.length, hand,
-    'R37: applying a mod is not playing a card, so Proph stays quiet');
+    'CR 701.2a: applying a mod is not playing a card, so Proph stays quiet');
 });
 
 // ── Riftspawn Remnant ────────────────────────────────────────────────────
@@ -651,7 +651,7 @@ test('Riftspawn Remnant: life GAINED this battle also switches it on', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atk, rift]] });
   assert.deepEqual(effStats(h, rift), [0, 5], 'no life change yet');
   withE(h, e => e.gainLife(A, 2, 'test'));
-  assert.deepEqual(effStats(h, rift), [4, 1], 'life GAINED this battle → +4/-4 (R49 ledger)');
+  assert.deepEqual(effStats(h, rift), [4, 1], 'life GAINED this battle → +4/-4 (lifeGained ledger)');
   finishBattle(h);
   assert.deepEqual(effStats(h, rift), [0, 5], 'out of battle the condition is off again');
 });
@@ -668,10 +668,10 @@ test('Siphon Life: X is paid at cast; target player gains or loses X life', () =
   const dLife = h.state.players[D]!.life;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Siphon Life') });
-  pick(h, 3);                                               // X = 3, paid now (R35)
+  pick(h, 3);                                               // X = 3, paid now (CR 107.2a)
   assert.equal(h.q.openMana(A), 0, 'X was paid at cast');
   pick(h, { player: D });
-  // R57 — the report this fix is named for: "[gains or loses]" is the caster's
+  // The report this fix is named for (CR 702.3d): "[gains or loses]" is the caster's
   // choice and it is DECLARED AT CAST, after X and the target, before the
   // stack. It used to be asked after both passes, so the opponent spent their
   // window responding to a spell that would not say whether it was a burn or
@@ -697,7 +697,7 @@ test('Siphon Life: the caster may choose "gains" instead', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Siphon Life') });
   pick(h, 2);
   pick(h, { player: A });
-  pick(h, 'gain');                                          // R57: declared at cast
+  pick(h, 'gain');                                          // CR 702.5: declared at cast
   pass(h); pass(h);
   assert.equal(h.state.players[A]!.life, aLife + 2, 'a heal for X instead');
   finishBattle(h);
@@ -720,7 +720,7 @@ test('Stellar Fission: erases a unit and pays its controller power + defense in 
   pick(h, { unit: whale });
   pass(h); pass(h);
   assert.ok(!ent(h, whale), 'erased');
-  assert.equal(h.state.players[D]!.bin.length, dBin, 'no bin, so no trash (R40)');
+  assert.equal(h.state.players[D]!.bin.length, dBin, 'no bin, so no trash (CR 801.2c)');
   assert.equal(h.state.players[D]!.life, dLife + 12, 'its controller gains 7 + 5 life');
   finishBattle(h);
 });
@@ -732,21 +732,20 @@ test('The Foretold: prophesied for [0], then released from cache for free a turn
   toDeployment(h);
   const A = h.state.deployPlayer!;
   clearHand(h, A);
-  // R301: the banner is [0l] — no mana to spend, but a light pip to MEET.
-  // Before R301 this fixture needed no resources at all, which is exactly the
+  // CR 803.7d: the banner is [0l] — no mana to spend, but a light pip to MEET.
+  // Before the banner's affinity was charged, this fixture needed no resources at all, which is exactly the
   // shape of the bug: a zero-mana banner looked free and was not.
   giveResources(h, A, 'light', 1);
   give(h, A, 'The Foretold');
   h.do({ type: 'prophesy', seat: A, from: 'hand', index: 0 });
-  assert.equal(cacheOf(h, A).length, 1, 'the banner card moved to the cache (R42)');
+  assert.equal(cacheOf(h, A).length, 1, 'the banner card moved to the cache (CR 803.7)');
   assert.equal(cacheOf(h, A)[0]!.prophecy!.norm, '1 turn passes');
-  assert.ok(!cacheOf(h, A)[0]!.prophecy!.fulfilled, 'not yet — it counts forward (R43)');
+  assert.ok(!cacheOf(h, A)[0]!.prophecy!.fulfilled, 'not yet — it counts forward (CR 803.7)');
 
   toNextBattle(h, A);
   finishBattle(h);                                          // → regroup → next deployment
   assert.ok(cacheOf(h, A)[0]!.prophecy!.fulfilled, 'one turn has passed');
-  // "free" used to be proved by the seat being broke. Since R301 it holds the
-  // light resource the [0l] banner required, so prove it directly: the card
+  // "free" used to be proved by the seat being broke. Since the banner's affinity has been charged, it holds the light resource the [0l] banner required, so prove it directly: the card
   // costs [3] and the seat has one mana, so a release that SPENDS nothing is
   // the only way this can land at all.
   const before = h.q.openMana(A);
@@ -754,9 +753,9 @@ test('The Foretold: prophesied for [0], then released from cache for free a turn
     'non-vacuity: the seat could not afford this card normally');
   h.do({ type: 'playCached', seat: A, index: 0 });
   assert.equal(h.q.openMana(A), before,
-    'and the release spent no mana — a fulfilled prophecy is free (R42)');
+    'and the release spent no mana — a fulfilled prophecy is free (CR 803.7h)');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'The Foretold').length, 1,
-    'the 3/3 arrives for free, ignoring affinity (R42)');
+    'the 3/3 arrives for free, ignoring affinity (CR 803.7h)');
   assert.equal(cacheOf(h, A).length, 0, 'and left the cache');
 });
 
@@ -801,7 +800,7 @@ test("Waxen Witness: caches target unit with 'One Battle Passes', then arrives a
   finishBattle(h);
 });
 
-test('Waxen Witness: mods on the cached unit stay behind and are trashed (R46/R40)', () => {
+test('Waxen Witness: mods on the cached unit stay behind and are trashed (CR 403.7, 801.2f)', () => {
   const h = new Harness(3926);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -819,8 +818,8 @@ test('Waxen Witness: mods on the cached unit stay behind and are trashed (R46/R4
   pass(h); pass(h);
   assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale', 'the card is cached');
   assert.ok(h.state.players[D]!.bin.includes('Aberrant Statweaver'),
-    'its mod did NOT travel — it went to the bin (R46)');
+    'its mod did NOT travel — it went to the bin (CR 403.7)');
   assert.ok(h.events.some(e => e.type === 'trashed' && e.data?.['card'] === 'Aberrant Statweaver'),
-    'and entering a bin from play trashes it (R40)');
+    'and entering a bin from play trashes it (CR 801.2)');
   finishBattle(h);
 });

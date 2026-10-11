@@ -1,4 +1,4 @@
-/* R218 — scenario batch A. See scenarios.ts for the type and the worked
+/* scenario batch A (see 14-scenario-tester.md). See scenarios.ts for the type and the worked
  * example (`lithoghul-donated`), and docs/14-scenario-tester.md for why any of
  * this exists. Authored as a batch so parallel authors never share a file.
  *
@@ -22,8 +22,8 @@
  * 2. THE HASTE STEP IS NOT SKIPPED FOR YOU. `Scenario.prologue`'s worked
  *    example says "`dealScenario` skips it if it is open anyway (see
  *    runPrologue)". `runPrologue` does no such thing — it applies the actions
- *    it is given and nothing else. R18 opens the haste step whenever a seat
- *    HOLDS A PAYABLE HASTE CARD, so any scenario whose `hand` contains one
+ *    it is given and nothing else. The haste step once opened only when a seat
+ *    HELD A PAYABLE HASTE CARD (it is unconditional now), so any scenario whose `hand` contains one
  *    (here: Void Mandible, Cinder Scuttler) must put `doneHaste` in its own
  *    prologue or its `declareAttack` is refused with "not your attack step".
  *    ⚠ Only the seat that holds one is asked: a second `doneHaste` for the
@@ -78,7 +78,7 @@ export const BATCH_A: Record<string, Scenario> = {
    *
    * The trash is a REAL trash through a real action, not a synthesised event:
    * Darkblast prints "[Discard a card]" as a cast cost (`castCost: discardCard`)
-   * and a discard trashes (R40). The hand is built so that when that cost is
+   * and a discard trashes (CR 801.3). The hand is built so that when that cost is
    * asked there is EXACTLY ONE card left to discard — no wrong click exists.
    */
   'cthyrian-rector-sacrifice': {
@@ -101,7 +101,7 @@ export const BATCH_A: Record<string, Scenario> = {
       + 'EXPECTED: Luminous Arc comes back out of your bin INTO YOUR HAND.\n'
       + 'EXPECTED: the opponent finishes on 25, you stay on 30.\n'
       + '(The Colossus is erased rather than left in your bin because a modded card is Unstable —\n'
-      + 'that is R79, not this card.)',
+      + 'that is the modded-card rule, not this card.)',
     initiative: YOU,
     you: {
       // in this order on purpose: once the Rector and the Darkblast are played,
@@ -109,7 +109,7 @@ export const BATCH_A: Record<string, Scenario> = {
       // and cannot be misclicked into a different reading of the card.
       hand: ['Cthyrian Rector', 'Darkblast', 'Luminous Arc'],
       // the host, and the attacker. It has to be attacking: a listener is
-      // region-scoped (R12) and the battle is fought in the DEFENDER's region,
+      // region-scoped (CR 601.1d) and the battle is fought in the DEFENDER's region,
       // so a host sitting at home would never hear the trash. 10/15 also makes
       // its disappearance the least missable thing on the screen. Its own
       // printed text is an [Augment] box, inert while it is a body in play.
@@ -125,8 +125,8 @@ export const BATCH_A: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // no `doneHaste` here: neither seat holds a haste card, so R18 never
-      // opens the step. Contrast void-mandible-negates below.
+      // no `doneHaste` here: runPrologue walks both seats through
+      // the haste step. Contrast void-mandible-negates below.
       { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!]] },
     ],
     phase: 'battle',
@@ -137,7 +137,7 @@ export const BATCH_A: Record<string, Scenario> = {
   },
 
   /**
-   * ⚠ R219 — THIS SCENARIO USED TO ASK THE OWNER A QUESTION THAT WAS NOT ONE,
+   * ⚠ CR 801.6 — THIS SCENARIO USED TO ASK THE OWNER A QUESTION THAT WAS NOT ONE,
    * and it is worth leaving the note here because the mistake was expensive.
    *
    * It presented "where should an erased mod end up?" as an open ruling. It was
@@ -160,7 +160,7 @@ export const BATCH_A: Record<string, Scenario> = {
     why: 'the only EVENTLESS card in the unreached ledger, and CT-86 / round-27 '
       + 'Q3 are open on it. The mod erasure really happens but announces itself '
       + 'with an `info` line instead of an `erased` event, so the card reaches '
-      + 'neither the public erased pile (R65) nor any listener. What the erase '
+      + 'neither the public erased pile nor any listener. What the erase '
       + 'SHOULD do is a ruling, not a bug report — this scenario is asking for '
       + 'the ruling.',
     expect:
@@ -172,11 +172,11 @@ export const BATCH_A: Record<string, Scenario> = {
       + 'EXPECTED: the opponent goes 30 -> 28. You stay on 30.\n'
       + 'EXPECTED: Slag Spewer is gone off the unit, and is NOT in your bin (an erase is not a death).\n'
       + 'EXPECTED: Slag Spewer appears in your ERASED pile. An erased card goes to the erased\n'
-      + '   zone — the card says so, and this used to file nowhere at all (CT-86, fixed R219).',
+      + '   zone — the card says so, and this used to file nowhere at all (CT-86, since fixed).',
     initiative: YOU,
     you: {
       hand: ['Slag Spewer'],
-      // the host, and the attacker (R12 again: the ability's carrier has to be
+      // the host, and the attacker (CR 601.1b again: the ability's carrier has to be
       // in the battle's region). A 4/5 with no text of its own, so nothing on
       // this board competes for the owner's attention.
       play: [{ card: 'Ambling Mountaintop' }],
@@ -199,7 +199,7 @@ export const BATCH_A: Record<string, Scenario> = {
    *
    * Printed: "When I am trashed, negate up to one target nonspell effect." —
    * plus the printed "2 [d] Discard Me. {Battle}" cost line: paying it discards
-   * the card, which trashes it (R40), which fires this from the bin.
+   * the card, which trashes it (CR 801.3), which fires this from the bin.
    *
    * `unreached.ts`: "BOARD — the bait the drill can put on the stack is a spell
    * effect, so there is correctly nothing of that kind to aim at." The suite
@@ -332,7 +332,7 @@ export const BATCH_A: Record<string, Scenario> = {
       play: [{ card: 'Ambling Mountaintop' }, { card: 'Bubb' }],
       resources: { earth: 2 },
     },
-    // R218 — the prologue SPENDS the Skybreaker: a non-{Virus} [Augment] can
+    // the prologue SPENDS the Skybreaker (see 14-scenario-tester.md): a non-{Virus} [Augment] can
     // only ever attach as a deployment action (`doAugment`: "modding is a
     // deployment action (or a battle Virus)"), so the donated text cannot be
     // reached without playing it before the owner takes over. This declares
@@ -360,12 +360,12 @@ export const BATCH_A: Record<string, Scenario> = {
 
   /**
    * WHY THIS CARD (#6: UNREACHED:BOARD · ruled×21 · [Augment] · pronoun · just
-   * fixed by R207).
+   * fixed; CR 706.13).
    *
    * Printed: "[Augment] When a nontoken card is played during battle, sacrifice
    * me. If you do, negate that effect. (This is not optional.)"
    *
-   * R207 FIXED THIS CARD THIS ROUND, and this scenario is the CONFIRMATION that
+   * THIS CARD WAS FIXED THIS ROUND (CR 706.13), and this scenario is the CONFIRMATION that
    * the fix reads right in a real game rather than only in a fixture. The card
    * used to find its victim by scanning the stack for (card name, controller)
    * and taking the FIRST match — which is the OLDER item when two copies of the
@@ -376,7 +376,7 @@ export const BATCH_A: Record<string, Scenario> = {
    * So the board is deliberately the ambiguous one: TWO Luminous Arcs, same
    * card, same controller, both on the stack, aimed at two different enemy
    * bodies. The right answer and the old wrong answer are exact mirror images —
-   * under R207 Bubb survives and Ambling Mountaintop dies; under the old scan it
+   * under CR 706.13 Bubb survives and Ambling Mountaintop dies; under the old scan it
    * was the other way round. There is no reading of the finished board where
    * the owner cannot tell which happened.
    *
@@ -389,7 +389,7 @@ export const BATCH_A: Record<string, Scenario> = {
    * `&seed=` switch promises it does not have. Rook prints "[Augment] You may
    * augment cards from hand and bin during battle as if they were [Virus]", its
    * text box is live while it is a body in play, and the owner ruled it confers
-   * {Virus} outright (R157 §26 / R161). `178` uses the same trick for the same
+   * {Virus} outright (CR 723.5a). `178` uses the same trick for the same
    * reason.
    *
    * "Sacrifice me" is the host again (Towering Colossus), so the price is
@@ -398,7 +398,7 @@ export const BATCH_A: Record<string, Scenario> = {
   'void-mandible-negates': {
     id: 'void-mandible-negates',
     card: 'Void Mandible',
-    why: 'R207 fixed this card THIS ROUND — it was negating the wrong stack '
+    why: 'This card was fixed THIS ROUND — it was negating the wrong stack '
       + 'item, because it searched by card name and took the first match; '
       + '`cardPlayed` now carries the item id. This is the confirmation in a real '
       + 'game: two identical Luminous Arcs are on the stack, and the right answer '
@@ -414,14 +414,14 @@ export const BATCH_A: Record<string, Scenario> = {
       + 'EXPECTED: BUBB SURVIVES and AMBLING MOUNTAINTOP DIES. "That effect" is the card you\n'
       + 'just played — the second Arc — not the one that was already sitting on the stack.\n'
       + 'If it comes out the other way round (Bubb dead, Ambling Mountaintop alive) then the\n'
-      + 'card is negating the wrong item and R207 did not hold.\n'
+      + 'card is negating the wrong item and that fix did not hold.\n'
       + 'EXPECTED: your Towering Colossus is gone — "sacrifice me" on an augment is the host.',
     initiative: YOU,
     you: {
       hand: ['Luminous Arc', 'Void Mandible', 'Luminous Arc'],
       // ids.you[0] = Rook (the battle-augment permission, live as a body),
       // ids.you[1] = the host that pays for the trigger. BOTH attack: the
-      // permission and the listener are region-scoped (R12), and the battle is
+      // permission and the listener are region-scoped (CR 601.1d), and the battle is
       // fought in the opponent's region.
       play: [{ card: 'Rook' }, { card: 'Towering Colossus' }],
       // two Arcs at r/2 plus Void Mandible at ll/2. Over-provisioned.
@@ -436,8 +436,8 @@ export const BATCH_A: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // ⚠ REQUIRED: Void Mandible is a {Haste} card and it is in hand, so R18
-      // opens the haste step and `declareAttack` is refused until it is closed.
+      // ⚠ REQUIRED: Void Mandible is a {Haste} card and it is in hand, so
+      // the haste step opens and `declareAttack` is refused until it is closed.
       // Only the seat that HOLDS one is asked — a `doneHaste` for seat 1 here
       // is refused with "not the haste step".
       { type: 'doneHaste', seat: YOU },
@@ -508,8 +508,8 @@ export const BATCH_A: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // ⚠ REQUIRED: Cinder Scuttler is a {Haste} card sitting in hand, so R18
-      // opens the haste step. See void-mandible-negates.
+      // ⚠ REQUIRED: Cinder Scuttler is a {Haste} card sitting in hand, so
+      // the haste step opens. See void-mandible-negates.
       { type: 'doneHaste', seat: YOU },
       { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!]] },
     ],

@@ -1,4 +1,4 @@
-/* R299 — recycling a card from hand can make a PRISMITE, not only an element.
+/* CR 106.6a — recycling a card from hand can make a PRISMITE, not only an element.
  *
  * Playtest ledger #168 (Debeli, 2026-09-17, from the home page): "You can't
  * recycle for the multicolored one you start with to decide later." The
@@ -15,7 +15,7 @@
  * in the client only behind the expander.
  *
  * WHAT A MADE PRISMITE IS: exactly a starting one. It arrives dormant, takes
- * an activation to wake, gives no affinity (R17), grants no Shard (R116/R132 —
+ * an activation to wake, gives no affinity (CR 106.6b), grants no Shard (CR 106.7d —
  * `maybeGrantShard` returns early on prismite), and once active may be
  * exchanged for any element of the game.
  *
@@ -32,7 +32,7 @@ const recycleKinds = (h: Harness, seat: 0 | 1): string[] =>
     .filter(a => a.type === 'recycleForResource' && a.handIndex === 0)
     .map(a => (a as { element: string }).element);
 
-test('R299 every hand card offers a Prismite, then a Shard, after the elements', () => {
+test('CR 106.6a every hand card offers a Prismite, then a Shard, after the elements', () => {
   for (const [label, h] of [
     ['shared', new Harness(30801)],
     ['draft', new Harness(30802, undefined, 'draft')],
@@ -47,7 +47,7 @@ test('R299 every hand card offers a Prismite, then a Shard, after the elements',
   }
 });
 
-test('R299 a recycled Prismite behaves like a starting one', () => {
+test('CR 106.6b a recycled Prismite behaves like a starting one', () => {
   const h = new Harness(30803);
   const P = 0;
   const before = h.state.players[P]!.hand.length;
@@ -58,7 +58,7 @@ test('R299 a recycled Prismite behaves like a starting one', () => {
   assert.equal(h.state.players[P]!.hand.length, before - 1, 'the card left the hand');
   assert.deepEqual(res()[start], { kind: 'prismite', state: 'dormant' }, 'a DORMANT prismite arrived');
 
-  // a dormant prismite cannot be exchanged (R17)
+  // a dormant prismite cannot be exchanged (CR 106.8b)
   assert.ok(!legalActions(h.state, P).some(a => a.type === 'exchangePrismite' && a.index === start),
     'dormant: no exchange offered');
 
@@ -67,7 +67,7 @@ test('R299 a recycled Prismite behaves like a starting one', () => {
   assert.equal(h.state.players[P]!.activationsLeft, 1);
   assert.equal(res().length, start + 1, 'and it grants no Shard');
   for (const el of ALL_ELEMENTS) {
-    assert.equal(new E(h.state).affinity(P, el), 0, `an active prismite gives no ${el} affinity (R17)`);
+    assert.equal(new E(h.state).affinity(P, el), 0, `an active prismite gives no ${el} affinity (CR 105.5)`);
   }
 
   h.do({ type: 'exchangePrismite', seat: P, index: start, element: 'water' });
@@ -75,7 +75,7 @@ test('R299 a recycled Prismite behaves like a starting one', () => {
   assert.equal(new E(h.state).affinity(P, 'water'), 1);
 });
 
-test('R299 a recycled Shard is mana only: no affinity, no Shard of its own, no exchange', () => {
+test('a recycled Shard is mana only: no affinity, no Shard of its own, no exchange', () => {
   const h = new Harness(30805);
   const P = 0;
   const res = (): Harness['state']['players'][number]['resources'] => h.state.players[P]!.resources;
@@ -93,7 +93,7 @@ test('R299 a recycled Shard is mana only: no affinity, no Shard of its own, no e
   assert.throws(() => h.do({ type: 'exchangePrismite', seat: P, index: start, element: 'fire' }), IllegalAction);
 });
 
-test('R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard', () => {
+test('CR 106.8d what stays illegal: exchanging a Prismite into a Prismite or a Shard', () => {
   const h = new Harness(30804);
   h.do({ type: 'activateResource', seat: 0, index: 0 });
   assert.throws(() => h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'prismite' }), IllegalAction,

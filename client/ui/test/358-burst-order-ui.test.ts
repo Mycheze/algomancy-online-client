@@ -1,4 +1,4 @@
-/* R309 in the client — the burst is ordered on the board (owner, 2026-10-01,
+/* CR D1.2h, D6.9d in the client — the burst is ordered on the board (owner, 2026-10-01,
  * report FXAE a86), and every token wears its X as a die (same day).
  *
  *   §1 clicking a token sends the ORDERED cast, so the first question is which

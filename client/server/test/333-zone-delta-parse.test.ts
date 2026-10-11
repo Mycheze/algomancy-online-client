@@ -1,6 +1,6 @@
-/* CARD STATS §4 — READING THE R191 REFS BACK.
+/* CARD STATS §4 — READING THE REFERENCE KEYS BACK.
  *
- * Every saved game since R191 carries one reference key per action, and its
+ * Every saved game recorded since reference keys were added carries one reference key per action, and its
  * tail — the zone delta — names in card names what the action moved through
  * the actor's own zones. For a game that predates the card log and no longer
  * replays, that text is the only record of what was played, picked and

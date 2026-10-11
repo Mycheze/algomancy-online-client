@@ -47,7 +47,7 @@ class Client {
   close(): void { this.ws.close(); }
 }
 
-/* R204/CT-85: this file was the one the flake was reported against, and it had
+/* CT-85 (see test-clock.ts): this file was the one the flake was reported against, and it had
  * TWO reasons to be. It took a port from the old freePort() — which released
  * the port before the child bound it — and then, instead of waiting for the
  * server to say it was listening, it slept 1200ms and started making requests.

@@ -1,4 +1,4 @@
-/* R309 — THE CASTER ORDERS A {BURST} (owner, 2026-10-01, report FXAE a86).
+/* CR 803.5d — THE CASTER ORDERS A {BURST} (owner, 2026-10-01, report FXAE a86).
  *
  *   "it needs to do the same thing as stacking triggers where you click them
  *    in the order you want them to resolve NOT in the order you want to put
@@ -7,7 +7,7 @@
  *    It's all or nothing with Burst tokens." — and no auto mode: "Just force
  *    them to choose the order."
  *
- * The group still goes on together (R16/R81). What is new is `ordered`: the
+ * The group still goes on together (CR 803.5, 304.11g). What is new is `ordered`: the
  * caster picks the token that resolves next, aims it, and so on; the first
  * pick ends on top. Without the flag a log replays exactly as it always did.
  *
@@ -41,7 +41,7 @@ function burstInBattle(seed: number): { h: Harness; A: Seat; D: Seat; atk: numbe
 const fireballs = (h: Harness, D: Seat) => tokensOf(h, D).filter(t => t.card === 'Fireball');
 const byX = (h: Harness, D: Seat, x: number) => fireballs(h, D).find(t => t.x === x)!.id;
 
-test('R309: the caster picks each Fireball in RESOLVE order and aims it — the first pick ends on top', () => {
+test('CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it — the first pick ends on top', () => {
   const { h, A, D } = burstInBattle(35800);
   h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 1), ordered: true });
   assert.equal(h.state.suspension?.type, 'burstPick', 'the first question is which resolves first');
@@ -62,7 +62,7 @@ test('R309: the caster picks each Fireball in RESOLVE order and aims it — the 
   finishBattle(h);
 });
 
-test('R309: without `ordered` a burst casts exactly as before — entity-id order, first aimed at the bottom', () => {
+test('without `ordered` a burst casts exactly as before — entity-id order, first aimed at the bottom', () => {
   const { h, A, D } = burstInBattle(35801);
   h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 2) });
   assert.equal(h.state.suspension?.type, 'cast', 'no order question at all');
@@ -72,7 +72,7 @@ test('R309: without `ordered` a burst casts exactly as before — entity-id orde
   finishBattle(h);
 });
 
-test('R309: a lone token is not asked to be ordered', () => {
+test('CR 803.5d: a lone token is not asked to be ordered', () => {
   const h = new Harness(35802);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -90,7 +90,7 @@ test('R309: a lone token is not asked to be ordered', () => {
   finishBattle(h);
 });
 
-test('R309: an ordered burst is deterministic — the same actions from the same state give the same stack', () => {
+test('an ordered burst is deterministic — the same actions from the same state give the same stack', () => {
   const { h, A, D } = burstInBattle(35804);
   const before = structuredClone(h.state);
   const from = h.actions.length;

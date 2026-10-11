@@ -119,7 +119,7 @@ test('§5 a cached card that is playable now: a tap reads it, a mouse click play
   assert.ok(ui.has({ act: 'cache', p: me, i: 0 }), 'the cached card is drawn beside the hand, playable');
   ui.sent();
   ui.tap({ act: 'cache', p: me, i: 0 });
-  assert.deepEqual(ui.actions(), [], 'a tap does not play a cached card either (R311: the cache plays like the hand)');
+  assert.deepEqual(ui.actions(), [], 'a tap does not play a cached card either (CR 403.3b: the cache plays like the hand)');
   mouse({ act: 'cache', p: me, i: 0 });
   ui.click({ act: 'cache', p: me, i: 0 });
   assert.deepEqual(ui.actions(), legal, 'a mouse click still does');

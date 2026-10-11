@@ -2,8 +2,8 @@
   {
     "id": "F-U04-1",
     "rule": "concepts.costs.modifiers.paid-reduction",
-    "title": "Deferral Drone: a test title and R119 say \"this turn\"; the printed card says \"this phase\"",
-    "summary": "Deferral Drone prints \"The next card you play this phase costs [3] less.\" R119 quotes it as \"this turn\" and lists the charge as cleared in E.startTurn, and a 45-hybrids-ld-b test title says \"this turn\". Another test in the same file (the ERRATA one) shows the charge already ending at a mid-turn phase boundary, so the engine seems to follow the card. The title and the ruling text assert the superseded wording. Suspected test/register problem; not checked against the engine.",
+    "title": "Deferral Drone: a test title and the owner ruling of 2026-08-24 (“a paid-for cost reduction OUTLIVES its…”) say \"this turn\"; the printed card says \"this phase\"",
+    "summary": "Deferral Drone prints \"The next card you play this phase costs [3] less.\" the owner ruling of 2026-08-24 (“a paid-for cost reduction OUTLIVES its…”) quotes it as \"this turn\" and lists the charge as cleared in E.startTurn, and a 45-hybrids-ld-b test title says \"this turn\". Another test in the same file (the ERRATA one) shows the charge already ending at a mid-turn phase boundary, so the engine seems to follow the card. The title and the ruling text assert the superseded wording. Suspected test/register problem; not checked against the engine.",
     "evidence": [
       {
         "file": "client/engine/test/45-hybrids-ld-b.test.ts",
@@ -24,7 +24,7 @@
     "id": "F-U04-2",
     "rule": "concepts.costs.modifiers.imposed.ambush",
     "title": "An Ambush ignores imposed and \"cards\" cost modifiers (Arbiter of Armistice, Vengeance), though it is a card played",
-    "summary": "R129 counts an Ambush as a card being played, and Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") and Vengeance (\"Cards your opponents play during battle gain '[Sacrifice a unit]'\") print the noun \"Cards\". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. R122 records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "The owner ruling of 2026-08-24 (“a spell token is a token…”) counts an Ambush as a card being played, and Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") and Vengeance (\"Cards your opponents play during battle gain '[Sacrifice a unit]'\") print the noun \"Cards\". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -36,7 +36,7 @@
       },
       {
         "file": "client/engine/src/apply.ts",
-        "quote": "printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */"
+        "quote": "printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e"
       }
     ],
     "ct": "CT-243",
@@ -49,11 +49,11 @@
     "id": "F-U04-3",
     "rule": "concepts.costs.modifiers.imposed.ambush",
     "title": "An Ambush ignores imposed \"cards played\" costs (Arbiter of Armistice, Vengeance)",
-    "summary": "doAmbush pays only the Ambush line's mana and never consults lifeToPlay/unitsToPlay, so a card played as an Ambush during battle pays no [Pay 2 life] under Arbiter of Armistice and no [Sacrifice a unit] under an opponent's Vengeance, although R129 rules an Ambush is a card being played and both cards print the noun \"Cards\". R122 records this as a deliberate, still-open decision, so it is a divergence from the printed literal rather than from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "doAmbush pays only the Ambush line's mana and never consults lifeToPlay/unitsToPlay, so a card played as an Ambush during battle pays no [Pay 2 life] under Arbiter of Armistice and no [Sacrifice a unit] under an opponent's Vengeance, although the owner ruling of 2026-08-24 (“a spell token is a token…”) rules an Ambush is a card being played and both cards print the noun \"Cards\". The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) records this as a deliberate, still-open decision, so it is a divergence from the printed literal rather than from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/apply.ts",
-        "quote": "printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */"
+        "quote": "printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e"
       },
       {
         "file": "client/docs/digital-rules.md",
@@ -66,7 +66,7 @@
     "id": "F-U04-4",
     "rule": "concepts.costs.modifiers.imposed.ambush",
     "title": "An Ambush escapes imposed costs on \"cards played\" (Arbiter of Armistice)",
-    "summary": "Arbiter prints \"Cards played during battle gain [Pay 2 life]\". R129 makes an Ambush a card being played, and Manual p.40 says you \"play cards as an ambush\". But the Ambush path never consults the cost-mod layer, so an Ambush under Arbiter pays no life (measured). R122 calls this deliberate, pending a future decision.",
+    "summary": "Arbiter prints \"Cards played during battle gain [Pay 2 life]\". The owner ruling of 2026-08-24 (“a spell token is a token…”) makes an Ambush a card being played, and Manual p.40 says you \"play cards as an ambush\". But the Ambush path never consults the cost-mod layer, so an Ambush under Arbiter pays no life (measured). The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) calls this deliberate, pending a future decision.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -87,7 +87,7 @@
     "id": "F-U04-5",
     "rule": "concepts.costs.trigger-sacrifice-me",
     "title": "\"sacrifice me. If you do\" triggers sacrifice their source as the ability goes on the stack; print makes it part of the effect",
-    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"When …, sacrifice me. If you do, …\" as effect prose with no [cost] bracket, so the sacrifice happens as the ability resolves: players can respond while the unit is still in play, and if it is gone by then the \"If you do\" part does nothing. R73 (owner) reads the prose as a cast cost, and the engine follows R73: 26-metal-a asserts the sacrifice is paid on the way to the stack. Print outranks R73 (D-U04-2). Suspected from the ruling and the test title; not re-measured against the engine in this pass.",
+    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"When …, sacrifice me. If you do, …\" as effect prose with no [cost] bracket, so the sacrifice happens as the ability resolves: players can respond while the unit is still in play, and if it is gone by then the \"If you do\" part does nothing. The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) (owner) reads the prose as a cast cost, and the engine follows the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”): 26-metal-a asserts the sacrifice is paid on the way to the stack. Print outranks the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) (D-U04-2). Suspected from the ruling and the test title; not re-measured against the engine in this pass.",
     "evidence": [
       {
         "file": "client/engine/test/26-metal-a.test.ts",
@@ -103,7 +103,7 @@
   {
     "id": "F-U04-6",
     "title": "\"sacrifice me. If you do, …\" triggers are sacrificed as a cast cost, against the designer's ruling",
-    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible carry castCost {sacrificeUnits, from:'self'} (R73), so the source is sacrificed as the trigger goes on the stack. Caleb Gannon ruled on 2025-04-20, on Eldritch Dreamtender, that the sacrifice happens on resolution: if the opponent kills it with the trigger on the stack, it cannot be sacrificed and nothing is discarded. In the engine the opponent can never respond while the source is still in play, so the opponent loses the interaction the designer describes.",
+    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible carry castCost {sacrificeUnits, from:'self'} (owner ruling of 2026-08-22, “\"Sacrifice me\" is a CAST COST…”), so the source is sacrificed as the trigger goes on the stack. Caleb Gannon ruled on 2025-04-20, on Eldritch Dreamtender, that the sacrifice happens on resolution: if the opponent kills it with the trigger on the stack, it cannot be sacrificed and nothing is discarded. In the engine the opponent can never respond while the source is still in play, so the opponent loses the interaction the designer describes.",
     "evidence": [
       {
         "file": "data/rulings/generated_rulings.jsonl",

@@ -1,21 +1,21 @@
 /* Light & Dark engine wave D: the primitives the nine card batches asked for.
  *
- *  - R49 `lifeGained:<seat>` battle ledger — the exact mirror of `lifeLost`.
- *  - R49 non-mana COSTS. CastCost gained payLife / discardCard / gainDebt
+ *  - `lifeGained:<seat>` battle ledger — the exact mirror of `lifeLost`.
+ *  - CR 111.2, 111.6 non-mana COSTS. CastCost gained payLife / discardCard / gainDebt
  *    beside sacrificeUnit; ActivatedAbility.cost gained life / debt / discard /
  *    sacrificeOther / discardOrSacrifice. All of them GATE the action (an
  *    unpayable cost is refused and never offered) and are paid before the item
  *    reaches the stack, so nobody may respond between cost and effect.
- *  - R49 ⚠ the LIFE-COST ruling: payable only while you have MORE life than it
+ *  - CR 111.6b ⚠ the LIFE-COST ruling: payable only while you have MORE life than it
  *    costs. Paying your last life is refused too.
- *  - R49 per-ability `timing` — the printed {Battle}/{Deployment} marker on an
+ *  - CR 705.2 per-ability `timing` — the printed {Battle}/{Deployment} marker on an
  *    ACTIVATED ability, enforced at activation.
- *  - R49 `Entity.spawnedTurn`, and `from` (the source ZONE) on the two play
+ *  - `Entity.spawnedTurn`, and `from` (the source ZONE) on the two play
  *    events.
- *  - R50 the two turn-structure events that had none: 'endOfHaste' (fired
- *    while hasteDone still describes the closing step, BEFORE R43's mana-tally
- *    sweep) and 'startOfDeployment' (fired AFTER R38's rot damage).
- *  - R51 zone-resident trigger listeners: a card sitting in a BIN or a CACHE.
+ *  - CR 504.6, 507.4 the two turn-structure events that had none: 'endOfHaste' (fired
+ *    while hasteDone still describes the closing step, BEFORE the prophecy's mana-tally
+ *    sweep) and 'startOfDeployment' (fired AFTER the rot damage, CR 112.13c).
+ *  - CR 400.5 zone-resident trigger listeners: a card sitting in a BIN or a CACHE.
  *
  * Every primitive is proven with SYNTHETIC test cards over an explicitly built
  * state — no assertion reads anything out of the opening shuffle, so a sibling
@@ -48,7 +48,7 @@ registerSynthetic(base('T47 Grunt'), {});
 registerSynthetic(base('T47 Chaff'), {});
 registerSynthetic(base('T47 Chaff B'), {});
 
-// ── cast costs (R35/R49) ───────────────────────────────────────────────
+// ── cast costs (CR 702.4) ───────────────────────────────────────────────
 
 registerSynthetic(base('T47 Life Bolt', {
   kind: 'spell', type: 'Test Spell', timing: 'deploy', power: 0, toughness: 0,
@@ -86,7 +86,7 @@ registerSynthetic(base('T47 Printed Debt', {
   spellEffect: { run: (g, ctx) => { g.ev('info', `${ctx.sourceName} resolves.`); } },
 });
 
-// ── activation costs (R49) ─────────────────────────────────────────────
+// ── activation costs (CR 705.3) ─────────────────────────────────────────────
 
 registerSynthetic(base('T47 Life Pump', { toughness: 4 }), {
   abilities: [{
@@ -179,7 +179,7 @@ registerSynthetic(base('T47 Deploy Only', { toughness: 4 }), {
   }],
 });
 
-// ── the two new turn-structure events (R50) ────────────────────────────
+// ── the two new turn-structure events (CR 504.6, 507.4) ────────────────────────────
 
 registerSynthetic(base('T47 Haste Watcher'), {
   abilities: [{
@@ -221,7 +221,7 @@ registerSynthetic(base('T47 Deploy Watcher'), {
   }],
 });
 
-// ── zone-resident listeners (R51) ──────────────────────────────────────
+// ── zone-resident listeners (CR 400.5) ──────────────────────────────────────
 
 registerSynthetic(base('T47 Bin Lurker'), {
   abilities: [{
@@ -267,9 +267,9 @@ function toNextDeployment(h: Harness): void {
   finishBattle(h);
 }
 
-// ══════════════════════ R49: the lifeGained ledger ═════════════════════
+// ══════════════════════ the lifeGained ledger ═════════════════════
 
-test('R49: E.gainLife bumps `lifeGained:<seat>` exactly the way loseLife bumps `lifeLost`', () => {
+test('E.gainLife bumps `lifeGained:<seat>` exactly the way loseLife bumps `lifeLost`', () => {
   const h = sterile(4701);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -285,7 +285,7 @@ test('R49: E.gainLife bumps `lifeGained:<seat>` exactly the way loseLife bumps `
   finishBattle(h);
 });
 
-test('R49: the gain ledger is per BATTLE PHASE — a gain outside battle counts for nothing', () => {
+test('the gain ledger is per BATTLE PHASE — a gain outside battle counts for nothing', () => {
   const h = sterile(4702);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -298,9 +298,9 @@ test('R49: the gain ledger is per BATTLE PHASE — a gain outside battle counts 
   finishBattle(h);
 });
 
-// ═══════════════════ R49: bracketed CAST costs (R35) ═══════════════════
+// ═══════════════════ CR 702.4: bracketed CAST costs ═══════════════════
 
-test('R49: a [Pay N life] cast cost is charged at CAST, before the item exists', () => {
+test('CR 702.4: a [Pay N life] cast cost is charged at CAST, before the item exists', () => {
   const h = sterile(4710);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -311,7 +311,7 @@ test('R49: a [Pay N life] cast cost is charged at CAST, before the item exists',
   assert.ok(h.state.players[P]!.bin.includes('T47 Life Bolt'), 'and the spell resolved');
 });
 
-test('R49 ⚠ the life-cost RULING: a cost you cannot SURVIVE is not payable', () => {
+test('CR 111.6b ⚠ the life-cost RULING: a cost you cannot SURVIVE is not payable', () => {
   const h = sterile(4711);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -330,7 +330,7 @@ test('R49 ⚠ the life-cost RULING: a cost you cannot SURVIVE is not payable', (
   assert.equal(h.state.players[P]!.life, 1, 'at life > n it is payable, down to exactly 1');
 });
 
-test('R49: a [Discard N cards] cast cost asks for each card, at cast, and TRASHES them (R40)', () => {
+test('CR 702.4: a [Discard N cards] cast cost asks for each card, at cast, and TRASHES them (CR 801.3)', () => {
   const h = sterile(4712);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -345,10 +345,10 @@ test('R49: a [Discard N cards] cast cost asks for each card, at cast, and TRASHE
   assert.equal(h.state.decision, null);
   assert.ok(h.state.players[P]!.bin.includes('T47 Chaff'));
   assert.ok(h.state.players[P]!.bin.includes('T47 Chaff B'));
-  assert.equal(h.events.filter(e => e.type === 'trashed').length, 2, 'R40: discarding trashes');
+  assert.equal(h.events.filter(e => e.type === 'trashed').length, 2, 'CR 801.3: discarding trashes');
 });
 
-test('R49: a [Discard N cards] cost that cannot be paid makes the CAST illegal', () => {
+test('CR 702.4a: a [Discard N cards] cost that cannot be paid makes the CAST illegal', () => {
   const h = sterile(4713);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -363,7 +363,7 @@ test('R49: a [Discard N cards] cost that cannot be paid makes the CAST illegal',
   assert.ok(h.state.decision, 'now it is payable');
 });
 
-test('R49: a [Gain N debt] cast cost is taken at cast (R39)', () => {
+test('CR 112.14c: a [Gain N debt] cast cost is taken at cast', () => {
   const h = sterile(4714);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -371,7 +371,7 @@ test('R49: a [Gain N debt] cast cost is taken at cast (R39)', () => {
   assert.equal(h.q.debt(P), 3, 'the debt was taken');
 });
 
-test('R49: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt', () => {
+test('CR 112.14c: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt', () => {
   const h = sterile(4715);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -380,9 +380,9 @@ test('R49: printed.gainDebt is a REAL cast cost — a negated spell still cost t
   assert.ok(h.log.some(l => l.includes('the [cost] of T47 Printed Debt')));
 });
 
-// ═════════════════════ R49: ACTIVATION costs ═══════════════════════════
+// ═════════════════════ CR 705.3: ACTIVATION costs ═══════════════════════════
 
-test('R49: a life activation cost is paid at ACTIVATION and gates the ability', () => {
+test('a life activation cost is paid at ACTIVATION and gates the ability', () => {
   const h = sterile(4720);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -398,7 +398,7 @@ test('R49: a life activation cost is paid at ACTIVATION and gates the ability', 
   assert.deepEqual(effStats(h, u), [3, 6], 'and the ability resolved');
 });
 
-test('R49: a discard activation cost is CHOSEN and paid before the item reaches the stack', () => {
+test('CR 705.3: a discard activation cost is CHOSEN and paid before the item reaches the stack', () => {
   const h = sterile(4721);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -421,7 +421,7 @@ test('R49: a discard activation cost is CHOSEN and paid before the item reaches 
   finishBattle(h);
 });
 
-test('R49: an empty hand makes a discard activation cost unpayable', () => {
+test('CR 111.6: an empty hand makes a discard activation cost unpayable', () => {
   const h = sterile(4722);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -433,7 +433,7 @@ test('R49: an empty hand makes a discard activation cost unpayable', () => {
   assert.ok(!h.legal(P).some(a => a.type === 'activateAbility' && a.entityId === u));
 });
 
-test('R49: a sacrifice-another cost never offers the source itself', () => {
+test('a sacrifice-another cost never offers the source itself', () => {
   const h = sterile(4723);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -450,7 +450,7 @@ test('R49: a sacrifice-another cost never offers the source itself', () => {
   assert.deepEqual(effStats(h, u), [3, 6]);
 });
 
-test('R49: an either/or cost offers both pools and excludes tokens and the source', () => {
+test('an either/or cost offers both pools and excludes tokens and the source', () => {
   const h = sterile(4724);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -468,7 +468,7 @@ test('R49: an either/or cost offers both pools and excludes tokens and the sourc
   assert.deepEqual(effStats(h, u), [3, 6]);
 });
 
-test('R49: a debt activation cost is taken at activation', () => {
+test('CR 112.14c: a debt activation cost is taken at activation', () => {
   const h = sterile(4725);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -478,9 +478,9 @@ test('R49: a debt activation cost is taken at activation', () => {
   assert.deepEqual(effStats(h, u), [3, 6]);
 });
 
-// ══════════════════ R49: per-ability [Battle] timing ═══════════════════
+// ══════════════════ CR 705.2: per-ability [Battle] timing ═══════════════════
 
-test('R49: ActivatedAbility.timing gates activation by WINDOW, both ways', () => {
+test('CR 705.2: ActivatedAbility.timing gates activation by WINDOW, both ways', () => {
   const h = sterile(4730);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -510,9 +510,9 @@ test('R49: ActivatedAbility.timing gates activation by WINDOW, both ways', () =>
   finishBattle(h);
 });
 
-// ══════════════════════ R49: Entity.spawnedTurn ════════════════════════
+// ══════════════════════ Entity.spawnedTurn ════════════════════════
 
-test('R49: every entity is stamped with the turn it arrived', () => {
+test('every entity is stamped with the turn it arrived', () => {
   const h = sterile(4740);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -529,9 +529,9 @@ test('R49: every entity is stamped with the turn it arrived', () => {
   assert.ok(h.q.spawnedThisTurn(ent(h, late)!));
 });
 
-// ═══════════ R49: the source zone on the two play events ═══════════════
+// ═══════════ CR 410.6: the source zone on the two play events ═══════════════
 
-test('R49: play events carry `from` — hand vs cache, on both channels', () => {
+test('CR 410.6: play events carry `from` — hand vs cache, on both channels', () => {
   const h = sterile(4750);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -556,7 +556,7 @@ test('R49: play events carry `from` — hand vs cache, on both channels', () => 
     'a spell reports the zone on spellPlayed');
 });
 
-test('R49: a unit CREATED by an effect carries no `from` — it was never played', () => {
+test('CR 410.6b: a unit CREATED by an effect carries no `from` — it was never played', () => {
   const h = sterile(4751);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -567,9 +567,9 @@ test('R49: a unit CREATED by an effect carries no `from` — it was never played
     'no zone: "play a card from anywhere other than your hand" must not see this');
 });
 
-// ═════════════════ R50: 'endOfHaste' and 'startOfDeployment' ═══════════
+// ═════════════════ CR 504.6, 507.4: 'endOfHaste' and 'startOfDeployment' ═══════════
 
-test("R50: 'endOfHaste' fires — even when the step was skipped outright (R18)", () => {
+test("CR 504.6: 'endOfHaste' fires — even in a turn when nobody played anything in the step", () => {
   const h = sterile(4760);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -583,7 +583,7 @@ test("R50: 'endOfHaste' fires — even when the step was skipped outright (R18)"
   finishBattle(h);
 });
 
-test("R50: 'endOfHaste' fires INSIDE the closing step, before R43's mana-tally sweep", () => {
+test("CR 504.6: 'endOfHaste' fires INSIDE the closing step, before the prophecy's mana-tally sweep", () => {
   const h = sterile(4761);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -596,7 +596,7 @@ test("R50: 'endOfHaste' fires INSIDE the closing step, before R43's mana-tally s
   finishBattle(h);
 });
 
-test('R50: an end-of-haste trigger that SUSPENDS does not strand the phase flip', () => {
+test('CR 504.6: an end-of-haste trigger that SUSPENDS does not strand the phase flip', () => {
   const h = sterile(4763);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -621,7 +621,7 @@ test('R50: an end-of-haste trigger that SUSPENDS does not strand the phase flip'
   finishBattle(h);
 });
 
-test("R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented order)", () => {
+test("CR 507.4: 'startOfDeployment' fires AFTER CR 112.13c's rot damage (the documented order)", () => {
   const h = sterile(4762);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -635,9 +635,9 @@ test("R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented orde
     'the trigger sees the post-rot life total: rot is part of the step OPENING');
 });
 
-// ══════════════ R51: zone-resident trigger listeners ═══════════════════
+// ══════════════ CR 400.5: zone-resident trigger listeners ═══════════════════
 
-test('R51: a card sitting in your BIN hears events, anchored on its bin owner', () => {
+test('CR 400.5: a card sitting in your BIN hears events, anchored on its bin owner', () => {
   const h = sterile(4770);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -651,7 +651,7 @@ test('R51: a card sitting in your BIN hears events, anchored on its bin owner', 
   assert.ok(!h.log.some(l => l.includes(`from ${h.q.pname(1 - P)}'s bin`)));
 });
 
-test('R51: a card sitting in your CACHE hears events too', () => {
+test('CR 400.5: a card sitting in your CACHE hears events too', () => {
   const h = sterile(4771);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -661,7 +661,7 @@ test('R51: a card sitting in your CACHE hears events too', () => {
   assert.equal(h.state.players[P]!.life, life + 2, 'the cache-resident trigger fired');
 });
 
-test('R51: no copy in the zone, no trigger — and one firing per zone, not per copy', () => {
+test('CR 400.5: no copy in the zone, no trigger — and one firing per zone, not per copy', () => {
   const h = sterile(4772);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -677,7 +677,7 @@ test('R51: no copy in the zone, no trigger — and one firing per zone, not per 
     'exactly one extra card: one firing, however many copies are in the zone');
 });
 
-test('R51: a zone listener costs nothing when nothing in the pool listens for that event', () => {
+test('CR 400.5: a zone listener costs nothing when nothing in the pool listens for that event', () => {
   // the index is keyed by event type: a type nobody listens for is one failed
   // Map.get(). This is the behavioural half — an unrelated event fires no
   // zone trigger even with the card sitting in the bin.
@@ -692,7 +692,7 @@ test('R51: a zone listener costs nothing when nothing in the pool listens for th
 
 // ═══════════════════════ replay determinism ════════════════════════════
 
-test('R49/R50/R51: the new costs and events replay deterministically', () => {
+test('the new costs and events replay deterministically', () => {
   const build = (): Harness => {
     const h = sterile(4790);
     toDeployment(h);
@@ -724,7 +724,7 @@ test('R49/R50/R51: the new costs and events replay deterministically', () => {
 
 // ════════════════ an unpayable cost never half-pays ════════════════════
 
-test('R35/R49: a refused cast pays nothing at all — mana, life and debt included', () => {
+test('CR 111.6a: a refused cast pays nothing at all — mana, life and debt included', () => {
   const h = sterile(4795);
   toDeployment(h);
   const P = h.state.deployPlayer!;

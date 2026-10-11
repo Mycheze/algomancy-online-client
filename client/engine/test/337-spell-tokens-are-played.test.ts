@@ -1,8 +1,7 @@
-/* R305 — spell tokens ARE played: taxed and counted.
+/* CR 702.7a — spell tokens ARE played: taxed and counted.
  *
  * The owner, 2026-09-28, asked "Should casting a spell token count as playing
- * a spell?", chose *"Yes, taxed + counted."* That overturns R59's carve-out
- * ("a spell token is cast from play, not played"). The report that asked it
+ * a spell?", chose *"Yes, taxed + counted."* That overturns the earlier carve-out ("a spell token is cast from play, not played"). The report that asked it
  * was playtest #174, room UYRX: The Silent was in play, Reconfigure had been
  * played, and a Crystal 4 was then cast for nothing.
  *
@@ -13,7 +12,7 @@
  *  · COUNTED — a token cast bumps the token-inclusive `spellsPlayedAny:`
  *    ledger, and The Silent reads that one now.
  *
- * And the line R305 did NOT move: a token is still not a CARD (R133). Every
+ * And the line that did NOT move: a token is still not a CARD (CR 304.2). Every
  * modifier whose printed noun is "card(s)" — Arbiter of Armistice, Vengeance,
  * Deferral Drone's "the next card you play" — leaves a token alone.
  *
@@ -74,7 +73,7 @@ function playGodray(t: Table): void {
 
 // ── TAXED ─────────────────────────────────────────────────────────────────
 
-test('R305: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent', () => {
+test('CR 702.7a: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent', () => {
   // The UYRX report, on a clean board: one spell played this battle, then a
   // Crystal 4. The Silent prints "Spells cost each player [two] more to play
   // for each spell their team has previously played in this battle".
@@ -95,7 +94,7 @@ test('R305: The Silent taxes a Crystal [2] after one prior spell this battle, an
   finishBattle(h);
 });
 
-test('R305: a Crystal cast counts as a played spell, so it raises the tax on the next spell', () => {
+test('CR 702.7a: a Crystal cast counts as a played spell, so it raises the tax on the next spell', () => {
   let tok = 0;
   const t = battle(33702, (h, A) => {
     spawn(h, A, 'The Silent');
@@ -115,7 +114,7 @@ test('R305: a Crystal cast counts as a played spell, so it raises the tax on the
   finishBattle(h);
 });
 
-test('R305: an unaffordable token cast is not offered, and is refused if forced', () => {
+test('CR 702.7a: an unaffordable token cast is not offered, and is refused if forced', () => {
   let tok = 0;
   const t = battle(33703, (h, A) => {
     spawn(h, A, 'The Silent');
@@ -134,7 +133,7 @@ test('R305: an unaffordable token cast is not offered, and is refused if forced'
   finishBattle(h);
 });
 
-test('R305: a Burst group is priced at one instant and pays the sum', () => {
+test('CR 702.7a: a Burst group is priced at one instant and pays the sum', () => {
   let a = 0, b = 0;
   const t = battle(33704, (h, A) => {
     spawn(h, A, 'The Silent');
@@ -161,7 +160,7 @@ test('R305: a Burst group is priced at one instant and pays the sum', () => {
   finishBattle(h);
 });
 
-test('R305: Tranquility taxes a spell token [1] in battle', () => {
+test('CR 702.7a: Tranquility taxes a spell token [1] in battle', () => {
   let tok = 0;
   const t = battle(33705, (h, A) => {
     spawn(h, A, 'Tranquility');
@@ -179,7 +178,7 @@ test('R305: Tranquility taxes a spell token [1] in battle', () => {
   finishBattle(h);
 });
 
-test('R305: Stasis Sentry prints Spells, so a token (base cost 0) costs [3] in battle', () => {
+test('CR 111.10j: Stasis Sentry prints Spells, so a token (base cost 0) costs [3] in battle', () => {
   // "Spells with base cost [three] or less have a base cost of [three] to play
   // during battle." A token's base cost is its printed [0]; the 4 in
   // "Crystal 4" is its size, not a cost.
@@ -193,7 +192,7 @@ test('R305: Stasis Sentry prints Spells, so a token (base cost 0) costs [3] in b
 
 // ── NOT A CARD ────────────────────────────────────────────────────────────
 
-test('R305: Arbiter of Armistice prints Cards, so a token cast pays no life', () => {
+test('CR 701.1c: Arbiter of Armistice prints Cards, so a token cast pays no life', () => {
   let tok = 0;
   const t = battle(33710, (h, A) => {
     spawn(h, A, 'Arbiter of Armistice');
@@ -211,7 +210,7 @@ test('R305: Arbiter of Armistice prints Cards, so a token cast pays no life', ()
   finishBattle(h);
 });
 
-test('R305: Vengeance prints Cards, so a token cast imposes no sacrifice', () => {
+test('CR 701.1c: Vengeance prints Cards, so a token cast imposes no sacrifice', () => {
   // D attacks WITH Vengeance, so it stands in the battle region and "your
   // opponents" is A.
   let tok = 0;
@@ -227,7 +226,7 @@ test('R305: Vengeance prints Cards, so a token cast imposes no sacrifice', () =>
   finishBattle(h);
 });
 
-test('R305: Deferral Drone prints the next card, so a token neither takes nor spends the discount', () => {
+test('CR 701.1c: Deferral Drone prints the next card, so a token neither takes nor spends the discount', () => {
   let tok = 0;
   const t = battle(33712, (h, A) => {
     spawn(h, A, 'Tranquility');

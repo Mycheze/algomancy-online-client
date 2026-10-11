@@ -137,7 +137,7 @@ test('grafts can be applied from the bin', () => {
   assert.equal(tokensOf(h, p).length, 4, 'Fireball 1 (base) + three Fireball 1 (Flame Juggle graft)');
 });
 
-test("graft from the bin goes through the R124 choke point: exactly one 'leftBin', reason 'modded'", () => {
+test("graft from the bin goes through the CR 405.7 choke point: exactly one 'leftBin', reason 'modded'", () => {
   // zoneTake's bin branch used to splice the bin DIRECTLY, so no 'leftBin'
   // ever fired for a graft applied out of the bin (CARD-TODO #26). Nothing
   // reachable broke — Rotling, the only listener, carries no graft symbol —
@@ -158,9 +158,9 @@ test("graft from the bin goes through the R124 choke point: exactly one 'leftBin
     'through E.removeFromBin, with the mod-application reason verb');
 });
 
-test("augment from the bin goes through the R124 choke point: exactly one 'leftBin', reason 'modded'", () => {
+test("augment from the bin goes through the CR 405.7 choke point: exactly one 'leftBin', reason 'modded'", () => {
   // the augment sibling of the graft test above — doAugment's deployment
-  // branch routes through the same zoneTake, and R41 allows the bin zone.
+  // branch routes through the same zoneTake, and CR 507.2 allows the bin zone.
   const h = new Harness(922);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -176,12 +176,12 @@ test("augment from the bin goes through the R124 choke point: exactly one 'leftB
     'through E.removeFromBin, with the mod-application reason verb');
 });
 
-test('bounded graft EFFECT skips after first firing; unbounded cause keeps firing (R9)', () => {
+test('bounded graft EFFECT skips after first firing; unbounded cause keeps firing (CR 722.5a)', () => {
   const h = new Harness(93);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   giveResources(h, p, 'fire', 20); giveResources(h, p, 'wood', 4);
-  // two Oracles: sacrifice the first to prove budgets are per CARD (R9)
+  // two Oracles: sacrifice the first to prove budgets are per CARD (CR 803.4)
   const o1 = spawn(h, p, 'Oracle of the Flame');
   const o2 = spawn(h, p, 'Oracle of the Flame');
   graft(h, p, 'Accelerated Germination', o1, 0);
@@ -235,7 +235,7 @@ test('graft insert position: below the base, order controls resolution', () => {
   assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 2, 'later graft still resolved');
 });
 
-test('composite is ONE stack item in battle: single negation kills all of it (R5/Graft 101)', () => {
+test('composite is ONE stack item in battle: single negation kills all of it (CR 722.4b/Graft 101)', () => {
   const h = new Harness(96);
   toDeployment(h);
   const p = h.state.deployPlayer!, o = 1 - p;
@@ -251,12 +251,12 @@ test('composite is ONE stack item in battle: single negation kills all of it (R5
   assert.equal(h.state.stack[0]!.parts.length, 2, 'two parts inside');
   // negate it directly through the engine to prove single-negation semantics
   new E(h.state).negate(h.state.stack[0]!.id);
-  assert.equal(h.state.stack.length, 0, 'R68: negating takes the composite off the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: negating takes the composite off the stack at once');
   assert.equal(tokensOf(h, p).length, 0, 'no Fireballs: one negation killed the whole composite');
   assert.equal(h.state.players[o]!.life, 30, 'no Tidewraith damage either');
 });
 
-test('mods move with a stolen unit: controller of the unit controls its mods (R8)', () => {
+test('mods move with a stolen unit: controller of the unit controls its mods (CR 711.2)', () => {
   const h = new Harness(97);
   toDeployment(h);
   const p = h.state.deployPlayer!, o = 1 - p;

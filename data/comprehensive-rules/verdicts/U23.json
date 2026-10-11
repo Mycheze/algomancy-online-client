@@ -405,7 +405,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready",
-    "textHash": "3136df8747d12588",
+    "textHash": "dfce5dc35ab9a269",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -454,7 +454,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready.any-play",
-    "textHash": "ed7f86fff1ebc58c",
+    "textHash": "8a9577a0945a6661",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -493,7 +493,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready.bluff",
-    "textHash": "2adb5dd40851a318",
+    "textHash": "2f125a2bf26aa8b5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -542,7 +542,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready.readiness-hidden",
-    "textHash": "ebfa623344a3d164",
+    "textHash": "70431c5dbcbb646a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -607,7 +607,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready.residual",
-    "textHash": "40a962ebb84bdf1d",
+    "textHash": "555acbb337ae8a57",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -656,7 +656,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready.server-never",
-    "textHash": "019b8a0f06ff8fce",
+    "textHash": "2eadba64c83b0082",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -867,7 +867,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision",
-    "textHash": "574e247abada7dce",
+    "textHash": "97b8a8796232c90b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -907,7 +907,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.battle",
-    "textHash": "999f97efcfecc43c",
+    "textHash": "794cde0d05016818",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1015,7 +1015,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.concede",
-    "textHash": "ccea98d93774be3e",
+    "textHash": "2b48a7d5127faea2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1055,7 +1055,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.no-disturb",
-    "textHash": "f61ce8dac78e94e6",
+    "textHash": "9626ec7fa71d670e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1111,7 +1111,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.rewind",
-    "textHash": "ef513925e83f75c3",
+    "textHash": "fc7f315798767493",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1165,7 +1165,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.segment",
-    "textHash": "14aebafaa4224071",
+    "textHash": "48951edee8599a17",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2665,7 +2665,7 @@
   },
   {
     "key": "annexd.general.player-decides.burst-order",
-    "textHash": "323bf6a7cdb5ae82",
+    "textHash": "d0da50612cc38faa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3054,7 +3054,7 @@
   },
   {
     "key": "annexd.recap.glimpse",
-    "textHash": "03189419730ba811",
+    "textHash": "cc1ccbbd7b20e95e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -3131,7 +3131,7 @@
   },
   {
     "key": "annexd.recap.skip",
-    "textHash": "15ceedf7669d0349",
+    "textHash": "9a036177344569fd",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U23-r3",
@@ -3209,7 +3209,7 @@
   },
   {
     "key": "annexd.recap.skip.disconnect",
-    "textHash": "621a725b368fb0af",
+    "textHash": "9f51bb01a32e7d23",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3308,7 +3308,7 @@
   },
   {
     "key": "annexd.recap.skip.live",
-    "textHash": "6364cc4f1174306b",
+    "textHash": "fd18317c5b8c3f76",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -3605,7 +3605,7 @@
   },
   {
     "key": "annexd.recap.tempo.flush",
-    "textHash": "0a42877f22c8a6f1",
+    "textHash": "2868fba0fc4a80e1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3645,7 +3645,7 @@
   },
   {
     "key": "annexd.recap.tempo.held",
-    "textHash": "bbbcb3437f8ff156",
+    "textHash": "21a97016d77c4b0d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3701,7 +3701,7 @@
   },
   {
     "key": "annexd.recap.tempo.input",
-    "textHash": "a5203ab29a500f44",
+    "textHash": "f2f5a361589c1b33",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3741,7 +3741,7 @@
   },
   {
     "key": "annexd.recap.tempo.lag-bound",
-    "textHash": "3f242ab7508dc6a9",
+    "textHash": "6b5d63e837828525",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4120,7 +4120,7 @@
   },
   {
     "key": "annexd.undo.hidden-step",
-    "textHash": "3e230e0086062260",
+    "textHash": "f7d77c03a04f0407",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4284,7 +4284,7 @@
   },
   {
     "key": "annexd.undo.learn-to-play",
-    "textHash": "d733f47c701e6270",
+    "textHash": "4755785bb4e29d02",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4349,7 +4349,7 @@
   },
   {
     "key": "annexd.undo.seen-cards",
-    "textHash": "b1dd6e3972a294ea",
+    "textHash": "38e7b42f730167f9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4397,7 +4397,7 @@
   },
   {
     "key": "annexd.undo.seen-cards.after",
-    "textHash": "8ff2d7f582c5928e",
+    "textHash": "0b3c84178ec8e05b",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -4445,7 +4445,7 @@
   },
   {
     "key": "annexd.undo.seen-cards.measured",
-    "textHash": "0a2f76c93ebec922",
+    "textHash": "f1ef0ed468b9d871",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4539,7 +4539,7 @@
   },
   {
     "key": "annexd.undo.seen-cards.only-seer",
-    "textHash": "6670971c8311f13d",
+    "textHash": "6b97cebbff8e59c9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -4615,7 +4615,7 @@
   },
   {
     "key": "annexd.undo.seen-cards.restart",
-    "textHash": "5d175179d00a702b",
+    "textHash": "170f034b27f03380",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",

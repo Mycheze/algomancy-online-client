@@ -6,9 +6,9 @@
  * be asking. That works exactly as long as the engine has not moved.
  *
  * It has moved, repeatedly, and the failure it produces is SILENT. Room KAWJ
- * (2026-09-16, R295) replayed 253 of 253 actions, refused nothing, reported
- * ✓ FAITHFUL, and arrived at a different final life total: R295 had added a
- * priority window, and the log's old `passPriority` actions were consumed by
+ * (2026-09-16) replayed 253 of 253 actions, refused nothing, reported
+ * ✓ FAITHFUL, and arrived at a different final life total: a priority window had been added between split
+ * damage sub-steps (CR 608.3b), and the log's old `passPriority` actions were consumed by
  * the new window instead of the one they were taken for. Nothing DERIVED from
  * the log can see that, because the log is not the thing that changed. A
  * refusal count is an upper bound on a divergence and KAWJ's upper bound was
@@ -232,7 +232,7 @@ test('BL-38 §6 a mismatch names the FIRST index that differs', async () => {
     // Two entries differ. The finding is the FIRST one: from there on the
     // replay is running a board the recorded game never had, so a later
     // difference is cascade and not a second finding — the same rule
-    // replay-room.ts's §R169 report is built on.
+    // replay-room.ts's divergence-point report is built on.
     const replayed = [...recorded];
     replayed[12] = 'f'.repeat(16);
     replayed[30] = 'e'.repeat(16);

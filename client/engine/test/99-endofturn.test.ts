@@ -25,7 +25,7 @@
  * decision, the stack and the trigger queue are all empty. The turn-end is
  * owed as a FLAG, not held on a call stack, so a suspension raised inside
  * that window is answered like any other and the flip happens on the way back
- * out. R85's replay contract does the rest: a suspension rolls the part back
+ * out. The engine's suspend-and-replay contract does the rest: a suspension rolls the part back
  * and replays it from its start, with `shownEvents` suppressing the log lines
  * it already printed.
  *
@@ -164,7 +164,7 @@ test('a choice raised inside a real endTurn() is asked, answered, and the turn s
   const walker = spawn(h, p, 'Mirage Walker');         // "at the end of turn, [Switch1] …"
   const fodder = spawn(h, p, 'Conduit of Pain');       // a SECOND unit, so the pick is real
   giveResources(h, p, 'fire', 2);                      // General Smof r / 2
-  // General Smof rides the Walker's end-of-turn cause as a graft (R9/R110)
+  // General Smof rides the Walker's end-of-turn cause as a graft (CR 722.1)
   h.do({
     type: 'graft', seat: p, from: 'hand',
     index: give(h, p, 'General Smof'), hostId: walker, position: 0,
@@ -321,7 +321,7 @@ test('Mindburn asks once per iteration and lets you discard rather than sacrific
     'one question per iteration — this is the card the designer was warned about by name '
     + '("Mindburn can raise 2X prompts in a row") and accepted');
   assert.notEqual(asks[0]!.key, asks[1]!.key,
-    'and the keys differ per round, or R85 replay would answer round 2 with round 1\'s answer');
+    'and the keys differ per round, or the suspend replay would answer round 2 with round 1\'s answer');
   assert.ok(asks.every(k => k.seat === A));
   assert.ok(asks[0]!.options.some(v => String(v).startsWith('h:')),
     'discarding is on the menu at all — it is half the printed text');
@@ -330,7 +330,7 @@ test('Mindburn asks once per iteration and lets you discard rather than sacrific
     + 'never do — it always sacrificed the leftmost unit');
   assert.equal(g.player(A).hand.length, handBefore - 2, 'two cards left the hand instead');
   assert.equal(g.player(A).bin.filter(n => n === 'Immolate' || n === 'Overbloom').length, 2,
-    'discarding is trashing (R40) — they are in the bin');
+    'discarding is trashing (CR 801.3) — they are in the bin');
 });
 
 // ── 7. Big Glimpse Card ─────────────────────────────────────────────────
@@ -354,9 +354,9 @@ test('Big Glimpse Card really splits the 7 and caches a non-empty pile', () => {
     + 'auto-answered "Done" before a single card moved, so pile 1 was empty, pile 1 was '
     + 'cached, and all seven were recycled');
   assert.ok(cache.every(c => c.playableUntilTurn === g.s.turn),
-    'with the glimpse-style permission the printed text promises (R45)');
+    'with the glimpse-style permission the printed text promises (CR 801.9e)');
   assert.equal(deck.length, deckBefore - 7,
-    'R296: all seven left the deck — two to the cache and five PAST THE MARK, where the old '
+    'CR 408.2a: all seven left the deck — two to the cache and five PAST THE MARK, where the old '
     + 'reading (`- 7 + 5`) put them straight back on the bottom of the live deck');
   assert.equal(g.recycleOf(A).length, 5, 'and the unchosen pile is the five in the recycle pile');
 });
@@ -387,13 +387,13 @@ test('Abduct offers the pay-to-keep clause to the VICTIM', () => {
 // asks which card to discard. Before this change that choose could not
 // suspend in the end-of-turn window (it auto-picked hand[0]); everywhere else
 // it always could, and it always mutated first. So the hazard is not new, but
-// it is the one worth checking by hand: R85 rolls the part back and REPLAYS it
+// it is the one worth checking by hand: a suspension rolls the part back and REPLAYS it
 // from the start, which means `removeFromStack` and `hand.push` run a second
 // time. If the rollback did not restore the stack, the replay would find
 // nothing to recall; if it did not restore the hand, the card would arrive
 // twice. Confirmed here rather than reasoned about.
 
-test('Dream Lapse suspends AFTER mutating and the R85 replay does not double the recall', () => {
+test('Dream Lapse suspends AFTER mutating and the suspend replay does not double the recall', () => {
   const h = new Harness(9907);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - h.state.initiative) as Seat;
@@ -429,7 +429,7 @@ test('Dream Lapse suspends AFTER mutating and the R85 replay does not double the
     'and exactly one copy reached the bin — a doubled recall would show up here');
   assert.ok(!h.state.stack.some(i => i.id === arcId), 'the Arc did not come back with the replay');
   assert.equal(h.log.filter(l => l.includes('is recalled off the stack')).length, 1,
-    'and the log says it once, not twice: R85 suppresses the lines the first pass already '
+    'and the log says it once, not twice: the replay suppresses the lines the first pass already '
     + 'printed, which is what keeps a replayed mutation invisible instead of confusing');
   finishBattle(h);
 });

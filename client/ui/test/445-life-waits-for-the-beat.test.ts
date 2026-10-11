@@ -157,7 +157,7 @@ test('§2a the Iyngstra life gain, its number and its sound, wait until the trig
   assert.equal(lifeOn(seat), was, 'at the click the total has not moved — the trigger is not even on the stack yet');
   assert.ok(!PLAYED.includes('lifeup'), 'and nothing was heard');
 
-  // the trigger's beat: R189 puts the unit play first and the trigger a tempo
+  // the trigger's beat: CR D6.7 puts the unit play first and the trigger a tempo
   // step behind it, so its end is the latest `until` in the batch
   const q = queueFlashes([], events, t0, new Map(), bornSince(before, h.state));
   const beat = q.find(f => f.life)!;

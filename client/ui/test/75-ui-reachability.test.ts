@@ -7,12 +7,12 @@
  * and both times the ENGINE was right, fully tested, and completely out of
  * reach:
  *
- *  - **R79, viruses on spells on the stack.** `legalActions` had been emitting
+ *  - **CR 723.4, viruses on spells on the stack.** `legalActions` had been emitting
  *    `{ type: 'augment', from: 'hand', index, hostStack }` since the rule
  *    landed. `grep -rn hostStack ui/` returned ZERO hits. Not a wrong
  *    affordance — no affordance. The owner asked whether the combo was even
  *    legal, because from the board it behaved as though it wasn't.
- *  - **R84 {Alluring}.** A correct, heavily-tested compulsory-block rule.
+ *  - **CR 606.2e {Alluring}.** A correct, heavily-tested compulsory-block rule.
  *    `grep -rn Alluring ui/` returned exactly one hit, a glossary entry.
  *    The block bar never named the duty and never gated Confirm, so the only
  *    thing a lured defender ever saw was a red refusal after committing.
@@ -114,12 +114,12 @@ import type {
  * not "the client can send a `send` list together with two blocks".
  */
 /**
- * R89: which KIND of thing an augment's `hostId` names.
+ * CR 721.4a: which KIND of thing an augment's `hostId` names.
  *
  * A spell token in play is an `Entity` exactly as a unit is, and the engine
  * puts both in the same field — so this is the one facet that cannot be read
  * off the action alone. Without the state (the sweep's `note` always has it)
- * it degrades to `host-unit`, which is the pre-R89 answer.
+ * it degrades to `host-unit`, which is the answer from before spell-token hosts existed.
  */
 function hostKindOf(a: Extract<Action, { type: 'augment' }>, s?: GameState): string {
   if (a.hostStack !== undefined) return 'host-stack';
@@ -130,13 +130,13 @@ function hostKindOf(a: Extract<Action, { type: 'augment' }>, s?: GameState): str
 export function facetsOf(a: Action, s?: GameState): string[] {
   switch (a.type) {
     case 'playCard': return [`playCard:${a.mode ?? 'plain'}`];
-    // R311: the cache plays like the hand for every mode, so its release
+    // CR 403.3b: the cache plays like the hand for every mode, so its release
     // carries the hand's alternative modes too — each its own facet, or a
     // mode wired for the hand and not the cache passes this sweep in silence
     case 'playCached': return a.mode ? ['playCached', `playCached:${a.mode}`] : ['playCached'];
     case 'prophesy': return [`prophesy:${a.from}`];
     case 'graft': return [`graft:${a.from}`];
-    // R89: a spell TOKEN host arrives in `hostId`, the same field a unit host
+    // CR 721.4a: a spell TOKEN host arrives in `hostId`, the same field a unit host
     // uses, so `host-unit` swallowed it whole and the new ruling passed this
     // sweep in silence — the exact failure mode this file exists to prevent.
     // The kind is not in the action, so the facet needs the state to see it.
@@ -147,7 +147,7 @@ export function facetsOf(a: Action, s?: GameState): string[] {
     case 'declareAttack':
       return [a.columns.length ? 'declareAttack:columns' : 'declareAttack:skip',
         ...(a.spellTokens?.length ? ['declareAttack:spellTokens'] : [])];
-    // R87: `spellTokens` is its own axis for the same reason `send` is — the
+    // CR 610.3: `spellTokens` is its own axis for the same reason `send` is — the
     // client has to be able to put a token in that field, and folding it into
     // `declareBlocks:send` let the whole rider pass this sweep unguarded.
     case 'declareBlocks':
@@ -215,7 +215,7 @@ function sweepIssues(s: GameState, seat: Seat, legal: readonly Action[], where: 
     // mods: the glow behind a placement IS modHosts(), and a host that does
     // not glow takes no click (ui/main.ts routes the click through the cache)
     if (a.type === 'augment' || a.type === 'graft') {
-      // R89: the state goes in, so a spell-token host is asked for by its own
+      // CR 721.4a: the state goes in, so a spell-token host is asked for by its own
       // kind rather than being accepted as "a unit". A sweep that cannot tell
       // them apart is a sweep the token host walks straight through.
       const hosts = modHosts(legal, { from: a.from, index: a.index, mode: a.type }, s);
@@ -244,7 +244,7 @@ function sweepIssues(s: GameState, seat: Seat, legal: readonly Action[], where: 
         out.push(`${where}: playableCachedNames() omits ${cc.card}, which is playable`);
       }
     }
-    // R84: the client must never refuse a declaration the engine would take.
+    // the client must never refuse a declaration the engine would take.
     // `blocks` is what the block builder holds; `send` rides along untouched.
     if (a.type === 'declareBlocks') {
       const why = blockPlanIssue(s, seat, a.blocks);
@@ -263,7 +263,7 @@ function sweepIssues(s: GameState, seat: Seat, legal: readonly Action[], where: 
 interface Position { h: Harness; seat: Seat }
 
 /**
- * R79's exact shape (the same one 74-ui-stack-mod-host builds): a spell on the
+ * CR 723.4's exact shape (the same one 74-ui-stack-mod-host builds): a spell on the
  * stack, a unit in the battle region, and the seat holding priority holding a
  * {Virus} it can pay for. Both KINDS of mod host are legal at once.
  */
@@ -278,7 +278,7 @@ function virusWindow(): Position {
   giveResources(h, A, 'earth', 2);                    // Chitin Shredder ee/2
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arc Lightning') });
-  pick(h, { player: A });                             // R67: aimed as it is cast
+  pick(h, { player: A });                             // CR 702.3c: aimed as it is cast
   give(h, A, 'Chitin Shredder');
   return { h, seat: A };
 }
@@ -300,7 +300,7 @@ function ambushWindow(): Position {
   return { h, seat: D };
 }
 
-/** R311: the same battle window, with the Ambush card GLIMPSED into the cache
+/** CR 803.6i: the same battle window, with the Ambush card GLIMPSED into the cache
  * instead of in hand — the cache plays like the hand for every mode */
 function cachedAmbushWindow(): Position {
   const h = new Harness(7548);
@@ -319,12 +319,12 @@ function cachedAmbushWindow(): Position {
 /**
  * One deployment window stocked with every zone the rules make a source.
  *
- * R41 ("you CAN augment or graft from cache", Caleb 2024-12-02) and R42 ("I
+ * CR 403.3b ("you CAN augment or graft from cache", Caleb 2024-12-02) and CR 803.7c ("I
  * can be prophesied from your bin", Angel of Anguish) both put ordinary
  * actions behind zones a random game rarely fills. Cards reach the cache by
  * being prophesied and no card in the pool carries both a prophecy banner and
  * a mod line, so the zone is stocked directly — which is what a Glimpse effect
- * does to it anyway, stamp and all (R303: the stamp is now load-bearing, not
+ * does to it anyway, stamp and all (CR 403.3a: the stamp is now load-bearing, not
  * decoration — without it the entry is inert for every verb).
  *
  * It also holds the two donated-ability shapes: Astralith's [Augment] text is
@@ -339,12 +339,12 @@ function deployBench(): Position {
   spawn(h, seat, 'Astralith');                        // its own [Augment] text is live
   // and a PLAIN activated ability (`via === undefined`) that costs [zero], so
   // `activateAbility:own` does not depend on a random game finding one it can
-  // afford — R228 shortened those games and it fell out (see the budgets)
+  // afford — the unconditional haste step shortened those games and it fell out (see the budgets)
   spawn(h, seat, 'Vaporweave Eidolon');               // "[zero]: recall me"
   giveResources(h, seat, 'metal', 1);                 // the mod cost, m/1
   h.do({ type: 'augment', seat, from: 'hand', index: give(h, seat, 'Astralith'), hostId: host });
-  // R303: the two mod sources need a LIVE glimpse stamp. A bare cache entry
-  // used to be moddable — that was the bug R303 fixed — so stocking the zone
+  // CR 720.5a: the two mod sources need a LIVE glimpse stamp. A bare cache entry
+  // used to be moddable — that was the bug fixed on 2026-09-20 — so stocking the zone
   // is no longer enough on its own; `playableUntilTurn` is this turn's window,
   // which is what a Glimpse would have left behind anyway.
   h.state.players[seat]!.cache = [
@@ -352,24 +352,23 @@ function deployBench(): Position {
     { card: 'Bloated Manablub', uid: 9002, playableUntilTurn: h.state.turn },   // b/1 graft
     // ...and one entry with PERMISSION, so `playCached` has a deterministic
     // home. It used to arrive by luck: the fuzz prophesied The Foretold for a
-    // bare [0] and released it a turn later. R301 made that banner cost a
-    // light pip, the fuzz deck is mostly fire/earth/metal, and the shape fell
-    // straight out of the corpus — the same way `graft:bin` did after R228,
-    // and fixed the same way. A fulfilled prophecy is permission (R42/R44).
+    // bare [0] and released it a turn later. Charging the banner's affinity made that banner cost a light pip, the fuzz deck is mostly fire/earth/metal, and the shape fell
+    // straight out of the corpus — the same way `graft:bin` did after the haste step became unconditional,
+    // and fixed the same way. A fulfilled prophecy is permission (CR 403.3a, 803.7g).
     {
       card: 'Throwing Boulder', uid: 9003,
       prophecy: { condition: 'One Turn Passes', norm: '1 turn passes', turn: 0, battles: 0, fulfilled: true },
     },
   ];
   h.state.players[seat]!.bin.push('Angel of Anguish');
-  // R41 again, the BIN leg of it: a graftable mod in the bin, so `graft:bin`
+  // CR 507.2, the BIN leg of the same permission: a graftable mod in the bin, so `graft:bin`
   // has a deterministic home instead of waiting for a random game to bin one
-  // (R228 shortened those games and it fell straight out — see the budgets).
+  // (the unconditional haste step shortened those games and it fell straight out — see the budgets).
   h.state.players[seat]!.bin.push('Bloated Manablub');   // b/1 graft
   give(h, seat, 'The Foretold');                      // a prophecy banner for [0l]
   giveResources(h, seat, 'metal', 4);                 // the donated ability costs [three]
   giveResources(h, seat, 'water', 2);
-  // R301: a banner costs AFFINITY as well as mana, so this bench has to hold
+  // CR 803.7d: a banner costs AFFINITY as well as mana, so this bench has to hold
   // the elements its two banners name or neither is prophesiable and both
   // `prophesy:bin` and `playCached` fall out of the corpus — which is exactly
   // what this test caught on the day the rule changed. The Foretold is [0l]
@@ -402,7 +401,7 @@ function orderingDecision(): Position {
 }
 
 /**
- * R87, playtest report #67 (GETD): the block step of round 1, with a free
+ * CR 610.3, playtest report #67 (GETD): the block step of round 1, with a free
  * counterattacker AND a spell token of the defender's standing in the
  * contested region. `legalActions` offers the rider on top of each unit send,
  * and no fuzz game reliably arrives here with a token in the right place.
@@ -424,7 +423,7 @@ function counterattackRide(): Position {
 }
 
 /**
- * R89: a deployment window with a spell TOKEN in the home region and an
+ * CR 721.4a: a deployment window with a spell TOKEN in the home region and an
  * attribute-granting augment in hand. Spell tokens exist in the deployment
  * phase only when something made one and regroup has not erased it yet, which
  * a random game does not arrange.
@@ -446,7 +445,7 @@ function tokenModHost(): Position {
  * the contested region — the one position `castSpellToken` is offered from
  * (apply.ts's battle branch offers it for every token you control there).
  *
- * ⚠ R228 IS WHY THIS EXISTS. The facet used to be reached by luck alone,
+ * ⚠ THE UNCONDITIONAL HASTE STEP (CR 504.5) IS WHY THIS EXISTS. The facet used to be reached by luck alone,
  * somewhere in twenty random walks, and the walks are budgeted in ACTIONS —
  * so making the haste step unconditional (one more action per seat per turn)
  * shortened every game and dropped it off the end. A facet that only a
@@ -468,8 +467,8 @@ function spellTokenAtPriority(): Position {
 }
 
 /**
- * A bin play (R123), built rather than waited for: the random games reached one
- * for the first time when R299's Prismite shifted them, and lost it again one
+ * A bin play (CR 405.9), built rather than waited for: the random games reached one
+ * for the first time when the recycle-for-Prismite option shifted them, and lost it again one
  * option later (the Shard). BL-24's shape from 108-formation-class — Trench
  * Stalker prints its own permission to be played from the bin in battle.
  */
@@ -533,10 +532,9 @@ const corpus = (() => {
 
   // ⚠ THE BUDGETS ARE IN ACTIONS, NOT TURNS. A rules change that adds an
   // action to every turn shortens every game here, and any facet the walks
-  // reached only by luck falls off the end. R228 (the haste step is now
-  // ALWAYS offered, so every seat clicks `doneHaste` every turn) cost three
+  // reached only by luck falls off the end. The unconditional haste step (CR 504.5: every seat clicks `doneHaste` every turn) cost three
   // of them at once — castSpellToken, activateAbility:own and graft:bin —
-  // which is a measurement of how thin their coverage was, not of R228. The
+  // which is a measurement of how thin their coverage was, not of the rule. The
   // budgets are therefore UNCHANGED and all three were given deterministic
   // homes instead (spellTokenAtPriority, and two additions to deployBench):
   // raising the budget until they came back would have re-rolled the dice,
@@ -597,7 +595,7 @@ const modReach = (kind: 'augment' | 'graft', want: 'units' | 'stack' | 'tokens')
   // …and the zone banner, which asks the same question before a card is picked
   const zone = modHosts(legalAt(s), { from: a.from, mode: kind }, s.state);
   assert.ok(modHostCount(zone) > 0, `the ${a.from} banner offers no host at all (${s.where})`);
-  // R89: and it must NAME the kind. "a unit" over a spell token is how a
+  // CR 721.4a: and it must NAME the kind. "a unit" over a spell token is how a
   // ruling stays invisible while every test stays green.
   if (want === 'tokens') {
     assert.match(modHostPhrase(hosts), /spell token/,
@@ -622,12 +620,12 @@ const REACH: Record<string, Evidence> = {
     // the menu is built from `s.elements`, NOT from the legal list, so the two
     // can drift: a game whose element list is narrower than what the engine
     // offers has entries with no menu item. That is the real question here.
-    // R101/#63: `s.elements` now goes through resourceMenuElements, which only
+    // CR D6.14b/#63: `s.elements` now goes through resourceMenuElements, which only
     // ever decides which of them to draw FIRST — every element it holds back is
     // behind the "more elements…" expander, so this question is unchanged.
     check: s => {
       const offered = new Set(legalAt(s).filter(a => a.type === 'recycleForResource').map(a => a.element));
-      // R299 (#168): plus the Prismite entry, and the Shard behind the
+      // CR D6.14b (#168): plus the Prismite entry, and the Shard behind the
       // expander, drawn in every game
       const inMenu = new Set<string>([...s.state.elements, 'prismite', 'shard']);
       for (const el of offered) {
@@ -638,7 +636,7 @@ const REACH: Record<string, Evidence> = {
       const a = s.action as Extract<Action, { type: 'recycleForResource' }>;
       assert.ok(a.handIndex < s.state.players[s.seat]!.hand.length, 'and there is a card to click');
     },
-    // R299 (#168), the owner's layout: the main menu is the deck's elements,
+    // CR D6.14b (#168), the owner's layout: the main menu is the deck's elements,
     // a Prismite and the expander; the expander is the OTHER elements and a
     // Shard — so between them every element in s.elements is one click away
     needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, false\);/,
@@ -654,7 +652,7 @@ const REACH: Record<string, Evidence> = {
   },
   exchangePrismite: {
     via: 'wiring', anchor: 'an active Prismite chip',
-    why: 'R17: the same chip menu, one entry per element the Prismite may become',
+    why: 'CR 106.8a: the same chip menu, one entry per element the Prismite may become',
     // the label reads a.element — without it every entry would read the same
     needs: [/a\.type === 'exchangePrismite' && a\.index === i/, /Exchange → \$\{\(a as \{ element: string \}\)\.element\}/],
   },
@@ -664,7 +662,7 @@ const REACH: Record<string, Evidence> = {
     needs: [/act\(\{ type: 'donePlanning', seat: Number\(btn\.dataset\['p'\]\) \}\)/, /data-btn="doneplan"/],
   },
   doneHaste: {
-    via: 'wiring', anchor: 'the "done" button in the haste step (R18)',
+    via: 'wiring', anchor: 'the "done" button in the haste step (CR 504.5a)',
     why: 'the haste step only appears when someone holds a payable {Haste} card',
     needs: [/^  donehaste: btn =>/m, /act\(\{ type: 'doneHaste', seat: Number\(btn\.dataset\['p'\]\) \}\)/],
   },
@@ -701,12 +699,12 @@ const REACH: Record<string, Evidence> = {
   },
   'playCard:discardMe': {
     via: 'wiring', anchor: 'the same hand menu, as a separate entry',
-    why: 'R40: paying a "1 Discard me" line is a play mode that TRASHES the card, and says so',
+    why: 'CR 111.12: paying a "1 Discard me" line is a play mode that TRASHES the card, and says so',
     needs: [/mode === 'discardMe' \? discardMeLabel\(name\)/, /function discardMeLabel/],
   },
   'prophesy:hand': {
     via: 'wiring', anchor: 'a card in your hand, at deployment',
-    why: 'R42: an entry naming the banner cost and the condition — and it never fires on the '
+    why: 'CR 803.7: an entry naming the banner cost and the condition — and it never fires on the '
       + 'click that revealed it (actionNeedsMenu)',
     needs: [/a\.type === 'prophesy' && a\.from === 'hand' && a\.index === i/,
       /confirm: actionNeedsMenu\(a\)/],
@@ -719,7 +717,7 @@ const REACH: Record<string, Evidence> = {
   },
   playCached: {
     via: 'helper', anchor: 'a card in the cache dialog',
-    why: 'R42/R45: free on a fulfilled prophecy, or for its mana on a live glimpse',
+    why: 'CR 403.3c, 403.3a: free on a fulfilled prophecy, or for its mana on a live glimpse',
     check: s => {
       const a = s.action as Extract<Action, { type: 'playCached' }>;
       const cache = s.state.players[s.seat]!.cache ?? [];
@@ -732,7 +730,7 @@ const REACH: Record<string, Evidence> = {
   },
   'playCached:ambush': {
     via: 'helper', anchor: 'a card in the cache dialog (or the hand strip of cached cards), in a battle window',
-    why: 'R311: the cache plays like the hand for every mode — an Ambush out of the cache is its own '
+    why: 'CR 803.6i: the cache plays like the hand for every mode — an Ambush out of the cache is its own '
       + 'menu line, priced the cache way, and the strip lists the entry because any offer makes it live',
     check: s => {
       const a = s.action as Extract<Action, { type: 'playCached' }>;
@@ -742,12 +740,12 @@ const REACH: Record<string, Evidence> = {
     },
     needs: [/mode === 'ambush'\s+\? `Ambush with \$\{cc\.card\}/, /cacheView = null; act\(a\)/],
   },
-  // Wired since R96/R123 but never in this ledger: the corpus first reached a
-  // bin play when R299 added an option and shifted its random walk (#168).
+  // Wired since bin plays were built but never in this ledger: the corpus first reached a
+  // bin play when the recycle-for-Prismite option was added and shifted its random walk (#168).
   // The binPlay scenario now reaches it on purpose.
   playFromBin: {
     via: 'helper', anchor: 'a card in your bin',
-    why: 'R96/R123: clicking a bin card offers "Play <card> from your bin" (Abyssal Evocation\'s grant, Trench Stalker)',
+    why: 'CR 405.9: clicking a bin card offers "Play <card> from your bin" (Abyssal Evocation\'s grant, Trench Stalker)',
     check: s => {
       const a = s.action as Extract<Action, { type: 'playFromBin' }>;
       assert.ok(s.state.players[s.seat]!.bin[a.binIndex],
@@ -804,7 +802,7 @@ const REACH: Record<string, Evidence> = {
   },
   'augment:cache': {
     via: 'helper', anchor: 'a card in the cache dialog',
-    why: 'R41/R303: "you CAN augment or graft from cache", on the permission a play needs',
+    why: 'CR 403.3b, 720.5a: "you CAN augment or graft from cache", on the permission a play needs',
     check: modReach('augment', 'units'),
     needs: [/modMenuItems\(p, 'cache', i, cc\.card, mods,/],
   },
@@ -816,7 +814,7 @@ const REACH: Record<string, Evidence> = {
   },
   'augment:host-stack': {
     via: 'helper', anchor: 'a glowing SPELL on the stack',
-    why: 'R79 — the incident. A StackItem is not an Entity, the host cache was a Set<EntityId>, '
+    why: 'CR 723.4 — the incident. A StackItem is not an Entity, the host cache was a Set<EntityId>, '
       + 'and so the whole ruling was unreachable from the board',
     check: modReach('augment', 'stack'),
     needs: [/modHostCache\.stack\.has\(it\.id\)/, /modHostCache\.stack\.has\(id\)/,
@@ -824,7 +822,7 @@ const REACH: Record<string, Evidence> = {
   },
   'augment:host-token': {
     via: 'helper', anchor: 'a glowing SPELL TOKEN in the region strip, during your deployment',
-    why: 'R89 — R79\'s missing half, and the same shape of exposure. Caleb 2025-03-06: "You can '
+    why: 'CR 721.4a — the deployment half the stack-host ruling (CR 723.4) left out, and the same shape of exposure. Caleb 2025-03-06: "You can '
       + 'augment spells during deployment but currently that would only be possible with spell '
       + 'tokens." The engine names the token in `hostId`, exactly as it names a unit, so this '
       + 'facet used to be indistinguishable from augment:host-unit and the ruling could have '
@@ -848,7 +846,7 @@ const REACH: Record<string, Evidence> = {
   },
   'graft:cache': {
     via: 'helper', anchor: 'a card in the cache dialog',
-    why: 'R41/R303 again: the cache is a mod source for grafts as well as augments, on a live '
+    why: 'CR 403.3b, 720.5a, 720.4b again: the cache is a mod source for grafts as well as augments, on a live '
       + 'glimpse or a fulfilled prophecy — which also makes the graft free',
     check: modReach('graft', 'units'),
   },
@@ -904,9 +902,9 @@ const REACH: Record<string, Evidence> = {
   },
   'declareBlocks:spellTokens': {
     via: 'helper', anchor: 'click your spell token (strip or chip), then Confirm',
-    why: 'R87, playtest report #67: "What happened to Rashi\'s Poison tokens here? She just '
+    why: 'CR 610.3, playtest report #67: "What happened to Rashi\'s Poison tokens here? She just '
       + 'wanted to bring them with her attackers but they somehow went onto the stack." '
-      + '`declareBlocks` had no such field until R87, so the tokens had nowhere to go; folding '
+      + '`declareBlocks` had no such field until counterattack riders were supported (CR 610.3), so the tokens had nowhere to go; folding '
       + 'this into declareBlocks:send would have let the new field ship unreachable too',
     check: counterattackRideReach,
     needs: [/if \(shouldAskSend\(s, def, ui\.send, ui\.rideAnswered\)\) \{/,
@@ -950,7 +948,7 @@ const REACH: Record<string, Evidence> = {
   // ── never offered ─────────────────────────────────────────────────────
   concede: {
     via: 'unoffered',
-    why: 'R65 keeps concede out of legalActions on purpose — "it is never a move to consider, '
+    why: 'Concede is kept out of legalActions on purpose — "it is never a move to consider, '
       + 'only one to choose, and the fuzzer must never wander into it". It is reachable all the '
       + 'same, from the board right-click menu (boardMenuEntries), and the entry only OPENS the '
       + 'question rather than resigning the game.',
@@ -973,7 +971,7 @@ function activationReach(s: Sample): void {
 }
 
 /**
- * R87: the rider the counterattack carries, from the client's own two helpers.
+ * CR 610.3: the rider the counterattack carries, from the client's own two helpers.
  *
  * The board holds ONE list (`ui.send` — everything dropped in the counterattack
  * slot or clicked in the strip) and the action has two fields, so both halves
@@ -1001,7 +999,7 @@ function counterattackRideReach(s: Sample): void {
 }
 
 /**
- * R84: the Confirm gate must agree with the engine, in BOTH directions.
+ * the Confirm gate must agree with the engine, in BOTH directions.
  *
  * The incident was one-directional — the client knew nothing, so it let the
  * player build a declaration the engine would refuse and only said so after
@@ -1115,7 +1113,7 @@ test('every offered shape passes its own reachability evidence', () => {
   assert.deepEqual(failures, [], `unreachable actions:\n  ${failures.join('\n  ')}`);
 });
 
-test('R65: concede stays out of legalActions and stays in the board menu', () => {
+test('CR D6.15: concede stays out of legalActions and stays in the board menu', () => {
   // the one 'unoffered' row with a real affordance behind it — asserted from
   // the helper rather than from main.ts, because boardMenuEntries owns it
   for (const s of [...corpus.samples.values()].slice(0, 4)) {
@@ -1128,7 +1126,7 @@ test('R65: concede stays out of legalActions and stays in the board menu', () =>
   }
 });
 
-/* ── R84 {Alluring}: the block duty, from the player's seat ──────────────
+/* ── CR 606.2e {Alluring}: the block duty, from the player's seat ──────────────
  *
  * The second incident, and the one the facet ledger alone does NOT catch: a
  * lured defender can reach every legal declaration, so nothing above would
@@ -1160,7 +1158,7 @@ function luredDefender(seed: number): { h: Harness; D: Seat; d1: EntityId } {
   return { h, D, d1 };
 }
 
-test('R84: the client names the compulsory block instead of letting you find out', () => {
+test('CR 606.2e: the client names the compulsory block instead of letting you find out', () => {
   const { h, D, d1 } = luredDefender(7550);
   // an empty board, and the block bar has something to say about it
   const empty = blockPlanIssue(h.state, D, {});
@@ -1175,7 +1173,7 @@ test('R84: the client names the compulsory block instead of letting you find out
   assert.equal(blockPlanIssue(h.state, D, { 0: [d1] }), null);
 });
 
-test('R84: the gate never refuses a block the engine would take', () => {
+test('CR 606.2e: the gate never refuses a block the engine would take', () => {
   const { h, D } = luredDefender(7551);
   const offers = legalActions(h.state, D)
     .filter((a): a is Extract<Action, { type: 'declareBlocks' }> => a.type === 'declareBlocks');
@@ -1187,7 +1185,7 @@ test('R84: the gate never refuses a block the engine would take', () => {
   }
 });
 
-test('R84: no lure on the board, no gate — the ordinary block step is untouched', () => {
+test('CR 606.2e: no lure on the board, no gate — the ordinary block step is untouched', () => {
   const h = new Harness(7552);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1201,7 +1199,7 @@ test('R84: no lure on the board, no gate — the ordinary block step is untouche
   assert.equal(blockPlanIssue(h.state, D, { 0: [d1] }), null, 'and so is blocking');
 });
 
-test('R84: the block bar and the Confirm button read the same plan, and both gate on it', () => {
+test('the block bar and the Confirm button read the same plan, and both gate on it', () => {
   // one reader of ui.columns (blockPlan) feeding both, or the bar can promise
   // what the button refuses
   assert.match(MAIN, /const duty = blockPlanIssue\(s, b\.defender, blockPlan\(\)\);/,
@@ -1272,7 +1270,7 @@ test('both resource menus default to the deck elements through the one shared he
   // Ledger #63 (GETD, 2026-08-22). A PRESENTATION default: the engine still
   // offers all seven and both menus keep all seven reachable.
   assert.match(MAIN, /const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, false\);/,
-    'the recycle menu asks the helper — and puts `show` on the main menu, `hidden` behind the expander (R299)');
+    'the recycle menu asks the helper — and puts `show` on the main menu, `hidden` behind the expander (CR D6.14b)');
   assert.doesNotMatch(MAIN, /items: s\.elements\.map\(el => \(\{/,
     'the old unfiltered recycle list must be gone');
   assert.match(MAIN, /const plan = prismiteClickPlan\(s, p, opts, expanded\);/,
@@ -1301,7 +1299,7 @@ test('the prismite click never counts the shortened list when it decides to auto
 });
 
 test('the haste bar no longer claims only printed haste cards may be played', () => {
-  // R97 (Dispatch Courier): "Each turn, you may play a unit during the mana
+  // CR 803.2b (Dispatch Courier): "Each turn, you may play a unit during the mana
   // step as if it had [Haste]" — so a card with no [Haste] symbol can be
   // playable in the haste step because something granted it, and the status
   // bar was telling the player otherwise.

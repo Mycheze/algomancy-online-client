@@ -44,7 +44,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight). registry.ts registers
 // only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
@@ -74,9 +74,9 @@ const ENGINE = path.resolve(HERE, '..');
  *    engine-side attribute, not text the card has to implement.
  *  - markup tokens — `{/n}`, `{p}`, `{g}`, `{i}`, `{/i}`.
  *  - the Ambush banner, when printed.ambush carries it. The mode is engine
- *    level (R22) and the banner is not the card's own text — that is why Good
+ *    level (CR 803.6) and the banner is not the card's own text — that is why Good
  *    Whale, Orblish Horroth, Lurking Slimebeast and Shib are correctly bare.
- *  - a "Discard me" banner, when printed.discardMe carries it (R40), for the
+ *  - a "Discard me" banner, when printed.discardMe carries it (CR 111.12), for the
  *    same reason.
  *  - the [Augment] / [once] / [Switch] markers, which are structure.
  */
@@ -127,7 +127,7 @@ const admitsTheGap = (s: string) => /PARKED|not implemented/i.test(s);
  * The same, read in CODE — `bare()` has already stripped the comments and the
  * string literals, so the only thing left that can "say PARKED" is an
  * IDENTIFIER, and a case-insensitive match on one is a false positive waiting
- * to happen. It happened: R118 gave Borrower of Forms
+ * to happen. It happened: the copy layer gave Borrower of Forms
  * `const parked = g.takeCopySource(…)`, a perfectly live line, and the sweep
  * read it as the card admitting it does nothing. A real park note is written
  * `PARKED`, in caps, every time — so the marker word is case-SENSITIVE here
@@ -139,7 +139,7 @@ const codeAdmitsTheGap = (s: string) => /PARKED|not implemented/.test(s);
 const BEHAVIOR_KEYS = [
   'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
   'prophesyFromBin', 'playsIntoFormation', 'spellEffect', 'graftEffect', 'augmentText',
-  // R123: a bin-anchored haste grant (Writhing Host) and a card's own
+  // CR 504.7, 405.9: a bin-anchored haste grant (Writhing Host) and a card's own
   // played-from-your-bin line (Trench Stalker) are whole-card behaviour with
   // no abilities and no live spellEffect run, so the sweep has to see them.
   'binPlayPermissions', 'playsFromBin',
@@ -147,23 +147,23 @@ const BEHAVIOR_KEYS = [
   // a preview is presentation, not behaviour — but a card carrying ONLY one
   // would otherwise read as a bare definition, same as the two above
   'previewNote',
-  // R104's replacement-effect layer. A card whose whole text is a replacement
+  // The replacement-effect layer. A card whose whole text is a replacement
   // has no abilities and no spellEffect BY CONSTRUCTION — that is the point of
   // the layer, not a gap — so the sweep has to see these or every one of the
   // seven cards report #60 named would read as a bare definition the moment it
   // was fixed. (Cosmic Conspirator did exactly that until this line existed.)
-  // R162 adds the multiplicative half of that layer (Arbiter of Vitality).
+  // The multiplicative half of that layer (Arbiter of Vitality, CR 708.6) is here too.
   'amountMods', 'amountMultipliers', 'replaceLifeGain', 'replaceCounters',
   'replaceTokenCreation', 'replaceTokenBatch',
   // Worldbender's whole text is a card-step replacement (report #87), so it
   // has no abilities and no spellEffect by construction — same reason as the
-  // R104 hooks above.
+  // replacement hooks above.
   'replaceCardStep',
-  // R178: Maelstrom Charger's whole text is an AS-YOU-PLAY option — a
+  // CR 109.6: Maelstrom Charger's whole text is an AS-YOU-PLAY option — a
   // cost-shaped, non-stack decision collected in the cast window — and the
   // designer's ruling is that it is *"neither Triggered nor Activated"*, so
   // it has no abilities and no spellEffect BY CONSTRUCTION. Same reason as the
-  // R104 hooks above: without this line the card reads as a bare definition
+  // replacement hooks above: without this line the card reads as a bare definition
   // the moment it is built the way the RAQ describes.
   'asYouPlay',
 ] as const;
@@ -181,7 +181,7 @@ export function deadShapes(name: string): string[] {
   //     card, damning for one with text — Writhing Host, Rotling and Trench
   //     Stalker are all just `card('X', {})`.
   //
-  //     R155: an EMPTY array does not count as behaviour. `statics: []` is
+  //     an EMPTY array does not count as behaviour. `statics: []` is
   //     `!== undefined`, so before this the one-line difference between
   //     `card('X', {})` and `card('X', { statics: [] })` was the difference
   //     between "the sweep demands a ledger entry" and "the sweep says fine" —
@@ -228,14 +228,14 @@ export function deadShapes(name: string): string[] {
     if (codeAdmitsTheGap(bare(source(e.run)))) out.push(`${where}: says PARKED / not implemented`);
   }
 
-  // (d) R155: the shapes (a)-(c) are structurally blind to — a gap written as
+  // (d) the shapes (a)-(c) are structurally blind to — a gap written as
   //     a STATIC, a COST MOD or a `when()` rather than as a `run` body.
   out.push(...inertShapes(name));
 
   return [...new Set(out)];
 }
 
-/* ── R155: THE STATIC/FLAG BLIND SPOT ─────────────────────────────────────
+/* ── THE STATIC/FLAG BLIND SPOT ─────────────────────────────────────
  *
  * Everything above reads bare definitions and `run` bodies. It is blind to a
  * dead half expressed as a STATIC or a FLAG, and that is not a hypothetical
@@ -327,7 +327,7 @@ export function inertShapes(name: string): string[] {
     if (Array.isArray(v) && v.length === 0) out.push(`${k}: [] — the key is present but empty`);
   }
 
-  // R268: a clause printed inside the [Augment] box lives in `augmentBox`, and
+  // CR 721.1: a clause printed inside the [Augment] box lives in `augmentBox`, and
   // 44 cards' statics, cost mods and replacement hooks moved there. This sweep
   // exists to notice a dead clause; reading only the body half would have made
   // it blind to 47 of them at once — "a refactor that renamed `statics`",
@@ -377,12 +377,12 @@ const RESOURCE_FACE_REASON =
   + 'the real activateResource path (12-fire-a conformance sweep). printed.json has '
   + 'only three Resource faces (fire/water/earth), so routing the rule through card '
   + 'definitions would drop the bonus for wood/metal/light/dark and double it for '
-  + "these three. `card('X Resource', {})` is the correct definition. See R116.";
+  + "these three. `card('X Resource', {})` is the correct definition. See CR 106.7c.";
 
 const NOT_A_GAP: Record<string, string> = {
   Grox:
     'The [Switch] socket carries no text of its own — the whole ability is a graft '
-    + 'CAUSE, and its real payload is the R64 `castCost: { kind: \'eraseBin\', n: 2 }` '
+    + 'CAUSE, and its real payload is the CR 111.7 `castCost: { kind: \'eraseBin\', n: 2 }` '
     + 'that gates the activation. The log line exists because an effect resolving in '
     + 'silence is indistinguishable from a bug (test/65-effect-conformance).',
   'Cadaverous Cultivator':
@@ -399,18 +399,18 @@ const NOT_A_GAP: Record<string, string> = {
     + 'on every run. It is not a pool card and has no ledger entry — this exemption '
     + 'is what keeps the sweep→ledger assertion from demanding one.',
   'T71 Inert Canary':
-    'The R155 canary, and the same deal as T71 Canary one line up: a SYNTHETIC card '
+    'The canary, and the same deal as T71 Canary one line up: a SYNTHETIC card '
     + 'registered by this file carrying every inert LITERAL shape at once, so the '
     + 'static/cost/when detector is proved on every run rather than the day somebody '
     + 'needs it. Not a pool card, no ledger entry, exempted so the sweep→ledger '
     + 'assertion does not demand one.',
   'Trench Stalker':
-    'The spellEffect exists solely to carry the R49 "[Discard two cards]" CAST COST, '
+    'The spellEffect exists solely to carry the CR 702.4e "[Discard two cards]" CAST COST, '
     + 'chosen and paid in the cast window on every route into play (hand and bin '
-    + 'alike, R123). Its empty run is unreachable BY CONSTRUCTION, not a gap: a '
+    + 'alike, CR 205.3). Its empty run is unreachable BY CONSTRUCTION, not a gap: a '
     + "'unit' StackItem resolves by spawning (resolveItem returns before parts ever "
     + 'run), so there is no resolution body to implement. The other two printed '
-    + 'clauses are live behaviour flags — R29 playsIntoFormation and R123 '
+    + 'clauses are live behaviour flags — CR 602.7 playsIntoFormation and CR 405.9 '
     + 'playsFromBin — with real tests in 46-hybrids-ld-c.test.ts.',
 
   // ── the three [element] Resource faces (2026-08-23) ────────────────────
@@ -435,14 +435,14 @@ const NOT_A_GAP: Record<string, string> = {
   // regression, traded for making a park note go away); keeping both would
   // grant two Shards. `card('X Resource', {})` is the correct definition, for
   // the Robot reason: the printed text carries no behaviour the card owns.
-  // See R116 and R54's 2026-08-23 correction.
+  // See CR 106.7c (the 2026-08-23 correction).
   'Fire Resource': RESOURCE_FACE_REASON,
   'Water Resource': RESOURCE_FACE_REASON,
   'Earth Resource': RESOURCE_FACE_REASON,
 
-  // ── R214 (2026-08-26) ──────────────────────────────────────────────────
+  // ── 2026-08-26 ──────────────────────────────────────────────────
   //
-  // The card this ledger could not see. Until R214 this file imported
+  // The card this ledger could not see. Until the pool-sight fix this file imported
   // `src/cards/registry.ts` alone, which registers 494 of the 495 cards —
   // `Alluring Attribute` is registered by `src/apply.ts`. So the "no dead
   // cards" clean sheet below covered 494 cards while reading as though it
@@ -450,7 +450,7 @@ const NOT_A_GAP: Record<string, string> = {
   // in this file go red on it at once, which is the correct outcome and the
   // proof the blindness was load-bearing here rather than cosmetic.
   'Alluring Attribute':
-    'R84/R214. `abilities[0].when` really is `() => false`, and that is deliberate rather '
+    'CR 802.15. `abilities[0].when` really is `() => false`, and that is deliberate rather '
     + 'than a scaffold: the trigger is NEVER queued by the event system. `apply.ts::'
     + 'queueAlluringTriggers` pushes it onto `s.triggerQueue` by hand from '
     + '`doDeclareAttack`, because the thing that fires is a COLUMN attribute and no '
@@ -458,19 +458,19 @@ const NOT_A_GAP: Record<string, string> = {
     + 'resolve `ability:Alluring Attribute#0` when Divine Intervention / Gravitational '
     + 'Correction / Hexbane Shiitake retarget the trigger. `when` is belt-and-braces '
     + 'against a scan finding it anyway, and its comment in apply.ts says so. The '
-    + 'behaviour is live and tested — R84, and 68-target-conformance now reads its '
-    + "declared 'enemyUnit' kind off the printed text, which before R214 it could not "
+    + 'behaviour is live and tested — CR 802.15, and 68-target-conformance now reads its '
+    + "declared 'enemyUnit' kind off the printed text, which before the pool-sight fix it could not "
     + 'see either.',
 };
 
-/* ── R210 (CT-83) · THE STALENESS ASSERTION NOT_A_GAP NEVER HAD ─────────
+/* ── CT-83 · THE STALENESS ASSERTION NOT_A_GAP NEVER HAD ─────────
  *
  * `NOT_A_GAP` had NINE entries and ZERO assertions. Its only four references
  * were `if (name in NOT_A_GAP) continue;` skip-filters and two mentions in
  * failure prose — so an entry whose card was implemented, renamed or deleted
  * went on waiving nothing, forever, and the list could only ever grow. That
- * is the exact failure CT-68 caught in `DEAD_EXEMPT` (R174 wrote entries for
- * two helpers, R181 deleted the helpers, the entries sat on for a round) —
+ * is the exact failure CT-68 caught in `DEAD_EXEMPT` (the park-note audit wrote entries for
+ * two helpers, the tooling round (CT-59/60) deleted the helpers, the entries sat on for a round) —
  * running here on the file whose entire subject is a claim outliving its
  * reason.
  *
@@ -488,7 +488,7 @@ test('CT-83: every NOT_A_GAP exemption still waives a real sweep hit', () => {
     if (!registered.has(name)) {
       stale.push(`${name}: NOT_A_GAP exempts it, but it is not a registered card. Either it was `
         + 'renamed/removed (delete the entry), or this file has lost sight of part of the pool '
-        + `— see the R214 pool floor at the foot of this file. (Was: ${why.slice(0, 80)}…)`);
+        + `— see the pool floor at the foot of this file. (Was: ${why.slice(0, 80)}…)`);
       continue;
     }
     const dead = deadShapes(name);
@@ -535,7 +535,7 @@ test('every card with a readably-dead half is declared in the card ledger', () =
 // The sweep's canary, SYNTHETIC as of 2026-08-24. It was a real parked card
 // five times over — Harbinger → Envoy of Lightning → Conduit → Crevice Lurker
 // → Vengeance — and each time the card got built, the canary had to move.
-// The 2026-08-24 round un-parked EVERY remaining ledger card (R120-R124,
+// The 2026-08-24 round un-parked EVERY remaining ledger card (that round's rulings,
 // the bin seams), so the musical chairs ended: the shape now lives on a card
 // registered by this file alone, byte-for-byte what Harbinger had — an inert
 // augmentText entry, `events: []`, an empty run, a label ending "(not
@@ -573,11 +573,11 @@ test('the sweep has teeth: it recognises the shape Harbinger of Immolation was f
   }
 });
 
-// ── R155: the second canary, for the static/cost/when blind spot ─────────
+// ── the second canary, for the static/cost/when blind spot ─────────
 //
 // Same device as T71 Canary and for the same reason — a detector nobody
 // exercises is a detector that quietly stops working — but carrying the
-// shapes `deadShapes` could not see before R155. Every field on it is inert
+// shapes `deadShapes` could not see before the inert-shape audit. Every field on it is inert
 // in a way that is decidable by READING it, which is the only thing
 // `inertShapes` claims to catch (see its doc comment for the rest).
 registerSynthetic({
@@ -607,7 +607,7 @@ registerSynthetic({
   }],
 });
 
-test('R155: the sweep sees a gap written as a static, a cost mod or a when() — and says what it cannot see', () => {
+test('the sweep sees a gap written as a static, a cost mod or a when() — and says what it cannot see', () => {
   const shapes = inertShapes('T71 Inert Canary');
   const wanted = [
     /effectAttrs: \[\]/,                             // an empty behaviour key
@@ -620,7 +620,7 @@ test('R155: the sweep sees a gap written as a static, a cost mod or a when() —
   ];
   for (const re of wanted) {
     assert.ok(shapes.some(s => re.test(s)),
-      `the R155 detector no longer recognises ${re} — it has lost that tooth. Fix `
+      `the detector no longer recognises ${re} — it has lost that tooth. Fix `
       + `inertShapes, do not touch the canary. (It reported: ${shapes.join(' | ')})`);
   }
   // and it must reach the sweep→ledger assertion, not just live beside it
@@ -633,7 +633,7 @@ test('R155: the sweep sees a gap written as a static, a cost mod or a when() —
   //    [Augment] half is `statics: [{ affects, survivesRegroup: true }]`: no
   //    run, no events, nothing (a)-(c) can read.
   //  · Arbiter of Armistice — its ENTIRE printed text is one `costMods` entry
-  //    (R60's life channel), so a bad sweep would call the whole card dead.
+  //    (CR 111.10d's life channel), so a bad sweep would call the whole card dead.
   //  · Life Power Dude carries a literal `dt: 0` beside a live `dp`, which is
   //    the false positive the "every channel is zero" rule has to avoid.
   //  · Beyond, Codex Incarnate's static grants `attrs: ['Inverted']` and
@@ -719,8 +719,8 @@ test('every ledger entry is still needed — delete it when the card is implemen
   //   · it says so itself with `unverified` (which the tally counts, loudly).
   const engineSrc = fs.readFileSync(path.join(ENGINE, 'src', 'engine.ts'), 'utf8');
   // PER ATTRIBUTE, because the two stat layers did not ship together. Stat
-  // layer 5 landed in round 17 (R93: {Inverted} negates the net change from
-  // base) and stat layer 6 landed on 2026-08-23 (R106: an {Unaware} card, and
+  // layer 5 landed in round 17 (CR 802.8a: {Inverted} negates the net change from
+  // base) and stat layer 6 landed on 2026-08-23 (CR 802.9: an {Unaware} card, and
   // everything it fights or damages, reads at PRINTED stats). BOTH are code
   // now, so neither attribute has one left to point at and a `deadAttr` entry
   // naming either has lost that channel of evidence for good — which is the
@@ -822,7 +822,7 @@ test('the ledger reports honestly on how many card halves are dead', () => {
     + `{ todo: true } test, nothing: ${untracked.join(', ')}`);
 });
 
-// ── (4) THE R155 TALLY: the static/cost/flag population, and how much of it
+// ── (4) THE INERT-SHAPE TALLY: the static/cost/flag population, and how much of it
 //        is provably inert ────────────────────────────────────────────────
 //
 // Printed on every run for the same reason as (3): the denominator is the
@@ -836,7 +836,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   const inert: string[] = [];
   for (const name of pool) {
     const c = getCard(name);
-    // R268: body half + [Augment]-box half. The pinned numbers below are
+    // CR 721.1: body half + [Augment]-box half. The pinned numbers below are
     // UNCHANGED by that migration, and that is the point — no clause was
     // added or removed, 44 of them just moved to the channel that says where
     // they are printed.
@@ -848,7 +848,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
     if (shapes.length) inert.push(`${name} — ${shapes.join('; ')}`);
   }
   console.log(
-    `    R155 inert-shape sweep: ${statics} statics · ${costMods} cost mods · `
+    `    inert-shape sweep: ${statics} statics · ${costMods} cost mods · `
     + `${guards} when() guards, across ${pool.length} cards`);
   console.log(
     `      provably inert by literal shape: ${inert.length} `
@@ -873,21 +873,21 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   // which is the same mistake reports #15, #104 and #106 all made.
   //
   // ALL SEVEN WERE FOUND, by running this exact tally in a worktree at the
-  // R155 commit (8b92357) and diffing per card against HEAD. Every one is a
+  // inert-shape round's commit (8b92357) and diffing per card against HEAD. Every one is a
   // DELIBERATE conversion, documented at length in its own card file — not one
   // was lost in a refactor:
   //
-  //   Aetherflux Golem        R168        triggered → static
-  //   Arbiter of Vitality ×2  R162, R157 §23   → AmountMultiplier
-  //   Stellarspore Harvester ×2  R161, R157 §15
-  //   Powerforge Synergist    R165        → spawnsWithCounters
-  //   Maelstrom Charger       R178 (RAQ)  → asYouPlay
+  //   Aetherflux Golem        CR 721.1e        triggered → static
+  //   Arbiter of Vitality ×2  CR 708.6   → AmountMultiplier
+  //   Stellarspore Harvester ×2  CR 110.3a
+  //   Powerforge Synergist    CR 707.5        → spawnsWithCounters
+  //   Maelstrom Charger       CR 109.6 (RAQ)  → asYouPlay
   //
   // And ADDED since (the number goes UP here, deliberately):
   //   Inexorable Miasma  +1 guard  report #171 — the after-combat bin trigger
   //                      only wakes when a unit in the region has a -1/-1 counter
   //
-  // R268 (round 34) moved 44 cards' statics / cost mods / replacement hooks
+  // The augment-box work (round 34) moved 44 cards' statics / cost mods / replacement hooks
   // from the body channel into `augmentBox`, because that is where their text
   // is printed. NOT ONE CLAUSE was added, removed or converted, so these three
   // numbers are unchanged — the sweep above simply counts both halves of the
@@ -922,7 +922,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
     + 'a reason. Do NOT resolve it with a { todo: true } test.');
 });
 
-// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+// ── POOL SIGHT ─────────────────────────────────────────────────── (see 180-pool-sight)
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
 // card entry point and it registers 494 of the 495 cards: two of the three
@@ -934,7 +934,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
 // The floor is what stops that being reintroduced by an import change nobody
 // reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
 // floor for the whole suite and the guard that catches a ninth sweep.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496,
     `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `

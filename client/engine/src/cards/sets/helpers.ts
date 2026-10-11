@@ -4,11 +4,11 @@
  * audited as identical. A batch that needs a genuinely different flavor keeps
  * its own local — divergence is a reason to stay local, not to grow flags.
  *
- * R172 retired the standing example of that. batch-hybrids-ld-a's `eraseUnit`
+ * The erase consolidation of 2026-08-25 retired the standing example of that. batch-hybrids-ld-a's `eraseUnit`
  * "carried a different 'erased' payload", and the different payload was the
  * whole of the difference: both bodies were hand-rolled erases that predated
- * `E.eraseFromPlay`, and both were missing the same three things (the R157 §10
- * face revert, the R172 despawn, R72's formation repair). Divergence is a
+ * `E.eraseFromPlay`, and both were missing the same three things (the CR 410.3
+ * face revert, the CR 801.6a despawn, CR 602.5b's formation repair). Divergence is a
  * reason to stay local only when the DIVERGENCE is the point; two copies of a
  * primitive that disagree by accident are one primitive with two bugs.
  */
@@ -29,7 +29,7 @@ export const isEnt = (t: unknown): t is Entity =>
   !!t && typeof t === 'object' && 'id' in t;
 
 /**
- * R57: the unit a modal part is aimed at, for an `EffectDef.modes` prompt.
+ * CR 702.3d: the unit a modal part is aimed at, for an `EffectDef.modes` prompt.
  *
  * `E.collectModes` runs AFTER `collectPartTargets`, so by the time a mode is
  * asked the target is already declared on the part — which is the whole point
@@ -48,7 +48,7 @@ export const modeTargetOf = (g: E, part: EffectPart): Entity | undefined => {
 };
 
 /**
- * R57: the modal half for a card run INLINE — a spell played out of another
+ * CR 702.5: the modal half for a card run INLINE — a spell played out of another
  * effect's resolution (Tides of the Cosmos, Spell Excavation), where there is
  * no cast window and no stack item because the card never reaches the stack.
  *
@@ -91,7 +91,7 @@ export function inlineMode(
  * The cost of a card KNOWN ONLY BY NAME — a card in a bin, a hand, a cache, a
  * deck, or a unit standing in play. An X card reads as **0**.
  *
- * R157 §1 is why, and it is a decision rather than an approximation:
+ * The X ruling (now CR 107.3a) is why, and it is a decision rather than an approximation:
  * *"Pips aren't a relevant part of looking at the cost of a card in Algomancy.
  * And paying X replaces the letter X on the printed card temporarily."* So an
  * X card's cost is the X that was paid for it — and a card that was never cast
@@ -109,13 +109,13 @@ export const manaOf = (name: CardName): number => {
 };
 
 /**
- * R157 §1 — the cost of a spell that was ACTUALLY CAST: its printed mana, or,
+ * CR 111.11 — the cost of a spell that was ACTUALLY CAST: its printed mana, or,
  * on an X card, the X its caster paid ("paying X replaces the letter X on the
  * printed card temporarily").
  *
  * `x` is `StackItem.x` for an item on the stack, or the `x` the engine now
  * carries on the 'spellPlayed' / 'cardPlayed' events. `undefined` means no X
- * was paid — a free prophecy release casts an X spell for X = 0 (R111), and a
+ * was paid — a free prophecy release casts an X spell for X = 0 (CR 702.6c, 202.6), and a
  * card read out of a zone has no cast at all — so it reads as 0, exactly as
  * `manaOf` does.
  */
@@ -125,9 +125,9 @@ export const castCostOf = (name: CardName, x?: number): number => {
 };
 
 /**
- * R157 §1 — "that spell's cost" read off a 'spellPlayed' / 'cardPlayed' event
+ * CR 111.11 — "that spell's cost" read off a 'spellPlayed' / 'cardPlayed' event
  * (Channeled Amalgam, Arcane Concentrator, Death Greeter). The event carries
- * both the card name and, on an X card, the X that was paid; R1 says a
+ * both the card name and, on an X card, the X that was paid; CR 109.3a says a
  * triggered ability reads its condition off the event snapshot, and this is
  * that snapshot.
  *
@@ -144,11 +144,11 @@ export const eventCardCost = (ev: { data?: Record<string, unknown> } | null | un
 };
 
 /**
- * R347 — IS THIS 'spawned' EVENT MY OWN ARRIVAL? A plain unit's play is
- * announced on its own 'spawned' line (R263, `from` set), so a "when you play a
+ * CR 701.1e — IS THIS 'spawned' EVENT MY OWN ARRIVAL? A plain unit's play is
+ * announced on its own 'spawned' line (`from` set), so a "when you play a
  * unit" card that reads 'spawned' as a play (Proph, Stalwart Sentinel) would
  * otherwise hear ITS OWN play: it is standing in play by the time its own spawn
- * fires. R347 rules that out — a card being played is on the stack, not in
+ * fires. CR 701.1e rules that out — a card being played is on the stack, not in
  * play, so it never hears its own play, out of any zone. Such a reader drops
  * its own arrival with this. The 'cardPlayed' half of the same rule is the
  * engine's (E.fireEvent's `beingPlayed`); a "When I spawn" ability is about
@@ -194,26 +194,26 @@ export const pickUnit = (
 
 /**
  * Erase an entity from play entirely — **now a one-line shim over the engine
- * choke point** (R172). Eight card sites across six batches call this
+ * choke point**. Eight card sites across six batches call this
  * (Banishment, Celestial Purge, Borrower of Forms, Feed to Hooba, Reap the
  * Due, …), so re-pointing the body was the whole of "route the copies through
  * `E.eraseFromPlay`".
  *
  * What the hand-rolled body used to get wrong, all four of them silently:
- *  · **no `revertFace`** — R157 §10 says a transformed card exists as its
+ *  · **no `revertFace`** — CR 410.3 says a transformed card exists as its
  *    FRONT side in every zone but play, so a Beyond, Codex Incarnate erased by
  *    Banishment was filed on the erased pile under the BACK face, and the
  *    Scholar of the Void that really left the game was never recorded;
- *  · **no despawn** — R157 §3 / R172: an erase is not a death but it IS a
+ *  · **no despawn** — CR 801.6a: an erase is not a death but it IS a
  *    despawn, and this route fired nothing a listener could hear;
  *  · **the wrong seat** — it filed the card under `u.controller`, so a stolen
  *    unit was erased out of the THIEF's pile; the engine files it under
  *    `u.owner`, the seat whose card it is, as every bin route does;
  *  · **`unslot` instead of `removeFromFormation`** — the local mirror skipped
- *    `repairFormation`, so erasing the last unit of a column left the R72 gap
+ *    `repairFormation`, so erasing the last unit of a column left the CR 602.5b gap
  *    open until some later death happened to close it. That helper had no
  *    other caller and is gone with the body.
- * The mods also reach the pile now (R65), which the local copy never did.
+ * The mods also reach the pile now (CR 410.4b), which the local copy never did.
  */
 export function eraseFromPlay(g: E, u: Entity): void {
   g.eraseFromPlay(u);
@@ -232,18 +232,18 @@ export const perSeatRows = (g: E, seat: Seat, f: (s: Seat) => number): XPreviewR
   ([seat, (1 - seat) as Seat] as Seat[]).map(s => ({ label: s === seat ? 'you' : g.pname(s), x: f(s), seat: s }));
 
 /** The `lifeLost:<seat>` battle ledger — E.loseLife bumps it, it is region
- * -keyed (R14) and wiped at the start of every battle. Copied out of the three
+ * -keyed (CR 505.6) and wiped at the start of every battle. Copied out of the three
  * batch files that each had their own local, so a preview and the effect it
  * previews cannot read the counter two different ways. */
 export const lifeLostIn = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeLost:${seat}`);
-/* R181: `lifeGainedIn` — the `lifeGained:<seat>` twin of `lifeLostIn` — was
+/* `lifeGainedIn` (see CLAUDE.md § The gates) — the `lifeGained:<seat>` twin of `lifeLostIn` — was
  * exported from here with zero call sites. Its only other appearance tree-wide
  * was inside a REGEX LITERAL in `96-x-preview.test.ts`, which is not a call, so
  * a grep made it look alive. Deleted; it was a one-line read of
  * `g.battleCounter(region, 'lifeGained:' + seat)` if a card ever needs it back.
  *
- * NOTE, because it matters for what R181 actually bought: `noUnusedLocals`
+ * NOTE, because it matters for what CARD-TODO #60 actually bought: `noUnusedLocals`
  * would NOT have caught this one. The flag ignores EXPORTED declarations, and
  * an export with no importer is exactly the dead helper that hides longest.
  * The sweep that catches those is `147-comment-conformance.test.ts` §4, which
@@ -251,7 +251,7 @@ export const lifeLostIn = (g: E, region: number, seat: Seat): number =>
 
 /* ── doubling a unit's effective stats (Burgeon, Surly Stalker) ─────────
  *
- * MOVED HERE FROM batch-wood-a.ts, 2026-08-25 (R177), and the reason is not
+ * MOVED HERE FROM batch-wood-a.ts, 2026-08-25 (see 180-pool-sight), and the reason is not
  * tidiness. `batch-water-b.ts` imported it from `batch-wood-a.ts`, and a card
  * batch importing a LATER card batch pulls that batch's module evaluation
  * forward — so its `card()` calls registered early, `allCardNames()` came back
@@ -280,7 +280,7 @@ function statsWithTemp(g: E, u: Entity, dp: number, dt: number): [number, number
  * The smallest-magnitude layer-3 delta on `axis` (0 = power, 1 = defense) that
  * makes `effStats` read exactly `want`, holding the other axis at `other`, or
  * `null` when no delta can get there — which is a real answer, not a failure:
- * an {Unaware} unit reads at its printed numbers for every purpose (R106), so
+ * an {Unaware} unit reads at its printed numbers for every purpose (CR 802.9a), so
  * nothing applied at layer 3 moves them.
  *
  * Layers 4-6 are weakly monotone in one layer-3 axis ({Tough} scales, and only
@@ -347,7 +347,7 @@ export function doubleStats(g: E, u: Entity, which: 'power' | 'defense' | 'both'
 }
 
 /**
- * R307 — RE-CHOOSE A STACK ITEM'S TARGETS, SLOT BY SLOT, LEGALLY.
+ * CR 110.9 — RE-CHOOSE A STACK ITEM'S TARGETS, SLOT BY SLOT, LEGALLY.
  *
  * The one loop behind every card that changes the targets of an effect on
  * the stack wholesale: Divine Intervention ("you may change the targets"),
@@ -402,7 +402,7 @@ export function rechooseTargets(
 }
 
 /**
- * R307: write `rechooseTargets`' picks onto the item — RE-VALIDATED, so no
+ * CR 110.6: write `rechooseTargets`' picks onto the item — RE-VALIDATED, so no
  * part can come out of a retarget with one object in two of its slots,
  * whatever produced the picks. A part whose result would hold a duplicate
  * keeps its targets as they were (said in the log); the rest are written.

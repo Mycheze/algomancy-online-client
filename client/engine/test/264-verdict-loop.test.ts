@@ -1,7 +1,7 @@
 /*
  * 264 · A VERDICT IS A REPORT, AND IT NEEDED THE SAME LOCK
  *
- * R285. The scenario tester (docs/14) exists so the owner — the rules
+ * (see fetch-reports.mjs). The scenario tester (docs/14) exists so the owner — the rules
  * authority — can judge a card by playing it, and docs/14 §6 states the
  * obligation in one sentence: a `broken` or `slightly off` verdict becomes a
  * `card-todo.ts` entry with the scenario attached, and the same scenario
@@ -19,7 +19,7 @@
  * ⚠ WHAT THAT COST, MEASURED. The owner marked **Vengeance `broken`** on
  * 2026-08-27 (scenario `vengeance-taxes-their-play`, room YNBP, action 4).
  * Nothing in the repo answered it: no todo entry, no ruling in
- * digital-rules.md after that date, no test, no commit. It sat for five days
+ * the retired ruling register after that date, no test, no commit. It sat for five days
  * across three rounds and two full ledger sweeps while `card-todo.ts` reported
  * 9 open items and none of them was this.
  *
@@ -87,7 +87,7 @@ const ROWS: VerdictRow[] = readFileSync(VERDICTS_SNAPSHOT, 'utf8')
  * verdict **on this same room**"*. A re-run in a DIFFERENT room is a fresh
  * judgement on a fresh board and retires nothing — which is why Slag Spewer's
  * `slightly-off` (room RYDP, 2026-08-26) still stands on its own and was
- * answered on its own (CT-86 / R219), even though the same scenario came back
+ * answered on its own (CT-86 / CR 407.2), even though the same scenario came back
  * `works` in room EWZQ a day later.
  */
 const LIVE = new Map<string, VerdictRow>();

@@ -1,4 +1,4 @@
-/* 407 — R321 IN THE CLIENT, THE LEFT-HAND SIDE: a side-block before column 1
+/* 407 — CR 606.4a IN THE CLIENT, THE LEFT-HAND SIDE: a side-block before column 1
  * is built on the board exactly as one past the attack's right end is.
  *
  * The RAQ ("What is blocked?"): a defender may block where no attacker is, to
@@ -154,7 +154,7 @@ test('§4b when the line closes ranks under the build, a left side-block keeps i
   ui.click({ act: 'slot', ci: '-1', row: '0' });
   ui.click({ act: 'unit', id: String(mine[1]) });
   ui.click({ act: 'slot', ci: '1', row: '0' });     // blocking the SECOND attacker
-  // R72: the first attacking column empties and the line closes up — the
+  // CR 602.5: the first attacking column empties and the line closes up — the
   // second attacker is column 1 now (ui/main.ts ensureBlockKeys re-keys)
   const s2 = structuredClone(h.state);
   s2.battle!.columns = [s2.battle!.columns[1]!];

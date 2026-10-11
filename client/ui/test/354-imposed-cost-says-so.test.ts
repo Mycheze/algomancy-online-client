@@ -135,7 +135,7 @@ test('CT-181 the taxed play keeps its own target question as a target', () => {
   giveResources(h, D, 'fire', 4);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
   const dec = h.state.decision!;
-  assert.equal(dec.kind, 'targets', 'fixture: the spell\'s own target is asked first (R57)');
+  assert.equal(dec.kind, 'targets', 'fixture: the spell\'s own target is asked first (CR 702.3f)');
   assert.equal(imposedCost(dec, h.state), null, 'a real target is not taken for a cost');
   const html = paint(h.state, D);
   assert.doesNotMatch(barOf(html), /extra cost/, 'the target question is not dressed as a cost');

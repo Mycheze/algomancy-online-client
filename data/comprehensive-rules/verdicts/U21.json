@@ -1,7 +1,7 @@
 [
   {
     "key": "keywords.abilities.ambush",
-    "textHash": "7ac44943c34afc18",
+    "textHash": "951f13cd8e308eeb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -53,7 +53,7 @@
   },
   {
     "key": "keywords.abilities.ambush.cache",
-    "textHash": "a4bd6a3ce4e14129",
+    "textHash": "d630baae6305efeb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -96,7 +96,7 @@
   },
   {
     "key": "keywords.abilities.ambush.cost",
-    "textHash": "60bee7e8dc4017a1",
+    "textHash": "e0aa2b616ca415f9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -223,7 +223,7 @@
   },
   {
     "key": "keywords.abilities.ambush.resolution",
-    "textHash": "e3f3ccbf3405dbd2",
+    "textHash": "6d62fd6935f21496",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -438,7 +438,7 @@
   },
   {
     "key": "keywords.abilities.ambush.target",
-    "textHash": "3943787a40dc5177",
+    "textHash": "a8a68c1b30d04235",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -504,7 +504,7 @@
   },
   {
     "key": "keywords.abilities.ambush.tides",
-    "textHash": "759402a7314482fa",
+    "textHash": "40712a74f854b754",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U21-r4",
@@ -629,7 +629,7 @@
   },
   {
     "key": "keywords.abilities.battle",
-    "textHash": "558fdeb65208fbbf",
+    "textHash": "510e47d16089127b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -741,7 +741,7 @@
   },
   {
     "key": "keywords.abilities.battle.per-line",
-    "textHash": "64cc30c24f02e60e",
+    "textHash": "ab3fa52ffec4b9d3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -856,7 +856,7 @@
   },
   {
     "key": "keywords.abilities.burst.by-name",
-    "textHash": "a5e56bed8e81a9cf",
+    "textHash": "d2df9f6aa31ae339",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -894,7 +894,7 @@
   },
   {
     "key": "keywords.abilities.burst.individual",
-    "textHash": "eb4da9302776359b",
+    "textHash": "9cb9e942fa8b035e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -937,7 +937,7 @@
   },
   {
     "key": "keywords.abilities.burst.order",
-    "textHash": "5c54a7b436c615c7",
+    "textHash": "485e609e506560b4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -1004,7 +1004,7 @@
   },
   {
     "key": "keywords.abilities.burst.targets",
-    "textHash": "0b53e85300eada7e",
+    "textHash": "9f11ed1bcc37d7d1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1236,7 +1236,7 @@
   },
   {
     "key": "keywords.abilities.non-combat.not-shared",
-    "textHash": "9912014e04b4a3a7",
+    "textHash": "0c79ee645a40f1da",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1338,7 +1338,7 @@
   },
   {
     "key": "keywords.abilities.prophecy",
-    "textHash": "3df3b4124a92b950",
+    "textHash": "807422d0b242f7b2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1382,7 +1382,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.battles",
-    "textHash": "67c8c0ff8cbbf3e9",
+    "textHash": "afdf9027406a1cac",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U21-r4",
@@ -1420,7 +1420,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.cost",
-    "textHash": "44e2b91e9e120d49",
+    "textHash": "a09aad01d8760b75",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1459,7 +1459,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.forward",
-    "textHash": "7f4b5413faeb9811",
+    "textHash": "4de9b6652d9d823f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1498,7 +1498,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.from",
-    "textHash": "b0db713ab1e4ea2e",
+    "textHash": "c687f95ede948786",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1562,7 +1562,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.granted",
-    "textHash": "465db3e367dd3def",
+    "textHash": "366d934cfc45ad3b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -1621,7 +1621,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.latch",
-    "textHash": "b978e2583ac5dfd3",
+    "textHash": "6a6afaef851ac937",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1659,7 +1659,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.mods",
-    "textHash": "83717b90ab6698ba",
+    "textHash": "672210f320400155",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1704,7 +1704,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.release",
-    "textHash": "552b58bf587eb3d3",
+    "textHash": "37a98ea199a76c61",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1748,7 +1748,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.release-timing",
-    "textHash": "c929a12c5fc60c3a",
+    "textHash": "0af0ef2b393f7b43",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1803,7 +1803,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.tides",
-    "textHash": "58a4e2e96c64f88d",
+    "textHash": "87a55f0946aedb00",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1847,7 +1847,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.units-die",
-    "textHash": "4be53453914b7118",
+    "textHash": "75de8c2c1893bf03",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U21-r4",
@@ -1905,7 +1905,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.window",
-    "textHash": "84645e674bad9e14",
+    "textHash": "beec021625e0556e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1955,7 +1955,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.x",
-    "textHash": "aeef3b995e0884c3",
+    "textHash": "e49cdd0cfd878cee",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2055,7 +2055,7 @@
   },
   {
     "key": "keywords.abilities.unstable.active-zone",
-    "textHash": "0f01378f67dd9417",
+    "textHash": "48d1be5608aec034",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2156,7 +2156,7 @@
   },
   {
     "key": "keywords.abilities.unstable.copy",
-    "textHash": "fbf37e97995ba5af",
+    "textHash": "e8b391879ac9ce22",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -2278,7 +2278,7 @@
   },
   {
     "key": "keywords.abilities.unstable.modded",
-    "textHash": "eed01416b537a691",
+    "textHash": "63dd6ac0b47004f0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2335,7 +2335,7 @@
   },
   {
     "key": "keywords.abilities.unstable.modded-spell",
-    "textHash": "4c84cf7b6679b3dc",
+    "textHash": "6eae6d5a8bcdcb34",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2385,7 +2385,7 @@
   },
   {
     "key": "keywords.abilities.unstable.moved-mod",
-    "textHash": "d6e200de2a74ec83",
+    "textHash": "c3b6734caa3025c1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2467,7 +2467,7 @@
   },
   {
     "key": "keywords.abilities.unstable.recall",
-    "textHash": "737238a4662b9670",
+    "textHash": "76f78a74a76a0f59",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2519,7 +2519,7 @@
   },
   {
     "key": "keywords.abilities.unstable.stack",
-    "textHash": "145f4a67ba15a7ac",
+    "textHash": "3ead1d64c934ecf5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",

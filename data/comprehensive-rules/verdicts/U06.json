@@ -138,7 +138,7 @@
   },
   {
     "key": "types.general.nouns.card",
-    "textHash": "9c52b08928a1b630",
+    "textHash": "51014d0e2c37be0a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -484,7 +484,7 @@
   },
   {
     "key": "types.mods.applied-not-played",
-    "textHash": "9dd567ab92c9681c",
+    "textHash": "ac2368e33dc6e3ca",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U06-r4",
@@ -527,7 +527,7 @@
   },
   {
     "key": "types.mods.spell-token-host",
-    "textHash": "9c1d15330aadbb3f",
+    "textHash": "927d7ddc9c43a88c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -697,7 +697,7 @@
   },
   {
     "key": "types.mods.what",
-    "textHash": "797f16650b26d9e4",
+    "textHash": "b906317ba38f9e93",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -807,7 +807,7 @@
   },
   {
     "key": "types.spell-units.control",
-    "textHash": "d51e5f773d2a98d3",
+    "textHash": "5341696ec30e9613",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U06-r4",
@@ -857,7 +857,7 @@
   },
   {
     "key": "types.spell-units.copy",
-    "textHash": "0bd541606494edcc",
+    "textHash": "e9ca26a4a58caf56",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1534,7 +1534,7 @@
   },
   {
     "key": "types.spells.to-bin",
-    "textHash": "8c8f0a166060a819",
+    "textHash": "4128a9e7e4e50279",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1614,7 +1614,7 @@
   },
   {
     "key": "types.tokens.back-face",
-    "textHash": "d4ccc6cec27d1ad3",
+    "textHash": "09e72458f2431bc2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1878,7 +1878,7 @@
   },
   {
     "key": "types.tokens.leaving-play",
-    "textHash": "d28c36df57eca4e0",
+    "textHash": "c973aef3748abf70",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -1962,7 +1962,7 @@
   },
   {
     "key": "types.tokens.leaving-play.not-trashed",
-    "textHash": "0249e4517f4de59d",
+    "textHash": "b02e98714020dbf2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2282,7 +2282,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.burst",
-    "textHash": "571b33ea13e37046",
+    "textHash": "c3333d6bc3c0059d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -2341,7 +2341,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.cost",
-    "textHash": "077d30cf906d3277",
+    "textHash": "e5117e5407391d67",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -2388,7 +2388,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.moving",
-    "textHash": "097ba770b16623ac",
+    "textHash": "06688a75931bba45",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2437,7 +2437,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.moving.counterattack",
-    "textHash": "9b5a6907aaf3db73",
+    "textHash": "4ef99dc4e939d7e3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2642,7 +2642,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.played",
-    "textHash": "00be9984ed4591d8",
+    "textHash": "7ca228edcbbf1f7a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2841,7 +2841,7 @@
   },
   {
     "key": "types.tokens.unique",
-    "textHash": "b778ca673631e10b",
+    "textHash": "cb49e1704b28f28b",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U06-r4",

@@ -4,7 +4,7 @@
     "kind": "a-sources-disagree",
     "rule": "types.tokens.not-cards",
     "tier": 4,
-    "summary": "Both printed rulebooks call tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if a token can be a card. The owner ruled that a token is not a card (R129, R133) and confirmed it in R306.",
+    "summary": "Both printed rulebooks call tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if a token can be a card. The owner ruled that a token is not a card (the owner ruling of 2026-08-24 (“a spell token is a token…”), the owner ruling of 2026-08-24 (“tokens are NOT cards, and trashing…”)) and confirmed it in the owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”).",
     "seeAlso": [
       {
         "id": "D-U03-1",
@@ -29,19 +29,19 @@
         "quote": "When a nontoken card is played during battle, sacrifice me."
       },
       {
-        "source": "R133",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "Tokens are NOT cards, however."
       },
       {
-        "source": "R306",
+        "source": "owner ruling, adopted 2026-09-28",
         "quote": "Tokens are specifically not considered cards in terms of specific semantics"
       },
       {
-        "source": "R129",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "Everything is a card, including units. Tokens are NOT cards, however."
       },
       {
-        "source": "R133",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "> \"I think Void Mandible is just trying to save space (card < unit or spell)."
       },
       {
@@ -49,15 +49,15 @@
         "quote": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
       },
       {
-        "source": "R305",
+        "source": "owner ruling, adopted 2026-09-28",
         "quote": "**A token is still not a CARD.**"
       },
       {
-        "source": "R346",
+        "source": "owner ruling, adopted 2026-10-11",
         "quote": "For the rules, a token is never a card."
       }
     ],
-    "resolution": "Answered by the owner on 2026-10-11, reading B (R346): \"temporary card\" is how print describes a token to players, and for the rules a token is not a card, though it is a unit, a spell or another printed thing. R129, R133, R305 and R306 stand, Void Mandible's \"nontoken\" is shorthand, and the rules that state them stand (108.2a no longer calls it an open question)."
+    "resolution": "Answered by the owner on 2026-10-11, reading B (owner ruling of 2026-10-11, “A token is not a card…”): \"temporary card\" is how print describes a token to players, and for the rules a token is not a card, though it is a unit, a spell or another printed thing. The owner ruling of 2026-08-24 (“a spell token is a token…”), the owner ruling of 2026-08-24 (“tokens are NOT cards, and trashing…”), the owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”) and the owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”) stand, Void Mandible's \"nontoken\" is shorthand, and the rules that state them stand (108.2a no longer calls it an open question)."
   },
   {
     "id": "D-U06-2",
@@ -85,7 +85,7 @@
         "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
       },
       {
-        "source": "R69 (its zone-visit and timing halves)",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "Against `data/rules/Algomancy-Manual.txt:361-362`, which says tokens go to the token"
       }
     ],
@@ -136,29 +136,29 @@
     "kind": "c-owner-call-only",
     "rule": "types.tokens.spell-tokens.moving.counterattack",
     "tier": 3,
-    "summary": "Both printed rulebooks and Caleb speak only of bringing spell tokens along on an attack. That a counterattack may bring them rests on players' answers quoted in R87, not on a designer source.",
+    "summary": "Both printed rulebooks and Caleb speak only of bringing spell tokens along on an attack. That a counterattack may bring them rests on players' answers quoted in the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”), not on a designer source.",
     "sides": [
       {
         "source": "Manual p.15",
         "quote": "During the attack step, spell tokens can be brought"
       },
       {
-        "source": "R87",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> \"you can only play spell tokens in the region they are in (**or you can bring"
       },
       {
-        "source": "R87",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> \"If your opponent declares a counter attack they create a formation and move"
       }
     ],
-    "resolution": "Owner call (R87), stated with basis owner. It does not contradict print: the counterattack is the same movement in the other direction."
+    "resolution": "Owner call (owner ruling of 2026-08-23, “A counterattacker may bring spell tokens…”), stated with basis owner. It does not contradict print: the counterattack is the same movement in the other direction."
   },
   {
     "id": "D-U06-7",
     "kind": "c-owner-call-only",
     "rule": "types.mods.spell-token-host",
     "tier": 3,
-    "summary": "Caleb said spell tokens can be augmented during deployment, with attributes only. R89 reads that as allowing any augment, not just a Virus, and says that reading is sourced to a player rather than to Caleb.",
+    "summary": "Caleb said spell tokens can be augmented during deployment, with attributes only. The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) reads that as allowing any augment, not just a Virus, and says that reading is sourced to a player rather than to Caleb.",
     "seeAlso": [
       {
         "id": "D-U17-11",
@@ -167,11 +167,11 @@
     ],
     "sides": [
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "The reading taken, and it is a reading — sourced to the community rather than to"
       },
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> deployment but currently that would only be possible with spell tokens. Also"
       }
     ],
@@ -189,18 +189,18 @@
         "quote": "Negate target effect. Its controller gains control of me."
       },
       {
-        "source": "R143",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "A spell unit whose text says another player gains control of it ENTERS as"
       }
     ],
-    "resolution": "Owner call (R143), stated with basis owner. Print says only that control changes, not when; R143 reads both sentences as one resolution."
+    "resolution": "Owner call (owner ruling of 2026-08-24, “\"…gains control of me\" on a…”), stated with basis owner. Print says only that control changes, not when; the owner ruling of 2026-08-24 (“\"…gains control of me\" on a…”) reads both sentences as one resolution."
   },
   {
     "id": "D-U06-9",
     "kind": "g-other",
     "rule": "types.mods.spell-token-host",
     "tier": 1,
-    "summary": "Sources do not say whether a Virus may be applied during battle to a spell token standing in play. R89 left it for the owner to rule. A player's remark implies it can be.",
+    "summary": "Sources do not say whether a Virus may be applied during battle to a spell token standing in play. The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) left it for the owner to rule. A player's remark implies it can be.",
     "seeAlso": [
       {
         "id": "D-U17-4",
@@ -209,19 +209,19 @@
     ],
     "sides": [
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s \"not without help of"
       },
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> \"But since Bubb is not a virus, you couldn't mod Fireball **during combat**"
       },
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "and response-window design. Left alone deliberately; **Bena to rule** whether"
       },
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "it is worth the second path."
       },
       {
@@ -229,11 +229,11 @@
         "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
       },
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "\"It's very similar to how regular viruses work. So you can hit enemy spells,"
       }
     ],
-    "resolution": "Question for the owner. No rule states either reading: R89 leaves it as \"Bena to rule\" and names the engine work reading A needs. The _passer remark R89 quotes (\"not without help of Rook\") is from #rules-questions, not a [Solved] write-up.",
+    "resolution": "Question for the owner. No rule states either reading: The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) leaves it as \"Bena to rule\" and names the engine work reading A needs. The _passer remark the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) quotes (\"not without help of Rook\") is from #rules-questions, not a [Solved] write-up.",
     "question": {
       "topic": "Mods",
       "ask": "In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?",
@@ -241,7 +241,7 @@
         {
           "label": "A",
           "text": "Yes: a spell token is a spell, and a Virus may \"hit enemy spells\" in battle (Caleb), so a token in play is a legal battle host.",
-          "table": "A Virus, or a Rook-enabled augment, can give a Fireball token standing on the board Deadly or Powerful mid-battle; the engine needs the second path R89 describes."
+          "table": "A Virus, or a Rook-enabled augment, can give a Fireball token standing on the board Deadly or Powerful mid-battle; the engine needs the second path the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) describes."
         },
         {
           "label": "B",
@@ -250,7 +250,7 @@
         }
       ],
       "follows": "Neither: no rule is written. The engine does B.",
-      "recommend": "A, the permissive reading. R89 already reads {Virus} as buying the timing, not the host."
+      "recommend": "A, the permissive reading. The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) already reads {Virus} as buying the timing, not the host."
     }
   },
   {
@@ -258,10 +258,10 @@
     "kind": "g-other",
     "rule": "types.tokens.leaving-play",
     "tier": 2,
-    "summary": "R69 still warns that Caleb once said the opposite (2025-03-09: tokens go to the token pile \"instead of sending them to your bin\"), and that \"this rule and R40's amendment both fall\" if that line is the intended one. The [Solved] RAQ write-up has since settled it in R69's favour, so the warning is stale.",
+    "summary": "The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) still warns that Caleb once said the opposite (2025-03-09: tokens go to the token pile \"instead of sending them to your bin\"), and that \"this rule and the owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”)’s amendment both fall\" if that line is the intended one. The [Solved] RAQ write-up has since settled it in the owner ruling of 2026-08-22 (“A token entering a ZONE is…”)’s favour, so the warning is stale.",
     "sides": [
       {
-        "source": "R69",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "⚠ **A conflicting ruling, recorded rather than smoothed over.** Caleb"
       },
       {
@@ -269,14 +269,14 @@
         "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
       }
     ],
-    "resolution": "Register fix: mark R69's conflicting-ruling warning as answered by RAQ 1355689559609839787 (point 3). No change to the rule."
+    "resolution": "Register fix: mark the owner ruling of 2026-08-22 (“A token entering a ZONE is…”)’s conflicting-ruling warning as answered by RAQ 1355689559609839787 (point 3). No change to the rule."
   },
   {
     "id": "D-U06-11",
     "kind": "a-sources-disagree",
     "rule": "types.mods.what",
     "tier": 4,
-    "summary": "Print says a modified card is treated as one card with its mods' text. Caleb's answer quoted in R89 says a mod on a spell gives it only attributes.",
+    "summary": "Print says a modified card is treated as one card with its mods' text. Caleb's answer quoted in the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) says a mod on a spell gives it only attributes.",
     "sides": [
       {
         "source": "Manual p.32",
@@ -287,7 +287,7 @@
         "quote": "When a card is modified, it is simply treated as if it"
       },
       {
-        "source": "R89",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "you can only do this with attributes."
       }
     ],

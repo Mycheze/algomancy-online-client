@@ -35,12 +35,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual calls the game modes \"formats\"; Rulebook 2023 p.1 calls them \"Game Modes\" and lists the same four, with cube draft under the name \"Pre-Draft\" (formats.general.modes.pre-draft). Each mode is defined in 901 (constructed) and 902 (live draft, cube draft, team draft). That any mode pairs with any setup is 100 (concepts.general.formats, U01).",
     "sourceHashes": {},
@@ -69,12 +69,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Identification by description: both books describe drafting a deck before the game and then playing constructed with it; neither says the names are the same thing. The Manual (later edition) uses \"Cube Draft\".",
     "sourceHashes": {},
@@ -115,12 +115,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.6 lists these four \"including\", so the list is not stated to be closed. Rulebook 2023 p.1 lists 1v1, 3v3, Free For All and 2v1 as \"Player Configurations\".",
     "sourceHashes": {},
@@ -155,14 +155,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.1 recommends \"1v1 or free for all\" for the first game; the Manual recommends 1v1.",
     "sourceHashes": {}
@@ -186,12 +186,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "A pointer rule.",
     "sourceHashes": {},
@@ -225,14 +225,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "So every team-game rule in 904 applies to 1v1, where each team is one player. The initiative system, the attack-and-counterattack battle and the shared team priority are stated for \"teams/1v1\" together on Manual p.27 and p.36.",
     "sourceHashes": {}
@@ -260,12 +260,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The seating rule and the region rule are printed on different pages; the link between them (regions arranged in a circle, as the players sit) is how Manual p.19 and Rulebook 2023 p.8 both present regions. The team-game seating rule is 904 (formats.teams.seating).",
     "sourceHashes": {},
@@ -299,14 +299,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -337,12 +337,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -381,14 +381,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "A table shortcut printed in parentheses; it only arises with more than two players. The clockwise order itself is turn.battle.region-order.clockwise (U09) and combat.regions.one-at-a-time.order (U10). Untestable in the client, which has one battle region per battle round.",
     "sourceHashes": {}
@@ -405,7 +405,7 @@
       },
       {
         "text": null,
-        "test": "168-three-card-divergences.test.ts::R197 §3a Cinder Scuttler"
+        "test": "168-three-card-divergences.test.ts::CR 900.6 Cinder Scuttler: the"
       }
     ],
     "see": [
@@ -415,17 +415,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R27 (the \"Project decisions\" block recorded under it)",
-          "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed."
+          "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R197 (its §3 two-seat measurement, which stands)",
-          "quote": "* `createGame` takes `names: [string, string]` and builds exactly **two**"
+          "quote": "* `createGame` takes `names: [string, string]` and builds exactly **two**",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts",
@@ -433,12 +434,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "Same scope as concepts.general.digital-scope (100, U01), stated here for the format chapter. R27's Project decisions block is classified process, but it is the only source naming the client's formats. R197 is partly superseded (its §3 Cinder Scuttler 1v1 gap corrected by R238); the two-seat measurement in its §3 is unaffected, and R238 repeats it (\"`createGame` builds two seats\"). The client variants Single Card Duel (901) and custom live-draft rules (902) are two-seat too. Owner basis: no printed or designer source limits the game to two players.",
-    "sourceHashes": {
-      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b",
-      "R27": "f9de0bd386630de9d13ba5eaecf8f59a21043f5695f988e9a7fcff619ce2a071"
-    }
+    "notes": "Same scope as concepts.general.digital-scope (100, U01), stated here for the format chapter. The owner ruling of 2026-08-18 (“Formation-counting amounts are live at resolution”)’s Project decisions block is classified process, but it is the only source naming the client's formats. The owner ruling of 2026-08-26 (“an option list is not \"any…”) is partly superseded (its §3 Cinder Scuttler 1v1 gap corrected by the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”)); the two-seat measurement in its §3 is unaffected, and the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) repeats it (\"`createGame` builds two seats\"). The client variants Single Card Duel (901) and custom live-draft rules (902) are two-seat too. Owner basis: no printed or designer source limits the game to two players.",
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.what",
@@ -473,14 +472,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -516,8 +515,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts",
@@ -525,6 +523,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The second sentence records silence (D-U22-7); confidence medium for that half only. The test title also says \"scripted pool only\": the client accepts only cards it implements in a deck. That is a client restriction with no ruling behind it in this pack, so it is not stated as a rule here (Annex D).",
     "sourceHashes": {}
@@ -556,8 +555,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts",
@@ -565,6 +563,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.6 says \"the standard format allows\", leaving room for variants; Single Card Duel (formats.constructed.single-card) is the client's one exception.",
     "sourceHashes": {}
@@ -598,14 +597,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Also stated at 103 (concepts.starting.constructed) and 401/409 (zones.deck.shared.constructed, zones.pack.what.constructed).",
     "sourceHashes": {}
@@ -651,14 +650,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual phrases it as the draw step's 2 plus a draft step of \"draw 2 and recycle 2\", usually combined; the Rulebook and Caleb phrase it as draw 4, put back 2. Same result. The step itself is 503 (turn.draw.constructed, U08); the first turn is 103 (U01). \"Recycle\" and \"put on the bottom of the deck\" are the same act (408).",
     "sourceHashes": {
@@ -688,28 +687,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R296",
-          "quote": "The pile is shuffled on its way back in, so the order cards were recycled in is"
+          "quote": "The pile is shuffled on its way back in, so the order cards were recycled in is",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R296",
-          "quote": "constructed draw phase's put-2-back, the cards a Glimpse did not cache, a recycled"
+          "quote": "constructed draw phase's put-2-back, the cards a Glimpse did not cache, a recycled",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Print gives the free order; R296 (owner, the recycle mark) makes it unobservable. R296 itself is 408 (U07). The R296 pack quote is not in this unit's pack: R296 was read from digital-rules.md (the extract), added source.",
-    "sourceHashes": {
-      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
-    }
+    "notes": "Print gives the free order; the owner ruling of 2026-09-16 (“Recycling puts a card past the…”) (owner, the recycle mark) makes it unobservable. The owner ruling of 2026-09-16 (“Recycling puts a card past the…”) itself is 408 (U07). The owner ruling of 2026-09-16 (“Recycling puts a card past the…”) pack quote is not in this unit's pack: The owner ruling of 2026-09-16 (“Recycling puts a card past the…”) was read from digital-rules.md (the extract), added source.",
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.draw-phase.one-step",
@@ -719,11 +718,11 @@
     "examples": [
       {
         "text": "Dreadspawn Horror with 1 card in hand: drawing 4 does not kill it, and after the put-back it is a 4/2.",
-        "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5b constructed: drawing 4 does not kill before the 2 go back"
       },
       {
         "text": "With 3 cards in hand, Dreadspawn Horror's controller draws 4 and puts 2 back, keeping 5 cards: the Horror then dies.",
-        "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5b constructed: 3 cards in hand nets to 5"
       }
     ],
     "see": [
@@ -734,28 +733,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+          "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         },
         {
-          "ref": "R313",
-          "quote": "2 (`E.isLethal` skips them while `bottomPending`). The owner, 2026-10-06, on"
+          "quote": "2 (`E.isLethal` skips them while `bottomPending`). The owner, 2026-10-06, on",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Also turn.draw.state-checks.constructed (503, U08). R313 names the engine predicate in its own text; the rule states the ruling only.",
-    "sourceHashes": {
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "notes": "Also turn.draw.state-checks.constructed (503, U08). The owner ruling of 2026-10-06 (“No action ends with a dead…”) names the engine predicate in its own text; the rule states the ruling only.",
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.any-element",
@@ -776,28 +775,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R99",
-          "quote": "make a Fire resource, even if you don't have any Fire cards in the deck […] we should be"
+          "quote": "make a Fire resource, even if you don't have any Fire cards in the deck […] we should be",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R99",
-          "quote": "`legalActions` still offers **all seven** elements for `recycleForResource` and"
+          "quote": "`legalActions` still offers **all seven** elements for `recycleForResource` and",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R99: the deck's element identity is only the client's default resource menu (Annex D, U24). R99 also leaves open whether a deck's element identity is public at game start; that is a digital display question for Annex D, not a rule here.",
-    "sourceHashes": {
-      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”): the deck's element identity is only the client's default resource menu (Annex D, U24). The owner ruling of 2026-08-23 (“A constructed deck's ELEMENT IDENTITY is…”) also leaves open whether a deck's element identity is public at game start; that is a digital display question for Annex D, not a rule here.",
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.card-text",
@@ -826,14 +825,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "28-metal-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Worldbender is the only card in the pool whose text names a format (extract cards search for constructed/draft/pack).",
     "sourceHashes": {}
@@ -860,12 +859,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Read off the two printed texts together; no source answers it directly. Unreachable in the client (no cube draft).",
     "sourceHashes": {},
@@ -890,29 +889,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §2, which stands)",
-          "quote": "> *\"Shared mode isn't a real thing. You invented it for testing. So I guess"
+          "quote": "> *\"Shared mode isn't a real thing. You invented it for testing. So I guess",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R162 (its 'shared' is constructed half, which stands)",
-          "quote": "takes the constructed branch: all three cards out of the card, and 3 life with"
+          "quote": "takes the constructed branch: all three cards out of the card, and 3 life with",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "137-multiplier-and-mode.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "A shared game has no packs, no draft step and no draw phase: each turn draws a flat 2 (R162; 20-draft.test.ts::shared mode is untouched). So \"shared is constructed\" governs card text only, not the draw phase: D-U22-10. Digital-only; Annex D may carry the mode itself.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R162": "cce03aedbad6ba5b735880d7acb96b463e250174b38e8f23e2f7f449b087412b"
-    }
+    "notes": "A shared game has no packs, no draft step and no draw phase: each turn draws a flat 2 (the owner ruling of 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”); 20-draft.test.ts::shared mode is untouched). So \"shared is constructed\" governs card text only, not the draw phase: D-U22-10. Digital-only; Annex D may carry the mode itself.",
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.single-card",
@@ -932,28 +930,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card."
+          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card.",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "Digital-only, an owner format (D-U22-8). Its guard is server/e2e/test-single-card.ts, an e2e script that is not in the tests index, so no example binds to it. Picking, the card ladder and stats are Annex D (U24).",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.single-card.copies",
@@ -973,24 +971,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.single-card.no-draw-phase",
@@ -1010,28 +1007,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it"
+          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`"
+          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.constructed.single-card.no-units",
@@ -1051,28 +1048,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "both players choose Spells (which don't produce units), then end the game in a draw, tell"
+          "quote": "both players choose Spells (which don't produce units), then end the game in a draw, tell",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose"
+          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R298: the room does not deal, records nothing, and deals as soon as a new pair includes a unit-maker. \"Creates a unit token\" is the card's declared creates list (R69), never read off the printed text.",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "notes": "The owner ruling of 2026-09-18 (“Single Card Duel: thirty copies of…”): the room does not deal, records nothing, and deals as soon as a new pair includes a unit-maker. \"Creates a unit token\" is the card's declared creates list (owner ruling of 2026-08-22, “A token entering a ZONE is…”), never read off the printed text.",
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.live-draft",
@@ -1107,14 +1104,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Building the deck is 103 (concepts.starting.live-draft.deck, U01).",
     "sourceHashes": {}
@@ -1139,12 +1136,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -1183,14 +1180,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Six players fall under both sentences: 4 elements, though a cube draft is recommended. The Manual's \"all 5 elements\" predates the client's seven-element pool (105). Custom rules may change the count in the client (formats.draft.custom.elements).",
     "sourceHashes": {}
@@ -1215,12 +1212,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Sources silent on the competitive procedure: D-U22-6. How the client chooses (the lobby's methods) is Annex D.",
     "sourceHashes": {},
@@ -1260,14 +1257,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Caleb's \"16 card draft\" (RAQ #0) confirms the count; print states the split. The deal itself is 103 (concepts.starting.live-draft.deal, U01).",
     "sourceHashes": {
@@ -1302,14 +1299,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "A pointer rule, so the format chapter is complete without restating 503 and 409.",
     "sourceHashes": {}
@@ -1334,28 +1331,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "**Ruling.** A live draft may be created with custom rules. They change the"
+          "quote": "**Ruling.** A live draft may be created with custom rules. They change the",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "DEAL, never how a card works:"
+          "quote": "DEAL, never how a card works:",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "Digital-only, an owner format (D-U22-9). The lobby, the not-counted rule (no stats, ratings or achievements) and the match-history tag are Annex D (U24).",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.pack-size",
@@ -1376,17 +1373,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that"
+          "quote": "- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "size, and the draft step leaves exactly that many cards in the pack."
+          "quote": "size, and the draft step leaves exactly that many cards in the pack.",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts",
@@ -1394,11 +1392,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.elements",
@@ -1418,17 +1415,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Elements** (2–7, standard 3). The pool is every deck card whose factions"
+          "quote": "- **Elements** (2–7, standard 3). The pool is every deck card whose factions",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "choose that many. Two elements default to fire + wood, the rulebook Quick"
+          "quote": "choose that many. Two elements default to fire + wood, the rulebook Quick",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts",
@@ -1436,11 +1434,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.numbers",
@@ -1461,28 +1458,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,"
+          "quote": "per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.simple",
@@ -1502,24 +1499,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Simple cards only**: only cards with the silver complexity symbol (the"
+          "quote": "- **Simple cards only**: only cards with the silver complexity symbol (the",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "297-custom-rules-resolve.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.bans",
@@ -1541,17 +1537,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Banned cards** by name, and an **advanced card filter** in the card"
+          "quote": "- **Banned cards** by name, and an **advanced card filter** in the card",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "browser's search syntax: only cards matching it are in the pool."
+          "quote": "browser's search syntax: only cards matching it are in the pool.",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts",
@@ -1559,11 +1556,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.refresh",
@@ -1583,24 +1579,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "The pack refresh stays every N+1 turns. **A pool must hold at least"
+          "quote": "The pack refresh stays every N+1 turns. **A pool must hold at least",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.floor",
@@ -1622,17 +1617,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,"
+          "quote": "2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "that size must pass. Rules below the floor are refused before the room exists."
+          "quote": "that size must pass. Rules below the floor are refused before the room exists.",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts",
@@ -1640,11 +1636,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.custom.not-printed",
@@ -1662,28 +1657,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+          "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "holds; they are the reporter's suggestion. The Beginner preset (two elements,"
+          "quote": "holds; they are the reporter's suggestion. The Beginner preset (two elements,",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-custom-rules-ui.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "formats.draft.cube",
@@ -1715,12 +1710,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Not in the client (formats.general.digital-scope). The 2023 Rulebook's \"Pre-Draft\" is the same mode (formats.general.modes.pre-draft).",
     "sourceHashes": {},
@@ -1755,12 +1750,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The 320 counts the five base elements (54 each) and 50 hybrids printed beside it; the client's pool is larger (Light & Dark).",
     "sourceHashes": {},
@@ -1807,12 +1802,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -1838,12 +1833,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whether the 2-copy limit (formats.constructed.copies) binds a drafted deck (a two-set cube can hold more copies) is not said: D-U22-7.",
     "sourceHashes": {},
@@ -1874,12 +1869,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "\"May be used instead\" is a reading: the Manual prints it as a second procedure under CUBE DRAFT without saying how to pick between them.",
     "sourceHashes": {},
@@ -1914,12 +1909,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -1948,12 +1943,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -1987,12 +1982,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The 2023 Rulebook sets the team deck at 100 cards; the Manual (later edition) is stated: D-U22-1. Not in the client.",
     "sourceHashes": {},
@@ -2021,12 +2016,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Stated only by the 2023 Rulebook; the Manual does not contradict it.",
     "sourceHashes": {},
@@ -2051,12 +2046,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Also zones.pack.refresh.team-draft (409, U07). Stated only by the 2023 Rulebook.",
     "sourceHashes": {},
@@ -2082,12 +2077,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
     "sourceHashes": {},
@@ -2112,12 +2107,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Kept as a rule so a judge's CR built from the 2023 Rulebook lines up; the Manual (later edition) is 902 formats.draft.team-draft. D-U22-1.",
     "sourceHashes": {},
@@ -2142,12 +2137,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Not in the client (formats.general.digital-scope). Elimination and the game continuing are 104 (U01).",
     "sourceHashes": {},
@@ -2170,12 +2165,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Only the 2023 Rulebook gives a player count. A two-player free-for-all is allowed by it; nothing says how it would differ from 1v1 beyond the FFA battle structure.",
     "sourceHashes": {},
@@ -2209,12 +2204,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"One battle round\" is turn.battle.ffa (505, U09), which words it as \"no battle rounds\". Here: the attack-counterattack pair of rounds does not exist.",
     "sourceHashes": {},
@@ -2244,12 +2239,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2302,12 +2297,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.27's FFA column lists the same six steps. Regions resolve in the clockwise order of 601 (Manual p.21).",
     "sourceHashes": {},
@@ -2340,12 +2335,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.36 places this under FFA; nothing confines it to FFA, but only FFA lets two players attack one player in the same battle round.",
     "sourceHashes": {},
@@ -2374,12 +2369,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Sources silent on how one defending formation is set against two attacking formations (one formation per attacker, or one shared), and on how combat damage pairs across them. Recorded in D-U22-11.",
     "sourceHashes": {},
@@ -2408,12 +2403,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2454,12 +2449,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Manual p.36 says \"the player closest to the initiative player in a clockwise direction gains priority first\"; Manual p.30 says the initiative player goes first when present. The rule reads them together (p.30 is the general rule; p.36 agrees whenever the initiative player is absent). D-U22-3. The general priority window is effects.priority.window.order (703, U14).",
     "sourceHashes": {},
@@ -2485,12 +2480,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2528,12 +2523,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "This is the FFA difference from team games, where the initiative team acts first (formats.teams.initiative).",
     "sourceHashes": {},
@@ -2568,12 +2563,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2602,12 +2597,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A 1v1 game is a team game with one player per team (formats.general.one-v-one-is-team). Not in the client beyond 1v1.",
     "sourceHashes": {},
@@ -2640,12 +2635,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Sources silent on the details of joint players (whose life total, deck, hand and resources; who controls what): D-U22-5. The rules of 904 below are written for split teams, as the Manual writes them.",
     "sourceHashes": {},
@@ -2675,12 +2670,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2705,12 +2700,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The next line (\"games, you must elimiate the entire opposing team.\") completes the sentence; quotes are one line each, so it is noted here. Also concepts.ending.win.teams (104, U01). Attacking through allied regions after nearby opponents are eliminated is combat.regions.arrangement.teams (601, U10).",
     "sourceHashes": {},
@@ -2737,12 +2732,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2780,12 +2775,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "turn.general.initiative (500, U08) states it for 1v1.",
     "sourceHashes": {},
@@ -2819,14 +2814,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "433-cr-formats.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The token passes clockwise (508, turn.initiative.pass, U09); with each player seated between two opponents, the next player clockwise is always on the other team.",
     "sourceHashes": {}
@@ -2857,12 +2852,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Same as turn.deploy.order (507, U09), where the client's simultaneous deployment is an open owner question (D-U09-1).",
     "sourceHashes": {},
@@ -2895,12 +2890,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Also effects.priority.priority.teams (703, U14).",
     "sourceHashes": {},
@@ -2942,12 +2937,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -2994,12 +2989,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Manual p.38 writes it for 2v2 (\"In a 2v2 game, there are two Non-Initiative (NIT) regions and two Initiative (IT) regions\"); applying it to 3v3 is the natural reading, not a printed statement. \"The IT player\" is read as the player holding the initiative token. Rulebook 2023 p.9 gives the same order in brief. 1v1 is the one-region case (turn.battle.rounds, U09).",
     "sourceHashes": {},
@@ -3030,12 +3025,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -3050,7 +3045,7 @@
     "examples": [
       {
         "text": "The Silent in 1v1: once its controller has played 2 spells this battle, their next spell costs [4] more, while the opponent, who has played none, pays the printed cost.",
-        "test": "49-playtest-round6.test.ts::R59: The Silent taxes [2] per spell you have already played this battle"
+        "test": "49-playtest-round6.test.ts::CR 111.10: The Silent taxes [2] per spell you have already played this battle"
       }
     ],
     "see": [
@@ -3069,14 +3064,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "49-playtest-round6.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The Silent is the only card in the pool that says \"team\". Round 1: the example is rebound to the test that measures the tax against the paying player's own spell count (the 29-hybrids-wm-a test only checks the cost modifier is wired).",
     "sourceHashes": {}
@@ -3103,12 +3098,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The 2023 Rulebook gives the single player \"bonus cards and resources\" instead: D-U22-2. Neither book says more. Placed under teams because it is a two-sides game; nothing says whether the two form a team under the team rules of 904.",
     "sourceHashes": {},
@@ -3131,12 +3126,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Kept as a rule so a judge's CR built from the 2023 Rulebook lines up. D-U22-2.",
     "sourceHashes": {},
@@ -3166,12 +3161,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.5 calls them \"intent tokens\". Sources silent on which intent cards exist and what each shows: D-U22-4. Not in the client.",
     "sourceHashes": {},
@@ -3204,12 +3199,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -3236,12 +3231,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -3268,12 +3263,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},

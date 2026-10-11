@@ -160,7 +160,7 @@
   },
   {
     "key": "combat.columns.adjacency.only-in-formation",
-    "textHash": "cef2a1b247419c04",
+    "textHash": "c00fdd8d1d7dfdff",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -385,7 +385,7 @@
   },
   {
     "key": "combat.columns.definition.side-blocks",
-    "textHash": "f1c78d76089f4cfd",
+    "textHash": "2e880e102869ac0f",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U10-r4",
@@ -498,7 +498,7 @@
   },
   {
     "key": "combat.columns.edges.attacking-only",
-    "textHash": "dc5acbe6b5d73dfb",
+    "textHash": "8dbb1c5ecb7785f2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -625,7 +625,7 @@
   },
   {
     "key": "combat.columns.width",
-    "textHash": "c9af41e428bffe93",
+    "textHash": "53f9dd8da0aa242f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -669,7 +669,7 @@
   },
   {
     "key": "combat.columns.width.columns-keep-identity",
-    "textHash": "cc39ecd4d7756743",
+    "textHash": "8c77e9ec2b95390c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U10-r4",
@@ -728,7 +728,7 @@
   },
   {
     "key": "combat.formations.collapse",
-    "textHash": "c4becd64ef693bca",
+    "textHash": "56f34f514ed2cc9e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -772,7 +772,7 @@
   },
   {
     "key": "combat.formations.collapse.after-blocks",
-    "textHash": "534263beba2b2d02",
+    "textHash": "04bcff754da32fb8",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -828,7 +828,7 @@
   },
   {
     "key": "combat.formations.collapse.any-removal",
-    "textHash": "24f096d7531bdaca",
+    "textHash": "82ef3d49869a2ec3",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -867,7 +867,7 @@
   },
   {
     "key": "combat.formations.collapse.defending",
-    "textHash": "3404151168b2ce83",
+    "textHash": "f89607a4763f45b0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -916,7 +916,7 @@
   },
   {
     "key": "combat.formations.collapse.immediate",
-    "textHash": "9b45b55d25553bd1",
+    "textHash": "a6a6b36a7dcb3afd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1340,7 +1340,7 @@
   },
   {
     "key": "combat.formations.outside.stolen",
-    "textHash": "e06bf9bf2b6dda49",
+    "textHash": "2967da5bb008cf29",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -1464,7 +1464,7 @@
   },
   {
     "key": "combat.formations.placement.counting",
-    "textHash": "609f795ba70be66a",
+    "textHash": "83d6983c601d5295",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1513,7 +1513,7 @@
   },
   {
     "key": "combat.formations.placement.defending",
-    "textHash": "7ff5b0ed89082266",
+    "textHash": "839d0dd2ceea5b56",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -1668,7 +1668,7 @@
   },
   {
     "key": "combat.formations.placement.empty-formation",
-    "textHash": "38ef7db58d8903f4",
+    "textHash": "17ed5ea4156579be",
     "verdict": "partial",
     "round": 3,
     "verifier": "U10-r3",
@@ -1744,7 +1744,7 @@
   },
   {
     "key": "combat.formations.placement.ends-only",
-    "textHash": "ed1fc432b4e76c48",
+    "textHash": "cc13a841a8f7900b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1783,7 +1783,7 @@
   },
   {
     "key": "combat.formations.placement.legal-positions",
-    "textHash": "0a3b4692c2dbe3dd",
+    "textHash": "c51636d2bb24ad1c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -1828,7 +1828,7 @@
   },
   {
     "key": "combat.formations.placement.one-or-none",
-    "textHash": "94a293ff1a2ac4af",
+    "textHash": "c152c0627bdd3ef2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1867,7 +1867,7 @@
   },
   {
     "key": "combat.formations.placement.source-formation",
-    "textHash": "5a4dba937c92281e",
+    "textHash": "aa1e04ce889a8afd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1911,7 +1911,7 @@
   },
   {
     "key": "combat.formations.placement.source-gone",
-    "textHash": "7262cbc467aa2d0c",
+    "textHash": "a8e6c915606a4522",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -2082,7 +2082,7 @@
   },
   {
     "key": "combat.formations.play-into",
-    "textHash": "ea5fd3ccb9aaa358",
+    "textHash": "2f6091dae79434dc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2137,7 +2137,7 @@
   },
   {
     "key": "combat.formations.play-into.needs-formation",
-    "textHash": "c6cd541121e23dda",
+    "textHash": "1a43e49fc7415333",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -2216,7 +2216,7 @@
   },
   {
     "key": "combat.formations.play-into.optional",
-    "textHash": "50a631fd1003d933",
+    "textHash": "944589b0f7e723b6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2260,7 +2260,7 @@
   },
   {
     "key": "combat.formations.play-into.spot-gone",
-    "textHash": "21d45762c9887455",
+    "textHash": "211be273326a0791",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2299,7 +2299,7 @@
   },
   {
     "key": "combat.formations.promotion",
-    "textHash": "cc61b09324ddc5f4",
+    "textHash": "7413ff5060b4b459",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2528,7 +2528,7 @@
   },
   {
     "key": "combat.regions.created",
-    "textHash": "3f063030b5b96eae",
+    "textHash": "201715c46bd3ba18",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2640,7 +2640,7 @@
   },
   {
     "key": "combat.regions.definition.all",
-    "textHash": "c7663520d4c90bcf",
+    "textHash": "eeb442bd994f8a43",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2733,7 +2733,7 @@
   },
   {
     "key": "combat.regions.definition.isolated",
-    "textHash": "0866ed1eb06b2561",
+    "textHash": "d4672f1c20ad665c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2839,7 +2839,7 @@
   },
   {
     "key": "combat.regions.definition.statics-and-triggers",
-    "textHash": "fa11b6a190ba5d44",
+    "textHash": "7c6d36d0688b0270",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3197,7 +3197,7 @@
   },
   {
     "key": "combat.regions.presence",
-    "textHash": "e4d627b09b110c4b",
+    "textHash": "d2cc95452c283fb8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3252,7 +3252,7 @@
   },
   {
     "key": "combat.regions.presence.ally-enemy",
-    "textHash": "132721ec5a561800",
+    "textHash": "173f8a24739beaa0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3395,7 +3395,7 @@
   },
   {
     "key": "combat.regions.presence.outside-battle",
-    "textHash": "6eed1b1a9cb76f59",
+    "textHash": "cd340a6f77165ff8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3453,7 +3453,7 @@
   },
   {
     "key": "combat.regions.presence.player-things",
-    "textHash": "921ae6484783a4b1",
+    "textHash": "b273d8eda091332f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -3516,7 +3516,7 @@
   },
   {
     "key": "combat.regions.presence.regroup",
-    "textHash": "b2ab77b3684121b1",
+    "textHash": "a14f3dfd8303e7df",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",

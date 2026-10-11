@@ -7,11 +7,11 @@
     "summary": "That a player may pay N life only while they have more than N is the engine's own ruling. No designer statement was found either way.",
     "sides": [
       {
-        "source": "R49",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "while you have **more** than N — paying your last life is refused too. Life"
       },
       {
-        "source": "R49",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "designer statement was found either way — this is the engine's ruling"
       }
     ],
@@ -22,18 +22,18 @@
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.trigger-sacrifice-me",
     "tier": 2,
-    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text, with no bracket. R73 reads the sacrifice as a cost paid as the ability goes on the stack, and says so.",
+    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text, with no bracket. The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) reads the sacrifice as a cost paid as the ability goes on the stack, and says so.",
     "sides": [
       {
         "source": "card: Eldritch Dreamtender",
         "quote": "sacrifice me. If you do, look at that player's hand and discard a card from it."
       },
       {
-        "source": "R73",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "`[cost]`; the ruling reads it as a cost anyway."
       },
       {
-        "source": "R73",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "printed prose as a bracketed cost.**"
       },
       {
@@ -41,43 +41,43 @@
         "quote": "sacrifice me. If you do, negate that effect. {i}(This is not optional.)"
       }
     ],
-    "resolution": "Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text after a \"When …\" trigger condition, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, \"If you do\" fails. The sacrifice stays mandatory (no \"may\"; Void Mandible prints \"(This is not optional.)\"). R73 reads the prose as a bracketed cost on the owner's understanding that the unit \"needs to be sacrificed for its ability to go on the stack\", and says itself that the card has no brackets; print outranks it. Maelstrom Charger (\"As you play a nonunit spell, you may sacrifice me\") is a different shape, settled by its own RAQ write-up. Document fix: done 2026-10-10 (concepts.costs.trigger-sacrifice-me states print, marked engine-differs). The engine pays the sacrifice as the ability is stacked: F-U04-5. Register fix: mark R73 as outranked by the printed text."
+    "resolution": "Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text after a \"When …\" trigger condition, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, \"If you do\" fails. The sacrifice stays mandatory (no \"may\"; Void Mandible prints \"(This is not optional.)\"). The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) reads the prose as a bracketed cost on the owner's understanding that the unit \"needs to be sacrificed for its ability to go on the stack\", and says itself that the card has no brackets; print outranks it. Maelstrom Charger (\"As you play a nonunit spell, you may sacrifice me\") is a different shape, settled by its own RAQ write-up. Document fix: done 2026-10-10 (concepts.costs.trigger-sacrifice-me states print, marked engine-differs). The engine pays the sacrifice as the ability is stacked: F-U04-5. Register fix: mark the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) as outranked by the printed text."
   },
   {
     "id": "D-U04-3",
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.modifiers.paid-reduction",
     "tier": 2,
-    "summary": "R119 quotes Deferral Drone as \"The next card you play this turn\" and clears the charge at the start of each turn. The printed card says \"this phase\", and a test in 45-hybrids-ld-b shows the charge ending at a phase boundary within one turn.",
+    "summary": "The owner ruling of 2026-08-24 (“a paid-for cost reduction OUTLIVES its…”) quotes Deferral Drone as \"The next card you play this turn\" and clears the charge at the start of each turn. The printed card says \"this phase\", and a test in 45-hybrids-ld-b shows the charge ending at a phase boundary within one turn.",
     "sides": [
       {
         "source": "card: Deferral Drone",
         "quote": "The next card you play this phase costs [3] less."
       },
       {
-        "source": "R119",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "turn costs [3] less.\"*"
       },
       {
-        "source": "R119",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |"
       }
     ],
-    "resolution": "Printed text wins (authority order): the rule says the charge lasts until the phase ends. R119's quotation of the card and its \"clear\" row should be marked corrected in the register (see F-U04-1 (CT-235))."
+    "resolution": "Printed text wins (authority order): the rule says the charge lasts until the phase ends. The owner ruling of 2026-08-24 (“a paid-for cost reduction OUTLIVES its…”)’s quotation of the card and its \"clear\" row should be marked corrected in the register (see F-U04-1 (CT-235)). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U04-4",
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.modifiers.imposed.ambush",
     "tier": 2,
-    "summary": "R122 says an Ambush sits outside the play-tax layer and that widening it is a future decision. R129 counts an Ambush as a card played, and Arbiter of Armistice and Vengeance tax \"cards\" played during battle.",
+    "summary": "The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) says an Ambush sits outside the play-tax layer and that widening it is a future decision. The owner ruling of 2026-08-24 (“a spell token is a token…”) counts an Ambush as a card played, and Arbiter of Armistice and Vengeance tax \"cards\" played during battle.",
     "sides": [
       {
-        "source": "R122",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "printed cost line and today sits outside the R59/R60/R122 play-tax layer"
       },
       {
-        "source": "R129",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
       },
       {
@@ -85,43 +85,43 @@
         "quote": "Cards played during battle gain [Pay 2 life]."
       }
     ],
-    "resolution": "The printed noun \"Cards\" read literally, with R129, puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2 (CT-243)). Question for the owner only if R122's deferral was meant as a ruling that an Ambush is exempt."
+    "resolution": "The printed noun \"Cards\" read literally, with the owner ruling of 2026-08-24 (“a spell token is a token…”), puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2 (CT-243)). Question for the owner only if the owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”)’s deferral was meant as a ruling that an Ambush is exempt."
   },
   {
     "id": "D-U04-5",
     "kind": "a-sources-disagree",
     "rule": "concepts.rot.timing",
     "tier": 4,
-    "summary": "R50 treats rot damage as an automatic charge that opens deployment, \"not a trigger\", and orders it before start-of-deployment triggers by its own ruling. The owner, quoted in R102's addendum, calls rot damage \"a trigger to deal you that damage\".",
+    "summary": "The owner ruling of 2026-08-19 (“The haste step ends, and deployment…”) treats rot damage as an automatic charge that opens deployment, \"not a trigger\", and orders it before start-of-deployment triggers by its own ruling. The owner, quoted in the owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”)’s addendum, calls rot damage \"a trigger to deal you that damage\".",
     "sides": [
       {
-        "source": "R50",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "charge, not a trigger — so a start-of-deployment trigger cannot pre-empt it."
       },
       {
-        "source": "R50",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "has settled. ⚠ That order is a ruling: nothing in the printed rules sequences"
       },
       {
-        "source": "R102",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to"
       }
     ],
-    "resolution": "The rule follows R50's order, which R102 itself keeps (\"R50's ordering is preserved\"). The owner's remark was a reason for letting Beyond's replacement use the stack, not a ruling on timing. Question for the owner only if a card can tell the two apart, for example one that taxes, copies or negates a trigger during deployment."
+    "resolution": "The rule follows the owner ruling of 2026-08-19 (“The haste step ends, and deployment…”)’s order, which the owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) itself keeps (\"the owner ruling of 2026-08-19 (“The haste step ends, and deployment…”)’s ordering is preserved\"). The owner's remark was a reason for letting Beyond's replacement use the stack, not a ruling on timing. Question for the owner only if a card can tell the two apart, for example one that taxes, copies or negates a trigger during deployment."
   },
   {
     "id": "D-U04-7",
     "kind": "g-other",
     "rule": "concepts.rot",
     "tier": 3,
-    "summary": "Sources silent: neither the Manual nor the Rulebook 2023 defines rot or debt. Both rules come from R38 and R39, which cite Caleb (and a Rot Counter card in Caleb's card library) by date; no RAQ claim or printed page in the sources holds his words.",
+    "summary": "Sources silent: neither the Manual nor the Rulebook 2023 defines rot or debt. Both rules come from the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”) and the owner ruling of 2026-08-19 (“Debt: mandatory, automatic, paid at the…”), which cite Caleb (and a Rot Counter card in Caleb's card library) by date; no RAQ claim or printed page in the sources holds his words.",
     "sides": [
       {
-        "source": "R38",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "itself. (Printed: the Rot Counter card, Caleb's card library 2026-01-15; via"
       },
       {
-        "source": "R39",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "casting this turn. (Caleb 2024-09-10, refined 2024-12-02; via Bena 2026-08-19.)"
       },
       {
@@ -136,7 +136,7 @@
     "kind": "f-register-chain-wrong",
     "rule": "concepts.costs.trigger-sacrifice-me",
     "tier": 2,
-    "summary": "R73 is presented as current, but its ⚠ paragraph on timing says a Dreamtender's combat-damage trigger resolves immediately inside the damage step. R261 moved combat-damage triggers onto the stack after combat, and R295 made a split step resolve them at the sub-step boundary, with priority.",
+    "summary": "The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) is presented as current, but its ⚠ paragraph on timing says a Dreamtender's combat-damage trigger resolves immediately inside the damage step. The owner ruling of 2026-08-30 (“Combat-damage triggers resolve AFTER combat, on…”) moved combat-damage triggers onto the stack after combat, and the owner ruling of 2026-09-16 (“A split damage step is several…”) made a split step resolve them at the sub-step boundary, with priority.",
     "seeAlso": [
       {
         "id": "D-U15-6",
@@ -145,37 +145,37 @@
     ],
     "sides": [
       {
-        "source": "R73",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "and R3/R31 resolve it immediately, so a Dreamtender in a Swift column is gone"
       },
       {
-        "source": "R261",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "**[R117] / [R157] §5 keep their gate and lose their ordering claim.** R117's finding — that"
       },
       {
-        "source": "R295",
+        "source": "owner ruling, adopted 2026-09-16",
         "quote": "- **R261**: the hold is conditional now. Its unsplit case is untouched."
       },
       {
-        "source": "R73",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "trigger fires off the aggregated combat `lifeLost` event and R3/R31 resolve it"
       },
       {
-        "source": "R261",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "They no longer land before normal damage. They land after combat, with everything else. A"
       }
     ],
-    "resolution": "Mark R73's ⚠ \"WHEN inside combat damage\" paragraph as superseded by R261 and R295 in the register. The cost reading R73 rules is not affected. Combat-damage trigger timing is rule 608."
+    "resolution": "Mark the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”)’s ⚠ \"WHEN inside combat damage\" paragraph as superseded by the owner ruling of 2026-08-30 (“Combat-damage triggers resolve AFTER combat, on…”) and the owner ruling of 2026-09-16 (“A split damage step is several…”) in the register. The cost reading the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) rules is not affected. Combat-damage trigger timing is rule 608. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U04-9",
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.modifiers.abilities",
     "tier": 2,
-    "summary": "R121 calls Augment and Ambush \"alternative ways to PLAY a card\". The designer says mods are not played: they are applied.",
+    "summary": "The owner ruling of 2026-08-24 (“the ability-cost tax and the pay-to-trigger…”) calls Augment and Ambush \"alternative ways to PLAY a card\". The designer says mods are not played: they are applied.",
     "sides": [
       {
-        "source": "R121",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not"
       },
       {
@@ -183,7 +183,7 @@
         "quote": "Mods are not considered 'played'"
       }
     ],
-    "resolution": "The designer wins. R121's conclusion (applying an augment is not taxed as an ability) is unaffected; its wording about Augment should be corrected in the register."
+    "resolution": "The designer wins. The owner ruling of 2026-08-24 (“the ability-cost tax and the pay-to-trigger…”)’s conclusion (applying an augment is not taxed as an ability) is unaffected; its wording about Augment should be corrected in the register. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U04-10",
@@ -193,11 +193,11 @@
     "summary": "That a paid-for cost reduction outlives its source, and is not limited to one region, is the owner's call. No designer source speaks to Deferral Drone.",
     "sides": [
       {
-        "source": "R119",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "**Bena, 2026-08-23:** *the charge survives — **\"you paid for it.\"***"
       },
       {
-        "source": "R119",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "regions in one turn gets the discount wherever they play.**"
       }
     ],
@@ -208,10 +208,10 @@
     "kind": "g-other",
     "rule": "concepts.life.cant-change",
     "tier": 4,
-    "summary": "Sources silent on whether damage dealt to a player whose life total \"can't change\" still counts as damage dealt. R238 says the engine treats it as dealt but that this was never asked.",
+    "summary": "Sources silent on whether damage dealt to a player whose life total \"can't change\" still counts as damage dealt. The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) says the engine treats it as dealt but that this was never asked.",
     "sides": [
       {
-        "source": "R238",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "  It now fires `combatFaceDamage` like any other damaged seat, because the"
       },
       {
@@ -226,7 +226,7 @@
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.grafted",
     "tier": 3,
-    "summary": "The designer says an unpayable grafted cost keeps \"the whole Graft Effect\" off the stack. R334 reads that as the whole composite for a triggered or activated item, but keeps a per-part skip for a played spell with a {Modular} graft part.",
+    "summary": "The designer says an unpayable grafted cost keeps \"the whole Graft Effect\" off the stack. The owner ruling of 2026-10-09 (“A grafted [cost] is mandatory, and…”) reads that as the whole composite for a triggered or activated item, but keeps a per-part skip for a played spell with a {Modular} graft part.",
     "seeAlso": [
       {
         "id": "D-U17-9",
@@ -235,7 +235,7 @@
     ],
     "sides": [
       {
-        "source": "R334",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
       },
       {
@@ -243,17 +243,17 @@
         "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
       }
     ],
-    "resolution": "An owner call where the designer is silent. Graft 101 point 11 (\"the whole Graft Effect won't go on the stack\") answers a triggered or activated graft composite, and the rule follows it for those. A played spell with a {Modular} graft part is a case the designer did not address: the spell is already paid for and on its way to the stack. R334 keeps a per-part skip for it, on the owner's reason that withholding a card already paid for would strand it. The rule states R334 with the carve-out, basis owner, for sign-off."
+    "resolution": "An owner call where the designer is silent. Graft 101 point 11 (\"the whole Graft Effect won't go on the stack\") answers a triggered or activated graft composite, and the rule follows it for those. A played spell with a {Modular} graft part is a case the designer did not address: the spell is already paid for and on its way to the stack. The owner ruling of 2026-10-09 (“A grafted [cost] is mandatory, and…”) keeps a per-part skip for it, on the owner's reason that withholding a card already paid for would strand it. The rule states the owner ruling of 2026-10-09 (“A grafted [cost] is mandatory, and…”) with the carve-out, basis owner, for sign-off."
   },
   {
     "id": "D-U04-13",
     "kind": "b-engine-only",
     "rule": "concepts.costs.region.other-units",
     "tier": 3,
-    "summary": "Only the engine says a cost that removes counters from allies, or recalls an ally, uses only units in the region where it is paid. R35's \"region-scoped\" predates those cost kinds and was written about sacrifice.",
+    "summary": "Only the engine says a cost that removes counters from allies, or recalls an ally, uses only units in the region where it is paid. The owner ruling of 2026-08-18 (“Bracketed [costs] and X on spells…”)’s \"region-scoped\" predates those cost kinds and was written about sacrifice.",
     "sides": [
       {
-        "source": "R35",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "sacrificed unit's defense as it was then), the cost is region-scoped (the"
       },
       {

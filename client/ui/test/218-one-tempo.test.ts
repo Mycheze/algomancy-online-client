@@ -1,4 +1,4 @@
-/* R242 — ONE TEMPO FOR THE WHOLE CLIENT, AND A CASCADE YOU CAN FOLLOW.
+/* CR D5.4, D5.4a — ONE TEMPO FOR THE WHOLE CLIENT, AND A CASCADE YOU CAN FOLLOW.
  *
  * The owner, 2026-08-29:
  *
@@ -14,12 +14,12 @@
  *
  * Report #94 (SMVJ) already asked: *"We need a 'max speed' that the gamestate
  * can resolve/put things onto the stack […] at a max speed of 1 thing per
- * second."* R150 built `ui/pace.ts` for it and it works — it throttles
+ * second."* The pacing fix (now CR D5.4) built `ui/pace.ts` for it and it works — it throttles
  * updates BETWEEN server batches at exactly that.
  *
  * It could never reach the case being complained about. A cascade nobody can
  * respond to is not several batches: `engine.ts::settle()` drains the whole
- * stack inside ONE action (R144(a) — outside battle there are no priority
+ * stack inside ONE action (CR 507.5 — outside battle there are no priority
  * windows) and `pumpCombatDamage` runs Swift → normal → Sluggish in one loop.
  * The client gets ONE update, `pace.ts` has nothing to space, and the only
  * thing still pacing was `ui/flash.ts` — at STAGGER_MS = 280ms, three and a
@@ -33,7 +33,7 @@
  *
  * ── AND THE SHAPE, WHICH IS THE OTHER HALF OF THE SENTENCE ────────────
  *
- * "all at once, AND THEN slowly resolve" is two requirements. R189 already
+ * "all at once, AND THEN slowly resolve" is two requirements. The beat-pacing fix (now CR D6.7) already
  * delivered the first: a batch that is simultaneous in the rules shares an
  * arrival. It also made the items share a DEPARTURE, so three simultaneous
  * triggers appeared together and then vanished together — the resolution, the
@@ -103,7 +103,7 @@ test('§1d neither number is written down twice — asserted against the source'
 
 /* ══ §2 all at once, and THEN slowly resolve ═════════════════════════════ */
 
-/** three triggers queued together and drained together — R189's own shape */
+/** three triggers queued together and drained together — CR D6.7's own shape */
 const simultaneous = (): EngineEvent[] => [
   triggeredEv(), triggeredEv(), triggeredEv(),
   flashEv(1), flashEv(2), flashEv(3),
@@ -113,7 +113,7 @@ test('§2a "all at once": a simultaneous batch shares ONE arrival', () => {
   const q = queueFlashes([], simultaneous(), 0);
   assert.equal(q.length, 3);
   assert.deepEqual(q.map(f => f.at), [0, 0, 0],
-    'R189: a batch that is simultaneous in the rules must LOOK simultaneous');
+    'CR D6.7: a batch that is simultaneous in the rules must LOOK simultaneous');
   assert.equal(visibleFlashes(q, 0).length, 3, 'the whole stack is on screen at once');
 });
 
@@ -215,7 +215,7 @@ test('§4c pendingFlashes counts what is still to come, so the chip can offer it
 });
 
 test('§4d the client really wires all three queues into one skip', () => {
-  // Before R242 the ⏭ chip counted `heldUpdates()` alone and `paceskip` called
+  // Before the one-tempo rule (CR D5.4) the ⏭ chip counted `heldUpdates()` alone and `paceskip` called
   // only `flushPace()`. That was defensible while a cascade emptied itself
   // inside 2.2s; it is not now, and a ceiling the player cannot opt out of is
   // a wait rather than a courtesy.

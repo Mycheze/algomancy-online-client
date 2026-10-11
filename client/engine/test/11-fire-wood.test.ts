@@ -1,8 +1,8 @@
 /* Per-card tests for the fire/wood/earth batch (project rule: a test for every
  * card). Covers type-line augments (Bumblecrab/Carapace Devourer), a {Battle}
  * buff spell (Channeled Boon), a resolution-time amount from battle deaths
- * (Burning Vengeance, R1/R14), region-scoped buffs and spawn/death triggers
- * (Guardian of the Grotto R12, Engorged Caudex, Forager of the Fallen), and
+ * (Burning Vengeance, CR 107.8, 505.6), region-scoped buffs and spawn/death triggers
+ * (Guardian of the Grotto CR 601.1b, Engorged Caudex, Forager of the Fallen), and
  * text-box [Augment] triggers (Bloomcaster, Flourishing Flora, Flamebreath
  * Initiate, Embermaw Fledgling). States are built explicitly (give/spawn/
  * giveResources) so concurrent card registration can't shift assertions.
@@ -63,7 +63,7 @@ test('Channeled Boon: {Battle} spell gives target unit +4/+4 until regroup', () 
   finishBattle(h);
 });
 
-test('Burning Vengeance: damage = units that died this battle (R1 amount, both seats)', () => {
+test('Burning Vengeance: damage = units that died this battle (CR 107.8 amount, both seats)', () => {
   const h = new Harness(604);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -85,7 +85,7 @@ test('Burning Vengeance: damage = units that died this battle (R1 amount, both s
   finishBattle(h);
 });
 
-test('Flamebreath Initiate: attack → Fireball X+1, X = adjacent allies (R1, at resolution)', () => {
+test('Flamebreath Initiate: attack → Fireball X+1, X = adjacent allies (CR 603.2c, at resolution)', () => {
   // X = 1: an adjacent ally column
   const h = new Harness(605);
   toDeployment(h);
@@ -150,7 +150,7 @@ test('Embermaw Fledgling: after combat → X/X, X = attacking units in my format
 
 // ─────────────────────────────── WOOD ────────────────────────────────────
 
-test('Guardian of the Grotto: attack → your units in this region gain +0/+1 (R12)', () => {
+test('Guardian of the Grotto: attack → your units in this region gain +0/+1 (CR 601.1b)', () => {
   const h = new Harness(607);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -180,7 +180,7 @@ test('Engorged Caudex: nontoken ally spawn draws (once/turn); tokens do not', ()
   // a NONTOKEN ally spawns → draw
   spawn(h, p, 'Good Whale');
   assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'nontoken ally → draw');
-  // second nontoken ally same turn → [Switch1] budget spent (R9)
+  // second nontoken ally same turn → [Switch1] budget spent (CR 722.5)
   spawn(h, p, 'Good Whale');
   assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'bounded: only once per turn');
   assert.ok(ent(h, caudex), 'sanity: Caudex still in play');
@@ -203,8 +203,8 @@ test('Forager of the Fallen: an enemy dying in-region creates a 2/2', () => {
   assert.ok(ent(h, forager), 'Forager survived the 1/1 blocker');
 });
 
-test('R347: Bloomcaster played from hand makes no 1/1 for its own play', () => {
-  // R347 (the owner, answering D-U14-11 with reading B; it reverses R26's
+test('CR 701.1e: Bloomcaster played from hand makes no 1/1 for its own play', () => {
+  // CR 701.1e (the owner's ruling, answering D-U14-11 with reading B; it reverses the earlier reading's
   // own-play half): a "whenever you play a unit" ability works only while its
   // card is in play, and a card being played is on the stack, so Bloomcaster
   // does not hear itself. The engine already did this; CT-254 had called it a bug.
@@ -224,7 +224,7 @@ test('Bloomcaster: PLAYING a unit makes a 1/1 — and putting one into play does
   // listened on 'spawned'. But the card prints "whenever you PLAY a unit", and
   // Exhume, Resurrect, Wake the Dead, Rousing Spirit and Lurking Dread all
   // print "put into play", not "play". Every one of them wrongly paid out.
-  // R129's 'cardPlayed' is the real event; the negative half below is the
+  // CR 108.1a's 'cardPlayed' is the real event; the negative half below is the
   // whole point and the old test had no way to express it.
   const h = new Harness(610);
   toDeployment(h);

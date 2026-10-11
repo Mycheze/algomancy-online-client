@@ -3,11 +3,11 @@
     "id": "F-U14-1",
     "rule": "effects.casting.targets-required.graft-trigger",
     "title": "A graft trigger with no legal target goes on the stack and fizzles instead of not being put on the stack",
-    "summary": "The designer says a graft composite whose targeted part has no legal target cannot be put on the stack. The RAQ register's own note says the engine reaches the same visible result (no Poison) by putting the item on the stack and fizzling it under R86. Then the opponent gets a priority window, and the item can be taxed or negated, though it should never exist. Suspected; not checked against the engine.",
+    "summary": "The designer says a graft composite whose targeted part has no legal target cannot be put on the stack. The RAQ register's own note says the engine reaches the same visible result (no Poison) by putting the item on the stack and fizzling it under the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”). Then the opponent gets a priority window, and the item can be taxed or negated, though it should never exist. Suspected; not checked against the engine.",
     "evidence": [
       {
         "file": "client/ledgers/raq.ts",
-        "quote": "the engine gets there by R86 fizzle rather than by refusing to stack it."
+        "quote": ": 'covered', guards: [\"390-raq-stack.test.ts::a graft trigger with a r"
       }
     ],
     "ct": "CT-252",
@@ -20,7 +20,7 @@
     "id": "F-U14-2",
     "rule": "effects.priority.priority.hold",
     "title": "The engine appears to pass priority to the other player after every action, so a player cannot hold priority",
-    "summary": "The Manual says a player who acts may keep priority and take further actions before passing. R250 and R198 describe the engine handing priority to the other seat whenever an item is pushed. If so, a player can never stack two of their own actions before the opponent may respond (the Manual names Burst as the usual exception, and Burst is handled separately). Suspected from ruling text only; Annex D may record a digital convention that settles it. Measured by the U14 tester: after a battle cast of Luminous Arc, priority is on the other seat, not the caster (pushItem hands it to other(controller)). (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "The Manual says a player who acts may keep priority and take further actions before passing. The owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) describe the engine handing priority to the other seat whenever an item is pushed. If so, a player can never stack two of their own actions before the opponent may respond (the Manual names Burst as the usual exception, and Burst is handled separately). Suspected from ruling text only; Annex D may record a digital convention that settles it. Measured by the U14 tester: after a battle cast of Luminous Arc, priority is on the other seat, not the caster (pushItem hands it to other(controller)). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -41,7 +41,7 @@
     "id": "F-U14-3",
     "rule": "effects.playing.mid-resolution",
     "title": "Units played by Wake the Dead and The Bonesculptor spawn in place, never on the stack, and a spell unit they play skips its spell",
-    "summary": "R198 rules that a card played during a resolution is played and goes on the stack, where it can be responded to. R207 records that the spawn route used for cards that print \"play\" (Wake the Dead, The Bonesculptor) predates R198 and still spawns the unit in place, so nobody can answer it. R165 records that a spell unit raised by Wake the Dead does not cast its spell, though a played spell unit's spell part should happen (RAQ, Hooba-Pon). Suspected still open. Verifier probe (U14 round 1): a unit Wake the Dead plays in battle is in play at once and never on the stack. Affects effects.priority.mid-resolution too. Round 2 probe: onStack=false, inPlay=true; the Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle. (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "The owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) rules that a card played during a resolution is played and goes on the stack, where it can be responded to. The owner ruling of 2026-08-26 (“the WIDE play event learns which…”) records that the spawn route used for cards that print \"play\" (Wake the Dead, The Bonesculptor) predates the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) and still spawns the unit in place, so nobody can answer it. The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) records that a spell unit raised by Wake the Dead does not cast its spell, though a played spell unit's spell part should happen (RAQ, Hooba-Pon). Suspected still open. Verifier probe (U14 round 1): a unit Wake the Dead plays in battle is in play at once and never on the stack. Affects effects.priority.mid-resolution too. Round 2 probe: onStack=false, inPlay=true; the Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -62,7 +62,7 @@
     "id": "F-U14-4",
     "rule": "effects.casting.other-zones.timing",
     "title": "A test title still marks as OPEN whether a bin-played card obeys its printed timing",
-    "summary": "R96 shipped the restrictive answer (printed timing applies) and flagged the question OPEN. R157 §12 later answered it the same way (\"Already correct — Abyssal Evocation\"). The test title and R96 heading still present it as open.",
+    "summary": "The owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) shipped the restrictive answer (printed timing applies) and flagged the question OPEN. The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) later answered it the same way (\"Already correct — Abyssal Evocation\"). The test title and the owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) heading still present it as open.",
     "evidence": [
       {
         "file": "client/engine/test/12-fire-a.test.ts",
@@ -79,7 +79,7 @@
     "id": "F-U14-5",
     "rule": "effects.playing.what-is-played.includes-itself",
     "title": "Bloomcaster does not hear its own play",
-    "summary": "R26 (current) says Bloomcaster's \"Whenever you play a unit\" fires on its own arrival when played normally. The verifier measured no 1/1 when Bloomcaster is played from hand: the card listens on cardPlayed from holders in play, and Bloomcaster is on the stack when its own play fires. Either the engine regressed when Bloomcaster moved to cardPlayed (R129/R165), or R26 is stale and should be superseded (D-U14-11). (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "The owner ruling of 2026-08-18 (“\"Whenever you play a unit\" includes…”) (current) says Bloomcaster's \"Whenever you play a unit\" fires on its own arrival when played normally. The verifier measured no 1/1 when Bloomcaster is played from hand: the card listens on cardPlayed from holders in play, and Bloomcaster is on the stack when its own play fires. Either the engine regressed when Bloomcaster moved to cardPlayed (owner rulings of 2026-08-24, “a spell token is a token…” and 2026-08-25, “\"I spawn with N counters\" is…”), or the owner ruling of 2026-08-18 (“\"Whenever you play a unit\" includes…”) is stale and should be superseded (D-U14-11). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -94,13 +94,13 @@
     "dupes": [
       "F-U14-8"
     ],
-    "closed": "not a bug: the owner answered D-U14-11 with reading B on 2026-10-11 (R347), and the engine already does B for Bloomcaster; CT-254 closes. The other routes that heard their own play (F-U14-10) were fixed on 2026-10-11 (CT-277)."
+    "closed": "not a bug: the owner answered D-U14-11 with reading B on 2026-10-11 (owner ruling of 2026-10-11, “\"Whenever you play a unit\" does…”), and the engine already does B for Bloomcaster; CT-254 closes. The other routes that heard their own play (F-U14-10) were fixed on 2026-10-11 (CT-277)."
   },
   {
     "id": "F-U14-6",
     "rule": "effects.priority.mid-resolution",
     "title": "Wake the Dead / The Bonesculptor plays never reach the stack",
-    "summary": "R198 rules that a card played mid-resolution is played and goes on the stack, respondable. Wake the Dead ({Battle}, \"Play up to two units ... now\") spawns its units with spawnUnit(asPlay) inside its own resolution: no stack item, no window, not negatable (probe: unit in play immediately).",
+    "summary": "The owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) rules that a card played mid-resolution is played and goes on the stack, respondable. Wake the Dead ({Battle}, \"Play up to two units ... now\") spawns its units with spawnUnit(asPlay) inside its own resolution: no stack item, no window, not negatable (probe: unit in play immediately).",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -117,7 +117,7 @@
     "id": "F-U14-7",
     "rule": "effects.priority.mid-resolution",
     "title": "Wake the Dead and The Bonesculptor play units mid-resolution with no stack item",
-    "summary": "R198 (and the designer on Tides) says a card played during a resolution goes on the stack and is respondable once the resolution finishes. Wake the Dead and The Bonesculptor still spawn the played unit in place (spawnUnit asPlay), so nobody can respond to or negate it. Probe: onStack=false, inPlay=true. The Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle.",
+    "summary": "The owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) (and the designer on Tides) says a card played during a resolution goes on the stack and is respondable once the resolution finishes. Wake the Dead and The Bonesculptor still spawn the played unit in place (spawnUnit asPlay), so nobody can respond to or negate it. Probe: onStack=false, inPlay=true. The Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle.",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-dark-a.ts",
@@ -133,8 +133,8 @@
   {
     "id": "F-U14-8",
     "rule": "effects.playing.what-is-played.includes-itself",
-    "title": "Bloomcaster does not trigger on its own play (contradicts R26)",
-    "summary": "R26 says Bloomcaster's \"Whenever you play a unit\" fires on its own arrival. The trigger listens on cardPlayed, which fires at commit while Bloomcaster is on the stack, so it never hears itself. Probe measured 0 tokens. The card file comment still claims \"playing Bloomcaster itself still makes a 1/1\".",
+    "title": "Bloomcaster does not trigger on its own play (contradicts the owner ruling of 2026-08-18 (“\"Whenever you play a unit\" includes…”))",
+    "summary": "The owner ruling of 2026-08-18 (“\"Whenever you play a unit\" includes…”) says Bloomcaster's \"Whenever you play a unit\" fires on its own arrival. The trigger listens on cardPlayed, which fires at commit while Bloomcaster is on the stack, so it never hears itself. Probe measured 0 tokens. The card file comment still claims \"playing Bloomcaster itself still makes a 1/1\".",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -142,13 +142,13 @@
       }
     ],
     "ct": "CT-254",
-    "closed": "not a bug, as F-U14-5 (R347)."
+    "closed": "not a bug, as F-U14-5 (owner ruling of 2026-10-11, “\"Whenever you play a unit\" does…”)."
   },
   {
     "id": "F-U14-9",
     "rule": "effects.resolution.recheck.once",
     "title": "Cards that re-check their target restriction by hand let an earlier part make a later part’s target illegal mid-resolution",
-    "summary": "The rule (R324’s encoding) says target legality is judged once, as the item begins to resolve, so an earlier part of the same item cannot make a later part’s target illegal. markIllegalTargets does judge once, but Minor Kraken (and, by the same pattern, Throw off a Cliff and Leave None Pure) re-checks its printed restriction inside its own run. Measured by the U14 tester: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is Minor Kraken’s recall does not recall it (control without the counters: recalled). (Measured by a verifier probe; the probe files are not committed.)",
+    "summary": "The rule (the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s encoding) says target legality is judged once, as the item begins to resolve, so an earlier part of the same item cannot make a later part’s target illegal. markIllegalTargets does judge once, but Minor Kraken (and, by the same pattern, Throw off a Cliff and Leave None Pure) re-checks its printed restriction inside its own run. Measured by the U14 tester: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is Minor Kraken’s recall does not recall it (control without the counters: recalled). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-water-a.ts",
@@ -168,7 +168,7 @@
   {
     "id": "F-U14-10",
     "title": "Stalwart Sentinel hears its own play from a bin and takes its two counters",
-    "summary": "R347: an ability that triggers when its controller plays a unit does not hear its own card being played (on the stack, not in play). Stalwart Sentinel's '[once] When you play a unit or spell from anywhere other than your hand' listens on 'spawned' with no self-exclusion, so a Sentinel played from a bin by Wake the Dead fires on its own arrival and gets two +1/+1 counters (probe zz-probe-U14-1.test.ts 1b). Bloomcaster is unaffected (it listens on cardPlayed while in play). So the engine follows R347 for Bloomcaster but not for the Sentinel.",
+    "summary": "The owner ruling of 2026-10-11 (“\"Whenever you play a unit\" does…”): an ability that triggers when its controller plays a unit does not hear its own card being played (on the stack, not in play). Stalwart Sentinel's '[once] When you play a unit or spell from anywhere other than your hand' listens on 'spawned' with no self-exclusion, so a Sentinel played from a bin by Wake the Dead fires on its own arrival and gets two +1/+1 counters (probe zz-probe-U14-1.test.ts 1b). Bloomcaster is unaffected (it listens on cardPlayed while in play). So the engine follows the owner ruling of 2026-10-11 (“\"Whenever you play a unit\" does…”) for Bloomcaster but not for the Sentinel.",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-light-a.ts",
@@ -181,6 +181,6 @@
     ],
     "rule": "effects.playing.what-is-played.includes-itself",
     "ct": "CT-277",
-    "closed": "fixed on 2026-10-11 (CT-277, R347): a unit being played is left out of its own play's listeners, and 444-no-self-hearing-play shows no play listener in the pool, Stalwart Sentinel included, hearing its own play from hand, a cache, a bin or the deck."
+    "closed": "fixed on 2026-10-11 (CT-277, the owner ruling of 2026-10-11 (“\"Whenever you play a unit\" does…”)): a unit being played is left out of its own play's listeners, and 444-no-self-hearing-play shows no play listener in the pool, Stalwart Sentinel included, hearing its own play from hand, a cache, a bin or the deck."
   }
 ]

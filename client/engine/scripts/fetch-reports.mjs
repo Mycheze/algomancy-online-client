@@ -9,7 +9,7 @@
  * exits, and nobody reads the output of a command they believe is bookkeeping).
  * The snapshot sat at 135 rows for three rounds while the server had 147.
  * Twelve owner reports, four of them engine-level, were invisible to a green
- * suite. R275.
+ * suite.
  *
  * So: one word, a path that is derived rather than typed, and loud failure.
  * The one thing this script must never do is finish quietly having written
@@ -147,7 +147,7 @@ const scratch = DRY ? '' : mkdtempSync(join(tmpdir(), 'algo-reports-'));
 try {
   console.log(`fetching from ${DEPLOY_HOST}…`);
   const issues = fetch(ISSUES_JSONL, ISSUES_SNAPSHOT, scratch);
-  // R285 — verdicts now get a COMMITTED snapshot too, for the reason the
+  // verdicts now get a COMMITTED snapshot too, for the reason the
   // comment that used to sit here got wrong. It said the raw file could live
   // in gitignored var/ because "the transcription in ledgers/unreached.ts is
   // read by a human". Being read by a human is not a guard: the owner's

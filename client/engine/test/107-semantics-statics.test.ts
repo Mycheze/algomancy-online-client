@@ -7,7 +7,7 @@
  * Rotspore Herald: "[Augment] Everything is {g}deadly. (Any damage from a
  * deadly source will kill a unit.)" — 30-hybrids-wm-b pins the COMBAT read
  * (both sides' units). The batch header still says "effect-damage sources
- * read printed attrs only (engine limitation)", but R94 rebuilt
+ * read printed attrs only (engine limitation)", but a later fix rebuilt
  * dealEffectDamageAll on the source's LIVE attributes (ownAttrs → staticsFor)
  * whenever the source is an entity in play — so a unit standing in the
  * Herald's region IS a deadly effect source now. These two tests pin that:
@@ -15,13 +15,13 @@
  * present, and leaves it at 1 damage without (the boundary, so the kill can
  * only come from the static).
  *
- * RULED 2026-08-24 (R125), and the escalation is closed: "Everything" is
+ * RULED 2026-08-24 (CR 707.7), and the escalation is closed: "Everything" is
  * literal. The owner: "Rotspore also applies to all spells and spell tokens.
  * Literally everything in its region. I think you're underestimating most
  * cards. All the cards in Algomancy are pretty literal." So the scope is the
  * REGION, not a category of object in it, and the card now carries BOTH
  * attribute channels — `statics` (unfiltered by kind, so spell tokens too)
- * for any source with an entity in play, and R94's `effectAttrs` for a
+ * for any source with an entity in play, and the effect-damage fix's `effectAttrs` for a
  * resolving spell, which has no entity and would otherwise read only its
  * printed attrs. The four tests below the first two pin that half.
  *
@@ -39,7 +39,7 @@ import { E } from '../src/engine.ts';
 
 // ── Rotspore Herald — the effect-damage half of "Everything is deadly" ───
 
-test('Rotspore Herald: a unit-sourced EFFECT from the region is deadly — 1 point kills a 7/5 (R94)', () => {
+test('Rotspore Herald: a unit-sourced EFFECT from the region is deadly — 1 point kills a 7/5 (CR 802.3e)', () => {
   const h = new Harness(10701);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -84,16 +84,16 @@ test('Rotspore Herald: absent, the same 1-point ability only marks damage — th
   finishBattle(h);
 });
 
-// ── R125: "everything" reaches SPELLS and SPELL TOKENS, not just units ────
+// ── CR 707.7: "everything" reaches SPELLS and SPELL TOKENS, not just units ────
 //
 // The ruling's own words are the spec: literally everything in its region.
 // A spell has no entity in play, so `dealEffectDamageAll` reads its PRINTED
-// attrs plus `EffectCtx.grantedAttrs` — which is why the card needs R94's
+// attrs plus `EffectCtx.grantedAttrs` — which is why the card needs the effect-damage fix's
 // `effectAttrs` channel as well as its `statics` one. Flame of History
 // ("I deal 1 damage to any target", r/1, battle) is the discriminator: one
 // point against a 7/5 either kills or merely marks.
 
-test('Rotspore Herald: R125 — a SPELL resolving in the region is deadly, so 1 damage kills a 7/5', () => {
+test('Rotspore Herald: CR 707.7 — a SPELL resolving in the region is deadly, so 1 damage kills a 7/5', () => {
   const h = new Harness(10703);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -104,14 +104,14 @@ test('Rotspore Herald: R125 — a SPELL resolving in the region is deadly, so 1 
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   pass(h);                                                  // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
-  pick(h, { unit: whale });                                 // R64: targeted at cast
+  pick(h, { unit: whale });                                 // CR 110.1a: targeted at cast
   pass(h); pass(h);                                         // resolve
   assert.ok(!ent(h, whale),
     'a 1-damage SPELL kills the 7/5 — the Herald deadly-fies the spell, not just units');
   finishBattle(h);
 });
 
-test('Rotspore Herald: R125 — without the Herald the same spell only marks 1 damage', () => {
+test('Rotspore Herald: CR 802.3f — without the Herald the same spell only marks 1 damage', () => {
   const h = new Harness(10704);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -128,7 +128,7 @@ test('Rotspore Herald: R125 — without the Herald the same spell only marks 1 d
   finishBattle(h);
 });
 
-test('Rotspore Herald: R125 — a SPELL TOKEN standing in the region is deadly too', () => {
+test('Rotspore Herald: CR 707.7 — a SPELL TOKEN standing in the region is deadly too', () => {
   const h = new Harness(10705);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -149,11 +149,11 @@ test('Rotspore Herald: R125 — a SPELL TOKEN standing in the region is deadly t
   finishBattle(h);
 });
 
-test('Rotspore Herald: R125 — the scope is the REGION: a spell resolving elsewhere is not deadly', () => {
+test('Rotspore Herald: CR 601.1d — the scope is the REGION: a spell resolving elsewhere is not deadly', () => {
   const h = new Harness(10706);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
-  // D ATTACKS, so the battle happens in A's region (R12) — and D's Herald
+  // D ATTACKS, so the battle happens in A's region (CR 601.4) — and D's Herald
   // stays home, in a region the spell never resolves in.
   const raider = spawn(h, D, 'Unit Token');
   const whale = spawn(h, A, 'Good Whale');                  // 7/5, defending at home

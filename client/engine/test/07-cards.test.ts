@@ -91,7 +91,7 @@ test('Curio Drifter: Evasive requires two blockers', () => {
   assert.ok(!single, 'no single-blocker option offered against Evasive');
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   pass(h); pass(h);
-  assignDefault(h);   // R319: the {Piercing} Whale's strike elects
+  assignDefault(h);   // CR 802.16c: the {Piercing} Whale's strike elects
   assert.ok(!ent(h, drifter), 'two blockers brought it down');
 });
 

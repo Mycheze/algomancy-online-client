@@ -12,15 +12,11 @@ export const ICONS_DIR: string;
 export const RULES_DIR: string;
 export const RULINGS_EXPORTS: string;
 export const MANUAL_TXT: string;
-/** the engine's spec, client/docs/digital-rules.md — the `## R<n>` register */
-export const DIGITAL_RULES: string;
 /** data/comprehensive-rules/ — see its README for which files are generated */
 export const CR_DIR: string;
 export const CR_RULES_DIR: string;
 /** committed reviewed state — append/edit only through the cr scripts */
 export const CR_LEDGER: string;
-export const CR_SUPERSESSION: string;
-export const CR_CLASSIFICATION: string;
 /** per drafting unit (`<unit>.json`): verdicts (reviewed state, written by
  *  cr/harness.mjs finalize), discrepancies and findings (written by the rounds) */
 export const CR_VERDICTS_DIR: string;

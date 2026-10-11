@@ -4,7 +4,7 @@
     "kind": "a-sources-disagree",
     "rule": "zones.cache.no-permission.like-hand",
     "tier": 4,
-    "summary": "The Manual says the virus ability \"only works from hand\". The designer's RAQ claim, and R311, let a glimpsed Virus be applied out of the cache during battle.",
+    "summary": "The Manual says the virus ability \"only works from hand\". The designer's RAQ claim, and the owner ruling of 2026-10-04 (“The cache plays like the hand…”), let a glimpsed Virus be applied out of the cache during battle.",
     "sides": [
       {
         "source": "Manual p.34",
@@ -15,18 +15,18 @@
         "quote": "A glimpsed Virus can be applied out of the cache during battle."
       },
       {
-        "source": "R311",
+        "source": "owner ruling, adopted 2026-10-04",
         "quote": "functions 100% like the hand* except *for the fact that it's not considered your"
       }
     ],
-    "resolution": "Authority order: the RAQ beats print. zones.cache.no-permission.like-hand states the RAQ and R311. The Manual sentence still holds for the bin (zones.bin.mods-from-bin.virus)."
+    "resolution": "Authority order: the RAQ beats print. zones.cache.no-permission.like-hand states the RAQ and the owner ruling of 2026-10-04 (“The cache plays like the hand…”). The Manual sentence still holds for the bin (zones.bin.mods-from-bin.virus)."
   },
   {
     "id": "D-U07-3",
     "kind": "a-sources-disagree",
     "rule": "zones.bin.unstable",
     "tier": 2,
-    "summary": "Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. R137 (owner) says it enters the bin, is trashed there, and is then erased, and the engine does that.",
+    "summary": "Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) says it enters the bin, is trashed there, and is then erased, and the engine does that.",
     "seeAlso": [
       {
         "id": "D-U18-1",
@@ -43,56 +43,56 @@
         "quote": "(If they would enter a bin, erase them instead.)"
       },
       {
-        "source": "R145",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "\"Unstable\": \"If an unstable card would enter a bin from an active"
       },
       {
-        "source": "R137 (its body-trash ruling and its Rector and Distiller notes)",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "Unstable units still die, they just get erased instead of ending up in the"
       },
       {
-        "source": "R137 (its body-trash ruling and its Rector and Distiller notes)",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
       },
       {
-        "source": "R137 (its body-trash ruling)",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "therefore no trash\". That reading is what the engine implemented until today,"
       },
       {
-        "source": "R244 (its attribution and mod-erase halves)",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "Trashing means it goes to the BIN. But the unit that died was unstable, so"
       },
       {
-        "source": "R157 (§3)",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "It's not a death, but it is a despawn and trashing. Weird corner case."
       }
     ],
-    "resolution": "Settled by the authority order. The printed reminder (\"If they would enter a bin, erase them instead\") has one reading: the card never enters the bin, so it is not trashed. Caleb's \"erased instead of ending up in the bin\" fits it, R137 itself calls it \"the plain sense of the text\", and the owner's own words in R244 (\"it didn't go to the bin\") argue it too. Print and designer outrank R137, so zones.bin.unstable and keywords.actions.trash.unstable-death state that reading, and the exchange route follows (zones.changes.mods.exchanged says only that the unit and its mods are erased). The engine passes the card through the bin and trashes it: F-U07-6 (CT-246, filed as an owner decision on whether to change the engine). Register fix: mark R137's body-trash ruling, and R146/R152's trash on the exchange route, as outranked by the printed reminder."
+    "resolution": "Settled by the authority order. The printed reminder (\"If they would enter a bin, erase them instead\") has one reading: the card never enters the bin, so it is not trashed. Caleb's \"erased instead of ending up in the bin\" fits it, the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) itself calls it \"the plain sense of the text\", and the owner's own words in the owner ruling of 2026-08-29 (“a mod is PART of the…”) (\"it didn't go to the bin\") argue it too. Print and designer outrank the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), so zones.bin.unstable and keywords.actions.trash.unstable-death state that reading, and the exchange route follows (zones.changes.mods.exchanged says only that the unit and its mods are erased). The engine passes the card through the bin and trashes it: F-U07-6 (CT-246, filed as an owner decision on whether to change the engine). Register fix: mark the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”)’s body-trash ruling, and the owner rulings of 2026-08-25 (“a card entering a bin goes…”) and 2026-08-25 (“the other three ways an exchange…”)’ trash on the exchange route, as outranked by the printed reminder."
   },
   {
     "id": "D-U07-4",
     "kind": "f-register-chain-wrong",
     "rule": "zones.general.follow-control",
     "tier": 2,
-    "summary": "R145 sends an {Unstable} card leaving the stack \"straight to the owner's public erased pile\". The register now says every erased pile follows control (R262, applied by B4 to R156 and R172), but R145's \"owner's\" is not marked.",
+    "summary": "The owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) sends an {Unstable} card leaving the stack \"straight to the owner's public erased pile\". The register now says every erased pile follows control (the owner ruling of 2026-08-30 (“zones follow control, in all four…”), applied by B4 to the owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) and the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”)), but the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”)’s \"owner's\" is not marked.",
     "sides": [
       {
-        "source": "R145",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "**From the stack** — straight to the owner's public erased pile (R65)."
       },
       {
-        "source": "R262",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "(a) All four follow control"
       }
     ],
-    "resolution": "Add a narrowing mark on R145 for the stack route if the owner's \"one rule, no seam\" reaches it, as the B4 adjudication did for R156 and R172. Question for the owner only if the stack route (a card that never left play) is meant to differ, since R262's four routes are all departures from play."
+    "resolution": "Add a narrowing mark on the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) for the stack route if the owner's \"one rule, no seam\" reaches it, as the B4 adjudication did for the owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) and the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”). Question for the owner only if the stack route (a card that never left play) is meant to differ, since the owner ruling of 2026-08-30 (“zones follow control, in all four…”)’s four routes are all departures from play."
   },
   {
     "id": "D-U07-5",
     "kind": "a-sources-disagree",
     "rule": "zones.erased.tokens",
     "tier": 3,
-    "summary": "Do tokens belong on the erased pile? R306 and R167 record a dying token, and a token mod whose host leaves play. R219 refuses to file a token mod erased off a living host, because \"R65's pile is a list of cards\".",
+    "summary": "Do tokens belong on the erased pile? The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”) and the owner ruling of 2026-08-25 (“a printed \"when I despawn\" means…”) record a dying token, and a token mod whose host leaves play. The owner ruling of 2026-08-26 (“an erased card goes to the…”) refuses to file a token mod erased off a living host, because \"the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards\".",
     "seeAlso": [
       {
         "id": "D-U17-1",
@@ -101,38 +101,38 @@
     ],
     "sides": [
       {
-        "source": "R219",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
       },
       {
-        "source": "R306",
+        "source": "owner ruling, adopted 2026-09-28",
         "quote": "unchanged: the `died` event still says `to: 'bin'`, anything reading the bin in"
       },
       {
-        "source": "R167",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "reaches the public erased pile exactly once on each of the three routes."
       },
       {
-        "source": "R219",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "list of cards. (`disposeToBin` does file token mods; that disagreement"
       },
       {
-        "source": "R156",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "event `disposeToBin` emits, anchored on the host's owner. No zone changes, no"
       },
       {
-        "source": "R208",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "disagree about it — `disposeToBin` **does** announce token mods on the erased"
       }
     ],
-    "resolution": "Two owner rulings disagree by route, and no printed or designer source speaks to the erased pile, a digital surface (R65). R306, R156 and R167 record tokens and token mods on it; R219 does not file a token mod erased off a host that stays in play, and says it left that disagreement alone. The rules state each route as its ruling says: zones.erased.tokens records tokens, effects.mods.erase-off-host.token does not record that one route, and the Return to Nature path is filed as F-U17-4 (CT-259). Sign-off: one rule for every route. The owner answered D-U06-1 with reading B (R346: a token is not a card), so R219's reason stands."
+    "resolution": "Two owner rulings disagree by route, and no printed or designer source speaks to the erased pile, a digital surface (owner ruling of 2026-08-21, “Discarding is not playing; conceding; the…”). The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”), the owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) and the owner ruling of 2026-08-25 (“a printed \"when I despawn\" means…”) record tokens and token mods on it; the owner ruling of 2026-08-26 (“an erased card goes to the…”) does not file a token mod erased off a host that stays in play, and says it left that disagreement alone. The rules state each route as its ruling says: zones.erased.tokens records tokens, effects.mods.erase-off-host.token does not record that one route, and the Return to Nature path is filed as F-U17-4 (CT-259). Sign-off: one rule for every route. The owner answered D-U06-1 with reading B (the owner ruling of 2026-10-11 (“A token is not a card…”): a token is not a card), so the owner ruling of 2026-08-26 (“an erased card goes to the…”)’s reason stands."
   },
   {
     "id": "D-U07-6",
     "kind": "f-register-chain-wrong",
     "rule": "zones.cache.lapse",
     "tier": 2,
-    "summary": "R206 says an expired glimpse card is still \"moddable\", and our glossary's Glimpse row still says \"still moddable out of the zone at full price\". R303 (later) says an expired glimpse is no permission for any verb. R206's clause is not marked superseded.",
+    "summary": "The owner ruling of 2026-08-26 (“the glossary is a rules document…”) says an expired glimpse card is still \"moddable\", and our glossary's Glimpse row still says \"still moddable out of the zone at full price\". The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) (later) says an expired glimpse is no permission for any verb. The owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s clause is not marked superseded.",
     "seeAlso": [
       {
         "id": "D-U18-10",
@@ -141,11 +141,11 @@
     ],
     "sides": [
       {
-        "source": "R206",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "over-broad — an expired glimpse card is still public, targetable and moddable),"
       },
       {
-        "source": "R303",
+        "source": "owner ruling, adopted 2026-09-20",
         "quote": "expired glimpse, unfulfilled banner, or neither | refused | refused"
       },
       {
@@ -153,11 +153,11 @@
         "quote": "still moddable out of the zone at full price"
       },
       {
-        "source": "R303",
+        "source": "owner ruling, adopted 2026-09-20",
         "quote": "was a mod zone with no door on it. A glimpsed card you failed to play stayed a live graft"
       },
       {
-        "source": "R45",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "makes \"inert\" mean it: the same permission, and the same \"ignoring affinity\","
       },
       {
@@ -165,14 +165,14 @@
         "quote": "and still moddable out of the zone at full price."
       }
     ],
-    "resolution": "R303 is current and is stated (zones.cache.lapse, zones.cache.no-permission). Mark R206's Glimpse-row clause as reversed by R303, and fix the glossary row (F-U07-5 (CT-231))."
+    "resolution": "The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) is current and is stated (zones.cache.lapse, zones.cache.no-permission). Mark the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s Glimpse-row clause as reversed by the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”), and fix the glossary row (F-U07-5 (CT-231))."
   },
   {
     "id": "D-U07-7",
     "kind": "g-other",
     "rule": "zones.bin.what",
     "tier": 4,
-    "summary": "The sources are silent on whether a bin is public. The cache (R41), the erased pile (R65) and the recycle pile's count (R296) are each stated, the hand and deck are hidden (R197b), and the pack is private (print). Nothing says who may look at a bin.",
+    "summary": "The sources are silent on whether a bin is public. The cache (owner ruling of 2026-08-19, “Cache is public information”), the erased pile (owner ruling of 2026-08-21, “Discarding is not playing; conceding; the…”) and the recycle pile's count (owner ruling of 2026-09-16, “Recycling puts a card past the…”) are each stated, the hand and deck are hidden (owner ruling of 2026-08-26, “\"look at\" is a PRIVATE look…”), and the pack is private (print). Nothing says who may look at a bin.",
     "sides": [
       {
         "source": "Manual p.19",
@@ -186,24 +186,24 @@
     "kind": "g-other",
     "rule": "zones.general.follow-control.constructed-owner",
     "tier": 4,
-    "summary": "The sources are silent on who owns a card in live draft, where every card comes out of one shared deck. R262 defines the owner only for constructed.",
+    "summary": "The sources are silent on who owns a card in live draft, where every card comes out of one shared deck. The owner ruling of 2026-08-30 (“zones follow control, in all four…”) defines the owner only for constructed.",
     "sides": [
       {
-        "source": "R262",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "Only exception is that \"owner\" in constructed is always the person's who"
       }
     ],
-    "resolution": "No rule written for live draft. Ownership still matters there (R250: \"whose card is this? its OWNER's, always, forever\")."
+    "resolution": "No rule written for live draft. Ownership still matters there (the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”): \"whose card is this? its OWNER's, always, forever\")."
   },
   {
     "id": "D-U07-9",
     "kind": "g-other",
     "rule": "zones.general.active",
     "tier": 4,
-    "summary": "The sources are silent on whether the recycle pile and the pack are active or inactive. R145's list names play and the stack as active and five zones as inactive, but neither of these two.",
+    "summary": "The sources are silent on whether the recycle pile and the pack are active or inactive. The owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”)’s list names play and the stack as active and five zones as inactive, but neither of these two.",
     "sides": [
       {
-        "source": "R145",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "Hand, deck, bin, cache and the erased pile are **inactive**."
       }
     ],
@@ -214,7 +214,7 @@
     "kind": "g-other",
     "rule": "zones.general.follow-control",
     "tier": 2,
-    "summary": "R262 says it knowingly overrules a Manual sentence (\"a recall goes to its owner's hand\"), but no page of the printed Manual or Rulebook that this project extracts contains that sentence.",
+    "summary": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) says it knowingly overrules a Manual sentence (\"a recall goes to its owner's hand\"), but no page of the printed Manual or Rulebook that this project extracts contains that sentence.",
     "seeAlso": [
       {
         "id": "D-U18-5",
@@ -223,11 +223,11 @@
     ],
     "sides": [
       {
-        "source": "R262",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "**1. The Manual's recall sentence is overruled, knowingly.** The Manual says a"
       },
       {
-        "source": "R262",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "recall goes to its *owner's* hand, and a stolen unit recalled now bounces into"
       },
       {
@@ -239,21 +239,21 @@
         "quote": "(Return it to their hand.)"
       }
     ],
-    "resolution": "The rule states R262. Find the sentence R262 means, or correct R262's attribution. Question for the owner only if the judge's CR quotes such a printed sentence."
+    "resolution": "The rule states the owner ruling of 2026-08-30 (“zones follow control, in all four…”). Find the sentence the owner ruling of 2026-08-30 (“zones follow control, in all four…”) means, or correct the owner ruling of 2026-08-30 (“zones follow control, in all four…”)’s attribution. Question for the owner only if the judge's CR quotes such a printed sentence."
   },
   {
     "id": "D-U07-11",
     "kind": "g-other",
     "rule": "zones.general.list",
     "tier": 4,
-    "summary": "Print names a \"token pile\" that tokens return to. No ruling treats it as a zone. In this document a token that ceases to exist is recorded on the erased pile instead (R306, R69).",
+    "summary": "Print names a \"token pile\" that tokens return to. No ruling treats it as a zone. In this document a token that ceases to exist is recorded on the erased pile instead (the owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”), the owner ruling of 2026-08-22 (“A token entering a ZONE is…”)).",
     "sides": [
       {
         "source": "Manual p.15",
         "quote": "erased from the game and returned to the token pile."
       },
       {
-        "source": "R306",
+        "source": "owner ruling, adopted 2026-09-28",
         "quote": "unchanged: the `died` event still says `to: 'bin'`, anything reading the bin in"
       }
     ],
@@ -273,7 +273,7 @@
     ],
     "sides": [
       {
-        "source": "R296",
+        "source": "owner ruling, adopted 2026-09-16",
         "quote": "Not a printed rule anywhere in this repository. The owner, 2026-09-16, after a"
       },
       {
@@ -285,7 +285,7 @@
         "quote": "recycled (put on the bottom of the deck) and each"
       },
       {
-        "source": "R296",
+        "source": "owner ruling, adopted 2026-09-16",
         "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
       }
     ],
@@ -313,18 +313,18 @@
     "summary": "That a cached token enters the cache before it is erased is \"the engine's call, not a ruling\". No designer statement exists.",
     "sides": [
       {
-        "source": "R69 (its zone-visit and timing halves)",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "The CACHE is the engine's call, not a ruling."
       }
     ],
-    "resolution": "Stated at low confidence (zones.changes.tokens.cached). R69 says the owner may overturn it \"with no other change\"."
+    "resolution": "Stated at low confidence (zones.changes.tokens.cached). The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) says the owner may overturn it \"with no other change\"."
   },
   {
     "id": "D-U07-15",
     "kind": "a-sources-disagree",
     "rule": "zones.changes.new-object.targets",
     "tier": 4,
-    "summary": "Does only a change of zone make a target fail? Caleb says things \"only\" fail to resolve when a unit changed location; the [Solved] \"Valid targets becomes invalid\" write-up says a target that became invalid fizzles, and R324 follows it.",
+    "summary": "Does only a change of zone make a target fail? Caleb says things \"only\" fail to resolve when a unit changed location; the [Solved] \"Valid targets becomes invalid\" write-up says a target that became invalid fizzles, and the owner ruling of 2026-10-09 (“Every target is re-checked against its…”) follows it.",
     "sides": [
       {
         "source": "RAQ 1454169054402314362#2",
@@ -335,10 +335,10 @@
         "quote": "If you did target something which was valid, but became invalid target then effect will fizzle on resolution."
       },
       {
-        "source": "R324",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "A target that fails is lost exactly like a target that left play. If every"
       }
     ],
-    "resolution": "Resolved without asking, both sources being tier 1: Caleb was answering whether a second effect aimed at a unit Organic Exchange also targets still resolves, where the unit stayed a legal target; the _passer write-up answers the case where a target stops being legal, and R324 encodes it. The rule states both. Question for the owner only if Caleb's \"only\" is meant to cover a target that is still in play but no longer legal."
+    "resolution": "Resolved without asking, both sources being tier 1: Caleb was answering whether a second effect aimed at a unit Organic Exchange also targets still resolves, where the unit stayed a legal target; the _passer write-up answers the case where a target stops being legal, and the owner ruling of 2026-10-09 (“Every target is re-checked against its…”) encodes it. The rule states both. Question for the owner only if Caleb's \"only\" is meant to cover a target that is still in play but no longer legal."
   }
 ]

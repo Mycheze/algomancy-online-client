@@ -1,6 +1,6 @@
 /* Per-card tests for batch-wood-a (project rule: a test for every card).
  * Covers the per-unit Poison mint (All-Consuming Blight), the hand-reveal
- * steal (Bioremediation), the allied-target negate, the R256 refusal of an
+ * steal (Bioremediation), the allied-target negate, the CR 110.3 refusal of an
  * unallied one and the Virus arm (Boon of Protection), the stat-doubling
  * choice and regroup cleanup (Burgeon), both
  * directions of the after-combat defection (Corrupting Blight — normal play
@@ -27,7 +27,7 @@ import {
  *
  * Defaults to 1/1. The 5/6 overload exists because three tests in this file
  * used to measure a stat change on a spawned `Bubb` — the pool's only vanilla
- * 5/6 body — and R106 (2026-08-23) shipped stat layer 6: {Unaware} makes Bubb
+ * 5/6 body — and the 2026-08-23 {Unaware} change (CR 802.9) shipped stat layer 6: {Unaware} makes Bubb
  * ignore every stat change, so a doubling, a +4/+4 and a +0/+1 all became
  * invisible ON THE YARDSTICK while the cards under test kept working. A stat
  * token is the yardstick with no attributes on it. */
@@ -93,10 +93,10 @@ test('Boon of Protection: negates an effect aimed at something allied; an unalli
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Boon of Protection') });
   pick(h, { stack: cb1 });
   pass(h); pass(h);                                   // Boon of Protection resolves
-  assert.ok(!h.state.stack.some(i => i.id === cb1), 'R68: the negated buff left the stack');
+  assert.ok(!h.state.stack.some(i => i.id === cb1), 'CR 704.4: the negated buff left the stack');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.deepEqual(effStats(h, bubbD), [5, 6], 'no buff landed');
-  // 2: A's Boon targets A's OWN unit → nothing allied to D. R256: that is a
+  // 2: A's Boon targets A's OWN unit → nothing allied to D. CR 110.3: that is a
   // TARGETING restriction, so the item is not a candidate, the card is not
   // offered as a play, and the cast is refused. This used to assert the
   // opposite — that D could spend the mana, bin the card and read "does not
@@ -109,14 +109,14 @@ test('Boon of Protection: negates an effect aimed at something allied; an unalli
   assert.deepEqual(
     eD.targetCandidates(getCard('Boon of Protection').spellEffect!.targets!,
       h.state.battle!.region, undefined, D),
-    [], 'R256: an effect aimed only at its own caster is not a legal target');
+    [], 'CR 110.3: an effect aimed only at its own caster is not a legal target');
   assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === idx),
-    'R256: with no legal target the card is not offered as a play');
+    'CR 110.3: with no legal target the card is not offered as a play');
   const manaD = eD.openMana(D);
   const binned = () => h.state.players[D]!.bin.filter(c => c === 'Boon of Protection').length;
   const binnedBefore = binned();                      // 1 — the copy cast in step 1
   assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: idx }), IllegalAction,
-    'R256: and the cast is refused rather than spent on a no-op');
+    'CR 110.3: and the cast is refused rather than spent on a no-op');
   assert.equal(new E(h.state).openMana(D), manaD, 'no mana was spent');
   assert.equal(binned(), binnedBefore, 'and this copy did not go to the bin');
   assert.ok(h.state.players[D]!.hand.includes('Boon of Protection'), 'it is still in hand');
@@ -138,7 +138,7 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
   pick(h, { unit: bubbD });
-  // R57 (ledger #7's other half): the stat is declared in the CAST window, so
+  // CR 702.5 (ledger #7's other half): the stat is declared in the CAST window, so
   // the opponent responds to a Burgeon that has already said which half it is.
   // This used to be a mid-resolution ctx.choose asked AFTER both passes — the
   // guards below asserted that a choice was offered and that nothing resolved
@@ -175,7 +175,7 @@ test('Burgeon: doubling a 0 says so instead of resolving into silence', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
   pick(h, { unit: wall });
-  pick(h, 'power');                                   // R57: declared at cast
+  pick(h, 'power');                                   // CR 702.5: declared at cast
   pass(h); pass(h);
   assert.equal(effStats(h, wall)[0], 0, 'twice nothing is still nothing');
   assert.ok(h.log.some(l => l.includes('has 0 power — doubling it changes nothing')),
@@ -322,15 +322,15 @@ test('Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets i
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channeled Boon') });
   pick(h, { unit: atkD });
   pass(h); pass(h);
-  assert.equal(h.log.filter(m => m.includes('Trigger: Hexbane Shiitake')).length, 1, '[once] spent (R9)');
+  assert.equal(h.log.filter(m => m.includes('Trigger: Hexbane Shiitake')).length, 1, '[once] spent (CR 109.9)');
   finishBattle(h);
 });
 
-test('Hooba-Nan alone: behind it AND a new column past each end (R304)', () => {
-  // R304 (Bena 2026-09-25, report YUZY): "The columns to the left and right,
+test('Hooba-Nan alone: behind it AND a new column past each end (CR 603.3)', () => {
+  // Bena 2026-09-25, report YUZY (CR 603.3): "The columns to the left and right,
   // even when empty, DO technically exist." A lone column's empty adjacent
   // slots are the one behind it and the front of a new column on each side.
-  // R75 closed the edges from 2026-08-21 and this made one 1/1.
+  // The edges were closed from 2026-08-21, and this made one 1/1.
   const h = new Harness(2310);
   toDeployment(h);
   const A = h.state.initiative;
@@ -346,11 +346,11 @@ test('Hooba-Nan alone: behind it AND a new column past each end (R304)', () => {
     'I am still in the middle column, with a 1/1 behind me');
   assert.equal(b.columns[0]!.length, 1, 'the new left column holds one 1/1, in its front row');
   assert.equal(b.columns[2]!.length, 1, 'and so does the new right column');
-  assert.ok(made.every(u => u.region === b.region), 'slot units are battle-local, not home (R115 — was an R28 override, now the general rule)');
+  assert.ok(made.every(u => u.region === b.region), 'slot units are battle-local, not home (CR 601.5 — once an override of the withdrawn home-region rule, now the general rule)');
   finishBattle(h);
 });
 
-test('Hooba-Nan on the edge of the line: the open side and behind — two 1/1s (R304)', () => {
+test('Hooba-Nan on the edge of the line: the open side and behind — two 1/1s (CR 603.3)', () => {
   // the owner's "most frequent use of the card": put it on the edge
   const h = new Harness(2313);
   toDeployment(h);
@@ -371,7 +371,7 @@ test('Hooba-Nan on the edge of the line: the open side and behind — two 1/1s (
   finishBattle(h);
 });
 
-test('Hooba-Nan in the BACK row at the edge: no new column — that slot is not reachable (R304)', () => {
+test('Hooba-Nan in the BACK row at the edge: no new column — that slot is not reachable (CR 603.3)', () => {
   // the slot beside a back-row unit past the end would be the back row of a
   // column with no front, and the front row fills first — so it is not a slot
   const h = new Harness(2314);
@@ -390,7 +390,7 @@ test('Hooba-Nan in the BACK row at the edge: no new column — that slot is not 
   finishBattle(h);
 });
 
-test('Hooba-Nan in the middle: both sides and below, and nothing diagonal (R75)', () => {
+test('Hooba-Nan in the middle: both sides and below, and nothing diagonal (CR 603.2a)', () => {
   const h = new Harness(2312);
   toDeployment(h);
   const A = h.state.initiative;
@@ -429,13 +429,13 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: cbId });
   pass(h); pass(h);                                   // Hush Mush resolves: negate + spawn
-  assert.ok(!h.state.stack.some(i => i.id === cbId), 'R68: the negated Boon left the stack');
+  assert.ok(!h.state.stack.some(i => i.id === cbId), 'CR 704.4: the negated Boon left the stack');
   const mush = unitsOf(h, A).concat(unitsOf(h, D)).find(u => u.card === 'Hush Mush')!;
   assert.ok(mush, 'the spell unit spawned');
-  // R143: no handoff step — the body ENTERED as A's. There is nothing on the
+  // CR 303.10: no handoff step — the body ENTERED as A's. There is nothing on the
   // stack to pass on here, and the two passes this test used to need are gone
   // with the trigger they were waiting for.
-  assert.deepEqual(h.state.stack, [], 'R143: the handover is not a trigger — nothing is waiting');
+  assert.deepEqual(h.state.stack, [], 'CR 303.10: the handover is not a trigger — nothing is waiting');
   assert.equal(ent(h, mush.id)!.controller, A, "the negated effect's controller gained control");
   assert.equal(ent(h, mush.id)!.owner, D, 'ownership stays with the caster');
   assert.deepEqual(effStats(h, atk), [1, 1], 'no buff landed');
@@ -443,7 +443,7 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
   assert.ok(unitsOf(h, A).some(u => u.card === 'Hush Mush'), "regroup sent it to A's side");
 });
 
-/* ── R143 — Hush Mush's handover is not a trigger ─────────────────────────
+/* ── CR 303.10 — Hush Mush's handover is not a trigger ─────────────────────────
  *
  * Reports #95 and #96, SMVJ, the same action index a minute apart. #95 is the
  * cause: "Hush Mush's ability to go to the opponent isn't a trigger. It just
@@ -455,7 +455,7 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
  * giveControl from the body's own `spawned` trigger. That intermediate state
  * is observable by every "whenever another ally spawns" watcher the caster
  * controls — Flourishing Flora is just the one that happened to be on the
- * board. R143 spawns the body under the negated effect's controller directly
+ * board. CR 303.10 spawns the body under the negated effect's controller directly
  * (StackItem.spawnUnder / ctx.spawnUnder), so the window does not exist.
  */
 
@@ -479,7 +479,7 @@ function drain(h: Harness, guard = 60): void {
   }
 }
 
-test('R143 #95: Hush Mush ENTERS under the negated effect\'s controller — no trigger, no handover', () => {
+test('CR 303.10 #95: Hush Mush ENTERS under the negated effect\'s controller — no trigger, no handover', () => {
   const h = new Harness(2331);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -501,7 +501,7 @@ test('R143 #95: Hush Mush ENTERS under the negated effect\'s controller — no t
   const sp = h.events.slice(mark).find(e => e.type === 'spawned' && e.data?.card === 'Hush Mush');
   assert.ok(sp, 'the body spawned');
   assert.equal(sp!.data!.seat, A, 'it entered as A\'s unit — never the caster\'s');
-  assert.equal(sp!.data!.owner, D, 'R107: ownership did NOT follow — the card is still D\'s');
+  assert.equal(sp!.data!.owner, D, 'CR 400.4a: ownership did NOT follow — the card is still D\'s');
   // and nothing moved afterwards
   assert.ok(!since(h, mark).some(m => /gains control of Hush Mush/.test(m)),
     'no giveControl line — the handover is not a step');
@@ -512,7 +512,7 @@ test('R143 #95: Hush Mush ENTERS under the negated effect\'s controller — no t
   finishBattle(h);
 });
 
-test('R143 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush', () => {
+test('CR 303.10 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush', () => {
   const h = new Harness(2332);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -526,7 +526,7 @@ test('R143 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush',
   giveResources(h, D, 'wood', 2);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  // R12: round 1 is fought in the DEFENDER's region, so Flora is standing in
+  // CR 505.3: round 1 is fought in the DEFENDER's region, so Flora is standing in
   // the very region the body spawns into. If this ever stops holding, the
   // test would pass for the wrong reason.
   assert.equal(ent(h, flora)!.region, h.state.battle!.region,
@@ -555,7 +555,7 @@ test('R143 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush',
   finishBattle(h);
 });
 
-test('R143: TWO Hush Mushes in one battle keep separate answers (the old ledger\'s worry)', () => {
+test('CR 303.10: TWO Hush Mushes in one battle keep separate answers (the old ledger\'s worry)', () => {
   // The ⚠ header used to warn that the per-REGION `hushMushGiveTo` slot was
   // last-write-wins, so two copies resolving in one region could read each
   // other's seat. The answer now rides on each spell's OWN stack item, so the
@@ -598,21 +598,21 @@ test('R143: TWO Hush Mushes in one battle keep separate answers (the old ledger\
   assert.equal(unitsOf(h, D).filter(u => u.card === 'Hush Mush').length, 1,
     'and the one that negated D\'s own spell stayed with D');
   for (const u of unitsOf(h, A).concat(unitsOf(h, D)).filter(u => u.card === 'Hush Mush')) {
-    assert.equal(ent(h, u.id)!.owner, D, 'both are still D\'s cards (R107)');
+    assert.equal(ent(h, u.id)!.owner, D, 'both are still D\'s cards (CR 400.4a)');
   }
   finishBattle(h);
 });
 
-test('R143: a Hush Mush whose target has already left the stack fizzles and hands nobody a body', () => {
+test('CR 303.10: a Hush Mush whose target has already left the stack fizzles and hands nobody a body', () => {
   // Two Hush Mushes aimed at the SAME effect: the first negates it, the second
-  // finds nothing there. R5 gets there first — the item fizzles before its run
+  // finds nothing there. CR 704.6 gets there first — the item fizzles before its run
   // is entered, so the card's own "the targeted effect has already left the
   // stack" branch stays the defensive line it always was, and the printed
   // consequence is the one the card's comment claims: no body, card binned.
   //
   // (The OTHER old branch — "the body is gone — no handover" — is deleted
   // rather than preserved. It guarded the gap between the spawn and the
-  // handover trigger, and R143 closes the gap, so there is nothing left for it
+  // handover trigger, and CR 303.10 closes the gap, so there is nothing left for it
   // to guard.)
   const h = new Harness(2334);
   toDeployment(h);
@@ -636,22 +636,22 @@ test('R143: a Hush Mush whose target has already left the stack fizzles and hand
   assert.deepEqual(effStats(h, atk), [1, 1], 'the Boon never buffed anything');
   assert.deepEqual(h.state.stack, [], 'and the game did not hang on it');
   assert.ok(since(h, mark).some(m => /Hush Mush fizzles/.test(m)),
-    'R5: the second copy fizzled — all its targets are gone');
+    'CR 704.6: the second copy fizzled — all its targets are gone');
   assert.ok(!since(h, mark).some(m => /gains control of Hush Mush/.test(m)),
-    'R143: nothing changed hands after the fact — a body enters correct or it never enters');
+    'CR 303.10: nothing changed hands after the fact — a body enters correct or it never enters');
   // a spell that negated nothing has no "its controller", so it must not hand a
-  // body to anybody — and R5 means it does not put one on the table at all.
+  // body to anybody — and CR 704.6 means it does not put one on the table at all.
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Hush Mush').length, 1,
     'only the copy that really negated something went to A');
   assert.equal(unitsOf(h, D).filter(u => u.card === 'Hush Mush').length, 0,
     'and the fizzled copy spawned no body at all');
   assert.equal(h.state.players[D]!.bin.filter(c => c === 'Hush Mush').length, 1,
-    'it went to its owner\'s bin from the stack (R40)');
+    'it went to its owner\'s bin from the stack (CR 801.2b)');
   finishBattle(h);
 });
 
 test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effect" does not', () => {
-  // R60, playtest DEYK: "I'm not able to cast Hush Mush for some reason right
+  // Playtest DEYK (CR 700.1): "I'm not able to cast Hush Mush for some reason right
   // now. Tho I have priority and there's an effect I want to negate." The
   // effect was an attack trigger, and the engine had mapped every "target
   // effect" onto spells only.
@@ -677,9 +677,9 @@ test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effe
   h.do({ type: 'playCard', seat: D, handIndex: hm });
   pick(h, { stack: trig.id });
   pass(h); pass(h);                                   // Hush Mush resolves
-  assert.ok(!h.state.stack.some(i => i.id === trig.id), 'R68: the negated trigger left the stack');
+  assert.ok(!h.state.stack.some(i => i.id === trig.id), 'CR 704.4: the negated trigger left the stack');
   assert.ok(!h.state.players[A]!.bin.includes('Warbloom Herald'),
-    'R68: a negated ABILITY has no card of its own — its source stays in play, nothing is binned');
+    'CR 704.4a: a negated ABILITY has no card of its own — its source stays in play, nothing is binned');
   assert.deepEqual(effStats(h, herald), [1, 1], 'the +1/+0 never landed');
   finishBattle(h);
 });
@@ -764,14 +764,14 @@ test('Luminary Leader: draws when attacking in a formation of 4+ units; silent b
   assert.equal(getCard('Luminary Leader').graftEffect?.bounded, true, '[Switch1]: bounded graftable draw');
 });
 
-/* R256 / R88: a Virus is an effect that targets its host, and the designer
+/* CR 110.3, 110.10a: a Virus is an effect that targets its host, and the designer
  * named THIS CARD when saying so — "so you could Graxxlid or Boon of
  * Protection it as well?" / "Yep! They're fully interactible." (calebgannon).
  * `doAugment` builds a Virus stack item with `parts: []` and a `hostId`, so
  * the old read over `parts[].targets` said a Virus targets nothing and Boon
  * could never answer one. Hoisting the predicate into `restrict` would have
  * made that gap permanent — the card would not even be OFFERED — so the arm
- * R88 gave Graxxlid is in `aimsAtAlly` too. Same shape as
+ * the Virus-targets-its-host ruling (CR 110.10a) gave Graxxlid is in `aimsAtAlly` too. Same shape as
  * 16-earth-a::Graxxlid: a Virus being applied to me. */
 test('Boon of Protection: a Virus being applied to an allied unit IS an allied target', () => {
   const h = new Harness(2324);
@@ -793,7 +793,7 @@ test('Boon of Protection: a Virus being applied to an allied unit IS an allied t
   h.do({ type: 'playCard', seat: D, handIndex: idx });
   pick(h, { stack: virus });
   pass(h); pass(h);                                   // Boon of Protection resolves
-  assert.ok(!h.state.stack.some(i => i.id === virus), 'R68: the negated Virus left the stack');
+  assert.ok(!h.state.stack.some(i => i.id === virus), 'CR 704.4: the negated Virus left the stack');
   assert.ok(!ent(h, mine)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'),
     'and the mod never landed on the ally');
   finishBattle(h);

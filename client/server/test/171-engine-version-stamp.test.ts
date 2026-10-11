@@ -1,4 +1,4 @@
-/* R200 / CT-66 — VERSION THE SAVED GAMES AGAINST THE ENGINE THAT MADE THEM.
+/* CT-66 (see replay-room.ts) — VERSION THE SAVED GAMES AGAINST THE ENGINE THAT MADE THEM.
  *
  * The corpus is the project's primary forensic evidence and it is rotting. 20
  * of the 22 saved games diverge on replay; the median replayable prefix is
@@ -85,7 +85,7 @@ function headSha(): string {
 const OLD_ENGINE = 'f1c9957e49723f34674d9bd30021fc2fa2469876';
 
 /** the fuzz seed the long log grows from, and the room's seed with it. Was 7
- * until R299 (2026-09-19) drifted every fuzz walk: the older-engine test below
+ * until the Prismite recycle option (2026-09-19) drifted every fuzz walk: the older-engine test below
  * needs a healed difference BEFORE the parting, and seed 7 parted at action 0
  * with nothing healed. ⚠ It is harder to find now than it was: a fuzz game
  * that recycles for a Prismite or a Shard parts from OLD_ENGINE on the spot
@@ -112,7 +112,7 @@ function longLog(): Action[] {
 
 /* ═══ §1 — the stamp, and why one is not enough ═══════════════════════ */
 
-test('R200: an unstamped file says so, and says what to do about it — it does not guess a commit', () => {
+test('an unstamped file says so, and says what to do about it — it does not guess a commit', () => {
   const v = versionsOf(roomFile([]));
   assert.equal(v.reference, null, 'a file with no `versions` must NOT be given a reference engine');
   assert.equal(v.stamps.length, 0);
@@ -121,7 +121,7 @@ test('R200: an unstamped file says so, and says what to do about it — it does 
   assert.match(v.why ?? '', /--at/, 'and it has to name the escape hatch');
 });
 
-test('R200: a forked file is two games against two engines, and the segments say where the join is', () => {
+test('a forked file is two games against two engines, and the segments say where the join is', () => {
   const actions = new Array(50).fill({ type: 'donePlanning', seat: 0 }) as Action[];
   const v = versionsOf(roomFile(actions, [
     { at: '2026-08-01T00:00:00Z', sha: SHA_A, from: 0 },
@@ -140,7 +140,7 @@ test('R200: a forked file is two games against two engines, and the segments say
   assert.notEqual(v.reference, SHA_A, 'and specifically NOT the first — that is the pre-fork game');
 });
 
-test('R200: a fork whose own engineVersion contradicts the stamp covering it is INCONSISTENT', () => {
+test('a fork whose own engineVersion contradicts the stamp covering it is INCONSISTENT', () => {
   const actions = new Array(50).fill({ type: 'donePlanning', seat: 0 }) as Action[];
   const file = roomFile(actions, [
     { at: '2026-08-01T00:00:00Z', sha: SHA_A, from: 0 },
@@ -157,7 +157,7 @@ test('R200: a fork whose own engineVersion contradicts the stamp covering it is 
     'and a consistent pair must not be flagged, or the check is noise');
 });
 
-test('R200: an "unknown" stamp is not a commit, and is refused as a reference rather than looked up', () => {
+test('an "unknown" stamp is not a commit, and is refused as a reference rather than looked up', () => {
   const v = versionsOf(roomFile([], [{ at: '', sha: UNKNOWN_VERSION, from: 0 }]));
   assert.equal(v.reference, null, 'a deploy with no git stamps "unknown" — it must not be treated as a SHA');
   assert.match(v.why ?? '', /not a commit/);
@@ -169,7 +169,7 @@ test('R200: an "unknown" stamp is not a commit, and is refused as a reference ra
 
 /* ═══ §2 — permanently unreplayable is NOT a divergence ═══════════════ */
 
-test('R200: a draft file with no recorded trio is UNREPLAYABLE, not diverged — GAXG and HDGG stop being counted', () => {
+test('a draft file with no recorded trio is UNREPLAYABLE, not diverged — GAXG and HDGG stop being counted', () => {
   const dead = { seed: 1, mode: 'draft' as const, names: ['A', 'B'] as [string, string], actions: [] };
   const why = unreplayableReason(dead);
   assert.ok(why, 'a draft file with no `els` records nothing about what deal it was played from');
@@ -194,7 +194,7 @@ test('R200: a draft file with no recorded trio is UNREPLAYABLE, not diverged —
 
 /* ═══ §3 — a stale copy does not error, it reassures ══════════════════ */
 
-test('R200: a truncated copy of a game is caught by the canonical file, and refused rather than replayed', () => {
+test('a truncated copy of a game is caught by the canonical file, and refused rather than replayed', () => {
   const dir = scratch();
   const copyDir = scratch();
   const prev = process.env['ALGO_GAMES_DIR'];
@@ -234,7 +234,7 @@ test('R200: a truncated copy of a game is caught by the canonical file, and refu
   }
 });
 
-test('R200: when there is no canonical copy to check against, a FAITHFUL verdict says it could not be checked', () => {
+test('when there is no canonical copy to check against, a FAITHFUL verdict says it could not be checked', () => {
   const dir = scratch();
   const prev = process.env['ALGO_GAMES_DIR'];
   try {
@@ -277,7 +277,7 @@ function playedBoard(): ReturnType<typeof createGame>['state'] {
   throw new Error('the fuzz log never put two entities on the board at once — this fixture is blind');
 }
 
-test('R200: the state signature ignores entity IDs — two engines numbering the same board differently is not a rules change', () => {
+test('the state signature ignores entity IDs — two engines numbering the same board differently is not a rules change', () => {
   const state = playedBoard();
   assert.ok(Object.keys(state.entities).length >= 2,
     'the fixture must have entities to renumber, or this passes for the wrong reason');
@@ -295,7 +295,7 @@ test('R200: the state signature ignores entity IDs — two engines numbering the
     'ids are the classic false positive: a diff that fires on renumbering fires on every file');
 });
 
-test('R200: the state signature notices a DIFFERENT CARD in a zone of the same size — the failure a count sails past', () => {
+test('the state signature notices a DIFFERENT CARD in a zone of the same size — the failure a count sails past', () => {
   const { state } = createGame(7, ['A', 'B'], 'shared');
   const before = signature(state);
   const swapped = JSON.parse(JSON.stringify(state)) as typeof state;
@@ -308,7 +308,7 @@ test('R200: the state signature notices a DIFFERENT CARD in a zone of the same s
 
 /* ═══ §5 — the delta, end to end ══════════════════════════════════════ */
 
-test('R200: a game saved today replays IDENTICALLY at the engine it was recorded on — stamp, worktree, probe and diff, end to end', async () => {
+test('a game saved today replays IDENTICALLY at the engine it was recorded on — stamp, worktree, probe and diff, end to end', async () => {
   const dir = scratch();
   try {
     const sha = headSha();
@@ -330,7 +330,7 @@ test('R200: a game saved today replays IDENTICALLY at the engine it was recorded
   }
 });
 
-test('R200: against an OLDER engine the tool NAMES what changed, and measures the divergence instead of bounding it', async () => {
+test('against an OLDER engine the tool NAMES what changed, and measures the divergence instead of bounding it', async () => {
   const dir = scratch();
   try {
     const file = join(dir, 'THEN.json');
@@ -369,7 +369,7 @@ test('R200: against an OLDER engine the tool NAMES what changed, and measures th
   }
 });
 
-test('R200: a refusal index is reported as an UPPER BOUND when nothing has measured the real one', async () => {
+test('a refusal index is reported as an UPPER BOUND when nothing has measured the real one', async () => {
   // A log with one action corrupted into an illegal one: the current engine
   // refuses it, and with no reference engine that refusal index is all there
   // is. The report must not present it as a measurement.
@@ -400,7 +400,7 @@ test('R200: a refusal index is reported as an UPPER BOUND when nothing has measu
     'once it has been measured the tool must stop hedging');
 });
 
-test('R200: the probe reports refusals rather than stopping at the first one — a diff needs the whole run', async () => {
+test('the probe reports refusals rather than stopping at the first one — a diff needs the whole run', async () => {
   const actions = longLog().slice(0, 60).map(a => ({ ...a })) as Action[];
   const victim = actions.findIndex(a => a.type === 'donePlanning');
   actions[victim] = { type: 'activateResource', seat: actions[victim]!.seat, index: 99 } as Action;

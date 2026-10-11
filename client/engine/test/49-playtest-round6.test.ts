@@ -1,13 +1,13 @@
 /* Playtest round 6 — the engine half of Bena's second bug list.
  *
- *  R57  Targets are chosen BEFORE any cost is paid. "Sacrifice me:" used to
+ *  CR 111.7  Targets are chosen BEFORE any cost is paid. "Sacrifice me:" used to
  *       eat its own unit the instant you clicked it, before showing you the
  *       target list — irreversible, and a disaster to fumble mid-battle.
- *  R58  Per-SLOT target legality. Fight prints "target ally AND ANOTHER target
+ *  CR 110.1b, 110.3  Per-SLOT target legality. Fight prints "target ally AND ANOTHER target
  *       unit": two cast-time targets with different restrictions. It used to
  *       take one target and pick the second mid-resolution, and Enigmatic
  *       Warder could redirect an ENEMY into the "ally" slot.
- *  R59  A continuous COST-modifier layer, so Tranquility taxes spells.
+ *  CR 111.10  A continuous COST-modifier layer, so Tranquility taxes spells.
  *
  * Seeds 4900-4999.
  */
@@ -22,9 +22,9 @@ import {
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
-/* ── R57: targets before costs ─────────────────────────────────────────── */
+/* ── CR 111.7: targets before costs ─────────────────────────────────────────── */
 
-test('R57: a "Sacrifice me:" ability keeps its unit until the target is chosen', () => {
+test('CR 111.7: a "Sacrifice me:" ability keeps its unit until the target is chosen', () => {
   // The report: activating one of these during battle was instant and
   // unrecoverable, so a misclick on a unit you meant to BLOCK with just
   // deleted it. Now the unit is still on the board while you choose.
@@ -44,7 +44,7 @@ test('R57: a "Sacrifice me:" ability keeps its unit until the target is chosen',
   assert.equal(h.state.players[A]!.life, life + 3);
 });
 
-test('R57: the cost is still paid at cast — nothing may respond between cost and effect', () => {
+test('CR 111.7: the cost is still paid at cast — nothing may respond between cost and effect', () => {
   const h = new Harness(4901, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -57,7 +57,7 @@ test('R57: the cost is still paid at cast — nothing may respond between cost a
   assert.ok(!ent(h, obs), 'sacrificed');
 });
 
-test('R57: mana for an activated ability is also charged after targeting', () => {
+test('CR 705.3d: mana for an activated ability is also charged after targeting', () => {
   const h = new Harness(4902, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -82,9 +82,9 @@ test('R57: mana for an activated ability is also charged after targeting', () =>
   finishBattle(h);
 });
 
-/* ── R58: per-slot target legality ─────────────────────────────────────── */
+/* ── CR 110.3, 110.9: per-slot target legality ─────────────────────────────────────── */
 
-test('R58: Fight takes both units as CAST-time targets', () => {
+test('CR 110.1a: Fight takes both units as CAST-time targets', () => {
   const h = new Harness(4903, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -107,7 +107,7 @@ test('R58: Fight takes both units as CAST-time targets', () => {
   finishBattle(h);
 });
 
-test('R58: the ally slot only offers allies OF THE CASTER', () => {
+test('CR 110.4c: the ally slot only offers allies OF THE CASTER', () => {
   const h = new Harness(4904, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -133,7 +133,7 @@ test('R58: the ally slot only offers allies OF THE CASTER', () => {
   finishBattle(h);
 });
 
-test('R58: Enigmatic Warder cannot redirect an ENEMY into an ally slot', () => {
+test('Enigmatic Warder cannot redirect an ENEMY into an ally slot', () => {
   // The exact table report: "allowed Enigmatic Warder to change the 'ally'
   // target to it (even though it was my opponent's spell)". "Ally" means ally
   // of the SPELL's controller, so the opponent's Warder is not a legal
@@ -172,7 +172,7 @@ test('R58: Enigmatic Warder cannot redirect an ENEMY into an ally slot', () => {
   finishBattle(h);
 });
 
-test('R58: canFillSlot enforces the slot restriction directly', () => {
+test('CR 110.9: canFillSlot enforces the slot restriction directly', () => {
   const h = new Harness(4906, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -193,11 +193,11 @@ test('R58: canFillSlot enforces the slot restriction directly', () => {
   assert.equal(e.canFillSlot(item, 0, 0, { unit: ally2 }), true, 'another ally can');
   assert.equal(e.canFillSlot(item, 0, 1, { unit: ally2 }), true, "slot 1 is plain 'unit'");
   assert.equal(e.canFillSlot(item, 0, 1, { unit: ally }), false,
-    'and may not duplicate the sibling slot — "another" (R56)');
+    'and may not duplicate the sibling slot — "another" (CR 704.5)');
   finishBattle(h);
 });
 
-test('R58: Fight refuses at resolution if its ally slot stopped being an ally', () => {
+test('Fight refuses at resolution if its ally slot stopped being an ally', () => {
   const h = new Harness(4907, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -218,9 +218,9 @@ test('R58: Fight refuses at resolution if its ally slot stopped being an ally', 
   finishBattle(h);
 });
 
-/* ── R59: the cost-modifier layer ──────────────────────────────────────── */
+/* ── CR 111.10: the cost-modifier layer ──────────────────────────────────────── */
 
-test('R59: Tranquility taxes spells [1] more during battle', () => {
+test('CR 111.10: Tranquility taxes spells [1] more during battle', () => {
   const h = new Harness(4908, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -241,7 +241,7 @@ test('R59: Tranquility taxes spells [1] more during battle', () => {
   finishBattle(h);
 });
 
-test('R59: it taxes BOTH players, not just its controller', () => {
+test('CR 111.10: it taxes BOTH players, not just its controller', () => {
   const h = new Harness(4909, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -255,7 +255,7 @@ test('R59: it taxes BOTH players, not just its controller', () => {
   finishBattle(h);
 });
 
-test('R59: no tax outside battle, and none on units', () => {
+test('CR 111.10c: no tax outside battle, and none on units', () => {
   const h = new Harness(4910, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -265,7 +265,7 @@ test('R59: no tax outside battle, and none on units', () => {
   assert.equal(e.manaToPlay(A, 'Bubb'), getCard('Bubb').mana, 'a unit is not a spell');
 });
 
-test('R59: applying a mod is not playing, so it is never taxed (R37)', () => {
+test('CR 701.2b: applying a mod is not playing, so it is never taxed', () => {
   const h = new Harness(4911, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -283,7 +283,7 @@ test('R59: applying a mod is not playing, so it is never taxed (R37)', () => {
   finishBattle(h);
 });
 
-test('R59: the tax makes an unaffordable spell genuinely unplayable', () => {
+test('the tax makes an unaffordable spell genuinely unplayable', () => {
   const h = new Harness(4912, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -299,7 +299,7 @@ test('R59: the tax makes an unaffordable spell genuinely unplayable', () => {
   finishBattle(h);
 });
 
-test('R59: the modifier is region-scoped like any static (R12)', () => {
+test('CR 111.10: the modifier is region-scoped like any static (CR 601.1d)', () => {
   const h = new Harness(4913, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -316,7 +316,7 @@ test('R59: the modifier is region-scoped like any static (R12)', () => {
   finishBattle(h);
 });
 
-test('R59: Tranquility is recognised as an augment and taxes from a host', () => {
+test('CR 111.10: Tranquility is recognised as an augment and taxes from a host', () => {
   const h = new Harness(4914, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -333,7 +333,7 @@ test('R59: Tranquility is recognised as an augment and taxes from a host', () =>
   finishBattle(h);
 });
 
-test('R59: with no cost modifiers in play, manaToPlay is exactly the printed cost', () => {
+test('CR 111.10: with no cost modifiers in play, manaToPlay is exactly the printed cost', () => {
   const h = new Harness(4915, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -345,11 +345,11 @@ test('R59: with no cost modifiers in play, manaToPlay is exactly the printed cos
   assert.equal(unitsOf(h, A).length, 0);
 });
 
-test('R59: an X spell pays the tax on top, and X is offered after it', () => {
+test('an X spell pays the tax on top, and X is offered after it', () => {
   // The invariant: you can never be offered an X you cannot actually afford.
   //
   // It used to be kept by deducting the modifier in payCard, BEFORE collectX
-  // built its menu. R157 #1 moved the whole bill of an X spell to collectX —
+  // built its menu. The owner's X-cost answer (now CR 107.2a) moved the whole bill of an X spell to collectX —
   // "paying X replaces the letter X on the printed card temporarily", so the
   // chosen X is the base cost and nothing is owed until it is chosen — and the
   // menu now prices each candidate X itself and drops the ones that do not
@@ -373,7 +373,7 @@ test('R59: an X spell pays the tax on top, and X is offered after it', () => {
   const open = e.openMana(D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   assert.equal(new E(h.state).openMana(D), open,
-    'R157 #1: nothing is owed until X is chosen — the bill is settled at collectX');
+    'CR 107.2a: nothing is owed until X is chosen — the bill is settled at collectX');
   const dec = h.state.decision!;
   assert.match(dec.prompt, /choose X/i, 'the X menu is the first question');
   const maxX = Math.max(...dec.options.map(o => o.value as number));
@@ -385,7 +385,7 @@ test('R59: an X spell pays the tax on top, and X is offered after it', () => {
   finishBattle(h);
 });
 
-test('R59: manaToPlay never returns a negative cost', () => {
+test('CR 111.10b: manaToPlay never returns a negative cost', () => {
   // a discount bigger than the printed cost clamps at zero rather than
   // handing the player mana back
   const h = new Harness(4917, ['Ben', 'Rashi']);
@@ -396,10 +396,10 @@ test('R59: manaToPlay never returns a negative cost', () => {
   assert.ok(e.manaToPlay(A, 'Bubb') >= 0);
 });
 
-test('R59: The Silent taxes [2] per spell you have already played this battle', () => {
+test('CR 111.10: The Silent taxes [2] per spell you have already played this battle', () => {
   // Unparked by the same layer. Asymmetric on purpose: "each player … for each
   // spell THEIR TEAM has previously played", so it bills the spell-slinger.
-  // R305: the count is the token-inclusive `spellsPlayedAny:` ledger — a cast
+  // CR 702.7a: the count is the token-inclusive `spellsPlayedAny:` ledger — a cast
   // spell token is a played spell (test/337 drives it through real casts).
   const h = new Harness(4918, ['Ben', 'Rashi']);
   toDeployment(h);
@@ -423,7 +423,7 @@ test('R59: The Silent taxes [2] per spell you have already played this battle', 
   finishBattle(h);
 });
 
-test('R59: two cost modifiers in the same region stack additively', () => {
+test('CR 111.10a: two cost modifiers in the same region stack additively', () => {
   const h = new Harness(4919, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -434,7 +434,7 @@ test('R59: two cost modifiers in the same region stack additively', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const region = h.state.battle!.region;
-  new E(h.state).bumpBattleCounter(region, `spellsPlayedAny:${D}`, 1);   // R305
+  new E(h.state).bumpBattleCounter(region, `spellsPlayedAny:${D}`, 1);   // CR 702.7a
   assert.equal(new E(h.state).manaToPlay(D, 'Fight'), 1 + 1 + 2,
     'printed 1 + Tranquility 1 + The Silent 2');
   finishBattle(h);

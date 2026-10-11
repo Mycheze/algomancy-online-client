@@ -1,4 +1,4 @@
-/* R202 — THE EVENT CHANNEL LEAKED WHAT THE STATE CHANNEL HID.
+/* CR D6.5 — THE EVENT CHANNEL LEAKED WHAT THE STATE CHANNEL HID.
  *
  * ── THE DEFECT
  *
@@ -6,7 +6,7 @@
  * seat … the OPPONENT's hand contents -> count only (card backs)"*. `viewFor`
  * honours it, mapping every opposing hand card to `HIDDEN_CARD`.
  *
- * R179's `E.toHand` then added `handEntered`, carrying
+ * The hand-entry point `E.toHand` then added `handEntered`, carrying
  * `{ seat, from, cards: names, card: names[0], n }` — for EVERY route a card
  * takes into a hand: a draw, a bin recursion, a recall, an uncache, a pull off
  * the stack, a card taken out of an opponent's hand. `sendUpdate` ships raw
@@ -34,7 +34,7 @@
  *
  * §1 is the reported defect; §2 is the class. A per-event redaction rule is a
  * denylist, and a denylist rots the day a new event carries a secret — which
- * is precisely what R179 did to the one that existed. §2 asserts the INVARIANT
+ * is precisely what the hand-entry event did to the one that existed. §2 asserts the INVARIANT
  * over every event the engine can emit about a hidden zone, so the next
  * `toHand`-shaped addition fails here instead of shipping.
  */
@@ -64,7 +64,7 @@ function namesIn(ev: EngineEvent): string[] {
 /* ── §1. the reported defect, per route ──────────────────────────────────── */
 
 for (const from of ['deck', 'bin', 'play', 'stack', 'cache', 'hand'] as const) {
-  test(`R202 §1: a card entering the opponent's hand from the ${from} is not named to the other seat`, () => {
+  test(`CR D6.5: a card entering the opponent's hand from the ${from} is not named to the other seat`, () => {
     const h = new Harness(4242);
     const e = new E(h.state);
     const secret = ['Rampart Guardian', 'Retribution Thing'];
@@ -93,7 +93,7 @@ for (const from of ['deck', 'bin', 'play', 'stack', 'cache', 'hand'] as const) {
   });
 }
 
-test('R202 §1: the state channel and the event channel now agree about one hand', () => {
+test('CR D6.5: the state channel and the event channel now agree about one hand', () => {
   const h = new Harness(4242);
   const e = new E(h.state);
   const before = e.events.length;
@@ -114,13 +114,13 @@ test('R202 §1: the state channel and the event channel now agree about one hand
 
 /* ── §2. the class: no event may name a card in a zone viewFor hides ─────── */
 
-test('R202 §2: no event names a card in a zone the state channel hides — the invariant, not the instance', () => {
+test('CR D6.5: no event names a card in a zone the state channel hides — the invariant, not the instance', () => {
   const h = new Harness(4242);
   const e = new E(h.state);
 
   // Every route a secret can travel. A new one added later without a redaction
   // arm fails HERE rather than shipping, which is the whole point of §2: a
-  // per-event rule is a denylist, and R179 is what a denylist rots against.
+  // per-event rule is a denylist, and the hand-entry event is what a denylist rots against.
   const secret = 'Rampart Guardian';
   const before = e.events.length;
   e.toHand(1, [secret], 'deck');

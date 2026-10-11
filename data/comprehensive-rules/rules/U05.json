@@ -37,14 +37,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.12 lists name, mana cost, affinity, stats, timing, types and attributes, abilities, set symbol; Rulebook 2023 p.3 lists the same with older words (Threshold, health, main phase): D-U05-1. Neither anatomy page shows the banner or the augment symbol; those come from Manual p.32/p.40 and R301.",
+    "notes": "Manual p.12 lists name, mana cost, affinity, stats, timing, types and attributes, abilities, set symbol; Rulebook 2023 p.3 lists the same with older words (Threshold, health, main phase): D-U05-1. Neither anatomy page shows the banner or the augment symbol; those come from Manual p.32/p.40 and the owner ruling of 2026-09-20 (“The prophecy banner costs affinity, and […]”).",
     "sourceHashes": {},
     "untestableReason": "a list of the parts of the printed card face; nothing in play depends on it",
     "untested": true
@@ -61,7 +61,7 @@
       },
       {
         "text": null,
-        "test": "137-multiplier-and-mode.test.ts::R157 §25: Arbiter of Armistice's printed type line has no {Switch}, and nothing else moved"
+        "test": "137-multiplier-and-mode.test.ts::CR 200.2: Arbiter of Armistice's printed type line has no {Switch}, and nothing else moved"
       }
     ],
     "see": [
@@ -71,24 +71,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R240",
-          "quote": "**Read the card art.** `data/cards/*.jpg` is the actual source of truth, and it is"
+          "quote": "**Read the card art.** `data/cards/*.jpg` is the actual source of truth, and it is",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R240",
-          "quote": "> \"Correct, that's a typo in the oracle text. **{Battle} Cosmic Spell is correct. AI"
+          "quote": "> \"Correct, that's a typo in the oracle text. **{Battle} Cosmic Spell is correct. AI",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §25",
-          "quote": "> *\"That's an error on your part. The card does not have a [Switch] thing. It"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R162",
-          "relation": "its Interdiction Rift whitespace-only repair superseded by R240"
+          "quote": "> *\"That's an error on your part. The card does not have a [Switch] thing. It",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -98,12 +95,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Owner rulings (R240 quotes the owner; R157 §25 quotes the owner). R301 is the same lesson for banner pips. Whether a CR needs this rule at all is a judgement: it governs the client's data, but a judge comparing texts needs to know the transcription is not authority. R240/R162 still describe a patch layer that was removed: D-U05-12.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R240": "07a6e64a34bd01c02a1010a64c2a0b0518b7e1a52d7aaa5154312829c65714be"
-    }
+    "notes": "Owner rulings (the owner ruling of 2026-08-28 (“Interdiction Rift has no AI, and…”) quotes the owner; the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) quotes the owner). The owner ruling of 2026-09-20 (“The prophecy banner costs affinity, and […]”) is the same lesson for banner pips. Whether a CR needs this rule at all is a judgement: it governs the client's data, but a judge comparing texts needs to know the transcription is not authority. The owner rulings of 2026-08-28 (“Interdiction Rift has no AI, and…”) and 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”) still describe a patch layer that was removed: D-U05-12.",
+    "sourceHashes": {}
   },
   {
     "key": "card.name.every-card",
@@ -130,14 +125,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Section 201 is otherwise about how the name is used; uniqueness of names in a deck is a format question (900s).",
     "sourceHashes": {}
@@ -150,7 +145,7 @@
     "examples": [
       {
         "text": "A unit wearing two Rotbeast augments: each Rotbeast's trigger moves the other one.",
-        "test": "121-another-identity.test.ts::R131 Rotbeast: a SECOND Rotbeast augment is \"another\" — each moves the other"
+        "test": "121-another-identity.test.ts::CR 720.6d Rotbeast: a SECOND Rotbeast augment is \"another\" — each moves the other"
       }
     ],
     "see": [
@@ -160,28 +155,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R131",
-          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R131",
-          "quote": "card are two things, and each is \"another\" to the other. Excluding by name"
+          "quote": "card are two things, and each is \"another\" to the other. Excluding by name",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "121-another-identity.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner ruling R131 (verbatim quote of the owner inside it). How the identity is tracked in a bin is 405 (U07).",
-    "sourceHashes": {
-      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
-    }
+    "notes": "Owner ruling the owner ruling of 2026-08-24 (“\"another\" is a different ENTITY, not…”) (verbatim quote of the owner inside it). How the identity is tracked in a bin is 405 (U07).",
+    "sourceHashes": {}
   },
   {
     "key": "card.name.unique-token",
@@ -191,7 +186,7 @@
     "examples": [
       {
         "text": "Automaton of Abundance: when its controller creates a Robot 3, a Robot 2 and a Robot 1 together, those are three unique tokens, so three extra Robots are made.",
-        "test": "26-metal-a.test.ts::R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras"
+        "test": "26-metal-a.test.ts::CR 201.3: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras"
       }
     ],
     "see": [
@@ -201,16 +196,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §24",
-          "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R104",
-          "relation": "its unique-by-kind (name only) reading reversed by R157 §24"
+          "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -219,11 +209,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R104 (heading: \"its unique-by-kind reversed by R157\") is history. Placed under Name because it is the one ruling on what a token's name includes.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) (heading: \"its unique-by-kind reversed by the owner ruling of 2026-08-25 (“the owner's answers to the 27…”)\") is history. Placed under Name because it is the one ruling on what a token's name includes.",
+    "sourceHashes": {}
   },
   {
     "key": "card.name.front-face",
@@ -233,7 +222,7 @@
     "examples": [
       {
         "text": "A transformed Scholar of the Void killed in play goes to the bin as Scholar of the Void.",
-        "test": "135-exchange-and-zones.test.ts::R157 §10: a transformed Scholar killed in play BINS as \"Scholar of the Void\""
+        "test": "135-exchange-and-zones.test.ts::CR 201.4: a transformed Scholar killed in play BINS as \"Scholar of the Void\""
       }
     ],
     "see": [
@@ -244,28 +233,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §10",
-          "quote": "> *\"Turns back over. In all zones, other than play, it exists as the front"
+          "quote": "> *\"Turns back over. In all zones, other than play, it exists as the front",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §10",
-          "quote": "> side. And the back is NOT a token.\"*"
+          "quote": "> side. And the back is NOT a token.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "135-exchange-and-zones.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Faces in general are 108/710 (U03/U16); this is the name half only.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "card.name.copy",
@@ -275,7 +264,7 @@
     "examples": [
       {
         "text": "A Borrower of Forms that copied a Good Whale and dies puts Borrower of Forms in the bin.",
-        "test": "26-metal-a.test.ts::R118: a Borrower that became something else still bins as BORROWER OF FORMS (ruling 1)"
+        "test": "26-metal-a.test.ts::CR 201.5: a Borrower that became something else still bins as BORROWER OF FORMS (ruling 1)"
       },
       {
         "text": "Recalled, it returns to the hand as Borrower of Forms.",
@@ -298,17 +287,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (its ruling 1)",
-          "quote": "**1. SPLIT IDENTITY.** A copy changes the **game name** — statics, \"name a card\","
+          "quote": "**1. SPLIT IDENTITY.** A copy changes the **game name** — statics, \"name a card\",",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R118 (its ruling 1)",
-          "quote": "and then dies puts **Borrower of Forms** in the bin."
+          "quote": "and then dies puts **Borrower of Forms** in the bin.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -316,10 +306,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R118 is partly superseded (ruling 2 halves, a radiating bullet); ruling 1 stands. Round 1: the second designer quote is now the _passer source words (\"goes to bin/discard\", not \"as Borrower of Forms\"); the \"as Borrower of Forms\" is the owner's R118 ruling 1.",
+    "notes": "The owner ruling of 2026-08-23 (“the COPY LAYER: a face in…”) is partly superseded (ruling 2 halves, a radiating bullet); ruling 1 stands. Round 1: the second designer quote is now the _passer source words (\"goes to bin/discard\", not \"as Borrower of Forms\"); the \"as Borrower of Forms\" is the owner's the owner ruling of 2026-08-23 (“the COPY LAYER: a face in…”) ruling 1.",
     "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9",
       "RAQ 1372468222158180424#2": "6f8f74f0bbd6cae24ae79c2d4e11976bcd397801eac98203b560daddc106f8b4",
       "RAQ 1372468222158180424#7": "5ed960b6abd609c253a7137d312a9ab7690d5ea072fca8bb89494e251dfbcf54"
     }
@@ -356,14 +346,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Paying costs in general is 111 (U04); resources are 106 (U02).",
     "sourceHashes": {}
@@ -408,8 +398,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -417,6 +406,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Caleb's own words in the \"Mana question\" thread (not marked [Solved], but calebgannon is authority). Affinity itself is 105 (U02). This RAQ claim was not in the U05 pack; added from the extract.",
     "sourceHashes": {
@@ -441,24 +431,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §1",
-          "quote": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
+          "quote": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Owner call. Consistent with the Manual, which lists MANA COST and AFFINITY as separate characteristics.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "card.cost-orb.printed-cost",
@@ -491,8 +480,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -500,6 +488,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Both are _passer [Solved] write-ups. The X case is the exception in 202.5: a paid X replaces the printed X.",
     "sourceHashes": {
@@ -515,7 +504,7 @@
     "examples": [
       {
         "text": "With Unstable Apparition in play (\"create a Fireball X, where X is the spell's cost\"), its controller casts Wildfire for X = 0. Wildfire's cost is 0, so no Fireball is made.",
-        "test": "133-x-cost-semantics.test.ts::R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball"
+        "test": "133-x-cost-semantics.test.ts::CR 202.5 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball"
       }
     ],
     "see": [
@@ -526,28 +515,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §1",
-          "quote": "> And paying X replaces the letter X on the printed card temporarily.\"*"
+          "quote": "> And paying X replaces the letter X on the printed card temporarily.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §1",
-          "quote": "So \"that spell's cost\" = **the X actually paid**."
+          "quote": "So \"that spell's cost\" = **the X actually paid**.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "133-x-cost-semantics.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Owner call. X in general is 107 (U02).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "card.cost-orb.x-outside-cast",
@@ -561,7 +550,7 @@
       },
       {
         "text": "Living Vault caches a card from hand by paying its cost: an X card in hand costs 0, so it can be cached for [0].",
-        "test": "39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)"
+        "test": "39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (CR 107.3a)"
       }
     ],
     "see": [
@@ -576,13 +565,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R158 §1",
-          "quote": "The middle row is a decision, not an approximation: nobody has paid an X for a"
+          "quote": "The middle row is a decision, not an approximation: nobody has paid an X for a",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -590,10 +579,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R158 is the engine-shape ruling that implements R157 §1; its §3 is reversed by R326, §1 stands. The \"unit in play\" case is R158's table row only. R158 still says Living Vault refuses X cards; the 39-light-b test says otherwise: D-U05-13. R158 is not in the U05 pack (classified 107/111/702); added from the register. Round 1: the designer quote is now the _passer source words, which state only \"X=0\"; \"cost 0 against the budget\" is the test's (396 Tides 6a), not the designer's.",
+    "notes": "The owner ruling of 2026-08-25 (“the three cost contexts of an…”) is the engine-shape ruling that implements the owner ruling of 2026-08-25 (“the owner's answers to the 27…”); its §3 is reversed by the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) stands. The \"unit in play\" case is the owner ruling of 2026-08-25 (“the three cost contexts of an…”)’s table row only. The owner ruling of 2026-08-25 (“the three cost contexts of an…”) still says Living Vault refuses X cards; the 39-light-b test says otherwise: D-U05-13. The owner ruling of 2026-08-25 (“the three cost contexts of an…”) is not in the U05 pack (classified 107/111/702); added from the register. Round 1: the designer quote is now the _passer source words, which state only \"X=0\"; \"cost 0 against the budget\" is the test's (396 Tides 6a), not the designer's.",
     "sourceHashes": {
-      "R158": "fe9ff19c6119330409f62bf10183f580ae08a886557ffdeac9f762cf6a40f3b3",
       "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
     }
   },
@@ -620,23 +609,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R336",
-          "quote": "## R336 — A copy is read by its face: cost, type, graft host, copied grafts; and a fresh copy is not Unstable (reverses R118 ruling 2's Unstable half)"
+          "quote": "## R336 — A copy is read by its face: cost, type, graft host, copied grafts; and a fresh copy is not Unstable (reverses R118 ruling 2's Unstable half)",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The designer answer is about one case (a copied Robot 3 costs 0); R336's heading generalises it. R336 is not in the U05 pack; added from the register. Copies are 710 (U16).",
+    "notes": "The designer answer is about one case (a copied Robot 3 costs 0); the owner ruling of 2026-10-09 (“A copy is read by its…”)’s heading generalises it. The owner ruling of 2026-10-09 (“A copy is read by its…”) is not in the U05 pack; added from the register. Copies are 710 (U16).",
     "sourceHashes": {
-      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
       "RAQ 1372468222158180424#10": "17f53867d9afb07f1a9252d7660ee4a8ce56504270c17b75478a4d7262378f13"
     }
   },
@@ -648,7 +637,7 @@
     "examples": [
       {
         "text": null,
-        "test": "313-prophecy-affinity.test.ts::R301 §1: every printed prophecy banner carries affinity pips"
+        "test": "313-prophecy-affinity.test.ts::CR 203.1: every printed prophecy banner carries affinity pips"
       }
     ],
     "see": [
@@ -667,28 +656,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R301",
-          "quote": "same banner on the same cards — has always worked this way."
+          "quote": "same banner on the same cards — has always worked this way.",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R301",
-          "quote": "pips in it — Angel of Anguish `[1ld]`, Shib's Ambush `[4lb]`, Vengeance `[2lr]` — and the"
+          "quote": "pips in it — Angel of Anguish `[1ld]`, Shib's Ambush `[4lb]`, Vengeance `[2lr]` — and the",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "313-prophecy-affinity.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The transcription writes an Ambush banner into the text (\"[Battle] Ambush [4bb]\") and keeps a Prophecy banner out of the text entirely (printed.json carries it as a separate field), so a Prophecy banner cannot be quoted as card text. Whether the \"Discard me\" lines (Sacrifice Dude, Dropslime, Nothyr) are banners: sources silent, D-U05-9. Ambush and Prophecy themselves are 803 (U21).",
-    "sourceHashes": {
-      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "card.banner.cost",
@@ -698,15 +687,15 @@
     "examples": [
       {
         "text": null,
-        "test": "313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy"
+        "test": "313-prophecy-affinity.test.ts::CR 803.7d: mana without the affinity does not buy a prophecy"
       },
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R42/R301: the banner is priced on its own pips, not the card's"
+        "test": "36-cache-prophecy.test.ts::the banner is priced on its own pips, not the card's"
       },
       {
         "text": "Lurking Slimebeast ambushes for 3 mana with one water pip.",
-        "test": "14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)"
+        "test": "14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (CR 803.6a, 107.10a)"
       }
     ],
     "see": [
@@ -722,20 +711,11 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R301",
-          "quote": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R42",
-          "relation": "its 'plain mana number, no affinity' clause corrected by R301"
-        },
-        {
-          "ruling": "R277",
-          "relation": "its no-affinity aside superseded by R301"
+          "quote": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -747,11 +727,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R301 (owner, on being shown the scans) for Prophecy; it says Ambush \"has always worked this way\". The pips are required, not spent (313 \"the affinity is REQUIRED, not spent\"), which is 202.2 applied to the banner.",
-    "sourceHashes": {
-      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
-    }
+    "notes": "The owner ruling of 2026-09-20 (“The prophecy banner costs affinity, and […]”) (owner, on being shown the scans) for Prophecy; it says Ambush \"has always worked this way\". The pips are required, not spent (313 \"the affinity is REQUIRED, not spent\"), which is 202.2 applied to the banner.",
+    "sourceHashes": {}
   },
   {
     "key": "card.banner.not-the-cards-cost",
@@ -776,14 +755,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
     "notes": "_passer [Solved] Tides write-up, point 3: said of Tides' \"total cost 8 or less\". Generalised here to every reader of a card's cost; the write-up states it for Tides only. No test isolates the cost read; 404-raq-fix-tides plays an Ambush through Tides but does not test the budget.",
     "sourceHashes": {
@@ -798,11 +777,11 @@
     "examples": [
       {
         "text": "A fulfilled prophecy whose card needs earth affinity its controller lacks is released from the cache with nothing paid.",
-        "test": "36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity"
+        "test": "36-cache-prophecy.test.ts::CR 803.7h: a released prophecy is FREE and ignores affinity"
       },
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment"
+        "test": "36-cache-prophecy.test.ts::CR 803.7i: normal TIMING still applies — a {Battle} release is refused at deployment"
       }
     ],
     "see": [
@@ -813,24 +792,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R301",
-          "quote": "Everything else in R42 stands: prophesying is still deployment-only, a fulfilled prophecy"
+          "quote": "Everything else in R42 stands: prophesying is still deployment-only, a fulfilled prophecy",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R301",
-          "quote": "still releases the card for free and still ignores affinity on the way out (Caleb"
+          "quote": "still releases the card for free and still ignores affinity on the way out (Caleb",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R42 (its prophesy half)",
-          "quote": "with its prophecy attached. Only a card that says so may be prophesied from"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R42",
-          "relation": "window amended by R277; source zone amended by R308; no-affinity cost corrected by R301"
+          "quote": "with its prophecy attached. Only a card that says so may be prophesied from",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -840,12 +816,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "An overview only; the full Prophecy rules are 803 (U21). R42 attributes deployment-only (Caleb 2025-05-09) and free-and-affinity-free (Caleb 2024-10-28) to the designer by date, but no RAQ claim in the pack carries those words, so the basis is the ruling. Round 1: example 1 rebound from 313-prophecy-affinity (which never releases the card) to 36-cache-prophecy; the R42 quote is about prophesying, so it is scoped to that half.",
-    "sourceHashes": {
-      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba",
-      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
-    }
+    "notes": "An overview only; the full Prophecy rules are 803 (U21). The owner ruling of 2026-08-19 (“Prophecy: cache during deployment for the…”) attributes deployment-only (Caleb 2025-05-09) and free-and-affinity-free (Caleb 2024-10-28) to the designer by date, but no RAQ claim in the pack carries those words, so the basis is the ruling. Round 1: example 1 rebound from 313-prophecy-affinity (which never releases the card) to 36-cache-prophecy; the owner ruling of 2026-08-19 (“Prophecy: cache during deployment for the…”) quote is about prophesying, so it is scoped to that half.",
+    "sourceHashes": {}
   },
   {
     "key": "card.banner.timing",
@@ -869,22 +843,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R277 (its release and prophesy-window halves)",
-          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "General statement of 203.5a and 203.5b; the same holds for a \"Discard me\" line (207.8).",
-    "sourceHashes": {
-      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
-    },
+    "sourceHashes": {},
     "untestableReason": "a summary of 203.5a and 203.5b, each demonstrated there"
   },
   {
@@ -918,14 +891,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.40, AMBUSH.",
     "sourceHashes": {}
@@ -938,15 +911,15 @@
     "examples": [
       {
         "text": "Divine Intervention (\"Your life is 5 or less [Haste]\") may be prophesied in the haste step.",
-        "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
+        "test": "257-prophecy-release-timing.test.ts::CR 504.9: a banner marked [Haste] may be prophesied during the haste step"
       },
       {
         "text": null,
-        "test": "257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step"
+        "test": "257-prophecy-release-timing.test.ts::CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step"
       },
       {
         "text": null,
-        "test": "257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it"
+        "test": "257-prophecy-release-timing.test.ts::CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it"
       }
     ],
     "see": [
@@ -957,24 +930,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R277 (its release and prophesy-window halves)",
-          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R277 (its release and prophesy-window halves)",
-          "quote": "   The owner, 2026-08-30: *\"Divine Intervention can be Prophecied during the"
+          "quote": "   The owner, 2026-08-30: *\"Divine Intervention can be Prophecied during the",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R277 (its release and prophesy-window halves)",
-          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R42",
-          "relation": "its deployment-only prophesy window amended by R277"
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -983,11 +953,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner call (R277, quoting the owner). One card prints the marker (Divine Intervention).",
-    "sourceHashes": {
-      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
-    }
+    "notes": "Owner call (the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”), quoting the owner). One card prints the marker (Divine Intervention).",
+    "sourceHashes": {}
   },
   {
     "key": "card.type-line.what",
@@ -1019,12 +988,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.12 \"TYPES AND ATTRIBUTES\". The transcription also writes the timing icon and the Virus icon into the type line ({Battle}, {Haste}, {Virus}); on the printed card they are icons (207, 204.7).",
     "sourceHashes": {},
@@ -1073,24 +1042,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R284",
-          "quote": "Jelly, fifteen more). A spellToken's reads \"Spell Token\"."
+          "quote": "Jelly, fifteen more). A spellToken's reads \"Spell Token\".",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Card types are section 300 (U06). Round 1: the three resource cards in the pool (Earth, Fire and Water Resource) print \"<Element> Resource\", so the first sentence is scoped to playable cards and the last names them; resources are 106 (U02).",
-    "sourceHashes": {
-      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
-    },
+    "sourceHashes": {},
     "untestableReason": "a description of the printed type line; what each type does is demonstrated under 300"
   },
   {
@@ -1111,24 +1079,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R284",
-          "quote": "A {Spell Unit} answers **both** halves, on the permissive reading, and the"
+          "quote": "A {Spell Unit} answers **both** halves, on the permissive reading, and the",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R284 says it of Void Memory's \"[unit or spell]\"; the RAQ \"Spell Units played when you can play a unit\" thread (quoted in R97) agrees for \"playing a spell\". Spell units are 303 (U06).",
-    "sourceHashes": {
-      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
-    }
+    "notes": "The owner ruling of 2026-09-01 (“a printed square bracket belongs to…”) says it of Void Memory's \"[unit or spell]\"; the RAQ \"Spell Units played when you can play a unit\" thread (quoted in the owner ruling of 2026-08-23 (“A card may be granted permission…”)) agrees for \"playing a spell\". Spell units are 303 (U06).",
+    "sourceHashes": {}
   },
   {
     "key": "card.type-line.subtypes",
@@ -1157,28 +1124,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R240",
-          "quote": "space *and* the `AI`, which is not a subtype of this card and is not a subtype at all."
+          "quote": "space *and* the `AI`, which is not a subtype of this card and is not a subtype at all.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R240",
-          "quote": "spurious token is, by construction, a population-of-one subtype. The pool has twenty real"
+          "quote": "spurious token is, by construction, a population-of-one subtype. The pool has twenty real",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "209-interdiction-rift-type-line.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "No source says what a subtype does in play: D-U05-7. R162/R157 also record the owner's repair of Might of the Grove's duplicated \"Tree\". Round 1: Trashling's {Virus} marker sits between its subtypes (Scrap Robot) and Unit, so \"between\" became \"other than\".",
-    "sourceHashes": {
-      "R240": "07a6e64a34bd01c02a1010a64c2a0b0518b7e1a52d7aaa5154312829c65714be"
-    }
+    "notes": "No source says what a subtype does in play: D-U05-7. The owner rulings of 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”) and 2026-08-25 (“the owner's answers to the 27…”) also record the owner's repair of Might of the Grove's duplicated \"Tree\". Round 1: Trashling's {Virus} marker sits between its subtypes (Scrap Robot) and Unit, so \"between\" became \"other than\".",
+    "sourceHashes": {}
   },
   {
     "key": "card.type-line.attributes",
@@ -1188,7 +1155,7 @@
     "examples": [
       {
         "text": null,
-        "test": "262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text"
+        "test": "262-type-line-attributes.test.ts::CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text"
       }
     ],
     "see": [
@@ -1204,28 +1171,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R282",
-          "quote": "> *\"That's cause they're attributes in the type line, not abilities. Attributes"
+          "quote": "> *\"That's cause they're attributes in the type line, not abilities. Attributes",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R282",
-          "quote": "## R282 — A type-line attribute is rules text, and it belongs in the text box"
+          "quote": "## R282 — A type-line attribute is rules text, and it belongs in the text box",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "262-type-line-attributes.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Owner's words in R282. The example test is a ui test about display (R282's digital half); the game half is the owner's sentence. Attributes are 802 (U19/U20).",
-    "sourceHashes": {
-      "R282": "75937cf1adfaa54c08a624eb297a4b93fe7c606be13c115240236e53fecaef1d"
-    }
+    "notes": "Owner's words in the owner ruling of 2026-08-30 (“A type-line attribute is rules text…”). The example test is a ui test about display (the owner ruling of 2026-08-30 (“A type-line attribute is rules text…”)’s digital half); the game half is the owner's sentence. Attributes are 802 (U19/U20).",
+    "sourceHashes": {}
   },
   {
     "key": "card.type-line.attribute-colours",
@@ -1268,14 +1235,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Rulebook 2023 p.12 says units in a column share attributes without the purple exception: D-U05-2. This document numbers Burst and Unstable under 803, not 802: D-U05-10.",
     "sourceHashes": {}
@@ -1288,7 +1255,7 @@
     "examples": [
       {
         "text": "A Lonely Forager (3/1) given Tough and then Balanced is 3/3; given Balanced first and then Tough, it is 3/6.",
-        "test": "08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
+        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
       }
     ],
     "see": [
@@ -1303,16 +1270,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Manual p.42 Q&A on Tough and Balanced. The full order (type line, then augments, then column) is R19, 709 (U16).",
+    "notes": "Manual p.42 Q&A on Tough and Balanced. The full order (type line, then augments, then column) is the owner ruling of 2026-08-18 (“Stat layer 4 application order”), 709 (U16).",
     "sourceHashes": {}
   },
   {
@@ -1323,7 +1290,7 @@
     "examples": [
       {
         "text": null,
-        "test": "262-type-line-attributes.test.ts::R282: a card with no attribute and no text still says nothing, and the guard does not reach it"
+        "test": "262-type-line-attributes.test.ts::CR D6.10: a card with no attribute and no text still says nothing, and the guard does not reach it"
       }
     ],
     "see": [
@@ -1338,24 +1305,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R282",
-          "quote": "A genuine vanilla still says nothing. Tidal Menace has no text and no"
+          "quote": "A genuine vanilla still says nothing. Tidal Menace has no text and no",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "262-type-line-attributes.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Inferred from R282 calling Tidal Menace, whose transcribed type line starts \"{Haste}\", a card with \"no attributes\". The Virus icon is likewise not in the engine's attribute list, but no ruling says so in words.",
-    "sourceHashes": {
-      "R282": "75937cf1adfaa54c08a624eb297a4b93fe7c606be13c115240236e53fecaef1d"
-    }
+    "notes": "Inferred from the owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) calling Tidal Menace, whose transcribed type line starts \"{Haste}\", a card with \"no attributes\". The Virus icon is likewise not in the engine's attribute list, but no ruling says so in words.",
+    "sourceHashes": {}
   },
   {
     "key": "card.text-box.abilities",
@@ -1379,12 +1345,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Abilities as such are 109 (U03) and 705–708 (U15).",
     "sourceHashes": {},
@@ -1418,24 +1384,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R55",
-          "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
+          "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "48-playtest-hotfix.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "No source says whether reminder text has rules force of its own: D-U05-11.",
-    "sourceHashes": {
-      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "card.text-box.brackets",
@@ -1445,11 +1410,11 @@
     "examples": [
       {
         "text": "Darkblast's [Discard a card] is a cost: with no other card in hand it cannot be cast.",
-        "test": "45-hybrids-ld-b.test.ts::Darkblast: R35 — with nothing else in hand the cost is unpayable and the CAST is illegal"
+        "test": "45-hybrids-ld-b.test.ts::Darkblast: CR 702.4a — with nothing else in hand the cost is unpayable and the CAST is illegal"
       },
       {
         "text": "Retribution Thing's \"[lost or gained]\" is a mode: X is one of the two, never the sum.",
-        "test": "38-light-a.test.ts::R157 §21: the printed \"[lost or gained]\" is a MODE, so X is one ledger and never the sum"
+        "test": "38-light-a.test.ts::CR 205.3: the printed \"[lost or gained]\" is a MODE, so X is one ledger and never the sum"
       }
     ],
     "see": [
@@ -1473,17 +1438,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §21",
-          "quote": "> *\"All text on cards that's in [square brackets] like that is either an"
+          "quote": "> *\"All text on cards that's in [square brackets] like that is either an",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §21",
-          "quote": "> additional cost or a modal choice. The additional cost must be paid in order"
+          "quote": "> additional cost or a modal choice. The additional cost must be paid in order",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "45-hybrids-ld-b.test.ts",
@@ -1491,11 +1457,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.13 and the owner (R157 §21) agree. Costs are 111 (U04); casting is 702 (U14).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "Manual p.13 and the owner (owner ruling of 2026-08-25, “the owner's answers to the 27…”) agree. Costs are 111 (U04); casting is 702 (U14).",
+    "sourceHashes": {}
   },
   {
     "key": "card.text-box.brackets.who-and-when",
@@ -1505,11 +1470,11 @@
     "examples": [
       {
         "text": "Void Memory's caster declares \"unit\" or \"spell\" at cast; each opponent then discards one of that type if able.",
-        "test": "97-mode-conformance.test.ts::R284: Void Memory declares its half at cast, and a hand with no card of that type reveals"
+        "test": "97-mode-conformance.test.ts::CR 205.3a: Void Memory declares its half at cast, and a hand with no card of that type reveals"
       },
       {
         "text": null,
-        "test": "136-triggers-and-modes.test.ts::R157 §21: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it"
+        "test": "136-triggers-and-modes.test.ts::CR 205.3: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it"
       }
     ],
     "see": [
@@ -1520,21 +1485,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R284",
-          "quote": "> B]. […] The owner of the effect chooses the mode or pays the additional cost"
+          "quote": "> B]. […] The owner of the effect chooses the mode or pays the additional cost",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R284",
-          "quote": "> on cast. Not on resolution or any other time. […] All modal/additional costs"
+          "quote": "> on cast. Not on resolution or any other time. […] All modal/additional costs",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §21",
-          "quote": "> to put it on the stack and the modal choice (happening on this card) must be"
+          "quote": "> to put it on the stack and the modal choice (happening on this card) must be",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "97-mode-conformance.test.ts",
@@ -1542,12 +1509,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner rulings R284 and R157 §21. Manual p.13 also says targets are chosen \"as the card is being played\" (110).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
-    }
+    "notes": "Owner rulings the owner ruling of 2026-09-01 (“a printed square bracket belongs to…”) and the owner ruling of 2026-08-25 (“the owner's answers to the 27…”). Manual p.13 also says targets are chosen \"as the card is being played\" (110).",
+    "sourceHashes": {}
   },
   {
     "key": "card.text-box.brackets.unbracketed",
@@ -1562,26 +1527,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R284",
-          "quote": "Abduct's ransom is prose, not a bracket, and that is exactly why it is the"
+          "quote": "Abduct's ransom is prose, not a bracket, and that is exactly why it is the",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R284",
-          "quote": "| R6's unbracketed *\"unless its controller pays\"* (Abduct) | the opponent | resolution |"
+          "quote": "| R6's unbracketed *\"unless its controller pays\"* (Abduct) | the opponent | resolution |",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R284 §2 table, contrasting brackets with R6. R6 itself is not in the pack.",
-    "sourceHashes": {
-      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
-    },
+    "notes": "The owner ruling of 2026-09-01 (“a printed square bracket belongs to…”) table, contrasting brackets with the owner ruling of 2026-08-18 (“\"Unless its controller pays [x]\" payments”). The owner ruling of 2026-08-18 (“\"Unless its controller pays [x]\" payments”) itself is not in the pack.",
+    "sourceHashes": {},
     "untestableReason": "no test in the pack isolates Abduct's ransom timing; a verifier probe would be needed"
   },
   {
@@ -1592,7 +1557,7 @@
     "examples": [
       {
         "text": null,
-        "test": "97-mode-conformance.test.ts::R57: nothing declares a mode it does not print"
+        "test": "97-mode-conformance.test.ts::CR 205.3c: nothing declares a mode it does not print"
       }
     ],
     "see": [
@@ -1602,28 +1567,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R284",
-          "quote": "> *\"All cards that have square brackets **in the actual oracle text** are"
+          "quote": "> *\"All cards that have square brackets **in the actual oracle text** are",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R284",
-          "quote": "than a marker like `[Augment]`, `[Switch1]`, `[once]`, `[4bb]` or `[2]`:"
+          "quote": "than a marker like `[Augment]`, `[Switch1]`, `[once]`, `[4bb]` or `[2]`:",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "97-mode-conformance.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "On the printed card these are icons, so the rule matters only to a reader of the transcription. R284 §3 census: 21 prose brackets, 8 modal and 13 costs; every modal bracket contains \"or\" and no cost bracket does.",
-    "sourceHashes": {
-      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
-    }
+    "notes": "On the printed card these are icons, so the rule matters only to a reader of the transcription. The owner ruling of 2026-09-01 (“a printed square bracket belongs to…”) census: 21 prose brackets, 8 modal and 13 costs; every modal bracket contains \"or\" and no cost bracket does.",
+    "sourceHashes": {}
   },
   {
     "key": "card.text-box.brackets.paid-when-free",
@@ -1648,16 +1613,16 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "_passer [Solved] Tides write-up, point 5. R111 says the same of a free prophecy release (\"bracketed X costs are still paid\") per its summary.",
+    "notes": "_passer [Solved] Tides write-up, point 5. The owner ruling of 2026-08-23 (“a FREE prophecy release casts an…”) says the same of a free prophecy release (\"bracketed X costs are still paid\") per its summary.",
     "sourceHashes": {
       "RAQ 1396955380000755795#5": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
     }
@@ -1690,14 +1655,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Graft is 722 (U17). The bounded form of the symbol (once per turn) is Manual p.33 and belongs there too.",
     "sourceHashes": {
@@ -1737,14 +1702,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 says \"health\" where the Manual says \"defense\": D-U05-1. When damage kills is 112/713.",
     "sourceHashes": {}
@@ -1777,14 +1742,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The sources do not say whether a spell has a power or defense: D-U05-8. The card data gives 91 spells non-zero power/toughness: F-U05-1.",
     "sourceHashes": {}
@@ -1812,28 +1777,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §14",
-          "quote": "> *\"Literally any change to a unit's stats counts. If they're different from the"
+          "quote": "> *\"Literally any change to a unit's stats counts. If they're different from the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §14",
-          "quote": "> printed stats, they are changed.\"*"
+          "quote": "> printed stats, they are changed.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "59-base-stats.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The example is a ui test file (client/ui/test/59-base-stats).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "card.stats.layers",
@@ -1884,14 +1849,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The layer system belongs to 709 (U16); stated here because 206 is where a reader looks up what a unit's power is. Keep the two in step.",
     "sourceHashes": {
@@ -1939,13 +1904,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R66",
-          "quote": "**last-wins by timestamp** — never by summing. Timestamps come off the shared"
+          "quote": "**last-wins by timestamp** — never by summing. Timestamps come off the shared",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -1954,10 +1919,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "What happens to swapped bases when a Statweaver later dies is unruled in the RAQ thread: D-U05-5.",
     "sourceHashes": {
-      "R66": "effa2095307431ee86e4abe37d0832f0c6b05332d4f788c4c3024a8468ba8b9c",
       "RAQ 1357965714807586897#1": "a36aec1009a3f35e9df78ea89edd77e406519c4106b6796f908ef96285d9e7b2"
     }
   },
@@ -1996,14 +1961,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.40, STAT CHANGES AND COUNTERS and its NOTE. Regroup removing temporary changes is 506 (Manual p.26).",
     "sourceHashes": {}
@@ -2031,8 +1996,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2040,6 +2004,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The RAQ counters thread (1364890301147250798) is answered by a player, not the designer: D-U05-6. Whether a cancelled -1/-1 still triggers \"when put\" effects (Pestilent Mycelion) is 706 (U15).",
     "sourceHashes": {}
@@ -2062,16 +2027,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R130 (its all-counters ruling and the actor parameter)",
-          "quote": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R130",
-          "relation": "its poison-proxy 'sign filters that stayed' paragraph superseded by R237"
+          "quote": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2080,11 +2040,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner ruling, quoted verbatim in R130.",
-    "sourceHashes": {
-      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000"
-    }
+    "notes": "Owner ruling, quoted verbatim in the owner ruling of 2026-08-24 (“every counter is a counter, and…”).",
+    "sourceHashes": {}
   },
   {
     "key": "card.stats.negative-power",
@@ -2114,14 +2073,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.42 Q&A. No test in the pack demonstrates it; a verifier probe is needed. A unit with 0 or less defense dying (Manual p.40) is 713.",
     "sourceHashes": {}
@@ -2157,14 +2116,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.13 TIMING shows Haste, Battle and Virus side by side. The card data has one timing per card (deploy, haste or battle) and Virus as a separate flag; in the pool no Virus card has Haste or Battle timing.",
     "sourceHashes": {}
@@ -2196,8 +2155,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -2205,6 +2163,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.3 says \"main phase\" for deployment: D-U05-1. Exceptions: 207.7 (effects that ignore timing), 207.8 (a timing icon on a line), 203.5. The example shows the exception; a direct test of the refusal is a verifier probe. Round 1: the refusal without Tides (in the haste step and in battle) is shown by the verifier's probe (data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts).",
     "sourceHashes": {}
@@ -2217,7 +2176,7 @@
     "examples": [
       {
         "text": null,
-        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
+        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (CR 504.1, 504.2)"
       }
     ],
     "see": [
@@ -2241,13 +2200,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R97",
-          "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
+          "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -2255,11 +2214,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.13 \"can also be played during the haste step\"; Manual p.26 \"Any card can be played during this phase, with the exception of battle cards\" covers deployment. R97 quotes Caleb that the Rulebook's \"mana step\" is the haste step.",
-    "sourceHashes": {
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
-    }
+    "notes": "Manual p.13 \"can also be played during the haste step\"; Manual p.26 \"Any card can be played during this phase, with the exception of battle cards\" covers deployment. The owner ruling of 2026-08-23 (“A card may be granted permission…”) quotes Caleb that the Rulebook's \"mana step\" is the haste step.",
+    "sourceHashes": {}
   },
   {
     "key": "card.timing.battle",
@@ -2269,7 +2227,7 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment"
+        "test": "36-cache-prophecy.test.ts::CR 803.7i: normal TIMING still applies — a {Battle} release is refused at deployment"
       }
     ],
     "see": [
@@ -2296,14 +2254,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.13 BATTLE: \"Battle cards can / only be played / while in battle with / another player.\"",
     "sourceHashes": {}
@@ -2344,13 +2302,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R97",
-          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -2358,10 +2316,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Caleb reversed his own 2025-03-24 answer on 2026-01-25: D-U05-3. Whether gaining Haste changes a banner play mode is unanswered: D-U05-4. Round 1: the RAQ #1 quote is now the _passer source words, not the register claim.",
     "sourceHashes": {
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6",
       "RAQ 1464899726796390433#0": "29919fd7167ef4b5d8270f68bc27b34a37b2a2600b7c520143430f818c931ee3",
       "RAQ 1465292396664193171#0": "b9818845b89b995e2deb3a2c33684e65ecbf762c87aec010da8a4401369be1b9",
       "RAQ 1465292396664193171#1": "5dc7d77443715228d9d2f69544025a49d12a72cb332616ef18c1b528d96c8d0c"
@@ -2403,8 +2361,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -2412,6 +2369,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.13 VIRUS: \"Virus cards can / also be applied as / augments from your / hand during battle.\" Viruses are 723 (U17); a glimpsed Virus in the cache is 403 (U07).",
     "sourceHashes": {}
@@ -2443,14 +2401,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.32 NOTE. The Haste half is the RAQ Graft 101 point 1 guard; Slurpr and Rook are card exceptions (720s).",
     "sourceHashes": {}
@@ -2487,14 +2445,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "calebgannon \"yep!\" (thread 1357483405276614856) and the _passer [Solved] write-up. Round 1: the RAQ #0 quote is now the source words, not the register claim.",
     "sourceHashes": {
@@ -2510,11 +2468,11 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer"
+        "test": "36-cache-prophecy.test.ts::CR 801.9f: glimpse still obeys timing, and a short deck glimpses fewer"
       },
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment"
+        "test": "36-cache-prophecy.test.ts::CR 803.7i: normal TIMING still applies — a {Battle} release is refused at deployment"
       }
     ],
     "see": [
@@ -2526,29 +2484,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §12",
-          "quote": "> *\"Cards that let you ignore timing say something like 'You may play them"
+          "quote": "> *\"Cards that let you ignore timing say something like 'You may play them",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R42 (its release half)",
-          "quote": "2024-10-28) — but normal TIMING still applies, since it is played \"as if it"
+          "quote": "2024-10-28) — but normal TIMING still applies, since it is played \"as if it",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner, R157 §12 (on Abyssal Evocation and Writhing Host), and R42's release sentence. R45 says the same of a glimpse.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
-    }
+    "notes": "Owner, the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (on Abyssal Evocation and Writhing Host), and the owner ruling of 2026-08-19 (“Prophecy: cache during deployment for the…”)’s release sentence. The owner ruling of 2026-08-19 (“Glimpse N: reveal N, cache ONE…”) says the same of a glimpse.",
+    "sourceHashes": {}
   },
   {
     "key": "card.timing.per-line",
@@ -2558,11 +2515,11 @@
     "examples": [
       {
         "text": null,
-        "test": "58-playtest-round9.test.ts::R65: a \"Discard me\" line works during battle, whatever the card's own timing says"
+        "test": "58-playtest-round9.test.ts::CR 207.8: a \"Discard me\" line works during battle, whatever the card's own timing says"
       },
       {
         "text": "Nothyr's battle-marked discard-me line is refused outside battle.",
-        "test": "37-attrs-wight.test.ts::R40: Nothyr's battle-timing discard-me line is refused outside battle"
+        "test": "37-attrs-wight.test.ts::CR 207.8: Nothyr's battle-timing discard-me line is refused outside battle"
       }
     ],
     "see": [
@@ -2573,21 +2530,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R65 (its discard-me half)",
-          "quote": "as during your own deployment. A printed `{Battle}` marker on the discard line"
+          "quote": "as during your own deployment. A printed `{Battle}` marker on the discard line",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R65 (its discard-me half)",
-          "quote": "(Nothyr) still restricts it to battle; nothing restricts it to deployment."
+          "quote": "(Nothyr) still restricts it to battle; nothing restricts it to deployment.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §8",
-          "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
+          "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "58-playtest-round9.test.ts",
@@ -2595,12 +2554,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner calls R65 and R157 §8. The same principle for banners is 203.5. Discarding is not playing (R37, R65), which is why the card's own timing does not govern the line.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
-    }
+    "notes": "Owner calls the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”) and the owner ruling of 2026-08-25 (“the owner's answers to the 27…”). The same principle for banners is 203.5. Discarding is not playing (the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”), the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)), which is why the card's own timing does not govern the line.",
+    "sourceHashes": {}
   },
   {
     "key": "card.augment-box.what",
@@ -2628,12 +2585,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Augment is 721 (U17). The transcription writes the symbol as [Augment].",
     "sourceHashes": {},
@@ -2671,14 +2628,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "45-hybrids-ld-b.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whose \"you\" is the host's controller is 721/723.",
     "sourceHashes": {}
@@ -2718,8 +2675,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "28-metal-c.test.ts",
@@ -2727,6 +2683,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "\"Never stats\" follows from Manual p.32 (\"take all of the text\") and Rulebook p.15; no source says it in so many words.",
     "sourceHashes": {}
@@ -2749,28 +2706,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R55",
-          "quote": "If a card prints the `[Augment]` marker in its text box, it **can be applied as"
+          "quote": "If a card prints the `[Augment]` marker in its text box, it **can be applied as",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R55",
-          "quote": "an augment** — from hand, from bin, or from cache — regardless of whether its"
+          "quote": "an augment** — from hand, from bin, or from cache — regardless of whether its",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "416-cr-parts-of-a-card.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R55 is the owner's ruling from playtest round 5 (classified printed/other: the printed symbol is the permission). \"From cache\" needs a live permission (403, R303).",
-    "sourceHashes": {
-      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Printed [Augment] is a permission, not…”) is the owner's ruling from playtest round 5 (classified printed/other: the printed symbol is the permission). \"From cache\" needs a live permission (403, the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”)).",
+    "sourceHashes": {}
   },
   {
     "key": "card.augment-box.permission.reminder",
@@ -2790,24 +2747,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R55",
-          "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
+          "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "48-playtest-hotfix.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R55.",
-    "sourceHashes": {
-      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Printed [Augment] is a permission, not…”).",
+    "sourceHashes": {}
   },
   {
     "key": "card.augment-box.copy",
@@ -2832,8 +2788,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2841,8 +2796,9 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "_passer [Solved & Expanding?] thread. Stated for Borrower of Forms only; generalised to any copy here. R341 makes the [Augment] boxes of copied MODS work, which is a different thing. Round 1: the suite test 393-raq-mods \"a Borrower that copied an [Augment] unit cannot be the first target of Reconfigure\" asserts nothing (Reconfigure is not castable in its setup, so its guarded branch is skipped): F-U05-2. The verifier's probe (data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts) shows it with a real [Augment] unit present, so the example is illustrative.",
+    "notes": "_passer [Solved & Expanding?] thread. Stated for Borrower of Forms only; generalised to any copy here. The owner ruling of 2026-10-10 (“A copy's copied augments work: it…”) makes the [Augment] boxes of copied MODS work, which is a different thing. Round 1: the suite test 393-raq-mods \"a Borrower that copied an [Augment] unit cannot be the first target of Reconfigure\" asserts nothing (Reconfigure is not castable in its setup, so its guarded branch is skipped): F-U05-2. The verifier's probe (data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts) shows it with a real [Augment] unit present, so the example is illustrative.",
     "sourceHashes": {
       "RAQ 1372468222158180424#6": "d85bf21ea2b82c2373151dc7f1a82b03c80b7d150a101f7fc9c04cf28a251916"
     }
@@ -2871,12 +2827,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Light & Dark cards print a Simple/Complex glyph rather than a coloured set symbol (repo knowledge, not a pack source); not stated as a rule.",
     "sourceHashes": {},
@@ -2910,16 +2866,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "297-custom-rules-resolve.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The client's \"Simple cards only\" draft option is R292 (digital; Annex D). No source says complexity has any effect during play: D-U05-14. The Rulebook calls these cards \"rare\" on p.2 and says the colour shows \"complexity\" on p.3.",
+    "notes": "The client's \"Simple cards only\" draft option is the owner ruling of 2026-09-14 (“Custom rules on a live draft…”) (digital; Annex D). No source says complexity has any effect during play: D-U05-14. The Rulebook calls these cards \"rare\" on p.2 and says the colour shows \"complexity\" on p.3.",
     "sourceHashes": {}
   }
 ]

@@ -1,4 +1,4 @@
-/* R29 — a card PLAYED into an open spot never stands outside the line.
+/* CR 602.7 — a card PLAYED into an open spot never stands outside the line.
  *
  * Playtest UFAB, 2026-08-22: *"Tiderunner Initiate should never have entered
  * the Invader's zone. It gets played directly into the formation, not as a
@@ -11,12 +11,12 @@
  * that window was enough for Good Whale (Ambush) and Tidal Reversion to
  * recall it before it ever reached the line.
  *
- * The conceptual mistake was folding it into R75. R75's ruling — *"that choice
+ * The conceptual mistake was folding it into the effect-placement ruling. That ruling (now CR 602.6) — *"that choice
  * should be made on effect resolution"* — was written for "create a unit IN MY
  * FORMATION" (Hooba-Bot/Lin/God/Pon), where the placement genuinely is part of
  * an effect resolving. Tiderunner's text is "you may PLAY me into an open
  * spot". A play, not an effect. So the spot is chosen in the CAST window with
- * everything else about how the card is played (R35), and taken at resolution
+ * everything else about how the card is played (CR 702.3), and taken at resolution
  * atomically with the spawn.
  *
  * Seeds 7300-7399.
@@ -49,7 +49,7 @@ function playTiderunner(h: Harness, seat: Seat): void {
 
 // ── the report ─────────────────────────────────────────────────────────
 
-test('R29 THE REPORT: Tiderunner is never in the invader’s zone, and never stacks a trigger', () => {
+test('CR 602.7 THE REPORT: Tiderunner is never in the invader’s zone, and never stacks a trigger', () => {
   const h = new Harness(7301, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -80,7 +80,7 @@ test('R29 THE REPORT: Tiderunner is never in the invader’s zone, and never sta
   finishBattle(h);
 });
 
-test('R29 THE REPORTED SHAPE: no state between the play and the line shows an invader', () => {
+test('CR 602.7 THE REPORTED SHAPE: no state between the play and the line shows an invader', () => {
   // Driven blind, the way a client would: answer whatever is asked, pass when
   // nothing is, and check the reported symptom after EVERY single step. The
   // old modelling failed here and not at some timing assertion — there really
@@ -115,7 +115,7 @@ test('R29 THE REPORTED SHAPE: no state between the play and the line shows an in
   finishBattle(h);
 });
 
-test('R29 the spawn event itself already sees it in the formation', () => {
+test('CR 602.7 the spawn event itself already sees it in the formation', () => {
   const h = new Harness(7302, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative;
@@ -141,7 +141,7 @@ test('R29 the spawn event itself already sees it in the formation', () => {
   finishBattle(h);
 });
 
-test('R29 the opponent’s response window cannot catch it outside the line', () => {
+test('CR 602.7 the opponent’s response window cannot catch it outside the line', () => {
   // The reported kill: Good Whale (Ambush) / Tidal Reversion answering the
   // spawn. There is no longer a spawn to answer — the only window is against
   // the PLAY, and recalling a card off the stack is a different card's job.
@@ -169,7 +169,7 @@ test('R29 the opponent’s response window cannot catch it outside the line', ()
 
 // ── the printed "may", and the no-formation case ──────────────────────
 
-test('R29 "stay out of formation" is still on the menu — the text says MAY', () => {
+test('CR 602.7b "stay out of formation" is still on the menu — the text says MAY', () => {
   const h = new Harness(7304, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative;
@@ -185,7 +185,7 @@ test('R29 "stay out of formation" is still on the menu — the text says MAY', (
   finishBattle(h);
 });
 
-test('R29 with NO formation of your own the play is legal and asks nothing', () => {
+test('CR 602.7c with NO formation of your own the play is legal and asks nothing', () => {
   const h = new Harness(7305, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -201,9 +201,9 @@ test('R29 with NO formation of your own the play is legal and asks nothing', () 
   finishBattle(h);
 });
 
-// ── R5/R56: the board may move between the cast and the resolution ────
+// ── CR 704.6b, 704.5: the board may move between the cast and the resolution ────
 
-test('R29 the slot is RE-DERIVED at resolution: the spot can be gone by then', () => {
+test('CR 602.7a the slot is RE-DERIVED at resolution: the spot can be gone by then', () => {
   const h = new Harness(7306, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -231,7 +231,7 @@ test('R29 the slot is RE-DERIVED at resolution: the spot can be gone by then', (
   finishBattle(h);
 });
 
-test('R29 a spot chosen at cast opens a NEW column at resolution, re-keying blocks', () => {
+test('CR 602.7 a spot chosen at cast opens a NEW column at resolution, re-keying blocks', () => {
   const h = new Harness(7307, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative;
@@ -249,14 +249,14 @@ test('R29 a spot chosen at cast opens a NEW column at resolution, re-keying bloc
 
 // ── the primitive is a card FLAG, and exactly two cards have it ───────
 
-test('R29 playsIntoFormation is the flag, and R75’s placeInFormation is untouched', async () => {
+test('CR 602.7 playsIntoFormation is the flag, and CR 602.6’s placeInFormation is untouched', async () => {
   const { allCardNames, getCard } = await import('../src/cards/dsl.ts');
   const flagged = allCardNames().filter(n => getCard(n).playsIntoFormation);
   assert.deepEqual(flagged, ['Tiderunner Initiate', 'Trench Stalker'],
     'exactly the cards whose text is a PLAY into the line — "you may PLAY me into an '
-    + 'open spot" and (R123) "I can be played directly into formation"');
+    + 'open spot" and "I can be played directly into formation"');
 
-  // R75's class is untouched: those four create a unit with an EFFECT and then
+  // CR 602.6's class is untouched: those four create a unit with an EFFECT and then
   // place it, so their placement stays where the ruling put it — at
   // resolution, inside an ability, and reached through E.placeInFormation.
   for (const n of ['Hooba-Bot', 'Hooba-Lin', 'Hooba-God', 'Hooba-Pon']) {

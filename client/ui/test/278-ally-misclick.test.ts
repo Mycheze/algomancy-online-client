@@ -1,4 +1,4 @@
-/* R288 / BL-30 — "DID YOU MEAN TO TARGET YOUR OWN UNITS?"
+/* CR D2.8 / BL-30 — "DID YOU MEAN TO TARGET YOUR OWN UNITS?"
  *
  * The owner, 2026-08-26:
  *
@@ -28,7 +28,7 @@
  * target units" with no ally slot at all, so "target ally AND target unit on
  * the same card" does not describe it. It is a different shape: pointing it at
  * two of your own is not a misclick guess, it is a KNOWN NO-OP (you exchange
- * control of two units you already control), which is R74's job — a `warning`,
+ * control of two units you already control), which is CR D7.1's job — a `warning`,
  * not a `confirm`. §0 pins the derived family so that difference is visible
  * instead of being argued about again.
  *
@@ -75,7 +75,7 @@ function specs(): { name: string; spec: TargetSpec; max: number }[] {
 
 /* ══ §0 THE FAMILY, DERIVED ═══════════════════════════════════════════ */
 
-test('R288 §0 the family is derived from printed specs, and Fight is in it', () => {
+test('CR D2.8a the family is derived from printed specs, and Fight is in it', () => {
   const all = specs();
   assert.ok(all.length > 40, `fixture: ${all.length} target specs found — the census is not reading the pool`);
   const mixed = [...new Set(all.filter(s => mixedAllegiance(s.spec, s.max)).map(s => s.name))].sort();
@@ -93,7 +93,7 @@ test('R288 §0 the family is derived from printed specs, and Fight is in it', ()
     + 'the same card". Both are real changes and both need the owner');
 });
 
-test('R288 §0 CONTROL: the predicate rejects both single-allegiance shapes', () => {
+test('CR D2.8 CONTROL: the predicate rejects both single-allegiance shapes', () => {
   // If this ever passes everything, §1's true positive is meaningless.
   const allyOnly: TargetSpec = { what: 'allyUnit', prompt: 'x', count: 2 };
   const enemyOnly: TargetSpec = { what: 'enemyUnit', prompt: 'x', count: 2 };
@@ -102,7 +102,7 @@ test('R288 §0 CONTROL: the predicate rejects both single-allegiance shapes', ()
   assert.equal(mixedAllegiance(enemyOnly, 2), false, 'nor one that cannot hit an ally at all');
   assert.equal(mixedAllegiance(plain, 2), false,
     'nor one that never says "ally" — that is Organic Exchange, and it is a no-op question '
-    + '(R74), not a misclick question');
+    + '(CR D7.1), not a misclick question');
   assert.equal(mixedAllegiance({ ...plain, slots: ['allyUnit', 'unit'] }, 2), true,
     'positive control: the shape the owner described IS accepted');
   assert.equal(mixedAllegiance({ ...plain, slots: ['allyUnit', 'unit'] }, 1), false,
@@ -138,7 +138,7 @@ const optFor = (opts: readonly DecisionOption[], id: number): DecisionOption | u
 
 /* ══ §1 THE TRUE POSITIVE ═════════════════════════════════════════════ */
 
-test('R288 §1 Fight aimed at a second unit of your own asks whether you meant it', () => {
+test('CR D2.8 Fight aimed at a second unit of your own asks whether you meant it', () => {
   const { h, me, ally, foe, idx } = fightBoard(27800);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
 
@@ -165,7 +165,7 @@ test('R288 §1 Fight aimed at a second unit of your own asks whether you meant i
 
 /* ══ §2 THE FALSE POSITIVES, on the same card ═════════════════════════ */
 
-test('R288 §2 the ALLY slot never asks — being an ally is what that slot is for', () => {
+test('CR D2.8 the ALLY slot never asks — being an ally is what that slot is for', () => {
   const { h, me, idx } = fightBoard(27801);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const first = h.state.decision!;
@@ -175,7 +175,7 @@ test('R288 §2 the ALLY slot never asks — being an ally is what that slot is f
     + 'A guard that fires on every cast is one nobody reads');
 });
 
-test('R288 §2 picking the ENEMY in the open slot is silent', () => {
+test('CR D2.8 picking the ENEMY in the open slot is silent', () => {
   const { h, me, ally, foe, idx } = fightBoard(27802);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);
@@ -189,7 +189,7 @@ test('R288 §2 picking the ENEMY in the open slot is silent', () => {
 
 /* ══ §3 …AND NOTHING ELSE IN THE POOL ASKS ════════════════════════════ */
 
-test('R288 §3 no single-allegiance spell in the pool can reach the question', () => {
+test('CR D2.8 no single-allegiance spell in the pool can reach the question', () => {
   // Derived, not driven: `mixedAllegiance` is the only gate on the engine
   // side, so proving no other printed spec passes it proves no other card can
   // ever raise the confirm — for every board, not just the ones a test builds.
@@ -206,7 +206,7 @@ test('R288 §3 no single-allegiance spell in the pool can reach the question', (
 
 /* ══ §4 NOTHING IS NARROWED ═══════════════════════════════════════════ */
 
-test('R288 §4 the question changes no legality: same candidates, same outcome', () => {
+test('CR D2.8 the question changes no legality: same candidates, same outcome', () => {
   const { h, me, ally, idx } = fightBoard(27803);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);
@@ -215,7 +215,7 @@ test('R288 §4 the question changes no legality: same candidates, same outcome',
   const opts = h.state.decision!.options;
   const asked = opts.filter(o => o.confirm).length;
   assert.ok(asked > 0, 'fixture: something really is being asked about here');
-  // R157's steer: printed text wins, take the permissive reading. The option
+  // The steer of CR 101.1 and 101.4: printed text wins, take the permissive reading. The option
   // is OFFERED — the confirm is a question, never a filter.
   const mineIdx = opts.findIndex(o => o.confirm);
   h.do({ type: 'decide', seat: me, choice: mineIdx });
@@ -231,7 +231,7 @@ test('R288 §4 the question changes no legality: same candidates, same outcome',
 /** the unit a `{unit: id}` option names */
 const unitOf = (v: unknown): number => (v as { unit: number }).unit;
 
-test('R288 §5 the client asks before sending, and "yes" sends the very pick it interrupted', () => {
+test('CR D2.8 the client asks before sending, and "yes" sends the very pick it interrupted', () => {
   const { h, me, ally, idx } = fightBoard(27804);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);
@@ -256,7 +256,7 @@ test('R288 §5 the client asks before sending, and "yes" sends the very pick it 
     + 'dialogue ends up committing a different click');
 });
 
-test('R288 §5 "no" sends nothing and leaves the same pick open', () => {
+test('CR D7.1b "no" sends nothing and leaves the same pick open', () => {
   const { h, me, ally, idx } = fightBoard(27805);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);

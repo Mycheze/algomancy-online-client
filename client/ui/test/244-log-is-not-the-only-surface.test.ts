@@ -1,4 +1,4 @@
-/* R266 / CT-134 — NOTHING SHOULD ONLY EXIST IN THE LOG.
+/* CR D7.4 / CT-134 — NOTHING SHOULD ONLY EXIST IN THE LOG.
  *
  * ── THE RULING (owner, answering the round-32 question sheet, Q7)
  *
@@ -8,7 +8,7 @@
  * So this warning about spell tokens should be in the normal warning and
  * choice area, where all the normal buttons are."*
  *
- * The question he was answering: report #131 / R253 hid the game log behind a
+ * The question he was answering: report #131 / the game-log ruling (now CR D6.15a) hid the game log behind a
  * right-click menu item, and the log had been the client's FALLBACK SURFACE —
  * where anything with no notice of its own ended up. CT-134 filed that cost.
  *
@@ -20,16 +20,17 @@
  *
  *   - THE PASS. Report #66's actual warning — *"You're about to move to
  *     Regroup which will remove your Spell Tokens. Are you sure?"* — has been
- *     a `.promptbar` confirm since R194, armed by `passEndsBattlePhase` and
+ *     a `.promptbar` confirm since the regroup confirm (CR D2.6) shipped, armed by `passEndsBattlePhase` and
  *     fired on the pass that would reach Regroup and on no other window. It
  *     was never log-only. It is ALREADY in the normal warning and choice area,
  *     which is why the owner did not recognise the warning being described.
  *
  *   - THE DECLINE. A round-2 attacker who declines goes `doDeclareAttack` →
  *     `endBattleRound` → `startRegroup` with no priority window anywhere on
- *     the path, so there is no pass to hang a confirm on. R194 announced the
- *     loss instead of preventing it (see docs/digital-rules ## R194 for why
- *     opening the window was rejected), and that announcement went to the log
+ *     the path, so there is no pass to hang a confirm on. The token-loss ruling
+ *     (now CR D2.6a) announced the loss instead of preventing it (a declined round
+ *     opens no window, CR 610.4e, and opening one was rejected), and that
+ *     announcement went to the log
  *     and nowhere else. THAT is the log-only one, and it is a NOTICE rather
  *     than a warning: the tokens are already gone by the time anyone can be
  *     told. It still goes where the owner put it.
@@ -75,7 +76,7 @@ const ui = await client();
 
 /**
  * A round-2 declare step with the ROUND-2 DEFENDER holding castable spell
- * tokens at home — the one state R194 is about. Copied in shape from
+ * tokens at home — the one state CR D2.6a is about. Copied in shape from
  * 165-token-loss-warning, which argues at length why it is reachable.
  */
 function declinedOnTokens(seed: number): { h: Harness; loser: Seat; decliner: Seat; toks: EntityId[] } {
@@ -108,7 +109,7 @@ function declinedOnTokens(seed: number): { h: Harness; loser: Seat; decliner: Se
  * Put a state (and optionally the batch that produced it) in front of the
  * client and return the markup.
  *
- * R150's pacing throttle holds arrivals once a session has a backlog, and a
+ * The pacing throttle (CR D5.4) holds arrivals once a session has a backlog, and a
  * held update paints nothing — which reads exactly like a notice that failed
  * to appear. So the pacing is flushed through the client's own skip key (S),
  * the way a player would.
@@ -124,7 +125,7 @@ function seat(state: GameState, s: Seat): string {
 
 /* ── §1. the premise, checked before anything is claimed ──────────────── */
 
-test('[R266] the pass route was never log-only: report 66 warning is already a promptbar confirm', () => {
+test('[CR D7.1c] the pass route was never log-only: report 66 warning is already a promptbar confirm', () => {
   const src = read('../ui/main.ts');
   // the bar itself, with the owner's own copy in it
   assert.match(src, /confirmBarHtml\('pass',[\s\S]{0,120}move to Regroup, which will remove your spell tokens/,
@@ -137,7 +138,7 @@ test('[R266] the pass route was never log-only: report 66 warning is already a p
     'the confirm is gated on a pass being pending — which is what the decline route does not have');
 });
 
-test('[R266] the decline route really did announce the loss to the log and to nothing else', () => {
+test('[CR D7.4a] the decline route really did announce the loss to the log and to nothing else', () => {
   const { h, loser, decliner, toks } = declinedOnTokens(2440);
   const at = h.log.length;
   const evs = h.do({ type: 'declareAttack', seat: decliner, columns: [] });
@@ -146,9 +147,9 @@ test('[R266] the decline route really did announce the loss to the log and to no
   assert.equal(h.state.entities[toks[0]!], undefined, 'the tokens really did go');
   assert.equal(h.state.entities[toks[1]!], undefined);
   const line = h.log.slice(at).find(l => /unused spell token\(s\) to regroup/.test(l));
-  assert.ok(line, 'R194 announces it');
+  assert.ok(line, 'CR D2.6a announces it');
 
-  // ⚠ THE POINT: it is not in the R65 erased pile, so the erased dialog —
+  // ⚠ THE POINT: it is not in the CR 407.1 erased pile, so the erased dialog —
   // the one existing surface for an erase — cannot show it. That is the
   // engine's own deliberate choice (a spell token is not a card) and it is
   // what left this announcement with nowhere to go.
@@ -163,7 +164,7 @@ test('[R266] the decline route really did announce the loss to the log and to no
   assert.equal(seen.msg, line);
 });
 
-test('[R266] exactly one announcement in the engine has the erased-with-ids-and-no-cards shape', () => {
+test('[CR D7.4a] exactly one announcement in the engine has the erased-with-ids-and-no-cards shape', () => {
   // the predicate is a claim about the whole engine, so it is measured over
   // the whole engine rather than over the one call site it was written for.
   // A second erase with this shape would make the notice fire on the wrong
@@ -174,10 +175,10 @@ test('[R266] exactly one announcement in the engine has the erased-with-ids-and-
   assert.equal(shaped.length, 1,
     `tokenLossNotice matches erased+seat+ids with no card names; the engine has ${shaped.length} of those:\n`
     + shaped.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
-  assert.match(shaped[0]!.msg, /unused spell token/, 'and it is the one R194 wrote');
+  assert.match(shaped[0]!.msg, /unused spell token/, 'and it is the token-loss announcement (CR D2.6a)');
 });
 
-test('[R266] the loss is put in front of the player who lost it, in the promptbar area', () => {
+test('[CR D7.4a] the loss is put in front of the player who lost it, in the promptbar area', () => {
   const { h, loser, decliner } = declinedOnTokens(2441);
   const evs = h.do({ type: 'declareAttack', seat: decliner, columns: [] });
 
@@ -200,7 +201,7 @@ test('[R266] the loss is put in front of the player who lost it, in the promptba
   assert.equal(/spell tokens lost/.test(closed), false, 'dismissed');
 });
 
-test('[R266] a net client is not shown the opponent loss, and the notice goes stale at the next battle', () => {
+test('[CR D7.4a] a net client is not shown the opponent loss, and the notice goes stale at the next battle', () => {
   const { h, loser, decliner } = declinedOnTokens(2442);
   const evs = h.do({ type: 'declareAttack', seat: decliner, columns: [] });
 
@@ -225,7 +226,7 @@ test('[R266] a net client is not shown the opponent loss, and the notice goes st
     'and down again once a battle is running');
 });
 
-test('[R266] an ordinary batch adds nothing to the prompt slot', () => {
+test('[CR D7.4a] an ordinary batch adds nothing to the prompt slot', () => {
   // the negative control the ui-driver note asks for: a surface that renders
   // unconditionally is a surface that cannot be measured. An update carrying
   // events that are NOT a token loss must leave the slot exactly as it was.
@@ -241,7 +242,7 @@ test('[R266] an ordinary batch adds nothing to the prompt slot', () => {
   const quiet = show(h.state, [
     { type: 'erased', msg: 'X is erased.', data: { seat: loser, cards: ['Grox'] } },
     { type: 'info', msg: 'something happened.', data: { ids: [1, 2] } },
-    // …and the forward guard, which is the whole reason the R65 clause is in
+    // …and the forward guard, which is the whole reason the CR 407.1 clause is in
     // the predicate rather than left out as unreachable: the day somebody adds
     // card names to a token erase, the erased DIALOG starts showing it and
     // this notice must stand down rather than say the same thing twice.
@@ -288,9 +289,9 @@ function skipBraces(s: string, i: number): number {
  * The source with every comment blanked to spaces — same length, same lines.
  *
  * Not cosmetic. `ev()` call sites in this engine routinely carry a paragraph
- * of comment BETWEEN the message and the data object (R194's own does), and a
+ * of comment BETWEEN the message and the data object (the token-loss announcement's own does), and a
  * comment containing a comma splits the argument list in the wrong place —
- * which is how an earlier pass of this measurement read R194's announcement as
+ * which is how an earlier pass of this measurement read the token-loss announcement (CR D2.6a) as
  * having no `data` at all and left the ruling's own case out of its inventory.
  */
 function stripComments(s: string): string {
@@ -410,7 +411,7 @@ function eventUnion(): string[] {
   return [...new Set([...block.matchAll(/\|\s*'([A-Za-z]+)'/g)].map(m => m[1]!))];
 }
 
-test('[R266] the type-level question is answerable and gives the wrong answer', () => {
+test('[CR D7.4] the type-level question is answerable and gives the wrong answer', () => {
   const union = eventUnion();
   assert.equal(union.length, 54, `EventType has ${union.length} members: ${union.join(' ')}`);
 
@@ -429,7 +430,7 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
 
   // ⚠ AND HERE IS WHY THE TYPE IS THE WRONG UNIT. 'erased' is read by three
   // separate non-log surfaces — and none of them shows the erase this whole
-  // ruling is about, because R194 deliberately keeps it out of the R65 pile
+  // ruling is about, because the token-loss announcement (CR D2.6a) deliberately keeps it out of the erased pile (CR 407.1)
   // those surfaces draw from. A type-level sweep scores 'erased' as surfaced
   // and loses the one case the owner asked about.
   const uiSays = uiConsumers();
@@ -443,7 +444,7 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   // have an event-driven consumer somewhere, which tells you nothing about
   // whether any GIVEN announcement of that type is visible
   const consumed = [...announcing].filter(t => uiSays.has(t));
-  // 26 -> 27 on 2026-08-30: R271 gave 'fizzled' a consumer in ui/flash.ts
+  // 26 -> 27 on 2026-08-30: a fix gave 'fizzled' a consumer in ui/flash.ts
   // (CT-142 — the stack strip used to label a fizzled item "resolved"). That
   // is the direction this measurement is supposed to move, and it moving is
   // the point of pinning it.
@@ -491,7 +492,7 @@ function uiConsumers(): Map<string, string[]> {
   // `cardEvSites` twelve lines up already says why that is wrong: "The directory
   // is the list: a set file nobody remembered to add here is exactly the blind
   // spot this whole file is about." The rule was applied to the CARD directory
-  // and not to this one. `ui/toast.ts` (R276) was a real fourteenth consumer the
+  // and not to this one. `ui/toast.ts` (CR D7.4) was a real fourteenth consumer the
   // list could not know about, and nothing would have gone red — the measurement
   // would just have been quietly smaller than the truth, which is this file's own
   // subject one level up. The directory is the list here too.
@@ -504,7 +505,7 @@ function uiConsumers(): Map<string, string[]> {
     // order to say "this one is not mine" is the opposite of a surface for it, and
     // counting it makes this number say the client shows MORE than it does — the
     // direction a coverage number must never drift on its own. main.ts's two log
-    // tables were always stripped for this reason; toast.ts's ZONE_CHANGE (R276)
+    // tables were always stripped for this reason; toast.ts's ZONE_CHANGE (CR D7.4)
     // is the same shape and is stripped for the same reason. Without this the
     // tally read 32 instead of 27, entirely from seventeen types toast.ts lists
     // to REJECT.
@@ -544,7 +545,7 @@ function uiConsumers(): Map<string, string[]> {
  *  (3) A ZONE CHANGE. Some event types ARE an entity arriving in or leaving a
  *      zone the board draws. "The unit is gone from the board" is a surface
  *      for "the unit died", and this file is deliberately honest about that.
- *      'erased' is NOT in this set, and that is the R65 argument above: an
+ *      'erased' is NOT in this set, and that is the CR D6.6c argument above: an
  *      erase is the one removal that leaves nothing behind to point at, which
  *      is why the erased dialog had to be built in the first place.
  */
@@ -589,23 +590,23 @@ function logOnly(): Site[] {
   });
 }
 
-test('[R266] the derivation itself is alive: every filter it uses matches something and rejects something', () => {
+test('[CR D7.4] the derivation itself is alive: every filter it uses matches something and rejects something', () => {
   const sites = allSites();
   // 193 → 199 with BL-06's six test-mode announcements (apply.ts's `sandbox*`
-  // handlers). 199 → 200 with R286's `stackFlash` in `E.pushItem` — a push
+  // handlers). 199 → 200 with the deployment-stack `stackFlash` in `E.pushItem` — a push
   // onto a stack with no response window now gets the round-8 beat back.
   // 200 → 201 with BL-43's "Custom rules: …" line in createGame — said once, at
   // the deal of a custom draft, and never on a standard game.
-  // 201 → 203 with the round-39 pair: R295's sub-step boundary line ("Swift
+  // 201 → 203 with the round-39 pair: the sub-step boundary line (CR 608.3b; "Swift
   // damage is dealt — responses before normal damage", said only when {Swift}
-  // or {Sluggish} splits the damage step) and R296's reshuffle line ("X's deck
+  // or {Sluggish} splits the damage step) and the reshuffle line (CR 408.2b; "X's deck
   // is out — the N recycled cards are shuffled into a new deck"). Both are
   // events a player must SEE: one opens a priority window, the other is the
   // deck turning over.
-  // 203 → 205 with R297's lesson deal: "Learn to Play: a lesson game." at the
+  // 203 → 205 with the Learn to Play lesson deal (CR D8.1): "Learn to Play: a lesson game." at the
   // deal, and the per-turn Shard income line in startTurn — only in a lesson
   // game, and the learner must see the bot's economy tick.
-  // 205 → 207 with R303's pair: "<card> grafts/augments out of <player>'s
+  // 205 → 207 with the cache-mod pair: "<card> grafts/augments out of <player>'s
   // cache, ignoring affinity." The waiver is the one thing about a glimpse mod
   // that the board cannot show — the mana leaves the pool either way, and what
   // the player needs to know is that the pips they do not have were not
@@ -616,27 +617,27 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // It is a tier-1 costly absence and carries a toast — see the stem below.
   // 256-cost-toasts reads this very number out of this file, so it is pinned
   // in exactly one place.
-  // 208 → 210 with R305's pair in doCastSpellToken: "<player> pays [n] to cast
+  // 208 → 210 with the token-cast pricing pair in doCastSpellToken: "<player> pays [n] to cast
   // <token>" and "<player> pays n life to cast <token>". A spell token is a
   // played spell now, so its cast is priced; the pair is the token-cast twin of
   // the existing "pays [n] to discard" line, said only when a tax applies.
-  // 210 → 211 with R308: "<player> prophesies <card> from cache for [n]" — the
+  // 210 → 211 with the cache-prophecy line: "<player> prophesies <card> from cache for [n]" — the
   // cache twin of doProphesy's line, a 'prophesied' event like it.
-  // 211 → 215 with R311 (report #195, the cache plays like the hand): two
-  // pairs, the same kind as R303's. "<card> ambushes out of <player>'s cache
+  // 211 → 215 when the cache gained the hand's modes (report #195, the cache plays like the hand): two
+  // pairs, the same kind as the cache-mod pair's. "<card> ambushes out of <player>'s cache
   // for FREE / ignoring affinity" in doAmbush, and "<card> augments for FREE /
   // out of <player>'s cache, ignoring affinity" in the battle branches of
   // doAugment (payBattleAugment). Said only for a cache source; the waiver is
   // what the board cannot show.
-  // 215 → 216 with R334 (CT-216, RAQ "Graft 101" point 11): "<item>: the
+  // 215 → 216 with the mandatory-graft-cost rule (CR 722.6a; CT-216, RAQ "Graft 101" point 11): "<item>: the
   // grafted [cost] cannot be paid — the whole graft effect does not go on the
   // stack", said once by E.withholdComposite. It carries the host unit, so it
   // is not a log-only line.
-  // 216 → 218 with R315 ({Resonant} is its source's trigger): "Trigger:
+  // 216 → 218 with CR 802.19a ({Resonant} is its source's trigger): "Trigger:
   // <source> — {Resonant}: n damage to <player>." in E.queueResonant, and the
   // rider's own "no damage was dealt" line in apply.ts. Both carry the source
   // unit, so neither joins the log-only inventory below.
-  // 218 → 219 with R324 (CT-208, RAQ "Valid targets becomes invalid"): "<item>:
+  // 218 → 219 with the target re-check (CR 704.5; CT-208, RAQ "Valid targets becomes invalid"): "<item>:
   // <target> is not a legal target any more", said as resolution begins. It
   // carries the unit it is about, so it is not log-only either.
   assert.equal(sites.length, 219, `the engine and apply make ${sites.length} announcements`);
@@ -647,13 +648,13 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // the pulse rule is imported, so prove the import is the live one
   assert.deepEqual(beatKeys({ type: 'died', msg: 'x', data: { unit: 7, seat: 1 } }), ['e7', '@bin:1']);
   assert.deepEqual(beatKeys({ type: 'erased', msg: 'x', data: { seat: 1, ids: [1] } }), [],
-    'and that an erase with a seat and no unit pulses nothing — the whole reason R194 had nowhere to go');
+    'and that an erase with a seat and no unit pulses nothing — the whole reason the token-loss announcement (CR D2.6a) had nowhere to go');
   // and that the message parser really recovered prose, not code
   const spoken = sites.filter(s => s.msg).length;
   assert.ok(spoken > 180, `${spoken} of ${sites.length} sites yielded a message`);
 });
 
-test('[R266] the derived inventory of announcements that exist only in the log', () => {
+test('[CR D7.4] the derived inventory of announcements that exist only in the log', () => {
   const inv = logOnly();
   const show = (l: Site[]): string => l.map(s => `  ${s.file}:${s.line} [${s.type}] ${s.msg}`).join('\n');
   // 38 → 39 with the Deferral Drone errata (see the site census above): a
@@ -678,7 +679,7 @@ test('[R266] the derived inventory of announcements that exist only in the log',
     "'info' earns no colour in the log either — it is the plainest line the panel draws");
 });
 
-test('[R266] the ranked half: the announcements where the absence cost the player something', () => {
+test('[CR D7.4] the ranked half: the announcements where the absence cost the player something', () => {
   const inv = logOnly();
   const costly = inv.filter(s => COSTLY.test(s.msg));
   const rest = inv.filter(s => !COSTLY.test(s.msg));
@@ -699,7 +700,7 @@ test('[R266] the ranked half: the announcements where the absence cost the playe
     // the phase ended and it was never spent. Two stems rather than one,
     // because they are opposite outcomes and only this one is a loss.
     ['discount goes unused', 1],
-    // R271 fixed the LABEL half of this row: the strip says "fizzled" now, and
+    // The stack-strip fix (now CR D6.12) took care of the LABEL half of this row: the strip says "fizzled" now, and
     // draws the item from `seen` the way it draws a negated one. The row stays
     // because `logOnly` is a per-SITE derivation off the event's own data keys
     // and a `fizzled` event still carries nothing but `{ id }` — which is
@@ -721,7 +722,7 @@ test('[R266] the ranked half: the announcements where the absence cost the playe
     ['life (~) is not gained', 1],
     ['life (~) is not lost', 1],
     ['nothing is lured', 1],
-    ['unused spell token(s) to regroup', 1],                   // FIXED THIS ROUND — R266
+    ['unused spell token(s) to regroup', 1],                   // FIXED THIS ROUND — CR D7.4a
   ];
   const unmatched = costly.filter(s => !STEMS.some(([stem]) => s.msg.includes(stem)));
   assert.deepEqual(unmatched, [],
@@ -733,7 +734,7 @@ test('[R266] the ranked half: the announcements where the absence cost the playe
   }
 });
 
-test('[R266] one of the thirty-eight now has a surface, and the client really draws it', () => {
+test('[CR D7.4] one of the thirty-eight now has a surface, and the client really draws it', () => {
   // The measurement above counts the SOURCE, which still has 38 announcements
   // that would be log-only if nobody had built anything. This is the one that
   // no longer is — asserted against the client, not against the count, so the
@@ -743,7 +744,7 @@ test('[R266] one of the thirty-eight now has a surface, and the client really dr
   assert.equal(promoted.length, 1, 'the ruling case is in the inventory it was derived from');
 
   const src = read('../ui/main.ts');
-  assert.match(src, /function tokenLossBarHtml\(\)/, 'R266 built it');
+  assert.match(src, /function tokenLossBarHtml\(\)/, 'the CR D7.4a notice has a builder');
   assert.match(src, /\$\{tokenLossBarHtml\(\)\}\s*\n\s*\$\{promptHtml\(\)\}/,
     'and it is in the prompt slot, above the live question rather than instead of it');
   // ONE feed, since the hotseat client went: `absorbTokenLoss(evs)` used to sit
@@ -753,5 +754,5 @@ test('[R266] one of the thirty-eight now has a surface, and the client really dr
   assert.doesNotMatch(src, /absorbTokenLoss\(evs\)/,
     'a second event feed is back in ui/main.ts — there is one server now, and a '
     + 'surface fed from two places is a surface that can disagree with itself');
-  assert.match(src, /tokenLossUp = null;\s+\/\/ R266/, 'and dropped by flashReset like every other moment');
+  assert.match(src, /tokenLossUp = null;\s+\/\/ CR D7.4a/, 'and dropped by flashReset like every other moment');
 });

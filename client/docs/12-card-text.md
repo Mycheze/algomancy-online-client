@@ -19,12 +19,12 @@ until this round the client showed the first of those and hinted at the second.
 **Removing abilities genuinely was not working.** It was not working at all: five printed
 cards take something away and every one of them was parked with the same note, because the
 engine could add to a card forever and subtract from it never. So the text engine came in
-two halves — a real suppression layer underneath (R62), plus granting (R63) to close the
+two halves — a real suppression layer underneath (CR 712.1), plus granting (CR 109.8) to close the
 mirror-image gap, and then a box that can afford to be believed.
 
 ## Half one: the engine can take things away now
 
-[R62](digital-rules.md#r62--the-suppression-layer-loses-all-attributes-and-abilities) is the
+[CR 712.1](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r712.1) is the
 layer. It is a **veto, not a sum**: one suppressor switches a half off and nothing switches
 it back on, and it sits *under* every other layer, so "loses all attributes" takes the
 mod-granted and column-shared ones too. Two forms — an until-regroup flag a spell stamps on
@@ -36,7 +36,7 @@ a unit has lost its abilities and cannot say why is not much better than one tha
 text, its mods' donated text, granted text), activated abilities, the statics and cost
 modifiers it radiates, and both replacement hooks. Stats are not abilities.
 
-[R63](digital-rules.md#r63--granting-rules-text) is the other direction. A grant is a
+[CR 109.8](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r109.8) is the other direction. A grant is a
 **reference, not a copy** — `{ card, via, index, text, from }` pointing at an authored
 ability — so it stays serializable, replays bit-identically, and composes for free through
 the `viaCard` parameter `fireEvent` already had.
@@ -60,9 +60,9 @@ A live box is composed of:
 | origin | what it is |
 |---|---|
 | `printed` | the card's own text box |
-| `augment` | a clause donated by an augment mod slid under it (R55) |
+| `augment` | a clause donated by an augment mod slid under it (CR 721.1) |
 | `graft` | the host's cause + every grafted `[Switch]` clause, as the **one** ability they are (Manual p.33) |
-| `granted` | text handed to it until regroup (R63) |
+| `granted` | text handed to it until regroup (CR 109.8) |
 | `static` | a continuous projection radiating onto it from elsewhere, attributed to the card that authored it — not to the unit wearing it |
 | `note` | the one per-ability fact: a once-per-turn budget already spent this turn |
 
@@ -72,7 +72,7 @@ stat arithmetic term by term, a banner naming whatever has switched a half off, 
 `state` row for what happens to this card when it **leaves** play — token, sent to
 counterattack, and **{Unstable}**.
 
-### A line never repeats what its own tag already says (R135)
+### A line never repeats what its own tag already says
 
 Every line is rendered under a tag for its origin, and that tag is an **icon**: the augment
 symbol for an `augment`, ⇄ for a `graft`. A donated clause is sliced *from* its printed
@@ -86,13 +86,13 @@ The note does not restate `ab.label`: that is a paraphrase of the clause above i
 card in the pool has two bounded abilities, so there is nothing to disambiguate.
 `[Switch1]` in **printed** text is untouched — 118 cards print one.
 
-### The spent-budget note wears the marker its ability prints (R249)
+### The spent-budget note wears the marker its ability prints (CR D6.10b)
 
-⚠ **This supersedes one clause of R135.** R135 tagged the note `[Once]` *always*, on the
-argument that the note is about the budget rather than the card. Before R135 it was
+⚠ **This supersedes one clause of the 2026-08-24 text-box ruling.** That ruling tagged the note `[Once]` *always*, on the
+argument that the note is about the budget rather than the card. Before that ruling it was
 `[Switch1]` always. Each constant drew its own report, the second being the first with the
 sides swapped — *"the [Switch1] and [once] effects are DIFFERENT… use the one actually
-relevant to the unit"*. R135's own rule does not reach this line: `LINE_TAG.note` is
+relevant to the unit"*. The no-repeat rule above does not reach this line: `LINE_TAG.note` is
 "⏳ spent", carrying no symbol for the text to duplicate, so the augment/graft argument was
 borrowed for a line that is not shaped like them. And the two markers are not two spellings
 of one thing — `[Switch1]` is the bounded **graft** marker and its clause *transfers* when
@@ -104,11 +104,11 @@ donated box, a grafted mod's `switchClause`, and an augment mod's `augmentClause
 list of card names. The pool: 88 cards have a bounded ability, 64 print `[Switch1]`, 22
 print `[once]`, **zero print both**, and none has two bounded abilities — so a per-clause
 read is exact. Two cards spell the budget in prose (The Bonesculptor, Gridxlan) and fall
-back to `[Once]`, which is R135's answer kept where its argument still holds.
+back to `[Once]`, which is the earlier ruling's answer kept where its argument still holds.
 `test/228-spent-marker.test.ts` spends all 88 through `E.composeParts` and re-derives every
 one of those numbers.
 
-### {Unstable} (R135)
+### {Unstable}
 
 Unstable is a bin *replacement*, not a combat attribute — deliberately absent from the
 `Attr` union — so it was never going to show up in the attribute row, and for a long time
@@ -117,16 +117,16 @@ Statweaver, from report #89) and the type line renders it; every *other* way in 
 invisible, including the common one, the Manual p.35 blanket rule that a **modded card is
 Unstable**. It rides in `state` now, beside "token — erased when it leaves play", which is
 the same class of fact, and it names *which* of `E.isUnstable`'s four ways in applies —
-they expire differently (a mod can be removed, an R96 stamp lapses at regroup, a printed
+they expire differently (a mod can be removed, a CR 803.8d stamp lapses at regroup, a printed
 marker never does). Read through `E.isUnstable`; never re-derived here.
 
 A clause that is present but doing nothing is **struck through, not hidden**. "It says Flying
 and Flying is off" is two facts and a player needs both.
 
-### A cost written as bare digits (R141)
+### A cost written as bare digits
 
 The pool spells the same amount two ways — `[two]` on 24 cards and `[2]` on 12
-— and until R141 only the first one drew an icon. `COST_TOKEN_RE` demands at
+— and until this fix only the first one drew an icon. `COST_TOKEN_RE` demands at
 least one pip letter (it exists for the `[4bb]` compound form), so a bare-digit
 body matched nothing and fell through to the formatter's last branch, *"unknown
 `[token]`: untouched"*. The player read a literal `[2]` on twelve cards
@@ -143,13 +143,13 @@ ever reached it.
 Digits resolve per character, exactly as `[4bb]` does, so a hypothetical `[10]`
 would draw a 1 then a 0. No card in the pool goes past `[8]`.
 
-This is the same shape as R134's `{g}`: **a token nobody taught the formatter
+This is the same shape as the old `{g}` bug: **a token nobody taught the formatter
 about does not announce itself — it renders as its own source text.** Both
 branches now end in a whole-pool sweep so the next unknown spelling fails a test
 instead of reaching a player.
 
 
-### None of the formatting markup may ever reach a player (R142)
+### None of the formatting markup may ever reach a player
 
 > "UI thing: All the text on cards still includes things that are only for the engine to see
 > (like {i} or / or some other 'markup' notes)." […] "It's pure engine markup used by some
@@ -158,7 +158,7 @@ instead of reaching a player.
 > — Bena, room SMVJ 2026-08-24 (report #102)
 
 That second sentence is the rule, and it is stronger than the three fixes it produced: the
-markers are a **presentation layer, not card content**. So R142 stops fixing them one at a
+markers are a **presentation layer, not card content**. So this rule stops fixing them one at a
 time and states the invariant, then guards it over the whole pool.
 
 **Three families of brace token, and only one of them is markup.** Getting this wrong in
@@ -178,7 +178,7 @@ close by inventing icons, and the sweep asserts they still print.
 
 `/[` marks a bracket the **printed card draws as its own boxed panel**. Thirteen cards print
 one, in two jobs: a *cost* (`[Switch1] /[Sacrifice a unit]: Draw a card.` — Immolate) and a
-*modal body* (`double its /[power {i1}or defense]` — Burgeon). Before R142 the slash and both
+*modal body* (`double its /[power {i1}or defense]` — Burgeon). Before this rule the slash and both
 brackets reached the table verbatim.
 
 **The census that came with the report was wrong about where it appears**, and the wrong
@@ -186,7 +186,7 @@ version is the one worth writing down: it said `/[` only ever follows a `[Switch
 marker. Six of the thirteen have no Switch in front of them — Burgeon, Void Memory, Spirit of
 Nature, Transmutide Enigma, Floral Singularity, Malevolent Machinations — and two of those
 *open* their text box with it. Had it been implemented as a suffix of the Switch token it
-would have fixed seven cards and left six, which is exactly the failure mode R134 and R141
+would have fixed seven cards and left six, which is exactly the failure mode the `{g}` and bare-digit fixes
 each hit: fix the instance you were shown, ship the family. It is handled generically, in the
 icon pass, where every other bracket is handled.
 
@@ -214,9 +214,9 @@ visible as one that prints** — which is why the pool sweep for this one is *po
 these two words still separated?") rather than hunting for the jammed digraph: `power {i1}or`
 looks for `ro`, and "regroup" has one.
 
-#### R134's global-formatting claim: verified, not assumed
+#### The global-formatting claim: verified, not assumed
 
-R134 said formatting markers are resolved *globally*, before the icon pass, so a marker nested
+The `{g}` fix said formatting markers are resolved *globally*, before the icon pass, so a marker nested
 inside a bracket the icon pass does not recognise is still reached. The claim held — a `{/n}`
 inside `/[…]` was already a `<br>` — and it is now a test rather than a comment, because the
 `costbox` span was in a position to quietly break it. The one place `{/n}` deliberately is
@@ -233,7 +233,7 @@ The sweep walks both the raw card data *and* the composed box, so the slicing th
 `clean()`/`switchClause`/`dropOriginMarker` do cannot reassemble something the formatter then
 fails to consume.
 
-### Layout artifacts are scrubbed in the EXTRACTOR (R142)
+### Layout artifacts are scrubbed in the EXTRACTOR
 
 Two things that reach a player are not markup at all — they are accidents of the printed
 card's typesetting that the transcription carried through — and they belong in
@@ -295,11 +295,11 @@ Cards not in play (hand, bin, cache, a token being explained) render the same ma
 
 ## Known limits
 
-* Static-vs-static suppression resolves in one pass (R62) — two mutual suppressors both keep
+* Static-vs-static suppression resolves in one pass (CR 712.5) — two mutual suppressors both keep
   radiating and both go quiet.
 * The Everywhere SHIPPED (2026-08-23). Both halves it was parked on had already landed and
-  the note above outlived them: *naming a card* is R91's `ctx.choose` with `DecisionOption.card`,
-  and the CONTINUOUS silence is R62's `StaticMod.suppressAbilities`, whose `staticsFor` walk is
+  the note above outlived them: *naming a card* is CR 712.6's `ctx.choose` with `DecisionOption.card`,
+  and the CONTINUOUS silence is CR 712.1a's `StaticMod.suppressAbilities`, whose `staticsFor` walk is
   already region-scoped — which is exactly what "(as long as I am in their region)" means. All
   that was actually missing was somewhere to keep the name: `Entity.named`, a string, because
   `budgets` is numeric-only. Read it through `E.nameOf()`, the single hook a future copy-NAME

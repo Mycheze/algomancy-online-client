@@ -1,4 +1,4 @@
-/* R217 — the scenario queue keeps its properties, and its inputs cannot go
+/* the scenario queue keeps its properties, and its inputs cannot go
  * blind without saying so.
  *
  * `docs/14-scenario-tester.md` §7. The queue decides what the OWNER spends his
@@ -19,24 +19,22 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { DIGITAL_RULES } from '../scripts/paths.mjs';
 import '../src/index.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
 import { UNREACHED_CARDS, UNWITNESSED_CARDS, WITNESSED, unreachedOpener } from '../../ledgers/unreached.ts';
-import { buildQueue, rankCards, rulingWeight } from '../../ledgers/scenario-queue.ts';
+import { buildQueue, crRecordTexts, rankCards, rulingWeight } from '../../ledgers/scenario-queue.ts';
 
-const REGISTER = readFileSync(DIGITAL_RULES, 'utf8');
+const REGISTER = crRecordTexts();
 
 /* ══ §1 · THE INPUTS CAN SEE ══════════════════════════════════════════ */
 
-test('R217 §1: the UNREACHED ledger is imported whole — 35 cards, not a scrape of 32', () => {
+test('the UNREACHED ledger is imported whole — 35 cards, not a scrape of 32', () => {
   // The exact number the scrape got wrong. If the ledger legitimately changes,
   // this fails and names it — which is the point: the queue's contents should
   // never move silently.
   // 37 -> 36 on 2026-08-26: SLAG SPEWER LEFT THE LEDGER. It was the sole
   // EVENTLESS entry — "implemented, really happens, and nothing in the game can
-  // see it happen" — and R219 (an erased card goes to the erased pile) made its
+  // see it happen" — and the owner's ruling that an erased card goes to the erased pile (CR 801.6) made its
   // promise observable. The category is now empty and gone from the partition.
   // A card leaving this ledger is the good direction; the assertion exists so
   // it cannot happen SILENTLY, and this is it working.
@@ -44,9 +42,9 @@ test('R217 §1: the UNREACHED ledger is imported whole — 35 cards, not a scrap
   // its own entry could not have named. The entry blamed the VOCABULARY of
   // `recall` (no event type of its own, state evidence is a hand delta a
   // bin→play recall never makes) — all true, and never the reason. The card's
-  // trigger fires on COMBAT DAMAGE, and until R261 such a trigger resolved
+  // trigger fires on COMBAT DAMAGE, and until the owner's 2026-08-30 ruling such a trigger resolved
   // inside the damage sub-step with no stack entry, so `ownResolution` had
-  // nothing to attribute the payload to whatever the vocabulary said. R261 gave
+  // nothing to attribute the payload to whatever the vocabulary said. That ruling (CR 608.9b) gave
   // it a window and the card is now observed delivering.
   // ⚠ EXPECT MORE OF THESE: every entry written while combat triggers were
   // unobservable is suspect for the same reason (CT-147).
@@ -108,7 +106,7 @@ test('the witness record and the queue agree on who has been watched', () => {
   }
 });
 
-test('R217 §1: every ledger entry declares an opener the queue can rank on', () => {
+test('every ledger entry declares an opener the queue can rank on', () => {
   for (const card of UNREACHED_CARDS) {
     const opener = unreachedOpener(card);
     assert.ok(opener && /^[A-Z]+$/.test(opener),
@@ -117,21 +115,24 @@ test('R217 §1: every ledger entry declares an opener the queue can rank on', ()
   }
 });
 
-test('R217 §1: the ruling weight ignores short names — a signal that fires on prose is worse than none', () => {
+test('the ruling weight ignores short names — a signal that fires on prose is worse than none', () => {
   // "Rook" appears inside ordinary sentences constantly and topped the first
   // draft for no reason. Short names score zero on purpose.
   assert.equal(rulingWeight('Rook', REGISTER), 0, 'a four-letter name must not be counted');
-  assert.equal(rulingWeight('Void Mandible', 'R1 Void Mandible does. R2 Void Mandible also.'), 2);
-  assert.equal(rulingWeight('Void Mandible', 'nothing here'), 0,
+  assert.ok(REGISTER.length > 1000, `only ${REGISTER.length} rules read — the comprehensive rules went missing`);
+  assert.ok(rulingWeight('Void Mandible', REGISTER) >= 1, 'a card the rules name scores — the weight can see');
+  assert.equal(rulingWeight('Void Mandible', ['Void Mandible does.', 'Void Mandible also.']), 2);
+  assert.equal(rulingWeight('Void Mandible', ['Void Mandible does, and Void Mandible again.']), 1, 'a rule counts once, however often it names the card');
+  assert.equal(rulingWeight('Void Mandible', ['nothing here']), 0,
     'the weight must be capable of returning zero, or it is not measuring anything');
   // word boundaries, not substrings
-  assert.equal(rulingWeight('Glimpse Card', 'Big Glimpse Cardigan'), 0,
+  assert.equal(rulingWeight('Glimpse Card', ['Big Glimpse Cardigan']), 0,
     'a substring match would count an unrelated word — that is how the first draft ranked wrongly');
 });
 
 /* ══ §2 · THE QUEUE KEEPS ITS PROPERTIES ══════════════════════════════ */
 
-test('R217 §2: every unreached card is in the queue — they are the reason it exists', () => {
+test('every unreached card is in the queue — they are the reason it exists', () => {
   const queue = buildQueue(REGISTER);
   const inQueue = new Set(queue.map(q => q.card));
   const missing = UNREACHED_CARDS.filter(c => !inQueue.has(c));
@@ -140,7 +141,7 @@ test('R217 §2: every unreached card is in the queue — they are the reason it 
     + 'is for, and these are not being offered to him');
 });
 
-test('R217 §2: the queue is interleaved — no more than two augment cards in a row', () => {
+test('the queue is interleaved — no more than two augment cards in a row', () => {
   const queue = buildQueue(REGISTER);
   let run = 0;
   for (const [i, q] of queue.entries()) {
@@ -152,7 +153,7 @@ test('R217 §2: the queue is interleaved — no more than two augment cards in a
   }
 });
 
-test('R217 §2: the queue is ordered, bounded, and drawn from the real pool', () => {
+test('the queue is ordered, bounded, and drawn from the real pool', () => {
   const queue = buildQueue(REGISTER, 40);
   assert.equal(queue.length, 40, 'the limit is honoured');
   const pool = new Set(allCardNames());
@@ -162,7 +163,7 @@ test('R217 §2: the queue is ordered, bounded, and drawn from the real pool', ()
   }
 });
 
-test('R217 §2: the ranking discriminates — it is not just returning the pool in name order', () => {
+test('the ranking discriminates — it is not just returning the pool in name order', () => {
   // A ranking that scores everything equally still produces a plausible-looking
   // queue. Assert it actually separates.
   const ranked = rankCards(REGISTER);

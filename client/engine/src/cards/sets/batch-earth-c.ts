@@ -4,12 +4,12 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (mid-resolution choices via ctx.choose),
- * R9 (bounded budgets per card), R12 (regions exclusive — listeners and
- * "all units" are region-scoped), R13 (a blocked column stays blocked — the
- * sticky blocks keys ARE the blocked columns), R21 (Deadly), R22 (an ambush
- * on the stack counts as a spell effect), R25 ("each opponent" reads the
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 704.1a (mid-resolution choices via ctx.choose),
+ * CR 803.4 (bounded budgets per card), CR 601.2, 101.6 (regions exclusive — listeners and
+ * "all units" are region-scoped), CR 608.4c (a blocked column stays blocked — the
+ * sticky blocks keys ARE the blocked columns), CR 802.3 (Deadly), CR 803.6h (an ambush
+ * on the stack counts as a spell effect), CR 601.4d ("each opponent" reads the
  * event region's present seats).
  *
  * PARKED (needs engine machinery that does not exist yet — every card still
@@ -20,7 +20,7 @@
  *     statics run only while the holder is a UNIT in play". E.anchored()
  *     radiates a mod's statics from its HOST, so both donate correctly; both
  *     are now plain `augmentable: true` + a static, with no inert stand-in.
- *   - Tranquility, parked on "a static COST modifier layer". R59's CostMod is
+ *   - Tranquility, parked on "a static COST modifier layer". The CostMod (CR 111.10) is
  *     that layer, and the card has used it since.)
  *
  * ⚠ APPROXIMATIONS (implemented subsets, noted per card):
@@ -30,7 +30,7 @@
  *    them, so the prismite fidelity leak it warned about is gone.
  * ✔ Skybreaker: "Erase me" is REAL as of CARD-TODO #15. It used to be
  *    approximated by the sacrifice-self activation cost, which put an unmodded
- *    Skybreaker in the BIN — a death, with death triggers and R40 recursion off
+ *    Skybreaker in the BIN — a death, with death triggers and trash triggers off
  *    it. `AbilityCost.eraseSelf` is its own choice-free cost kind now, paid by
  *    E.payActivationCost through E.eraseFromPlay: no bin, no death, no despawn.
  *    (A modded host was erased anyway under Unstable; that is unchanged.)
@@ -42,24 +42,24 @@
  *  - The Bonesculptor: "play one unit ... from your bin each deployment" is
  *    modelled as a free bounded activated ability (deploy plays resolve
  *    immediately, so the shapes match); the full cost of the played unit is
- *    still paid. (R77 retired the sentence that used to sit here — "activating
+ *    still paid. (A later fix retired the sentence that used to sit here — "activating
  *    it outside deployment (or with no eligible card) wastes the once-per-turn
  *    budget". Both halves are ACTIVATION gates now: `timing: 'deploy'` and
  *    `usableWhen: bonesculptorPicks(...).length > 0`; and the two paths that
- *    can still reach an empty offer call `ctx.refundBudget?.()` (R113).)
- *    R165: the played unit really is PLAYED now — it fires R129's 'cardPlayed'
- *    from R49's 'bin' — where it used to be
+ *    can still reach an empty offer call `ctx.refundBudget?.()` (CR 109.9b).)
+ *    CR 301.9: the played unit really is PLAYED now — it fires 'cardPlayed' (CR 108.1a)
+ *    from 'bin' (CR 410.6) — where it used to be
  *    put into play in silence while the log line above it said "plays". What
  *    it still lacks is a stack item of its own (nothing may respond to it),
  *    the standing `playInline` approximation for a mid-resolution play.
  *  - (Throwing Boulder's entry is GONE. It read "the sacrifice and the 'only
  *    if I have an adjacent ally' precondition are checked/paid at RESOLUTION
  *    (the Immolate precedent — there is no activation-precondition hook)".
- *    R77 built both hooks: `cost: { sacrificeSelf: true }` and
+ *    The gate-and-cost fix built both hooks: `cost: { sacrificeSelf: true }` and
  *    `usableWhen: g.adjacentInFormation(self.id).some(...)`. See the card.)
  *  - (Squish's entry is GONE too. It read "the damage source's attrs are the
  *    ally CARD's printed attrs (dealEffectDamage reads the card name)".
- *    R94 changed that: `dealEffectDamageAll` resolves `ctx.sourceId` to the
+ *    An engine fix changed that: `dealEffectDamageAll` resolves `ctx.sourceId` to the
  *    LIVE entity and reads `ownAttrs`, and Squish passes `sourceId: a.id` —
  *    so a GRANTED {Powerful}/{Deadly} on the ally counts, exactly as combat
  *    damage has always counted it. The printed-card read survives only as the
@@ -68,7 +68,7 @@
  *  - (Two further entries used to sit here: Throw off a Cliff enforcing "4 or
  *    more defense" at resolution because TargetSpec had no filters, and Squish
  *    picking its second target mid-resolution because a spec held one target
- *    per part. R64 added the restriction seam and R58 the per-slot one, and
+ *    per part. The restriction seam (CR 110.3a) and the per-slot one (CR 110.3) were added, and
  *    both cards use them — the restriction is now part of what makes a target
  *    legal, and both of Squish's targets are declared at cast.)
  */
@@ -89,10 +89,10 @@ const presentOpponents = (g: E, region: number, me: Seat): Seat[] =>
 // each blocked column." — e/2 1/3 Porcupine Beast Unit. Text-box [Augment]:
 // live when played normally, donated to hosts. "After the blocking step" =
 // the 'blocksDeclared' event (fires exactly once per block declaration).
-// Condition at event time (R1): at least one column was blocked. The AMOUNT
-// is read at resolution (R1) from the sticky blocks keys — R13: a blocked
+// Condition at event time (CR 109.3a): at least one column was blocked. The AMOUNT
+// is read at resolution (CR 109.3b) from the sticky blocks keys — CR 608.4c: a blocked
 // column stays blocked even if its blockers die. "Each opponent" = the battle
-// region's present seats other than mine (R25).
+// region's present seats other than mine (CR 601.4d).
 card('Roving Quillback', {
   augmentText: [{
     type: 'triggered', events: ['blocksDeclared'],
@@ -103,7 +103,7 @@ card('Roving Quillback', {
         const b = g.s.battle;
         if (!b) return;
         const n = Object.keys(b.blocks).length;
-        g.dealEffectDamageAll(ctx,   // R80: "each opponent" is one batch
+        g.dealEffectDamageAll(ctx,   // CR 112.8: "each opponent" is one batch
           presentOpponents(g, ctx.region, ctx.controller).map(seat => ({ target: { player: seat }, n })));
       },
     },
@@ -113,7 +113,7 @@ card('Roving Quillback', {
 // "[Augment] After combat, delete all units." — e/8 8/9 {Piercing} Bedlam
 // Primordial Unit. Text-box [Augment]. NOT self:true — the afterCombat event
 // carries no source unit (Embermaw precedent). "All units" is region-scoped
-// (R12): every unit in the battle region, both sides, INCLUDING the carrier
+// (CR 101.6): every unit in the battle region, both sides, INCLUDING the carrier
 // itself, is deleted (nontoken unmodded → owner's bin).
 card('Ruinbringer', {
   augmentText: [{
@@ -140,7 +140,7 @@ card('Ruinbringer', {
 // shape, which un-parked on the same day and the same primitive).
 card('Sandstone Defender', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -158,7 +158,7 @@ card('Seismomancy', {
   spellEffect: {
     targets: { what: 'any', prompt: 'Seismomancy: I deal 3 damage to any target' },
     run: (g, ctx) => {
-      const t = firstTarget(g, ctx);   // R227
+      const t = firstTarget(g, ctx);   // CR D7.3a
       if (!t) return;
       g.dealEffectDamage(ctx, t, 3);
     },
@@ -169,7 +169,7 @@ card('Seismomancy', {
 // Primordial {Virus} Unit. An ACTIVATED ability in the [Augment] text box
 // (live when played normally, donated to hosts, playable as a battle Virus).
 // "All spell effects" = every un-negated spell / spell unit / spell token /
-// ambush on the stack (R22 counts ambushes; triggered and activated abilities
+// ambush on the stack (CR 803.6h counts ambushes; triggered and activated abilities
 // are not spell effects).
 //
 // "ERASE ME" IS A COST, and that is what makes this card the odd one out of
@@ -181,7 +181,7 @@ card('Seismomancy', {
 // It used to BE `sacrificeSelf`, which is a real divergence and not a wording
 // one: a sacrifice is a death, so the card reached D's bin, fired every
 // "when a unit dies" trigger, and could be recurred or trashed out of the bin
-// afterwards. An erase does none of that — no bin, no death, no despawn, R40
+// afterwards. An erase does none of that — no bin, no death, no despawn, CR 801.2c
 // cannot reach it. (Spore of Regenesis is the same reading of the same clause
 // one zone over: there "erase me" is the cost of a death trigger and is paid
 // out of the bin.)
@@ -192,7 +192,7 @@ card('Skybreaker', {
     effect: {
       run: (g) => {
         let negated = 0;
-        for (const it of [...g.s.stack]) {   // R68: negate() splices
+        for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
           if (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush') {
             g.negate(it.id);
             negated++;
@@ -206,12 +206,12 @@ card('Skybreaker', {
 
 // "[Switch1] Target ally deals damage equal to its defense to another target
 // unit." — e/2, {Battle} Rock Spell. The amount is the ally's defense at
-// RESOLUTION (R1); the damage source is the LIVE ALLY entity, so its CURRENT
+// RESOLUTION (CR 107.8); the damage source is the LIVE ALLY entity, so its CURRENT
 // attrs apply — a GRANTED {Powerful}/{Deadly} counts, not just a printed one
-// (R94; this line used to say "its printed attrs apply").
-// Bounded graft ([Switch1], R9).
+// (CR 802.1; this line used to say "its printed attrs apply").
+// Bounded graft ([Switch1], CR 722.5).
 //
-// R67/R82 (playtest VEAV): "Squish, on cast, only has you select 1 target
+// CR 110.1b (playtest VEAV): "Squish, on cast, only has you select 1 target
 // unit, but it needs 2 targets (a target ally and any target)." It printed
 // TWO targets and declared one — the victim was a mid-resolution ctx.choose,
 // so the spell sat on the stack aiming at nobody and the second "target"
@@ -219,7 +219,7 @@ card('Skybreaker', {
 // two-slot spec with per-slot legality, slot 0 an ally of the CASTER and slot
 // 1 any other unit (the collector already keeps the two distinct).
 //
-// Both are re-checked at resolution rather than trusted from cast (R56/R58) —
+// Both are re-checked at resolution rather than trusted from cast (CR 704.5, 110.4c) —
 // Enigmatic Warder can move a slot afterwards, and "ally" means ally of this
 // spell's controller, never of the redirector's.
 const squishEffect: EffectDef = {
@@ -244,7 +244,7 @@ const squishEffect: EffectDef = {
       g.ev('info', `Squish: ${a.card} is not ${g.pname(ctx.controller)}'s ally any more — nothing is squished.`);
       return;
     }
-    // R106 / R318: Squish is an interaction between the two units, so if
+    // CR 802.9c, 112.6: Squish is an interaction between the two units, so if
     // EITHER is Unaware the ally's defense is read off its printed card. RAQ
     // "[Solved] Squish/Fight/Battle vs Source of damage": "Squish to make
     // Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb".
@@ -252,10 +252,10 @@ const squishEffect: EffectDef = {
     const dmg = g.interactionStats(a, [b])[1];
     if (dmg <= 0) { g.ev('info', `Squish: ${a.card} has no defense left — no damage.`); return; }
     // the ALLY deals the damage, and `sourceId` makes it the LIVE entity:
-    // dealEffectDamageAll reads its attributes (R94). R318: and ONLY its
+    // dealEffectDamageAll reads its attributes. CR 112.6: and ONLY its
     // attributes — the same thread, "You look at units Attributes. It doesn't
     // matter if Squish is Powerful", so a virus on the Squish stack item
-    // (R79's `grantedAttrs`) is dropped here. `Unaware` is the one flag still
+    // (`grantedAttrs`, CR 723.4) is dropped here. `Unaware` is the one flag still
     // handed over, so the receiving half collapses too (see `fight`).
     g.dealEffectDamage({ ...ctx, sourceName: a.card, sourceId: a.id, grantedAttrs: collapsed ? ['Unaware'] : [] }, b, dmg);
   },
@@ -268,11 +268,11 @@ card('Squish', {
 // "When one of your units survives damage, [Switch1] Create a 2/2 unit." —
 // ee/2 1/3 Mystic Rock Unit. The 'damage' event fires right after damage is
 // marked (combat and effect damage alike), before deaths are processed —
-// when() checks at event time (R1) that the damaged unit is mine ("one of
+// when() checks at event time (CR 109.3a) that the damaged unit is mine ("one of
 // your units", itself included) and survives (marked damage < toughness).
 // Edge: damage from a Deadly source passes the check but the unit then dies
 // (rare; noted). Poisonous damage becomes counters and never fires 'damage'.
-// Region auto-scoped (R12). Bounded ([Switch1], R9); the 2/2 is the graft.
+// Region auto-scoped (CR 101.6). Bounded ([Switch1], CR 722.5); the 2/2 is the graft.
 const stonebornMake: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => {
@@ -295,7 +295,7 @@ card('Stoneborn Progenitor', {
 // "When I spawn, create two Shards. {i}(Dormant)" — e/2 2/1 Primordial
 // Maelstrom Unit. PLAYTEST FIX: this used to push dormant PRISMITES, which is
 // a straight upgrade — a prismite can be exchanged for any element during
-// planning (R17). Real Shards (E.createShard) give mana only.
+// planning (CR 106.8a). Real Shards (E.createShard) give mana only.
 card('Swirling Shardform', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
@@ -324,7 +324,7 @@ card('Swirling Shardform', {
 // host stack, which is right — each is its own -2/-2.
 card('Tenebrous Bulborb', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{ affects: (_g, self, t) => t.id === self.id, dp: -2, dt: -2 }],
@@ -340,8 +340,8 @@ card('Tenebrous Bulborb', {
 // count — and that you can afford; its cost is paid normally and it spawns
 // (spawn triggers fire). Declining is allowed.
 //
-// R77: both preconditions are ACTIVATION gates now — `timing: 'deploy'` for
-// the window (R49's own field, which this card was re-implementing at
+// CR 705.3a: both preconditions are ACTIVATION gates now — `timing: 'deploy'` for
+// the window (the activation-timing field, CR 705.2, which this card was re-implementing at
 // resolution) and `usableWhen` for "is there anything in the bin I could
 // actually play". It is `bounded`, so being offered when it can do nothing
 // did not merely waste a click: activating it burnt the once-per-turn budget.
@@ -360,7 +360,7 @@ card('Tenebrous Bulborb', {
  * has a text box.
  *
  * A static IS an ability — the engine says so itself where it silences one
- * (`E.staticsFor`: "R62: a silenced unit radiates nothing — a static IS an
+ * (`E.staticsFor`: "CR 712.1a: a silenced unit radiates nothing — a static IS an
  * ability"). So the test is now "the card def carries NO behaviour at all",
  * with exactly two things deliberately not counted:
  *   · attributes and type-line [Augment] attribute grants — the card's own
@@ -410,7 +410,7 @@ const INERT_KEYS = new Set([
  * has a text box.
  *
  * A static IS an ability — the engine says so itself where it silences one
- * (`E.staticsFor`: "R62: a silenced unit radiates nothing — a static IS an
+ * (`E.staticsFor`: "CR 712.1a: a silenced unit radiates nothing — a static IS an
  * ability"). So the test is "the card def carries no behaviour at all", by way
  * of INERT_KEYS above.
  */
@@ -439,7 +439,7 @@ card('The Bonesculptor', {
         const bin = g.player(ctx.controller).bin;
         const opts = bonesculptorPicks(g, ctx.controller);
         if (!opts.length) {
-          ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
+          ctx.refundBudget?.();   // CR 109.9b: no offer could be made, so the use is not spent
           g.ev('info', 'The Bonesculptor: no playable ability-free unit in your bin.');
           return;
         }
@@ -449,21 +449,21 @@ card('The Bonesculptor', {
           options: [...opts, { label: 'Decline', value: -1 }],
         }) as number;
         if (pick < 0) {
-          ctx.refundBudget?.();   // R113: declining a "you may" never spends it
+          ctx.refundBudget?.();   // CR 109.9b: declining a "you may" never spends it
           g.ev('info', 'The Bonesculptor: no unit is played from the bin.');
           return;
         }
         const name = bin[pick];
         if (name === undefined || !abilityFree(name) || !g.canPayCard(ctx.controller, name)) return;
-        g.removeFromBin(ctx.controller, pick, 'played');   // R124
+        g.removeFromBin(ctx.controller, pick, 'played');   // CR 405.7
         g.payCard(ctx.controller, name);
         g.ev('info', `The Bonesculptor: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
-        // R165: the printed verb is "PLAY", and the log line directly above has
+        // CR 701.3: the printed verb is "PLAY", and the log line directly above has
         // said so all along while the engine put the unit into play in silence.
         // The two are a real distinction in this pool — Exhume, Resurrect,
         // Rousing Spirit and Lurking Dread print "put into play" and are rightly
-        // plain spawns. `asPlay` fires R129's 'cardPlayed' immediately before
-        // the body arrives; `from: 'bin'` is R49's other half of the same fact.
+        // plain spawns. `asPlay` fires 'cardPlayed' (CR 108.1a) immediately before
+        // the body arrives; `from: 'bin'` is the other half of the same fact (CR 410.6).
         // So "whenever you play a unit" (Bloomcaster) and "when you play a card
         // from anywhere other than your hand" (Stalwart Sentinel, Proph) hear
         // it, each exactly once — and note the cost really was paid one line up,
@@ -476,15 +476,15 @@ card('The Bonesculptor', {
 });
 
 // "Delete target unit with 4 or more defense." — e/2, {Battle} Rock Spell.
-// R64: "with 4 or more defense" is part of what makes a target LEGAL, so only
-// units at 4+ are ever offered; the resolution check below is the R5/R56 half,
+// CR 110.3a: "with 4 or more defense" is part of what makes a target LEGAL, so only
+// units at 4+ are ever offered; the resolution check below is the CR 704.5 half,
 // for defense that changes between cast and resolution. (The "⚠ TargetSpec has
 // no filters … any unit is targetable at cast" line that used to sit here was
 // contradicted by the spec five lines below it — and by the header's own
 // retraction.)
 card('Throw off a Cliff', {
   spellEffect: {
-    // R64: "with 4 or more defense" gates which units are legal targets at
+    // CR 110.3a: "with 4 or more defense" gates which units are legal targets at
     // all; the resolution check stays for defense that changes in between.
     targets: {
       what: 'unit', prompt: 'Throw off a Cliff: delete target unit with 4 or more defense',
@@ -509,23 +509,23 @@ card('Throw off a Cliff', {
 // ability in the [Augment] text box (live normally, donated to hosts — "me"
 // and "I" are then the host).
 //
-// R77 (playtest XCYX, 2026-08-22): "Throwing Boulder was allowed to be
+// CR 111.7b, 111.7 (playtest XCYX, 2026-08-22): "Throwing Boulder was allowed to be
 // activated without having adjacent allies. It didn't resolve, but it
 // shouldn't have been allowed to be activated. And also, in order to activate
 // it, sacrificing him should have happened as a cost to even put the ability
 // on the stack." Both halves were real and both are fixed here:
 //
 //  - the sacrifice is `cost: { sacrificeSelf: true }`, paid in the cast window
-//    on the way to the stack (R49/R57/R73), not a `g.destroy` at resolution;
+//    on the way to the stack (CR 705.3, 111.7), not a `g.destroy` at resolution;
 //  - "only if I have an adjacent ally" is `usableWhen`, so the ability is not
-//    offered and is refused (R64's principle), instead of being activated and
+//    offered and is refused (the CR 705.3a principle), instead of being activated and
 //    then resolving into nothing.
 //
-// Adjacency is R75's: sides and above/below within the formation, nothing
+// Adjacency is as CR 603.2a and 603.2b define it: sides and above/below within the formation, nothing
 // diagonal — and adjacent allies only exist while I am IN a formation, so out
 // of combat this ability is simply not available.
 //
-// R1: the condition is checked once, at activation, and is NOT re-checked at
+// CR 111.7b: the condition is checked once, at activation, and is NOT re-checked at
 // resolution — for a self-sacrificing ability it could not be, since the cost
 // has already removed its own subject by then. The damage lands whatever
 // happens to the ally in between.
@@ -541,7 +541,7 @@ card('Throwing Boulder', {
         // the carrier is already in the bin: the sacrifice was the cost. The
         // damage still comes FROM Throwing Boulder (ctx.sourceName), which is
         // what its riders read.
-        const t = firstTarget(g, ctx);   // R227
+        const t = firstTarget(g, ctx);   // CR D7.3a
         if (!t) return;
         g.dealEffectDamage(ctx, t, 3);
       },
@@ -551,7 +551,7 @@ card('Throwing Boulder', {
 
 // "[Augment] Enemies gain +2/+2." — ee/5 10/15 Primordial Rock Beast {Virus}
 // Unit. Text-box [Augment], live when played normally: the drawback is a
-// static projecting +2/+2 onto ENEMY units in its region (R12: attackers
+// static projecting +2/+2 onto ENEMY units in its region (CR 101.6: attackers
 // entering its region grow; its controller's units never do).
 // Mod-carried statics are live (host-anchored via E.anchored), so the same
 // static covers the augment-donated form too — un-parked 2026-08-18. (The
@@ -559,7 +559,7 @@ card('Throwing Boulder', {
 // two was left behind by that unpark and has been removed.)
 card('Towering Colossus', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -570,34 +570,34 @@ card('Towering Colossus', {
 });
 
 // "[Augment] Spells cost [one] more to play during battle." — ee/3 3/4
-// Mystic Structure Unit. LIVE as of the R59 cost-modifier layer (it was parked
+// Mystic Structure Unit. LIVE since the cost-modifier layer, CR 111.10 (it was parked
 // for want of one, and the playtest report was "Tranquility isn't taxing
 // spells" — it wasn't, it couldn't).
 //
 // Scope, clause by clause:
-//  - "Spells" = `isPlayedSpellKind`: spell, spell unit and spell TOKEN. R305
-//    (owner, 2026-09-28): casting a spell token IS playing a spell — *"Yes,
+//  - "Spells" = `isPlayedSpellKind`: spell, spell unit and spell TOKEN. The owner
+//    (2026-09-28, CR 702.7a): casting a spell token IS playing a spell — *"Yes,
 //    taxed + counted"* — so a Fireball, Poison or Crystal cast in battle here
 //    costs [1]. (This read "a spell token is cast from play, not played" under
-//    R59, which R305 overturned.) A unit is not a spell.
-//  - "to play" = playing the card. Applying it as a mod is NOT playing (R37),
+//    the old cost-modifier ruling, which has since been overturned.) A unit is not a spell.
+//  - "to play" = playing the card. Applying it as a mod is NOT playing (CR 701.2b),
 //    which the purpose: 'mod' lookup handles for free.
 //  - "during battle" = the battle phase only; deployment casts are untaxed.
 //  - Unqualified subject, so it taxes BOTH players — and it is region-scoped
-//    (R12) like every static, so it bites in whichever region it is standing
+//    (CR 111.10) like every static, so it bites in whichever region it is standing
 //    in, attackers included.
 // Text-box [Augment], so the modifier radiates from the card played normally
 // AND from the augment mod anchored on its host, exactly like a static.
 card('Tranquility', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     costMods: [{
       delta: (g, _self, ctx) =>
         g.s.phase === 'battle'
           && ctx.purpose === 'play'
-          && isPlayedSpellKind(ctx.card.kind)                     // R305
+          && isPlayedSpellKind(ctx.card.kind)                     // CR 111.10c
           ? 1 : 0,
     }],
   },

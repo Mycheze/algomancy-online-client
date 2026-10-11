@@ -8,15 +8,18 @@
  *   stale:        [{kind, where, msg}]   sources that changed since drafting,
  *                                         verifier spans or finding evidence no
  *                                         longer in their file (pinned, not failing);
- *   undecided:    [{from, to}]           supersession candidates with no reviewed row;
- *   unclassified: [id]                   rulings with no classification row;
  * }
  *
  * Quotes are compared whitespace-normalised, as substrings of their source:
  *   printed  → the extract's printedPages (Manual / Rulebook 2023 pages) or a card's text
  *   designer → the RAQ claim's `claim` / `source` text
- *   rulings  → the ruling's body
  *   ours     → our glossary (never authority)
+ *   owner    → nothing outside the record: `sources.owner[].quote` IS the owner's
+ *              call, in his words, with the date he adopted it. It is its own
+ *              evidence, so the checks are its shape (≤200 chars, one line, a date)
+ *              and that an owner-basis rule carries one — except a call absorbed from
+ *              the retired register (`from: "register@<sha>"`), which must be verbatim
+ *              in the register at that commit (read from git).
  * Pure apart from reading repo files named by `file:` references and verdict
  * spans. Run as a script it checks the committed state and exits 1 on problems.
  *
@@ -24,14 +27,15 @@
  *   node client/engine/scripts/cr/check.mjs --unit U12     (one unit's files only)
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, basename, isAbsolute } from 'node:path';
 import { parseArgs } from 'node:util';
 import { REPO_ROOT } from '../paths.mjs';
 import {
-  ANY_NUM_RE, norm, parseRef, parseRulingCite, recordHash,
+  ANY_NUM_RE, norm, parseRef, recordHash,
   validateDiscrepancy, validateFinding, validateOutline, validateRecord, validateVerdict,
 } from './schema.mjs';
-import { buildModel, citedRulings, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
+import { buildModel, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
 
 /**
  * A verdict span quoted from a GENERATED file goes stale when that file is
@@ -47,10 +51,6 @@ const GENERATED_SPAN_HINT = {
     + 're-verify, and quote spans from ledgers/raq.ts, not the corpus)',
 };
 
-/** relations that do NOT make the older ruling stop being current */
-export const NON_SUPERSEDING = new Set(['extends', 'cites', 'confirms', 'applies']);
-export const CLASS_SCOPES = ['game', 'digital', 'process'];
-
 /**
  * Where a verifier's quoted code can stand as a rule's evidence (with an
  * executed test). A game rule is what the ENGINE does, so only engine source
@@ -62,12 +62,31 @@ export const CLASS_SCOPES = ['game', 'digital', 'process'];
 export const ENGINE_EVIDENCE_ROOTS = ['client/engine/src/'];
 export const DIGITAL_EVIDENCE_ROOTS = [...ENGINE_EVIDENCE_ROOTS, 'client/ui/', 'client/server/'];
 const NOT_SOURCE = ['client/ui/test/', 'client/server/test/', 'client/server/e2e/'];
+/**
+ * The retired R-ruling register (deleted 2026-10-11, archived at
+ * refs/archive/r-register-final). A frozen verdict's spans, and a finding's
+ * evidence, may quote it: that is history of what was checked, never evidence a
+ * rule rests on (only engine/ui/server source counts), so a span or evidence item
+ * in it is neither a problem nor stale.
+ */
+export const RETIRED_SOURCES = new Set(['client/docs/digital-rules.md']);
 export const isAnnexD = (r) => /^annexd(\.|$)/.test(String(r?.key ?? ''));
 export function isEvidenceSpan(r, file) {
   const f = String(file ?? '');
   if (NOT_SOURCE.some((p) => f.startsWith(p)) || /\.test\.[cm]?[jt]s$/.test(f) || f.includes('/node_modules/')) return false;
   return (isAnnexD(r) ? DIGITAL_EVIDENCE_ROOTS : ENGINE_EVIDENCE_ROOTS).some((p) => f.startsWith(p));
 }
+
+/**
+ * A quoted span with its rule citations taken out, the same on both sides of
+ * the comparison: `CR 608.2b`, `CR 702.3, 704.6b`, the retired `R114`, `R25/R239`,
+ * `R157 §5`, with the parentheses around them. A verdict pinned a span of code
+ * whose comment cited the retired register; the 2026-10 migration rewrote that
+ * citation and nothing else, and the span still holds. A span whose WORDS
+ * changed is still stale.
+ */
+const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*|R\d{1,3}b?(?:\s?[/+]\s?R\d{1,3}b?)*(?:\s?\(?(?:its\s)?§\s?\d+[a-z]?\)?)?)\)?(?:\s+ruling\s+\d+\b)?/g;
+export const uncite = (s) => norm(String(s ?? '').replace(CITE_RE, ' ')).replace(/\s+([,.;:)])/g, '$1');
 
 /** index the extract once: the lookups every check needs */
 export function indexExtract(ex) {
@@ -82,11 +101,10 @@ export function indexExtract(ex) {
     threads.add(String(t.threadId));
     for (const c of t.claims ?? []) claims.set(c.id, c);
   }
-  const rulings = new Map((ex.rulings ?? []).map((r) => [r.id, r]));
   const gloss = (ex.glossary ?? []).map((g) => ({ term: String(g.term ?? ''), text: norm(Object.values(g).filter((v) => typeof v === 'string').join(' \n ')) }));
   const tests = ex.tests ?? [];
   const symbols = new Set(ex.engineSymbols ?? []);
-  return { pages, cards, claims, threads, rulings, gloss, tests, symbols };
+  return { pages, cards, claims, threads, gloss, tests, symbols };
 }
 
 /**
@@ -144,23 +162,26 @@ export function check(inputs, ex, opts = {}) {
   const P = (code, where, msg) => problems.push({ code, where, msg });
   const S = (kind, where, msg) => stale.push({ kind, where, msg });
   const fileCache = new Map();
+  /* an owner call absorbed from the retired register (`from: "register@<sha>"`) is checked, verbatim,
+   * against the register at that commit — read from git, since the file is gone. `opts.registers`
+   * ({sha: text}) stands in for git (the fixtures); a commit git cannot show is a notice, not a pass */
+  const notices = [];
+  const regCache = new Map();
+  const registerText = (sha) => {
+    if (regCache.has(sha)) return regCache.get(sha);
+    let raw = null;
+    if (opts.registers) raw = opts.registers[sha] ?? null;
+    else { try { raw = execFileSync('git', ['show', `${sha}:client/docs/digital-rules.md`], { cwd: repo, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] }); } catch { raw = null; } }
+    if (raw === null) notices.push(`register@${sha} is not in this clone (git fetch origin refs/archive/r-register-final:refs/archive/r-register-final): its absorbed owner quotes were not checked`);
+    regCache.set(sha, raw === null ? null : norm(raw));
+    return regCache.get(sha);
+  };
   const repoFile = (rel) => {
     if (!fileCache.has(rel)) {
       const abs = join(repo, rel);
       fileCache.set(rel, !isAbsolute(rel) && existsSync(abs) ? norm(readFileSync(abs, 'utf8')) : null);
     }
     return fileCache.get(rel);
-  };
-
-  /* reviewed state: supersession and classification */
-  const edges = inputs.supersession?.edges ?? [];
-  const accepted = edges.filter((e) => e.decision === 'accepted' && !NON_SUPERSEDING.has(e.relation));
-  /** → null (current) | {whole: true} | {scopes: [...]} */
-  const superseded = (id) => {
-    const es = accepted.filter((e) => e.to === id);
-    if (!es.length) return null;
-    if (es.some((e) => !e.scope)) return { whole: true, by: es.map((e) => e.from) };
-    return { whole: false, scopes: es.map((e) => e.scope), by: es.map((e) => e.from) };
   };
 
   /** resolve a source ref and check a quote against it; `code` names the failure */
@@ -183,10 +204,8 @@ export function check(inputs, ex, opts = {}) {
       const c = X.claims.get(r.id);
       if (!c) { P('raq-missing', where, `RAQ claim ${r.id} does not exist`); return; }
       text = norm(`${c.claim ?? ''} \n ${c.source ?? ''}`);
-    } else if (r.type === 'ruling') {
-      const rr = X.rulings.get(r.id);
-      if (!rr) { P('ruling-missing', where, `${r.id} does not exist`); return; }
-      text = norm(`${rr.heading ?? ''} \n ${rr.body ?? ''}`);
+    } else if (r.type === 'owner') {
+      return; // an owner call is its own evidence: the quote is what he said
     } else if (r.type === 'glossary') {
       const hit = X.gloss.filter((g) => g.term.toLowerCase() === r.term.toLowerCase());
       text = (hit.length ? hit : X.gloss).map((g) => g.text).join(' \n ') || null;
@@ -255,6 +274,8 @@ export function check(inputs, ex, opts = {}) {
       if (!x.num) P('ref-unresolved', `${where} ${field}`, `${x.kind === 'key' ? 'key' : 'rule number'} ${x.ref} in the ${field} is not a live rule (renamed, removed or misspelt)`);
     }
   };
+  const uncited = new Map();
+  const unciteOf = (rel) => { if (!uncited.has(rel)) uncited.set(rel, uncite(repoFile(rel) ?? '')); return uncited.get(rel); };
   const findingIds = new Set(inputs.findings.map((f) => f.id));
   const discIds = new Set(inputs.discrepancies.map((d) => d.id));
   const verdictByKey = new Map();
@@ -268,19 +289,11 @@ export function check(inputs, ex, opts = {}) {
     for (const [i, x] of arr('printed').entries()) quoteIn(`${w} printed[${i}]`, x.ref, x.quote);
     for (const [i, x] of arr('designer').entries()) quoteIn(`${w} designer[${i}]`, x.ref, x.quote);
     for (const [i, x] of arr('ours').entries()) quoteIn(`${w} ours[${i}]`, x.ref, x.quote);
-    for (const [i, x] of arr('rulings').entries()) {
-      const label = typeof x === 'string' ? x : x?.ref ?? '';
-      const c = parseRulingCite(label);
-      if (!c) continue; // schema already said so
-      if (!X.rulings.has(c.id)) { P('ruling-missing', `${w} rulings[${i}]`, `${c.id} does not exist`); continue; }
-      const sup = superseded(c.id);
-      if (sup?.whole) P('ruling-superseded', `${w} rulings[${i}]`, `${c.id} is superseded (by ${sup.by.join(', ')}): cite it in history, not rulings`);
-      else if (sup && !c.scope) P('ruling-scope-required', `${w} rulings[${i}]`, `${c.id} is partly superseded (${sup.scopes.join('; ')}): cite it with the scope that still stands`);
-      if (typeof x === 'object' && x.quote !== undefined) quoteIn(`${w} rulings[${i}]`, c.id, x.quote);
-    }
-    for (const [i, h] of arr('history').entries()) {
-      const c = parseRulingCite(h?.ruling ?? '');
-      if (c && !X.rulings.has(c.id)) P('ruling-missing', `${w} history[${i}]`, `${c.id} does not exist`);
+    for (const [i, x] of arr('owner').entries()) {
+      const m = /\bregister@([0-9a-f]{7,40})\b/.exec(String(x?.from ?? ''));
+      if (!m) continue;
+      const t = registerText(m[1]);
+      if (t !== null && !t.includes(norm(x.quote ?? ''))) P('owner-quote-not-in-register', `${w} owner[${i}]`, `not verbatim in the retired register at ${m[1]}: "${String(x.quote).slice(0, 90)}"`);
     }
     for (const e of arr('engine')) {
       for (const tok of String(e).split(/\s*[/,]\s*/).filter(Boolean)) {
@@ -308,42 +321,33 @@ export function check(inputs, ex, opts = {}) {
     }
 
     /* basis vs sources (ours never counts) */
-    const hasPrinted = arr('printed').length > 0, hasDesigner = arr('designer').length > 0, hasRulings = arr('rulings').length > 0;
+    const hasPrinted = arr('printed').length > 0, hasDesigner = arr('designer').length > 0, hasOwner = arr('owner').length > 0;
     const hasEngine = arr('engine').length > 0;
-    const kinds = [hasPrinted, hasDesigner, hasRulings, hasEngine].filter(Boolean).length;
+    const kinds = [hasPrinted, hasDesigner, hasOwner, hasEngine].filter(Boolean).length;
     const bad = (m) => { if (!('term' in r)) P('basis-inconsistent', w, `basis ${r.basis}: ${m}`); };
     if (r.basis === 'printed' && !hasPrinted) bad('needs a printed quote');
     if (r.basis === 'designer' && !hasDesigner) bad('needs a designer quote');
-    if (r.basis === 'owner' && !hasRulings) bad('needs a ruling');
+    if (r.basis === 'owner' && !hasOwner) bad('needs sources.owner: the owner\'s words, with the date he adopted them');
     if (r.basis === 'owner' && (hasPrinted || hasDesigner)) bad('has a printed or designer source, so it is not an owner call alone');
     if (r.basis === 'engine' && (hasPrinted || hasDesigner)) bad('has a printed or designer source, so it is not engine-only');
-    if (r.basis === 'mixed' && kinds < 2) bad('needs sources of at least two kinds (printed, designer, rulings, engine)');
+    if (r.basis === 'mixed' && kinds < 2) bad('needs sources of at least two kinds (printed, designer, owner, engine)');
 
     /* the contract's first clause: at least one checkable evidence item */
-    const quoted = hasPrinted || hasDesigner || arr('rulings').some((x) => typeof x === 'object' && x?.quote);
+    const quoted = hasPrinted || hasDesigner || arr('owner').some((x) => typeof x === 'object' && x?.quote);
     const v = verdictByKey.get(M ? M.canon(r.key) : r.key);
     const demonstrated = v && v.textHash === recordHash(r)
       && (v.quote_spans ?? []).some((q) => isEvidenceSpan(r, q.file))
       && (v.tests_run ?? []).some((t) => t.passed);
-    if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed, designer or ruling source, and no verified code quote (engine source; for Annex D also client/ui or client/server source) with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
+    if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed or designer source, no owner call in his words, and no verified code quote (engine source; for Annex D also client/ui or client/server source) with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
 
     /* the sources a later check can watch */
     const hashes = r.sourceHashes ?? {};
-    for (const x of arr('rulings')) {
-      const c = parseRulingCite(typeof x === 'string' ? x : x?.ref ?? '');
-      if (c && X.rulings.has(c.id) && !(c.id in hashes)) P('source-hash-missing', w, `cites ${c.id} but carries no sourceHashes["${c.id}"]`);
-    }
     for (const x of arr('designer')) {
       const k = String(x?.ref ?? '');
       if (X.claims.has(k.replace(/^RAQ /, '')) && !(k in hashes)) P('source-hash-missing', w, `quotes ${k} but carries no sourceHashes["${k}"]`);
     }
     for (const [k, h] of Object.entries(hashes)) {
-      const c = parseRulingCite(k);
-      if (c && c.scope === '') {
-        const rr = X.rulings.get(c.id);
-        if (!rr) P('ruling-missing', `${w} sourceHashes`, `${c.id} does not exist`);
-        else if (rr.bodyHash !== h) S('source', w, `${c.id} changed since drafting`);
-      } else if (k.startsWith('RAQ ')) {
+      if (k.startsWith('RAQ ')) {
         const cl = X.claims.get(k.slice(4));
         if (!cl) P('raq-missing', `${w} sourceHashes`, `${k} does not exist`);
         else if (cl.textHash !== h) S('source', w, `${k} changed since drafting`);
@@ -409,9 +413,10 @@ export function check(inputs, ex, opts = {}) {
     if (f.rule && !numOk(f.rule)) P('finding-rule-unresolved', f.id, `rule ${f.rule} is not a live rule number or key`);
     for (const d of f.dupes ?? []) if (!findingIds.has(d)) P('finding-missing', f.id, `dupes names ${d}, which is not in findings`);
     for (const e of f.evidence ?? []) {
+      if (RETIRED_SOURCES.has(String(e.file ?? ''))) continue;
       const t = repoFile(String(e.file ?? ''));
       if (t === null) P('source-missing', f.id, `evidence file ${e.file} does not exist (repo-relative paths only)`);
-      else if (!t.includes(norm(e.quote ?? ''))) S('finding-evidence', f.id, `evidence no longer in ${e.file}: "${String(e.quote).slice(0, 80)}"`);
+      else if (!t.includes(norm(e.quote ?? '')) && !uncite(t).includes(uncite(e.quote))) S('finding-evidence', f.id, `evidence no longer in ${e.file}: "${String(e.quote).slice(0, 80)}"`);
     }
   }
 
@@ -423,43 +428,28 @@ export function check(inputs, ex, opts = {}) {
     if (!recKeys.has(v.key) && !recKeys.has(k)) P('verdict-orphan', v.key, 'a verdict for a key no record has');
     for (const q of v.quote_spans ?? []) {
       if (isAbsolute(String(q.file))) { P('verdict-span-path', v.key, `span file ${q.file} must be repo-relative`); continue; }
+      if (RETIRED_SOURCES.has(String(q.file))) continue;
       const t = repoFile(String(q.file));
       if (t === null) P('source-missing', v.key, `span file ${q.file} does not exist`);
-      else if (!t.includes(norm(q.text ?? ''))) S('verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"${GENERATED_SPAN_HINT[q.file] ?? ''}`);
+      else if (!t.includes(norm(q.text ?? '')) && !unciteOf(q.file).includes(uncite(q.text))) {
+        // a span that is ONLY a comment quotes no code: its words changing is a note, not a
+        // rule whose demonstration moved (409 pins the code spans, and lists these). A span
+        // citing a retired R-number quoted a comment or a message too: code never cited one.
+        const commentOnly = String(q.text ?? '').split('\n').every((l) => /^\s*(?:\/\/|\/?\*)/.test(l))
+          || /\bR\d{1,3}b?\b/.test(String(q.text ?? ''));
+        S(commentOnly ? 'verdict-comment' : 'verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"${GENERATED_SPAN_HINT[q.file] ?? ''}`);
+      }
     }
   }
 
-  /* supersession: every candidate decided; decided rows name real rulings */
-  const decided = new Set(edges.map((e) => `${e.from}>${e.to}`));
-  const seenPairs = new Set();
-  const undecided = [];
-  for (const c of ex.supersessionCandidates ?? []) {
-    const k = `${c.from}>${c.to}`;
-    if (seenPairs.has(k)) continue;
-    seenPairs.add(k);
-    if (!decided.has(k)) undecided.push({ from: c.from, to: c.to });
-  }
-  for (const e of edges) {
-    if (!X.rulings.has(e.from) || !X.rulings.has(e.to)) P('supersession-unresolved', `${e.from}>${e.to}`, 'a supersession row names a ruling that does not exist');
-    if (!['accepted', 'rejected'].includes(e.decision)) P('schema', 'supersession.json', `${e.from}>${e.to}: decision must be accepted or rejected`);
-  }
-
-  /* classification: every ruling has a row; every row is a ruling */
-  const cls = inputs.classification ?? {};
-  const unclassified = (ex.rulings ?? []).map((r) => r.id).filter((id) => !(id in cls));
-  for (const [id, c] of Object.entries(cls)) {
-    if (!X.rulings.has(id)) P('classification-orphan', id, 'classified, but no such ruling');
-    if (!CLASS_SCOPES.includes(c?.scope)) P('schema', 'classification.json', `${id}: scope must be ${CLASS_SCOPES.join('|')}`);
-  }
-
-  return { problems, stale, undecided, unclassified, cited: new Set(all.flatMap(citedRulings)) };
+  return { problems, stale, notices: [...new Set(notices)] };
 }
 
 /**
  * Which drafting unit a problem or stale row belongs to (`U12`), by the file
  * its row came from: a schema problem names the file; every other `where`
  * starts with a record key, a discrepancy or finding id, or a verdict key.
- * null = global (the outline, the ledger, the reviewed register files).
+ * null = global (the outline, the ledger).
  */
 export function unitIndex(inputs) {
   const byId = new Map();
@@ -496,8 +486,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   for (const p of problems) console.log(`PROBLEM ${p.code}  ${p.where}: ${p.msg}`);
   for (const s of stale) console.log(`stale   ${s.kind}  ${s.where}: ${s.msg}`);
+  for (const n of r.notices ?? []) console.log(`notice  ${n}`);
   if (values.unit) {
     console.log(`${values.unit}: ${problems.length} problem(s); ${stale.length} stale; ${notes.length} record(s) not numbered yet (numbered at wave end by cr:render — not a problem); ${elsewhere} problem(s) outside this unit, not listed`);
-  } else console.log(`${problems.length} problem(s); ${stale.length} stale; ${r.undecided.length} supersession candidate(s) undecided; ${r.unclassified.length} ruling(s) unclassified`);
+  } else console.log(`${problems.length} problem(s); ${stale.length} stale`);
   process.exit(problems.length ? 1 : 0);
 }

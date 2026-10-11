@@ -1,19 +1,19 @@
 /* BL-24 — "The 'into formation' or 'in my formation' hasn't been working."
  *
  * The owner's report (2026-08-24) names the whole class: Hooba-Lin, Hooba-Bot,
- * Hooba-Pon, Hooba-God ("create/play … in my formation", R75 — the controller
+ * Hooba-Pon, Hooba-God ("create/play … in my formation", CR 602.6 — the controller
  * chooses the slot at the effect's resolution), Tiderunner Initiate and Trench
- * Stalker ("played directly into formation", R29 — the spot is part of the
+ * Stalker ("played directly into formation", CR 602.7 — the spot is part of the
  * CAST). Investigated at be4cd54: every card in the class asks and places
  * correctly through the REAL action path, and the server's per-seat relay
  * (viewFor + legalActions) delivers the question intact — the reported
  * experience matches the class's documented pre-2026-08-22/24 behaviour
- * (ledger #54; the Hooba auto-pick; Trench Stalker parked until R123).
+ * (ledger #54; the Hooba auto-pick; Trench Stalker parked until its bin play landed).
  *
  * What WAS broken at HEAD is the question's presentation contract: both
  * mechanisms raised their ask as kind 'electricPath', whose numeric option
- * values the client reads as RAW ENTITY IDS (that is R4's contract — the
- * electric-path options really are entity ids). R75's slot options are slot
+ * values the client reads as RAW ENTITY IDS (that is CR 802.17's contract — the
+ * electric-path options really are entity ids). CR 602.6's slot options are slot
  * INDEXES 0..n-1, so the slot buttons pinged/previewed whichever units
  * happened to own entity ids 0..n-1 — actively misleading on exactly the
  * question the report is about. The ask is its own kind now: 'formationSlot'.
@@ -43,11 +43,11 @@ function expectSlotAsk(h: Harness, seat: Seat, source: string): void {
   assert.ok(dec, `${source}: the slot question is actually asked`);
   assert.equal(dec.seat, seat, `${source}: the effect's CONTROLLER is asked`);
   assert.equal(dec.kind, 'formationSlot',
-    `${source}: its own kind — 'electricPath' numeric values are raw entity ids (R4), and slot indexes are not`);
+    `${source}: its own kind — 'electricPath' numeric values are raw entity ids (CR 802.17), and slot indexes are not`);
   // Report #107: EVERY option on EVERY formation ask carries the FormationSpot
   // it refers to. Without it the client has label prose and nothing else, so
   // it cannot draw a drop target on the line even in principle. This runs on
-  // all three ask sites (R75 placeInFormation, R29 collectFormationSpot, R198
+  // all three ask sites (placeInFormation, collectFormationSpot and
   // pushInlinePlay) because all seven cards in the class come through here.
   assert.ok(dec.options.every(o => o.spot !== undefined),
     `${source}: #107 — every option says WHERE on the board it puts the unit`);
@@ -86,10 +86,10 @@ test('BL-24 Hooba-Bot (played as a unit): attack → the ask, and the Robot 2 la
   h.do({ type: 'declareAttack', seat: A, columns: [[bot]] });
   pass(h); pass(h);
   expectSlotAsk(h, A, 'Hooba-Bot');
-  // the R75 values are slot INDEXES — the exact namespace that collided with
+  // the CR 602.6 values are slot INDEXES — the exact namespace that collided with
   // entity ids while the ask rode kind 'electricPath'
   assert.ok(h.state.decision!.options.every((o, i) => o.value === i),
-    'R75 option values are indexes into the offered slot list');
+    'CR 602.6 option values are indexes into the offered slot list');
   pick(h, 1);                                         // behind me
   const col = h.state.battle!.columns[0]!;
   const robot = ent(h, col[1]!)!;
@@ -130,8 +130,8 @@ test('BL-24 Hooba-Pon: the pay question, THEN the slot question, and the paid un
   assert.equal(h.state.decision?.kind, 'payOrDecline', 'first: whether (and what) to pay for');
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));
   expectSlotAsk(h, A, 'Hooba-Pon');
-  // R198: still kind 'formationSlot' — which is what this file is about — but
-  // the VALUES are R29 `FormationSpot`s now rather than R75 slot indexes,
+  // CR 702.3e: still kind 'formationSlot' — which is what this file is about — but
+  // the VALUES are CR 602.7 `FormationSpot`s now rather than CR 602.6 slot indexes,
   // because the answer is stamped on the stack item and taken at the spawn.
   // Both shapes are opaque to the client, which is exactly BL-24's point.
   pick(h, { kind: 'behind', unit: pon });             // behind me
@@ -161,7 +161,7 @@ test('BL-24 Hooba-God: attack → the ask, and the copy token lands in the chose
   finishBattle(h);
 });
 
-// ── Tiderunner Initiate: "you may play me into an open spot in your formation" (R29) ──
+// ── Tiderunner Initiate: "you may play me into an open spot in your formation" (CR 602.7) ──
 
 test('BL-24 Tiderunner Initiate: the spot is asked in the CAST window, as formationSlot, and taken at resolution', () => {
   const h = new Harness(10506, ['Ben', 'Rashi']);
@@ -173,7 +173,7 @@ test('BL-24 Tiderunner Initiate: the spot is asked in the CAST window, as format
   giveResources(h, A, 'water', 1);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
   expectSlotAsk(h, A, 'Tiderunner Initiate');
-  // R29's values are FormationSpot descriptors, and "may" keeps the decline
+  // CR 602.7's values are FormationSpot descriptors, and "may" keeps the decline
   assert.ok(h.state.decision!.options.some(o => o.label === 'stay out of formation'));
   pick(h, { kind: 'behind', unit: wh });
   pass(h); pass(h);                                   // the play resolves
@@ -197,7 +197,7 @@ test('BL-24 Trench Stalker (from hand): the spot is asked at cast, and it resolv
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Trench Stalker') });
   expectSlotAsk(h, A, 'Trench Stalker');
   pick(h, { kind: 'end', end: 'left' });
-  // the [Discard two cards] cast cost follows, in the same window (R35/R49)
+  // the [Discard two cards] cast cost follows, in the same window (CR 702.3f, 702.4)
   for (let k = 0; k < 2; k++) {
     assert.equal(h.state.decision?.kind, 'targets', 'the discard cost is collected at cast');
     h.do({ type: 'decide', seat: A, choice: 0 });
@@ -220,7 +220,7 @@ test('BL-24 Trench Stalker (from bin): offered, asked, and it lands in the line'
   giveResources(h, A, 'dark', 4);
   give(h, A, 'Jelly'); give(h, A, 'Jelly');
   const offer = legalActions(h.state, A).find(a => a.type === 'playFromBin');
-  assert.ok(offer, 'R123: the bin play is OFFERED (its own printed permission)');
+  assert.ok(offer, 'CR 405.9: the bin play is OFFERED (its own printed permission)');
   h.do(offer!);
   expectSlotAsk(h, A, 'Trench Stalker (bin)');
   pick(h, { kind: 'behind', unit: wh });
@@ -233,7 +233,7 @@ test('BL-24 Trench Stalker (from bin): offered, asked, and it lands in the line'
 });
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * R225 — "IN MY FORMATION" IS READ OFF THE SOURCE, NOT OFF THE SEAT.
+ * CR 602.6e — "IN MY FORMATION" IS READ OFF THE SOURCE, NOT OFF THE SEAT.
  *
  * Owner, room FTUW action 45 (2026-08-27): *"Hooba-Lin should not have made a
  * token here since it does not have a formation"*. Hooba-Lin attacked, its
@@ -242,19 +242,19 @@ test('BL-24 Trench Stalker (from bin): offered, asked, and it lands in the line'
  *
  * The engine already had the right reading of the same printed phrase: the
  * COUNTING half of the family reads the source (`columnOf` on Hooba-Nan and
- * Rousing Spirit; R27's "a unit that wasn't attacking gets X = 0"). The
+ * Rousing Spirit; CR 602.6h's "a unit that wasn't attacking gets X = 0"). The
  * PLACING half read `formationSlots(ctx.controller)` — the SEAT's grid — and
  * `placeInFormation` was only ever handed the source's DISPLAY NAME, so it
  * could not have read the source even if it had wanted to. That asymmetry is
- * the whole bug, and it is not an exception to R1's "if I am still in
- * formation is the only recheck mechanism": R1 is about CONDITIONS, and "in my
- * formation" is a REFERENT computed at resolution (R27), which simply has
+ * the whole bug, and it is not an exception to CR 109.3c's "if I am still in
+ * formation is the only recheck mechanism": CR 109.3c is about CONDITIONS, and "in my
+ * formation" is a REFERENT computed at resolution (CR 602.6e), which simply has
  * nothing to point at when the source is not in a line.
  *
  * TWO GRADES, and every card in the class was wrong in at least one:
  *  · DEAD SOURCE — Hooba-Lin and Hooba-Bot had no guard at all and placed from
  *    the bin. Hooba-God and Hooba-Pon refused this one already (`selfOf`).
- *  · ALIVE BUT UNSLOTTED — R172's mid-battle control theft leaves a unit in
+ *  · ALIVE BUT UNSLOTTED — CR 711.3's mid-battle control theft leaves a unit in
  *    play, out of the formation, until regroup. ALL FOUR placed, because
  *    `selfOf` tests IN PLAY, which is the wrong predicate. Hooba-Pon
  *    additionally CHARGED the player for the play.
@@ -304,7 +304,7 @@ function killSource(h: Harness, src: EntityId): void {
 /**
  * grade 2: the source is ALIVE and IN PLAY but stands in no formation.
  *
- * R172's own primitive produces it — `giveControl` unslots mid-battle and
+ * CR 711.3's own primitive produces it — `giveControl` unslots mid-battle and
  * never re-slots ("it sits out until regroup"). Stealing it straight back
  * leaves the controller, the region and the trigger's seat exactly as they
  * were, so the ONLY fact that changed is the one under test: it is not in a
@@ -317,7 +317,7 @@ function unslotSource(h: Harness, src: EntityId, D: Seat, A: Seat): void {
   const u = ent(h, src)!;
   assert.equal(u.controller, A, 'still mine');
   assert.equal(u.region, h.state.battle!.region, 'still standing in the battle region');
-  assert.equal(e.columnOf(src), null, 'and out of the formation (R172)');
+  assert.equal(e.columnOf(src), null, 'and out of the formation (CR 711.3)');
 }
 
 /** the shared verdict: the trigger resolved into nothing, loudly and cleanly */
@@ -329,15 +329,15 @@ function expectNoPlacement(h: Harness, A: Seat, src: EntityId, before: number, w
 
 // ── Hooba-Lin — "create a 1/1 unit in my formation" ─────────────────────────
 
-// ⚠ R325 (2026-10-09) REVERSES R225's dead-source grade. The RAQ, "[Solved]
+// ⚠ The last-known-state ruling (2026-10-09, now CR 714.4) REVERSES the earlier dead-source grade. The RAQ, "[Solved]
 // Dead Unit Effect on Stack" (_passer): "there are some which will remember
 // they were in formation and will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin,
 // Embermaw Fledgling, Lumengrove Lurker)". The RAQ is the authority (owner,
-// 2026-10-09). These four tests used to assert R225's "no token"; they assert
-// the RAQ now. The ALIVE-but-unslotted grade (R172) is untouched: a unit that
+// 2026-10-09). These four tests used to assert the earlier reading, "no token"; they assert
+// the RAQ now. The ALIVE-but-unslotted grade (CR 711.3) is untouched: a unit that
 // is in play and out of the line names no formation, alive or remembered.
 
-test('R325 Hooba-Lin: killed under its own attack trigger, it remembers its formation → the 1/1 joins it', () => {
+test('CR 714.4 Hooba-Lin: killed under its own attack trigger, it remembers its formation → the 1/1 joins it', () => {
   const { h, A, src, whale } = twoColumnAttack(10520, 'Hooba-Lin');
   killSource(h, src);
   pass(h); pass(h);                                   // the attack trigger resolves
@@ -350,7 +350,7 @@ test('R325 Hooba-Lin: killed under its own attack trigger, it remembers its form
   finishBattle(h);
 });
 
-test('R225 Hooba-Lin: alive but out of the formation (R172) → no token, no question', () => {
+test('CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3) → no token, no question', () => {
   const { h, A, D, src, whale } = twoColumnAttack(10521, 'Hooba-Lin');
   unslotSource(h, src, D, A);
   const before = unitsOf(h, A).length;
@@ -363,7 +363,7 @@ test('R225 Hooba-Lin: alive but out of the formation (R172) → no token, no que
 
 // ── Hooba-Bot — "create a Robot 2 in my formation" ──────────────────────────
 
-test('R325 Hooba-Bot: killed under its own attack trigger, it remembers its formation → the Robot joins it', () => {
+test('CR 714.4 Hooba-Bot: killed under its own attack trigger, it remembers its formation → the Robot joins it', () => {
   const { h, A, src, whale } = twoColumnAttack(10522, 'Hooba-Bot');
   killSource(h, src);
   pass(h); pass(h);
@@ -375,7 +375,7 @@ test('R325 Hooba-Bot: killed under its own attack trigger, it remembers its form
   finishBattle(h);
 });
 
-test('R225 Hooba-Bot: alive but out of the formation (R172) → no Robot, no question', () => {
+test('CR 602.6e Hooba-Bot: alive but out of the formation (CR 711.3) → no Robot, no question', () => {
   const { h, A, D, src, whale } = twoColumnAttack(10523, 'Hooba-Bot');
   unslotSource(h, src, D, A);
   const before = unitsOf(h, A).length;
@@ -388,7 +388,7 @@ test('R225 Hooba-Bot: alive but out of the formation (R172) → no Robot, no que
 
 // ── Hooba-God — "create a token that's a copy of me in my formation" ────────
 
-test('R325 Hooba-God: killed under its own attack trigger → a copy of what it was joins the formation it remembers', () => {
+test('Hooba-God: killed under its own attack trigger → a copy of what it was joins the formation it remembers', () => {
   // Hooba-God is not named in the RAQ's list, but the rule the thread states is
   // general — "his effect will check BB 'state/last known state' on
   // resolution" — and "a copy of me in my formation" reads the same two facts
@@ -403,7 +403,7 @@ test('R325 Hooba-God: killed under its own attack trigger → a copy of what it 
   finishBattle(h);
 });
 
-test('R225 Hooba-God: alive but out of the formation (R172) → no copy — IN PLAY was the wrong predicate', () => {
+test('CR 602.6e Hooba-God: alive but out of the formation (CR 711.3) → no copy — IN PLAY was the wrong predicate', () => {
   const { h, A, D, src, whale } = twoColumnAttack(10525, 'Hooba-God');
   unslotSource(h, src, D, A);
   const before = unitsOf(h, A).length;
@@ -417,7 +417,7 @@ test('R225 Hooba-God: alive but out of the formation (R172) → no copy — IN P
 // ── Hooba-Pon — "you may play a unit from your hand into an open position in
 //    my formation (you still pay the cost)" ─────────────────────────────────
 
-test('R325 Hooba-Pon: killed under its own attack trigger, it remembers its formation → the play is still offered', () => {
+test('CR 714.4 Hooba-Pon: killed under its own attack trigger, it remembers its formation → the play is still offered', () => {
   const { h, A, src } = twoColumnAttack(10526, 'Hooba-Pon');
   giveResources(h, A, 'water', 4);
   give(h, A, 'Hooba-Pon');                            // a unit it can pay for
@@ -432,7 +432,7 @@ test('R325 Hooba-Pon: killed under its own attack trigger, it remembers its form
   finishBattle(h);
 });
 
-test('R225 Hooba-Pon: alive but out of the formation (R172) → the PAY QUESTION is never asked', () => {
+test('CR 602.6e Hooba-Pon: alive but out of the formation (CR 711.3) → the PAY QUESTION is never asked', () => {
   const { h, A, D, src, whale } = twoColumnAttack(10527, 'Hooba-Pon');
   giveResources(h, A, 'water', 4);
   give(h, A, 'Hooba-Pon');
@@ -475,7 +475,7 @@ async function cardSources(): Promise<{ file: string; text: string }[]> {
   return Promise.all(names.map(async f => ({ file: f, text: await readFile(new URL(f, dir), 'utf8') })));
 }
 
-test('R225 conformance: EVERY card call site of placeInFormation names its source ENTITY', async () => {
+test('CR 602.6e conformance: EVERY card call site of placeInFormation names its source ENTITY', async () => {
   // DERIVED, never typed. The repo's signature failure is a one-card fix for a
   // whole class (report #46, closed single-card and re-filed twice), so the
   // guard's membership is computed from the tree: a FIFTH card that calls
@@ -487,11 +487,11 @@ test('R225 conformance: EVERY card call site of placeInFormation names its sourc
     `the scan must actually find the call sites — it found ${sites.length}, so it is not testing anything`);
   const bare = sites.filter(s => !/\bsourceId\s*:/.test(s.call));
   assert.deepEqual(bare.map(s => `${s.file}: ${s.call.replace(/\s+/g, ' ')}`), [],
-    '"in my formation" is read off the SOURCE (R225/R27), and a display string cannot answer that: '
+    '"in my formation" is read off the SOURCE (CR 602.6e), and a display string cannot answer that: '
     + 'pass `sourceId: <the source entity id>`, and guard the effect on it BEFORE anything is minted or paid');
 });
 
-test('R225 conformance: every "in my formation" placer guards on the SOURCE before it spawns', async () => {
+test('CR 602.6e conformance: every "in my formation" placer guards on the SOURCE before it spawns', async () => {
   // The second half of the same class: a guard that runs AFTER the spawn
   // leaves a token stranded in the region, which is a different wrong answer
   // rather than a safe one. Every effect body that calls placeInFormation must
@@ -513,7 +513,7 @@ test('R225 conformance: every "in my formation" placer guards on the SOURCE befo
 
 /* ── report #107: the ask can be pointed at, and the ANSWER did not move ─── */
 
-test('#107 R75: the slot ask carries the real FormationSpot, and is still ANSWERED BY INDEX', () => {
+test('#107 CR 602.6: the slot ask carries the real FormationSpot, and is still ANSWERED BY INDEX', () => {
   const h = new Harness(10528, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative;
@@ -528,7 +528,7 @@ test('#107 R75: the slot ask carries the real FormationSpot, and is still ANSWER
   // the chosen option's LABEL (server/rooms.ts referenceKey); the engine reads
   // `value` as a slot index. `spot` is additive and display-only — read it to
   // resolve an answer and every saved game re-keys, taking
-  // 143-replay-divergence and the R200 forensic stack with it.
+  // 143-replay-divergence and the replay forensic stack with it.
   assert.deepEqual(opts.map(o => o.value), [0, 1, 2], 'values are still bare slot indexes');
   assert.deepEqual(opts.map(o => o.spot),
     [{ kind: 'end', end: 'left' }, { kind: 'behind', unit: bot }, { kind: 'end', end: 'right' }],
@@ -541,9 +541,9 @@ test('#107 R75: the slot ask carries the real FormationSpot, and is still ANSWER
 });
 
 test('#107: all three formationSlot ask sites are accounted for', async () => {
-  // Derived, not typed: three SITES serving seven cards (R75 placeInFormation
-  // → Hooba-Lin/Bot/God/Pon-out-of-battle; R29 collectFormationSpot →
-  // Tiderunner Initiate/Trench Stalker; R198 pushInlinePlay → Hooba-Pon in
+  // Derived, not typed: three SITES serving seven cards (CR 602.6 placeInFormation
+  // → Hooba-Lin/Bot/God/Pon-out-of-battle; CR 602.7 collectFormationSpot →
+  // Tiderunner Initiate/Trench Stalker; CR 702.3e pushInlinePlay → Hooba-Pon in
   // battle). A fourth site reddens this, and its author has to give it a
   // `spot` and a test rather than shipping an unpointable question.
   const dir = new URL('../src/', import.meta.url);
@@ -561,7 +561,7 @@ test('#107: all three formationSlot ask sites are accounted for', async () => {
     'a new formationSlot ask must carry `spot` on every option (#107) and be covered here');
 });
 
-test('R225 the primitive itself: placeInFormation given a sourceId that is in NO formation refuses', () => {
+test('CR 602.6e the primitive itself: placeInFormation given a sourceId that is in NO formation refuses', () => {
   // The engine half, tested where the card guards cannot reach it. Both are
   // wanted: the card guard stops the token being minted at all, and this stops
   // a future caller that forgets one from placing into the SEAT's grid — the
@@ -583,7 +583,7 @@ test('R225 the primitive itself: placeInFormation given a sourceId that is in NO
   const asked: unknown[] = [];
   const ctx = { controller: A, choose: (_k: string, d: { options: unknown[] }) => { asked.push(d); return 0; } };
   assert.equal(e.placeInFormation(tok, ctx as never, { source: 'Hooba-Lin', sourceId: loose }), false,
-    'R225: the source names no formation, so nothing joins one');
+    'CR 602.6e: the source names no formation, so nothing joins one');
   assert.deepEqual(asked, [], 'and nothing was asked');
   assert.deepEqual(h.state.battle!.columns, [[whale]], 'the line is untouched');
   assert.ok(e.events.some(ev => /not in a formation/.test(ev.msg)), 'it says why — silence is a conformance failure');

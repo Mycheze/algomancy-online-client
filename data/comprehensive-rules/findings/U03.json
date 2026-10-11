@@ -3,11 +3,11 @@
     "id": "F-U03-1",
     "rule": "concepts.targets.ally.self",
     "title": "Wraith test title still calls the self-pick an unconfirmed reading after the owner confirmed it",
-    "summary": "R71 item 4 (owner, 2026-08-21) settled that \"an ally\" may be the Wraith itself, and R265 (owner, 2026-08-30) made \"an ally includes itself\" general. The 37-attrs-wight test is still titled \"(unconfirmed reading)\" with a warning mark. The title states an open question that is closed; retitle it to cite the ruling.",
+    "summary": "The owner ruling of 2026-08-22 (“The Wraith token, redesigned; and \"an…”) item 4 (owner, 2026-08-21) settled that \"an ally\" may be the Wraith itself, and the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) (owner, 2026-08-30) made \"an ally includes itself\" general. The 37-attrs-wight test is still titled \"(unconfirmed reading)\" with a warning mark. The title states an open question that is closed; retitle it to cite the ruling.",
     "evidence": [
       {
         "file": "client/engine/test/37-attrs-wight.test.ts",
-        "quote": "test('R71 ⚠: a lone Wraith may pick ITSELF as \"an ally\" (unconfirmed reading)', () => {"
+        "quote": "test('CR 110.4a ⚠: a lone Wraith may pick ITSELF as \"an ally\" (unconfirmed reading)', () => {"
       },
       {
         "file": "client/docs/digital-rules.md",
@@ -28,7 +28,7 @@
       },
       {
         "file": "client/engine/src/cards/sets/batch-light-c.ts",
-        "quote": "// like everything else (R12), which is also what \"during battle\" amounts to:"
+        "quote": "// like everything else (CR 601.2), which is also what \"during battle\" amounts to:"
       },
       {
         "file": "client/engine/src/engine.ts",
@@ -40,8 +40,8 @@
   {
     "id": "F-U03-3",
     "rule": "concepts.targets.ally.effect-controller",
-    "title": "The R58 Enigmatic Warder test asserts nothing on its main path",
-    "summary": "49-playtest-round6 'R58: Enigmatic Warder cannot redirect an ENEMY into an ally slot' passes twice and then looks for Fight on the stack; Fight has resolved by then, so the ally-slot assertion inside `if (after)` never runs, and the remaining assertion holds whatever the Warder did. Assert before passing, or drop the guard.",
+    "title": "The owner ruling of 2026-08-19 (“Per-slot target legality, re-checked at resolution”) Enigmatic Warder test asserts nothing on its main path",
+    "summary": "49-playtest-round6 'the owner ruling of 2026-08-19 (“Per-slot target legality, re-checked at resolution”): Enigmatic Warder cannot redirect an ENEMY into an ally slot' passes twice and then looks for Fight on the stack; Fight has resolved by then, so the ally-slot assertion inside `if (after)` never runs, and the remaining assertion holds whatever the Warder did. Assert before passing, or drop the guard.",
     "evidence": [
       {
         "file": "client/engine/test/49-playtest-round6.test.ts",

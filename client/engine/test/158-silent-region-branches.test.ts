@@ -1,7 +1,7 @@
 /**
- * "EACH OPPONENT" IN A REGION THAT HOLDS NOBODY ELSE — CARD-TODO #70 / R187.
+ * "EACH OPPONENT" IN A REGION THAT HOLDS NOBODY ELSE — CARD-TODO #70 / CR D7.3b.
  *
- * R25 scopes an effect to its region. Nine effects read the region's
+ * CR 101.6 scopes an effect to its region. Nine effects read the region's
  * `presentSeats` to find "each opponent", and a HOME region out of battle
  * lists only its owner — so the loop runs zero times, the effect resolves,
  * and the log said NOTHING. The player was told neither what happened nor why
@@ -13,14 +13,14 @@
  * Not SAYING so is the bug, and that is the only thing repaired.
  *
  * `85-silent-branches` §9 made exactly this repair for the three the old fuzz
- * happened to reach — Restitution, Vroot and Flzzz. R182's deterministic drive
+ * happened to reach — Restitution, Vroot and Flzzz. The later deterministic drive
  * then reached the whole registry and found the rest of the family sitting in
  * `65-effect-conformance`'s `SILENT_KNOWN`, thirteen labels of it (nine
  * EffectDefs, four of them reached twice because the ability/spell and the
  * graft rider are the SAME object). This file is the per-card regression net
  * for all nine, plus the near neighbour that travelled with them.
  *
- * ⚠ R209 / CARD-TODO #74: **the family now lives HERE and only here.** 85's §9
+ * ⚠ CR D7.3 / CARD-TODO #74: **the family now lives HERE and only here.** 85's §9
  * three have been moved into §11 below. They were split across two files whose
  * class tests each claimed the two lists were disjoint, which meant that when
  * the family next grew, neither file owned it — the exact failure mode
@@ -70,7 +70,7 @@ interface Board { g: E; A: Seat; D: Seat; region: number }
  * Deployment is the ordinary out-of-battle shape: `regions` is
  * `[{owner:0,presentSeats:[0]},{owner:1,presentSeats:[1]}]`, so seat A's home
  * region holds A and nobody else while D sits in D's own region with a unit,
- * a full hand and his life total intact. That is precisely the situation R25
+ * a full hand and his life total intact. That is precisely the situation CR 601.4d
  * produces and the one the whole family used to resolve into silence in.
  */
 function board(seed: number): Board {
@@ -115,13 +115,13 @@ function assertNoOpponentPresent(b: Board, card: string): void {
   const others = b.g.s.regions[b.region]!.presentSeats.filter(s => s !== b.A);
   assert.deepEqual(others, [],
     `${card}: the rig is supposed to put the effect in a region that holds NOBODY but its `
-    + 'controller (R25) — with an opponent present the payload runs and this test proves nothing');
+    + 'controller (CR 601.4d) — with an opponent present the payload runs and this test proves nothing');
 }
 
 /** the whole point, in one line: the player was TOLD. */
 function assertSpoke(evs: EngineEvent[], card: string, clause: string): void {
   assert.ok(evs.length > 0,
-    `${card}: "${clause}" resolved in a region holding no opponent (R25) and emitted NOTHING. `
+    `${card}: "${clause}" resolved in a region holding no opponent (CR 601.4d) and emitted NOTHING. `
     + 'The player watches the effect leave the stack with no indication of what it did or why '
     + "it did not — add a g.ev('info', …) saying the region held no opponent before that return. "
     + '"Nothing happened" is a legitimate outcome; not SAYING so never is.');
@@ -137,7 +137,7 @@ test('Bloated Manablub — "Each opponent loses 3 life" in a region holding no o
   const b = board(8710);
   assertNoOpponentPresent(b, 'Bloated Manablub');
   const life = b.g.s.players.map(p => p.life);
-  assert.ok(life[b.D]! > 3, 'Bloated Manablub: the opponent has life to lose — a no-op here is R25, not exhaustion');
+  assert.ok(life[b.D]! > 3, 'Bloated Manablub: the opponent has life to lose — a no-op here is CR 601.4d, not exhaustion');
   const evs = resolve(abilityOf('Bloated Manablub'), b, {
     sourceName: 'Bloated Manablub',
     event: { type: 'died', msg: '', data: {} },
@@ -145,7 +145,7 @@ test('Bloated Manablub — "Each opponent loses 3 life" in a region holding no o
   assertSpoke(evs, 'Bloated Manablub', 'Each opponent loses 3 life');
   assert.deepEqual(b.g.s.players.map(p => p.life), life,
     'Bloated Manablub: "Each opponent loses 3 life" must NOT reach a seat that is not in the '
-    + 'region (R25) — the repair is the announcement, never making the loop run');
+    + 'region (CR 601.4d) — the repair is the announcement, never making the loop run');
 });
 
 // ── 2. Blightmound ─────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ test('Blightmound — "Each opponent gains 1 rot" in a region holding no opponen
   });
   assertSpoke(evs, 'Blightmound', 'Each opponent gains 1 rot');
   assert.deepEqual(b.g.s.players.map(p => p.rot ?? 0), rot,
-    'Blightmound: "Each opponent gains 1 rot" must not reach a seat outside the region (R25)');
+    'Blightmound: "Each opponent gains 1 rot" must not reach a seat outside the region (CR 601.4d)');
 });
 
 // ── 3. Linked Extinction ───────────────────────────────────────────────
@@ -176,7 +176,7 @@ test('Linked Extinction — "Each opponent sacrifices a unit" with the cost PAID
   assertNoOpponentPresent(b, 'Linked Extinction');
   const theirs = b.g.unitsOf(b.D, b.g.homeRegion(b.D));
   assert.ok(theirs.length > 0,
-    'Linked Extinction: the opponent has a unit — in his OWN region, which R25 puts out of reach');
+    'Linked Extinction: the opponent has a unit — in his OWN region, which CR 601.4d puts out of reach');
   const before = Object.keys(b.g.s.entities).length;
   const evs = resolve(spellOf('Linked Extinction'), b, {
     sourceName: 'Linked Extinction',
@@ -184,7 +184,7 @@ test('Linked Extinction — "Each opponent sacrifices a unit" with the cost PAID
   });
   assertSpoke(evs, 'Linked Extinction', 'Each opponent sacrifices a unit');
   assert.equal(Object.keys(b.g.s.entities).length, before,
-    'Linked Extinction: "Each opponent sacrifices a unit" is region-scoped (R25) — a unit '
+    'Linked Extinction: "Each opponent sacrifices a unit" is region-scoped (CR 601.4d) — a unit '
     + 'standing in the opponent\'s own region is not one this spell may reach');
 });
 
@@ -192,7 +192,7 @@ test('Linked Extinction — "Each opponent sacrifices a unit" with the cost PAID
 // "[Switch1] Each opponent discards a unit or spell if able. Otherwise, they
 // reveal their hand."
 //
-// ⚠ Its own comment CITED R25 for this exact case and it still said nothing
+// ⚠ Its own comment CITED CR 601.4d for this exact case and it still said nothing
 // when the case arrived.
 
 test('Void Memory — "Each opponent discards a unit or spell" in a region holding no opponent says so and touches no hand', () => {
@@ -205,7 +205,7 @@ test('Void Memory — "Each opponent discards a unit or spell" in a region holdi
   const evs = resolve(spellOf('Void Memory'), b, { sourceName: 'Void Memory' });
   assertSpoke(evs, 'Void Memory', 'Each opponent discards a unit or spell if able');
   assert.deepEqual(b.g.s.players.map(p => p.hand.length), hands,
-    'Void Memory: "each opponent" is the region\'s present seats (R25) and a seat that is not '
+    'Void Memory: "each opponent" is the region\'s present seats (CR 601.4d) and a seat that is not '
     + 'there neither discards nor reveals');
 });
 
@@ -218,14 +218,14 @@ test('Growing Plague — "each other player draws two cards" in a region holding
   const hands = b.g.s.players.map(p => p.hand.length);
   const decks = b.g.s.players.map(p => b.g.deckOf(p.seat).length);
   assert.ok(decks[b.D]! >= 2,
-    'Growing Plague: the other player has cards left to draw — a no-op here is R25, not an empty deck');
+    'Growing Plague: the other player has cards left to draw — a no-op here is CR 601.4d, not an empty deck');
   const evs = resolve(augmentOf('Growing Plague'), b, {
     sourceName: 'Growing Plague',
     event: { type: 'despawned', msg: '', data: {} },
   });
   assertSpoke(evs, 'Growing Plague', 'each other player draws two cards');
   assert.deepEqual(b.g.s.players.map(p => p.hand.length), hands,
-    'Growing Plague: "each other player" is region-scoped (R25) — nobody outside the region draws');
+    'Growing Plague: "each other player" is region-scoped (CR 601.4d) — nobody outside the region draws');
   assert.deepEqual(b.g.s.players.map(p => b.g.deckOf(p.seat).length), decks,
     'Growing Plague: and no deck was touched either');
 });
@@ -244,7 +244,7 @@ test('Malicious Hardware — "each opponent sacrifices a unit" in a region holdi
   assertSpoke(evs, 'Malicious Hardware', 'each opponent sacrifices a unit');
   assert.equal(Object.keys(b.g.s.entities).length, before,
     'Malicious Hardware: "each opponent sacrifices a unit" reaches only seats present in the '
-    + 'effect\'s region (R25) — nothing on the board may move');
+    + 'effect\'s region (CR 601.4d) — nothing on the board may move');
 });
 
 // ── 7. Pestilent Mycelion ──────────────────────────────────────────────
@@ -261,7 +261,7 @@ test('Pestilent Mycelion — "each opponent loses 1 life" in a region holding no
   });
   assertSpoke(evs, 'Pestilent Mycelion', 'each opponent loses 1 life');
   assert.deepEqual(b.g.s.players.map(p => p.life), life,
-    'Pestilent Mycelion: "each opponent" is the region\'s present seats (R25) and nobody else loses life');
+    'Pestilent Mycelion: "each opponent" is the region\'s present seats (CR 601.4d) and nobody else loses life');
 });
 
 // ── 8. Rotwall ─────────────────────────────────────────────────────────
@@ -277,7 +277,7 @@ test('Rotwall — "each opponent gains a rot" in a region holding no opponent sa
   });
   assertSpoke(evs, 'Rotwall', 'each opponent gains a rot');
   assert.deepEqual(b.g.s.players.map(p => p.rot ?? 0), rot,
-    'Rotwall: `opponentsIn` yields nobody in a home region (R25) and no rot may be handed out');
+    'Rotwall: `opponentsIn` yields nobody in a home region (CR 601.4d) and no rot may be handed out');
 });
 
 // ── 9. Verdant Necrophage ──────────────────────────────────────────────
@@ -302,7 +302,7 @@ test('Verdant Necrophage — "each opponent recalls a unit from their bin" in a 
   });
   assertSpoke(evs, 'Verdant Necrophage', 'each opponent recalls a unit from their bin');
   assert.deepEqual(b.g.s.players.map(p => p.bin.join(',')), bins,
-    'Verdant Necrophage: a seat that is not in the region recalls nothing (R25) — his bin is untouched');
+    'Verdant Necrophage: a seat that is not in the region recalls nothing (CR 601.4d) — his bin is untouched');
   assert.deepEqual(b.g.s.players.map(p => p.hand.length), hands,
     'Verdant Necrophage: and nothing arrived in anybody\'s hand');
 });
@@ -311,9 +311,9 @@ test('Verdant Necrophage — "each opponent recalls a unit from their bin" in a 
 // "[Augment] When I die, give each of your units with a -1/-1 counter on it
 // to target opponent."
 //
-// NOT the R25 shape: the opponent is a TARGET and is really there. The
+// NOT the CR 601.4d shape: the opponent is a TARGET and is really there. The
 // quantity — "each of your units with a -1/-1 counter" — is counted at
-// RESOLUTION (R157 §15 / R161) and may be none, and none used to be silent.
+// RESOLUTION (CR 107.8) and may be none, and none used to be silent.
 // It travelled off `SILENT_KNOWN` with the family, so it is watched with them.
 
 test('Stellarspore Harvester — "each of your units with a -1/-1 counter" counting zero says so and hands over nothing', () => {
@@ -336,7 +336,7 @@ test('Stellarspore Harvester — "each of your units with a -1/-1 counter" count
 
 // ── 11. THE THREE THE OLD FUZZ REACHED (moved here from 85-silent-branches §9)
 //
-// R209 / CARD-TODO #74. These three were repaired FIRST — 85-silent-branches
+// CR D7.3 / CARD-TODO #74. These three were repaired FIRST — 85-silent-branches
 // §9 fixed them because the old fuzz drive happened to walk into them — and
 // the other ten arrived here later, which left one family split across two
 // files with each file's class test claiming the lists were disjoint. Neither
@@ -362,7 +362,7 @@ for (const [card, def, clause, extra] of MOVED_FROM_85) {
     assertNoOpponentPresent(b, card);
     const lives = b.g.s.players.map(p => p.life);
     assert.ok(lives[b.D]! > 3,
-      `${card}: the opponent HAS life to lose — a no-op here is R25, not exhaustion`);
+      `${card}: the opponent HAS life to lose — a no-op here is CR 601.4d, not exhaustion`);
     const evs = resolve(def, b, { sourceName: card, ...extra });
     assertSpoke(evs, card, clause);
     assert.deepEqual(b.g.s.players.map(p => p.life), lives,
@@ -372,7 +372,7 @@ for (const [card, def, clause, extra] of MOVED_FROM_85) {
 
 // ── 12. THE GRAFT RIDER IS THE SAME OBJECT ──────────────────────────────
 
-test('the four grafted R25 riders are the same EffectDef object the tests above drove', () => {
+test('the four grafted CR 601.4d riders are the same EffectDef object the tests above drove', () => {
   // 65-effect-conformance labels a card's spell/ability and its graft rider
   // SEPARATELY, so the family was thirteen labels over nine effects. Four of
   // those thirteen are the second sighting of an object already covered above
@@ -406,21 +406,21 @@ test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also wa
     'Bloated Manablub', 'Blightmound', 'Linked Extinction', 'Void Memory',
     'Growing Plague', 'Malicious Hardware', 'Pestilent Mycelion', 'Rotwall',
     'Verdant Necrophage', 'Stellarspore Harvester',
-    // R209/CT-74: moved here from 85-silent-branches §9 so the family has ONE
+    // CR D7.3/CT-74: moved here from 85-silent-branches §9 so the family has ONE
     // owner. 85's own class test no longer claims them.
     ...MOVED_FROM_85.map(([c]) => c),
   ];
   assert.equal(fixed.length, 13,
-    'the whole R25 family lives in THIS file now — ten from R187 plus the three 85-silent-branches '
+    'the whole CR 601.4d family lives in THIS file now — ten from the CT-70 repair plus the three 85-silent-branches '
     + '§9 reached first. If the family grows, it grows here.');
   const missing = fixed.filter(c => effectsOf(c).length === 0);
   assert.deepEqual(missing, [],
     'these cards carry no EffectDef the registry can see, so the whole-pool sweeps cannot watch them');
 });
 
-// ── 14. R239's THREE, AND WHERE THE LINE BETWEEN THE FILES IS ───────────
+// ── 14. THE REGION-SCOPING THREE, AND WHERE THE LINE BETWEEN THE FILES IS ───────────
 //
-// R239 (owner, 2026-08-28): "Only players that are in the region as an effect
+// The owner, 2026-08-28 (now CR 101.6, 601.4d): "Only players that are in the region as an effect
 // can even see that it exists. So anything that happens in a region where a
 // player or unit currently isn't is 100% ignored, as if that effect didn't
 // exist." Same ruling as this whole file — a DIFFERENT failure.
@@ -429,7 +429,7 @@ test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also wa
 // nothing was said. Three others did the opposite: Uglk, Big Glimpse Card and
 // Rebalance NAMED an opponent rather than looping over one, and produced that
 // opponent by arithmetic (`?? (1 - seat)`, and in Rebalance's case a bare
-// `(1 - seat)` that never consulted the region at all). They REACHED a seat R25
+// `(1 - seat)` that never consulted the region at all). They REACHED a seat CR 601.4d
 // says is not there.
 //
 // Their per-card regression net is `208-region-scoping-is-absolute.test.ts`,
@@ -439,7 +439,7 @@ test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also wa
 
 const R239_REACHED = ['Uglk', 'Big Glimpse Card', 'Rebalance'];
 
-test('R239: the three cards that REACHED an absent seat are 208\'s, not this file\'s', () => {
+test('CR 601.4d: the three cards that REACHED an absent seat are 208\'s, not this file\'s', () => {
   const fixedHere = [
     'Bloated Manablub', 'Blightmound', 'Linked Extinction', 'Void Memory',
     'Growing Plague', 'Malicious Hardware', 'Pestilent Mycelion', 'Rotwall',

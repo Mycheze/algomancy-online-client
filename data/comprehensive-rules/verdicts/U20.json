@@ -45,7 +45,7 @@
   },
   {
     "key": "attr.afflicting.any-kill",
-    "textHash": "d259e52191769725",
+    "textHash": "253b08ed95c4d8f6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -95,7 +95,7 @@
   },
   {
     "key": "attr.afflicting.combat",
-    "textHash": "6b1b2bcea9d26b60",
+    "textHash": "a89df2a5e7d0149e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -146,7 +146,7 @@
   },
   {
     "key": "attr.afflicting.one-rot",
-    "textHash": "43babd288e4c7550",
+    "textHash": "6f1bccd7b51a3e6c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -235,7 +235,7 @@
   },
   {
     "key": "attr.afflicting.rot",
-    "textHash": "3bdf80881f9c79c5",
+    "textHash": "766d0430d99ff0b4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -373,7 +373,7 @@
   },
   {
     "key": "attr.alluring.after-resolution",
-    "textHash": "f58b4c3c650b8b58",
+    "textHash": "7f9abf1f305d79cc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -412,7 +412,7 @@
   },
   {
     "key": "attr.alluring.allurer-gone",
-    "textHash": "e55054c28400ef73",
+    "textHash": "706d42a1e75c959a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -455,7 +455,7 @@
   },
   {
     "key": "attr.alluring.cannot-attack",
-    "textHash": "7d9b4eaca91c60d7",
+    "textHash": "d0fe9223470bcccd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -554,7 +554,7 @@
   },
   {
     "key": "attr.alluring.lone-sneaky",
-    "textHash": "12ac0b9ddec25e9d",
+    "textHash": "f97699cec60d8115",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -597,7 +597,7 @@
   },
   {
     "key": "attr.alluring.must-block",
-    "textHash": "de0348fea9202df0",
+    "textHash": "5111837fe2a4d47c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -641,7 +641,7 @@
   },
   {
     "key": "attr.alluring.one-per-column",
-    "textHash": "94f522f6bf3e549e",
+    "textHash": "b8548186667138ce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -680,7 +680,7 @@
   },
   {
     "key": "attr.alluring.per-column",
-    "textHash": "4ccbb64528a55bc5",
+    "textHash": "35ff2116d63f9f54",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -725,7 +725,7 @@
   },
   {
     "key": "attr.alluring.pure-column",
-    "textHash": "f297b0c656412bdc",
+    "textHash": "bc40e912d18d9480",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -769,7 +769,7 @@
   },
   {
     "key": "attr.alluring.pure-target",
-    "textHash": "5f000a09200cedb6",
+    "textHash": "080d5f8574c45007",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -814,7 +814,7 @@
   },
   {
     "key": "attr.alluring.source",
-    "textHash": "392273b503487aff",
+    "textHash": "24bd515a42d616a8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -908,7 +908,7 @@
   },
   {
     "key": "attr.alluring.trigger",
-    "textHash": "91106155fea6da36",
+    "textHash": "2de197bfa901b8b1",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -1064,7 +1064,7 @@
   },
   {
     "key": "attr.blessed.column",
-    "textHash": "17c4380fb1742d86",
+    "textHash": "3752f947a93215db",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U20-r4",
@@ -1145,7 +1145,7 @@
   },
   {
     "key": "attr.blessed.gain",
-    "textHash": "451e0df5c552d70e",
+    "textHash": "126cb577e6edbbad",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1296,7 +1296,7 @@
   },
   {
     "key": "attr.blessed.simultaneous",
-    "textHash": "aea66d16613ac258",
+    "textHash": "849efce93e8bec6c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1448,7 +1448,7 @@
   },
   {
     "key": "attr.electric.atomic",
-    "textHash": "43f38216483f4086",
+    "textHash": "dfa902f8ed6c6732",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1487,7 +1487,7 @@
   },
   {
     "key": "attr.electric.chooser",
-    "textHash": "891659a6c377a03c",
+    "textHash": "af9cd563e4de397a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1679,7 +1679,7 @@
   },
   {
     "key": "attr.electric.no-revisit",
-    "textHash": "f640b118c2bbbf51",
+    "textHash": "919dcec604b0b0f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2091,7 +2091,7 @@
   },
   {
     "key": "attr.lethal.kills",
-    "textHash": "f2a7e92a0a3203e1",
+    "textHash": "ef8e12b4ec2cac1e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2136,7 +2136,7 @@
   },
   {
     "key": "attr.lethal.replaced",
-    "textHash": "492b9d4def118949",
+    "textHash": "c89d33f479c113ab",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2231,7 +2231,7 @@
   },
   {
     "key": "attr.modular.anything",
-    "textHash": "830d2861ca9fa973",
+    "textHash": "4f88db99f0deb5ff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2276,7 +2276,7 @@
   },
   {
     "key": "attr.modular.attributes",
-    "textHash": "2693a7258d93aa22",
+    "textHash": "975a8a3c4497fe9f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2315,7 +2315,7 @@
   },
   {
     "key": "attr.modular.graft",
-    "textHash": "2bcd47bad843491d",
+    "textHash": "90d52f0ae1da8dad",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2359,7 +2359,7 @@
   },
   {
     "key": "attr.modular.not-played",
-    "textHash": "5a65dbc02e9d29de",
+    "textHash": "e2c2931d60ab602d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2454,7 +2454,7 @@
   },
   {
     "key": "attr.modular.text-augment",
-    "textHash": "9f4979b93b6a863c",
+    "textHash": "4e1e9239e1d57975",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2493,7 +2493,7 @@
   },
   {
     "key": "attr.modular.unstable",
-    "textHash": "2645f310d878cf9b",
+    "textHash": "2ba0667a7712a151",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2838,7 +2838,7 @@
   },
   {
     "key": "attr.piercing.deadly",
-    "textHash": "4c1824f1223e3ccd",
+    "textHash": "afd68207f3098c51",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2888,7 +2888,7 @@
   },
   {
     "key": "attr.piercing.defending",
-    "textHash": "da38e96c71bc9d54",
+    "textHash": "a790779e72b5de35",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -2957,7 +2957,7 @@
   },
   {
     "key": "attr.piercing.elective",
-    "textHash": "2968dabc4961591d",
+    "textHash": "759e4ce1393b4419",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3012,7 +3012,7 @@
   },
   {
     "key": "attr.piercing.electric",
-    "textHash": "802a60fa70df7675",
+    "textHash": "b87dd5e16b50a793",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3126,7 +3126,7 @@
   },
   {
     "key": "attr.piercing.noncombat",
-    "textHash": "07e6db1ac11ca656",
+    "textHash": "7e910917a57c723e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3176,7 +3176,7 @@
   },
   {
     "key": "attr.piercing.noncombat-chooser",
-    "textHash": "6a3ae156715e238a",
+    "textHash": "4bddb48cfbc397c6",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3573,7 +3573,7 @@
   },
   {
     "key": "attr.poisonous.deadly",
-    "textHash": "b9ebc1d90b9dd464",
+    "textHash": "c7d6d3eeed9a0171",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3667,7 +3667,7 @@
   },
   {
     "key": "attr.poisonous.is-damage",
-    "textHash": "a4c6a7be2cc9fea7",
+    "textHash": "88acbc395db62227",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3804,7 +3804,7 @@
   },
   {
     "key": "attr.poisonous.powerful",
-    "textHash": "060ce7603fedec88",
+    "textHash": "882409629f37ce76",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4115,7 +4115,7 @@
   },
   {
     "key": "attr.pure.combat-damage",
-    "textHash": "30f42a47e78060f6",
+    "textHash": "8a384219db67a660",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4426,7 +4426,7 @@
   },
   {
     "key": "attr.pure.own",
-    "textHash": "9d843357c5667867",
+    "textHash": "2c8eaa5c85fce565",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4947,7 +4947,7 @@
   },
   {
     "key": "attr.resonant.combat-timing",
-    "textHash": "8bbc3644ffb9de4a",
+    "textHash": "97921252f1619bce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5261,7 +5261,7 @@
   },
   {
     "key": "attr.resonant.tax-and-negate",
-    "textHash": "5f6d683836cafab8",
+    "textHash": "8e7d1dbed7f3fab7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5311,7 +5311,7 @@
   },
   {
     "key": "attr.resonant.trigger",
-    "textHash": "0e248969c2669fa4",
+    "textHash": "145876741bc0fb3c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",

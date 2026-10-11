@@ -439,9 +439,9 @@ test('§4c rowId names an entity for a unit row and nothing for a spell row', ()
  * see them right now."*
  *
  * ⚠ THE REPORTED MOMENT IS NOT BROKEN and that was established by LOOKING, not
- * by reading: R188 drove a restored game in a real browser as the opponent
- * seat and the names arrive, render, and are inspectable (R222/R235 made them
- * arrive immediately inside a hidden segment; R310 moved them back to the
+ * by reading: the 2026-08-26 investigation drove a restored game in a real browser as the opponent
+ * seat and the names arrive, render, and are inspectable (rulings of 2026-08-28 made them
+ * arrive immediately inside a hidden segment; the 2026-10-04 ruling (CR D6.2) moved them back to the
  * recap, where the notice pops in the playback frame). The gap is ATTENTION —
  * the glimpser gets N card scans in a modal, the opponent gets one line of
  * prose in an 80-line log — which is exactly why the report was easy to close
@@ -489,7 +489,7 @@ test('§5c the newest glimpse in a batch wins', () => {
 
 test('§5d the client does not re-decide what is public', () => {
   // The server already made the whole privacy decision (visibleToSeat,
-  // redactEvent, R310's hold). A client filtering on its own opinion
+  // redactEvent, CR D6.2's hold). A client filtering on its own opinion
   // would be a second, quieter redactor — this repo has shipped two
   // information leaks that way (docs/13 §7.4). Whatever arrived, is shown.
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'reveal.ts'), 'utf8');
@@ -500,7 +500,7 @@ test('§5d the client does not re-decide what is public', () => {
 });
 
 test('§5e how long it stays up scales with the tempo, not a number of its own', () => {
-  // R242: one opinion about how fast a human reads, and a reveal is not exempt
+  // CR D5.4: one opinion about how fast a human reads, and a reveal is not exempt
   const one = glimpseNoticeUntil(0, 1, 1200, 1000);
   const five = glimpseNoticeUntil(0, 5, 1200, 1000);
   assert.ok(five > one, 'five cards get longer than one');

@@ -1,7 +1,7 @@
 /*
  * 255 · A WRITTEN-DOWN REMOTE PATH IS A CLAIM, AND CLAIMS ROT
  *
- * R275. The owner's 🐛 button appends to `var/issues.jsonl` on the deploy box.
+ * The owner's 🐛 button appends to `var/issues.jsonl` on the deploy box.
  * The repo sees those reports only through a committed copy,
  * `ledgers/playtest-issues.snapshot.jsonl`, and the only thing that refreshes
  * that copy is a command a human runs. That command lived as an scp literal in
@@ -127,7 +127,7 @@ test('§0 POSITIVE CONTROL: the refresh command is written down somewhere findab
   const refs = references();
   assert.ok(refs.length > 0,
     `no ${DEPLOY_HOST}:<path> reference anywhere in the repo. Either the fetch instruction was `
-    + 'deleted — in which case the intake loop has no documented repair at all and R275 has '
+    + 'deleted — in which case the intake loop has no documented repair at all and the path-constants rule has '
     + 'regressed — or the scan is broken. Both need a human.');
   assert.ok(refs.some(r => r.file.includes('70-playtest-ledger')),
     'no remote path in 70-playtest-ledger.test.ts. That file IS the snapshot guard; the command '
@@ -223,7 +223,7 @@ test('§3 the snapshot the ledger is checked against is the one the fetch writes
 /* ════════════════════════════════════════════════════════════════════════
  * 4. THE TYPE DECLARATIONS ARE A SECOND COPY OF §1's FACT
  *
- * R285. `scripts/paths.mjs` is plain JS, so the TypeScript side reads it
+ * `scripts/paths.mjs` is plain JS, so the TypeScript side reads it
  * through a HAND-WRITTEN `paths.d.mts` sitting beside it. That file is a copy
  * of the module's shape, maintained by remembering to — which is the precise
  * arrangement §1 exists because of, one directory along.

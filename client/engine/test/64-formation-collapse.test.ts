@@ -1,4 +1,4 @@
-/* R72 — formation GRAVITY: the two halves, and their different timing.
+/* CR 602.4, 602.5 — formation GRAVITY: the two halves, and their different timing.
  *
  * Reported in game BRDM, 2026-08-20, deferred in the round-7 commit message,
  * and fixed in round 13:
@@ -21,14 +21,14 @@
  *
  * So VERTICAL gravity is untimed and HORIZONTAL gravity is not. After blocks,
  * an emptied column is a permanent hole and every column index is frozen for
- * the rest of the battle. The first build of R72 ran the collapse
+ * the rest of the battle. The first build ran the collapse
  * unconditionally, including between damage sub-steps; these tests are mostly
  * about the window.
  *
  * The hard part of the horizontal half is that `BattleState.blocks` is keyed by
  * attack-column INDEX — the index IS the column's identity — so closing a gap
  * is a re-key. Note what the timing rule does to that: a collapse can only run
- * while `b.blocks` is still empty, so the live re-key case is R75's
+ * while `b.blocks` is still empty, so the live re-key case is CR 603.5a's
  * left-insert, not this one. `E.rekeyColumns` owns both.
  *
  * Seeds 6400-6499.
@@ -40,7 +40,7 @@ import { E } from '../src/engine.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle, throughDamageWindows} from './util.ts';
 import type { EngineEvent, EntityId, Seat } from '../src/types.ts';
 
-/** shape a unit's stats white-box (layer 2, R66) so each scenario decides
+/** shape a unit's stats white-box (layer 2, CR 206.5) so each scenario decides
  * exactly who dies and who walks away */
 function stats(h: Harness, id: EntityId, p: number, t: number): void {
   new E(h.state).setBase(ent(h, id)!, p, t);
@@ -81,7 +81,7 @@ function board(seed: number, nBlockers = 0): {
 
 /* ── horizontal gravity: BEFORE blocks are declared ─────────────────────── */
 
-test('R72: a middle column emptied before blocks collapses, and the right-hand columns shift', () => {
+test('CR 602.5: a middle column emptied before blocks collapses, and the right-hand columns shift', () => {
   const { h, atk } = board(6400);
   assert.ok(h.state.battle!.step === 'blocks', 'blocks have not been declared yet');
   kill(h, atk[1]!);
@@ -93,14 +93,14 @@ test('R72: a middle column emptied before blocks collapses, and the right-hand c
   finishBattle(h);
 });
 
-test('R72: the LEFT column emptying pulls everything left too', () => {
+test('CR 602.5: the LEFT column emptying pulls everything left too', () => {
   const { h, atk } = board(6401);
   kill(h, atk[0]!);
   assert.deepEqual(cols(h), [[atk[1]!], [atk[2]!]]);
   finishBattle(h);
 });
 
-test('R72: a unit RECALLED out of a middle column closes the gap too (no death involved)', () => {
+test('CR 602.5b: a unit RECALLED out of a middle column closes the gap too (no death involved)', () => {
   const { h, atk } = board(6402);
   const e = new E(h.state);
   e.recall(ent(h, atk[1]!)!);
@@ -109,7 +109,7 @@ test('R72: a unit RECALLED out of a middle column closes the gap too (no death i
   finishBattle(h);
 });
 
-test('R72: the gap is closed before any observer runs — the collapse sits between the death and its trash', () => {
+test('CR 602.5c: the gap is closed before any observer runs — the collapse sits between the death and its trash', () => {
   const { h, atk } = board(6403);
   const evs = kill(h, atk[1]!);
   const types = evs.map(ev => ev.type);
@@ -125,7 +125,7 @@ test('R72: the gap is closed before any observer runs — the collapse sits betw
   finishBattle(h);
 });
 
-test('R72: a column-scoped battle counter rides the collapse to the new index', () => {
+test('CR 603.5a: a column-scoped battle counter rides the collapse to the new index', () => {
   const { h, atk } = board(6404);
   const region = h.state.battle!.region;
   const e = new E(h.state);
@@ -146,7 +146,7 @@ test('R72: a column-scoped battle counter rides the collapse to the new index', 
   finishBattle(h);
 });
 
-test('R72: a death trigger still receives the DEATH event, not the collapse announcement', () => {
+test('CR 602.5c: a death trigger still receives the DEATH event, not the collapse announcement', () => {
   // Malicious Hardware: "whenever one of your units dies, each opponent
   // sacrifices a unit" — its `when` reads ev.data.seat, so it is exactly the
   // observer a mis-captured event would silence. The death that fires it is
@@ -173,7 +173,7 @@ test('R72: a death trigger still receives the DEATH event, not the collapse anno
   finishBattle(h);
 });
 
-test('R72: the collapse is deterministic — same script, same state, same log', () => {
+test('CR 602.5: the collapse is deterministic — same script, same state, same log', () => {
   const run = (): Harness => {
     const { h, atk } = board(6406);
     kill(h, atk[1]!);
@@ -188,7 +188,7 @@ test('R72: the collapse is deterministic — same script, same state, same log',
 
 /* ── horizontal gravity: AFTER blocks, the line is LOCKED ───────────────── */
 
-test('R72 (Manual): after blocks are declared, an emptied column stays as a HOLE', () => {
+test('CR 602.5a (Manual): after blocks are declared, an emptied column stays as a HOLE', () => {
   const { h, D, atk, blk } = board(6407, 1);
   stats(h, blk[0]!, 9, 9);                            // kills the middle attacker, survives
   h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [blk[0]!] } });
@@ -204,7 +204,7 @@ test('R72 (Manual): after blocks are declared, an emptied column stays as a HOLE
   finishBattle(h);
 });
 
-test('R72 (Manual): the hole is permanent — losing the blockers too does not close it', () => {
+test('CR 602.5a (Manual): the hole is permanent — losing the blockers too does not close it', () => {
   // this is where the Manual and the earlier ⚠ part company. Under the ruling
   // "a column holding blockers is not empty" the column would collapse the
   // moment its blocker left; under the Manual nothing moves after blocks, full
@@ -218,11 +218,11 @@ test('R72 (Manual): the hole is permanent — losing the blockers too does not c
   kill(h, blk[0]!);                                   // now the column holds nothing at all
   assert.deepEqual(cols(h), [[atk[0]!], [], [atk[2]!]], 'still three columns, still a hole');
   assert.deepEqual(h.state.battle!.blocks[1], [],
-    'and the emptied block entry stays as the sticky "was blocked" flag (R13)');
+    'and the emptied block entry stays as the sticky "was blocked" flag (CR 608.4c)');
   finishBattle(h);
 });
 
-test('R72 (Manual): a whole column trading itself out mid-combat leaves a hole, not a collapse', () => {
+test('CR 602.5a (Manual): a whole column trading itself out mid-combat leaves a hole, not a collapse', () => {
   const { h, D, atk, blk } = board(6409, 1);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [blk[0]!] } });   // 3/3 vs 3/3: both die
   pass(h); pass(h);
@@ -232,13 +232,13 @@ test('R72 (Manual): a whole column trading itself out mid-combat leaves a hole, 
   finishBattle(h);
 });
 
-test('R72: no collapse between the Swift and normal sub-steps either', () => {
+test('CR 608.3e: no collapse between the Swift and normal sub-steps either', () => {
   // The first build ran the collapse at the sub-step boundary. The Manual says
   // the line is locked from the moment blocks are declared, so that boundary is
   // inside the locked window, not outside it.
   //
   // ⚠ THIS COMMENT USED TO OPEN "R3 says there is no priority window between
-  // sub-steps", and R295 took that away: a step split by {Swift}/{Sluggish}
+  // sub-steps", and split-step windows (CR 608.3b) took that away: a step split by {Swift}/{Sluggish}
   // offers priority at every boundary, and this board (Swift on both sides)
   // is split. The claim under test got STRONGER rather than weaker — the hole
   // now has to survive an open priority window, with both seats free to act,
@@ -262,7 +262,7 @@ test('R72: no collapse between the Swift and normal sub-steps either', () => {
 
   const b = h.state.battle!;
   assert.ok(!ent(h, a1) && !ent(h, swift), 'the Swift exchange wiped its own column');
-  assert.equal(b.step, 'damageWindow', 'R295: the step is split, so a window is open here');
+  assert.equal(b.step, 'damageWindow', 'CR 608.3b: the step is split, so a window is open here');
   assert.deepEqual(cols(h), [[a0], [], [a2]],
     'and the hole is ALREADY there, with priority open and nothing having closed it');
   throughDamageWindows(h);
@@ -275,15 +275,15 @@ test('R72: no collapse between the Swift and normal sub-steps either', () => {
 
 /* ── the surviving half of the 2026-08-21 ruling: a hole deals nothing ──── */
 
-test('R72 (ruling): a hole deals and takes no damage — Piercing included', () => {
+test('CR 608.4e (ruling): a hole deals and takes no damage — Piercing included', () => {
   // Bena, 2026-08-21: "It stays, but has nothing to deal damage to, so it
-  // doesn't deal damage." Before R72 the engine pushed the blocker's FULL power
+  // doesn't deal damage." Before the empty-column fix (CR 608.4e) the engine pushed the blocker's FULL power
   // through to the attacking player: a Good Whale (7/5 {Piercing}) whose
   // attacker was killed in the block window used to deal 7 to the attacker's
-  // face. Piercing is the EXCESS of an assignment (R7), and there is no
+  // face. Piercing is the EXCESS of an assignment (CR 802.16b), and there is no
   // assignment to be the excess of.
   //
-  // Note the deliberate asymmetry with R13, which is the Manual's own: "the
+  // Note the deliberate asymmetry with CR 802.16e, which is the Manual's own: "the
   // column is considered blocked even if the defending unit is removed during
   // combat", so a Piercing ATTACKER still gets through a dead block.
   const h = new Harness(6411);
@@ -309,7 +309,7 @@ test('R72 (ruling): a hole deals and takes no damage — Piercing included', () 
   finishBattle(h);
 });
 
-test('R72 (ruling): a hole deals nothing in a LATER sub-step either', () => {
+test('CR 608.4e (ruling): a hole deals nothing in a LATER sub-step either', () => {
   const h = new Harness(6412);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -332,7 +332,7 @@ test('R72 (ruling): a hole deals nothing in a LATER sub-step either', () => {
 
 /* ── vertical gravity: untimed, unlike the horizontal half ──────────────── */
 
-test('R72 (Manual): the back row promotes BEFORE blocks', () => {
+test('CR 602.4 (Manual): the back row promotes BEFORE blocks', () => {
   const h = new Harness(6413);
   toDeployment(h);
   const A = h.state.initiative;
@@ -348,7 +348,7 @@ test('R72 (Manual): the back row promotes BEFORE blocks', () => {
   finishBattle(h);
 });
 
-test('R72 (Manual): the back row promotes AFTER blocks too — vertical gravity is untimed', () => {
+test('CR 602.4 (Manual): the back row promotes AFTER blocks too — vertical gravity is untimed', () => {
   // the asymmetry is the whole finding: "any units behind it move to the front
   // row and take its place" carries no timing qualifier, while the column rule
   // explicitly does.
@@ -365,7 +365,7 @@ test('R72 (Manual): the back row promotes AFTER blocks too — vertical gravity 
   finishBattle(h);
 });
 
-test('R72 (Manual): the front row always fills first, so [gap, back] is unreachable', () => {
+test('CR 602.3 (Manual): the front row always fills first, so [gap, back] is unreachable', () => {
   // "The front row of a column must be filled first before a unit can be
   // placed in a back row." Promotion + the dead-id splice + append-only
   // placement make that an invariant, not a check: every column is [], [front]

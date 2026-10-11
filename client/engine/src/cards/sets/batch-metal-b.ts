@@ -4,32 +4,32 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R9 (bounded budgets per card), R12 (regions are
- * exclusive — listeners and "each …" clauses are region-scoped), R25 ("each
- * opponent" region-scoped), R115 (created UNITS arrive where their SOURCE is
+ * Rules referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 803.4 (bounded budgets per card), CR 601.1a (regions are
+ * exclusive — listeners and "each …" clauses are region-scoped), CR 601.4d ("each
+ * opponent" region-scoped), CR 601.5 (created UNITS arrive where their SOURCE is
  * — ctx.region; "in my formation" additionally names a slot),
- * R31 (triggers between combat damage sub-steps resolve immediately).
+ * CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).
  *
- * GLIMPSE (Foretell) is REAL as of Light & Dark: E.glimpse (R45) reveals the
+ * GLIMPSE (Foretell) is REAL as of Light & Dark: E.glimpse (CR 801.9b, 801.9e) reveals the
  * top card, CACHES it, and makes it playable until end of turn ignoring
  * affinity (mana and timing still apply). It replaced an approximation that
  * put the card straight into the glimpser's hand, permanently.
  *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
- *  - Flux Resonator: a REAL replacement as of R104 — an `AmountMod` consulted
+ *  - Flux Resonator: a REAL replacement as of the replacement-layer work (CR 708.5) — an `AmountMod` consulted
  *    by E.addCounters before it commits, so one placement produces one
  *    countersChanged carrying the right number. It never reaches the stack.
- *    NO approximation survives (R130): "by an allied source" is the printed
+ *    NO approximation survives (CR 708.8b): "by an allied source" is the printed
  *    clause now that `addCounters` carries `by` (→ `AmountCtx.sourceSeat`),
  *    the recipient may be any unit, and the sign filter is gone ("all counters
  *    count as counters"). Spawn-with-X counters (Robot X) still get the bonus
  *    through the amount layer (report #88) and still fire no countersChanged.
  *  - Formless: "becomes a base 4/4" REWRITES layer 2 (E.setBase), and the
- *    "loses all attributes until regroup" half is R62's until-regroup
+ *    "loses all attributes until regroup" half is CR 712.1's until-regroup
  *    suppression — both cleared at regroup.
  * ✔ Instrument of Reassignment: its "[x], Sacrifice another nontoken unit"
- *    costs are REAL COSTS as of R196, paid in the cast window. This entry used
+ *    costs are REAL COSTS (CR 111.7), paid in the cast window. This entry used
  *    to say they were paid at RESOLUTION because "the DSL's activated-cost
  *    shape has no X and no sacrifice-another" — it has both now
  *    (`CastCost.payMana` with `n: 'X'`, and `AbilityCost.sacrificeNontoken`),
@@ -38,21 +38,21 @@
  *    card `E.gateCompoundCost` was written for.
  *  - Invasive Reassignment: the swap freezes the target's EFFECTIVE stats at
  *    resolution as a temp delta (later stat changes shift both sides).
- *    Its printed {Reaping} is NO LONGER hand-rolled here. R184 moved the
+ *    Its printed {Reaping} is NO LONGER hand-rolled here. The Reaping ruling (CR 802.21b) moved the
  *    attribute out of `dealEffectDamageAll` (where a stat swap, dealing no
  *    damage, could never reach it) onto the engine's kill diff at the
- *    resolving-part boundary — the same diff {Afflicting} has ridden since
- *    R48. The card just swaps stats; the draw is the printed attribute.
+ *    resolving-part boundary — the same diff {Afflicting} has long ridden
+ *    (CR 802.23c). The card just swaps stats; the draw is the printed attribute.
  *  - Powerforge Synergist: NO LONGER an approximation. This entry used to read
  *    '"I spawn with two +1/+1 counters" has no DSL hook … the counters are
- *    added synchronously in a bookkeeping when() at spawn-event time'. R165
- *    built the hook — `CardBehavior.spawnsWithCounters`, applied by
- *    E.spawnUnit before the 'spawned' event and THROUGH R104's amount layer,
+ *    added synchronously in a bookkeeping when() at spawn-event time'. The hook
+ *    exists now (CR 707.5) — `CardBehavior.spawnsWithCounters`, applied by
+ *    E.spawnUnit before the 'spawned' event and THROUGH the amount layer (CR 707.5a),
  *    which the raw `self.counters += 2` bypassed (an allied Flux Resonator gave
  *    this card 2 where it gave "Create a Robot 2" 3). Still silent — no
- *    countersChanged event, matching Robot's spawn-with-counters (R130).
+ *    countersChanged event, matching Robot's spawn-with-counters (CR 707.5a).
  *    "Move my counters" needs NO snapshot of its
- *    own: R70 stamps `counters` onto every leave-play event (E.leftPlayFacts),
+ *    own: every leave-play event carries `counters` (E.leftPlayFacts, CR 714.9),
  *    which is the same fact the note two paragraphs down credits for
  *    un-parking Flux Constructor — the effect reads ctx.event.data.counters.
  *    "My counters" is the SIGNED net (Flux Constructor's and Scrap For Parts'
@@ -61,7 +61,7 @@
  *  - Perish / Linked Extinction: sacrifice choices are made seat by seat
  *    (caster first) and committed immediately — deterministic under the
  *    engine's rollback-and-replay choice model. Perish and the opponents'
- *    half of Linked Extinction are region-scoped (R12/R25); the caster's
+ *    half of Linked Extinction are region-scoped (CR 601.4d); the caster's
  *    own Linked Extinction cost may come from any of their units.
  *
  * (Nothing in this batch is parked any more. Flux Constructor used to be, on
@@ -77,7 +77,7 @@ import { selfOf, isEnt } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** create a Robot X — a 0/0 Robot token with X +1/+1 counters — in `region`.
- * R115: `region` is REQUIRED and is always the SOURCE's region (`ctx.region`);
+ * CR 601.5: `region` is REQUIRED and is always the SOURCE's region (`ctx.region`);
  * the old `?? homeRegion` default silently answered for cards that never asked. */
 const makeRobot = (g: E, seat: Seat, x: number, region: number): Entity =>
   g.spawnUnit(seat, 'Robot', region, { token: true, counters: x });
@@ -97,7 +97,7 @@ const makeRobot = (g: E, seat: Seat, x: number, region: number): Entity =>
 // two -1/-1 counters is a unit with counters on it, and moving them keeps
 // their sign: you move what was actually there, drawback and all.
 //
-// R67: "another target unit" is a DECLARED target, chosen as the trigger goes
+// CR 110.1a: "another target unit" is a DECLARED target, chosen as the trigger goes
 // on the stack; `min: 0` carries the printed "you may". "Another" needs no
 // restriction — the unit that died is already gone, so it cannot be offered.
 card('Flux Constructor', {
@@ -114,7 +114,7 @@ card('Flux Constructor', {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
         const t = ctx.targets[0];
-        // R166: `min: 0` — declining is the ordinary answer, and test/65 is
+        // `min: 0` — declining is the ordinary answer, and test/65 is
         // right that it has to be said out loud rather than returned in silence.
         if (!n || !isEnt(t)) {
           g.ev('info', 'Flux Constructor: no unit was chosen — the counters go nowhere.');
@@ -135,7 +135,7 @@ card('Flux Constructor', {
 // source, put that many counters plus one instead." — mm/2 2/2 Technology
 // Construct Unit.
 //
-// UNPARKED as a real replacement (R104). It used to be a post-hoc trigger on
+// UNPARKED as a real replacement (CR 708.5). It used to be a post-hoc trigger on
 // 'countersChanged' that reached into `u.counters` directly to dodge its own
 // re-entrancy — so the printed counters landed first, a `countersChanged` fired
 // for the wrong number, and the extra one arrived silently afterwards. An
@@ -147,14 +147,14 @@ card('Flux Constructor', {
 // different modifiers both apply), and neither applies to its own contribution
 // because a query cannot re-enter the thing it is answering about.
 //
-// R130 TOOK BOTH APPROXIMATIONS OFF. They were one line each and both said
+// THE COUNTER RULING (CR 708.8a, 708.8b) TOOK BOTH APPROXIMATIONS OFF. They were one line each and both said
 // something the card does not print:
 //
 //  - "BY AN ALLIED SOURCE" used to be read as "onto an allied unit", because
 //    `addCounters` had no source. It has one now (`by`, defaulted to the
 //    resolving effect's controller), and the amount layer already had the
 //    field to carry it — `AmountCtx.sourceSeat`, which Conduit of Pain's
-//    identical clause has read on the damage path since R104. So the clause is
+//    identical clause has long read on the damage path. So the clause is
 //    the printed one: I care WHO is placing, not WHOM onto. The recipient is
 //    "a unit" — ANY unit — so counters you put on an ENEMY are plus one too,
 //    which is the half the old reading refused outright.
@@ -170,7 +170,7 @@ card('Flux Constructor', {
 // a yes.
 card('Flux Resonator', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     amountMods: [{
@@ -184,7 +184,7 @@ card('Flux Resonator', {
 
 // "[Switch1] Glimpse 1 (Reveal the top card of the deck and cache it. Until
 // end of turn, you may play it as if it was in your hand, ignoring
-// affinity.)" — m/1 {Battle} Cosmic Spell. The reminder text IS R45 verbatim,
+// affinity.)" — m/1 {Battle} Cosmic Spell. The reminder text says what CR 801.9b and 801.9e say,
 // and E.glimpse does exactly that. Bounded graft ([Switch1]).
 const foretellGlimpse: EffectDef = {
   run: (g, ctx) => { g.glimpse(ctx.controller, 1); },
@@ -203,7 +203,7 @@ card('Foretell', {
 // 2026-08-20). The base rewrite hits THE TARGET ALONE; only the attribute half
 // is column-wide.
 //
-// R293 — THE PARENTHESIS IS THE WHOLE COLUMN. Suppressing the target alone
+// CR 712.3 — THE PARENTHESIS IS THE WHOLE COLUMN. Suppressing the target alone
 // removes what the TARGET shared IN and leaves every attribute its
 // column-mates share in exactly where it was, which is half the printed
 // promise. Every unit in the target's column is stamped.
@@ -219,7 +219,7 @@ card('Foretell', {
 // not track column membership afterwards. A stamped unit that leaves the
 // column keeps the stamp; a unit that JOINS the column later was never
 // stamped. `columnOf` is null outside battle and for a unit in no column,
-// which reads as a column of one: the target. See R293 for the report
+// which reads as a column of one: the target. See CR 712.3 for the rule, the report
 // (#167, room BTUX) and 299-formless-column.test.ts for the guard.
 // Unbounded graft cause ([Switch]).
 const formlessReshape: EffectDef = {
@@ -230,7 +230,7 @@ const formlessReshape: EffectDef = {
     g.setBase(t, 4, 4);
     const column = g.columnOf(t.id)?.map(id => g.entity(id)).filter((u): u is NonNullable<typeof u> => !!u);
     for (const u of column?.length ? column : [t]) {
-      g.suppress(u, 'Formless', { attrs: true });   // R62 — abilities are untouched
+      g.suppress(u, 'Formless', { attrs: true });   // CR 712.1 — abilities are untouched
     }
     g.checkDeaths();
   },
@@ -246,9 +246,9 @@ card('Formless', {
 
 // "[Augment] When I attack or block, create a Robot 2 in my formation." —
 // mm/3 1/2 Hooba Robot Unit. Text-box [Augment]; live when played normally
-// (Manual Q&A). "In my formation" names a SLOT on top of R115's region: the Robot
+// (Manual Q&A). "In my formation" names a SLOT on top of CR 601.5's region: the Robot
 // spawns in the battle region and its CONTROLLER chooses the slot at
-// resolution (R75, E.placeInFormation). This used to auto-pick — "my column if
+// resolution (CR 602.6, E.placeInFormation). This used to auto-pick — "my column if
 // open, else the first open column" — which was one of five different
 // house rules for the same printed words.
 card('Hooba-Bot', {
@@ -258,11 +258,11 @@ card('Hooba-Bot', {
     effect: {
       creates: ['Robot'],
       run: (g, ctx) => {
-        // R225: same guard, same reason, same place as Hooba-Lin's — "in MY
+        // CR 602.6e: same guard, same reason, same place as Hooba-Lin's — "in MY
         // formation" is read off the source at resolution, and it is read
         // BEFORE the Robot is minted so a refused placement never strands one
         // in the region.
-        // R325: a dead Hooba-Bot remembers its formation (RAQ, Dead Unit)
+        // CR 714.4: a dead Hooba-Bot remembers its formation (RAQ, Dead Unit)
         const src = ctx.sourceId;
         if (src === undefined || g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-Bot: I am not in a formation any more — no Robot is created.');
@@ -278,21 +278,21 @@ card('Hooba-Bot', {
 // "[Augment] [x], Sacrifice another nontoken unit: Create a Robot X. X can't
 // be 0." — mm/2 3/1 Spirit Construct Unit. An ACTIVATED ability in the
 // [Augment] text box: live when played normally (via: 'augment') and donated
-// to hosts (via: { mod }). The Robot arrives at the carrier's region (R115).
+// to hosts (via: { mod }). The Robot arrives at the carrier's region (CR 601.5).
 //
-// R196 — BOTH COSTS ARE REAL COSTS NOW, and this is the card that made the
+// CR 111.6a — BOTH COSTS ARE REAL COSTS NOW, and this is the card that made the
 // COMPOUND shape a real one. They used to be chosen and paid at RESOLUTION, so
 // the ability reached the stack with X unknown and the victim unnamed and the
-// opponent answered blind. R157 §21: a [bracketed] clause is a COST, fixed
+// opponent answered blind. CR 205.3: a [bracketed] clause is a COST, fixed
 // when the item goes on the stack — never a resolution-time pick.
 //
 //  · "[x]" is `castCost: { kind: 'payMana', n: 'X', xMin: 1 }`, collected by
 //    the same machinery an X SPELL's bracketed cost uses. `xMin` is the
 //    printed "X can't be 0" — a floor that FORBIDS, which is exactly what
-//    `xMin` is for (contrast R157 §22/R161's `xZeroWarning`, where paying zero
+//    `xMin` is for (contrast CR D7.1a's `xZeroWarning`, where paying zero
 //    is merely a bad idea you are allowed to have).
 //  · "Sacrifice another nontoken unit" is `AbilityCost.sacrificeOther` with
-//    R196's `sacrificeNontoken` flag: "another" is the collector's own source
+//    its `sacrificeNontoken` flag: "another" is the collector's own source
 //    exclusion, "nontoken" is the flag.
 //
 // ⚠ IT IS THE FIRST COMPOUND ACTIVATION COST IN THE POOL — a variable
@@ -302,7 +302,7 @@ card('Hooba-Bot', {
 // reordering: all or nothing, asked at the top of the cast window before
 // either collector has charged anything.
 //
-// Both halves GATE the activation (R49), so an Instrument with no open mana or
+// Both halves GATE the activation (CR 111.6), so an Instrument with no open mana or
 // no other nontoken unit is not offered at all. The two "no effect" bail-outs
 // this run used to carry went with them — an unpayable cost is not something
 // you discover after activating.
@@ -327,7 +327,7 @@ card('Instrument of Reassignment', {
 // none → nothing happens.
 card('Interdiction Rift', {
   spellEffect: {
-    // R64: "target OPPONENT" is a player-only, opponent-only kind — 'any'
+    // CR 110.3c: "target OPPONENT" is a player-only, opponent-only kind — 'any'
     // offered every unit on the board and the caster themself.
     // the prompt names what is being CHOSEN: the printed sentence read as
     // "target … an effect", and a player went looking for the effect (report
@@ -354,7 +354,7 @@ card('Interdiction Rift', {
 // {Battle} {Reaping} Occult Technology Spell. ⚠ header approximation: the
 // EFFECTIVE stats at resolution are swapped via a temp delta (cleared at
 // regroup). If the swap kills (a 0-power unit becomes X/0), the printed
-// {Reaping} draws the caster a card — R184: through the ENGINE's kill diff,
+// {Reaping} draws the caster a card — CR 802.21b: through the ENGINE's kill diff,
 // off the printed attribute. The rider used to be hand-rolled HERE, because
 // {Reaping} lived in `dealEffectDamageAll` and a stat swap deals no damage.
 card('Invasive Reassignment', {
@@ -371,24 +371,24 @@ card('Invasive Reassignment', {
 });
 
 // "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices a unit." — m/1
-// {Battle} Technology Spell. The slash cost is a CAST COST (R35): the
+// {Battle} Technology Spell. The slash cost is a CAST COST (CR 702.4): the
 // caster's sacrifice is chosen and paid before the spell reaches the stack —
-// no unit of yours IN THE REGION, no cast (R35 scopes cast costs to the
+// no unit of yours IN THE REGION, no cast (CR 111.3 scopes cast costs to the
 // item's region, superseding this batch's old any-region note). "Each
-// opponent" is region-scoped (R25): opponents present in the effect's region
+// opponent" is region-scoped (CR 601.4d): opponents present in the effect's region
 // sacrifice one of their units THERE (none there → nothing for them).
-// Bounded graft ([Switch1], R9) — the rider pays (or declines) at composite
+// Bounded graft ([Switch1], CR 722.5) — the rider pays (or declines) at composite
 // cast time.
 const linkedExtinction: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
     if (!ctx.costPaid?.sacrificed) {
-      ctx.refundBudget?.();   // R113: declining a [cost] never spends the use
+      ctx.refundBudget?.();   // CR 109.9b: declining a [cost] never spends the use
       g.ev('info', 'Linked Extinction: no unit was sacrificed — nobody sacrifices.');
       return;   // rider declined / unpayable
     }
-    // R187/CT-70: the declined-cost branch above announces itself; this loop
-    // did not, and R25 empties it whenever the region holds nobody else.
+    // CR D7.3/CT-70: the declined-cost branch above announces itself; this loop
+    // did not, and CR 601.4d empties it whenever the region holds nobody else.
     const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
     if (!foes.length) {
       g.ev('info', 'Linked Extinction: no opponent is present here — nobody sacrifices a unit.');
@@ -415,7 +415,7 @@ card('Linked Extinction', {
 // "[Augment] [three]: Create a Robot 2." — mm/4 2/4 Robot Unit. An ACTIVATED
 // ability in the [Augment] text box: live when played normally
 // (via: 'augment') and donated to hosts (via: { mod }). The Robot arrives
-// where the carrier is (R115: ctx.region).
+// where the carrier is (CR 601.5: ctx.region).
 card('Living Forge', {
   augmentText: [{
     type: 'activated', cost: { mana: 3 },
@@ -425,8 +425,8 @@ card('Living Forge', {
 });
 
 // "[Switch1] Create a Robot 3, a Robot 2 and a Robot 1." — mmm/6 Robot
-// Spell (deploy timing). All three arrive at the source's region (R115),
-// which for a deploy-timing spell IS home. Bounded graft ([Switch1], R9).
+// Spell (deploy timing). All three arrive at the source's region (CR 601.5),
+// which for a deploy-timing spell IS home. Bounded graft ([Switch1], CR 722.5).
 const manufactureRobots: EffectDef = {
   creates: ['Robot'],
   run: (g, ctx) => { for (const x of [3, 2, 1]) makeRobot(g, ctx.controller, x, ctx.region); },
@@ -437,7 +437,7 @@ card('Manufacture', {
 });
 
 // "If I spawned this turn, other units lose all attributes and abilities
-// during battle." — m/1 1/1 {Battle} Bedlam Alien Monkey Unit. R62's
+// during battle." — m/1 1/1 {Battle} Bedlam Alien Monkey Unit. CR 712.1's
 // continuous suppression, with both of the printed conditions read live
 // (a static is re-evaluated every time anybody asks, so "if I spawned this
 // turn" stops being true the moment the turn rolls over, and the whole thing
@@ -445,10 +445,10 @@ card('Manufacture', {
 //   - "other units": every unit in the region but Monke itself, BOTH sides'
 //     — the text says units, not your units, and this one is symmetrical on
 //     purpose (it is a 1/1 that turns the battle vanilla for everyone).
-//   - region scope is the engine's (R12), as for every other static.
+//   - region scope is the engine's (CR 601.1d), as for every other static.
 // Two Monkes do not silence each other: staticsFor's suppression check is the
 // entity flag only, so simultaneous static-vs-static suppression resolves in
-// one pass and both keep radiating (R62).
+// one pass and both keep radiating (CR 712.5).
 card('Monke', {
   statics: [{
     affects: (g, self, t) => t.kind === 'unit' && t.id !== self.id
@@ -483,9 +483,9 @@ card('Omniwield Evoker', {
 });
 
 // "Each player sacrifices half of their units, rounded up." — mm/4 {Battle}
-// Occult Spell. Region-scoped (R12/R25 — header): each player present in the
+// Occult Spell. Region-scoped (CR 601.4d — header): each player present in the
 // effect's region sacrifices ceil(their units there / 2), choosing which,
-// caster first. The count is read per player as their picks begin (R1).
+// caster first. The count is read per player as their picks begin (CR 107.8).
 card('Perish', {
   spellEffect: {
     run: (g, ctx) => {
@@ -494,7 +494,7 @@ card('Perish', {
         ...present.filter(s => s === ctx.controller),
         ...present.filter(s => s !== ctx.controller),
       ];
-      // R1: "amounts are computed at RESOLUTION" — and Perish resolves ONCE, so
+      // CR 107.8: "amounts are computed at RESOLUTION" — and Perish resolves ONCE, so
       // every player's half is the half they had at that single moment. The
       // count used to be recomputed as each seat's picks began, caster first,
       // so a death trigger off the CASTER's own sacrifices could shrink the
@@ -502,7 +502,7 @@ card('Perish', {
       // sacrificed half of an already-reduced army. Snapshot all of them first.
       const quota = new Map<Seat, number>(
         seats.map(s => [s, Math.ceil(g.unitsOf(s, ctx.region).length / 2)]));
-      // R209/CT-74: half of nothing is nothing. Every present seat can be here
+      // CR D7.3/CT-74: half of nothing is nothing. Every present seat can be here
       // with no units — after a trade-off, or grafted onto a deployment cause
       // — and every quota is then 0, so the loops below never run and the
       // spell resolved in total silence. Perish was on NO ticket; the 'barren'
@@ -533,13 +533,13 @@ card('Perish', {
 // "I spawn with two +1/+1 counters. [Augment] When I despawn, you may move
 // my counters onto target unit." — m/2 0/0 Robot Unit.
 //
-// R165: the first sentence is `spawnsWithCounters: 2` — a DECLARATION about
+// CR 707.5: the first sentence is `spawnsWithCounters: 2` — a DECLARATION about
 // the body, applied by E.spawnUnit before the 'spawned' event fires. It used
 // to be a bookkeeping `triggered` whose `when()` wrote `self.counters += 2`
 // and returned false, with a comment explaining that a queued trigger would
 // be too late (settle()'s death check would erase the 0/0 first). The
 // diagnosis was right and the workaround still had a hole in it: writing the
-// field RAW walks straight past R104's AMOUNT layer, so an allied Flux
+// field RAW walks straight past the AMOUNT layer (CR 707.5a), so an allied Flux
 // Resonator made this card enter with 2 counters while "Create a Robot 2" —
 // the same printed sentence with a number in it — entered with 3. One field
 // on the card definition, one application site, one answer for both.
@@ -553,7 +553,7 @@ card('Perish', {
 // never on the stack on either card, and it is scaled on both.
 //
 // ⚠ Header note retired with it: the spawn-counter approximation is gone.
-// The DESPAWN amount is still read off the event (R70's leftPlayFacts), which
+// The DESPAWN amount is still read off the event (leftPlayFacts, CR 714.9), which
 // is not an approximation at all. Despawn = ANY leave-play ('died' +
 // 'despawned', Bloated Manablub precedent). "You may": min 0 lets the chooser
 // decline. The first sentence sits above the [Augment] marker, so it does NOT
@@ -564,7 +564,7 @@ card('Powerforge Synergist', {
   augmentText: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
     label: 'move my counters onto target unit',
-    // R70: the leave-play event already CARRIES the counter total
+    // CR 714.9: the leave-play event already CARRIES the counter total
     // (E.leftPlayFacts stamps `counters` on 'died' and 'despawned' alike,
     // precisely because the entity is out of s.entities by the time the
     // trigger resolves). This used to stash its own `pfCounters` snapshot
@@ -592,12 +592,12 @@ card('Powerforge Synergist', {
 });
 
 // "Your units gain \"When I die, create a Robot 3.\" until regroup." — mm/3
-// {Battle} Occult Technology Spell. R63: the granted clause is authored HERE,
+// {Battle} Occult Technology Spell. CR 109.8: the granted clause is authored HERE,
 // as this card's own abilities[0], and handed to each unit as a reference.
 // Nothing else can ever fire it — a spell is never a unit in play, so
 // fireEvent's scan reaches abilities[0] only through the grants below.
 //
-// "Your units" is region-scoped (R12, the Flowstone Arcanite precedent): the
+// "Your units" is region-scoped (CR 601.1b, the Flowstone Arcanite precedent): the
 // units with you where the spell is cast. The grant is a snapshot of that
 // moment, exactly as the printed text reads — a unit that arrives afterwards
 // was not one of "your units" when the spell resolved and gets nothing.

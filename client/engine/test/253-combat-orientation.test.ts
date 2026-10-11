@@ -1,4 +1,4 @@
-/* R273 — TWO OWNER REPORTS ABOUT WHERE THINGS STAND IN A BATTLE.
+/* CR D6.13 — TWO OWNER REPORTS ABOUT WHERE THINGS STAND IN A BATTLE.
  *
  *  [#137] CT-150, room ERJZ (action 100): "The 'live view' of an opponent's
  *         attacks or blocks are showing in the orientation that the opponent
@@ -415,7 +415,7 @@ test('while an attack is only being declared the region panel still draws the in
    * not drawing any. They would be on the board one paint and gone the next.
    *
    * ⚠ THE FIRST TWO VERSIONS OF THIS TEST ASSERTED NOTHING, and both looked
-   * fine. After the battle phase there ARE no invaders: R11 regroup sends
+   * fine. After the battle phase there ARE no invaders: CR 506.2 regroup sends
    * every unit home and erases every spell token, so a version written on the
    * riding token short-circuited on a card that no longer existed, and a
    * version written on the attacking unit found it standing back in its own

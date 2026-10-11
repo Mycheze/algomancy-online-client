@@ -1,5 +1,5 @@
 /**
- * R337–R339 — Tides of the Cosmos and the other mid-resolution plays, fixed
+ * Tides of the Cosmos and the other mid-resolution plays, fixed
  * to the RAQ (CT-220, CT-221, CT-222).
  *
  * RAQ "[Solved] Tides of Cosmos - all you need to know." (_passer):
@@ -61,7 +61,7 @@ function tides(seed: number, deck: string[], setup?: (h: Harness, A: Seat, D: Se
   return { h, A, D };
 }
 
-test('R337: a Virus card played by Tides as a Virus augments a unit and never enters play', () => {
+test('CR 701.2c: a Virus card played by Tides as a Virus augments a unit and never enters play', () => {
   const { h, A, D } = tides(40401, ['Molten Riftbreaker']);
   const host = unitsOf(h, A).find(u => u.card === 'Curio Drifter')!.id;
   decide(h, l => l.startsWith('Molten Riftbreaker'));
@@ -76,7 +76,7 @@ test('R337: a Virus card played by Tides as a Virus augments a unit and never en
   finishBattle(h);
 });
 
-test('R337: an Ambush card played by Tides as an Ambush takes an ally place', () => {
+test('CR 803.6j: an Ambush card played by Tides as an Ambush takes an ally place', () => {
   const { h, D } = tides(40402, ['Mirrorback Ambusher'], (g, _A, d) => { spawn(g, d, 'Curio Drifter'); });
   const ally = unitsOf(h, D).find(u => u.card === 'Curio Drifter')!.id;
   decide(h, l => l.startsWith('Mirrorback Ambusher'));
@@ -90,7 +90,7 @@ test('R337: an Ambush card played by Tides as an Ambush takes an ally place', ()
   finishBattle(h);
 });
 
-test('R337: a card played by Tides as a Prophecy is cached with its banner, for free, and not binned', () => {
+test('CR 803.7n: a card played by Tides as a Prophecy is cached with its banner, for free, and not binned', () => {
   const { h, D } = tides(40403, ['The Foretold']);
   const mana = h.state.players[D]!.resources.length;
   decide(h, l => l.startsWith('The Foretold'));
@@ -105,7 +105,7 @@ test('R337: a card played by Tides as a Prophecy is cached with its banner, for 
   finishBattle(h);
 });
 
-test('R337: a pick with no alternative mode asks nothing new', () => {
+test('a pick with no alternative mode asks nothing new', () => {
   // the replay guarantee: a Tides pick of a card with no Virus, Ambush or
   // Prophecy line raises exactly the questions it always did
   const { h, D } = tides(40404, ['Curio Drifter']);
@@ -118,7 +118,7 @@ test('R337: a pick with no alternative mode asks nothing new', () => {
   finishBattle(h);
 });
 
-test('R338: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves', () => {
+test('CR 702.4e: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves', () => {
   const { h, D } = tides(40405, ['Volatile Toxicity'], (g, _A, d) => { spawn(g, d, 'Curio Drifter'); });
   const curio = unitsOf(h, D).find(u => u.card === 'Curio Drifter')!.id;
   decide(h, l => l.startsWith('Volatile Toxicity'));
@@ -131,13 +131,13 @@ test('R338: a Tides play pays its additional cost — the sacrifice happens and 
   finishBattle(h);
 });
 
-test('R338: with nothing to sacrifice, Tides does not offer Volatile Toxicity', () => {
+test('with nothing to sacrifice, Tides does not offer Volatile Toxicity', () => {
   const { h } = tides(40406, ['Volatile Toxicity']);
   assert.ok(!labels(h).some(l => l.startsWith('Volatile Toxicity')),
     `an unpayable additional cost keeps the card off the menu; menu [${labels(h).join(' | ')}]`);
 });
 
-test('R338: a unit played by Hooba-Pon pays its additional cost — Trench Stalker discards two', () => {
+test('CR 702.4e: a unit played by Hooba-Pon pays its additional cost — Trench Stalker discards two', () => {
   const h = new Harness(40407);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -163,7 +163,7 @@ test('R338: a unit played by Hooba-Pon pays its additional cost — Trench Stalk
   finishBattle(h);
 });
 
-test('R339: an X card that may not be zero is never a Tides pick; one that may be zero still is', () => {
+test('CR 107.4a: an X card that may not be zero is never a Tides pick; one that may be zero still is', () => {
   const { h } = tides(40408, ['Frosted Denial', 'Wildfire']);
   assert.ok(!labels(h).some(l => l.startsWith('Frosted Denial')), 'Frosted Denial ("X can\'t be zero") is not offered');
   assert.ok(labels(h).some(l => l === 'Wildfire [0]'), 'Wildfire (X may be zero) is, at [0]');

@@ -13,7 +13,7 @@ import { stripCode } from '../engine/test/stripcode.ts';
 
 export const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'engine', 'src');
 export const ENGINE_SRC = fs.readFileSync(path.join(SRC_DIR, 'engine.ts'), 'utf8');
-/** a card-batch file's source, comments and strings stripped (R148) */
+/** a card-batch file's source, comments and strings stripped */
 export const setSrc = (file: string): string =>
   stripCode(fs.readFileSync(path.join(SRC_DIR, 'cards', 'sets', file), 'utf8'));
 

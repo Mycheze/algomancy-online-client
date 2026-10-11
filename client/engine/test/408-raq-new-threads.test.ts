@@ -3,14 +3,13 @@
  * against the engine (ledgers/raq.ts; the audit is engine/test/386).
  *
  *  · "[Solved] Combat Damage triggers & "After Combat" triggers stack." — most
- *    of it was already guarded by 239 (R261 took this very write-up as its
- *    text); what is new here is the Swift/Sluggish follow-up: the LAST damage
+ *    of it was already guarded by 239 (the after-combat ruling took this very write-up as its text); what is new here is the Swift/Sluggish follow-up: the LAST damage
  *    sub-step's triggers join the after-combat batch.
  *  · "[Solved] Mods are NOT Played." — what was missing is "you still need to
  *    pay the cost & meet affinity requirements" for an augment and a Virus.
  *  · "[Solved] Spell Tokens vs Hand. …" — its new point 1: a spell token is
  *    not in the hand, and casting one is a play from somewhere other than the
- *    hand (R342).
+ *    hand (CR 701.1b).
  *
  * Authority, as everywhere in this repo: `calebgannon` is final, `_passer`'s
  * [Solved] write-ups are reliable, other players are reasoning aloud.
@@ -221,7 +220,7 @@ test('RAQ Spell Tokens vs Hand: casting a Fireball token triggers Stalwart Senti
     if (d) h.do({ type: 'decide', seat: d.seat, choice: d.pickOrder ? d.options.map((_, i) => i) : 0 });
     else pass(h);
   }
-  assert.equal(ent(h, sent)!.counters, 2, 'R342: the Sentinel takes its two +1/+1 counters');
+  assert.equal(ent(h, sent)!.counters, 2, 'CR 410.6a: the Sentinel takes its two +1/+1 counters');
 });
 
 test('RAQ Spell Tokens vs Hand: Proph, printed with the same words, draws for a cast Fireball token too', () => {
@@ -239,5 +238,5 @@ test('RAQ Spell Tokens vs Hand: Proph, printed with the same words, draws for a 
     if (d) h.do({ type: 'decide', seat: d.seat, choice: d.pickOrder ? d.options.map((_, i) => i) : 0 });
     else pass(h);
   }
-  assert.equal(h.state.players[A]!.hand.length, hand0 + 1, 'R342: "a unit or spell from anywhere other than your hand" — Proph draws');
+  assert.equal(h.state.players[A]!.hand.length, hand0 + 1, 'CR 410.6a: "a unit or spell from anywhere other than your hand" — Proph draws');
 });

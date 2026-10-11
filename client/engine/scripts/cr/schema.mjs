@@ -7,7 +7,12 @@
  * needs the extract.
  *
  * The shapes (data/comprehensive-rules/README.md has the prose):
- *   rule record   CONTROL's v2 schema + `parent`, `order`, `sourceHashes`
+ *   rule record   CONTROL's v2 schema + `parent`, `order`, `sourceHashes`, `scope`
+ *                 ('game'|'digital'; a game rule may name its `digitalClause`, a
+ *                 verbatim clause of its text that only the client does) and
+ *                 `sources.owner[{quote, adopted, from}]`: the owner's own words,
+ *                 the date he adopted them, and where he said them ('comment <id>',
+ *                 'questions-round27 Q2', or 'register@<sha>' for a call absorbed from the old register)
  *   glossary row  a rule record with `term` instead of `parent`/`order`; a pointer:
  *                 one sentence + `see` (the first target is the defining rule),
  *                 `derived?` (the term-source tags it covers), `obsolete?` and,
@@ -22,7 +27,7 @@
  *                  probes[]?, source_checks[], quote_spans[], basis_ok, problem}
  *                  (textHash = recordHash: the text and the examples verified)
  *   finding       {id: F-U12-3, title, summary, evidence[{file, quote}], rule, ct?, dupes?, closed?}
- *                 (a register-level finding, F-REG-<n>, comes from the ruling register,
+ *                 (a register-level finding, F-REG-<n>, came from the retired ruling register,
  *                  not from a drafting unit, and has rule: null)
  */
 import { createHash } from 'node:crypto';
@@ -38,7 +43,7 @@ export const DISC_KINDS = [
 /** the discrepancy report's four tiers, in the order a reader takes them */
 export const TIERS = {
   1: 'Questions for the owner',
-  2: 'Register and test fixes',
+  2: 'Record and test fixes',
   3: 'Engine-only and owner-only rules',
   4: 'Everything else',
 };
@@ -60,7 +65,7 @@ export function recordHash(r) {
   return textHash([r.text, ...ex.map((x) => `${x?.text ?? ''} ⟦${x?.test ?? ''}⟧`)].join(' ¶ '));
 }
 /** a finding id: `F-U12-3` (unit-scoped, what the rounds write), `F-REG-2`
- *  (register-level: found in the ruling register, with no rule of its own) or `F-3` */
+ *  (found in the retired ruling register, with no rule of its own) or `F-3` */
 export const FINDING_ID_RE = /^F-(?:U\d+-|REG-)?\d+$/;
 /** a register-level finding: rule is null, because no CR rule states it */
 export const REGISTER_FINDING_RE = /^F-REG-\d+$/;
@@ -75,19 +80,10 @@ export const KEY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*$
  */
 export const GLOSSARY_TAG_KINDS = ['zone', 'phase', 'step', 'substep', 'attr', 'ours', 'keyword'];
 export const GLOSSARY_TAG_RE = new RegExp(`^(?:${GLOSSARY_TAG_KINDS.join('|')}):\\S.*$`);
-/** a ruling citation: `R114`, `R197b`, optionally followed by a scope
- *  ("R7 its Piercing half") */
-const RULING_CITE_RE = /^R(\d+)(b?)(?![\w])\s*(.*)$/;
-
-/**
- * Parse a ruling citation. → {id, n, suffix, scope} or null.
- * `scope` is the text after the id ('' when the citation is bare).
- */
-export function parseRulingCite(s) {
-  const m = RULING_CITE_RE.exec(String(s).trim());
-  if (!m) return null;
-  return { id: `R${m[1]}${m[2]}`, n: Number(m[1]), suffix: m[2], scope: m[3].trim() };
-}
+/** a rule's scope: what holds at a table, or what only this client does */
+export const SCOPES = ['game', 'digital'];
+/** an owner call's adoption date */
+export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * Parse a source reference, as written in a record's `ref` or a discrepancy
@@ -95,7 +91,7 @@ export function parseRulingCite(s) {
  *   Manual p.N · Rulebook 2023 p.N       → printed page
  *   card: <Name>                         → a card's printed text
  *   RAQ <threadId>#<i>                   → a designer claim
- *   R<n>[b] …                            → a ruling body
+ *   owner ruling, adopted YYYY-MM-DD     → an owner call (its quote is its own evidence)
  *   glossary: <Term>                     → our glossary (never authority)
  *   file: <repo-relative path>           → a file in the repo (engine code, a test)
  */
@@ -108,8 +104,7 @@ export function parseRef(ref) {
   if ((m = /^RAQ (\d+)#(\d+)$/.exec(s))) return { type: 'raq', id: `${m[1]}#${m[2]}`, threadId: m[1] };
   if ((m = /^glossary: (.+)$/.exec(s))) return { type: 'glossary', term: m[1].trim() };
   if ((m = /^file: (.+)$/.exec(s))) return { type: 'file', path: m[1].trim() };
-  const r = parseRulingCite(s);
-  if (r) return { type: 'ruling', ...r };
+  if ((m = /^owner ruling, adopted (\d{4}-\d{2}-\d{2})$/.exec(s))) return { type: 'owner', adopted: m[1] };
   return null;
 }
 
@@ -139,7 +134,7 @@ function refQuoteList(where, list, refOk, refHint) {
   return out;
 }
 
-const SOURCE_FIELDS = ['printed', 'designer', 'ours', 'rulings', 'history', 'engine', 'tests'];
+const SOURCE_FIELDS = ['printed', 'designer', 'ours', 'owner', 'engine', 'tests'];
 
 /** a section/parent number: `608`, `D3`; a rule number: `608.2`; a subrule: `608.2b` */
 export const SECTION_NUM_RE = /^(?:\d{3}|D\d+)$/;
@@ -184,14 +179,23 @@ export function validateRecord(r) {
   // a glossary row is a definition pointing at its rule; the rule carries the basis
   if (!(glossary && r.basis === undefined) && !BASES.includes(r.basis)) P(`basis ${JSON.stringify(r.basis)} is not one of ${BASES.join('|')}`);
   if (!(glossary && r.confidence === undefined) && !CONFIDENCES.includes(r.confidence)) P(`confidence ${JSON.stringify(r.confidence)} is not one of ${CONFIDENCES.join('|')}`);
+  // every numbered rule says whether it holds at a table or only in this client; an Annex D rule is digital
+  if (!glossary) {
+    if (!SCOPES.includes(r.scope)) P(`scope ${JSON.stringify(r.scope)} is not one of ${SCOPES.join('|')}`);
+    else if (/^annexd(\.|$)/.test(String(r.key ?? '')) && r.scope !== 'digital') P('an Annex D rule has scope digital');
+  } else if (r.scope !== undefined) P('a glossary row carries no scope (the rule it points at does)');
+  if (r.digitalClause !== undefined) {
+    if (!nonEmpty(r.digitalClause) || r.scope !== 'game') P('digitalClause marks the client-only clause of a GAME rule: a non-empty string on a scope-game rule');
+    else if (!String(r.text ?? '').includes(r.digitalClause)) P('digitalClause is not verbatim in the text');
+  }
   if (r.notes !== undefined && !isStr(r.notes)) P('notes must be a string');
   if (r.engineDiffers !== undefined && (!Array.isArray(r.engineDiffers) || !r.engineDiffers.every((f) => FINDING_ID_RE.test(f)))) P('engineDiffers must be an array of finding ids (F-U<nn>-<n>)');
   if (r.untested !== undefined && typeof r.untested !== 'boolean') P('untested must be a boolean');
   // a rule with nothing to execute says why, so the document can print "not executable: <reason>"
   if (r.untestableReason !== undefined && (!nonEmpty(r.untestableReason) || /[\r\n]/.test(r.untestableReason))) P('untestableReason must be a one-line non-empty string');
-  if (!isObj(r.sourceHashes)) P('sourceHashes must be an object ({"R114": bodyHash, "RAQ <id>#<i>": textHash})');
+  if (!isObj(r.sourceHashes)) P('sourceHashes must be an object ({"RAQ <id>#<i>": textHash})');
   else for (const [k, v] of Object.entries(r.sourceHashes)) {
-    if (!(parseRulingCite(k)?.scope === '' || /^RAQ \d+#\d+$/.test(k))) P(`sourceHashes key ${JSON.stringify(k)} is not "R<n>" or "RAQ <id>#<i>"`);
+    if (!/^RAQ \d+#\d+$/.test(k)) P(`sourceHashes key ${JSON.stringify(k)} is not "RAQ <id>#<i>"`);
     if (!nonEmpty(v)) P(`sourceHashes[${k}] is empty`);
   }
   const s = r.sources;
@@ -202,15 +206,11 @@ export function validateRecord(r) {
   if (Array.isArray(s.printed)) out.push(...refQuoteList(`${pre}.printed`, s.printed, (x) => parseRef(x)?.type === 'page' || parseRef(x)?.type === 'card', '"Manual p.N", "Rulebook 2023 p.N" or "card: <Name>"'));
   if (Array.isArray(s.designer)) out.push(...refQuoteList(`${pre}.designer`, s.designer, (x) => parseRef(x)?.type === 'raq', '"RAQ <threadId>#<i>"'));
   if (Array.isArray(s.ours)) out.push(...refQuoteList(`${pre}.ours`, s.ours, (x) => parseRef(x)?.type === 'glossary', '"glossary: <Term>"'));
-  if (Array.isArray(s.rulings)) s.rulings.forEach((x, i) => {
-    if (isStr(x)) { if (!parseRulingCite(x)) P(`sources.rulings[${i}] ${JSON.stringify(x)} is not a ruling citation`); }
-    else if (isObj(x)) {
-      if (!parseRulingCite(x.ref ?? '')) P(`sources.rulings[${i}].ref is not a ruling citation`);
-      if (x.quote !== undefined) out.push(...quoteProblems(`${pre}.rulings[${i}]`, x.quote));
-    } else P(`sources.rulings[${i}] must be "R<n>" or {ref, quote}`);
-  });
-  if (Array.isArray(s.history)) s.history.forEach((h, i) => {
-    if (!isObj(h) || !parseRulingCite(h.ruling ?? '') || !nonEmpty(h.relation)) P(`sources.history[${i}] must be {ruling: "R<n>", relation}`);
+  if (Array.isArray(s.owner)) s.owner.forEach((x, i) => {
+    if (!isObj(x)) { P(`sources.owner[${i}] must be {quote, adopted, from}`); return; }
+    out.push(...quoteProblems(`${pre}.owner[${i}]`, x.quote));
+    if (!DATE_RE.test(x.adopted ?? '')) P(`sources.owner[${i}].adopted must be YYYY-MM-DD`);
+    if (!isStr(x.from)) P(`sources.owner[${i}].from must be a string ('comment <id>', 'questions-roundNN Qn', or '')`);
   });
   if (Array.isArray(s.engine) && !s.engine.every(nonEmpty)) P('sources.engine must hold non-empty strings');
   if (Array.isArray(s.tests) && !s.tests.every(nonEmpty)) P('sources.tests must hold non-empty strings');

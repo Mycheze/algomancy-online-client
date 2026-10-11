@@ -29,7 +29,7 @@
  * because the card did do *something*.
  *
  * It mattered in a real game rather than only on paper: the erased pile is a
- * zone cards leave the game through (R65), so a spell that should erase itself
+ * zone cards leave the game through (CR 407.1), so a spell that should erase itself
  * and instead goes to the bin stays recurrable and keeps counting toward every
  * "cards in your bin" effect. Collect Remains is a bin-recursion spell that is
  * supposed to remove itself, which made it the worst of the four.
@@ -51,7 +51,7 @@
  * demanding those would produce a wall of false failures. The conditional ones
  * are counted out loud instead.
  *
- * WHAT THE GATED COUNT IS FOR — CARD-TODO #49 (R171)
+ * WHAT THE GATED COUNT IS FOR — CARD-TODO #49
  *
  * "Counted out loud" was 316 promises in one heap, which is a number nobody
  * can plan against. Each gated claim now says WHY it is gated (`Claim.gate`),
@@ -131,7 +131,7 @@ interface Observed {
   /** the fixtures the press run actually got through */
   fired: string[];
   /**
-   * R211 / CARD-TODO #87: THE THIRD STATE. Runs that ended with one of this
+   * CARD-TODO #87 (see 181-inconclusive-activation-window): THE THIRD STATE. Runs that ended with one of this
    * card's activations still on the stack, so the drill could not close its
    * evidence window and this card's activation-gated promises are UNDECIDED
    * by that run rather than unobserved.
@@ -143,7 +143,7 @@ interface Observed {
    * observed" is the opposite lie and would put a card in UNREACHED under a
    * precondition it does not actually lack.
    *
-   * Measured over the whole pool at R211: 0 of 1296 runs. That zero is only
+   * Measured over the whole pool when the third state landed (CARD-TODO #87): 0 of 1296 runs. That zero is only
    * worth something because the channel has a positive control proving it can
    * be non-zero — `181-inconclusive-activation-window.test.ts` forces one and
    * shows the refusal. See docs/13-assessment.md §7.4.
@@ -189,7 +189,7 @@ function observe(card: string): Observed {
   for (const opts of runs) {
     let r;
     try { r = drillCard(card, 900_000, opts); } catch { continue; }
-    // R211 / CT-87. Recorded BEFORE the branch below, because both the augment
+    // CT-87. Recorded BEFORE the branch below, because both the augment
     // run and the activate run open activation windows and either can end with
     // one still on the stack.
     if (r.actInconclusive) {
@@ -347,7 +347,7 @@ const KNOWN_UNMET: Record<string, string> = {
     + 'an odd life total draws a card." Both players are on 30, so the sacrifice half '
     + 'fires and the draw half correctly does not.',
   'Calming Force':
-    'BOARD — R100: "I can\'t be played from your hand", so it is never cast and its '
+    'BOARD — CR 702.2b: "I can\'t be played from your hand", so it is never cast and its '
     + 'negate is never owed. Same exemption as UNREACHABLE in 81-card-drill.',
   Robot:
     'BOARD — "I spawn with X +1/+1 counters on me" is applied by the CREATING effect '
@@ -595,7 +595,7 @@ test('every gated promise the fixtures cannot reach is NAMED, with the precondit
   for (const g of ['augment', 'trigger', 'condition'] as ClaimGate[]) {
     for (const { card, claim } of unobserved.get(g) ?? []) {
       if (card in UNREACHED) continue;
-      // R211 / CT-87: say WHICH of the three states this is. A card whose run
+      // CT-87 (see 181-inconclusive-activation-window): say WHICH of the three states this is. A card whose run
       // ended mid-activation has an UNDECIDED promise, not an unreached one,
       // and telling the reader "no fixture reached it" would send them to
       // build a board precondition that is already being built.
@@ -724,22 +724,22 @@ test('the fixture library actually fires, and the augment actually lands on a ho
   const pressed = drillCard('Megadeath', 900_000, { press: true });
   assert.ok(pressed.fired.length >= 29,
     `the press run got through only ${pressed.fired.length} fixtures (31 exist, and 31 fired when `
-    + 'R199 landed) — the beat scheduler has stopped firing and stage 3 is measuring nothing');
+    + 'the battle-position fix landed) — the beat scheduler has stopped firing and stage 3 is measuring nothing');
   for (const beat of ['die', 'despawn', 'trash', 'allySpawn', 'damage', 'counters']) {
     assert.ok(pressed.fired.includes(beat), `the "${beat}" fixture never fired`);
   }
-  // R199: …and the beats that wait for the card to be STANDING IN the battle
+  // …and the beats that wait for the card to be STANDING IN the battle (see drill.ts)
   // fired there, in a region that is not its own. Without this, the five
   // REGION-family entries deleted from UNREACHED above would come back as
   // surprises and nothing here would say why. 170-battle-position-promises
   // holds the per-card assertions; this is the aggregate guard.
   assert.ok(pressed.inBattleBeats.length >= 5,
     `only ${pressed.inBattleBeats.length} beats fired while Megadeath stood in the battle — the `
-    + '`inBattle` pin has stopped firing and the R12 family is dark again');
+    + '`inBattle` pin has stopped firing and the CR 101.6 family is dark again');
   assert.ok(pressed.inBattleBeats.some(b => !b.includes(':home=0:at=0:')),
     'every in-battle beat fired in the seat\'s OWN home region, so no attacking position was '
     + 'ever reached — the pin has degenerated into "the battle phase", which is exactly the bug '
-    + 'R199 fixed');
+    + 'the 2026-08-26 drill work fixed');
   assert.ok(pressed.ownTypes.includes('tokenCreated'),
     'Megadeath prints "When I attack, create a Poison 5" and the press run must see it attack — '
     + 'if the destructive beats stop being held back until two battles have finished, the card is '
@@ -809,9 +809,9 @@ test('the semantic pass reports honestly on what it could and could not check', 
     `${unmetCount} unmet claims but only ${claimsIn(realCards) + claimsIn(boardCards)} of them `
     + 'belong to a KNOWN_UNMET card — the honesty tally no longer adds up');
 
-  // ── CARD-TODO #87 / R211: THE THIRD STATE, printed whether or not it is 0 ──
+  // ── CARD-TODO #87 (see 181-inconclusive-activation-window): THE THIRD STATE, printed whether or not it is 0 ──
   // A run that ended with an activation still on the stack knows nothing about
-  // what that activation delivered. Before R211 the drill credited it with
+  // what that activation delivered. Before the inconclusive-window fix the drill credited it with
   // every event from the stuck activation to wherever the run stopped, so an
   // inconclusive run read as a POSITIVE one — that is how Slag Spewer came to
   // be scored on an `erased` its host's death produced (CT-86). Now it is
@@ -830,7 +830,7 @@ test('the semantic pass reports honestly on what it could and could not check', 
   }
 
   // …and a FLOOR in the honest direction: here a number going UP is the bad
-  // news. Measured 0 of 1296 runs at R211, over the whole pool, in exactly
+  // news. Measured 0 of 1296 runs at CARD-TODO #87, over the whole pool, in exactly
   // these scenarios. A non-zero means some card's activation-gated promise
   // went UNDECIDED — raise `maxSteps` for that run until the window closes, or
   // say in UNREACHED that the drill cannot finish the activation. Do NOT make
@@ -861,7 +861,7 @@ test('the semantic pass reports honestly on what it could and could not check', 
   console.log(
     `    ${gHit}/${gTot} gated promises were observed being delivered by a run that could `
     + `satisfy their gate; ${gTot - gHit} have still never been observed`);
-  // ⚠ R217: PRINT THE UNIT, BECAUSE THIS LINE HAS BEEN MIS-SUMMARISED THREE
+  // ⚠ PRINT THE UNIT (see 187-scenario-queue), BECAUSE THIS LINE HAS BEEN MIS-SUMMARISED THREE
   // TIMES. The number above counts CLAIMS; `UNREACHED` is keyed by CARD, and
   // several cards carry more than one unobserved claim. Every hand-written
   // summary of this tally so far — docs/13-assessment.md twice, and a
@@ -888,8 +888,8 @@ test('the semantic pass reports honestly on what it could and could not check', 
    * The comment a few lines up lists three times a hand-written summary of
    * this tally drifted from it. `ledgers/unreached.ts`'s header was the fourth
    * and nothing could see it: it opened "38 claims over 37 cards" while the
-   * object held 35 and the drill counted 36. Slag Spewer left at R219 and
-   * Cinder Scuttler at R261; the prose stayed.
+   * object held 35 and the drill counted 36. Slag Spewer left when its erase began filing the pile and
+   * Cinder Scuttler when combat-damage triggers moved to after combat; the prose stayed.
    *
    * Both numbers are computed RIGHT HERE, so this is the one place that can
    * check them without re-deriving anything. `187 §1` already pins the card
@@ -914,25 +914,25 @@ test('the semantic pass reports honestly on what it could and could not check', 
   // The delivered count is floored too, in the other direction: coverage that
   // has been paid for once must not be lost silently.
   // FLOORS ON THE DELIVERED COUNTS, one per gate, raised as each stage paid
-  // for them. Measured 2026-08-25 at the end of R180: augment 129, trigger 86,
+  // for them. Measured 2026-08-25 at the end of stage 4: augment 129, trigger 86,
   // activated 35, condition 14 — 264 of 316. Measured 2026-08-26 at the end of
-  // R199, once the beats learned to wait for the card to be STANDING IN the
+  // the battle-position round, once the beats learned to wait for the card to be STANDING IN the
   // battle: augment 137, trigger 92, activated 35, condition 14 — 278 of 316.
   // Set a little below so that a refinement is free and a silent give-back is
   // not.
   const hit = (g: ClaimGate) => partition.get(g)?.[0] ?? 0;
   assert.ok(hit('augment') >= 130,
-    `only ${hit('augment')} [Augment] promises observed delivered (was 137 after R199, 129 when `
+    `only ${hit('augment')} [Augment] promises observed delivered (was 137 after the battle-position fix, 129 when `
     + 'stage 4 landed, and 0 before it) — the host path has regressed');
   assert.ok(hit('trigger') >= 85,
-    `only ${hit('trigger')} trigger-gated promises observed delivered (was 92 after R199, 86 when `
+    `only ${hit('trigger')} trigger-gated promises observed delivered (was 92 after the battle-position fix, 86 when `
     + 'stage 3 landed) — a fixture has stopped firing, or the destructive beats are no longer '
     + 'being held back until two battles have finished');
   assert.ok(hit('condition') >= 12,
     `only ${hit('condition')} condition-gated promises observed delivered (was 14)`);
   assert.ok(gHit >= 270,
     `only ${gHit} gated promises observed delivered (98 when stage 2 landed, 264 at the end of `
-    + 'R180, 278 at the end of R199) — coverage has regressed');
+    + 'stage 4, 278 after the battle-position round) — coverage has regressed');
   assert.equal(partition.get('activated')?.[0], partition.get('activated')?.[1],
     'stage 2 delivered EVERY activation-gated promise; one has stopped being delivered');
   // A floor on the promises the suite actually REQUIRES. It is far below the

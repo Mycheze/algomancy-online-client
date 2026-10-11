@@ -30,7 +30,7 @@ import { autoPassPlan } from './inspect.ts';
 import { inPassWindow, passAllRelease } from './passrelease.ts';
 import type { Action, Entity, EntityId, GameState, Phase, Seat } from '../engine/src/types.ts';
 
-// ── [66] + R245/R251: the pass judgements the SERVER asks too ──────────
+// ── [66] + CR D1.3, D2.2: the pass judgements the SERVER asks too ──────────
 //
 // passEndsBattlePhase, tokensAtRisk, inPassWindow and passAllRelease (with
 // PassAllRelease) moved verbatim to ui/passrelease.ts on 2026-09-28, so the
@@ -41,14 +41,14 @@ export { inPassWindow, passAllRelease, passEndsBattlePhase, tokensAtRisk } from 
 export type { PassAllRelease } from './passrelease.ts';
 
 /**
- * R245/R251 — the snapshot the chip is armed against.
+ * CR D2.2f, D2.2 — the snapshot the chip is armed against.
  *
  * ONE definition of "what this window looked like", so arming it and checking
  * it can never drift: `ui/main.ts` arms with this and the suite arms with the
  * very same call. The two legacy scalars ride along so an arm from either
  * source answers whichever pair `passAllRelease` reaches for.
  *
- * ⚠ R251 — IT IS TAKEN ONCE, AT THE ARM, AND NEVER RE-TAKEN. R245 re-took it
+ * ⚠ CR D2.2f — IT IS TAKEN ONCE, AT THE ARM, AND NEVER RE-TAKEN. The earlier version re-took it
  * at every window the chip declined, which made "new" mean "new since the
  * previous window I passed". That is a running diff, and it is neither of the
  * owner's two promises: "a pass is given to all effects that are CURRENTLY on
@@ -98,7 +98,7 @@ export function autoPassDecision(
 // ── [127] the units a declaration may actually be built out of ────────
 
 /**
- * R245 — WHICH OF MY THINGS MAY JOIN THE DECLARATION I AM BEING ASKED FOR.
+ * CR D1.3a — WHICH OF MY THINGS MAY JOIN THE DECLARATION I AM BEING ASKED FOR.
  *
  * THE REPORT (ledger #127, room DSVQ, action 92): *"why is Rashi able to
  * attack like this? She did not do counterattackers (just Thoughtripper) but
@@ -142,7 +142,7 @@ export function formationCandidates(s: GameState, seat: Seat): EntityId[] {
     return Object.values(s.entities)
       .filter(e => e.kind === 'unit' && mine(e) && e.region === from
         && (!b.attackerPool || b.attackerPool.includes(e.id))
-        // R84: a lured unit cannot attack for the rest of this battle phase
+        // CR 802.15e: a lured unit cannot attack for the rest of this battle phase
         && !e.allured)
       .map(e => e.id).sort((x, y) => x - y);
   }
@@ -236,7 +236,7 @@ export function counterShapes(pool: readonly EntityId[]): CounterShape[] {
 export function ridableTokens(s: GameState, seat: Seat): EntityId[] {
   const b = s.battle;
   if (!b || b.step !== 'declare' || b.attacker !== seat) return [];
-  // R245: the region a formation leaves from is `attackFrom` above — one
+  // CR D1.3: the region a formation leaves from is `attackFrom` above — one
   // derivation for the units and their riders, which leave together
   const from = attackFrom(s);
   return Object.values(s.entities)
@@ -267,7 +267,7 @@ export function shouldAskRide(
   return ridableTokens(s, seat).length > 0;
 }
 
-// ── [67] R87: the same question, asked of a COUNTERATTACK ─────────────
+// ── [67] CR 610.3: the same question, asked of a COUNTERATTACK ─────────────
 
 /**
  * The spell tokens `seat` could send out with their counterattackers.
@@ -275,7 +275,7 @@ export function shouldAskRide(
  * [67] "What happened to Rashi's Poison tokens here? She just wanted to bring
  * them with her attackers but they somehow went onto the stack, without any
  * targets or anything??" — game GETD, action 94. `declareBlocks` had no
- * `spellTokens` field at all until R87, so the only thing left to do with a
+ * `spellTokens` field at all until counterattack riders were supported (CR 610.3), so the only thing left to do with a
  * token at block time was fire it where it stood.
  *
  * Mirrors `doDeclareBlocks`'s own acceptance test for a `send` entry of kind
@@ -294,7 +294,7 @@ export function sendableTokens(s: GameState, seat: Seat): EntityId[] {
   if (!b || b.step !== 'blocks' || b.round !== 1 || b.defender !== seat) return [];
   return Object.values(s.entities)
     .filter(e => e.kind === 'spellToken' && e.controller === seat && !e.absent
-      // R84 {Alluring}: doDeclareBlocks refuses any lured entity in `send`
+      // CR 604.2e {Alluring}: doDeclareBlocks refuses any lured entity in `send`
       && e.region === b.region && !e.allured)
     .map(e => e.id)
     .sort((x, y) => x - y);
@@ -304,7 +304,7 @@ export function sendableTokens(s: GameState, seat: Seat): EntityId[] {
 export interface Counterattack {
   /** units — `declareBlocks.send` */
   send: EntityId[];
-  /** spell tokens riding with them — `declareBlocks.spellTokens` (R87) */
+  /** spell tokens riding with them — `declareBlocks.spellTokens` (CR 610.3) */
   spellTokens: EntityId[];
 }
 
@@ -368,7 +368,7 @@ export function shouldAskSend(
  * So the whole plan was discarded on every refused declaration in every
  * network game, which is every real game.
  *
- * WHAT THIS IS. R84's shape, widened. R84 asks the engine's own validator
+ * WHAT THIS IS. The Alluring check's shape, widened. That check asks the engine's own validator
  * whether the plan being built would be refused (`blockPlanIssue`), so a
  * compulsory block is NAMED rather than discovered; the only thing that kept
  * it to {Alluring} was that the rest of the legality was locked inside
@@ -385,8 +385,8 @@ export function shouldAskSend(
  *
  *  1. Ask about the whole plan. Accepted → nothing to report.
  *  2. Establish a BASE. Normally the empty declaration, which is always legal;
- *     when it is not, the board is under a compulsory duty, and R84's own
- *     `compulsoryBlocks` is the assignment that duty demands — legal by
+ *     when it is not, the board is under a compulsory duty, and the engine's own
+ *     `compulsoryBlocks` (CR 606.2f) is the assignment that duty demands — legal by
  *     construction, so it is what the rebuild starts from and what the notice
  *     names as REQUIRED.
  *  3. Add the player's columns one at a time, in column order. A column that
@@ -418,7 +418,7 @@ export interface BlockVerdict {
   offenders: BlockOffender[];
   /** the largest part of the plan the engine accepts — what the board keeps */
   keep: { blocks: Record<number, EntityId[]>; send: EntityId[]; spellTokens: EntityId[] };
-  /** R84: blockers the plan was rebuilt ON because the board compels them.
+  /** CR 606.2e: blockers the plan was rebuilt ON because the board compels them.
    * Added, never removed — the notice names these as required, not as errors. */
   required: Record<number, EntityId[]>;
 }
@@ -445,7 +445,7 @@ export function blockVerdict(
   const why = ask(blocks, all);
   if (why === null) return null;
 
-  // the base: nothing, unless the board compels something (R84)
+  // the base: nothing, unless the board compels something (CR 606.2e)
   const required: Record<number, EntityId[]> = ask({}, []) === null ? {} : compulsoryBlocks(e, seat);
   const keep: Record<number, EntityId[]> = {};
   for (const [ci, col] of Object.entries(required)) keep[Number(ci)] = [...col];
@@ -502,7 +502,7 @@ export function blockVerdict(
  * the engine would take as a counterattacker.
  *
  * The last test is a question put to the engine, as `blockVerdict` puts it,
- * one unit at a time on top of the bare plan the board compels (R84's
+ * one unit at a time on top of the bare plan the board compels (CR 606.2e's
  * compulsory blocks, or nothing) — so a lured unit, which must block and may
  * not counterattack, is never offered, and nothing here restates a rule.
  * Sends are judged one by one in the engine too, so each answer stands alone.

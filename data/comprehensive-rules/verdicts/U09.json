@@ -174,7 +174,7 @@
   },
   {
     "key": "turn.battle.region-order.others-absent",
-    "textHash": "16ce45ddaae29d5e",
+    "textHash": "8aa9fef11f81e214",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -695,7 +695,7 @@
   },
   {
     "key": "turn.battle.this-battle",
-    "textHash": "bfe0fd8d838b6331",
+    "textHash": "cb20e7fd32ffa7bd",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -834,7 +834,7 @@
   },
   {
     "key": "turn.battle.what-it-is.during-battle",
-    "textHash": "0ca2e1b020689616",
+    "textHash": "7209552e54383b2f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -888,7 +888,7 @@
   },
   {
     "key": "turn.battle.what-it-is.only-interaction",
-    "textHash": "dc0853d84087d697",
+    "textHash": "8c670eed20eeb32b",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -1082,7 +1082,7 @@
   },
   {
     "key": "turn.deploy.mods.spell-token",
-    "textHash": "6d43b692a4a05d32",
+    "textHash": "bbd17c6cfefc61e7",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -1177,7 +1177,7 @@
   },
   {
     "key": "turn.deploy.order.simultaneous",
-    "textHash": "8fc1e4fbc73d2cf7",
+    "textHash": "f1f4dbb721efbbd5",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -1241,7 +1241,7 @@
   },
   {
     "key": "turn.deploy.stack",
-    "textHash": "19789c8b2f015a1d",
+    "textHash": "2550f7616b86cb83",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1289,7 +1289,7 @@
   },
   {
     "key": "turn.deploy.stack.no-waiting",
-    "textHash": "8a6e1e1885d2bd46",
+    "textHash": "dde2262a2c6427d0",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -1342,7 +1342,7 @@
   },
   {
     "key": "turn.deploy.start",
-    "textHash": "78c774106d136a25",
+    "textHash": "fb3ad8e9910e7801",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
@@ -1395,7 +1395,7 @@
   },
   {
     "key": "turn.deploy.start.triggers",
-    "textHash": "571297deb2211321",
+    "textHash": "d188c9b5e2e98728",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1480,7 +1480,7 @@
   },
   {
     "key": "turn.deploy.what-it-is.alone",
-    "textHash": "03eceaac3a02c8d4",
+    "textHash": "d74995d549d9397c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1594,7 +1594,7 @@
   },
   {
     "key": "turn.deploy.what-it-is.no-opponents",
-    "textHash": "047bbccd0dc1aa08",
+    "textHash": "cbc68a21a0415131",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1979,7 +1979,7 @@
   },
   {
     "key": "turn.regroup.sequence",
-    "textHash": "8c96a79535d78b19",
+    "textHash": "89177ef5d99c3a29",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2030,7 +2030,7 @@
   },
   {
     "key": "turn.regroup.sequence.damage",
-    "textHash": "666e83799e4990a1",
+    "textHash": "a75fddea77f9a0f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2077,7 +2077,7 @@
   },
   {
     "key": "turn.regroup.sequence.formation",
-    "textHash": "012c64d0de84542c",
+    "textHash": "6e8912e6419ffd8e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2125,7 +2125,7 @@
   },
   {
     "key": "turn.regroup.sequence.players",
-    "textHash": "4b48550bf7196c57",
+    "textHash": "c3962400b040daf1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2168,7 +2168,7 @@
   },
   {
     "key": "turn.regroup.sequence.return",
-    "textHash": "ce3ff35c9df7dbdf",
+    "textHash": "e24d0974217d6eff",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U09-r2",
@@ -2343,7 +2343,7 @@
   },
   {
     "key": "turn.regroup.sequence.spell-tokens.mods",
-    "textHash": "7e00c27af6f417b6",
+    "textHash": "2ce2594bc0dfd1b6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2390,7 +2390,7 @@
   },
   {
     "key": "turn.regroup.sequence.temporary",
-    "textHash": "00f813e38937a967",
+    "textHash": "68f3a2bb11d56a15",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2443,7 +2443,7 @@
   },
   {
     "key": "turn.regroup.unit-tokens-stay",
-    "textHash": "0a84d539febf0811",
+    "textHash": "3c4288e6e81440d2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2481,7 +2481,7 @@
   },
   {
     "key": "turn.regroup.what-it-is",
-    "textHash": "94b79f1be8804787",
+    "textHash": "a4959463790f8dc4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",

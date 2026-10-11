@@ -100,7 +100,7 @@ has no lobby and deals immediately.
 
 A live draft can be created with custom rules: pack size, element count,
 opening hand, draws per turn, starting life, Simple cards only, banned cards,
-a card filter (R292). The client previews them with `../ui/customrules.ts`;
+a card filter (CR D8.3a). The client previews them with `../ui/customrules.ts`;
 `POST /api/new {rules}` runs the same check here, resolves them once into a
 `DraftDeal` and refuses a pool below the floor with a sentence. The
 reservation keeps the resolved deal, every re-deal and restore passes it, and

@@ -1,5 +1,5 @@
 /**
- * R172 — AN ERASE IS A DESPAWN, AND EVERY ERASE GOES THROUGH ONE CHOKE POINT.
+ * CR 801.6a — AN ERASE IS A DESPAWN, AND EVERY ERASE GOES THROUGH ONE CHOKE POINT.
  *
  * Three related defects, all of them "a route OUT of play that does not behave
  * like the other routes out of play":
@@ -7,14 +7,14 @@
  *  1. `E.eraseFromPlay` reverted the face, deleted the unit and its mods,
  *     unslotted it and emitted a single `'erased'` event — a type that NO
  *     `fireEvent` site in the engine or the card pool dispatches. So an erase
- *     was invisible to the game, exactly the way R152 found a Hooba-Mon
- *     exchange to be. R157 §3 had already ruled the general case — *"It's not
- *     a death, but it IS a despawn and a trashing"* — and R152 repaired this
- *     same omission on `exchangeInPlace`. An erase was the last non-death
+ *     was invisible to the game, exactly the way a Hooba-Mon exchange once was.
+ *     The owner's exchange answer had already ruled the general case — *"It's not
+ *     a death, but it IS a despawn and a trashing"* — and an earlier repair fixed
+ *     the same omission on `exchangeInPlace`. An erase was the last non-death
  *     departure still silent: every "whenever a unit despawns" watcher was
  *     blind to Banishment, and every donated `[Augment] When I despawn` was
- *     dead on this route. R167's bug, one verb over — and because
- *     `eraseFromPlay` deleted its mods before it announced anything, R167's
+ *     dead on this route. It was the donated-despawn bug (CR 721.1f), one verb over — and because
+ *     `eraseFromPlay` deleted its mods before it announced anything, the same
  *     anchoring fix had to be repeated here or the new event would fire with
  *     nothing left to donate.
  *
@@ -22,7 +22,7 @@
  *     (`helpers.ts`'s `eraseFromPlay`, reached by EIGHT card sites including
  *     Banishment and Celestial Purge; and batch-hybrids-ld-a's `eraseUnit`,
  *     reached by Zephyrzoa). Neither turned a transformed card back over, so
- *     R157 §10 — *"in all zones, other than play, it exists as the front
+ *     the owner's front-face answer (CR 201.4) — *"in all zones, other than play, it exists as the front
  *     side"* — was false on every one of them: the erased pile recorded
  *     "Beyond, Codex Incarnate" instead of the Scholar of the Void that was
  *     really leaving the game. Both are one-line shims now, so (1) reaches
@@ -39,7 +39,7 @@
  *     does not "fix" it into a mid-battle re-slot.
  *
  * ⚠ WHAT MUST NOT CHANGE, and is pinned here as hard as the fix: an erase is
- * still NOT a death and NOT a trash. R40 is about a card entering a bin and
+ * still NOT a death and NOT a trash. CR 801.2 is about a card entering a bin and
  * nothing here enters one, so no `'died'`, no `'trashed'`, no bin entry.
  * Widening the event is not the same as widening the verb.
  *
@@ -97,10 +97,9 @@ function eraseDirect(h: Harness, id: EntityId): void {
 //
 // Demon of the Depths prints "[Augment] Whenever one of your units despawns,
 // I deal 1 damage to any target" — a THIRD-PARTY watcher: it rides an ally
-// that is still standing when a DIFFERENT ally is erased. Before R172 an
-// erase fired only 'erased', which nothing dispatches, so this was silent.
+// that is still standing when a DIFFERENT ally is erased. Before an erase fired a despawn (CR 801.6a), it fired only 'erased' which nothing dispatches, so this was silent.
 
-test('R172 (i): an ERASE fires \'despawned\', and Demon of the Depths hears an ally being erased', () => {
+test('CR 410.2 (i): an ERASE fires \'despawned\', and Demon of the Depths hears an ally being erased', () => {
   const h = new Harness(14500);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -113,17 +112,17 @@ test('R172 (i): an ERASE fires \'despawned\', and Demon of the Depths hears an a
 
   assert.equal(ent(h, victim), undefined, 'the victim left play');
   assert.equal(eventsOf(h, 'despawned', mark).length, 1,
-    'an erase fires exactly one \'despawned\'. Before R172 it fired NONE — eraseFromPlay emitted '
+    'an erase fires exactly one \'despawned\'. Before the erase-is-a-despawn fix (CR 410.2) it fired NONE — eraseFromPlay emitted '
     + '\'erased\' and stopped, and no fireEvent site anywhere dispatches that type.');
   assert.equal(eventsOf(h, 'erased', mark).length, 1,
     'and still exactly one \'erased\' — the pile line is not duplicated by the new event');
   assert.equal(triggersOf(h, 'Demon of the Depths'), 1,
-    '…and a "whenever one of your units despawns" watcher on a SURVIVING ally saw it (R157 §3: '
+    '…and a "whenever one of your units despawns" watcher on a SURVIVING ally saw it (CR 801.6a: '
     + '"not a death, but it IS a despawn")');
 });
 
-test('R172 (i-facts): the erase\'s \'despawned\' carries R70\'s fact bundle, and no card enters a zone', () => {
-  // R70: 'despawned' fires once the entity is already out of s.entities, so
+test('CR 801.6a (i-facts): the erase\'s \'despawned\' carries CR 714.9\'s fact bundle, and no card enters a zone', () => {
+  // CR 714.9: 'despawned' fires once the entity is already out of s.entities, so
   // everything a listener could want has to ride the event. Demon of the
   // Depths' own `when` reads `ev.data.seat`, so a missing bundle is not a
   // cosmetic problem.
@@ -145,20 +144,20 @@ test('R172 (i-facts): the erase\'s \'despawned\' carries R70\'s fact bundle, and
     { unit: victim, card: 'Rune Channeler', seat: A, owner: A, region, to: 'erased' },
     'leftPlayFacts rides the event, and `to` names the destination the way a recall says '
     + '"hand" and a cache says "cache"');
-  assert.equal(countIn(erasedOf(h, A), 'Rune Channeler'), 1, 'R65: it is on the public pile');
+  assert.equal(countIn(erasedOf(h, A), 'Rune Channeler'), 1, 'CR 407.1: it is on the public pile');
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// (ii) R167's case, on the third route
+// (ii) the donated-despawn case, on the third route
 // ══════════════════════════════════════════════════════════════════════
 //
-// A Pile of Runes is the probe R167 used, for the same reason: its WHOLE text
+// A Pile of Runes is the probe the original fix used, for the same reason: its WHOLE text
 // box is "[Augment] When I despawn, create a Crystal X, where X is my
 // defense", so a fired trigger is the only thing that can produce a Crystal,
-// and the Crystal is a real entity rather than a log line. R167 gave it recall
-// and cache; this is the route R167 did not have.
+// and the Crystal is a real entity rather than a log line. The earlier fix gave it recall
+// and cache; this is the route that fix did not cover.
 
-test('R172 (ii): a donated "[Augment] When I despawn" (A Pile of Runes) fires on an ERASE', () => {
+test('CR 410.2 (ii): a donated "[Augment] When I despawn" (A Pile of Runes) fires on an ERASE', () => {
   const h = new Harness(14502);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -170,14 +169,14 @@ test('R172 (ii): a donated "[Augment] When I despawn" (A Pile of Runes) fires on
 
   assert.equal(ent(h, host), undefined, 'the host left play');
   assert.equal(triggersOf(h, 'A Pile of Runes'), 1,
-    'the donated despawn text fired on an ERASE. Before R172 this was 0 twice over: no '
+    'the donated despawn text fired on an ERASE. Before an erase fired a despawn (CR 410.2), this was 0 twice over: no '
     + '\'despawned\' event at all, and the mod entity deleted before there could have been one.');
   assert.equal(tokensNamed(h, 'Crystal').length, 1,
     'and it RESOLVED — a queued trigger that never resolves is not a card doing what it prints');
 });
 
-test('R172 (ii-anchor): the mod entity outlives the announce and is gone once the window closes', () => {
-  // R167's anchoring, repeated on this route: `fireEvent` finds donated
+test('(ii-anchor): the mod entity outlives the announce and is gone once the window closes', () => {
+  // The same anchoring, repeated on this route: `fireEvent` finds donated
   // [Augment] text by walking `u.mods` THROUGH the entity table, so the mods
   // must still be there when 'despawned' fires — and must not survive it.
   const h = new Harness(14503);
@@ -196,11 +195,11 @@ test('R172 (ii-anchor): the mod entity outlives the announce and is gone once th
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// (iii)–(v) R157 §10 on all three card-side erase routes
+// (iii)–(v) CR 407.4 on all three card-side erase routes
 // ══════════════════════════════════════════════════════════════════════
 //
 // "Turns back over. In all zones, other than play, it exists as the front
-// side." The engine choke point has done this since R157 §10 shipped; the two
+// side." The engine choke point has done this since the front-face rule shipped; the two
 // hand-rolled copies never did, so the public erased pile — the only record
 // that a card has left the GAME — named a back face that exists nowhere but
 // play, and the Scholar of the Void that really left was recorded nowhere at
@@ -223,7 +222,7 @@ function assertFrontFaceOnPile(h: Harness, seat: Seat, id: EntityId): void {
   assert.equal(ent(h, id), undefined, 'it left play');
   assert.equal(countIn(erasedOf(h, seat), 'Scholar of the Void'), 1,
     'the erased pile records the FRONT face — "in all zones, other than play, it exists as the '
-    + 'front side" (R157 §10). The hand-rolled copies never called revertFace.');
+    + 'front side" (CR 407.4). The hand-rolled copies never called revertFace.');
   assert.equal(countIn(erasedOf(h, seat), 'Beyond, Codex Incarnate'), 0,
     'and NOT the back face, which reaches no zone but play');
   assert.ok(h.log.some(l => l.includes('turns back over')),
@@ -231,14 +230,14 @@ function assertFrontFaceOnPile(h: Harness, seat: Seat, id: EntityId): void {
   assert.equal(countIn(binOf(h, seat), 'Scholar of the Void'), 0, 'erase means erase: no bin');
 }
 
-test('R172 (iii): a transformed Scholar of the Void ERASED BY BANISHMENT reaches the erased pile as its FRONT face', () => {
+test('CR 407.4 (iii): a transformed Scholar of the Void ERASED BY BANISHMENT reaches the erased pile as its FRONT face', () => {
   const h = new Harness(14510);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'light', 3);                          // Banishment: l/3
   toNextBattle(h, A);
-  // R12/R25: the spell sweeps the region it resolves in — the battle region,
+  // CR 601.1c: the spell sweeps the region it resolves in — the battle region,
   // the defender's home. "Erase all units that spawned THIS TURN", so the
   // Scholar is spawned here.
   const scholar = flippedScholar(h, D);
@@ -251,7 +250,7 @@ test('R172 (iii): a transformed Scholar of the Void ERASED BY BANISHMENT reaches
   assertFrontFaceOnPile(h, D, scholar);
 });
 
-test('R172 (iv): a transformed Scholar of the Void ERASED BY CELESTIAL PURGE reaches the erased pile as its FRONT face', () => {
+test('CR 407.4 (iv): a transformed Scholar of the Void ERASED BY CELESTIAL PURGE reaches the erased pile as its FRONT face', () => {
   const h = new Harness(14511);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -269,7 +268,7 @@ test('R172 (iv): a transformed Scholar of the Void ERASED BY CELESTIAL PURGE rea
   assertFrontFaceOnPile(h, D, scholar);
 });
 
-test('R172 (v): a transformed Scholar of the Void ERASED BY ZEPHYRZOA\'s "erase me" reaches the erased pile as its FRONT face', () => {
+test('CR 407.4 (v): a transformed Scholar of the Void ERASED BY ZEPHYRZOA\'s "erase me" reaches the erased pile as its FRONT face', () => {
   // Zephyrzoa is the only card that reaches batch-hybrids-ld-a's `eraseUnit`.
   // Its text is an [Augment], and "me" reads from the HOST when donated — so
   // a Zephyrzoa grafted onto the turned-over Scholar erases the SCHOLAR when
@@ -309,13 +308,13 @@ test('R172 (v): a transformed Scholar of the Void ERASED BY ZEPHYRZOA\'s "erase 
 // (vi) the mods: one erased-pile entry, no bin, no trash
 // ══════════════════════════════════════════════════════════════════════
 //
-// R167's (iv)/(v) invariants, on this route. The window between the announce
+// 141-despawn-mods' (iv)/(v) invariants, on this route. The window between the announce
 // and the mod deletion is now several statements long, so the risk is a
-// SECOND pass over the same mods, not a missing one. R40 is the other half:
+// SECOND pass over the same mods, not a missing one. CR 801.2c is the other half:
 // an erase never touches a bin, so it is never a trash — for a nontoken mod
 // just as much as for a token one.
 
-test('R172 (vi): a nontoken mod (Chitin Shredder) erased with its host reaches the erased pile exactly once, and no bin', () => {
+test('CR 720.7 (vi): a nontoken mod (Chitin Shredder) erased with its host reaches the erased pile exactly once, and no bin', () => {
   const h = new Harness(14520);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -333,10 +332,10 @@ test('R172 (vi): a nontoken mod (Chitin Shredder) erased with its host reaches t
   assert.equal(countIn(binOf(h, A), 'Chitin Shredder') + countIn(binOf(h, D), 'Chitin Shredder'), 0,
     'and NO bin: an erase does not put a card in one, whoever owns it');
   assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,
-    'so R40 has nothing to trash — "erasing never touches a bin, so it is never a trash"');
+    'so CR 801.2 has nothing to trash — "erasing never touches a bin, so it is never a trash"');
 });
 
-test('R172 (vi-token): a token mod (Wraith) erased with its host reaches the erased pile exactly once, and no bin', () => {
+test('CR 407.3a (vi-token): a token mod (Wraith) erased with its host reaches the erased pile exactly once, and no bin', () => {
   const h = new Harness(14521);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -346,16 +345,16 @@ test('R172 (vi-token): a token mod (Wraith) erased with its host reaches the era
   eraseDirect(h, host);
 
   assert.equal(countIn(erasedOf(h, A), 'Wraith'), 1,
-    'R65/R69: a token mod has no card of its own, so the pile is the only record — exactly one');
+    'CR 407.3a: a token mod has no card of its own, so the pile is the only record — exactly one');
   assert.equal(countIn(binOf(h, A), 'Wraith'), 0, 'and it never reaches a bin');
-  assert.equal(trashesOf(h, 'Wraith').length, 0, 'so it is never trashed (R40)');
+  assert.equal(trashesOf(h, 'Wraith').length, 0, 'so it is never trashed (CR 801.2c)');
 });
 
 // ══════════════════════════════════════════════════════════════════════
 // (vii) the verb did NOT widen
 // ══════════════════════════════════════════════════════════════════════
 
-test('R172 (vii): Banishment still fires no \'died\' and no \'trashed\' — an erase gained a despawn, not a death', () => {
+test('(vii): Banishment still fires no \'died\' and no \'trashed\' — an erase gained a despawn, not a death', () => {
   const h = new Harness(14530);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -371,11 +370,11 @@ test('R172 (vii): Banishment still fires no \'died\' and no \'trashed\' — an e
   resolveAll(h);
 
   assert.equal(ent(h, victim), undefined, 'it was erased');
-  assert.equal(eventsOf(h, 'despawned', mark).length, 1, 'one despawn (R172)…');
+  assert.equal(eventsOf(h, 'despawned', mark).length, 1, 'one despawn (CR 801.6a)…');
   assert.equal(eventsOf(h, 'died', mark).length, 0,
-    '…and NO death: R157 §3 is "not a death, but it IS a despawn", both halves');
+    '…and NO death: CR 801.6a is "not a death, but it IS a despawn", both halves');
   assert.equal(trashesOf(h, 'Rune Channeler').length, 0,
-    'and no trash — R40 turns on entering a bin, and nothing entered one');
+    'and no trash — CR 801.2 turns on entering a bin, and nothing entered one');
   assert.equal(countIn(binOf(h, D), 'Rune Channeler'), 0, 'the card is in no bin');
   assert.equal(countIn(erasedOf(h, D), 'Rune Channeler'), 1, 'it is on the public erased pile');
 });
@@ -388,7 +387,7 @@ test('R172 (vii): Banishment still fires no \'died\' and no \'trashed\' — an e
 // a decision. These two cases exist so the next reader does not turn
 // `E.giveControl`'s unslot into a re-slot.
 
-test('R172 (viii): Download — a Robot token stolen mid-battle is OUT of the formation for the rest of the battle', () => {
+test('CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation for the rest of the battle', () => {
   const h = new Harness(14540);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -412,14 +411,14 @@ test('R172 (viii): Download — a Robot token stolen mid-battle is OUT of the fo
   pass(h); pass(h);
   resolveAll(h);
 
-  assert.equal(ent(h, robot)!.controller, A, 'it changes controller IMMEDIATELY (R8)');
+  assert.equal(ent(h, robot)!.controller, A, 'it changes controller IMMEDIATELY (CR 711.1)');
   assert.equal(ent(h, robot)!.owner, D, 'owner never changes');
   const inLine = (): boolean =>
     [...h.state.battle!.columns, ...Object.values(h.state.battle!.blocks)]
       .some(col => col.includes(robot));
   assert.ok(!inLine(),
     'and it is OUT of the formation at once — it blocks for nobody and attacks for nobody. '
-    + 'R172: the owner ruled it SITS OUT UNTIL REGROUP; giveControl\'s unslot is what delivers '
+    + 'CR 711.3: the owner ruled it SITS OUT UNTIL REGROUP; giveControl\'s unslot is what delivers '
     + 'that and must not grow a re-slot.');
 
   // …for the REST of the battle: run the damage steps out and it is still out.
@@ -447,14 +446,14 @@ test('R172 (viii): Download — a Robot token stolen mid-battle is OUT of the fo
   // ⚠ NOT Download's doing, and pinned here so the two are not confused: the
   // attacking column stays BLOCKED even though its blocker left ("Column 1 is
   // blocked (blockers gone) — no damage through"), which is the same
-  // after-blocks lock R72 states for column gaps. The steal removes a blocker;
+  // after-blocks lock CR 602.5a states for column gaps. The steal removes a blocker;
   // it does not un-declare the block.
   assert.equal(h.state.players[D]!.life, life0,
     'the column it was blocking does NOT connect — a blocked column whose blockers are gone '
-    + 'deals no damage through (existing engine rule, unchanged by R172)');
+    + 'deals no damage through (existing engine rule, CR 711.3a)');
 });
 
-test('R172 (ix): Download — the stolen Robot token joins its NEW controller\'s side at regroup', () => {
+test('CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller\'s side at regroup', () => {
   const h = new Harness(14541);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

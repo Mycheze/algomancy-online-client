@@ -69,7 +69,7 @@ export interface StackAbilityRow {
   graft?: boolean;
   /** index into item.parts — what ties the row to the clause that paid for it */
   part: number;
-  /** the cast cost THIS clause paid, defining its own X — R64's counted
+  /** the cast cost THIS clause paid, defining its own X — CR 702.6b's counted
    * payment, or the receipt stat the clause sizes itself off (partCostX). A
    * grafted rider's X is not its carrier's (types.ts EffectPart.costPaid.x),
    * so it is attributed to the row rather than to the item. */
@@ -79,7 +79,7 @@ export interface StackAbilityRow {
 }
 
 /**
- * R284 — the printed half a part DECLARED, as an index into its bracket.
+ * CR D6.10a — the printed half a part DECLARED, as an index into its bracket.
  *
  * The stored `part.mode` is the ModeSpec option's `value` ('lose', 'wither',
  * 'Crystal'), which says nothing about which printed words it stands for; the
@@ -102,7 +102,7 @@ function declaredHalf(item: StackItem, part: EffectPart, g?: E): 0 | 1 | undefin
  * Spent parts (a bounded graft already used this turn, a declined cost) are
  * dropped — they will do nothing, so showing them would mislead.
  *
- * R284: a part that has DECLARED its half reads as that half — the unchosen
+ * CR D6.10a: a part that has DECLARED its half reads as that half — the unchosen
  * words are dropped from the printed clause, so a card on the stack says what
  * it is going to do rather than what it could have done. Needs `g` to recover
  * which half (see `declaredHalf`); without it the text is simply not narrowed,
@@ -122,7 +122,7 @@ export function stackAbilityRows(item: StackItem, g?: E): StackAbilityRow[] {
   return out;
 }
 
-/* ── R271: THE MODS PEEKING OUT FROM UNDER A CARD ─────────────────────
+/* ── CR D6.12a: THE MODS PEEKING OUT FROM UNDER A CARD ─────────────────────
  *
  * Two owner reports, 2026-08-30, about the same strip.
  *
@@ -135,7 +135,7 @@ export function stackAbilityRows(item: StackItem, g?: E): StackAbilityRow[] {
  *
  * They are one fix because they are one picture. The focus viewer composed a
  * modded UNIT this way and a modded STACK ITEM not at all — `previewEntityHtml`
- * had the strips, `previewStackHtml` had none — and R35 / R105 are explicit
+ * had the strips, `previewStackHtml` had none — and CR 724.3 is explicit
  * that a {Modular} card's mods RIDE ON THE STACK with it, so the two surfaces
  * were describing the same physical object two different ways. One builder,
  * two callers, and the badge #146 objects to is gone from both at once.
@@ -150,7 +150,7 @@ export interface ModStripSource {
   card: CardName;
   /** a live mod entity knows how it was applied; a stack item's does not */
   appliedAs?: 'augment' | 'graft';
-  /** R35: the zone a {Modular} mod was paid out of, when that is known */
+  /** CR 724.1: the zone a {Modular} mod was paid out of, when that is known */
   from?: 'hand' | 'bin';
 }
 
@@ -182,10 +182,10 @@ export function modStrips(mods: readonly ModStripSource[]): ModStrip[] {
  *
  * `own` is true for the unit's own text (the two `via` shapes that address the
  * IDENTITY face), false when the ability is borrowed from somewhere the player
- * has to be told about: an augment mod, or an R118 face projected onto the
+ * has to be told about: an augment mod, or a CR 710.7 face projected onto the
  * unit right now. `card` is that source's name.
  *
- * ⚠ R118: `unit.card` is the PHYSICAL card and is NOT the answer for the own
+ * ⚠ CR 201.5: `unit.card` is the PHYSICAL card and is NOT the answer for the own
  * arms — a unit wearing a copy reads its own text off `E.faceName`. Reading
  * `unit.card` here is exactly how the inspector would come to show a different
  * ability list from the one the game offers.
@@ -205,7 +205,7 @@ function activationTextSource(
 
 /** the ActivatedAbility an activateAbility action refers to, resolving its
  * `via` (own abilities / own [Augment] text / an augment mod's donated text /
- * an R118 face projected onto the unit) */
+ * a CR 710.7 face projected onto the unit) */
 export function abilityOf(
   state: GameState, unit: Entity, a: Extract<Action, { type: 'activateAbility' }>,
 ): ActivatedAbility | undefined {
@@ -224,7 +224,7 @@ export function abilityOf(
  * taking it back. Two things make one safe to fire on a single click:
  *  - the cost is only mana, so nothing permanent is spent; or
  *  - the engine will stop and ask for a TARGET, which is both a moment to
- *    notice and (since R57) strictly before anything is paid.
+ *    notice and (CR 111.7) strictly before anything is paid.
  *
  * The target test is "will a decision actually appear", not "does the card
  * print the word target". An ability whose targets have no legal candidates
@@ -243,7 +243,7 @@ export function activationNeedsConfirm(
   const spec = ab.effect.targets;
   if (!spec) return true;                       // nothing will stop to ask
   try {
-    // R265: `unit.id` as the SOURCE, matching apply.ts's `abilityUnusable` —
+    // CR 110.4a: `unit.id` as the SOURCE, matching apply.ts's `abilityUnusable` —
     // the real gate — which passes it. Without it, any restriction that reads
     // `ctx.sourceId` (`notSelf` is one) answers a different question here than
     // it answers there, and this is the surface that decides whether a player
@@ -262,7 +262,7 @@ export function activationNeedsConfirm(
  * Playtest ask: a reminder before ending deployment, because the cache is a
  * zone nobody has muscle memory for and a prophecy you already paid for is
  * easy to walk past. "Playable now" is narrower than "permitted" — a fulfilled
- * prophecy still has to clear normal timing (R42) — and the legal-action list
+ * prophecy still has to clear normal timing (CR 803.7i) — and the legal-action list
  * is the only thing that knows both, so this reads from there rather than
  * re-deriving it. Deduped and index-ordered: one entry may be offered by
  * several actions.
@@ -282,9 +282,9 @@ export function playableCachedNames(cache: { card: CardName }[], legal: Action[]
  * which entries are live.
  */
 export function playableCachedIndexes(legal: Action[]): number[] {
-  // R308: a glimpsed card that can only be PROPHESIED right now is as live as
+  // CR 801.9h: a glimpsed card that can only be PROPHESIED right now is as live as
   // one that can be played — it belongs in the hand strip too.
-  // R311: and so is one that can only be augmented, grafted or ambushed: the
+  // CR 403.3b: and so is one that can only be augmented, grafted or ambushed: the
   // cache plays like the hand for every mode, so ANY offer sourced from the
   // entry makes it live. Report #195 (KEMX): a glimpsed Virus whose only
   // battle-window move was the augment was left out of the strip.
@@ -293,10 +293,10 @@ export function playableCachedIndexes(legal: Action[]): number[] {
 }
 
 /**
- * R311: the cache index an action draws its card from, or null when it draws
+ * the cache index an action draws its card from, or null when it draws
  * from anywhere else. Every action shape that can take a card out of the
  * cache — a release in any mode (`playCached`, `mode: 'ambush'` included),
- * a mod (`augment` / `graft` with `from: 'cache'`) and a prophecy (R308) — so
+ * a mod (`augment` / `graft` with `from: 'cache'`) and a prophecy (CR 801.9h) — so
  * the strip, the thumb, the block reason and the click menu ask ONE question
  * about which offers belong to an entry.
  */
@@ -319,7 +319,7 @@ export function cacheSourceIndex(a: Action): number | null {
  *
  * So the UI must not restate the rule; it must ask the SAME questions in the
  * SAME order the enumerator does. The enumerator (apply.ts `sources` +
- * `pushSourcePlays` / `pushBattleAugments` / `pushMods`, R311) walks:
+ * `pushSourcePlays` / `pushBattleAugments` / `pushMods`, CR 403.3b) walks:
  *     no `via`                                  → not permitted at all
  *     any offer sourced from the entry          → nothing is blocking it
  *     the play's window open:
@@ -332,18 +332,18 @@ export function cacheSourceIndex(a: Action): number | null {
  * engine-private, so once permission, timing and mana are known to be fine,
  * "still not in `legal`" IS "no legal target".
  *
- * R311 / report #195 (KEMX): this used to ask only about the plain release,
+ * CR 723.2a / report #195 (KEMX): this used to ask only about the plain release,
  * so a glimpsed {Virus} (a deployment-timed unit) in a battle window read
  * "…but only during deployment" — while its battle augment was the very move
  * the owner was trying to make. A MODE is open when its window is: the plain
- * play at the card's printed timing (widened by an R97/R123 haste grant), a
+ * play at the card's printed timing (widened by a CR 803.2b or 504.7 haste grant), a
  * Virus augment or an Ambush in a battle priority window, a mod in deployment
- * (or the haste step under an R95 grant).
+ * (or the haste step under a CR 504.8a grant).
  */
 export type CacheBlock = 'none' | 'no-permission' | 'timing' | 'mana' | 'no-target';
 
 /** one way a cached card can be used, and what it costs a glimpse to use it
- * that way (mana only: the glimpse waives affinity, R303) */
+ * that way (mana only: the glimpse waives affinity, CR 801.9g) */
 type CacheMode = 'play' | 'mod' | 'ambush';
 
 /** the step legalActions' dispatcher is in for this seat, as far as the cache
@@ -363,7 +363,7 @@ function cacheStep(e: E, seat: Seat): 'haste' | 'battle' | 'deploy' | null {
   return e.deploying(seat) ? 'deploy' : null;
 }
 
-/** R311: the modes of cache entry `i` whose WINDOW is open right now — the
+/** CR 702.2d: the modes of cache entry `i` whose WINDOW is open right now — the
  * same windows apply.ts's offer loops open, asked through the same engine
  * predicates (`mayPlayAtHaste`, `binHasteGrantorIndex`, `mayApplyModAtHaste`) */
 function cacheTimedModes(e: E, seat: Seat, i: number): CacheMode[] {
@@ -400,14 +400,14 @@ export function cacheBlockReason(e: E, seat: Seat, i: number, legal: Action[]): 
   if (!cc) return 'no-permission';
   const via = e.cachePermission(seat, i);
   if (!via) return 'no-permission';
-  // R311: an entry with ANY offer is not blocked — a play in any mode, a mod
+  // CR 403.3b: an entry with ANY offer is not blocked — a play in any mode, a mod
   // or a prophecy, the one question `playableCachedIndexes` asks too
   if (legal.some(a => a.seat === seat && cacheSourceIndex(a) === i)) return 'none';
   const modes = cacheTimedModes(e, seat, i);
   const short = (m: CacheMode): boolean => via === 'glimpse' && !glimpseAffords(e, seat, cc.card, m);
   // the PLAY is the verb the panel's words are about ("…but only during
   // battle" is the play's printed timing), so it is asked first, exactly as
-  // before R311
+  // before
   if (modes.includes('play')) return short('play') ? 'mana' : 'no-target';
   // the play's window is shut. Another mode whose window IS open and which
   // only the mana is stopping (a glimpsed Virus in battle with too little
@@ -437,7 +437,7 @@ export function shouldAutoYield(
   if (!yielded.size) return false;
   // a priority window of my own, with nothing being asked of anybody
   if (state.priority !== seat || state.decision) return false;
-  // R68 note: negation REMOVES the item from the stack the instant it
+  // CR 704.4 note: negation REMOVES the item from the stack the instant it
   // resolves, so `negated` is no longer reachable on anything in
   // GameState.stack (test/50 pins that against the live engine). The guard
   // stays anyway, and is not dead weight: the flag is still on the type, and
@@ -459,10 +459,10 @@ export { activationKeys, castableTokens, optionKeys } from './passrelease.ts';
 export type { AutoPassArm, PassMode } from './passrelease.ts';
 
 export interface AutoPassPlan {
-  /** the armed pass chip must come off, whichever promise it was (R251) */
+  /** the armed pass chip must come off, whichever promise it was (CR D2.2) */
   disarm: boolean;
   /** why a pass is going out for this state — null means the window is mine.
-   * 'haste' is R236 and is NOT a priority pass: it is the haste step being
+   * 'haste' is CR D2.5 and is NOT a priority pass: it is the haste step being
    * readied through, and main.ts sends `doneHaste` for it rather than
    * `passPriority`. It rides in this union because the two answers are one
    * question — "is this window going to be answered without asking?" — and the
@@ -471,7 +471,7 @@ export interface AutoPassPlan {
 }
 
 /**
- * R236 (owner, 2026-08-28) — WILL THIS CLIENT READY THROUGH THE HASTE STEP BY
+ * CR D2.5 (owner, 2026-08-28) — WILL THIS CLIENT READY THROUGH THE HASTE STEP BY
  * ITSELF?
  *
  * ── THE INSTRUCTION
@@ -480,9 +480,9 @@ export interface AutoPassPlan {
  * happen very very quickly."*
  *
  * ── WHY IT IS A CLIENT ANSWER AND NOT AN ENGINE CONDITION
- * R224/R228 made the step UNCONDITIONAL and deleted `canHaste`, because a step
+ * Making the step UNCONDITIONAL (CR 504.5) deleted `canHaste`, because a step
  * that only opened when you could act published "I am holding something
- * haste-playable" out of a hand the opponent's view redacts. That ruling also
+ * haste-playable" out of a hand the opponent's view redacts. The ruling that did so also
  * recorded the debt this pays: *an always-open window is a tax on every turn
  * unless passing through it is cheap*. So the step still opens for everybody,
  * every turn; this only decides whether the ANSWER needs a human.
@@ -491,11 +491,11 @@ export interface AutoPassPlan {
  * `legal` — the authoritative list `apply.ts::legalHasteActions` built and the
  * server pushed — and the whole question asked of it is "is `doneHaste` the
  * only thing on it?". `legalHasteActions` pushes exactly one `doneHaste` and
- * then every payable printed-{Haste} play, every R97/R123 granted play, every
- * [Haste]-release out of the cache and every R95 haste mod. A new route into
+ * then every payable printed-{Haste} play, every CR 803.2b, 504.7 granted play, every
+ * [Haste]-release out of the cache and every CR 504.8a haste mod. A new route into
  * the step therefore switches this OFF on the day it is added, with nothing
  * here to update. Re-deriving "do I hold a haste card?" here would rebuild the
- * duplicate R228 deleted, and it would be wrong for four of those five routes.
+ * duplicate the unconditional haste step deleted, and it would be wrong for four of those five routes.
  *
  * The phase guard is not a second copy of that predicate — `doneHaste` is only
  * ever offered inside the haste step, so it is belt and braces about WHICH
@@ -598,13 +598,12 @@ export function takeAutoPass(plan: AutoPassPlan, actionCount: number, latch: Sen
  * just immediately went to the Cache zone."
  *
  * ⚠ THE REPORTER WAS RIGHT ABOUT BOTH HALVES and was only half believed. This
- * note used to read "The cost was right — R42's prophecy banner is plain mana
+ * note used to read "The cost was right — […] prophecy banner is plain mana
  * with no affinity — but the CLICK was not." The cost was NOT right: Air
  * Plant's banner is [2lg] and prophesying it with no wood should always have
- * been refused. R42 said otherwise because the pips had been lost in
+ * been refused. That ruling said otherwise because the pips had been lost in
  * transcription, so the report was triaged as a UI complaint and the rules
- * half was closed on the strength of a rule that was itself wrong (R301,
- * 2026-09-20). The click fix below stands; the cost is now charged too.
+ * half was closed on the strength of a rule that was itself wrong (corrected 2026-09-20). The click fix below stands; the cost is now charged too.
  * During deployment a {Flying} unit that cannot be played and has no augment
  * mode leaves prophesying as the only thing on offer, and `offer()` fires a
  * lone item on the spot.
@@ -650,13 +649,12 @@ export type BoardMenuEntry =
   | { kind: 'log'; label: string; confirm: boolean };
 
 /**
- * R65, narrowed by R241 (BL-20): the two things THE BOARD offers on a
+ * The card-menu rule, CR D6.15 (BL-20): the two things THE BOARD offers on a
  * right-click — both were playtest asks ("We need a way to right click ->
  * concede match :(", "I dont think there's currently a way to view erased
  * cards").
  *
- * ⚠ WHERE THEY APPEAR IS NOT DECIDED HERE and it CHANGED. R65 rode them on
- * every card menu as well; the owner has since ruled that a card menu carries
+ * ⚠ WHERE THEY APPEAR IS NOT DECIDED HERE and it CHANGED. The first version rode them on every card menu as well; the owner has since ruled that a card menu carries
  * card things only and these belong to a right-click of bare table. The
  * composition is `ui/main.ts`'s contextmenu handler and the claim is
  * `216-menu-scoping.test.ts`. This function still answers only WHICH entries
@@ -675,11 +673,11 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEn
   // Declared HERE rather than in main.ts's contextmenu handler on purpose:
   // `216-menu-scoping.test.ts` asserts the card-back menu is exactly this
   // list, so an entry that existed only in main.ts would be a silent
-  // divergence between the two ways into the same menu (R241).
+  // divergence between the two ways into the same menu (CR D6.15).
   items.push({ kind: 'log', confirm: false, label: '📜 View game log' });
   for (const p of [0, 1] as Seat[]) {
     const pl = s.players[p]!;
-    // the same count the dialog shows: real cards only (R69; tokens uncounted)
+    // the same count the dialog shows: real cards only (tokens uncounted)
     const n = erasedPileView(pl.erased).cards.length;
     const mine = mySeat !== null && p === mySeat;
     items.push({
@@ -795,7 +793,7 @@ export function nameBarIcon(name: string): boolean {
 }
 
 /**
- * A unit whose abilities or attributes are switched off (R62: Monke, Formless,
+ * A unit whose abilities or attributes are switched off (CR 712.1: Monke, Formless,
  * The Everywhere, Transmogrifant…), in words (owner, 2026-09-27: "Units that
  * have their abilities removed or turned off don't visually show it in the
  * new zoom view"). The only marker used to be a line in the rail's text box,
@@ -876,7 +874,7 @@ export function handOfferBadge(kinds: OfferKind[]): Badge | null {
   };
 }
 
-// ── R136: the badge strip is ONE line ─────────────────────────────────
+// ── the badge strip is ONE line ─────────────────────────────────
 
 /** one corner chip on a card scan (cardHtml `badges`) */
 export interface Badge {
@@ -1006,7 +1004,7 @@ export function packBadgeLine(badges: Badge[], px = BADGE_LINE_PX): BadgeLine {
   };
 }
 
-// ── R79: where a mod-in-progress may LAND ─────────────────────────────
+// ── CR 723.4a: where a mod-in-progress may LAND ─────────────────────────────
 
 /** the mod the client is placing (UiState.modding), minus the seat. Leave
  * `index` off to ask about EVERY card in that zone at once — which is the
@@ -1021,7 +1019,7 @@ export interface ModPick {
  * The hosts one in-progress mod may legally land on, split by KIND.
  *
  * There are two kinds and there have always been two: a unit in play
- * (`Action.hostId`) and — R79, sourced Caleb 2025-04-06 (*"In Battle, can you
+ * (`Action.hostId`) and — CR 723.4, sourced Caleb 2025-04-06 (*"In Battle, can you
  * augment a spell with a virus… Yes"*) — a SPELL ON THE STACK
  * (`Action.hostStack`). The client only ever read the first, because the cache
  * behind the glow was a `Set<EntityId>` and a `StackItem` is not an `Entity`,
@@ -1040,7 +1038,7 @@ export interface ModHosts {
   /** items on the stack (`hostStack`) — augment only, spells only */
   stack: Set<number>;
   /**
-   * R89: spell tokens IN PLAY (`hostId` again — a token is an Entity like a
+   * CR 721.4a: spell tokens IN PLAY (`hostId` again — a token is an Entity like a
    * unit, so the engine names it in exactly the same field).
    *
    * Only filled when `modHosts` is given the state to ask; without it a token
@@ -1060,7 +1058,7 @@ export function modHosts(legal: readonly Action[], m: ModPick | null, s?: GameSt
     if (c.from !== m.from) continue;
     if (m.index !== undefined && c.index !== m.index) continue;
     if (c.hostId !== undefined) {
-      // R89 — Caleb 2025-03-06: "You can augment spells during deployment but
+      // CR 721.4a — Caleb 2025-03-06: "You can augment spells during deployment but
       // currently that would only be possible with spell tokens." The engine
       // offers it in `hostId`, so the KIND is the only thing that separates the
       // two, and only the state knows it.
@@ -1085,7 +1083,7 @@ export const modHostCount = (h: ModHosts): number =>
  *
  * Written to follow the article "a": `a ${modHostPhrase(hosts)}`.
  *
- * R89 adds the third kind — a spell TOKEN standing in your region during
+ * CR 721.4a adds the third kind — a spell TOKEN standing in your region during
  * deployment. It is named separately from "a unit" for the same reason the
  * stack host was: a banner that says "unit" is how a ruling stays invisible.
  */
@@ -1098,14 +1096,14 @@ export function modHostPhrase(h: ModHosts): string {
 }
 
 /**
- * R89: what an augment would actually donate to a SPELL host.
+ * CR 721.4a: what an augment would actually donate to a SPELL host.
  *
  * "Also you can only do this with attributes" (Caleb 2025-03-06). A mod whose
  * whole payload is rules text — Graxxlid, Skybreaker — is a perfectly legal
  * thing to put on a spell token and changes nothing about it, and the engine
  * says so in the log at the moment the card is committed (doAugment). This is
  * the same fact one moment EARLIER, while the player can still change their
- * mind, which is what R79's stack-host banner does for the stack kind.
+ * mind, which is what the stack-host banner does for the stack kind.
  */
 function spellAugmentAttrs(card: CardName): string[] {
   try { return [...getCard(card).augmentAttrs]; } catch { return []; }
@@ -1292,8 +1290,8 @@ export function namesInState(s: GameState | null | undefined): CardName[] {
     for (const n of p.erased ?? []) add(n);
     for (const c of p.cache ?? []) add(c?.card);
   }
-  // R118: an entity puts TWO names on the table when it is wearing a copied
-  // face — the physical card (which is what bins, ruling 1) and the card it
+  // CR 201.5: an entity puts TWO names on the table when it is wearing a copied
+  // face — the physical card (which is what bins) and the card it
   // currently reads as, whose text box and art the client is now showing.
   for (const en of Object.values(s.entities ?? {})) {
     add(en?.card);
@@ -1396,8 +1394,8 @@ export function onlyKnownNames(
  * answer, and is false whenever there is no battle.
  *
  * This is a READ of the legal-action list, never a re-derivation. `legalActions`
- * already gates on suppression (R62), the per-ability {Battle}/{Deployment}
- * marker (R49), cost payability, bounded budgets and R64's "a mandatory target
+ * already gates on suppression (CR 712.1a), the per-ability {Battle}/{Deployment}
+ * marker (CR 705.2), cost payability, bounded budgets and the rule (CR 705.3a) that "a mandatory target
  * with no candidate is not an option". Deriving the glow a second way is how a
  * highlight ends up promising something the engine will refuse.
  */
@@ -1413,7 +1411,7 @@ export function activatableUnits(legal: readonly Action[]): Set<EntityId> {
  *
  * `via` is the four-way the engine uses (`ActivateVia`): undefined = the
  * IDENTITY face's `abilities`, 'augment' = that face's text-box [Augment]
- * clause, { mod } = an augment mod slid under it, { face } = an R118 face
+ * clause, { mod } = an augment mod slid under it, { face } = a CR 710.7 face
  * projected onto it. The last two name their source.
  */
 function abilityOptionLabel(
@@ -1423,7 +1421,7 @@ function abilityOptionLabel(
     const src = activationTextSource(state, unit, a);
     if (!src) return '?';
     const label = getCard(src.card)[src.list]?.[a.abilityIndex]?.label ?? '?';
-    // its own text names itself already; borrowed text (a mod's, or an R118
+    // its own text names itself already; borrowed text (a mod's, or a CR 710.7
     // face projected onto it) says whose it is
     return src.own ? label : `${src.card}: ${label}`;
   } catch { return '?'; }
@@ -1513,7 +1511,7 @@ export function unitClickOptions(
  */
 const TOKEN_NAMES: readonly string[] = (() => {
   const playable = new Set<string>(DECK_LIST);
-  // R101: a TRANSFORM BACK FACE is also a registry card outside DECK_LIST —
+  // CR 108.3a: a TRANSFORM BACK FACE is also a registry card outside DECK_LIST —
   // "Beyond, Codex Incarnate" is even printed as a "Book Token Unit" — but it
   // is not a token anything CREATES, and Scholar of the Void's printed text
   // names it in a perfectly scannable sentence. Without this it would appear
@@ -1539,7 +1537,7 @@ const TOKEN_NAMES: readonly string[] = (() => {
  * for the whole client rather than a second, worse one here.
  *
  * It stays a FALLBACK. Printed text is the card's history, not its rules, so
- * it cannot see a token created by granted (R63), donated or graft-composite
+ * it cannot see a token created by granted (CR 109.8), donated or graft-composite
  * text, and it can never see a token whose card is also in DECK_LIST (Echo of
  * Despair, Hooba-God). Only the declared `EffectDef.creates` list can.
  */
@@ -1559,7 +1557,7 @@ export function tokensNamedIn(text: string): string[] {
 /**
  * The tokens this card can put onto the board.
  *
- * DECLARED first (`EffectDef.creates`, R69 — registry.createsOf), because that
+ * DECLARED first (`EffectDef.creates`, registry.createsOf), because that
  * is the rules answer and a conformance test keeps it honest. The text scan is
  * only a safety net for cards whose declaration has not been written yet.
  *
@@ -1581,7 +1579,7 @@ export function tokensCreatedBy(name: CardName, live?: { e: E; unit: Entity }): 
     let box;
     try { box = entityTextBox(live.e, live.unit); } catch { box = undefined; }
     for (const line of box?.lines ?? []) {
-      if (!line.active) continue;                 // switched off (R62) — it makes nothing
+      if (!line.active) continue;                 // switched off (CR 712.1) — it makes nothing
       if (line.from && line.from !== name) declared(line.from);
       text += `${line.text}\n`;
     }
@@ -1638,7 +1636,7 @@ export function transformFaces(name: CardName, live?: { e: E; unit: Entity }): C
   return back ? [back] : [];
 }
 
-// ── the erased pile, as it is SHOWN (R69 fallout) ─────────────────────
+// ── the erased pile, as it is SHOWN ─────────────────────
 
 /**
  * A name that can only ever have been a token — never a real card.
@@ -1687,9 +1685,9 @@ export interface ErasedPileView {
  * What the erased-pile viewer lists, out of everything `PlayerState.erased`
  * records.
  *
- * R65 built the viewer to answer one question — "which REAL cards are out of
- * the game?" — and R69 then made every dying token pass through a bin and be
- * erased by the state-based sweep. Correct by the rules, and the engine's
+ * The viewer (CR D6.6c) was built to answer one question — "which REAL cards are out of
+ * the game?" — and then every dying token was ruled to pass through a bin and be
+ * erased by the state-based sweep (CR 410.5a). Correct by the rules, and the engine's
  * record stays complete; but a Dark board buries the handful of real cards
  * under a game's worth of Wisps, Wraiths and Fireballs. So the pile keeps
  * every entry and the VIEW drops the token-only ones. Presentation, not rules.
@@ -1711,7 +1709,7 @@ export function erasedPileView(erased: readonly CardName[] | undefined): ErasedP
 // ── X on the stack (playtest UZRG) ────────────────────────────────────
 
 /** what a cast-time cost payment actually consumed, in words. Public under
- * R65 — erasing a bin happens in the open, and the player who just paid ten
+ * CR 407.1a — erasing a bin happens in the open, and the player who just paid ten
  * cards for a spell is entitled to see the receipt while it is still resolving. */
 export function costReceipt(paid: EffectPart['costPaid']): string | undefined {
   if (!paid) return undefined;
@@ -1736,7 +1734,7 @@ export function costReceipt(paid: EffectPart['costPaid']): string | undefined {
  * Playtest GETD: "there's still no way to see the X value for Volatile
  * Toxicity on the stack. All spells with X should be clear what X is when
  * they're cast." Report UZRG's fix covered the two X's that arrive as a
- * NUMBER — R35's mana X on the item, R64's counted variable cost in
+ * NUMBER — CR 107.2a's mana X on the item, CR 702.6b's counted variable cost in
  * `costPaid.x` — and this card has neither. Its cost is ONE sacrifice, a
  * fixed amount, so `finishVariableCost` never runs and `costPaid.x` stays
  * undefined; the X is a stat of the corpse: "X is the defense of the
@@ -1765,7 +1763,7 @@ const SACRIFICED_STAT = /\b(defense|power)\s+of\s+(?:the|your|that)\s+sacrificed
 /**
  * The X of ONE part: what its own cast cost fixed.
  *
- * R64's counted payment is the X when there is one (`costPaid.x`); otherwise
+ * CR 702.6b's counted payment is the X when there is one (`costPaid.x`); otherwise
  * the clause may still read its X off the receipt (SACRIFICED_STAT). Both live
  * on the part rather than the item so a grafted rider's X cannot collide with
  * its carrier's (types.ts EffectPart.costPaid.x), and both are settled before
@@ -1784,11 +1782,11 @@ function partCostX(part: EffectPart): number | undefined {
 }
 
 export interface StackXRow {
-  /** 'cast'  = the R35 mana X the whole item was cast for;
-   *  'cost'  = the cast cost ONE part paid, defining that part's X: R64's
+  /** 'cast'  = the CR 107.2a mana X the whole item was cast for;
+   *  'cost'  = the cast cost ONE part paid, defining that part's X: CR 702.6b's
    *            counted variable payment, or the stat its receipt snapshotted
    *            when the clause sizes itself off that (partCostX);
-   *  'event' = R80: the amount the EVENT that fired a triggered ability
+   *  'event' = the amount the EVENT that fired a triggered ability
    *            carried, which is the X of every "that much" / "that many" /
    *            "X is the damage I am dealt" trigger in the pool */
   kind: 'cast' | 'cost' | 'event';
@@ -1825,13 +1823,13 @@ const VARIABLE_LABEL = /\bx\b|that many|that much|equal to|double that/i;
  * and the focus viewer replaces the label with ability rows, so for any real
  * spell the string carrying X was exactly the string discarded.
  *
- * There are TWO X's and they cannot be one number: R35's mana X lives on the
- * item, while R64's variable cast cost lives on the part that paid it,
+ * There are TWO X's and they cannot be one number: CR 107.2a's mana X lives on the
+ * item, while CR 702.6b's variable cast cost lives on the part that paid it,
  * precisely so a grafted rider's own X does not collide with its carrier's
  * (types.ts EffectPart.costPaid.x). Spent parts are skipped — they resolve to
  * nothing, so their X is not about to matter.
  *
- * R80 adds a THIRD, and it is the one the report was actually about the second
+ * A later fix added a THIRD, and it is the one the report was actually about the second
  * time (VEAV): "Awoken Tomb's trigger, while on the stack, doesn't say what X
  * is equal to." A triggered ability's X is usually neither of the other two —
  * it is a number the triggering EVENT carried ("create an X/X unit, where X is
@@ -1847,7 +1845,7 @@ const VARIABLE_LABEL = /\bx\b|that many|that much|equal to|double that/i;
  * receipt instead. It is still a per-part X, so it lands in the same 'cost'
  * row and needs no fourth kind.
  */
-/** One declared MODE riding on a stack item — R57. */
+/** One declared MODE riding on a stack item — CR 702.5. */
 export interface StackModeRow {
   /** index into item.parts */
   part: number;
@@ -1860,7 +1858,7 @@ export interface StackModeRow {
 }
 
 /**
- * R57: a modal card declares its half in the CAST window, before anyone may
+ * CR 702.5: a modal card declares its half in the CAST window, before anyone may
  * respond — see 97-mode-conformance.test.ts. That was the whole point of the
  * report (EGCW #81): the caster used to pick AFTER seeing the response, with
  * the option labels recomputed off the post-response board.
@@ -1947,7 +1945,7 @@ const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods', 'declineCost'];
  * zone) — the kind the player is meant to click on the table */
 function isTargetRefValue(v: unknown): boolean {
   if (!v || typeof v !== 'object') return false;
-  // R184: 'formation' is a TargetRef arm too — a player's whole side of the
+  // CR 110.3d: 'formation' is a TargetRef arm too — a player's whole side of the
   // battle grid, which is very much something on the board.
   return ['unit', 'player', 'stack', 'cached', 'bin', 'formation'].some(k => k in (v as object));
 }
@@ -1963,14 +1961,14 @@ function isDeclineValue(v: unknown): boolean {
  * preview on the board — or null for an option that names none.
  *
  * Two value shapes name an entity: a ref object carrying `unit`, and — for
- * R4's electric path ONLY — a bare number, because that decision's options
+ * CR 802.17's electric path ONLY — a bare number, because that decision's options
  * are raw entity ids by contract. A bare number under any OTHER kind is a
- * payload in its own namespace (an R75 formation-slot index, an X amount, a
+ * payload in its own namespace (a CR 602.6 formation-slot index, an X amount, a
  * hand index) that collides with the entity-id namespace by arithmetic
- * accident. BL-24's presentational half: R75's slot question rode kind
+ * accident. BL-24's presentational half: CR 602.6's slot question rode kind
  * 'electricPath', so "column 1, behind Hooba-Bot" (value 1) pinged whichever
  * unit happened to own entity id 1. The engine now asks it as
- * 'formationSlot', and this refuses to ping numbers for every kind but R4's.
+ * 'formationSlot', and this refuses to ping numbers for every kind but CR 802.17's.
  */
 export function optionPingId(value: unknown, kind: string | undefined, pickSet = false): EntityId | null {
   if (value !== null && typeof value === 'object' && 'unit' in (value as object)) {
@@ -2167,14 +2165,14 @@ export function restoreSeenHand(
   return { key, cards: [] };
 }
 
-// ── R78: what the other seat is doing, when the view will not say ──────
+// ── what the other seat is doing, when the view will not say ──────
 
 /**
  * A public fingerprint of one seat's hand and of everywhere a card leaving it
  * could visibly land.
  *
- * This exists to close the hole R78 left one step EARLIER than itself. A
- * cast-time suspension — R35's X, {Modular} mods, an R49 bracketed cost, R67's
+ * This exists to close the hole the resolving marker (CR D6.3) left one step earlier than itself. A
+ * cast-time suspension — CR 107.2a's X, {Modular} mods, a CR 702.4 bracketed cost, CR 702.3c's
  * targets — happens after the card has left the hand and BEFORE the item
  * reaches `state.stack`, so the item exists nowhere but `state.suspension`,
  * and `server/view.ts` nulls the other seat's suspension along with their
@@ -2245,7 +2243,7 @@ export function watchCast(
 }
 
 /**
- * R247 — the server's redacted stub for "somebody else owes an answer".
+ * CR D6.4 — the server's redacted stub for "somebody else owes an answer".
  *
  * Declared structurally rather than imported: `server/view.ts` is not on the
  * client's import path (same reason `PackInfo` is redeclared in ui/main.ts).
@@ -2266,8 +2264,8 @@ export interface PendingAsk { seat: Seat; source?: EntityId }
  * sentence said more than a player needs mid-game, so what is left is who and,
  * when the state can prove it, a few words of why.
  *
- * Ordered by how much it explains. R78's `resolving` is a real field and says
- * exactly what is happening, so it wins; R247's `pendingAsk` is the next most
+ * Ordered by how much it explains. CR D6.3's `resolving` is a real field and says
+ * exactly what is happening, so it wins; CR D6.4's `pendingAsk` is the next most
  * definite — the SERVER saying a seat owes an answer, and which of their
  * permanents raised it; the cast watch is last because it is an inference and
  * says only what it actually observed (a card has left their hand — "to play a
@@ -2277,14 +2275,14 @@ export interface PendingAsk { seat: Seat; source?: EntityId }
  * ⚠ NOTHING HERE MAY DESCRIBE THE QUESTION. Report #117 asked to see *"that
  * Rashi is choosing that"*, and that is the whole of what this says: who, and
  * off which card. The kind of choice, the options and the candidates are not on
- * the wire, deliberately (R247), and inventing a likely-looking phrase for them
+ * the wire, deliberately (CR D6.4), and inventing a likely-looking phrase for them
  * from the card text would be the client holding an opinion about a state it
- * cannot see — R245, in the one place the temptation is strongest.
+ * cannot see — CR D1.3, in the one place the temptation is strongest.
  */
 export function waitingNote(s: GameState, casting = false, who = 'opponent'): string {
   const w = `Waiting for ${who}`;
   if (s.resolving) return `${w} to resolve ${s.resolving.label}`;
-  // R247: the effect NAMED, which is the half of #117 the client could not do
+  // CR D6.4: the effect NAMED, which is the half of #117 the client could not do
   // on its own. The name is read off this seat's own entity map — the stub
   // carries an id and nothing else — so a source that is not on this board
   // simply does not get named.
@@ -2295,12 +2293,12 @@ export function waitingNote(s: GameState, casting = false, who = 'opponent'): st
   if (s.stack.length) return `${w} to respond`;
   // ⚠ A SOURCELESS STUB ADDS NOTHING TO SAY. `pendingAsk` without a source is
   // "somebody owes an answer" and no more — which "Waiting for Rashi…" already
-  // says, and which R247 notes this client could derive unaided anyway. The
+  // says, and which this client could derive unaided anyway. The
   // field still rides for the seat it names; there is simply nothing to add.
   return `${w}…`;
 }
 
-// ── R84 {Alluring}: the block declaration the board is holding ─────────
+// ── CR 606.2e {Alluring}: the block declaration the board is holding ─────────
 
 /**
  * Why the block declaration currently being built would be REFUSED, in the
@@ -2349,8 +2347,7 @@ export function blockPlanIssue(
  * technically legal to make a Fire resource, even if you don't have any Fire
  * cards in the deck […] we should be faithful to the game."* So nothing here
  * removes an option: the
- * engine still offers all seven (`legalActions` was deliberately left alone in
- * R99), and everything this hides is one click away under `hidden`. A caller
+ * engine still offers all seven (`legalActions` was deliberately left alone when the menu was narrowed), and everything this hides is one click away under `hidden`. A caller
  * that renders `show` without also offering `hidden` has broken the card, not
  * tidied the menu.
  *
@@ -2359,7 +2356,7 @@ export function blockPlanIssue(
  * three real cases at once and all three want the same answer:
  *   · 'shared' and 'draft', where the engine never writes the field (draft has
  *     already narrowed `elements` to its trio, so a second narrowing is noise);
- *   · a game saved before R99, which simply lacks it;
+ *   · a game saved before the field existed, which simply lacks it;
  *   · a seat entry that is missing or empty.
  *
  * And one more guard that is not paranoia: if the deck's elements and what the
@@ -2433,13 +2430,13 @@ export function prismiteClickPlan(
   return { kind: 'menu', actions, hidden: hidden.length };
 }
 
-// ═══ R149 — the SHARED quantity stepper ═══════════════════════════════════
+// ═══ CR D7.2e — the SHARED quantity stepper ═══════════════════════════════════
 
 /**
  * The dial itself: an integer held inside [min, max], and what −, + and "All"
  * may do to it. Nothing about counters, nothing about damage — factored out
- * of BL-25/R139's `counterStepper` (below) when CT-34 needed the same control
- * for the R120 elective damage split.
+ * of BL-25's `counterStepper` (CR D7.2, below) when CT-34 needed the same control
+ * for the CR 608.6a elective damage split.
  *
  * ⚠ WHY THIS IS ONE FUNCTION AND NOT TWO. BL-19 is the cautionary tale: three
  * "clear" buttons each rolled its own "is anything built" gate and one board
@@ -2501,7 +2498,7 @@ export function stepQuantity(v: QuantityStepperView, act: 'up' | 'down' | 'all')
   return { count: clampQuantity(v.count + (act === 'up' ? 1 : -1), v.min, v.max), submit: false };
 }
 
-// ═══ BL-25 / R139 — the counter-removal quantity stepper ══════════════════
+// ═══ BL-25 / CR D7.2 — the counter-removal quantity stepper ══════════════════
 
 /**
  * The owner, on the counter-removal prompt: *"It's actually okay, it's just
@@ -2512,7 +2509,7 @@ export function stepQuantity(v: QuantityStepperView, act: 'up' | 'down' | 'all')
  *
  * So the mechanism is not redesigned. What is added is a QUANTITY: how many
  * counters this one pick takes. The judgement lives here rather than in
- * main.ts for the reason R134 and R136 both landed on — main.ts runs DOM code
+ * main.ts for the reason the `{g}` fix and the one-line badge strip both landed on — main.ts runs DOM code
  * on import and no test can reach it.
  *
  * Two decision shapes ask about a quantity of counters, and they are genuinely
@@ -2532,7 +2529,7 @@ export function stepQuantity(v: QuantityStepperView, act: 'up' | 'down' | 'all')
  * check reads. Recomputing it here from board state was the obvious thing and
  * it is wrong: `counterPool` counts the whole ALLY pool while a pick names ONE
  * unit, so a client tallying "counters I can see" would offer to take four off
- * a unit that has two — and R130's "all counters count as counters" would have
+ * a unit that has two — and the rule that "all counters count as counters" (CR 206.6b) would have
  * had to be re-decided in the UI to do even that. The option list is used only
  * as the fallback for a decision that carries no ceiling; the two agree by
  * construction, because the engine builds both from the same pool.
@@ -2568,7 +2565,7 @@ const NO_STEPPER: CounterStepperView = {
 
 /** the unit and amount a `removeCounters` cost option names, or null. A
  * missing `n` is one counter — the exact value shape saved games and the four
- * pre-R139 tests send. */
+ * older tests send. */
 export function counterPickValue(v: unknown): { unit: EntityId; n: number } | null {
   if (!v || typeof v !== 'object' || !('counterFrom' in (v as object))) return null;
   const id = (v as { counterFrom: unknown }).counterFrom;
@@ -2584,14 +2581,14 @@ export function counterAmountValue(v: unknown): number | null {
 }
 
 /** a count, forced into the range the decision will actually accept.
- * R149: the body moved to `clampQuantity` when the damage split needed the
+ * CR D7.2e: the body moved to `clampQuantity` when the damage split needed the
  * same clamp; this name stays because four tests and main.ts call it. */
 export function clampCounterCount(want: number, min: number, max: number): number {
   return clampQuantity(want, min, max);
 }
 
 /** say the instruction ONCE: '' when the engine's prompt already carries it.
- * R149: shared with the damage-split stepper below. */
+ * CR D7.2e: shared with the damage-split stepper below. */
 function hintOnce(prompt: string, hint: string): string {
   return prompt.toLowerCase().includes(hint.toLowerCase()) ? '' : hint;
 }
@@ -2611,7 +2608,7 @@ export function counterStepper(dec: CounterDecisionLike | null | undefined, want
   }
   // an effect's own "how many?" menu — only ever a stepper when the ENGINE
   // said so, because a bare number is otherwise just a payload (an X amount,
-  // a hand index, R75's formation slot — the same namespace collision
+  // a hand index, CR 602.6's formation slot — the same namespace collision
   // `optionPingId` above refuses to guess at)
   if (dec.counterMax === undefined) return NO_STEPPER;
   const amounts = dec.options.flatMap(o => { const n = counterAmountValue(o.value); return n === null ? [] : [n]; });
@@ -2623,7 +2620,7 @@ export function counterStepper(dec: CounterDecisionLike | null | undefined, want
   };
 }
 
-/** R149: the shared `StepperAction` — kept under the old name for main.ts and
+/** CR D7.2: the shared `StepperAction` — kept under the old name for main.ts and
  * the BL-25 tests. `submit: false` is the ruling, in the type; see
  * `stepQuantity`. */
 export type CounterStepperAction = StepperAction;
@@ -2679,7 +2676,7 @@ export function counterPickUnits(dec: CounterDecisionLike | null | undefined): E
   return [...seen];
 }
 
-// ═══ CT-34 / R149 — the R120 elective damage-split ticker ═════════════════
+// ═══ CT-34 / CR D7.2e — the CR 608.6a elective damage-split ticker ═════════════════
 
 /**
  * Owner report #100, room SMVJ: *"The damage distribution UI is terrible and
@@ -2687,7 +2684,7 @@ export function counterPickUnits(dec: CounterDecisionLike | null | undefined): E
  * click up/down and they always are forced to sum to the amount of damage you
  * have."*
  *
- * The MECHANIC is not touched. R120 made the combat split elective on "never
+ * The MECHANIC is not touched. The combat split was made elective (CR 608.6a) on "never
  * decide for the player" and it stays elective; this is the affordance.
  *
  * ⚠ WHAT THE ENGINE ACTUALLY ASKS — and it is NOT what the report assumes.
@@ -2716,15 +2713,15 @@ export function counterPickUnits(dec: CounterDecisionLike | null | undefined): E
  *
  * ⚠ THE RANGE IS THE ENGINE'S, NEVER THIS FILE'S — the same doctrine as
  * `counterStepper`'s counterMax, and here it matters more, because the floor is
- * `victimShare`: printed-vs-effective defense under {Unaware} (R106), doubled
- * receipt under {Vulnerable} (R23), the {Deadly} floor of 1 (R114), damage
+ * `victimShare`: printed-vs-effective defense under {Unaware}, doubled
+ * receipt under {Vulnerable}, the {Deadly} floor of 1 (all CR 608.6e), damage
  * already marked. A client recomputing that from board state would be
  * re-deciding four rulings to draw a number. `min`/`max` are read off the
  * option VALUES the engine emitted and nothing else.
  */
 export const ASSIGN_SPLIT_HINT =
   'set how much this unit takes; the rest goes to the units behind it';
-/** R319: a {Piercing} strike's rest goes on to the player once no unit is
+/** CR 802.16c: a {Piercing} strike's rest goes on to the player once no unit is
  * left to take it — the engine's prompt names the player, so this only has
  * to say it is a choice */
 export const ASSIGN_SPLIT_HINT_PIERCING =
@@ -2739,7 +2736,7 @@ export function assignSplitValue(v: unknown): number | null {
 
 /** the shape of `GameState.decision` this module needs — structural, so a test
  * can hand-build one without a whole engine. `kind` is REQUIRED: a bare number
- * option is otherwise just a payload (an X amount, a hand index, R75's
+ * option is otherwise just a payload (an X amount, a hand index, CR 602.6's
  * formation slot), and guessing at it is exactly the namespace collision that
  * made BL-25 unreachable. */
 export interface AssignDecisionLike {
@@ -2806,7 +2803,7 @@ const NO_ASSIGN: AssignSplitView = {
  * attacking column. `aliveInCol` is just "the entity still exists", which is
  * the same filter here.
  *
- * ⚠ R72: a column index is stable only for the length of combat, which is
+ * ⚠ CR 602.5a: a column index is stable only for the length of combat, which is
  * exactly as long as this decision lives. Never cache the result.
  */
 export function assignSplitVictims(s: AssignStateLike | null | undefined): EntityId[] | null {
@@ -2986,7 +2983,7 @@ export function assignSplitSubmit(
 
 /** what −, + and All do to the damage dial — the SHARED `stepQuantity`, so the
  * damage ticker and the counter ticker can never learn different arithmetic.
- * "All" jumps to everything-left and does NOT submit (R139's ruling, in the
+ * "All" jumps to everything-left and does NOT submit (CR D7.2's ruling, in the
  * type): with a strike big enough to kill the whole column you want to see the
  * number before you spend it. */
 export function assignSplitStep(
@@ -2999,7 +2996,7 @@ export function assignSplitStep(
   return stepQuantity(v, act);
 }
 
-// ═══ R197 — the NUMERIC ENTRY bar ═════════════════════════════════════════
+// ═══ CR D7.2a — the NUMERIC ENTRY bar ═════════════════════════════════════════
 //
 // `kind: 'number'` is the one DecisionKind whose answer is NOT an index into
 // `options`: `options` is empty and the `decide` action carries the VALUE. A
@@ -3087,7 +3084,7 @@ export function numberEntrySubmit(
 }
 
 /** what −, +, −10 and +10 do to the numeric dial. Like every other stepper in
- * this file it NEVER submits (R139's ruling, in the type): the number is read
+ * this file it NEVER submits (CR D7.2's ruling, in the type): the number is read
  * before it is spent. */
 export function stepNumberEntry(
   dec: NumberDecisionLike | null | undefined, want: number,
@@ -3100,7 +3097,7 @@ export function stepNumberEntry(
   return { count: clampQuantity(v.value + by, v.min, Math.max(v.min, hi)), submit: false };
 }
 
-// ── R230: which scrolls may take the long-hover tooltip away ──────────
+// ── CR D6.17: which scrolls may take the long-hover tooltip away ──────────
 
 /** the only thing the rule below needs of a scrolled element: whether the card
  * the cursor is on lives inside it. `Element.contains` is exactly this, so
@@ -3149,7 +3146,7 @@ export function scrollHidesHoverTip(
 }
 
 /**
- * R266 / CT-134 — THE UNUSED SPELL TOKENS, IN FRONT OF THE PLAYER WHO LOST THEM.
+ * CR D7.4a / CT-134 — THE UNUSED SPELL TOKENS, IN FRONT OF THE PLAYER WHO LOST THEM.
  *
  * Owner, answering the round-32 question sheet: *"no warnings should only
  * exist in the log. In fact, NOTHING should only exist in the log. Everything
@@ -3160,7 +3157,7 @@ export function scrollHidesHoverTip(
  * ⚠ HALF OF THIS WAS ALREADY DONE, AND THE HALF THAT WAS NOT IS NOT A WARNING.
  * Report #66's warning — *"You're about to move to Regroup which will remove
  * your Spell Tokens. Are you sure?"* — has been a `.promptbar` confirm since
- * R194 (`ui/main.ts`, `confirmBarHtml('pass', …)`). It is armed by
+ * the regroup confirm (CR D2.6) shipped (`ui/main.ts`, `confirmBarHtml('pass', …)`). It is armed by
  * `passEndsBattlePhase` and it fires on the pass that would reach Regroup and
  * on no other window. That one was never log-only.
  *
@@ -3168,8 +3165,7 @@ export function scrollHidesHoverTip(
  * who declines goes `doDeclareAttack` → `endBattleRound` → `startRegroup`
  * without opening a priority window at all, so the defender's castable tokens
  * are gone before any bar could ask them anything (see engine.ts's own note at
- * `startRegroup`, and R194 for why the window is not opened). R194 announced
- * the loss instead of preventing it, and the announcement went to the log —
+ * `startRegroup`, and CR 610.4e for why the window is not opened). The engine announces the loss instead of preventing it (CR D2.6a), and the announcement went to the log —
  * which report #131 has since hidden behind a right-click menu.
  *
  * So this is a NOTICE, not a warning: the thing has already happened and there
@@ -3179,10 +3175,10 @@ export function scrollHidesHoverTip(
  * ── THE PREDICATE, AND WHY IT IS A SHAPE RATHER THAN A SENTENCE
  *
  * `startRegroup`'s announcement is `ev('erased', …, { seat, ids })`, and the
- * MISSING key is what identifies it. `E.ev()` keeps the R65 public erased pile
+ * MISSING key is what identifies it. `E.ev()` keeps the CR 407.1 public erased pile
  * centrally: an 'erased' event with a numeric `seat` AND `cards`/`card` has
  * those names pushed onto that seat's erased list, which `erasedDialogHtml`
- * draws. R194 deliberately passes neither — a spell token is not a card and
+ * draws. The regroup erase (CR D2.6a) deliberately passes neither — a spell token is not a card and
  * has never been recorded there — so this is the one erase in the engine that
  * reaches NO existing surface, and "erased, with a seat, with ids, with no
  * card names" says exactly that. Matching the prose instead would break on a
@@ -3208,7 +3204,7 @@ export function tokenLossNotice(
     const seat = d['seat'], ids = d['ids'];
     if (typeof seat !== 'number') continue;
     if (!Array.isArray(ids) || ids.length === 0) continue;
-    if ('cards' in d || 'card' in d) continue;   // R65 pile: the erased dialog has it
+    if ('cards' in d || 'card' in d) continue;   // CR D6.6c pile: the erased dialog has it
     if (mySeat !== null && seat !== mySeat) continue;
     return { seat: seat as Seat, n: ids.length, msg: e.msg };
   }

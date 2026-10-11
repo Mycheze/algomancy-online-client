@@ -16,7 +16,7 @@
  *     not already blocking or sent, and the declaration it builds is one the
  *     engine takes
  * §2  …and once nothing is left, the button goes
- * §3  a lured unit (R84) must block and may not counterattack: the button
+ * §3  a lured unit (CR 606.2e, 604.2e) must block and may not counterattack: the button
  *     leaves it alone, because the ENGINE says so (ui/battle.ts sendableRest)
  * §4  only the blocking seat is offered it, and only in round 1
  * §5  the send box's plan: every card and the slot fit inside the block, at

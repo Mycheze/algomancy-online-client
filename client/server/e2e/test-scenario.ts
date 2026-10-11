@@ -1,4 +1,4 @@
-/* R216 — THE SCENARIO TESTER, END TO END (run: node test-scenario.ts).
+/* CR D8.4 — THE SCENARIO TESTER, END TO END (run: node test-scenario.ts).
  *
  * `docs/14-scenario-tester.md` §8 steps 1–4, against the real server over real
  * WebSockets. Five things are proved here and nowhere else:
@@ -26,11 +26,11 @@
  *      scenario)` and replays the log. The restored state must be
  *      BYTE-IDENTICAL to the state that was played. If that does not hold,
  *      the scenario mechanism has broken `rebuild()`, `replay-room.ts`, undo
- *      and the R200 divergence diff for exactly the games we most want to
+ *      and the replay divergence diff for exactly the games we most want to
  *      re-examine, and everything built on it is wrong.
  *
  *   §5 THE VERDICT RECORD. One JSON line, stamped with the scenario id, the
- *      engine SHA (R200), the room code and the action index — server-stamped,
+ *      engine SHA, the room code and the action index (see replay-room.ts) — server-stamped,
  *      never trusted from the client. Written to ALGO_VERDICTS_FILE, honouring
  *      ALGO_ISSUES_FILE's pattern for the same reason: on the deploy box the
  *      real file is the only copy of the owner's judgements.
@@ -110,7 +110,7 @@ class Client {
   }
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
   /** resolve once nothing has arrived for `quietMs` — the same "wait for the
-   * wire to go quiet rather than sleep a magic number" fix R204/CT-85 made in
+   * wire to go quiet rather than sleep a magic number" fix CT-85 made in
    * test-clock.ts, and for the same reason (the bot's moves and the human's
    * update are two pushes, not one). */
   async quiet(quietMs = 150, maxMs = 4000): Promise<void> {
@@ -212,7 +212,7 @@ async function main(): Promise<void> {
     'the clause dropdown is DERIVED from printed.json, not typed (docs/13 §7.2)');
   eq(you.scenario?.verdicts, [...VERDICTS], 'all four buttons, `bad-scenario` included');
   eq(you.scenario?.needsLiveOpponent, false, 'this one does not need a second tab');
-  ok(/^[0-9a-f]{40}$|^unknown$/.test(you.scenario?.engine ?? ''), 'and the engine SHA it would stamp (R200)');
+  ok(/^[0-9a-f]{40}$|^unknown$/.test(you.scenario?.engine ?? ''), 'and the engine SHA it would stamp (see replay-room.ts)');
 
   // ── §3 play it, with nobody in the other seat ────────────────────────
   console.log('\n§3 the scripted opponent (docs/14 §4) — one human, one seat');
@@ -242,7 +242,7 @@ async function main(): Promise<void> {
     else break;
   }
 
-  console.log('\n   the clause under test — R131 "you" on a DONATED augment');
+  console.log('\n   the clause under test — CR 720.6b "you" on a DONATED augment');
   eq([you.view.players[0].life, you.view.players[1].life], [30, 24],
     'the 6 came off the HOST\'S CONTROLLER, not off you');
 
@@ -327,13 +327,13 @@ async function main(): Promise<void> {
     ok(typeof v['actionIndex'] === 'number' && (v['actionIndex'] as number) === saved.actions.length,
       `stamped with the action index the server knows (${v['actionIndex']}), not one the client claimed`);
     ok(/^[0-9a-f]{40}$|^unknown$/.test(String(v['engine'])),
-      `stamped with the engine SHA (R200): ${v['engine']}`);
+      `stamped with the engine SHA (see replay-room.ts): ${v['engine']}`);
     ok(typeof v['ts'] === 'string' && !Number.isNaN(Date.parse(String(v['ts']))), 'and a timestamp');
     ok(!existsSync(join(import.meta.dirname, 'verdicts.jsonl')),
       'and NOTHING was written to var/verdicts.jsonl (ALGO_VERDICTS_FILE honoured)');
   }
 
-  // ── BATCH A (R218) — every scenario in scenarios-a.ts, driven to its clause ──
+  // ── BATCH A (see 14-scenario-tester.md) — every scenario in scenarios-a.ts, driven to its clause ──
   //
   // WHY THIS IS HERE and not in a fixture. docs/14 §9 names "scenarios that are
   // wrong" as the first way this whole instrument fails, and the cost of one is
@@ -347,7 +347,7 @@ async function main(): Promise<void> {
   // That makes these regression tests for the CARDS as much as for the
   // scenarios: a rules change that turns one of these boards into a different
   // outcome reddens `npm --prefix server test` instead of reaching him.
-  console.log('\n§6 batch A (R218) — six unreached cards, each driven to its printed clause');
+  console.log('\n§6 batch A (see 14-scenario-tester.md) — six unreached cards, each driven to its printed clause');
   {
     /** open a scenario room and sit down in seat 0, the way the runner link does */
     const openScenario = async (id: string): Promise<Client> => {
@@ -440,7 +440,7 @@ async function main(): Promise<void> {
       eq(lives(c), [30, 28], '   THE CLAUSE: the 2 went to the OPPONENT, not to you');
       eq(modsOf(c, 'Ambling Mountaintop'), [], '   the mod is gone off the unit');
       eq(bin(c), [], '   and it is NOT in your bin — an erase is not a death');
-      // R219 — CT-86 ANSWERED AND CLOSED. This used to assert `erased ===
+      // CR 801.6 — CT-86 ANSWERED AND CLOSED. This used to assert `erased ===
       // undefined` and call it "the point of the ticket": the cost-erase filed
       // NOWHERE, and that was carried to the owner as an open question across
       // two rounds. It was never a question — the card says "erase", which
@@ -452,7 +452,7 @@ async function main(): Promise<void> {
       // the mod here is Slag Spewer's OWN body, augmented onto the Mountaintop —
       // this scenario is the card eating itself as its own activation cost.
       eq(c.view.players[0].erased, ['Slag Spewer'],
-        '   CT-86: the cost-erased mod is on the R65 public pile, like every other erase');
+        '   CT-86: the cost-erased mod is on the CR 407.2 public pile, like every other erase');
       c.ws.close();
     }
 
@@ -504,12 +504,12 @@ async function main(): Promise<void> {
       eq(units(c, 0), [],
         '   and the cost took the HOST with it — on an augment "me" is the unit wearing it');
       eq(c.view.players[0].erased, ['Carapace Devourer', 'Skybreaker'],
-        '   both reached R65\'s erased pile — the positive control for the Slag Spewer assertion above');
+        '   both reached CR 407.1\'s erased pile — the positive control for the Slag Spewer assertion above');
       c.ws.close();
     }
 
-    // #6 Void Mandible — R207: it negates the item the event NAMES
-    console.log('\n   void-mandible-negates — the R207 confirmation, with two identical spells up');
+    // #6 Void Mandible — CR 706.13: it negates the item the event NAMES
+    console.log('\n   void-mandible-negates — the CR 706.13 confirmation, with two identical spells up');
     {
       const c = await openScenario('void-mandible-negates');
       eq(c.view.phase, 'battle', '   the prologue landed in the battle window');
@@ -523,7 +523,7 @@ async function main(): Promise<void> {
       await augment(c, 'Void Mandible', 'Towering Colossus');
       await pass(c);
       eq(modsOf(c, 'Towering Colossus'), ['Void Mandible'],
-        '   it attached, and applying a mod fired no play event (R37) — nothing triggered');
+        '   it attached, and applying a mod fired no play event (CR 701.2a) — nothing triggered');
       eq((c.view.stack as any[]).map(i => i.card), ['Luminous Arc'],
         '   Arc #1 is still standing underneath it');
       await play(c, 'Luminous Arc'); await decide(c, 'Bubb');
@@ -531,7 +531,7 @@ async function main(): Promise<void> {
         '   THE CLAUSE (a): the host was sacrificed the instant the card was played — not optional');
       await pass(c); await pass(c);
       eq(units(c, 1), ['Bubb'],
-        '   THE CLAUSE (b) / R207: the NEWER Arc was the one negated — Bubb lives, Ambling Mountaintop died');
+        '   THE CLAUSE (b) / CR 706.13: the NEWER Arc was the one negated — Bubb lives, Ambling Mountaintop died');
       eq(entOf(c, 'Bubb').damage ?? 0, 0, '   and Bubb took no damage at all');
       c.ws.close();
     }
@@ -546,7 +546,7 @@ async function main(): Promise<void> {
       await decide(c, them(c));
       eq(optionLabels(c), ['Cinder Scuttler'], '   the discard cost has exactly one option');
       await decide(c, 'Cinder Scuttler');
-      eq(bin(c), ['Cinder Scuttler'], '   the discard trashed it into your bin (R40)');
+      eq(bin(c), ['Cinder Scuttler'], '   the discard trashed it into your bin (CR 801.3)');
       await pass(c);
       eq(lives(c), [30, 25], '   Darkblast resolves for 5 at the opponent');
       eq(hand(c), [],
@@ -579,7 +579,7 @@ main().catch(err => {
 });
 
 /* ─────────────────────────────────────────────────────────────────────────
- * R218 — BATCH C, FROZEN (docs/14 §6: "a verdict is not a report, it is a
+ * BATCH C, FROZEN (docs/14 §6: "a verdict is not a report, it is a
  * test").
  *
  * Six scenarios, each driven through the REAL action path — `dealScenario`,
@@ -714,7 +714,7 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
    * when the owner opens it. Every batch-C prologue stays inside turn 1 for
    * exactly this reason; this loop is what keeps that true.
    *
-   * ⚠ R228 REPLACED THE PARAGRAPH THAT USED TO BE HERE. It read: "the seat's
+   * ⚠ THE UNCONDITIONAL HASTE STEP (CR 504.5) REPLACED THE PARAGRAPH THAT USED TO BE HERE. It read: "the seat's
    * HAND cannot hold a payable {Haste} card either, which is why no prologue
    * here needs a `doneHaste`: `hasteDone` is null on all six. A future
    * batch-C scenario that deals a haste card INTO A HAND must add its own —
@@ -737,7 +737,7 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
   }
 
   // ── Skittering Blight: rot damage becomes +1/+1 counters (the engine's ONE
-  //    replacement effect, R38) ─────────────────────────────────────────
+  //    replacement effect, CR 112.13d) ─────────────────────────────────────────
   {
     const r = new CRig('skittering-blight-rot-into-counters');
     eq(r.s.players[0]!.rot, 1, 'Skittering Blight: the spawn trigger already gave you a rot');
@@ -778,7 +778,7 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
     const r = new CRig('manablub-dies-in-their-region');
     const blub = r.unit('Bloated Manablub', 0);
     eq(blub?.region, r.s.battle?.region,
-      '⭐ Bloated Manablub: the prologue put it IN THE BATTLE REGION — the position R199 could not give it');
+      '⭐ Bloated Manablub: the prologue put it IN THE BATTLE REGION — the position the drill could not give it');
     ok((r.s.regions[blub.region]!.presentSeats as number[]).includes(C_OPP),
       '⭐ Bloated Manablub: and an opponent is actually present there');
     r.play('Flame of History');
@@ -851,7 +851,7 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
   {
     const r = new CRig('prediction-prophet-predict-the-future');
     r.act({ type: 'donePlanning', seat: 0 } as CAction);
-    // ⚠ R228 PUT A REAL STEP BACK BETWEEN THESE TWO LINES, and it belongs
+    // ⚠ THE UNCONDITIONAL HASTE STEP (CR 504.5) PUT A REAL STEP BACK BETWEEN THESE TWO LINES, and it belongs
     // there: the card's trigger is `endOfHaste`, and this block used to reach
     // it off `donePlanning` alone only because the step was OPTIMISED AWAY
     // when nobody could act in it. Now the step happens, so the prediction is
@@ -859,16 +859,16 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
     // declines seat 1's half for itself (`PASSIVE_ORDER` holds `doneHaste`);
     // seat 0 is the human at this table and says so out loud.
     ok(!!r.legal().find(a => a.type === 'doneHaste'),
-      'Prediction Prophet: the haste step is offered, as it now always is (R228)');
+      'Prediction Prophet: the haste step is offered, as it now always is (CR 504.5)');
     ok(!r.s.decision, 'Prediction Prophet: and nothing is asked while it is still open');
     r.act({ type: 'doneHaste', seat: 0 } as CAction);
     eq(r.s.decision?.kind, 'number',
-      'Prediction Prophet: the END OF THE HASTE STEP raises the R197 numeric entry');
+      'Prediction Prophet: the END OF THE HASTE STEP raises the CR D7.2a numeric entry');
     eq(r.s.decision?.seat, 0, 'Prediction Prophet: and it is asked of you, not of the bot');
     // `?? ` cannot be used to default this: `max: null` IS the open-ended
     // answer, so a nullish coalesce would rewrite a pass into a failure.
     ok(r.s.decision?.numeric?.max === null,
-      'Prediction Prophet: the entry is open-ended (R197 — the old menu could not reach life+6)');
+      'Prediction Prophet: the entry is open-ended (CR 107.9 — the old menu could not reach life+6)');
     r.act({ type: 'decide', seat: 0, choice: 24 } as CAction);
     ok(r.said('You predicts 24.'), 'Prediction Prophet: 24 is on the record while you stand on 30');
     r.act({ type: 'declareAttack', seat: 0, columns: [[r.unit('Rampart Guardian', 0).id]] } as CAction);
@@ -882,13 +882,13 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
     eq(five.length, 1, 'Prediction Prophet: a 5/5 was created');
     eq(five[0]?.controller, 0, 'Prediction Prophet: on YOUR side');
     eq(five[0]?.region, r.unit('Prediction Prophet', 0)?.region,
-      'Prediction Prophet: and it arrived where its source stands (R115)');
+      'Prediction Prophet: and it arrived where its source stands (CR 601.5)');
     eq(r.life(1), 30, 'Prediction Prophet: the opponent never moved — the only number in play is yours');
   }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * R218 — BATCH D, FROZEN (docs/14 §6: a verdict is not a report, it is a test).
+ * BATCH D, FROZEN (docs/14 §6: a verdict is not a report, it is a test).
  *
  * Six cards out of `ledgers/unreached.ts` — promises the whole-pool drill
  * has never once watched being delivered — each driven here through the REAL
@@ -1048,7 +1048,7 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 
   /* THE GUARD `scenarios.ts` SAYS EXISTS AND DOES NOT.
    *
-   * Its R218 batch-files note promises "`189-scenario-library.test.ts` asserts
+   * Its batch-files note promises "`189-scenario-library.test.ts` asserts
    * the summed key count matches the merged one, so a collision fails loudly
    * instead of deleting somebody's scenario". There is no such file — 185, 186
    * and 187 are the only scenario tests in `engine/test/`, and nothing in the
@@ -1075,8 +1075,8 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
     eq(r.stats('Stalwart Sentinel', 0), '1/1', 'Stalwart Sentinel: opens as a printed 1/1');
     eq(r.counters('Stalwart Sentinel', 0), 0, 'Stalwart Sentinel: with no counters');
     eq(r.unit('Stalwart Sentinel', 0)?.region, r.s.battle?.region,
-      'Stalwart Sentinel: and STANDING IN THE BATTLE — R12 scopes the play event to its region, '
-      + 'and a Sentinel left at home hears nothing at all (measured, R218)');
+      'Stalwart Sentinel: and STANDING IN THE BATTLE — CR 601.1d scopes the play event to its region, '
+      + 'and a Sentinel left at home hears nothing at all (measured)');
 
     const beforeHandPlay = r.mark();
     r.play('Abyssal Evocation');
@@ -1252,7 +1252,7 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
   // purpose: a card played mid-resolution carries NO zone marker, Proph reads
   // that blank as "from hand", and whether that is right is round-27 Q4 and
   // still unanswered. A scenario must not quietly decide an open question, so
-  // this one exercises the settled route (R42/R45) and the `expect` line asks
+  // this one exercises the settled route (CR 803.7h, 403.3a) and the `expect` line asks
   // Q4 separately, in the owner's own words.
   {
     const r = new DRig('proph-from-cache');
@@ -1260,7 +1260,7 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 
     const proph = r.legal().find((a: any) => a.type === 'prophesy'
       && r.s.players[0]!.hand[(a as any).index] === 'Air Plant');
-    ok(!!proph, 'Proph: prophesying Air Plant is on offer in deployment (R42)');
+    ok(!!proph, 'Proph: prophesying Air Plant is on offer in deployment (CR 803.7b)');
     r.act(proph!);
     ok(r.said('prophecy on Air Plant is fulfilled'),
       'Proph: and it is fulfilled the instant it is cached — four units, four unique printed costs');
@@ -1282,7 +1282,7 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * R218 — BATCH B, FROZEN (docs/14 §6: "a verdict is not a report, it is a
+ * BATCH B, FROZEN (docs/14 §6: "a verdict is not a report, it is a
  * test").
  *
  * Six scenarios off `ledgers/unreached.ts` — Automaton of Abundance,
@@ -1469,7 +1469,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
   {
     const r = new BRig('scholar-transforms');
     ok(r.legal().some(a => a.type === 'playCard'),
-      'Scholar of the Void: the R18 haste step opened and it is playable in it');
+      'Scholar of the Void: the CR 803.2 haste step opened and it is playable in it');
     r.play('Scholar of the Void');
     eq(r.units(0), ['Scholar of the Void'], 'Scholar of the Void: it arrives as its own 0/2 body');
     r.act({ type: 'doneHaste', seat: 0 } as BAction);
@@ -1485,7 +1485,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
       'Scholar of the Void: THE CLAUSE — the body on the board turned over into the 8/3');
     eq(r.hand(0), [], 'Scholar of the Void: and the whole hand was the price');
     eq(r.bin(0).sort(), ['Manufacture', 'The Foretold'],
-      'Scholar of the Void: both cards are in the bin (a discard is a trash, R40)');
+      'Scholar of the Void: both cards are in the bin (a discard is a trash, CR 801.3)');
   }
 
   // ── Necromantic Rebuke: the ransom REFUSED ────────────────────────────
@@ -1507,7 +1507,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
     eq(r.s.stack.map(i => i.label), ['Luminous Arc'], 'Necromantic Rebuke: your own Arc is on the stack');
     r.play('Necromantic Rebuke');
     ok(String(r.s.decision?.prompt).includes('erase X cards from your bin'),
-      'Necromantic Rebuke: X is an ADDITIONAL COST asked at cast (R64), not at resolution');
+      'Necromantic Rebuke: X is an ADDITIONAL COST asked at cast (CR 702.6b), not at resolution');
     r.pick('The Foretold');                      // erase one → X = 1
     ok(String(r.s.decision?.prompt).includes('X = 1 so far'), 'Necromantic Rebuke: X is now 1');
     r.pick("That's enough");
@@ -1547,17 +1547,17 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
     eq(r.life(1), 27, 'Stellarspore Harvester: one pass and combat damage happened');
     ok(String(r.s.decision?.prompt).includes('gain control of target unit'),
       'Stellarspore Harvester: the after-combat clause fired — the Harvester is standing in the '
-      + 'battle region it marched into (R12/R199)');
+      + 'battle region it marched into (CR 601.1b)');
     eq(r.labels().length, 3,
       'Stellarspore Harvester: the menu is EVERY unit in the battle, clean ones included — '
-      + 'R157 §15, "you can target any enemy, it only checks on resolution"');
+      + 'the owner\'s ruling, "you can target any enemy, it only checks on resolution" (CR 110.3a)');
     r.pick('Hammer of Justice');
     r.pass();
     eq(r.units(0), ['Hammer of Justice', 'Stellarspore Harvester'],
       'Stellarspore Harvester: THE CLAUSE — the countered unit is YOURS now');
     eq(r.units(1), ['The Foretold'],
       'Stellarspore Harvester: and the CLEAN unit stayed theirs');
-    ok(r.said('You gains control of Hammer of Justice'), 'Stellarspore Harvester: through E.giveControl (R112)');
+    ok(r.said('You gains control of Hammer of Justice'), 'Stellarspore Harvester: through E.giveControl (CR 711.1)');
   }
 
   // ── Vengeance: the imposed cost on somebody ELSE's play ───────────────
@@ -1589,7 +1589,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
   // ── Worldbender: the card step, replaced ──────────────────────────────
   //    unreached.ts: "'skip your draft step' only exists in a drafted game;
   //    the drill plays constructed." A scenario room is mode 'shared', which
-  //    R162 folded into the CONSTRUCTED branch — 3 cards and 3 life.
+  //    CR 901.7b puts in the CONSTRUCTED branch — 3 cards and 3 life.
   {
     const r = new BRig('worldbender-card-step');
     eq(r.s.deployDone, [false, true], 'Worldbender: seat 1 has already finished deploying');
@@ -1602,7 +1602,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
     eq(r.s.turn, 2, 'Worldbender: the turn rolled');
     eq([r.life(0), r.hand(0).length], [27, 3],
       'Worldbender: THE CLAUSE — three cards and three life, the constructed branch '
-      + '(report #87, R162). The DRAFT branch would be one card and no life.');
+      + '(report #87, CR 901.7b). The DRAFT branch would be one card and no life.');
     eq([r.life(1), r.hand(1).length], [30, 2],
       'Worldbender: the opponent, on the same turn, took the ordinary card step');
     ok(r.said('Worldbender: You skips the draw phase'), 'Worldbender: and it announced itself');
@@ -1610,7 +1610,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
 }
 
 /**
- * R220 — BATCH E, FROZEN (docs/14 §6: "a verdict is not a report, it is a
+ * BATCH E, FROZEN (docs/14 §6: "a verdict is not a report, it is a
  * test").
  *
  * EIGHT CONJUNCTIONS. Batches A–D were ranked on `UNREACHED` — "the drill has
@@ -1632,7 +1632,7 @@ import type { Action as BAction, GameState as BState } from '../../engine/src/ty
  * `wispweaver-wisps-attack-alone` asserts that three Wisps DO sacrifice
  * themselves while their Infernal Wispweaver is standing at home, because that
  * is what this engine does: the printed line ("Your wisps … do not sacrifice
- * themselves after combat") carries no region qualifier, and R12 scopes every
+ * themselves after combat") carries no region qualifier, and CR 601.1d scopes every
  * static to its own region (`E.staticsFor`: `a.region === target.region`), so
  * sending the wisps into the defender's region turns their protector off. The
  * assertions below therefore pin CURRENT BEHAVIOUR next to the printed text
@@ -1818,7 +1818,7 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     eq(seen.size, 1, `${id}: one board across ${E_SEEDS.length} seeds — the owner opens what was tested`);
   }
 
-  // ── ① Harbinger of Immolation: R11's regroup erase MEETS a static that
+  // ── ① Harbinger of Immolation: CR 506.2's regroup erase MEETS a static that
   //    spares it, with the token standing in the ENEMY region when the step
   //    begins — and the survivor then feeds the Harbinger's own X.
   {
@@ -1830,7 +1830,7 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     r.do('doneHaste');
     const fb = Object.values(r.s.entities as Record<string, any>).find(e => e.kind === 'spellToken')!;
     const ft = r.unit('The Foretold', 0)!;
-    // the token RIDES OUT with the formation (R87) — this is what puts it in
+    // the token RIDES OUT with the formation (CR 604.2c) — this is what puts it in
     // the defender's region when regroup starts, which is the whole point
     r.act({ type: 'declareAttack', seat: 0, columns: [[ft.id]], spellTokens: [fb.id] } as EAction);
     eq((r.s.entities as any)[fb.id].region, 1,
@@ -1845,13 +1845,13 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
       + 'regroup, and the end-of-turn X counted it (1 + 1). Without the static the 3 is '
       + 'erased and the second token is a Fireball 1.');
     eq((r.s.entities as any)[fb.id].region, 0,
-      'Harbinger: and the survivor came HOME — R11 step (1) moves spell tokens too, which is '
-      + 'what lets the region-scoped survival query (R12) still see its protector');
+      'Harbinger: and the survivor came HOME — CR 506.2 step (1) moves spell tokens too, which is '
+      + 'what lets the region-scoped survival query (CR 601.1d) still see its protector');
     eq(r.life(1), 27, 'Harbinger: the 3/3 that carried the token connected for 3');
   }
 
   // ── ② Blurf × Worldbender: the card step MEETS an effect that adds a card
-  //    outside it, and R43's tick lands between them in the same `startTurn`.
+  //    outside it, and CR 803.7e's tick lands between them in the same `startTurn`.
   {
     const r = new ERig('blurf-worldbender-card-step');
     eq([r.hand(0).length, r.life(0), r.debt(0), r.cache(0).length], [0, 30, 0, 0],
@@ -1865,23 +1865,23 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     eq(r.debt(0), 1,
       'Blurf: and the debt is the cached card\'s printed cost — Divine Foresight is ll/1 at this seed');
     eq([r.life(0), r.hand(0).length], [27, 3],
-      'Worldbender: THE CARD STEP — three cards and three life (the constructed branch, R162), '
+      'Worldbender: THE CARD STEP — three cards and three life (the constructed branch, CR 901.7b), '
       + 'not the two-and-nothing an unreplaced step gives');
     eq([r.life(1), r.hand(1).length], [30, 2],
       'Blurf/Worldbender: the opponent, same turn same table, took the ordinary card step');
     eq(r.cache(0)[0].prophecy?.fulfilled, true,
-      'THE RULING: a card cached at the END of turn 1 is fulfilled at the TOP of turn 2. R43 '
+      'THE RULING: a card cached at the END of turn 1 is fulfilled at the TOP of turn 2. CR 803.7e '
       + 'counts forward from the moment of caching, so "1 turn passes" is satisfied by the very '
       + 'next turn — not by a whole turn having to elapse first (which would be turn 3).');
     ok(r.said('may now be played from cache for free'),
       'Blurf: and it announced itself, in the same instant the card step paid out');
     r.do('donePlanning');
-    eq(r.debt(0), 0, 'Blurf: the debt is cleared by the resource step (R39), not by the owner');
+    eq(r.debt(0), 0, 'Blurf: the debt is cleared by the resource step (CR 502.4), not by the owner');
     eq(r.openMana(), openBefore - 1, 'Blurf: and it cost exactly one open resource to clear');
   }
 
   // ── ③ Infernal Wispweaver: a self-sacrifice clause MEETS the static that
-  //    suppresses it, at R12's region boundary.
+  //    suppresses it, at CR 601.1d's region boundary.
   //    ⚠ THIS PINS CURRENT BEHAVIOUR AGAINST THE PRINTED LINE. See the block
   //    header: the card says "your wisps", with no region in it.
   {
@@ -1894,7 +1894,7 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     r.act({ type: 'declareAttack', seat: 0, columns: wisps.map(w => [w.id]) } as EAction);
     eq(r.stats('Wisp'), '0/1',
       'Wispweaver: the instant they cross into the defender\'s region they lose the +2/+1 — '
-      + 'R12 scopes a static to its own region and the 2/1 weaver stayed home');
+      + 'CR 601.1d scopes a static to its own region and the 2/1 weaver stayed home');
     r.passTo('deploy');
     ok(r.said('Wisp: sacrifice me (after combat)'),
       'Wispweaver: THE CLAUSE — the self-sacrifice trigger fired, on all of them');
@@ -1906,7 +1906,7 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     eq(r.life(1), 30, 'Wispweaver: 0/1 attackers dealt nothing, which is the same fact from the other side');
   }
 
-  // ── ④ Waxen Witness: a GRANTED prophecy fulfilled by R43's battle tick
+  // ── ④ Waxen Witness: a GRANTED prophecy fulfilled by CR 803.7f's battle tick
   //    inside one turn, MEETING "the cache holds a card, not the unit".
   {
     const r = new ERig('waxen-witness-battle-prophecy');
@@ -1923,14 +1923,14 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     eq(r.cache(0)[0].prophecy?.condition, 'One Battle Passes',
       'Waxen Witness: carrying the prophecy it grants');
     eq(r.cache(0)[0].prophecy?.fulfilled, true,
-      'Waxen Witness: and ONE battle round was enough — R43 ticks on the initiative battle and '
+      'Waxen Witness: and ONE battle round was enough — CR 803.7f ticks on the initiative battle and '
       + 'the counterattack alike, so it comes true in the turn it was granted');
     eq(r.units(0), ['Waxen Witness'],
       'Waxen Witness: the spell resolved first and the 3/3 body spawned behind it (spellUnit)');
     const before = r.openMana();
     r.do('playCached');
     eq(r.openMana(), before,
-      'Waxen Witness: the release cost NOTHING — a fulfilled prophecy waives the mana (R42)');
+      'Waxen Witness: the release cost NOTHING — a fulfilled prophecy waives the mana (CR 803.7h)');
     eq(r.stats('Hammer of Justice', 0), '10/3',
       'Waxen Witness: THE JOIN — a 13/6 went into the cache and a 10/3 came back. The cache '
       + 'holds the CARD; the three +1/+1 counters belonged to the entity, and the entity is gone.');
@@ -1940,7 +1940,7 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
   }
 
   // ── ⑤ Proph: two cards leave the same zone one step apart, and only one of
-  //    them is a PLAY (R49's `from` against R37's "a mod is not a play").
+  //    them is a PLAY (CR 410.6's `from` against CR 701.2a's "a mod is not a play").
   {
     const r = new ERig('proph-cache-release-vs-mod');
     eq(r.hand(0), ['Air Plant', 'Air Plant'], 'Proph: two Air Plants to spend down the two paths');
@@ -1959,9 +1959,9 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
     r.do('augment', (a: any) => a.from === 'cache' && a.hostId === ft.id);
     eq(r.hand(0).length, 0,
       'Proph: THE CLAUSE, negative half — the augment came OUT OF THE CACHE and Proph drew '
-      + 'NOTHING. R37: applying a mod is not playing a card, so there was no play event to hear.');
+      + 'NOTHING. CR 701.2a: applying a mod is not playing a card, so there was no play event to hear.');
     eq(r.openMana(), mana0 - 4,
-      'Proph: and the mod was free — a fulfilled prophecy waives an augment too (R42), so the '
+      'Proph: and the mod was free — a fulfilled prophecy waives an augment too (CR 803.7k), so the '
       + 'two paths differ in nothing but the rule');
     eq([r.stats('Proph', 0), r.stats('Bumblecrab', 0), r.stats('Resonant Form', 0)],
       ['4/3', '4/5', '4/6'],
@@ -1983,14 +1983,14 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
       + 'other units". Each copy excludes only itself.');
   }
 
-  // ── ⑥ Vaporweave Eidolon: R79 {Unstable} MEETS leaving play without dying,
+  // ── ⑥ Vaporweave Eidolon: CR 720.7 {Unstable} MEETS leaving play without dying,
   //    with the graft rider resolving while its host removes itself.
   {
     const r = new ERig('graft-host-recalls-itself');
     r.do('graft');
     ok(r.said('Flame Juggle grafts onto Vaporweave Eidolon'), 'Vaporweave: the graft landed');
     ok(r.said('it is now Unstable'),
-      'Vaporweave: and the host is Unstable — R79\'s "it and all of its mods are erased with it" '
+      'Vaporweave: and the host is Unstable (CR 720.7) — "it and all of its mods are erased with it" '
       + 'is now armed, which is what makes the next click a question');
     eq(r.unit('Vaporweave Eidolon', 0).mods.length, 1, 'Vaporweave: one mod riding');
     r.do('activateAbility');                            // [zero]: recall me
@@ -1999,15 +1999,15 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
       'Vaporweave: THE JOIN — the grafted card is in the BIN, not the erased pile. Unstable '
       + 'erases the mods when the host DIES or IS ERASED, and a recall is neither.');
     eq(r.erased(0), [],
-      'Vaporweave: nothing reached the R65 erased pile at all — the negative half of the same claim');
+      'Vaporweave: nothing reached the erased pile at all (CR 720.7a) — the negative half of the same claim');
     eq(r.spellTokens(0), ['Fireball 1', 'Fireball 1', 'Fireball 1'],
       'Vaporweave: and the RIDER still delivered — three tokens — even though the card it was '
-      + 'riding on left play in the same resolution (R167: this family was silently dead on '
+      + 'riding on left play in the same resolution (this family was once silently dead on '
       + 'recalls and caches while working on deaths)');
     eq(r.units(0), [], 'Vaporweave: the Eidolon really is off the board');
   }
 
-  // ── ⑦ Dispatch Courier: R18's "only haste cards" MEETS R97's granted play,
+  // ── ⑦ Dispatch Courier: CR 504.2's "only haste cards" MEETS CR 504.7a's granted play,
   //    and the join is the one-per-turn allowance.
   {
     const r = new ERig('dispatch-courier-haste-unit');
@@ -2036,6 +2036,5 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
   // ── ⑧ WAS Tithe Enforcer, whose printed banner Caleb removed on 2026-09-21.
   //    The block drove prophesy × doneHaste × playCached in one line and is
   //    gone with the clause; see the note in scenarios-e.ts for what kept its
-  //    coverage (the Air Plant scenarios above, 36-cache-prophecy, and R228's
-  //    200-haste-step-is-unconditional) and why no card can replace it.
+  //    coverage (the Air Plant scenarios above, 36-cache-prophecy, and the 200-haste-step-is-unconditional test) and why no card can replace it.
 }

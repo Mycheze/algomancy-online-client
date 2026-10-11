@@ -17,7 +17,8 @@ export function textHash(s: string): string;
 export function recordHash(r: { text: string; examples?: { text: string | null; test?: string | null }[] }): string;
 export const FINDING_ID_RE: RegExp;
 export const REGISTER_FINDING_RE: RegExp;
-export function parseRulingCite(s: string): { id: string; n: number; suffix: string; scope: string } | null;
+export const SCOPES: readonly string[];
+export const DATE_RE: RegExp;
 export function parseRef(ref: string): ({ type: string } & Record<string, unknown>) | null;
 
 export interface RefQuote { ref: string; quote: string }
@@ -41,13 +42,17 @@ export interface RuleRecord {
     printed?: RefQuote[];
     designer?: RefQuote[];
     ours?: RefQuote[];
-    rulings?: (string | { ref: string; quote?: string })[];
-    history?: { ruling: string; relation: string }[];
+    /** the owner's own words, when he adopted them, and where he said them ('register@<sha>' = absorbed from the retired register) */
+    owner?: { quote: string; adopted: string; from: string }[];
     engine?: string[];
     tests?: string[];
   };
   /** required on a rule; a glossary row leaves both to the rule it points at */
   basis?: string;
+  /** required on a rule: 'game' (holds at a table) or 'digital' (only this client) */
+  scope?: string;
+  /** a game rule's client-only clause, verbatim from its text */
+  digitalClause?: string;
   confidence?: string;
   notes?: string;
   engineDiffers?: string[];

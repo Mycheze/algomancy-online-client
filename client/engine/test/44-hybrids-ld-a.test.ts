@@ -1,15 +1,15 @@
 /* Per-card tests for the Light & Dark hybrid batch A (batch-hybrids-ld-a):
  * sacrifice-for-damage-and-life (Abyssal Extortionist), the printed
- * "[Gain 4 debt]" cast cost wired at resolution (Hyper Beam, R35/R39), a
- * split-and-cache glimpse (Big Glimpse Card, R41/R45), control theft after
+ * "[Gain 4 debt]" cast cost, paid as the card is played (Hyper Beam, CR 702.4, 112.14c), a
+ * split-and-cache glimpse (Big Glimpse Card, CR 403.1, 801.9), control theft after
  * combat (Bloppert), life-scaled statics (Burden of Life, The Mighty Doot),
  * counter moving (Chombot), bin reanimation paid for in debt (Covenant of the
- * Damned, R39), recalling a spell off the stack (Dream Lapse), {Lethal}
- * (Gublin, R48), life-change token minting (Life Plant), a repeating
- * sacrifice-or-discard (Mindburn, R35/R40), even-life rot (Pale Tormentor,
- * R38), mods returned to play (Reclaim the Fallen), {Blessed} lifelink (Shib,
- * R48), bin-for-bin trades (Uglk) and bin recall + self-erase (Zephyrzoa).
- * Apex Prime is COMPLETE as of R118: "become a copy of target unit until
+ * Damned, CR 112.14), recalling a spell off the stack (Dream Lapse), {Lethal}
+ * (Gublin, CR 802.24), life-change token minting (Life Plant), a repeating
+ * sacrifice-or-discard (Mindburn, CR 107.2a, 801.2a), even-life rot (Pale Tormentor,
+ * CR 112.13), mods returned to play (Reclaim the Fallen), {Blessed} lifelink (Shib,
+ * CR 802.22a), bin-for-bin trades (Uglk) and bin recall + self-erase (Zephyrzoa).
+ * Apex Prime is COMPLETE (CR 710.1): "become a copy of target unit until
  * regroup" is one face carrying the name, the base stats, the attributes, the
  * statics, the triggered/[Augment] text and — since apply.ts learned
  * `E.facesWith(u, 'activated')` — the ACTIVATED abilities too.
@@ -64,7 +64,7 @@ test('Abyssal Extortionist: attacking sacrifices a unit, deals its power and gai
   pass(h); pass(h);                                          // resolve the trigger
   // the only unit I control in the region is the Extortionist itself — forced
   assert.ok(!ent(h, ae), 'the Extortionist sacrificed itself (the only legal unit)');
-  assert.ok(h.state.players[A]!.bin.includes('Abyssal Extortionist'), 'sacrificed → bin (R40 trash)');
+  assert.ok(h.state.players[A]!.bin.includes('Abyssal Extortionist'), 'sacrificed → bin (CR 801.2a trash)');
   assert.equal(h.state.players[D]!.life, lifeD - 5, 'dealt damage equal to its power (5)');
   assert.equal(h.state.players[A]!.life, lifeA + 5, 'gained life equal to the damage dealt');
   finishBattle(h);
@@ -89,7 +89,7 @@ test('Abyssal Extortionist: with no unit to sacrifice there is no damage', () =>
 
 // ── Apex Prime ───────────────────────────────────────────────────────────
 
-test('Apex Prime: on an odd life total, all of your units copy the target\'s base stats and attributes (R92)', () => {
+test('Apex Prime: on an odd life total, all of your units copy the target\'s base stats and attributes (CR 710.1)', () => {
   const h = new Harness(4404);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -99,20 +99,20 @@ test('Apex Prime: on an odd life total, all of your units copy the target\'s bas
   h.state.players[A]!.life = 29;                              // odd — the printed gate
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ap, tok]] });
-  pick(h, { unit: siren });                                   // R67: the target is declared at cast
+  pick(h, { unit: siren });                                   // CR 110.1a: the target is declared at cast
   pass(h); pass(h);                                           // resolve the trigger
   pick(h, true);                                              // "you MAY"
-  assert.deepEqual(effStats(h, ap), [2, 2], 'base stats copied (R66 E.setBase) — even onto Apex Prime itself');
+  assert.deepEqual(effStats(h, ap), [2, 2], 'base stats copied (CR 206.5 E.setBase) — even onto Apex Prime itself');
   assert.deepEqual(effStats(h, tok), [2, 2]);
   assert.ok(ownAttrs(h, ap).has('Poisonous'), 'attributes copied (E.addTempAttr over ownAttrs)');
   assert.ok(ownAttrs(h, tok).has('Poisonous'));
   assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Sporebloom Siren',
-    'R118: the copy is one FACE, so the NAME travels with the stats and the text');
+    'CR 710.1: the copy is one FACE, so the NAME travels with the stats and the text');
   assert.equal(ent(h, tok)!.card, 'Unit Token',
-    'R118 ruling 1: the PHYSICAL card is untouched — only the game name changed');
+    'CR 201.5: the PHYSICAL card is untouched — only the game name changed');
 });
 
-test('Apex Prime: the copied "when I die" text really fires on the copy (R63/R92)', () => {
+test('Apex Prime: the copied "when I die" text really fires on the copy (CR 109.8, 710.1)', () => {
   const h = new Harness(4405);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -134,7 +134,7 @@ test('Apex Prime: the copied "when I die" text really fires on the copy (R63/R92
     'the Unit Token died with the Deathcap\'s text and poisoned the region');
 });
 
-test('Apex Prime: an EVEN life total means the trigger never queues at all (R1)', () => {
+test('Apex Prime: an EVEN life total means the trigger never queues at all (CR 109.3a)', () => {
   const h = new Harness(4406);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -143,7 +143,7 @@ test('Apex Prime: an EVEN life total means the trigger never queues at all (R1)'
   h.state.players[A]!.life = 30;                              // even
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ap]] });
-  assert.equal(h.state.stack.length, 0, 'R1: the condition is judged at event time');
+  assert.equal(h.state.stack.length, 0, 'CR 109.3a: the condition is judged at event time');
   assert.equal(h.state.decision, null, 'and no target is ever asked for');
   assert.deepEqual(effStats(h, ap), [4, 4]);
   finishBattle(h);
@@ -160,16 +160,16 @@ test('Apex Prime: an EVEN life total means the trigger never queues at all (R1)'
   assert.equal(odd.state.decision!.kind, 'targets', 'odd life → the trigger queues and wants its target');
 });
 
-/** R118: bring Apex Prime's trigger to resolution with `target` copied onto
+/** CR 710.6: bring Apex Prime's trigger to resolution with `target` copied onto
  * every unit `A` controls in the battle region. Returns the attacker's id. */
 function apexCopy(h: Harness, A: Seat, apexId: number, targetId: number, extra: number[] = []): void {
   h.do({ type: 'declareAttack', seat: A, columns: [[apexId, ...extra]] });
-  pick(h, { unit: targetId });                                // R67: declared at cast
+  pick(h, { unit: targetId });                                // CR 110.1a: declared at cast
   pass(h); pass(h);                                           // resolve the trigger
   pick(h, true);                                              // "you MAY"
 }
 
-test('R118: a copy carries the NAME, and the PHYSICAL card is untouched (ruling 1)', () => {
+test('CR 201.5: a copy carries the NAME, and the PHYSICAL card is untouched', () => {
   const h = new Harness(4420);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -186,7 +186,7 @@ test('R118: a copy carries the NAME, and the PHYSICAL card is untouched (ruling 
   finishBattle(h);
 });
 
-test('R118: a copy DYING puts the PHYSICAL card in the bin, not the copied one (ruling 1)', () => {
+test('CR 710.1: a copy DYING puts the PHYSICAL card in the bin, not the copied one', () => {
   const h = new Harness(4421);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -199,12 +199,12 @@ test('R118: a copy DYING puts the PHYSICAL card in the bin, not the copied one (
   assert.equal(new E(h.state).nameOf(ent(h, cap)!), 'Good Whale');
   whiteBox(h, e => e.destroy(e.entity(cap)!, 'dies'));
   assert.ok(h.state.players[A]!.bin.includes('Noxious Deathcap'),
-    'R118 ruling 1: the card that bins is the one that was in the deck');
+    'CR 710.1: the card that bins is the one that was in the deck');
   assert.ok(!h.state.players[A]!.bin.includes('Good Whale'),
     'the copied card was never anybody\'s card — it does not enter a bin');
 });
 
-test('R118: a copied STATIC really radiates — Apex Prime copying Aberrant Statweaver', () => {
+test('CR 710.1: a copied STATIC really radiates — Apex Prime copying Aberrant Statweaver', () => {
   const h = new Harness(4422);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -224,7 +224,7 @@ test('R118: a copied STATIC really radiates — Apex Prime copying Aberrant Stat
   finishBattle(h);
 });
 
-test('R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates nothing', () => {
+test('CR 712.1a, 710.1: suppression is a veto ABOVE copy — a silenced copy radiates nothing', () => {
   const h = new Harness(4423);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -242,7 +242,7 @@ test('R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates no
   assert.equal(radiators().length, 1, 'silencing one copy switches ONLY its face off');
   whiteBox(h, e => e.suppress(e.entity(tok)!, 'Suppression Field', { attrs: true, abilities: true }));
   assert.equal(radiators().length, 0,
-    'R62 sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once');
+    'CR 712.1a sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once');
   // …and the veto is about ABILITIES, not identity. The copy is still a
   // Statweaver, and still has a Statweaver's printed 3/3 body.
   assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Aberrant Statweaver');
@@ -250,7 +250,7 @@ test('R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates no
   finishBattle(h);
 });
 
-test('R118: {Unaware} reads the COPIED face\'s printed stats (R106 over layer 0)', () => {
+test('CR 709.4a: {Unaware} reads the COPIED face\'s printed stats (CR 802.9a over layer 0)', () => {
   const h = new Harness(4424);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -267,11 +267,11 @@ test('R118: {Unaware} reads the COPIED face\'s printed stats (R106 over layer 0)
   assert.deepEqual(effStats(h, tok), [9, 7], 'counters are facts about the unit, on top');
   whiteBox(h, g => g.addTempAttr(g.entity(tok)!, 'Unaware'));
   assert.deepEqual(effStats(h, tok), [7, 5],
-    'R106: {Unaware} throws away everything above layer 1 — and layer 1 is the FACE');
+    'CR 802.9a: {Unaware} throws away everything above layer 1 — and layer 1 is the FACE');
   finishBattle(h);
 });
 
-test('R118: {Inverted} inverts the change from the COPIED base (R93 over layer 0)', () => {
+test('CR 709.4a: {Inverted} inverts the change from the COPIED base (CR 802.8a over layer 0)', () => {
   const h = new Harness(4425);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -289,7 +289,7 @@ test('R118: {Inverted} inverts the change from the COPIED base (R93 over layer 0
   finishBattle(h);
 });
 
-test('R118: a later setBase wins over a copy — and so does an earlier one (layer 2 over layer 0)', () => {
+test('CR 709.4: a later setBase wins over a copy — and so does an earlier one (layer 2 over layer 0)', () => {
   // copy THEN setBase
   const h = new Harness(4426);
   toDeployment(h);
@@ -322,7 +322,7 @@ test('R118: a later setBase wins over a copy — and so does an earlier one (lay
   finishBattle(h2);
 });
 
-test('R118: an until-regroup face lapses at regroup, and the revert can be lethal', () => {
+test('CR 710.6: an until-regroup face lapses at regroup, and the revert can be lethal', () => {
   const h = new Harness(4428);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -342,7 +342,7 @@ test('R118: an until-regroup face lapses at regroup, and the revert can be letha
   assert.deepEqual(effStats(h, ap), [4, 4], 'Apex Prime is a 4/4 again');
 });
 
-test('R118: a copy of a COPY chains through the face, not the physical card', () => {
+test('CR 710.4: a copy of a COPY chains through the face, not the physical card', () => {
   const h = new Harness(4429);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -363,7 +363,7 @@ test('R118: a copy of a COPY chains through the face, not the physical card', ()
   finishBattle(h);
 });
 
-test('R118: attacking and then blocking leaves ONE face, not two', () => {
+test('CR 710.3: attacking and then blocking leaves ONE face, not two', () => {
   const h = new Harness(4430);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -387,7 +387,7 @@ function activations(h: Harness, seat: Seat, id: number): unknown[] {
     .map(a => (a as { via?: unknown }).via ?? 'own');
 }
 
-test('R118: a copied ACTIVATED ability is offered, accepted and really fires — Apex Prime', () => {
+test('CR 710.1: a copied ACTIVATED ability is offered, accepted and really fires — Apex Prime', () => {
   const h = new Harness(4432);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -416,7 +416,7 @@ test('R118: a copied ACTIVATED ability is offered, accepted and really fires —
   finishBattle(h);
 });
 
-test('R118: an until-regroup face takes its ACTIVATED ability with it — Apex Prime', () => {
+test('CR 710.6: an until-regroup face takes its ACTIVATED ability with it — Apex Prime', () => {
   const h = new Harness(4433);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -430,7 +430,7 @@ test('R118: an until-regroup face takes its ACTIVATED ability with it — Apex P
   giveResources(h, A, 'metal', 3);
   assert.deepEqual(activations(h, A, tok), ['own'], 'offered while the face is worn');
   finishBattle(h);
-  assert.equal(ent(h, tok)!.copies, undefined, 'the face lapsed at regroup (R11 step 3)');
+  assert.equal(ent(h, tok)!.copies, undefined, 'the face lapsed at regroup (CR 506.2 step 3)');
 
   // the same window, one turn later: the token is a Unit Token again
   toNextBattle(h, A);
@@ -441,7 +441,7 @@ test('R118: an until-regroup face takes its ACTIVATED ability with it — Apex P
   finishBattle(h);
 });
 
-test('R118: Entity.copies survives a seed + actions replay byte for byte', () => {
+test('Entity.copies survives a seed + actions replay byte for byte', () => {
   const h = new Harness(4431);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -479,7 +479,7 @@ test('Apex Prime: plays as a 4/4 and is recognised as an augment (inert donation
 
 // ── Big Glimpse Card ─────────────────────────────────────────────────────
 
-test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playable this turn (R41/R45)', () => {
+test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playable this turn (CR 403.3a, 801.8a)', () => {
   const h = new Harness(4403);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -493,7 +493,7 @@ test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playab
   const deckBefore = h.state.sharedDeck.length;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Big Glimpse Card') });
-  pick(h, { player: D });                                    // R67: "target opponent", at cast
+  pick(h, { player: D });                                    // CR 110.1a: "target opponent", at cast
   pass(h); pass(h);                                          // resolve
   // the SPLIT is the opponent's: two cards into pile 1, then done
   assert.equal(h.state.decision!.seat, D, 'the opponent splits the piles');
@@ -504,20 +504,20 @@ test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playab
   const cache = h.state.players[A]!.cache ?? [];
   assert.deepEqual(cache.map(c => c.card), ['Gublin', 'Shib'], 'pile 1 is cached');
   assert.ok(cache.every(c => c.playableUntilTurn === h.state.turn),
-    'glimpse-style permission: playable until end of turn (R45)');
+    'glimpse-style permission: playable until end of turn (CR 801.9e)');
   assert.equal(h.state.sharedDeck.length, deckBefore - 7,
-    'R296: all 7 left the deck — two to the cache and five past the mark');
+    'CR 408.2a: all 7 left the deck — two to the cache and five past the mark');
   assert.deepEqual(h.state.sharedRecycled!.slice(-5),
     ['Chombot', 'Uglk', 'Bloppert', 'Zephyrzoa', 'Mindburn'],
     'the other pile is past the mark, in order');
   finishBattle(h);
 });
 
-test('Big Glimpse Card: its printed banner is prophesiable for [4] during deployment (R42)', () => {
+test('Big Glimpse Card: its printed banner is prophesiable for [4] during deployment (CR 803.7b)', () => {
   const h = new Harness(4428);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  // R301: the banner is [4lb] — four mana, one light and one water affinity
+  // CR 803.7d: the banner is [4lb] — four mana, one light and one water affinity
   giveResources(h, p, 'light', 2);
   giveResources(h, p, 'water', 2);
   const i = give(h, p, 'Big Glimpse Card');
@@ -525,7 +525,7 @@ test('Big Glimpse Card: its printed banner is prophesiable for [4] during deploy
   const cc = (h.state.players[p]!.cache ?? [])[0];
   assert.equal(cc?.card, 'Big Glimpse Card', 'it moved from hand to cache');
   assert.equal(cc?.prophecy?.condition, 'Two Turns Pass', 'the printed condition rode along');
-  assert.ok(!cc?.prophecy?.fulfilled, 'nothing is fulfilled yet — it counts forward (R43)');
+  assert.ok(!cc?.prophecy?.fulfilled, 'nothing is fulfilled yet — it counts forward (CR 803.7)');
   assert.equal(new E(h.state).openMana(p), 0, 'the banner cost [4] was paid');
 });
 
@@ -644,7 +644,7 @@ test('Chombot: a counterless source moves nothing', () => {
 
 // ── Covenant of the Damned ───────────────────────────────────────────────
 
-test('Covenant of the Damned: reanimates from your bin and charges its cost in debt (R39)', () => {
+test('Covenant of the Damned: reanimates from your bin and charges its cost in debt (CR 112.14)', () => {
   const h = new Harness(4410);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -654,13 +654,13 @@ test('Covenant of the Damned: reanimates from your bin and charges its cost in d
   giveResources(h, p, 'dark', 1);
   giveResources(h, p, 'earth', 1);                           // ld / 3
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Covenant of the Damned') });
-  pick(h, { bin: { seat: p, card: 'Gublin' } });             // R67: declared at cast
+  pick(h, { bin: { seat: p, card: 'Gublin' } });             // CR 702.3c: declared at cast
   assert.ok(unitsOf(h, p).some(u => u.card === 'Gublin'), 'the unit is in play');
   assert.ok(!h.state.players[p]!.bin.includes('Gublin'), 'it left the bin');
-  assert.equal(new E(h.state).debt(p), 9, 'debt equal to its printed cost (R39)');
+  assert.equal(new E(h.state).debt(p), 9, 'debt equal to its printed cost (CR 112.14)');
 });
 
-test('Covenant of the Damned: an empty bin makes the cast ILLEGAL (R67)', () => {
+test('Covenant of the Damned: an empty bin makes the cast ILLEGAL (CR 110.7)', () => {
   const h = new Harness(4411);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -669,7 +669,7 @@ test('Covenant of the Damned: an empty bin makes the cast ILLEGAL (R67)', () => 
   giveResources(h, p, 'dark', 1);
   giveResources(h, p, 'earth', 1);
   const idx = give(h, p, 'Covenant of the Damned');
-  // R64/R67: "put TARGET unit from your bin into play" is a mandatory target,
+  // CR 110.7: "put TARGET unit from your bin into play" is a mandatory target,
   // so an empty bin means there is nothing legal to aim at and the card may
   // not be played at all. It used to resolve into a no-op, which quietly ate
   // the card and the mana.
@@ -684,7 +684,7 @@ test('Covenant of the Damned: an empty bin makes the cast ILLEGAL (R67)', () => 
 // ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
 // printed bonus was +1/+1 and is now +1/+0 — power only. The toughness
 // assertions below are what would have failed silently had only the data moved.
-test('Debt Plant: at the end of [Haste], +1/+0 until regroup per 2 expended resources (R50)', () => {
+test('Debt Plant: at the end of [Haste], +1/+0 until regroup per 2 expended resources (CR 504.6)', () => {
   const h = new Harness(4430);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -760,14 +760,14 @@ test('Dream Lapse: recalls a spell off the stack to its hand, then its controlle
   assert.equal(ent(h, prey)!.damage, 0, 'it never resolved — no damage');
   // it went to hand, and the forced discard then trashed it
   assert.ok(!h.state.players[D]!.hand.includes('Luminous Arc'), 'recalled, then discarded');
-  assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'), 'the discard put it in the bin (R40 trash)');
+  assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'), 'the discard put it in the bin (CR 801.3 trash)');
   assert.ok(h.log.some(l => l.includes('is recalled to')), 'recalled, not negated-into-the-bin');
   finishBattle(h);
 });
 
 // ── Gublin ───────────────────────────────────────────────────────────────
 
-test('Gublin: {Lethal} — any combat damage kills a player outright (R48)', () => {
+test('Gublin: {Lethal} — any combat damage kills a player outright (CR 802.24a)', () => {
   const h = new Harness(4414);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -784,7 +784,7 @@ test('Gublin: {Lethal} — any combat damage kills a player outright (R48)', () 
 
 // ── Hyper Beam ───────────────────────────────────────────────────────────
 
-test('Hyper Beam: 8 damage + a draw, and its printed [Gain 4 debt] is charged (R35/R39)', () => {
+test('Hyper Beam: 8 damage + a draw, and its printed [Gain 4 debt] is charged (CR 111.2, 112.14c)', () => {
   const h = new Harness(4415);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -801,7 +801,7 @@ test('Hyper Beam: 8 damage + a draw, and its printed [Gain 4 debt] is charged (R
   pass(h); pass(h);                                          // resolve
   assert.ok(!ent(h, prey), '8 damage killed the 7/4');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, 'drew a card (the Beam itself left hand)');
-  assert.equal(new E(h.state).debt(A), 4, 'the printed [Gain 4 debt] cost was charged (R39)');
+  assert.equal(new E(h.state).debt(A), 4, 'the printed [Gain 4 debt] cost was charged (CR 112.14c)');
   finishBattle(h);
 });
 
@@ -818,15 +818,15 @@ test('Life Plant: [once] per turn — a life change mints that many 1/1 units', 
   assert.equal(made.length, 3, 'three 1/1 units');
   assert.deepEqual(effStats(h, made[0]!.id), [1, 1], 'each is a 1/1');
   assert.equal(unitsOf(h, p).length, before + 3, 'nothing else changed');
-  // [once]: a second life change this turn does nothing (R9)
+  // [once]: a second life change this turn does nothing (CR 109.9)
   whiteBox(h, e => e.loseLife(p, 2, 'test'));
   assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 3, 'bounded — no second batch');
 });
 
-// R115 (2026-08-23) REVERSED this test. Report #83 IS this card: "Life Plant's
+// The 2026-08-23 ruling (now CR 601.5) REVERSED this test. Report #83 IS this card: "Life Plant's
 // units were made in my region, despite it currently being in Rashi's region.
 // Anything made by anything needs to spawn in that region."
-test('Life Plant: R115 — the created units arrive in the BATTLE region the carrier is fighting in', () => {
+test('Life Plant: CR 601.5 — the created units arrive in the BATTLE region the carrier is fighting in', () => {
   const h = new Harness(4418);
   toDeployment(h);
   const A = h.state.initiative;
@@ -841,8 +841,8 @@ test('Life Plant: R115 — the created units arrive in the BATTLE region the car
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.token);
   assert.equal(made.length, 2, 'two 1/1s were created');
   assert.ok(made.every(u => u.region === battleRegion),
-    'R115: a created unit arrives where its SOURCE is — the enemy region Life Plant is standing in');
-  assert.ok(made.every(u => u.region !== home), 'R52 is WITHDRAWN — they are NOT sent home');
+    'CR 601.5: a created unit arrives where its SOURCE is — the enemy region Life Plant is standing in');
+  assert.ok(made.every(u => u.region !== home), 'the home-region reading is withdrawn — they are NOT sent home');
   finishBattle(h);
 });
 
@@ -858,7 +858,7 @@ test("Life Plant: only YOUR life changes count", () => {
 
 // ── Mindburn ─────────────────────────────────────────────────────────────
 
-test('Mindburn: each player sacrifices a nontoken unit or discards, X times (R35/R40)', () => {
+test('Mindburn: each player sacrifices a nontoken unit or discards, X times (CR 107.2a, 801.2a)', () => {
   const h = new Harness(4418);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -875,7 +875,7 @@ test('Mindburn: each player sacrifices a nontoken unit or discards, X times (R35
   // each player had exactly one option (their unit; hands are empty) — forced
   assert.ok(!ent(h, mine), "A's unit was sacrificed");
   assert.ok(!ent(h, theirs), "D's unit was sacrificed");
-  assert.ok(h.state.players[A]!.bin.includes('Gublin'), 'sacrificed → bin (R40 trash)');
+  assert.ok(h.state.players[A]!.bin.includes('Gublin'), 'sacrificed → bin (CR 801.2a trash)');
   assert.ok(h.state.players[D]!.bin.includes('Shib'), 'and theirs too');
   finishBattle(h);
 });
@@ -901,7 +901,7 @@ test('Mindburn: X = 0 does nothing', () => {
 
 // ── Pale Tormentor ───────────────────────────────────────────────────────
 
-test('Pale Tormentor: after combat, every even-life player gains two rot (R38)', () => {
+test('Pale Tormentor: after combat, every even-life player gains two rot (CR 112.13)', () => {
   const h = new Harness(4420);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -921,7 +921,7 @@ test('Pale Tormentor: after combat, every even-life player gains two rot (R38)',
   finishBattle(h);
 });
 
-test('Pale Tormentor: rot bites at the start of the next deployment (R38)', () => {
+test('Pale Tormentor: rot bites at the start of the next deployment (CR 112.13)', () => {
   const h = new Harness(4421);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -931,7 +931,7 @@ test('Pale Tormentor: rot bites at the start of the next deployment (R38)', () =
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   toDeployment(h);
   assert.equal(h.state.players[p]!.life, life - 2, 'took damage equal to its rot');
-  assert.equal(new E(h.state).rot(p), 2, 'rot never decays (R38)');
+  assert.equal(new E(h.state).rot(p), 2, 'rot never decays (CR 112.13a)');
 });
 
 // ── Reclaim the Fallen ───────────────────────────────────────────────────
@@ -963,7 +963,7 @@ test('Reclaim the Fallen: unit mods leave the host and enter play; other mods st
 
 // ── Shib ─────────────────────────────────────────────────────────────────
 
-test('Shib: {Blessed} combat damage gains its controller that much life (R48)', () => {
+test('Shib: {Blessed} combat damage gains its controller that much life (CR 802.22a)', () => {
   const h = new Harness(4423);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -977,7 +977,7 @@ test('Shib: {Blessed} combat damage gains its controller that much life (R48)', 
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   assert.equal(h.state.players[D]!.life, lifeD - 7, 'seven combat damage');
-  assert.equal(h.state.players[A]!.life, lifeA + 7, '…and seven life gained (R48)');
+  assert.equal(h.state.players[A]!.life, lifeA + 7, '…and seven life gained (CR 802.22a)');
   finishBattle(h);
 });
 
@@ -992,14 +992,14 @@ test('The Mighty Doot: your units gain +1/+1 per 3 life an opponent leads by', (
   assert.deepEqual(effStats(h, ally), [1, 1], 'level life totals: no bonus');
   h.state.players[o]!.life = h.state.players[p]!.life + 10;  // lead 10 → floor(10/3) = 3
 
-  // ⚠ R243 CHANGED THIS, AND THE CHANGE IS THE RULING, NOT A REGRESSION.
+  // ⚠ THE OWNER'S 2026-08-29 REGION RULING (NOW CR 101.6) CHANGED THIS, AND THE CHANGE IS THE RULING, NOT A REGRESSION.
   // "An opponent" is an opponent IN THIS REGION. Out of battle a home region
-  // lists only its owner (the standing R25 behaviour every "each opponent"
+  // lists only its owner (the standing CR 601.4d behaviour every "each opponent"
   // card already has), so during deployment there is no opponent here for the
   // superlative to read and the bonus is zero. This test used to assert +3/+3
   // here, reading a life total belonging to a player who is not present.
   assert.deepEqual(effStats(h, ally), [1, 1],
-    'R243: no opponent is in my home region during deployment, so nobody leads me here');
+    'CR 101.6: no opponent is in my home region during deployment, so nobody leads me here');
 
   // …and in the BATTLE region, where the opponent really is present, it buffs
   // exactly as printed. This half is what proves the card still works — a
@@ -1054,7 +1054,7 @@ test('Zephyrzoa: a connecting column recalls your whole bin and erases it', () =
   assert.deepEqual(h.state.players[A]!.hand.sort(), ['Gublin', 'Shib'], 'the whole bin is recalled to hand');
   assert.equal(h.state.players[A]!.bin.length, 0, 'the bin is empty');
   assert.ok(!ent(h, zep), 'it erased itself');
-  assert.ok(!h.state.players[A]!.bin.includes('Zephyrzoa'), 'erasing never touches a bin (R40)');
+  assert.ok(!h.state.players[A]!.bin.includes('Zephyrzoa'), 'erasing never touches a bin (CR 801.2c)');
   assert.ok(!h.state.players[A]!.hand.includes('Zephyrzoa'), '…and is not a recall either');
   finishBattle(h);
 });

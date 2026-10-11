@@ -1,7 +1,7 @@
 [
   {
     "key": "zones.bin.controller",
-    "textHash": "4191fe40c2c473eb",
+    "textHash": "533e380e50f279d3",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -259,7 +259,7 @@
   },
   {
     "key": "zones.bin.identity.another",
-    "textHash": "7095f185ec725fb2",
+    "textHash": "5ec65c41deb838cc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -297,7 +297,7 @@
   },
   {
     "key": "zones.bin.identity.that-card",
-    "textHash": "35d64b071f1e7619",
+    "textHash": "c662af020b07e8b9",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
@@ -340,7 +340,7 @@
   },
   {
     "key": "zones.bin.leaving",
-    "textHash": "f3799c4cf7dfbe93",
+    "textHash": "3fcfba7fd1ac7a7e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -571,7 +571,7 @@
   },
   {
     "key": "zones.bin.trash",
-    "textHash": "e18e96f5bfd4a46c",
+    "textHash": "6130fac4b4ce4dc4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -650,7 +650,7 @@
   },
   {
     "key": "zones.bin.trash.inline-play",
-    "textHash": "e21e4a82eeb54083",
+    "textHash": "a994f5a9e79a3c36",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -810,7 +810,7 @@
   },
   {
     "key": "zones.cache.from-play",
-    "textHash": "ab01233c982617c1",
+    "textHash": "2f269d084cd5a24e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -849,7 +849,7 @@
   },
   {
     "key": "zones.cache.lapse",
-    "textHash": "ba8bd782bc0247e9",
+    "textHash": "7d50ac71d6cb0510",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -893,7 +893,7 @@
   },
   {
     "key": "zones.cache.no-permission",
-    "textHash": "b0a4871924f69ce3",
+    "textHash": "23647774a58fe894",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -937,7 +937,7 @@
   },
   {
     "key": "zones.cache.no-permission.like-hand",
-    "textHash": "75ca979bfe597c70",
+    "textHash": "615639e342ed46bc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1042,7 +1042,7 @@
   },
   {
     "key": "zones.cache.no-permission.price",
-    "textHash": "e92e8c10fa99dea9",
+    "textHash": "db21262de6c6363d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -1107,7 +1107,7 @@
   },
   {
     "key": "zones.cache.no-permission.timing",
-    "textHash": "76b2f8868dac1175",
+    "textHash": "8c3a25668adc7245",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1184,7 +1184,7 @@
   },
   {
     "key": "zones.cache.prophesy-in-place",
-    "textHash": "b2ba5b26e3ae20e2",
+    "textHash": "3a94ec0038ba30d1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1223,7 +1223,7 @@
   },
   {
     "key": "zones.cache.public",
-    "textHash": "9ab46f48bc99bec1",
+    "textHash": "ee3472f1f22c4705",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1262,7 +1262,7 @@
   },
   {
     "key": "zones.cache.targetable",
-    "textHash": "b4422c8da689ff03",
+    "textHash": "848f8e243e17aefd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1316,7 +1316,7 @@
   },
   {
     "key": "zones.cache.what",
-    "textHash": "53e42dd840bf9b31",
+    "textHash": "4383af235fd72c7d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1360,7 +1360,7 @@
   },
   {
     "key": "zones.changes.despawn",
-    "textHash": "73b0bd51489956e2",
+    "textHash": "a5d9ddaee0777814",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
@@ -1604,7 +1604,7 @@
   },
   {
     "key": "zones.changes.mods",
-    "textHash": "000de19b9c03a408",
+    "textHash": "4a8b41447909f595",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -1732,7 +1732,7 @@
   },
   {
     "key": "zones.changes.mods.exchanged",
-    "textHash": "68a121da14777f24",
+    "textHash": "44c5e68ac5ad2707",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -1811,7 +1811,7 @@
   },
   {
     "key": "zones.changes.mods.token-mod",
-    "textHash": "c720909160aaf64d",
+    "textHash": "76e35a8b778a383e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -1856,7 +1856,7 @@
   },
   {
     "key": "zones.changes.mods.whose-bin",
-    "textHash": "1d551dc3366f7719",
+    "textHash": "e97e643903c7b1af",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -2047,7 +2047,7 @@
   },
   {
     "key": "zones.changes.played-from",
-    "textHash": "fb8cc4b40051fe7f",
+    "textHash": "07fe1fd0f0be1241",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -2085,7 +2085,7 @@
   },
   {
     "key": "zones.changes.played-from.created",
-    "textHash": "cd6d548e58fc2cc4",
+    "textHash": "37ac18eac54c52c1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -2227,7 +2227,7 @@
   },
   {
     "key": "zones.changes.tokens.cached",
-    "textHash": "3f4fcc07460996e0",
+    "textHash": "437d750b15bfe646",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -2266,7 +2266,7 @@
   },
   {
     "key": "zones.changes.tokens.dies",
-    "textHash": "95b09a808ccb9ded",
+    "textHash": "78556cf10fb8a516",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -2410,7 +2410,7 @@
   },
   {
     "key": "zones.deck.empty",
-    "textHash": "eff5db1660c4b0c6",
+    "textHash": "18fbd5c42114ca1c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -2674,7 +2674,7 @@
   },
   {
     "key": "zones.erased.front-face",
-    "textHash": "240bf35740304edb",
+    "textHash": "dc6dabb98e7ac352",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -2712,7 +2712,7 @@
   },
   {
     "key": "zones.erased.not-death",
-    "textHash": "35889975d347ff9d",
+    "textHash": "6cbd0fa775ff03ff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -2831,7 +2831,7 @@
   },
   {
     "key": "zones.erased.says-erase.into-play",
-    "textHash": "34ec6e27e7b634e6",
+    "textHash": "59c943b6e68186de",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
@@ -2874,7 +2874,7 @@
   },
   {
     "key": "zones.erased.tokens",
-    "textHash": "cd7b5d6063fb593c",
+    "textHash": "97e36fd85fbe3a67",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -2929,7 +2929,7 @@
   },
   {
     "key": "zones.erased.tokens.mods",
-    "textHash": "44148c905a40c379",
+    "textHash": "9efec3cf02d3093f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -3040,7 +3040,7 @@
   },
   {
     "key": "zones.general.active.unstable",
-    "textHash": "0edbc1a1167ed608",
+    "textHash": "25c7f4152cd93e23",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -3084,7 +3084,7 @@
   },
   {
     "key": "zones.general.follow-control",
-    "textHash": "15491c6baf9a3ab5",
+    "textHash": "fbcde89c06038008",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -3201,7 +3201,7 @@
   },
   {
     "key": "zones.general.follow-control.ownership",
-    "textHash": "073405550e135929",
+    "textHash": "79093248a2c669eb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -3442,7 +3442,7 @@
   },
   {
     "key": "zones.general.zone-text.one-firing",
-    "textHash": "e58169c969638a51",
+    "textHash": "64b2445ade58c7ab",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -3523,7 +3523,7 @@
   },
   {
     "key": "zones.hand.discard",
-    "textHash": "d93d0df95fdaeebe",
+    "textHash": "71a7a3cdfcef2071",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -3648,7 +3648,7 @@
   },
   {
     "key": "zones.hand.hidden.look-at",
-    "textHash": "bf6a7f969743b269",
+    "textHash": "cffe0a9d433cd665",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -4263,7 +4263,7 @@
   },
   {
     "key": "zones.recycle.hidden",
-    "textHash": "599a3d613c51a6a3",
+    "textHash": "59801dcbb5f952d1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -4308,7 +4308,7 @@
   },
   {
     "key": "zones.recycle.mark",
-    "textHash": "5964c38556dd494e",
+    "textHash": "a01577a822aa34ca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -4383,7 +4383,7 @@
   },
   {
     "key": "zones.recycle.mark.public-count",
-    "textHash": "28be6ceb69f5ade2",
+    "textHash": "ace055a13194172e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -4426,7 +4426,7 @@
   },
   {
     "key": "zones.recycle.mark.reshuffle",
-    "textHash": "1c671592cee763e7",
+    "textHash": "1f64487baf3abcdb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -4471,7 +4471,7 @@
   },
   {
     "key": "zones.recycle.mark.scope",
-    "textHash": "2b9b6862749fadfd",
+    "textHash": "6f626a9849fd38d1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",
@@ -4510,7 +4510,7 @@
   },
   {
     "key": "zones.recycle.mark.whose",
-    "textHash": "7faf99578b87b750",
+    "textHash": "ebb6040e30e56393",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -4614,7 +4614,7 @@
   },
   {
     "key": "zones.stack.leaving",
-    "textHash": "43f411b15424431a",
+    "textHash": "e3114f9321af2fcd",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U07-r2-a2",
@@ -4697,7 +4697,7 @@
   },
   {
     "key": "zones.stack.leaving.self-erase",
-    "textHash": "616748f2d280e49d",
+    "textHash": "15aa9da9cd5a1db5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U07-r1-a2",

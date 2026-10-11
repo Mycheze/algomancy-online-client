@@ -8,7 +8,7 @@
  *
  * ── THE GATE, AND WHY IT IS A 404 ────────────────────────────────────
  *
- * R216 already settled this for the scenario tester and the argument carries
+ * The scenario-tester ruling (now CR D8.4a) already settled this for the scenario tester and the argument carries
  * over unchanged, so main.ts's botAllowed() is testerAllowed()'s twin: no
  * ALGO_BOT_TOKEN in the environment and these paths do not exist; token set but
  * wrong on the request and they still do not exist. Not 403 — 404, the same

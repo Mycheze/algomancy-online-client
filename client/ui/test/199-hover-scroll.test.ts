@@ -1,4 +1,4 @@
-/* R230 — report #110: THE TOOLTIP THAT NEVER APPEARED ON FIRST LANDING.
+/* CR D6.17 — report #110: THE TOOLTIP THAT NEVER APPEARED ON FIRST LANDING.
  *
  * Owner, SBCM action 269: *"It's weirdly difficult to get the hover to work on
  * units and show their text. I often have to move my mouse several times to
@@ -34,13 +34,13 @@
  *
  * ── SO WHAT IS TESTED HERE, AND WHAT WAS TESTED ELSEWHERE ────────────────
  *
- * §1-§4: the RULE, as a pure function. R230 moved the decision out of the
+ * §1-§4: the RULE, as a pure function. The report-#110 fix (CR D6.17) moved the decision out of the
  * listener into `ui/inspect.ts scrollHidesHoverTip`, which is this repo's
  * standing shape for client logic worth asserting (cf. ui/cardtext.ts). The
  * function is total and the cases below are its whole domain, so a regression
  * in the rule is caught here rather than in a browser six weeks later.
  *
- * §5: the DRIVER's own honesty about cancelled timers, which R230 repaired.
+ * §5: the DRIVER's own honesty about cancelled timers, which the same fix repaired.
  *
  * THE WIRING — that this rule really is on the window's capture-phase `scroll`
  * listener, that `hoverEl` really is the hovered card, and that the tooltip
@@ -82,7 +82,7 @@ const OTHER = { what: 'a different card' };
 
 /* ═══ §1 THE CLIENT SCROLLING ITS OWN RAIL ════════════════════════════ */
 
-test('R230 §1: the focus rail scrolling does NOT hide the tip — this is #110', () => {
+test('CR D6.17: the focus rail scrolling does NOT hide the tip — this is #110', () => {
   // #preview is a sibling panel: it does not contain the card the cursor is
   // on, so it cannot have moved it. This is the exact call the client makes
   // three milliseconds after arming the dwell.
@@ -100,7 +100,7 @@ test('R230 §1: the focus rail scrolling does NOT hide the tip — this is #110'
 
 /* ═══ §2 THE SCROLLS THAT STILL HIDE ══════════════════════════════════ */
 
-test('R230 §2: a scroll that could have MOVED the card still hides the tip', () => {
+test('CR D6.17: a scroll that could have MOVED the card still hides the tip', () => {
   // the document scrolled: `e.target` is the document, not an Element, so the
   // wiring passes null. Everything on screen moved.
   assert.equal(scrollHidesHoverTip(null, CARD), true,
@@ -117,7 +117,7 @@ test('R230 §2: a scroll that could have MOVED the card still hides the tip', ()
 
 /* ═══ §3 NOTHING HOVERED ══════════════════════════════════════════════ */
 
-test('R230 §3: with nothing hovered, every scroll hides — there is nothing to protect', () => {
+test('CR D6.17: with nothing hovered, every scroll hides — there is nothing to protect', () => {
   for (const scroller of [null, holding(), holding(CARD)]) {
     assert.equal(scrollHidesHoverTip(scroller, null), true,
       'no dwell in flight: hiding is free, and it clears a tip left over from a repaint');
@@ -126,7 +126,7 @@ test('R230 §3: with nothing hovered, every scroll hides — there is nothing to
 
 /* ═══ §4 THE RULE IS ABOUT *THIS* CARD ════════════════════════════════ */
 
-test('R230 §4: a scroller holding some OTHER card does not hide this one', () => {
+test('CR D6.17: a scroller holding some OTHER card does not hide this one', () => {
   assert.equal(scrollHidesHoverTip(holding(OTHER), CARD), false,
     'containment is asked about the hovered card, not about cards in general');
   // the mirror image, so the two arguments cannot be swapped without failing
@@ -136,7 +136,7 @@ test('R230 §4: a scroller holding some OTHER card does not hide this one', () =
 
 /* ═══ §5 THE DRIVER TELLS THE TRUTH ABOUT CANCELLED TIMERS ════════════ */
 
-test('R230 §5: test/ui-driver.ts really cancels a cleared timeout', () => {
+test('§5: test/ui-driver.ts really cancels a cleared timeout', () => {
   /* This is the guard on the fidelity repair, not on the client. The driver's
    * `clearTimeout` was `() => {}`, so `tick()` ran callbacks the client had
    * explicitly called off — which is precisely the shape of #110 (arm, cancel,

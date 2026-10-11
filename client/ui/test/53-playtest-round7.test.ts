@@ -5,7 +5,7 @@
  *    Alluring attacker could simply be ignored. (The rule that landed here in
  *    round 7 was itself the WRONG rule, and the report came back in round 15
  *    from room UFAB — the whole Alluring half of this file was rebuilt for
- *    R84's targeted model; see the section header below.)
+ *    the targeted model; see the section header below.)
  *  - "Formless is broken here. It should have set Manablub to a 4/4, but it's
  *    combined with the other thing. Stats need to be able to be SET without
  *    using + or -.": the engine had no layer 2. Formless and Body Swap both
@@ -74,7 +74,7 @@ test('a rewritten base is an until-regroup change and regroup clears it', () => 
     else if (b.step === 'blocks') h.do({ type: 'declareBlocks', seat: b.defender, blocks: {} });
     else pass(h);
   }
-  assert.equal(ent(h, u)!.baseSet, undefined, 'cleared with the other temp changes (R11 step 3)');
+  assert.equal(ent(h, u)!.baseSet, undefined, 'cleared with the other temp changes (CR 506.2 step 3)');
   assert.deepEqual(effStats(h, u), [7, 5], 'back to printed');
 });
 
@@ -118,7 +118,7 @@ test('Formless after Body Swap is a 4/4 — the exact BRDM position', () => {
     'a base 4/4 is a base 4/4 however many times the base was rewritten before');
 });
 
-/* ── R84 {Alluring} — the targeted on-attack trigger ────────────────────────
+/* ── CR 802.15a {Alluring} — the targeted on-attack trigger ────────────────────────
  *
  * Rebuilt 2026-08-22 (playtest room UFAB). The reported bug was "Tempest
  * Wrangler (with Alluring) didn't trigger on attacks": three columns, one of
@@ -129,13 +129,13 @@ test('Formless after Body Swap is a 4/4 — the exact BRDM position', () => {
  * That was a real hole in the old rule (the duty's candidate pool was computed
  * AFTER subtracting the units already committed elsewhere, so the defender
  * could MANUFACTURE the "nobody is able" excuse), but the investigation found
- * the engine was implementing the wrong rule entirely. R76 read Alluring as
+ * the engine was implementing the wrong rule entirely. The old Alluring ruling read Alluring as
  * "every defender able to block this column must block it" and attributed the
  * wording to the Manual; `data/rules/Algomancy-Manual.txt` contains no occurrence of
  * the word. Caleb's rulings say something simpler: it TARGETS ONE enemy unit,
  * that unit can't attack and must block this column if able, it goes on the
- * stack, it can be negated, and it does not stack. See docs/digital-rules.md
- * R84 for the sources.
+ * stack, it can be negated, and it does not stack. See CR 802.15 for the rule; the sources
+ * were listed in the retired ruling register.
  *
  * WHY THE OLD SUITE MISSED THE UFAB BUG: every scenario in it attacked with
  * ONLY Alluring columns, so there was never a plain column to dump blockers
@@ -199,7 +199,7 @@ const refusedForAllure = (err: unknown) =>
 
 /* ── the UFAB regression, and its minimal form ─────────────────────────── */
 
-test('R84 UFAB: an Alluring column may not be side-stepped by blocking the OTHERS', () => {
+test('CR 606.2b UFAB: an Alluring column may not be side-stepped by blocking the OTHERS', () => {
   // THE REPORTED POSITION. Three attack columns, one Alluring; the defender
   // holds exactly two units able to block and puts both on the plain columns.
   const h = new Harness(5250);
@@ -221,7 +221,7 @@ test('R84 UFAB: an Alluring column may not be side-stepped by blocking the OTHER
   assert.deepEqual(h.state.battle!.blocks[0], [d1!]);
 });
 
-test('R84: the minimal form — two columns, one Alluring, one blocker', () => {
+test('CR 802.15a: the minimal form — two columns, one Alluring, one blocker', () => {
   const h = new Harness(5251);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -241,7 +241,7 @@ test('R84: the minimal form — two columns, one Alluring, one blocker', () => {
   assert.deepEqual(h.state.battle!.blocks[0], [d1]);
 });
 
-test('R84: only the LURED unit is compelled — a second able blocker is free', () => {
+test('CR 802.15f: only the LURED unit is compelled — a second able blocker is free', () => {
   // "single unit … meaning target unit controlled by an opponent". The old
   // rule compelled EVERY able defender; this one compels exactly one.
   const h = new Harness(5252);
@@ -258,7 +258,7 @@ test('R84: only the LURED unit is compelled — a second able blocker is free', 
     'd2 is under no duty at all and may go and counterattack');
 });
 
-test('R84: a substitute is not good enough — the lured unit must be in the column', () => {
+test('CR 606.2e: a substitute is not good enough — the lured unit must be in the column', () => {
   // "If another unit B wants to block the alluring column then suddenly A can
   // and also has to."
   const h = new Harness(5253);
@@ -301,7 +301,7 @@ function evasiveLure(seed: number, n: number): {
   return { h, A, D, ds };
 }
 
-test('R84 RAQ 1/3: one unit — it cannot cover an Evasive column alone, so it is free', () => {
+test('CR 802.15g RAQ 1/3: one unit — it cannot cover an Evasive column alone, so it is free', () => {
   const h = new Harness(5254);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -319,7 +319,7 @@ test('R84 RAQ 1/3: one unit — it cannot cover an Evasive column alone, so it i
   assert.deepEqual(h.state.battle!.blocks, { 1: [a] });
 });
 
-test('R84 RAQ 2/3: two units — block with both, or forgo the column; nothing else', () => {
+test('CR 802.15h RAQ 2/3: two units — block with both, or forgo the column; nothing else', () => {
   const { h, D, ds } = evasiveLure(5255, 2);
   const [a, b] = ds as [EntityId, EntityId];
   // forgo
@@ -334,7 +334,7 @@ test('R84 RAQ 2/3: two units — block with both, or forgo the column; nothing e
   offersAreHonest(h, D);
 });
 
-test('R84 RAQ 3/3: three units — forgo, or A+B, or A+C; B+C is illegal', () => {
+test('CR 802.15h RAQ 3/3: three units — forgo, or A+B, or A+C; B+C is illegal', () => {
   const { h, D, ds } = evasiveLure(5256, 3);
   const [a, b, c] = ds as [EntityId, EntityId, EntityId];
   const ok = (blocks: Record<number, EntityId[]>) =>
@@ -350,7 +350,7 @@ test('R84 RAQ 3/3: three units — forgo, or A+B, or A+C; B+C is illegal', () =>
 
 /* ── the other half of the attribute: it cannot attack ──────────────────── */
 
-test('R84: a lured unit cannot be sent out to counterattack', () => {
+test('CR 604.2e: a lured unit cannot be sent out to counterattack', () => {
   // "It won't be able to 'counter-attack' into your region" — going out at
   // block time IS attacking.
   const h = new Harness(5257);
@@ -369,7 +369,7 @@ test('R84: a lured unit cannot be sent out to counterattack', () => {
     'and legalActions never offers it either');
 });
 
-test('R84: a lured unit may not be declared as an attacker (a guard, by hand)', () => {
+test('CR 604.2e: a lured unit may not be declared as an attacker (a guard, by hand)', () => {
   // In the 1v1 battle structure this position cannot arise on its own: round
   // 2's attacker pool IS the units sent at block time, and a lured unit may
   // not be sent. The restriction is still real — it is the half of the
@@ -399,7 +399,7 @@ test('R84: a lured unit may not be declared as an attacker (a guard, by hand)', 
 
 /* ── it is a real effect on a real stack ────────────────────────────────── */
 
-test('R84: the trigger goes on the stack, targets at cast (R67), and can be NEGATED', () => {
+test('the trigger goes on the stack, targets at cast (CR 110.1a), and can be NEGATED', () => {
   // "'Alluring' effect goes to stack and can be negated?" — "Yep!"
   const h = new Harness(5259);
   toDeployment(h);
@@ -430,7 +430,7 @@ test('R84: the trigger goes on the stack, targets at cast (R67), and can be NEGA
   assert.deepEqual(h.state.battle!.blocks, {}, 'and the defender is under no duty');
 });
 
-test('R84: killing the allurer while the trigger is ON the stack fizzles it', () => {
+test('CR 802.15i: killing the allurer while the trigger is ON the stack fizzles it', () => {
   // "this would stop the trigger if you kill the allurer while the effect is
   // on the stack"
   const h = new Harness(5260);
@@ -449,7 +449,7 @@ test('R84: killing the allurer while the trigger is ON the stack fizzles it', ()
   assert.deepEqual(h.state.battle!.blocks, {});
 });
 
-test('R84: killing the allurer AFTER it resolves frees the block but not the attack', () => {
+test('CR 802.15j: killing the allurer AFTER it resolves frees the block but not the attack', () => {
   // "You can't attack but you can block other things" — the can't-attack half
   // is a mark on the unit and survives; the must-block duty names a column and
   // dies with it.
@@ -466,14 +466,14 @@ test('R84: killing the allurer AFTER it resolves frees the block but not the att
 
   whiteBox(h, e => { e.destroy(ent(h, lure)!, 'is deleted'); });
   assert.deepEqual(ent(h, d1)!.allured, { round: 1, columns: [] },
-    'R72 closed the line, and the duty went with the column');
+    'the line closed up (CR 602.5), and the duty went with the column');
   assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [d1] }),
     refusedForAllure, 'it still cannot attack');
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   assert.deepEqual(h.state.battle!.blocks, {}, 'but it is free not to block');
 });
 
-test('R84: {Alluring} does not stack — two Alluring units in one column, ONE trigger', () => {
+test('CR 802.15b: {Alluring} does not stack — two Alluring units in one column, ONE trigger', () => {
   // "Nah alluring doesn't stack … It's just one attribute … It's like how you
   // can't gain flying flying"
   const h = new Harness(5262);
@@ -494,7 +494,7 @@ test('R84: {Alluring} does not stack — two Alluring units in one column, ONE t
   assert.deepEqual(h.state.battle!.blocks[0], [d1]);
 });
 
-test('R84: two Alluring COLUMNS are two triggers, and may name the same unit', () => {
+test('CR 802.15c: two Alluring COLUMNS are two triggers, and may name the same unit', () => {
   // Alluring is shared to the column but does not stack WITHIN one; two
   // columns are two independent attributes and so two triggers.
   const h = new Harness(5263);
@@ -520,7 +520,7 @@ test('R84: two Alluring COLUMNS are two triggers, and may name the same unit', (
   }
 });
 
-test('R84: two Alluring columns naming DIFFERENT units compel both', () => {
+test('CR 802.15c: two Alluring columns naming DIFFERENT units compel both', () => {
   const h = new Harness(5264);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -535,7 +535,7 @@ test('R84: two Alluring columns naming DIFFERENT units compel both', () => {
   assert.notEqual(col(d1), col(d2), 'two columns, two different lured units');
   offersAreHonest(h, D);
   assert.ok(blockOptions(h, D).some(a => Object.keys(a.blocks).length === 2),
-    'the compulsory core covers both columns at once (R76: a single-column offer cannot)');
+    'the compulsory core covers both columns at once (CR 606.2f: a single-column offer cannot)');
   assert.throws(() =>
     apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { [col(d1)]: [d1] } }),
   refusedForAllure, 'answering one duty does not answer the other');
@@ -545,7 +545,7 @@ test('R84: two Alluring columns naming DIFFERENT units compel both', () => {
 
 /* ── "able" is a property of the unit and the column, and nothing else ──── */
 
-test('R84: a {Feeble} lured unit is not able, so it is not compelled', () => {
+test('CR 802.12c: a {Feeble} lured unit is not able, so it is not compelled', () => {
   const h = new Harness(5265);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -560,7 +560,7 @@ test('R84: a {Feeble} lured unit is not able, so it is not compelled', () => {
   assert.deepEqual(h.state.battle!.blocks, {}, 'a Feeble unit can never block, so it is never able');
 });
 
-test('R84: a lured unit with no {Flying} is not able against a Flying column', () => {
+test('CR 802.2e: a lured unit with no {Flying} is not able against a Flying column', () => {
   const h = new Harness(5266);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -574,8 +574,8 @@ test('R84: a lured unit with no {Flying} is not able against a Flying column', (
   assert.deepEqual(h.state.battle!.blocks, {});
 });
 
-test('R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state', () => {
-  // R20 forbids blocking it, so nobody is able and the compulsion is empty.
+test('CR 802.15m: a lone {Sneaky} + {Alluring} attacker is not a stuck state', () => {
+  // CR 802.14a forbids blocking it, so nobody is able and the compulsion is empty.
   // (Under the old rule this was a HANG: two rules, no legal declaration.)
   const h = new Harness(5267);
   toDeployment(h);
@@ -593,9 +593,9 @@ test('R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state', () => {
   assert.deepEqual(h.state.battle!.blocks, {});
 });
 
-/* ── R61 {Pure} still holds ─────────────────────────────────────────────── */
+/* ── CR 802.25 {Pure} still holds ─────────────────────────────────────────────── */
 
-test('R84 + R61: an Alluring column that is itself {Pure} never even triggers', () => {
+test('CR 802.15n: an Alluring column that is itself {Pure} never even triggers', () => {
   // "an Alluring column that is itself Pure ignores its own Alluring and
   // compels nobody" — and under the new model that is upstream of the stack:
   // there is nothing to negate, because nothing fires.
@@ -614,7 +614,7 @@ test('R84 + R61: an Alluring column that is itself {Pure} never even triggers', 
   assert.deepEqual(h.state.battle!.blocks, {});
 });
 
-test('R84 + R61: a {Pure} lured unit is able against a Flying Alluring column', () => {
+test('a {Pure} lured unit is able against a Flying Alluring column', () => {
   // "a Pure blocker is 'able' against anything, so it can be compelled"
   const h = new Harness(5269);
   toDeployment(h);
@@ -632,7 +632,7 @@ test('R84 + R61: a {Pure} lured unit is able against a Flying Alluring column', 
   assert.deepEqual(h.state.battle!.blocks[0], [pure]);
 });
 
-test('R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone', () => {
+test('a {Pure} lured unit discharges an EVASIVE Alluring column alone', () => {
   // Pure switches the whole attribute layer off for the exchange, Evasive
   // included, so "could it have covered the column alone?" answers yes.
   const h = new Harness(5270);
@@ -651,9 +651,9 @@ test('R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone
   assert.deepEqual(h.state.battle!.blocks[0], [pure]);
 });
 
-/* ── the R76 hang guard, restated for the new model ─────────────────────── */
+/* ── the CR 606.2f hang guard, restated for the new model ─────────────────────── */
 
-test('R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang)', () => {
+test('CR 606.2f: legalActions always offers a legal declaration (the fuzz-1993 hang)', () => {
   // The contract that exists because of a real hang: every offered declaration
   // was refused and the game locked up with no legal action for anyone. Each
   // shape below is checked for "there is something" AND "everything offered is
@@ -683,8 +683,8 @@ test('R84/R76: legalActions always offers a legal declaration (the fuzz-1993 han
   });
 });
 
-test('R84: an attack that has collapsed to nothing still lets the defender declare', () => {
-  // R72: every attacking column can empty and close up before blocks, leaving
+test('CR 606.2f: an attack that has collapsed to nothing still lets the defender declare', () => {
+  // CR 602.5: every attacking column can empty and close up before blocks, leaving
   // b.columns []. The defender must still have a way to say "no blocks".
   const h = new Harness(5285);
   toDeployment(h);
@@ -702,7 +702,7 @@ test('R84: an attack that has collapsed to nothing still lets the defender decla
   finishBattle(h);
 });
 
-test('R84: a duty is re-keyed when the formation closes ranks (R72)', () => {
+test('CR 603.5a: a duty is re-keyed when the formation closes ranks', () => {
   // The duty names an attack COLUMN, and a column's index is its identity, so
   // it has to move in the same commit as BattleState.blocks.
   const h = new Harness(5286);
@@ -722,7 +722,7 @@ test('R84: a duty is re-keyed when the formation closes ranks (R72)', () => {
   assert.deepEqual(h.state.battle!.blocks[0], [d1]);
 });
 
-test('R84: the mark is an until-regroup change, and regroup clears it', () => {
+test('CR 802.15e: the mark is an until-regroup change, and regroup clears it', () => {
   const h = new Harness(5287);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -733,7 +733,7 @@ test('R84: the mark is an until-regroup change, and regroup clears it', () => {
   toBlockStep(h, [d1]);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] } });
   finishBattle(h);
-  assert.equal(ent(h, d1)!.allured, undefined, 'cleared with the other temp changes (R11 step 3)');
+  assert.equal(ent(h, d1)!.allured, undefined, 'cleared with the other temp changes (CR 506.2 step 3)');
 });
 
 /* ── auto-yield ────────────────────────────────────────────────────────── */
@@ -783,8 +783,8 @@ test('auto-yield never passes through a pending decision', () => {
   assert.equal(shouldAutoYield(s, 0, new Set([7])), false);
 });
 
-test('auto-yield does not skip a negated trigger (R68: unreachable, kept as a guard)', () => {
-  // R68 made this state impossible to reach in play — negation splices the
+test('auto-yield does not skip a negated trigger (CR 704.4: unreachable, kept as a guard)', () => {
+  // Under CR 704.4 this state cannot be reached in play — negation splices the
   // item off the stack, so nothing on the stack is ever `negated`. The guard
   // stays because the flag stays on the type, and a stack item wearing it
   // should never be silently passed through.
@@ -825,38 +825,39 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
  * items, and left ZERO trace in the repo — no PARKED comment, no ⚠ header, no
  * { todo: true } test. The engine README's rule AT THE TIME was that the todo
  * count IS the backlog; these four sat outside it, which is exactly why two of
- * them came back as fresh reports. (That rule is retired as of R155 — a todo
+ * them came back as fresh reports. (That rule is retired as of the inert-shape audit — a todo
  * can never fail, so it was never a backlog, and the count in test/ is now
  * asserted to be zero. A gap that cannot be built goes in card-ledger.ts or
  * card-todo.ts, both of which are checked.) The ledger lives here now
  * (park-hygiene audit, round 13, 2026-08-21):
  *
- *   · Necromorph's second target — CLOSED. R64 gave bin cards a real TargetRef
+ *   · Necromorph's second target — CLOSED. Bin cards got a real TargetRef
  *     (`BinRef`); test/43-dark-c.test.ts exercises the exchange end to end.
- *   · Formless's attribute-removal half — CLOSED. R62 is the suppression
- *     layer; batch-metal-b.ts calls `g.suppress(t, 'Formless', { attrs: true })`
+ *   · Formless's attribute-removal half — CLOSED. The suppression
+ *     layer (CR 712.1) exists; batch-metal-b.ts calls `g.suppress(t, 'Formless', { attrs: true })`
  *     and test/59-base-stats.test.ts covers it.
- *   · the empty-column collapse — CLOSED. R72, test/64-formation-collapse.test.ts.
- *   · Eldritch Dreamtender's sacrifice timing — CLOSED. R73 (Bena, 2026-08-22):
+ *   · the empty-column collapse — CLOSED. CR 602.5, test/64-formation-collapse.test.ts.
+ *   · Eldritch Dreamtender's sacrifice timing — CLOSED. The owner, 2026-08-22:
  *     "sacrifice me" is a CAST COST, paid on the way to the stack, not at
  *     resolution. `sacrificeUnits` gained `from: 'self'` (resolved through
  *     item.sourceId, the `removeCounters` precedent) and the card carries it.
  *     Real tests, no longer todos: test/26-metal-a.test.ts for the card,
- *     test/32-cast-costs.test.ts for the primitive.
+ *     test/32-cast-costs.test.ts for the primitive. (CR 111.8 now reads the
+ *     sacrifice as part of the effect, not a cost; the engine differs, F-U04-5.)
  *
  * ALL FOUR round-7 deferrals are now closed, and so is the fifth question that
- * outlived them: R73 settled WHETHER the sacrifice is a cost, and R117 (owner,
- * 2026-08-23) settled WHICH combat damage sub-step the trigger fires in —
+ * outlived them: that owner ruling settled WHETHER the sacrifice is a cost, and another (owner,
+ * 2026-08-23; now CR 608.9a) settled WHICH combat damage sub-step the trigger fires in —
  * **the sub-step its own column strikes in.** The `{ todo: true }` that used to
  * sit here, and the card-ledger entry that named it, are replaced by the real
  * tests below.
  */
 
-/* ── R117: "when my column deals combat damage" fires in MY column's sub-step ──
+/* ── CR 608.9a: "when my column deals combat damage" fires in MY column's sub-step ──
  *
  * Printed: "[Augment] When my column deals combat damage to an opponent,
  * sacrifice me. If you do, look at that player's hand and discard a card from
- * it." The gap R117 closes is not the printed text but the READ: the trigger
+ * it." The gap CR 608.9a closes is not the printed text but the READ: the trigger
  * listens on the aggregated combat `lifeLost`, and `commitPlayerDamage` folds
  * EVERY connecting column's face damage into one `loseLife` per seat per
  * sub-step. So a Dreamtender in a NORMAL column used to hear the SWIFT
@@ -868,33 +869,32 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
  * `b.damageStep` is advanced only after `combatSubStep` returns — so it reads
  * the CURRENT sub-step there and the NEXT one by the time the trigger settles.
  *
- * ⚠ R261 (owner, 2026-08-30) LEFT THE GATE AND TOOK THE CLOCK, AND THAT IS
+ * ⚠ The owner's 2026-08-30 after-combat ruling LEFT THE GATE AND TOOK THE CLOCK, AND THAT IS
  * WHY THESE THREE TESTS HAD TO CHANGE THEIR INSTRUMENT.
  *
  * A combat-damage trigger no longer RESOLVES inside the damage sub-step: it is
  * announced there and held, and it goes on the stack in the after-combat
- * window with the afterCombat triggers, where both seats may answer it. R117's
+ * window with the afterCombat triggers, where both seats may answer it. CR 608.9a's
  * finding — the trigger fires in the sub-step its own column strikes in — is
  * untouched. What died is the sentence these tests used to MEASURE it by.
  *
  * They measured the gate through the Dreamtender's sacrifice: fire a sub-step
  * early and the Dreamtender is in the bin before its own column strikes, so
- * the face damage comes out one lower. Under R261 the sacrifice is paid on the
- * way to the after-combat stack whichever sub-step announced the trigger, so
+ * the face damage comes out one lower. Under the split-step rule (CR 608.9c) the sacrifice is paid as the trigger goes on the stack — at the window after its own sub-step, or after combat if that was the last — so
  * the Dreamtender is ALWAYS alive for its own column's damage and the life
  * total is the same number either way.
  *
  * MEASURED: with BOTH sub-step gates disabled in a scratch copy of the engine
- * (`strikesInCurrentSubStep` forced true AND R195's `faceDamageDealtBy`
+ * (`strikesInCurrentSubStep` forced true AND the per-column `faceDamageDealtBy`
  * column filter removed), all 40 tests in this file still passed. The
  * instrument is `dreamtenderTriggers` below — the COUNT of announcements,
  * which is the one thing the hold did not move.
  *
- * ⚠ AND "BOTH GATES" IS NOT A FIGURE OF SPEECH — R117 IS NOW THE REDUNDANT
+ * ⚠ AND "BOTH GATES" IS NOT A FIGURE OF SPEECH — THE SUB-STEP GATE IS NOW THE REDUNDANT
  * ONE. `strikesInCurrentSubStep` can be replaced outright by `return true` and
  * NOTHING notices: not this file, not 115-literal-light, not
  * 134-column-and-substep (which is named after it), not
- * 239-damage-triggers-after-combat. R195 gave the aggregated `lifeLost` event a
+ * 239-damage-triggers-after-combat. The per-column life-loss change gave the aggregated `lifeLost` event a
  * per-column breakdown and `columnDealtCombatDamage`'s face arm now asks
  * `faceDamageDealtBy` — which already answers "did MY column deal any of
  * this?" and therefore already answers "is this my sub-step?", because a
@@ -923,7 +923,7 @@ function answerAll(h: Harness): void {
       });
       continue;
     }
-    // R295: a damage step split by {Swift}/{Sluggish} hands priority over at
+    // CR 608.3b: a damage step split by {Swift}/{Sluggish} hands priority over at
     // each sub-step boundary. All three tests below are built on exactly such a
     // board, so without this the later sub-steps never run and their damage
     // never lands — which is the shape report #165's engine had.
@@ -936,10 +936,10 @@ function answerAll(h: Harness): void {
 /**
  * How many times the Dreamtender's "when my column deals combat damage to an
  * opponent" was ANNOUNCED — `fireEvent` writes 'triggered' at QUEUE time, so
- * this counts firings and not resolutions, which is exactly the R117 question.
+ * this counts firings and not resolutions, which is exactly the CR 608.9a question.
  *
  * ⚠ THIS IS THE ONLY NON-VACUOUS INSTRUMENT LEFT IN THESE THREE TESTS. See the
- * R261 note in the section header above: the life totals below are true, and
+ * note in the section header above: the life totals below are true, and
  * they are true whether or not the gate holds. Without the gate the aggregated
  * `lifeLost` of EVERY sub-step fires the trigger, so a normal column reports 2
  * and a Sluggish one 3; with it, always 1.
@@ -951,14 +951,14 @@ function dreamtenderTriggers(h: Harness): number {
 
 /* ⚠ THE OLD TITLE, and it is half superseded:
  *
- *     'R117: a Dreamtender in a NORMAL column survives the Swift sub-step and
+ *     '[…] a Dreamtender in a NORMAL column survives the Swift sub-step and
  *      is sacrificed in its own'
  *
  * It still survives the Swift sub-step. It is no longer sacrificed IN ITS OWN
- * sub-step — R261 holds the trigger to the after-combat window and the
- * sacrifice, which is a cast cost (R73), is paid on the way to the stack
+ * sub-step — CR 608.9c holds the trigger to the after-combat window and the
+ * sacrifice, which the engine takes as a cast cost (CR 111.8 differs, F-U04-5), is paid on the way to the stack
  * there. */
-test('R117 + R261: a Dreamtender in a NORMAL column hears only its OWN column damage, and pays after combat', () => {
+test('a Dreamtender in a NORMAL column hears only its OWN column damage, and pays after combat', () => {
   const h = new Harness(5290);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -974,11 +974,11 @@ test('R117 + R261: a Dreamtender in a NORMAL column hears only its OWN column da
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   answerAll(h);
-  // THE REGRESSION THIS USED TO PIN: before R117 the Swift column's aggregated
+  // THE REGRESSION THIS USED TO PIN: before the column-trigger ruling (now CR 608.9a) the Swift column's aggregated
   // lifeLost fired the Dreamtender, so it was already in the bin when the
   // normal sub-step ran and its own 1 power evaporated — 2 damage, not 3.
   //
-  // ⚠ AND THAT NUMBER NO LONGER PINS IT (R261). The sacrifice is paid after
+  // ⚠ AND THAT NUMBER NO LONGER PINS IT (CR 608.9c). The sacrifice is paid after
   // combat now, so the Dreamtender is alive for the normal sub-step whether
   // the gate held or not, and this reads life0 - 3 either way. It is kept
   // because it is still TRUE and still the right description of the board;
@@ -989,10 +989,10 @@ test('R117 + R261: a Dreamtender in a NORMAL column hears only its OWN column da
     'ONE announcement: the normal sub-step, its own. With the sub-step gating gone the Swift '
     + 'sub-step\'s aggregated lifeLost fires it as well and this reads 2');
   assert.equal(ent(h, dt), undefined,
-    'and it has left the board — the sacrifice is a cast cost (R73), paid on the way to the '
+    'and it has left the board — the engine takes the sacrifice as a cast cost (CR 111.8 differs, F-U04-5), paid on the way to the '
     + 'after-combat stack rather than inside the sub-step');
   assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
-  // R261, POSITIVE CONTROL: the trigger is really ON THE STACK and really
+  // CR 608.9c, POSITIVE CONTROL: the trigger is really ON THE STACK and really
   // resolves there. Every board assertion above would also hold on a board
   // where the trigger had been swallowed on the way out of the damage step.
   assert.ok(h.state.stack.some(it => /Eldritch Dreamtender/.test(it.label)),
@@ -1004,7 +1004,7 @@ test('R117 + R261: a Dreamtender in a NORMAL column hears only its OWN column da
   finishBattle(h);
 });
 
-test('R117: a Dreamtender in a {Swift} column fires in the Swift sub-step', () => {
+test('CR 608.9a: a Dreamtender in a {Swift} column fires in the Swift sub-step', () => {
   const h = new Harness(5291);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -1028,13 +1028,13 @@ test('R117: a Dreamtender in a {Swift} column fires in the Swift sub-step', () =
     '3 from the Swift column (2 + 1) and 1 from the normal one');
   assert.equal(dreamtenderTriggers(h), 1,
     'ONE announcement, in the Swift sub-step — the normal sub-step\'s lifeLost is not mine, '
-    + 'and R261 did not widen what a trigger HEARS, only when it resolves');
+    + 'and the after-combat hold (CR 608.9) did not widen what a trigger HEARS, only when it resolves');
   assert.equal(ent(h, dt), undefined,
-    'sacrificed for its own column\'s damage — after combat, not in the sub-step (R261)');
+    'sacrificed for its own column\'s damage — at the window after the Swift sub-step, not inside it (CR 608.9c)');
   finishBattle(h);
 });
 
-test('R117: a Dreamtender in a {Sluggish} column waits out BOTH earlier sub-steps', () => {
+test('CR 608.9a: a Dreamtender in a {Sluggish} column waits out BOTH earlier sub-steps', () => {
   const h = new Harness(5292);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -1055,13 +1055,13 @@ test('R117: a Dreamtender in a {Sluggish} column waits out BOTH earlier sub-step
   assert.equal(h.state.players[D]!.life, life0 - 4, '2 Swift + 1 normal + 1 Sluggish');
   assert.equal(dreamtenderTriggers(h), 1,
     'ONE announcement out of THREE aggregated lifeLost events — the sharpest form of the '
-    + 'measurement, and the only one of these three numbers R261 left able to fail');
+    + 'measurement, and the only one of these three numbers the after-combat hold left able to fail');
   assert.equal(ent(h, dt), undefined);
   finishBattle(h);
 });
 
-test('R117 threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step', () => {
-  // R61 collapses an attribute-blind exchange into the normal sub-step whatever
+test('CR 608.9a threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step', () => {
+  // CR 608.2d collapses an attribute-blind exchange into the normal sub-step whatever
   // the columns are printed with, and it is a property of the PAIRING, not of
   // either column — which is why `combatSubStepOf` reconstructs `pure` the way
   // `assignCombatDamage` does instead of reading the column's own attributes.
@@ -1085,10 +1085,10 @@ test('R117 threads {Pure}: a printed {Swift} column blocked by a Pure unit strik
   };
   assert.equal(subStepBlockedBy('Unit Token'), 'Swift', 'an ordinary blocker changes nothing');
   assert.equal(subStepBlockedBy('Just a Unit'), 'normal',
-    '{Pure} blinds the whole exchange to attributes, Swift included (R61)');
+    '{Pure} blinds the whole exchange to attributes, Swift included (CR 608.2d)');
 });
 
-test('R117: combatSubStepOf answers null for a unit that is not in a column', () => {
+test('CR 608.9a: combatSubStepOf answers null for a unit that is not in a column', () => {
   const h = new Harness(5294);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

@@ -3,7 +3,7 @@
  * writes `server/games/<code>.json` (`rooms.ts`) and everything that reads one
  * back (`rooms.ts`'s own restore, and `replay-room.ts`).
  *
- * WHY THIS FILE EXISTS (R181). `replay-room.ts` used to restate `Fork` and
+ * WHY THIS FILE EXISTS. `replay-room.ts` used to restate `Fork` and
  * `LostAction` structurally, with a comment explaining that it had to: its
  * canonical home is `rooms.ts`, but `rooms.ts` imports `ws` and pulls the whole
  * socket layer in behind it, and `engine/test/143` imports `replay-room.ts` —
@@ -20,7 +20,7 @@
 import type { Action, Seat } from '../engine/src/types.ts';
 
 /** One logged action a rebuild could not apply FAITHFULLY — it was refused,
- *  or (R191) it was accepted and came to mean something else. */
+ *  or it was accepted and came to mean something else. */
 export interface LostAction {
   /** index into the room's `actions` */
   i: number;
@@ -54,7 +54,7 @@ export interface Fork {
   turn: number;
   phase: string;
   /**
-   * R200: the engine that DID this rebuild — the one that refused the actions
+   * the engine that DID this rebuild (see replay-room.ts) — the one that refused the actions
    * in `lost`, and the one play then continued under.
    *
    * Restated here rather than living only in `VersionStamp` below, so a fork
@@ -64,13 +64,13 @@ export interface Fork {
    * `replay-room.ts` checks the two agree and says INCONSISTENT when they do
    * not, so the redundancy is guarded rather than merely duplicated.
    *
-   * Additive/optional — every file written before R200 lacks it.
+   * Additive/optional — every file written before replay versioning lacks it.
    */
   engineVersion?: string;
 }
 
 /**
- * R200 — one stretch of a game, and the engine it was recorded against.
+ * one stretch of a game, and the engine it was recorded against (see replay-room.ts).
  *
  * WHY A LIST AND NOT ONE FIELD. A forked file is not one game: the server
  * restarted onto a changed engine, rebuilt the room without the actions it

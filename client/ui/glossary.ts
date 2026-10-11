@@ -12,19 +12,19 @@
  * {Deadly} until regroup" or a ruling that turns on what "trashed" means is
  * unreadable if the reminder text lives behind another button.
  *
- * ⚠ THIS FILE IS A RULES DOCUMENT, NOT UI COPY (R206 / CT-80, 2026-08-26).
+ * ⚠ THIS FILE IS A RULES DOCUMENT, NOT UI COPY (CT-80, 2026-08-26).
  * TEN of the 25 attributes here carry NO printed reminder anywhere in the
  * pool — {Evasive}, {Sneaky}, {Alluring}, {Tough}, {Vulnerable}, {Feeble},
  * {Resonant}, {Thieving}, {Reaping}, {Unaware} — and neither do the four
- * printed markers {Burst}, {Virus}, {Ambush} and {Unstable}. R252 later found
+ * printed markers {Burst}, {Virus}, {Ambush} and {Unstable}. The manual channel (CR D6.11) later found
  * three of those four in the MANUAL; the ten attributes and {Unstable} are in
  * neither channel, so for them the row below is the ONLY statement of the rule
  * the repository has, and for the other three it is still the only COMPLETE
  * one — the manual's sentence is shorter than the rule. `engine.ts` says
  * so in as many words on {Reaping}: "none of the four cards carries a reminder at all.
- * ui/glossary.ts is the repo's own statement of it, AND IT IS WHAT R184
+ * ui/glossary.ts is the repo's own statement of it, AND IT IS WHAT […]
  * READ." A wrong row is therefore a rules bug. FIFTEEN of the 43 rows were
- * wrong when R206 read all of them against the engine — 35%, against the
+ * wrong when the 2026-08-26 audit read all of them against the engine — 35%, against the
  * four the ticket had found — and FIVE of the fifteen were on a list that
  * said they had already been checked, so "somebody looked at it" is not
  * evidence. `test/177-glossary-conformance.test.ts` is what stands between
@@ -33,14 +33,14 @@
  * Two standing rules for editing a row:
  *   1. PRINTED TEXT WINS. Where a card prints a reminder and this file
  *      disagrees, the card is right — that is how the Glimpse bug (report
- *      #106, R190) and the Piercing bug (R206) both went. 177 enforces it
+ *      #106) and the Piercing bug (CT-80) both went. 177 enforces it
  *      mechanically for the 15 attributes that carry a printed reminder.
- *   2. CITE THE RULING. Every row carries `ruling`, and 177 checks the
- *      citation RESOLVES to a live `## R<n>` in docs/digital-rules.md — a
- *      withdrawn, superseded or narrowed ruling fails, which is what would
- *      have caught {Unaware} still teaching R10 three days after R106.
+ *   2. CITE THE RULE. Every row carries `cites`, and 177 checks each rule key
+ *      in it names a LIVE comprehensive rule — a removed or unknown one fails,
+ *      which is what would have caught {Unaware} still teaching a replaced
+ *      reading three days after the owner replaced it.
  *
- * ── R248 / report #118: what a PLAYER reads, and what the REPO states ──
+ * ── CR D6.11 / report #118: what a PLAYER reads, and what the REPO states ──
  *
  * Report #118 (Bena, room YFUE, 2026-08-28): *"the reminders in the 'Rules'
  * page and under units is too verbose and includes R references, which aren't
@@ -49,8 +49,8 @@
  * example."*
  *
  * Both halves are true and they pull opposite ways. {Piercing} really IS
- * edited on purpose — R13/R103/R114 generalised the attribute off the combat
- * column onto all damage, and the row says so — while the printed card says
+ * edited on purpose — the attribute is generalised off the combat column
+ * onto all damage (CR 802.16j), and the row says so — while the printed card says
  * one sentence. Deleting the generalisation to satisfy the report would be a
  * rules bug of exactly the kind the paragraph above is about. So the row is
  * SPLIT rather than shortened, and the split is DERIVED:
@@ -63,7 +63,7 @@
  *                                 POOL prints a reminder for the term, `text`
  *                                 becomes that reminder VERBATIM and the
  *                                 authored sentence moves to `rule`; failing
- *                                 that, R252 does the same with the MANUAL's
+ *                                 that, CR D6.11 does the same with the MANUAL's
  *                                 sentence. Where neither speaks, nothing
  *                                 moves, because there is nothing to move
  *                                 it to.
@@ -75,13 +75,13 @@
  * the printed sentence for free; ui/cardpanel.ts also prints `rule` under it,
  * because the card browser is the surface you go to to look something up.
  *
- * ── R252 / report #119: the MANUAL is the second channel ──
+ * ── CR D6.11 / report #119: the MANUAL is the second channel ──
  *
- * R248 answered the report for the fifteen rows a card reminds you about. The
+ * The printed-reminder swap answered the report for the fifteen rows a card reminds you about. The
  * owner then read the card browser again (Aetherflux Golem) and objected to
  * the two rows underneath it — {Virus} and {Augment} — verbatim: *"That text
  * for 'Virus' and 'Augment' is OUR text. Not the games."* Both are among the
- * rows the pool prints NOTHING for, so R248's swap had left the repository's
+ * rows the pool prints NOTHING for, so that swap had left the repository's
  * own generalisation on screen, which is precisely what the report is about.
  *
  * So there is a second source, and it is the game's own rules document:
@@ -102,13 +102,13 @@
  * glossary at all — p.24 says only that attributes "have a reminder text in
  * italics" and delegates to the cards — so TWENTY-ONE rows have no entry in it
  * and keep their authored sentence as the only statement of the rule this repo
- * has (R206 / CT-80). Fourteen of those are not in the manual under any
+ * has (CT-80). Fourteen of those are not in the manual under any
  * spelling; test/231-manual-text.test.ts pins the count of manual occurrences
  * for the rest, so a row that becomes extractable later stops being invisible.
  *
- * ⚠ `ruling` IS MACHINERY, NOT COPY. It exists so 177 can prove a citation
- * still resolves; an R-number means nothing to anyone outside this repo. No
- * renderer may print it, and no `text`/`rule` may contain one —
+ * ⚠ `cites` IS MACHINERY, NOT COPY. It exists so 177 can prove a citation
+ * still resolves; a rule key means nothing to a player. No renderer may print
+ * it, and no `text`/`rule` may contain a rule number —
  * test/227-reminder-text.test.ts derives both guards rather than listing
  * places, because the {Haste} row carried "(R224)" and "(R236)" in its own
  * prose for a day and every renderer dutifully showed them.
@@ -119,13 +119,13 @@ import manualJson from './manual-reminders.json' with { type: 'json' };
 import libraryJson from './card-library-reminders.json' with { type: 'json' };
 import scanJson from './scan-reminders.json' with { type: 'json' };
 
-/** Where a row's sentence comes from. `R<n>` must resolve to a LIVE ruling in
- * docs/digital-rules.md (177 checks it); `'printed'` may only be claimed when
+/** Where a row's sentence comes from. A rule key (`attr.piercing.excess`) must
+ * name a LIVE comprehensive rule (177 checks it); `'printed'` may only be claimed when
  * the term really carries a printed reminder in printed.json (177 derives that
  * from the pool, so it cannot be used as an escape hatch); the rest are the
  * upstream documents, and 177 pins by name the short list of rows that rest on
  * nothing else. */
-export type GlossSource = `R${number}` | 'printed' | 'Rulebook' | 'Manual'
+export type GlossSource = `${string}.${string}` | 'printed' | 'Rulebook' | 'Manual'
   | 'CardLibrary' | 'docs/08';
 
 export interface GlossEntry {
@@ -133,7 +133,7 @@ export interface GlossEntry {
   term: string;
   /**
    * The reminder text — and WHICH reminder depends on which table you are
-   * holding (R248, above).
+   * holding (CR D6.11, above).
    *
    * In the AUTHORED tables below it is the complete rule, which is what every
    * comment in this file, `177-glossary-conformance.test.ts` and
@@ -154,39 +154,38 @@ export interface GlossEntry {
    * printed sentence stays in `text`, and the rules reference shows it.
    */
   short?: string;
-  /** R206/CT-76: where this sentence comes from. NOT decoration — every
-   * `R<n>` here is asserted to resolve to a ruling that has not been
-   * withdrawn, superseded or narrowed. Historical R-numbers (the ruling this
-   * row USED to state) belong in a comment, never here.
+  /** CT-76: where this sentence comes from. NOT decoration — every rule key
+   * here is asserted to name a live comprehensive rule. A rule this row USED
+   * to state belongs in a comment, never here.
    *
    * ⚠ OPTIONAL IN THE TYPE, MANDATORY IN FACT. Two callers build a synthetic
    * GlossEntry that is not a glossary row and has no rule behind it —
    * `ui/inspect.ts`'s `matcherFor({ term, text: '' })` and `ui/main.ts`'s
    * "see the rules reference" fallback — so requiring it here would only
-   * teach those two to write `ruling: []`, which is worse than nothing. The
+   * teach those two to write `cites: []`, which is worse than nothing. The
    * obligation is enforced where it can actually bite, over the REAL table:
    * `177-glossary-conformance.test.ts` fails on any GLOSSARY row without one. */
-  ruling?: readonly GlossSource[];
+  cites?: readonly GlossSource[];
   /** other spellings the printed text and the rulings corpus actually use */
   alt?: string[];
   /** override the generated matcher entirely — for terms that are also
    * ordinary English and would otherwise fire on every third sentence */
   re?: RegExp;
   /**
-   * R248: the repository's COMPLETE statement of the rule, present on an
-   * exported row only when the reminder in `text` — printed (R248) or from the
-   * manual (R252) — is narrower than it. Never authored by hand: `asShown`
+   * CR D6.11: the repository's COMPLETE statement of the rule, present on an
+   * exported row only when the reminder in `text` — printed or from the
+   * manual — is narrower than it. Never authored by hand: `asShown`
    * moves it here so that shortening what a player reads can never be the same
    * edit as deleting a rule.
    */
   rule?: string;
-  /** R248: the card whose printed reminder `text` was taken from */
+  /** CR D6.11: the card whose printed reminder `text` was taken from */
   printedOn?: string;
-  /** R267: which posted card `text` was taken from, as a reader would look it
+  /** CR D6.11: which posted card `text` was taken from, as a reader would look it
    * up — `"Rot Counter (the designer's own $card bot library, 2026-01-15)"`.
    * Set only when neither the pool nor the manual supplied the sentence. */
   libraryOn?: string;
-  /** R252: where in the Algomancy Manual `text` was taken from, as a reader
+  /** CR D6.11: where in the Algomancy Manual `text` was taken from, as a reader
    * would look it up — `"AUGMENT (Modifications, p.32)"`. Set only when the
    * manual supplied the sentence, which happens only when no card prints one. */
   manualOn?: string;
@@ -194,56 +193,56 @@ export interface GlossEntry {
 
 /** attributes and the named mechanics that behave like them */
 const KEYWORD_RULES: GlossEntry[] = [
-  { term: 'Flying', ruling: ['printed', 'Rulebook'], text: 'Its column can only be blocked by a column with Flying.' },
-  { term: 'Evasive', ruling: ['Rulebook'], text: 'Needs two blockers — a single unit cannot block it.' },
-  { term: 'Sneaky', ruling: ['R20'], text: 'If it is the only attacking unit, it cannot be blocked at all.' },
-  // R84 (2026-08-22): it TARGETS. The old wording here — "defenders that are
+  { term: 'Flying', cites: ['printed', 'Rulebook'], text: 'Its column can only be blocked by a column with Flying.' },
+  { term: 'Evasive', cites: ['Rulebook'], text: 'Needs two blockers — a single unit cannot block it.' },
+  { term: 'Sneaky', cites: ['attr.sneaky.alone'], text: 'If it is the only attacking unit, it cannot be blocked at all.' },
+  // CR 802.15a (2026-08-22): it TARGETS. The old wording here — "defenders that are
   // able to block it must block it" — was a rule nobody ever gave.
-  { term: 'Alluring', short: 'Attacking targets one enemy unit: it cannot attack or counterattack this battle, and must block this column if able.', ruling: ['R84'], text: 'Attacking with its column targets one enemy unit, from the stack: that unit cannot attack or counterattack for the rest of the battle, and must block this column if able.' },
-  // R206 (2026-08-26), CT-80 (b) — THE GLIMPSE SHAPE AGAIN: the printed card
+  { term: 'Alluring', short: 'Attacking targets one enemy unit: it cannot attack or counterattack this battle, and must block this column if able.', cites: ['attr.alluring'], text: 'Attacking with its column targets one enemy unit, from the stack: that unit cannot attack or counterattack for the rest of the battle, and must block this column if able.' },
+  // CT-80 (b), 2026-08-26 — THE GLIMPSE SHAPE AGAIN: the printed card
   // was right and this row was behind it. Protective Adaptations and
   // Pernicious Photosynthesis both print "Excess damage from piercing sources
   // is dealt to the RECIPIENT'S CONTROLLER"; this row said "its BLOCKED
-  // COLUMN" → "the DEFENDING PLAYER", which is wrong twice over. R103
-  // generalised the attribute off the column onto ALL damage (engine.ts:4085
+  // COLUMN" → "the DEFENDING PLAYER", which is wrong twice over. The attribute
+  // was generalised (CR 802.16j) off the column onto ALL damage (engine.ts:4085
   // -4119, on the owner's "piercing is done even when its on a non-combat
   // effect"), and combat's own blocker branch (engine.ts:10102) pierces into
   // the ATTACKING player. 177 now derives this row's obligation from the two
   // printed reminders, so the card can never get ahead of it again.
-  { term: 'Piercing', ruling: ['R13', 'R103', 'R114', 'R319', 'R340', 'printed'], text: 'Excess damage from a piercing source is dealt to the recipient’s controller, as part of the same damage, never as a separate trigger. Once each unit has been given lethal, the dealing player may keep any of the excess on the units instead. In combat that is the player behind the blocked column; a piercing BLOCKER pierces into the attacking player; and it works on non-combat damage too.' },
-  // R206, CT-80 (e): the row said "an adjacent unit" and stopped. The engine
+  { term: 'Piercing', cites: ['attr.piercing.dead-block', 'attr.piercing.noncombat', 'attr.piercing', 'attr.piercing.elective', 'printed'], text: 'Excess damage from a piercing source is dealt to the recipient’s controller, as part of the same damage, never as a separate trigger. Once each unit has been given lethal, the dealing player may keep any of the excess on the units instead. In combat that is the player behind the blocked column; a piercing BLOCKER pierces into the attacking player; and it works on non-combat damage too.' },
+  // CR 802.17a, CT-80 (e): the row said "an adjacent unit" and stopped. The engine
   // walks a `visited` chain (engine.ts:4123-4160) and Envoy of Lightning's
   // PRINTED reminder names the recursion outright — "can be directed to an
   // adjacent unit, RECURSIVELY". Printed text wins.
-  { term: 'Electric', ruling: ['R4', 'printed'], text: 'Excess damage is directed to an adjacent unit in the formation, recursively: each unit absorbs only enough to destroy it and the rest walks on to a fresh neighbour, never revisiting one. The controller picks the path. When the chain runs out the excess is lost — unless the source is also {Piercing}, which sends it to that unit’s controller.' },
-  { term: 'Deadly', ruling: ['R21', 'printed'], text: 'Any amount of damage it deals destroys the damaged unit.' },
-  { term: 'Swift', ruling: ['R117', 'printed'], text: 'Its column deals combat damage first, before normal units; triggers from that damage resolve before normal damage.' },
-  { term: 'Sluggish', ruling: ['R117', 'printed'], text: 'Its column deals combat damage last, after normal units.' },
-  { term: 'Tough', ruling: ['R19', 'Rulebook'], text: 'Its defense is doubled.' },
-  { term: 'Balanced', ruling: ['R19', 'printed'], text: 'Its power and defense each become the greater of the two.' },
-  { term: 'Powerful', ruling: ['R23', 'printed'], text: 'It deals double damage.' },
-  { term: 'Vulnerable', ruling: ['R23'], text: 'It takes double damage.' },
-  // R206, CT-80 (g): "It cannot block." — full stop — omitted the exception
+  { term: 'Electric', cites: ['attr.electric', 'printed'], text: 'Excess damage is directed to an adjacent unit in the formation, recursively: each unit absorbs only enough to destroy it and the rest walks on to a fresh neighbour, never revisiting one. The controller picks the path. When the chain runs out the excess is lost — unless the source is also {Piercing}, which sends it to that unit’s controller.' },
+  { term: 'Deadly', cites: ['attr.deadly.any-amount', 'printed'], text: 'Any amount of damage it deals destroys the damaged unit.' },
+  { term: 'Swift', cites: ['attr.swift.split', 'printed'], text: 'Its column deals combat damage first, before normal units; triggers from that damage resolve before normal damage.' },
+  { term: 'Sluggish', cites: ['combat.damage.substeps.schedule', 'printed'], text: 'Its column deals combat damage last, after normal units.' },
+  { term: 'Tough', cites: ['attr.tough', 'Rulebook'], text: 'Its defense is doubled.' },
+  { term: 'Balanced', cites: ['attr.balanced', 'printed'], text: 'Its power and defense each become the greater of the two.' },
+  { term: 'Powerful', cites: ['attr.powerful', 'printed'], text: 'It deals double damage.' },
+  { term: 'Vulnerable', cites: ['attr.vulnerable'], text: 'It takes double damage.' },
+  // CR 802.12b, CT-80 (g): "It cannot block." — full stop — omitted the exception
   // the engine implements at BOTH block sites, apply.ts:1662 and apply.ts:1902
-  // ("R61: a Pure card ignores its OWN other attributes too, so Pure+Feeble
+  // ("[…] a Pure card ignores its OWN other attributes too, so Pure+Feeble
   // blocks"). An omission is a wrong row: {Feeble} carries no printed
   // reminder, so this sentence was the whole rule.
-  { term: 'Feeble', ruling: ['R61', 'Rulebook'], text: 'It cannot block — unless it is also {Pure}, which switches off its own other attributes, this one included.' },
-  { term: 'Poisonous', ruling: ['printed'], text: 'Damage it deals becomes permanent −1/−1 counters instead of marked damage.' },
-  { term: 'Resonant', ruling: ['docs/08'], text: 'When it damages a unit, that unit’s controller also loses that much life.' },
-  { term: 'Thieving', ruling: ['R24'], text: 'When its column deals combat damage to a player, its controller draws a card.' },
+  { term: 'Feeble', cites: ['attr.feeble.pure', 'Rulebook'], text: 'It cannot block — unless it is also {Pure}, which switches off its own other attributes, this one included.' },
+  { term: 'Poisonous', cites: ['printed'], text: 'Damage it deals becomes permanent −1/−1 counters instead of marked damage.' },
+  { term: 'Resonant', cites: ['docs/08'], text: 'When it damages a unit, that unit’s controller also loses that much life.' },
+  { term: 'Thieving', cites: ['attr.thieving'], text: 'When its column deals combat damage to a player, its controller draws a card.' },
   // ⚠ DO NOT REWORD WITHOUT READING 156-reaping-and-formation.test.ts. This
   // row is the repo's only statement of {Reaping} — none of its four cards
   // prints a reminder — and 156 DERIVES `E.KILL_RIDERS` by scraping the word
   // "kills … unit" out of it. Losing that phrasing silently changes which
   // attributes ride the kill diff.
-  { term: 'Reaping', ruling: ['R184'], text: 'When it kills a unit, its controller draws a card.' },
-  { term: 'Inverted', ruling: ['R93', 'printed'], text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7). Base stats and base rewrites are what it inverts FROM, so they never move; it applies once however many sources granted it.' },
-  // R206, CT-80 (c): this row carried R10's 2026-07-16 wording — "everything
-  // counts as interacting with it" — which R106 replaced on 2026-08-23 and
-  // which never stated the operative rule at all. R10's own "everything"
-  // included TARGETING, which R106 deliberately does NOT implement
-  // (digital-rules.md:5645-5656), so the row was teaching a rule the engine
+  { term: 'Reaping', cites: ['attr.reaping'], text: 'When it kills a unit, its controller draws a card.' },
+  { term: 'Inverted', cites: ['attr.inverted.net', 'printed'], text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7). Base stats and base rewrites are what it inverts FROM, so they never move; it applies once however many sources granted it.' },
+  // CT-80 (c): this row carried the first Unaware ruling's 2026-07-16 wording — "everything
+  // counts as interacting with it" — which the Unaware ruling replaced on 2026-08-23 and
+  // which never stated the operative rule at all. That ruling's own "everything"
+  // included TARGETING, which the Unaware ruling deliberately does NOT implement
+  // (the retired ruling register), so the row was teaching a rule the engine
   // refuses. The rule is a STAT LAYER: engine.ts:1536 `if
   // (statAttrs.includes('Unaware')) return this.printedStats(e)`, and the
   // pairwise half at engine.ts:3976-3977 collapses BOTH sides. Column-shared
@@ -251,56 +250,56 @@ const KEYWORD_RULES: GlossEntry[] = [
   // standing beside Bubb matters.
   // what a player reads is Bubb's printed sentence (`withScanShort` below);
   // `text` is the repo's full statement of the rule
-  { term: 'Unaware', ruling: ['R106'],   // CT-171: R19 dropped — it never names Unaware,
-    // is about application ORDER, and flags its own content as an engine reading.
+  { term: 'Unaware', cites: ['attr.unaware'],   // CT-171: the layer-order citation was dropped — it never names Unaware, is about application ORDER and flags its own content as an engine reading.
     text: 'When dealing or receiving damage, and in combat, an unaware card AND everything else in that interaction are read at the stats PRINTED on their cards — counters, base rewrites, buffs and stat attributes on either side are all ignored, on both sides. So a 0/0 token wearing twenty +1/+1 counters deals nothing and dies to it, and an unaware unit under a hundred −1/−1 counters is untouched. Shared down the column, so a plain unit beside it reads that way too. You can still target it normally — a Poison 6 will put its six counters on, they just do nothing.' },
-  // R81 (2026-08-22): the group is the tokens of the SAME NAME, not every
+  // CR 803.5a (2026-08-22): the group is the tokens of the SAME NAME, not every
   // burst token you control there.
-  { term: 'Burst', ruling: ['R16', 'R81', 'Manual'], text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
-  // R79 (2026-08-22): a spell carrying a virus is Unstable too, and a spell's
+  { term: 'Burst', cites: ['keywords.abilities.burst', 'types.tokens.spell-tokens.burst', 'Manual'], text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
+  // CR 803.8f (2026-08-22): a spell carrying a virus is Unstable too, and a spell's
   // way out of the game is the stack rather than a death.
-  // R137 (2026-08-24): a dying UNIT is trashed on the way — it passes through
+  // In the engine (2026-08-24) a dying {Unstable} UNIT is trashed on the way — it passes through
   // the bin (firing "when I am trashed" and every trash watcher) and is erased
-  // out of it, exactly as a dying token is. A spell leaving the STACK is not
-  // trashed, because nothing coming from the stack ever is (R40).
-  // R206, CT-80: two corrections. (1) the row said "a modded card" and stopped,
-  // but `isUnstable` (engine.ts:1272-1275) has FOUR ways in — mods, R96's
+  // out of it; CR 801.2h says it is erased instead and not trashed (CT-246). A spell leaving the STACK is not
+  // trashed, because nothing coming from the stack ever is (CR 801.2b).
+  // CT-80: two corrections. (1) the row said "a modded card" and stopped,
+  // but `isUnstable` (engine.ts:1272-1275) has FOUR ways in — mods, CR 803.8d's
   // until-regroup stamp, the PRINTED {Unstable} type line (Aberrant
   // Statweaver, Oorblak) and being a copy of something modded — and the row
   // heading a KEYWORDS section for a printed attribute never once said a card
-  // can simply print it. (2) it stated the erase unconditionally; R145 scopes
+  // can simply print it. (2) it stated the erase unconditionally; CR 803.8a scopes
   // it to the ACTIVE ZONES. Hand, deck, bin, cache and the erased pile are
   // INACTIVE, so a card leaving one of those for a bin bins normally, printed
   // {Unstable} or not (engine.ts:1279-1292).
-  { term: 'Unstable', ruling: ['R69', 'R96', 'R137', 'R145', 'printed'], text: 'A card is unstable if it prints the attribute, if it carries mods, or if something stamped it. Leaving an ACTIVE zone — play or the stack — for a bin, it is erased with its mods instead of resting there; leaving hand, deck, bin or cache it bins normally. A unit that dies still passes through the bin first, so it is trashed on the way; a spell leaving the stack carrying a virus is erased without ever being trashed.' },
-  // R206, CT-80 (d) — WRONG IN BOTH DIRECTIONS, and the widest-reaching row of
+  { term: 'Unstable', cites: ['keywords.abilities.unstable', 'keywords.abilities.unstable.granted', 'zones.bin.unstable', 'printed'], text: 'A card is unstable if it prints the attribute, if it carries mods, or if something stamped it. Leaving an ACTIVE zone — play or the stack — for a bin, it is erased with its mods instead of resting there; leaving hand, deck, bin or cache it bins normally. A unit that dies still passes through the bin first, so it is trashed on the way; a spell leaving the stack carrying a virus is erased without ever being trashed.' },
+  // CT-80 (d) — WRONG IN BOTH DIRECTIONS, and the widest-reaching row of
   // the seven: 64 cards mention Virus. It INVENTED a restriction (the battle
   // branch, apply.ts:1412-1418, checks priority and region and NEVER
-  // `host.controller` — R157 §26, owner verbatim: "yes it can also go to an
+  // `host.controller` — CR 723.5a, owner verbatim: "yes it can also go to an
   // enemy. That's the whole point of the card") and OMITTED the real one
   // (`battleAugmentAllowed`, apply.ts:1262-1265, is `c.virus && from ===
   // 'hand'` — a virus in your BIN is not a battle-time augment unless
   // something grants it).
-  { term: 'Virus', ruling: ['R79', 'R95', 'R161', 'R311', 'Manual'], text: 'The one card you may augment DURING BATTLE, out of your hand or a cache card you may play: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
-  // R267: was ['R22', 'Manual']. R252 §1 took the manual's sentence without
-  // asking whether a card printed one; six do, and R252's own PRINTED BEATS
+  { term: 'Virus', cites: ['effects.virus.spell-host', 'effects.virus.permission', 'effects.virus.permission.confers', 'effects.virus.battle.cache', 'Manual'], text: 'The one card you may augment DURING BATTLE, out of your hand or a cache card you may play: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
+  // CR D6.11: this row once cited the Ambush rule and the Manual. The manual
+  // channel took the manual's sentence without asking whether a card printed
+  // one; six do, and its own PRINTED BEATS
   // MANUAL hands it to them. The manual's entry is deleted from
   // manual-reminders.json in the same change, not left as a second answer.
-  { term: 'Ambush', ruling: ['R22', 'printed'], text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
+  { term: 'Ambush', cites: ['keywords.abilities.ambush', 'printed'], text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
   // Light & Dark (docs/08). Kept here so the card inspector can explain them
   // instead of falling back to "see the rules reference".
-  { term: 'Blessed', ruling: ['R48', 'printed'], text: 'Damage dealt by a blessed source makes its controller gain that much life — simultaneously, so it applies before the lethal check.' },
+  { term: 'Blessed', cites: ['attr.blessed.simultaneous', 'printed'], text: 'Damage dealt by a blessed source makes its controller gain that much life — simultaneously, so it applies before the lethal check.' },
   // ⚠ "kills one or more units" is load-bearing: 156-reaping-and-formation
-  // derives E.KILL_RIDERS from this phrasing. R206 widened only the HOW —
-  // R184's diff catches any death the source caused (counters, stat swaps,
+  // derives E.KILL_RIDERS from this phrasing. The audit widened only the HOW —
+  // the engine's kill diff (CR 802.21b) catches any death the source caused (counters, stat swaps,
   // delete effects), not just the two the row happened to list.
-  { term: 'Afflicting', ruling: ['R48', 'R184', 'printed'], text: 'When an afflicting source kills one or more units — however it killed them: damage, −1/−1 counters, a stat swap, an outright delete — those units’ controllers each gain a rot. One rot per controller, however many of their units died.' },
-  { term: 'Lethal', ruling: ['printed'], text: 'Any combat damage from a lethal unit kills a player outright.' },
-  { term: 'Modular', ruling: ['R105', 'printed'], text: 'You may apply mods from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.' },
-  // R61 (2026-08-20) implemented the combat half; this entry still said the
+  { term: 'Afflicting', cites: ['attr.afflicting.any-kill', 'printed'], text: 'When an afflicting source kills one or more units — however it killed them: damage, −1/−1 counters, a stat swap, an outright delete — those units’ controllers each gain a rot. One rot per controller, however many of their units died.' },
+  { term: 'Lethal', cites: ['printed'], text: 'Any combat damage from a lethal unit kills a player outright.' },
+  { term: 'Modular', cites: ['effects.modular.any-card', 'printed'], text: 'You may apply mods from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.' },
+  // The combat half was implemented on 2026-08-20; this entry still said the
   // attribute did nothing at all.
   //
-  // R206, CT-80 (f) — AND THIS ROW WAS ON CT-80's OWN "checked and correct, do
+  // CT-80 (f) — AND THIS ROW WAS ON CT-80's OWN "checked and correct, do
   // not re-audit" LIST. It named three attributes. The engine empties the
   // WHOLE set: engine.ts:9887 `const attrsOf = (ids) => pure ? new
   // Set<string>() : this.colAttrs(ids)`. Its own docstring (engine.ts:1818)
@@ -309,24 +308,24 @@ const KEYWORD_RULES: GlossEntry[] = [
   // Just a Unit says "ignore all OTHER ATTRIBUTES" with no list, so printed
   // text was right and the enumeration was ours. Never enumerate a closed
   // list here — 177 asserts this row does not.
-  { term: 'Pure', ruling: ['R61', 'R289', 'printed'], text: 'A Pure card and whatever it interacts with ignore ALL other attributes — the entire set, for both sides of the exchange, its own included. In combat: a Pure {Feeble} unit blocks, and evasion, {Piercing}, {Deadly}, {Powerful} and {Swift} all stop applying. Outside combat the same switch applies to each effect and each thing it hits: a Pure spell or ability deals plain damage, and a Pure unit takes plain damage — {Powerful}, {Deadly}, {Piercing}, {Poisonous}, {Unaware} and its own {Vulnerable} all stop applying. Stat layers are untouched — {Tough}, {Balanced} and {Inverted} still read.' },
+  { term: 'Pure', cites: ['attr.pure', 'attr.general.pure', 'attr.pure.own', 'printed'], text: 'A Pure card and whatever it interacts with ignore ALL other attributes — the entire set, for both sides of the exchange, its own included. In combat: a Pure {Feeble} unit blocks, and evasion, {Piercing}, {Deadly}, {Powerful} and {Swift} all stop applying. Outside combat the same switch applies to each effect and each thing it hits: a Pure spell or ability deals plain damage, and a Pure unit takes plain damage — {Powerful}, {Deadly}, {Piercing}, {Poisonous}, {Unaware} and its own {Vulnerable} all stop applying. Stat layers are untouched — {Tough}, {Balanced} and {Inverted} still read.' },
 ];
 
 /** the Light & Dark zone/counter concepts */
 const EXPANSION_RULES: GlossEntry[] = [
   {
-    term: 'Rot', short: 'At the start of deployment you take damage equal to your rot. It never goes away.', ruling: ['R38', 'CardLibrary'],
+    term: 'Rot', short: 'At the start of deployment you take damage equal to your rot. It never goes away.', cites: ['concepts.rot', 'CardLibrary'],
     text: 'A counter on the PLAYER. At the start of every deployment you take damage equal to your rot. It never decreases on its own.',
   },
   {
-    term: 'Debt', short: 'At the end of each of your resource steps, pay 1 mana per debt. Unpaid debt carries over.', ruling: ['R39'],
+    term: 'Debt', short: 'At the end of each of your resource steps, pay 1 mana per debt. Unpaid debt carries over.', cites: ['concepts.debt'],
     text: 'A counter on the PLAYER. At the very end of every one of your resource steps you must pay 1 mana per debt; each mana removes one. Anything you cannot pay simply carries over to be charged again, and the mana spent is gone for the turn — there is no other penalty.',
   },
   {
-    term: 'Cache', short: 'A public zone beside your hand. A card here is usable only while an effect allows it — playing, augmenting and grafting alike.', alt: ['cached'], ruling: ['R41', 'R42', 'R45', 'R303'],
+    term: 'Cache', short: 'A public zone beside your hand. A card here is usable only while an effect allows it — playing, augmenting and grafting alike.', alt: ['cached'], cites: ['zones.cache.public', 'zones.cache.no-permission.live', 'zones.cache.no-permission.like-hand'],
     text: 'A zone of its own beside hand, bin and deck — and a PUBLIC one: you both see every cached card and the prophecy attached to it. Cards sit there indefinitely; being cached is not permission to use one. A fulfilled prophecy or a glimpse this turn is, and it covers playing, augmenting and grafting alike — once it lapses the card is inert. You can still target a cached card.',
   },
-  // R206, CT-80: "normal timing still applies" was flatly false for a banner
+  // CT-80: "normal timing still applies" was flatly false for a banner
   // ending in [Haste]. `cachedTiming` (engine.ts:2801-2806) returns the
   // BANNER's release timing in preference to the card's own, and
   // `startHasteStep` opens a step for it (engine.ts:10650-10656) — Divine
@@ -334,10 +333,10 @@ const EXPANSION_RULES: GlossEntry[] = [
   // missing too: hand only, unless the card prints that it may be prophesied
   // from a bin (apply.ts:780, Angel of Anguish).
   //
-  // ⚠ R279 / CT-166 (report #152) PUTS THAT SENTENCE BACK, and the round-34
-  // lesson is worth reading before the next person "corrects" it again: R206
+  // ⚠ CT-166 (report #152, CR 803.7i) PUTS THAT SENTENCE BACK, and the round-34
+  // lesson is worth reading before the next person "corrects" it again: the 2026-08-26 audit
   // rewrote this row TO MATCH THE ENGINE, and the engine was the thing that
-  // was wrong. R42 says in so many words that on release "normal TIMING still
+  // was wrong. The prophecy ruling (now CR 803.7i) said in so many words that on release "normal TIMING still
   // applies, since it is played as if it were in your hand"; `cachedTiming`
   // overrode it, and the override cost the owner a game — a fulfilled, free
   // Divine Intervention sat in cache through two lethal Fireballs because the
@@ -348,56 +347,55 @@ const EXPANSION_RULES: GlossEntry[] = [
   //
   // What the marker really does is the other half, CT-167 and the owner's own
   // words — *"Divine Intervention can be Prophecied during the haste step.
-  // That is why it has that symbol."* R42 allows prophesying only in
+  // That is why it has that symbol."* CR 803.7b allows prophesying only in
   // deployment; a [Haste] in the printed CONDITION is that card's exception to
   // it. So the marker widens the window in which you may CACHE the card, and
   // says nothing about when you may play it.
   {
     term: 'Prophecy', short: 'In deployment, pay the banner cost to cache it with its condition. Once met, play it free, ignoring affinity.', alt: ['prophesy', 'prophesied', 'prophesies'],
-    ruling: ['R42', 'R43', 'R44', 'R111', 'R277'],
+    cites: ['keywords.abilities.prophecy', 'keywords.abilities.prophecy.latch', 'keywords.abilities.prophecy.x', 'keywords.abilities.prophecy.release-timing'],
     text: 'During DEPLOYMENT, pay a card’s banner cost — mana, and the affinity it shows — out of your hand, or your bin if the card says it may be, to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. The condition counts forward from the moment you prophesy, so you cannot cache a card whose condition is already true and play it at once. Once it has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — an X spell released this way is played for X = 0. It is played as if it were in your hand, so the card’s own printed timing still applies.',
   },
-  // R190 (2026-08-26), report #106 — "the reminder text for Glimpsing is wrong,
+  // 2026-08-26, report #106 — "the reminder text for Glimpsing is wrong,
   // it does not mention that the other cards not chosen are recycled". THIS
   // entry is the reminder text a player reads: the inspector prints it under
-  // every card whose text says Glimpse. It still described R45 as it read
-  // BEFORE the 2026-08-19 correction ("cache them", all N) and never mentioned
+  // every card whose text says Glimpse. It still described the glimpse rule as it read before its 2026-08-19 correction ("cache them", all N) and never mentioned
   // the recycle at all — so it contradicted E.glimpse, and it contradicted the
   // four cards that print "Recycle the rest" in the panel directly above it.
-  // Reworded off R45 as corrected and off what E.glimpse actually does.
+  // Reworded off the corrected glimpse rule (CR 801.9) and off what E.glimpse actually does.
   {
-    // R267: four cards print a reminder for this row and the scan could not
-    // see any of them — the span never repeats the word "Glimpse". R206/CT-80
+    // CR D6.11: four cards print a reminder for this row and the scan could not
+    // see any of them — the span never repeats the word "Glimpse". CT-80
     // named the failure mode "THE GLIMPSE SHAPE" (the printed card is ahead of
     // the row); the {Glimpse} row was an instance of it for three rounds.
-    term: 'Glimpse', short: 'Reveal cards from the deck and cache one. Until end of turn, you may play it.', ruling: ['R45', 'R190', 'printed'],
+    term: 'Glimpse', short: 'Reveal cards from the deck and cache one. Until end of turn, you may play it.', cites: ['keywords.actions.glimpse', 'printed'],
     text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled — past the mark, into the recycle pile, not back onto the part of the deck you are drawing from. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
   },
-  // R306 (2026-09-28): tokens are NOT trashed — R133's "tokens are trashed"
+  // CR 801.2d (2026-09-28): tokens are NOT trashed — the earlier ruling's "tokens are trashed"
   // was withdrawn by the owner. The token check lives in `E.noteTrashed`.
-  // History, R206, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
+  // History, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
   // (engine.ts:1950-1954) has no token check at all, and its docstring
   // (engine.ts:1965-1972) says why: "trashing is defined by WHERE something
-  // goes, not by what it is". R133 records that the one printed "nontoken"
+  // goes, not by what it is". The owner's ruling that tokens are not cards (now CR 108.2a) records that the one printed "nontoken"
   // wording came from Void Scavenger, A CARD CUT FROM THE SET — so the row was
   // quoting a card that does not exist against an engine that never agreed.
   // Reach: 14 cards. 177 re-derives this from `toBin`'s own body.
   {
-    term: 'Trash', short: 'A card entering a bin from anywhere but the stack is trashed: discarded, sacrificed, milled, or a unit dying.', ruling: ['R40', 'R133', 'R137', 'R244', 'R306'],
+    term: 'Trash', short: 'A card entering a bin from anywhere but the stack is trashed: discarded, sacrificed, milled, or a unit dying.', cites: ['keywords.actions.trash', 'keywords.actions.trash.unstable-death', 'zones.bin.trash', 'keywords.actions.trash.tokens'],
     text: 'A card entering a bin from anywhere but the stack is trashed. A token is not a card, so it is never trashed: a dying token passes through the bin and is erased without counting. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies IS trashed on its way through the bin, then erased out of it — but a mod erased along with its host is not trashed separately; the host’s one trash is the whole unit’s.',
   },
 ];
 
 /** the marked mechanics a card's text box carries as icons */
 const MECHANIC_RULES: GlossEntry[] = [
-  // R206, CT-80: the row never said WHEN. Modding is a DEPLOYMENT action —
+  // CR 720.2, CT-80: the row never said WHEN. Modding is a DEPLOYMENT action —
   // apply.ts:1457 `e.illegal('modding is a deployment action (or a battle
   // Virus)')`, plus `e.deploying(seat)` and a host in your own region at
-  // apply.ts:1433-1434. And "under a unit" is not the whole host list: R89
-  // made your own SPELL TOKEN in play a legal deployment host (apply.ts:1407
+  // apply.ts:1433-1434. And "under a unit" is not the whole host list: CR 721.4a
+  // makes your own SPELL TOKEN in play a legal deployment host (apply.ts:1407
   // -1410), attributes only.
   {
-    term: 'Augment', short: 'Slide it under one of your units in deployment: its attributes and [Augment] text join the host.', ruling: ['R55', 'R79', 'R89', 'R95', 'Manual'],
+    term: 'Augment', short: 'Slide it under one of your units in deployment: its attributes and [Augment] text join the host.', cites: ['card.augment-box.permission', 'effects.augment.hosts.spell', 'effects.augment.hosts.spell-token', 'effects.mods.special-action.exceptions', 'Manual'],
     text: 'A deployment action: slide it out of your hand, bin or cache under one of your own units — or, in deployment, under your own spell token. It donates its type-line attributes and its text-box [Augment] text to the host. A host that is a SPELL, on the stack, reached during battle by a {Virus}, takes the attributes only; so does a spell token.',
   },
   {
@@ -405,47 +403,47 @@ const MECHANIC_RULES: GlossEntry[] = [
     // position with another target ally" is not the graft keyword. Card text
     // always MARKS the keyword, so match the bracket, not the word.
     //
-    // R206, CT-80: "[Switch1] is bounded — once per turn per card" was flatly
-    // contradicted by R110. A multiplier in the composite ("Trigger two copies
+    // CT-80: "[Switch1] is bounded — once per turn per card" was flatly
+    // contradicted by CR 109.9j. A multiplier in the composite ("Trigger two copies
     // of this graft ability") re-pushes every other graft part N times,
     // "bounded grafts included" — engine.ts:9092-9105. The deployment gate
     // (apply.ts:1473) was missing too, exactly as it was on Augment.
     //
-    // Cites R334 in place of R110, which it narrows (RAQ "Graft 101" point
-    // 11: a grafted [cost] is mandatory); R110's multiplier rule stands in it.
-    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', ruling: ['R334', 'R113', 'R42'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
+    // Cites CR 111.15 rather than the multiplier rule (CR 109.9j), which it narrows (RAQ "Graft 101"
+    // point 11: a grafted [cost] is mandatory); the multiplier rule stands in it.
+    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', cites: ['concepts.costs.grafted', 'effects.graft.bounded', 'keywords.abilities.prophecy.mods'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
     text: 'A deployment action: insert it from your hand or bin — or from cache, if a fulfilled prophecy paid for it — into a graft-cause unit’s stack, below the original card. Both cards must carry the graft symbol. The [Switch] effects join that unit’s cause and resolve as ONE ability, top to bottom, which one spell can negate whole. [Switch1] is bounded — once per turn per mod — and a bounded CAUSE bounds the whole composite; but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
   },
   {
     // same reasoning: "battle" is in half the rulings in the corpus as plain
     // English. The MARKER is the thing worth explaining — and it is written
     // both ways: {Battle} on a type line, [Battle] in a text box.
-    // R206 checked this row against apply.ts:710/716-724 and the two haste
+    // The 2026-08-26 audit checked this row against apply.ts:710/716-724 and the two haste
     // grant refusals (engine.ts:5844, engine.ts:5893, both citing the RAQ
     // "[Solved] Dispatch Courier vs Battle Timing"): correct as written,
     // including the haste step it does not mention because it cannot reach it.
-    term: 'Battle', ruling: ['R97', 'Manual'], re: /[[{]battle[\]}]/i,
+    term: 'Battle', cites: ['card.timing.battle.gaining-haste', 'Manual'], re: /[[{]battle[\]}]/i,
     text: 'A battle-timing card: playable only during a battle, in a response window. It cannot be played during planning, deployment or the haste step.',
   },
-  // R206, CT-80: both halves of the second sentence were too narrow.
+  // CT-80: both halves of the second sentence were too narrow.
   // `startHasteStep`'s `canHaste` (engine.ts:10599-10657) opens the step on
   // FIVE conditions, only the first of which is a payable haste card in hand:
-  // an R97 grant from a unit in play (Dispatch Courier), an R123 grantor in a
-  // BIN (Writhing Host), an R95 mod window (Slurpr), and a cached release
+  // a grant from a unit in play (Dispatch Courier), a CR 504.7 grantor in a
+  // BIN (Writhing Host), a CR 504.8a mod window (Slurpr), and a cached release
   // timed [Haste] (Divine Intervention). Each of those four WAS report #74's
   // fatal gate in a different form, back when missing one skipped the step.
-  // ⚠ R224/R228 DELETED THAT GATE ENTIRELY — `canHaste` is gone and the step
+  // ⚠ MAKING THE HASTE STEP UNCONDITIONAL (CR 504.5) DELETED THAT GATE ENTIRELY — `canHaste` is gone and the step
   // is unconditional, so none of the four can skip anything any more. This row
   // went on describing the removed behaviour for the rest of the day, which is
   // the SECOND time a glossary row has outlived the ruling it paraphrases
-  // (R45's correction left this file describing the superseded Glimpse rule for
+  // (the glimpse rule's 2026-08-19 correction left this file describing the superseded Glimpse rule for
   // seven days — that is CT-76, and it is still open). Nothing ties a row to
-  // its ruling, so an R-number can change engine.ts, apply.ts, a test and
-  // digital-rules.md and leave this file confidently wrong.
+  // its ruling, so an owner call can change engine.ts, apply.ts, a test and
+  // the comprehensive rules and leave this file confidently wrong.
   // And a {Haste} card is playable in DEPLOYMENT as well (apply.ts:566).
   {
-    term: 'Haste', ruling: ['R18', 'R50', 'R95', 'R97', 'R123', 'R224', 'R236', 'Manual'],
-    // ⚠ R248 / report #118: this sentence used to read "(R224)" and "(R236)"
+    term: 'Haste', cites: ['turn.haste', 'turn.haste.end-event', 'turn.haste.mods.slurpr', 'keywords.abilities.haste.grants', 'turn.haste.grants', 'turn.haste.always', 'annexd.auto-pass.haste-ready', 'Manual'],
+    // ⚠ Report #118 (CR D6.11a): this sentence used to read "(R224)" and "(R236)"
     // IN ITS OWN PROSE. {Haste} carries no printed reminder, so nothing
     // replaces this row on screen — it is what the ? rules overlay and the
     // unit inspector print verbatim, and it was printing two R-numbers at a
@@ -458,15 +456,15 @@ const MECHANIC_RULES: GlossEntry[] = [
   {
     // "once" is ordinary English ("once per turn", "once you have…") — only the
     // bracketed marker means the bounded-ability keyword
-    // R206: per turn and per card confirmed (engine.ts:10446 wipes every
+    // Audited 2026-08-26: per turn and per card confirmed (engine.ts:10446 wipes every
     // entity's budgets in startTurn; the holder is the entity instance,
-    // engine.ts:9046). Added R113's half, which the row omitted: the use is
+    // engine.ts:9046). Added the half the row omitted (CR 109.9a, 109.9b): the use is
     // spent by USING it, working or not — but a DECLINE is refunded
     // (engine.ts:8561-8598), so a player reading the old sentence over-counted.
-    term: 'Once', short: 'Once per turn per card. The use is spent when the ability goes on the stack, even if it fizzles.', ruling: ['R9', 'R113'], re: /[[{]once[\]}]/i,
+    term: 'Once', short: 'Once per turn per card. The use is spent when the ability goes on the stack, even if it fizzles.', cites: ['concepts.abilities.once', 'concepts.abilities.once.spent-on-use'], re: /[[{]once[\]}]/i,
     text: 'Bounded: this ability may be activated or triggered only once per turn, tracked per card — per mod, for a grafted one — and changing controller does not hand a spent use back. The use is gone the moment the ability is activated or goes on the stack, whether or not it ends up doing anything: a fizzle, a negation, or a run that finds no legal target still costs it. Only declining a "you may", or never being offered it, costs nothing.',
   },
-  // R190: fixed alongside Glimpse, because the two rows print TOGETHER on the
+  // Fixed alongside Glimpse (report #106) because the two rows print TOGETHER on the
   // four cards that say "Recycle the rest" and this one used to deny what that
   // one now says. Recycling has exactly ONE meaning in Algomancy — put a card
   // on the bottom of the deck (Rulebook 2023-07: "recycling a card in your hand
@@ -476,35 +474,35 @@ const MECHANIC_RULES: GlossEntry[] = [
   // old text said the card was "gone for the rest of the game", which is the
   // one thing recycling never does.
   {
-    term: 'Recycle', short: 'Put it at the bottom of the deck. If the deck runs out, recycled cards are shuffled into a new deck.', alt: ['recycled', 'recycles'], ruling: ['R45', 'R190', 'R296', 'Rulebook'],
+    term: 'Recycle', short: 'Put it at the bottom of the deck. If the deck runs out, recycled cards are shuffled into a new deck.', alt: ['recycled', 'recycles'], cites: ['zones.recycle.mark.scope', 'keywords.actions.recycle', 'Rulebook'],
     text: 'Put a card past the MARK at the bottom of its owner’s deck — into the recycle pile, not back into the part of the deck anyone is drawing from. During planning you may recycle a card from your hand to gain a dormant resource of an element — one of THIS game’s elements, which in a draft is its trio, not all seven. When the deck runs out, the recycled cards are shuffled together and become the new deck, so nothing recycled comes back in a knowable order and nothing is out of the game. Everyone can see how many cards are in the pile; nobody may look at them. Glimpse recycles the cards it did not cache the same way.',
   },
-  // R206, CT-80: "whenever you activate" was one caller short. R132 reversed
-  // R116 on the owner's own reading of the card ("create a non-prismite
+  // CT-80: "whenever you activate" was one caller short. The Prismite ruling (now CR 106.8c) reversed
+  // the exchange ruling on the owner's own reading of the card ("create a non-prismite
   // resource, THEN ACTIVATE IT"), so `maybeGrantShard` is called from
   // `doExchangePrismite` too (apply.ts:527 as well as apply.ts:463). Shard was
   // on CT-80's "checked and correct" list; it was not.
   {
-    term: 'Shard', short: 'A free resource with no affinity, gained when you activate a resource whose element you hold 3+ affinity in.', ruling: ['R54', 'R132', 'Manual'],
+    term: 'Shard', short: 'A free resource with no affinity, gained when you activate a resource whose element you hold 3+ affinity in.', cites: ['concepts.resources.shard', 'concepts.resources.prismite', 'Manual'],
     text: 'A resource that makes mana but grants NO affinity. Granted free (dormant) whenever you bring an element resource up at 3+ affinity of that element — by activating a dormant one, or by exchanging a prismite into it.',
   },
   {
   // CT-171: this row told the player a prismite gives "1 affinity of every element at once"
-  // — WILD AFFINITY, which is the exact error R17 exists to correct: "The engine and
+  // — WILD AFFINITY, the exact error the Prismite ruling (now CR 105.5) was made to correct: "The engine and
   // prototype had wrongly treated them as wild-affinity and starting face-up." The engine
   // has been right the whole time (`engine.ts`: "Prismites give NO affinity"), so the
   // client would refuse a play this row said was legal. The sentence was written
-  // 2026-08-20, a MONTH after R17 corrected it, and R206 audited this very row and fixed
+  // 2026-08-20, a MONTH after that ruling corrected it, and the 2026-08-26 audit read this very row and fixed
   // only the adjacent "any element" -> "this game's elements" clause before returning it
   // to the do-not-re-audit list. Reading a row "against the engine" means reading the
   // clause you are standing next to.
-    term: 'Prismite', short: '1 mana, no affinity. In planning, swap an active prismite for a resource of one of this game’s elements.', ruling: ['R17', 'R132'],
+    term: 'Prismite', short: '1 mana, no affinity. In planning, swap an active prismite for a resource of one of this game’s elements.', cites: ['concepts.resources.prismite', 'concepts.resources.prismite.exchange'],
     text: 'A colourless resource: it makes 1 mana like any other, but it gives NO affinity at all — it is not wild, and it cannot pay an affinity requirement. Its value is the exchange: during planning you may swap an ACTIVE prismite for a resource of any of this game’s elements (a dormant one cannot be exchanged), and that counts as activating it, so the 3+ affinity Shard is owed.',
   },
 ];
 
 /* ══════════════════════════════════════════════════════════════════════════
- * R248 — THE PRINTED REMINDER, SCANNED OUT OF THE POOL
+ * CR D6.11 — THE PRINTED REMINDER, SCANNED OUT OF THE POOL
  * ══════════════════════════════════════════════════════════════════════════
  *
  * `printed.json` rather than `dsl.ts::getCard`, deliberately. The registry
@@ -593,7 +591,7 @@ function printedReminders(): Map<string, PrintedReminder[]> {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * R267 — THE POOL HAS TWO REMINDER CONVENTIONS AND THE SCAN KNEW ONE
+ * CR D6.11 — THE POOL HAS TWO REMINDER CONVENTIONS AND THE SCAN KNEW ONE
  * ══════════════════════════════════════════════════════════════════════════
  *
  * `printedReminders()` above recognises a `{i}(…)` span as a reminder for term
@@ -611,13 +609,13 @@ function printedReminders(): Map<string, PrintedReminder[]> {
  * the rows kept their authored sentences. That produced three wrong claims,
  * each of which was written down somewhere as a fact:
  *
- *   {Glimpse}   R252 §3 — "the glossary row remains the ONLY statement of the
+ *   {Glimpse}   the manual ruling — "the glossary row remains the ONLY statement of the
  *               rule this repository has". Four cards print one.
- *   {Unstable}  R252 §4 read the MANUAL, judged its PERMADEATH paragraph
+ *   {Unstable}  the same ruling read the MANUAL, judged its PERMADEATH paragraph
  *               inadmissible, and left the row authored — never asking whether
  *               a card printed one. Two do.
- *   {Ambush}    R252 §1 took the manual's sentence. Six cards print a shorter
- *               one, and R252's own PRINTED BEATS MANUAL says the cards win.
+ *   {Ambush}    it took the manual's sentence. Six cards print a shorter
+ *               one, and its own PRINTED BEATS MANUAL says the cards win.
  *
  * ⚠ WHY THIS IS NOT SIMPLY "SCAN WIDER". `poolAttributes()` restricts the term
  * universe on purpose and the restriction was MEASURED: 17 false positives
@@ -626,14 +624,14 @@ function printedReminders(): Map<string, PrintedReminder[]> {
  * span, within `LEAD_GAP` characters of it. That is derivable, and it still
  * admits genuine noise: "create a Shard. {i}(It spawns dormant.)" explains the
  * TOKEN, not the marker. So the candidate SET is derived and the verdict on
- * each candidate is REVIEWED — the same split R252 made for the manual, and
+ * each candidate is REVIEWED — the same split the manual channel made, and
  * for the same reason. Nothing here types a card name or a sentence: the text
  * always comes back out of printed.json, so the pool stays the author.
  */
 const LEAD_GAP = 30;
 
 /**
- * R267: candidates accepted as genuine convention-B reminders, term → the CARD
+ * CR D6.11: candidates accepted as genuine convention-B reminders, term → the CARD
  * whose printed reminder the glossary shows, or `null` when every card that
  * prints one prints the same words and there is nothing to choose.
  *
@@ -668,13 +666,13 @@ const LEAD_ACCEPTED: Readonly<Record<string, string | null>> = {
   Ambush: null,                   // six cards, one wording
 };
 
-/** R267: candidates REJECTED, with the reason, so the next person does not
+/** CR D6.11: candidates REJECTED, with the reason, so the next person does not
  * re-derive them and wonder. 245 asserts accepted ∪ rejected is EXACTLY the
  * derived candidate set — a new card that creates a fourth candidate reddens
  * it and someone has to look, which is the whole point. */
 const LEAD_REJECTED: Readonly<Record<string, string>> = {
   Shard: 'the four resource cards read "create a Shard. {i}(It spawns dormant.)" — the span '
-    + 'explains the TOKEN that was just created, not what a Shard is. {Shard} keeps R252 §1s '
+    + 'explains the TOKEN that was just created, not what a Shard is. {Shard} keeps the '
     + 'manual sentence.',
   Graft: 'the {Graft} matcher deliberately also matches the [Switch1] markup that marks a graft '
     + 'ability, so it fires on Vaporweave Eidolons "[Switch1] Recall me. {i}(Put me into your '
@@ -682,11 +680,11 @@ const LEAD_REJECTED: Readonly<Record<string, string>> = {
     + '{Graft} and {Glimpse}; {Glimpse} is nearer the span and takes it.) {Graft} stays authored.',
   Battle: 'Crevice Lurkers span explains ITS OWN pay-to-trigger clause, and the six Ambush '
     + 'cards match only because "[Battle] Ambush" puts both words in the lead — Ambush is the '
-    + 'nearer term and takes them. {Battle} keeps R252 §1s manual sentence.',
+    + 'nearer term and takes them. {Battle} keeps the manual sentence.',
 };
 
 /**
- * R267: the pool's convention-B reminders, term → the sentence and a card that
+ * CR D6.11: the pool's convention-B reminders, term → the sentence and a card that
  * prints it.
  *
  * ⚠ THE TIE-BREAK IS DELIBERATE, 227 REQUIRES ONE, AND MY FIRST ONE WAS WRONG.
@@ -703,7 +701,7 @@ const LEAD_REJECTED: Readonly<Record<string, string>> = {
  * clause he asked for.
  *
  * So: MOST SENTENCES, then most cards, then shortest. That is not a fitted
- * rule — it is R248 §2 ("shortening what a player reads may never be the same
+ * rule — it is the reminder ruling's principle, now CR D6.11b ("shortening what a player reads may never be the same
  * edit as deleting a rule") applied to the choice between two printed
  * sentences, and it is the only one of the three orderings that cannot pick a
  * special case over the general one. It lands on Glimpse X, the parameterised
@@ -753,19 +751,19 @@ function leadReminders(): Map<string, { text: string; card: string; cards: numbe
   return out;
 }
 
-/** R267: every term the lead convention finds, accepted or not — 245 pins the
+/** CR D6.11: every term the lead convention finds, accepted or not — 245 pins the
  * set so a new card cannot quietly join or leave it. */
 export const LEAD_CANDIDATES: ReadonlyMap<string, { text: string; card: string; cards: number }> =
   leadReminders();
 
-/** R267: the reviewed verdicts, exported so 245 can check them against
+/** CR D6.11: the reviewed verdicts, exported so 245 can check them against
  * `LEAD_CANDIDATES` rather than carrying its own copy. */
 export const LEAD_VERDICTS = { accepted: LEAD_ACCEPTED, rejected: LEAD_REJECTED } as const;
 
 /** what the game prints, per attribute. A bucket with more than one entry is
  * an ambiguity, not a feature — 227 asserts there are none. */
 export const PRINTED_REMINDERS: ReadonlyMap<string, readonly PrintedReminder[]> = (() => {
-  // R267: convention A, then the ACCEPTED convention-B reminders. A term can
+  // CR D6.11: convention A, then the ACCEPTED convention-B reminders. A term can
   // never be in both — `leadReminders` drops any span convention A already
   // matched — so this never overwrites a scanned reminder.
   const out = printedReminders();
@@ -778,7 +776,7 @@ export const PRINTED_REMINDERS: ReadonlyMap<string, readonly PrintedReminder[]> 
 })();
 
 /* ══════════════════════════════════════════════════════════════════════════
- * R252 — THE MANUAL, for the markers no card reminds you about
+ * CR D6.11 — THE MANUAL, for the markers no card reminds you about
  * ══════════════════════════════════════════════════════════════════════════
  *
  * Read from JSON rather than scanned, and that asymmetry with printed.json is
@@ -805,7 +803,7 @@ export const MANUAL_REMINDERS: ReadonlyMap<string, ManualReminder> = new Map(
  * than carrying a second copy of the path */
 export const MANUAL_SOURCE = (manualJson as { source: Record<string, string> }).source;
 
-/** R267: TERM → the words a card in the designer's own $card bot library uses
+/** CR D6.11: TERM → the words a card in the designer's own $card bot library uses
  * for it, for the rows neither the pool nor the manual speaks to. One entry;
  * see ui/card-library-reminders.json for the admissibility bar and for why
  * this channel is weaker than the other two. */
@@ -826,12 +824,12 @@ export const LIBRARY_SOURCE = (libraryJson as { source: Record<string, string> }
  *
  * PRINTED BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED. A card in hand is
  * the most specific thing the game says, the manual is next, a card the
- * designer has posted but our pool does not carry is third (R267), and this
+ * designer has posted but our pool does not carry is third (CR D6.11), and this
  * file is what is left when none of them speaks.
  *
  * ⚠ THIS COMMENT USED TO NAME {Unstable} AS A ROW NO CHANNEL SPEAKS TO, and it
  * was wrong for as long as it said so: Abyssal Evocation and Spell Excavation
- * both print a reminder for it, in the convention R267 taught the scan. The
+ * both print a reminder for it, in the second convention the scan now reads (CR D6.11). The
  * lesson is the one worth keeping — a list of "rows the game is silent about"
  * is a claim about a SCAN, not about the game, and it is only ever as true as
  * the scan is complete. 245 derives the list now instead of stating it.
@@ -900,7 +898,7 @@ export const MECHANICS: GlossEntry[] = MECHANIC_RULES.map(asShown).map(withScanS
 /** every entry, in the order the inspector prints them */
 export const GLOSSARY: GlossEntry[] = [...KEYWORDS, ...EXPANSION_GUIDE, ...MECHANICS];
 
-// R267: a FUNCTION DECLARATION, not a const — `leadReminders()` runs at module
+// CR D6.11: a FUNCTION DECLARATION, not a const — `leadReminders()` runs at module
 // load, above this line, and calls `matcherFor`, which calls this. A const
 // here is in its temporal dead zone at that moment.
 function escapeRe(s: string): string { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }

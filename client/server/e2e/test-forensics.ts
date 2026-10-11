@@ -30,7 +30,7 @@ const { apply, createGame, forcedAction, legalActions, sanitizeTrio, IllegalActi
 const { applyToRoom, clockRunning, createRoom, expiredSeat, getRoom, legalInRoom, restoreRooms,
   undoActionAt, undoForSeat } = await import('../rooms.ts');
 import type { Action, GameState } from '../../engine/src/types.ts';
-// R200: the version stamp is resolved once per process and cached, so a test
+// The version stamp (see replay-room.ts) is resolved once per process and cached, so a test
 // that wants to pretend the engine moved has to be able to clear it. Imported
 // BEFORE rooms.ts so the first stamp any room gets is one this file chose.
 process.env['ALGO_ENGINE_VERSION'] = 'e'.repeat(40);
@@ -64,10 +64,10 @@ function act(room: Room, a: Action): void {
 }
 
 /**
- * R228: the haste step is ALWAYS offered, so `donePlanning` from both seats
+ * CR 504.5: the haste step is ALWAYS offered, so `donePlanning` from both seats
  * lands in it. Nothing closes it automatically — an automatic `doneHaste`
- * would say "this seat holds no haste play", which is the side channel R224
- * deleted — so a section that wants the next phase says so in both names.
+ * would say "this seat holds no haste play", which is the side channel the
+ * always-offer-the-step ruling deleted — so a section that wants the next phase says so in both names.
  */
 function passHaste(room: Room): void {
   for (const seat of [0, 1] as const) {
@@ -274,7 +274,7 @@ console.log('\n[undo measures, and rolls itself back]');
 const u = createRoom('UNDO', SEED);
 act(u, { type: 'donePlanning', seat: 0 });
 act(u, { type: 'donePlanning', seat: 1 });
-passHaste(u);                           // R228 — this section is about DEPLOYMENT
+passHaste(u);                           // CR 504.5 — this section is about DEPLOYMENT
 for (const s of [0, 1] as const) {
   u.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
   u.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
@@ -288,7 +288,7 @@ act(u, { type: 'doneDeploying', seat: 0 });
 act(u, { type: 'doneDeploying', seat: 1 });
 act(u, { type: 'donePlanning', seat: 0 });
 act(u, { type: 'donePlanning', seat: 1 });
-passHaste(u);                           // R228 — and this one about the BATTLE
+passHaste(u);                           // CR 504.5 — and this one about the BATTLE
 // an action that names an ENTITY ID — the thing a renumbering breaks
 const attack: Action = { type: 'declareAttack', seat: 0, columns: [[myUnit.id]] };
 let attacked = false;
@@ -326,7 +326,7 @@ ok(JSON.stringify(c.state) !== beforeState, 'and the state moved back with it');
 ok(replay(c.actions).skips.length === 0, 'the log still replays with zero skips');
 ok(c.lost.length === 0 && c.forks.length === 0, 'and the room is still fork-free');
 
-/* ── R186: the replay tool must REFUSE a file it cannot faithfully reproduce ──
+/* ── the replay tool must REFUSE a file it cannot faithfully reproduce ──
  *
  * Two silent substitutions used to make `replay-room.ts` answer confidently
  * about a game nobody had played. Both are the same shape and both are the
@@ -393,7 +393,7 @@ console.log('\n[the replay tool refuses a file it cannot reproduce]');
     'and it is not caught by either refusal');
 }
 
-/* ── R191 (CARD-TODO #67c): THE FORK THAT REFUSES NOTHING ─────────────────
+/* ── CARD-TODO #67c: THE FORK THAT REFUSES NOTHING ─────────────────
  *
  * Everything above this line is about a restore that LOSES actions. The
  * quieter half had no record at all: an engine that ACCEPTS every logged
@@ -455,7 +455,7 @@ ok(d3.events.some(e => /refer to something else/.test(e.msg) && !/no longer repl
 ok(d3.frozen === null,
   'a live room that forked on DRIFT alone is not frozen: every action still replays, so the log is still one game');
 ok(legalInRoom(d3, 0).length > 0 || legalInRoom(d3, 1).length > 0,
-  'and it is still playable — R191 drift is told, not stopped');
+  'and it is still playable — drift is told, not stopped');
 {
   const savedD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { forks?: unknown[] };
   ok(Array.isArray(savedD.forks) && savedD.forks.length === 1,
@@ -468,7 +468,7 @@ ok(getRoom('DRIFT')!.forks.length === 1,
 console.log('\n[a file that never recorded what its actions meant is not accused of drift]');
 {
   // The additive-field case, and the one that must stay silent: every game
-  // saved before R191 has no `refs`, and "I cannot tell" is not "it drifted".
+  // saved before the item-ref fix has no `refs`, and "I cannot tell" is not "it drifted".
   // (Nor `posRefs`, the keys a restore actually compares since 2026-10-04 —
   // a file with only the old, process-local `refs` is silent the same way.)
   const old = JSON.parse(readFileSync(join(DIR, 'CLEAN.json'), 'utf8')) as { refs?: unknown; posRefs?: unknown };
@@ -481,7 +481,7 @@ console.log('\n[a file that never recorded what its actions meant is not accused
   ok(c2.forks.length === 0, 'and no fork invented for a file that simply predates the field');
 }
 
-/* ── R200 / CT-66: the file names the engine that recorded it ──────────
+/* ── CT-66 (see replay-room.ts): the file names the engine that recorded it ──────────
  *
  * The corpus's problem is not that the logs are wrong. Every divergence anyone
  * has chased is a DELIBERATE rules change and none is a regression — the logs
@@ -493,7 +493,7 @@ console.log('\n[a file that never recorded what its actions meant is not accused
  * against two engines (game VEAV is exactly this), so the stamp is a LEDGER:
  * one entry per engine, each naming the action index it took over at.
  */
-console.log('\n[R200: a new game is stamped with the engine that is recording it]');
+console.log('\n[a new game is stamped with the engine that is recording it]');
 const ENGINE_1 = 'e'.repeat(40);
 const ENGINE_2 = 'f'.repeat(40);
 {
@@ -508,7 +508,7 @@ const ENGINE_2 = 'f'.repeat(40);
   ok(onDisk.versions![0]!.sha === ENGINE_1, 'with the same commit on disk as in the room');
 }
 
-console.log('\n[R200: a redeploy under a LIVE game stamps the boundary, whether or not anything was lost]');
+console.log('\n[a redeploy under a LIVE game stamps the boundary, whether or not anything was lost]');
 {
   runningAt(ENGINE_1);
   const g = createRoom('VLIVE', SEED);
@@ -546,7 +546,7 @@ console.log('\n[R200: a redeploy under a LIVE game stamps the boundary, whether 
     'and restarting again on the same commit does not add a third — idempotent, like recordFork');
 }
 
-console.log('\n[R200: a FORK names the engine that refused, so the fork record reads standalone]');
+console.log('\n[a FORK names the engine that refused, so the fork record reads standalone]');
 {
   runningAt(ENGINE_1);
   const f = createRoom('VFORK', SEED);
@@ -575,7 +575,7 @@ console.log('\n[R200: a FORK names the engine that refused, so the fork record r
   ok(len === f2.forks[0]!.logged, `both point at action ${len}`);
 }
 
-console.log('\n[R200: a file written before the stamp existed still loads — the deploy is additive]');
+console.log('\n[a file written before the stamp existed still loads — the deploy is additive]');
 {
   runningAt(ENGINE_1);
   const o = createRoom('VOLD', SEED);

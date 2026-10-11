@@ -1,7 +1,7 @@
-/* R289 — {Pure} outside combat: the attribute layer switched off per
+/* CR 802.25g — {Pure} outside combat: the attribute layer switched off per
  * (effect, recipient) pairing.
  *
- * R61 did combat (the column pair). This is the other half, and the shape of
+ * The combat half (the column pair) came first. This is the other half, and the shape of
  * the fixtures is 82-attr-interactions's: a real board, a real source entity,
  * `dealEffectDamageAll` called the way a card script calls it, and the
  * engine's own 'damage' events read back — not the prose.

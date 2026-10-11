@@ -1,4 +1,4 @@
-/* R294 — A UNIT IN A COLUMN *HAS* THE COLUMN'S ATTRIBUTES, for everything it
+/* CR 712.8a — A UNIT IN A COLUMN *HAS* THE COLUMN'S ATTRIBUTES, for everything it
  * does and not only for the combat damage it deals.
  *
  * PLAYTEST REPORT #166, room BTUX, 2026-09-15, filed by the owner (judge L1)
@@ -17,7 +17,7 @@
  * alone — while reading the RECIPIENT's {Vulnerable} with `effAttrs` and its
  * {Unaware} through `E.unaware`, both column-aware. The doc comment beside it
  * claimed the recipient used `ownAttrs` "because column-sharing is a combat
- * layer (R19)", which was not true of the two lines below it. The Pure read was
+ * layer ([…])", which was not true of the two lines below it. The Pure read was
  * the only recipient-side question answered off the card alone; the source side
  * was answered that way for every attribute at once.
  *
@@ -30,7 +30,7 @@
  * ⚠ THIS IS NARROWER THAN IT SOUNDS, and the reason is worth keeping. A COLUMN
  * ONLY EXISTS IN COMBAT — `E.columnOf` reads `s.battle` and answers null
  * without one — so outside battle `effAttrs` IS `ownAttrs` and nothing here
- * changes anything. R294 is not "column sharing applies everywhere"; it is
+ * changes anything. CR 712.8a is not "column sharing applies everywhere"; it is
  * "while the column exists, every question about the unit gets the same
  * answer".
  *
@@ -92,7 +92,7 @@ function columnBoard(seed: number, front: string, back: string, victim: string) 
 
 /* ══ §1 — THE REPORT ═════════════════════════════════════════════════ */
 
-test('R294 §1 the report: an ability fired by a unit in a {Blessed} column gains its controller life', () => {
+test('CR 802.22e the report: an ability fired by a unit in a {Blessed} column gains its controller life', () => {
   // Lithoghul stands where Refuse Reclaimer stood; Flzzz is the column-mate
   // that prints {Blessed}; the damage is an effect, not combat.
   const { h, A, f, v } = columnBoard(29801, 'Lithoghul', 'Flzzz', 'Good Whale');
@@ -107,7 +107,7 @@ test('R294 §1 the report: an ability fired by a unit in a {Blessed} column gain
   finishBattle(h);
 });
 
-test('R294 §1b the control: the same board with no {Blessed} in the column gains nothing', () => {
+test('CR 802.22e the control: the same board with no {Blessed} in the column gains nothing', () => {
   const { h, A, f, v } = columnBoard(29802, 'Lithoghul', 'Geode', 'Good Whale');
   const life0 = h.state.players[A]!.life;
   dealFrom(h, A, f, v, 3);
@@ -118,7 +118,7 @@ test('R294 §1b the control: the same board with no {Blessed} in the column gain
 
 /* ══ §2 — IT IS THE LAYER, NOT THE CARD ═════════════════════════════ */
 
-test('R294 §2 every source-side attribute rides the same line: {Powerful} from a column doubles too', () => {
+test('CR 712.8a every source-side attribute rides the same line: {Powerful} from a column doubles too', () => {
   const { h, A, f, v } = columnBoard(29803, 'Lithoghul', 'Chitin Shredder', 'Good Whale');
   assert.ok(!new E(h.state).ownAttrs(ent(h, f)!).has('Powerful'), 'the source card is not Powerful');
   dealFrom(h, A, f, v, 2);
@@ -129,7 +129,7 @@ test('R294 §2 every source-side attribute rides the same line: {Powerful} from 
 
 /* ══ §3 — OUTSIDE BATTLE THERE IS NO COLUMN, SO NOTHING CHANGES ═════ */
 
-test('R294 §3 outside battle there are no columns at all, so effAttrs IS ownAttrs', () => {
+test('CR 712.8b outside battle there are no columns at all, so effAttrs IS ownAttrs', () => {
   const h = new Harness(29804);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -139,7 +139,7 @@ test('R294 §3 outside battle there are no columns at all, so effAttrs IS ownAtt
   const g = new E(h.state);
   assert.equal(g.columnOf(src), null, 'no battle, no column');
   assert.deepEqual([...g.effAttrs(ent(h, src)!)], [...g.ownAttrs(ent(h, src)!)],
-    'so the two readers agree, and R294 widens nothing here');
+    'so the two readers agree, and CR 712.8a widens nothing here');
   const life0 = h.state.players[A]!.life;
   dealFrom(h, A, src, victim, 3);
   assert.equal(h.state.players[A]!.life, life0,
@@ -148,7 +148,7 @@ test('R294 §3 outside battle there are no columns at all, so effAttrs IS ownAtt
 
 /* ══ §4 — THE TWO SITES THE OWNER LEFT ALONE ════════════════════════ */
 
-test('R294 §4 {Feeble} block legality is still the unit\'s own question, on the owner\'s call', () => {
+test('CR 802.12a {Feeble} block legality is still the unit\'s own question, on the owner\'s call', () => {
   // "It won't let the Feeble unit block, even if it has another unit in the
   // column, which is correct." A test that goes red here is a change to a
   // ruling, not a bug fix.
@@ -159,7 +159,7 @@ test('R294 §4 {Feeble} block legality is still the unit\'s own question, on the
     'and nobody has quietly widened it to the column');
 });
 
-test('R294 §4b {Alluring} still originates from the unit that prints it', () => {
+test('CR 802.15d {Alluring} still originates from the unit that prints it', () => {
   const text = readFileSync(new URL('../src/apply.ts', import.meta.url), 'utf8');
   assert.ok(/ownAttrs\(e\.entity\(id\)!\)\.has\('Alluring'\)/.test(text),
     "the Alluring source is found by the unit's own attribute — \"a single trigger for the "
@@ -191,10 +191,10 @@ test('R294 §4b {Alluring} still originates from the unit that prints it', () =>
  * `E.isUnstable`; Burst is `CardDef.burst`. Neither is in `ownAttrs`, so
  * neither can union through `colAttrs` — correct by accident of modelling.
  * Modular IS in `attrs` and is harmless only because the one card that prints
- * it is a spell, which never stands in a column. R294 is the change that would
+ * it is a spell, which never stands in a column. The column-sharing rule (CR 712.8a) is what would
  * tempt someone to "fix" that inconsistency; this is the guard that stops them.
  */
-test('R294 §5 Unstable and Burst are not in the attribute set, so a column cannot share them', () => {
+test('CR 712.8e Unstable and Burst are not in the attribute set, so a column cannot share them', () => {
   for (const name of allCardNames()) {
     const c = getCard(name) as { attrs?: string[]; augmentAttrs?: string[] };
     for (const a of [...(c.attrs ?? []), ...(c.augmentAttrs ?? [])]) {
@@ -205,13 +205,13 @@ test('R294 §5 Unstable and Burst are not in the attribute set, so a column cann
   }
 });
 
-test('R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable', () => {
+test('CR 712.8e a modded (therefore Unstable) unit does not make its column-mate Unstable', () => {
   const { h, f, b } = columnBoard(29805, 'Lithoghul', 'Geode', 'Good Whale');
   const g = new E(h.state);
   g.attachMod(g.entity(f)!, 'Smouldering Inferno', g.entity(f)!.controller, 'augment');
   h.state = g.s;
   const g2 = new E(h.state);
-  assert.ok(g2.isUnstable(g2.entity(f)!), 'the modded unit is Unstable (R69, by derivation)');
+  assert.ok(g2.isUnstable(g2.entity(f)!), 'the modded unit is Unstable (CR 803.8e, by derivation)');
   assert.ok(!g2.isUnstable(g2.entity(b)!),
     'its column-mate is NOT — Unstable is an object attribute and does not travel the column');
   assert.ok(!g2.colAttrs(g2.columnOf(f)!).has('Unstable'),
@@ -219,7 +219,7 @@ test('R294 §5b a modded (therefore Unstable) unit does not make its column-mate
   finishBattle(h);
 });
 
-test('R294 §5c {Modular} is an object attribute too, and only a spell prints it', () => {
+test('CR 802.26h {Modular} is an object attribute too, and only a spell prints it', () => {
   // The owner: "Modular is also special. But doesn't matter yet cause it's a
   // spell." That is TRUE TODAY and is the whole of why it is safe — so the
   // guard is on the fact that keeps it safe, not on the behaviour it implies.

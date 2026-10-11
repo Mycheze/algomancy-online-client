@@ -112,7 +112,7 @@ export function ownResolution(msg: string, card: string): boolean {
 const ACTIVATE_PATIENCE = 90;
 
 /**
- * PRESS MODE'S THREE PATIENCES — R199.
+ * PRESS MODE'S THREE PATIENCES.
  *
  * These used to be one expression, `(fired < all || idle < 90) && idle < 720`,
  * and it was tuned against a board that KILLED ITSELF: the seeded position is
@@ -134,7 +134,7 @@ const ACTIVATE_PATIENCE = 90;
  * MEASURED over the whole pool at both the loose setting and this one, same
  * commit: coverage is IDENTICAL — 278/316, and the same 38 claims unobserved,
  * name for name — and the tight one is the faster of the two by a wide margin.
- * 84-card-semantics runs in 1m33s at these numbers, against 1m05s before R199;
+ * 84-card-semantics runs in 1m33s at these numbers, against 1m05s before the battle-position fix;
  * a game that does not end early is simply a longer game, and that length is
  * what the fourteen extra promises are bought with.
  *
@@ -216,7 +216,7 @@ export interface DrillResult {
   /** the fixtures that actually fired, in order */
   fired: string[];
   /**
-   * R199: the augment's CONTINUOUS text was seen BITING — `staticBite` said that
+   * the augment's CONTINUOUS text was seen BITING — `staticBite` said that
    * taking this mod out of the game changes somebody's effective power/defence,
    * and putting it back changes it again.
    *
@@ -228,7 +228,7 @@ export interface DrillResult {
    */
   staticBit: boolean;
   /**
-   * R199: every beat that fired while the card was STANDING IN THE BATTLE, as
+   * every beat that fired while the card was STANDING IN THE BATTLE, as
    * `<beat>:home=<n>:at=<n>:battle=<n>`.
    *
    * The three numbers are the whole point and none of them is redundant.
@@ -241,7 +241,7 @@ export interface DrillResult {
    */
   inBattleBeats: string[];
   /**
-   * R211 / CARD-TODO #87: the run ENDED with an activation still unresolved,
+   * CARD-TODO #87 (see 181-inconclusive-activation-window): the run ENDED with an activation still unresolved,
    * so its evidence window was never closed and this run can say NOTHING about
    * what that activation delivered.
    *
@@ -251,7 +251,7 @@ export interface DrillResult {
    * drill stopped — the rest of the game — to `activateTypes`. Anything any
    * card did in that span became this card's evidence. Slag Spewer read as
    * OBSERVED on exactly that accident: the window swallowed an `erased` its
-   * HOST's later destruction produced (CT-86). R199 made press runs end
+   * HOST's later destruction produced (CT-86). The battle-position fix made press runs end
    * cleanly, which closed the window and the card went dark — that is how the
    * whole EVENTLESS category was found.
    *
@@ -264,7 +264,7 @@ export interface DrillResult {
    * CT-92 — how many times this run was OFFERED a second activation while the
    * first was still unresolved, and REFUSED it.
    *
-   * `pendingAct` is a single SLOT, not a stack. Before R232 the branch that
+   * `pendingAct` is a single SLOT, not a stack. Before the one-slot fix the branch that
    * takes an activation did not require an empty stack, so a second activation
    * offered mid-resolution would OVERWRITE the open evidence window and
    * everything the first activation delivered was dropped without a trace.
@@ -345,9 +345,9 @@ type Fixture = {
    *  silent. So the soft fixtures are listed TWICE — once wherever the game
    *  happens to be quiet, once pinned to the battle phase.
    *
-   *  ⚠⚠ `inBattle` IS A THIRD, STRICTLY NARROWER PIN, and R199 exists because
+   *  ⚠⚠ `inBattle` IS A THIRD, STRICTLY NARROWER PIN, and the battle-position fix exists because
    *  `battle` turned out not to be it. Measured on Galerider Eel at the head of
-   *  R199: all seven `@battle` repeats fired at steps 29–35 and every one of
+   *  CARD-TODO #49: all seven `@battle` repeats fired at steps 29–35 and every one of
    *  them landed in the DECLARE step — `battleReg=1, subjReg=0`. The battle
    *  phase had begun and the card was still standing at home, because attacks
    *  had not been declared yet. Its clause reads
@@ -367,7 +367,7 @@ type Fixture = {
 /**
  * WHERE THE SUBJECT IS STANDING — the region an `inBattle` beat must act in.
  *
- * ⚠ NOT `homeRegion`, and that is the entire point of the family. R12 scopes
+ * ⚠ NOT `homeRegion`, and that is the entire point of the family. CR 601.1d scopes
  * every event to the region it fires in, so a beat that spawns an ally, places
  * a counter or applies a mod in the seat's HOME region is inaudible to a card
  * that has marched into the defender's region to attack. The soft beats all
@@ -396,7 +396,7 @@ const FIXTURES: Fixture[] = [
   },
   {
     name: 'enemyHere',
-    // R12: every static and every trigger is REGION-scoped, and `seedBoard`
+    // CR 601.1d: every static and every trigger is REGION-scoped, and `seedBoard`
     // puts each side in its own home region — so "Enemies gain +2/+2"
     // (Towering Colossus) had nothing in scope to affect and read as dead.
     // An attacker standing in the defender's region is an ordinary battle
@@ -422,7 +422,7 @@ const FIXTURES: Fixture[] = [
       // "whenever one or more -1/-1 counters are put on a unit" (Pestilent
       // Mycelion, Decay Distributor) is a different clause from the +1/+1 one
       // and a positive-only fixture answers neither of them.
-      // R12 again: "when you put a counter on an ENEMY" (Wandering Blightshell)
+      // CR 601.1d again: "when you put a counter on an ENEMY" (Wandering Blightshell)
       // can only hear a counter placed in ITS OWN region, and the foe's own
       // home region is not that. The `enemyHere` beat above put an enemy in
       // ours; this is the beat that has to use it.
@@ -480,7 +480,7 @@ const FIXTURES: Fixture[] = [
     name: 'trash',
     run: (e, seat) => {
       // "When I am trashed", "when you trash a card", "when another card is
-      // trashed", "when I enter your bin" — a DISCARD is a trash (R40), and
+      // trashed", "when I enter your bin" — a DISCARD is a trash (CR 801.3), and
       // both seats do it because half these cards say "you" and half say
       // "a player".
       for (const who of [seat, (1 - seat) as Seat]) {
@@ -492,7 +492,7 @@ const FIXTURES: Fixture[] = [
   },
   {
     name: 'modApplied',
-    // ⚠ ON SOMEBODY ELSE, never on the subject. R79 makes a modded card
+    // ⚠ ON SOMEBODY ELSE, never on the subject. CR 720.7 makes a modded card
     // {Unstable}, so modding the card under test turns its next death into an
     // ERASE — Colony of the Interworld blocked, died, was erased out of the
     // bin, and every later beat fired at a card that had left the game. The
@@ -506,7 +506,7 @@ const FIXTURES: Fixture[] = [
   {
     name: 'leftBin',
     run: (e, seat, _subject, card) => {
-      // R124: 'leftBin' reaches the card that just left AND NOBODY ELSE, so
+      // CR 405.7: 'leftBin' reaches the card that just left AND NOBODY ELSE, so
       // the card under test has to be the one leaving (Rotling's "When I leave
       // your bin"). It goes straight back afterwards, because the bin-ZONE
       // listeners of the later beats — "if I am in your bin, after combat …"
@@ -562,8 +562,8 @@ const FIXTURES: Fixture[] = [
     })),
   {
     // ⚠ `allySpawn@battle` IS PINNED ONE NOTCH LATER THAN ITS SIX SIBLINGS, and
-    // R199 paid for the distinction card by card. A BOUNDED ([Switch1]/[once])
-    // trigger has ONE use per turn (R9), and the budget is spent the moment the
+    // CARD-TODO #49 paid for the distinction card by card. A BOUNDED ([Switch1]/[once])
+    // trigger has ONE use per turn (CR 109.9a), and the budget is spent the moment the
     // trigger is QUEUED — whether or not its payload finds anything to do. The
     // battle phase opens in the DECLARE step, before attacks exist, and this
     // beat spawns at home: so Boreal Wanderer ("When another ally spawns during
@@ -588,13 +588,13 @@ const FIXTURES: Fixture[] = [
     },
   },
 
-  // ── R199: the same world, acting IN THE BATTLE THE CARD IS STANDING IN ──
+  // ── the same world, acting IN THE BATTLE THE CARD IS STANDING IN ──
   //
   // Every beat below is region-aware where its `@battle` twin is not: it aims
   // at `subject.region`, which during an attack is the DEFENDER's region.
   // Copying the soft beats verbatim (the way the `@battle` repeats do) would
   // have been pointless here — `allySpawn` spawns into `e.homeRegion(who)`, and
-  // R12 makes a home-region spawn inaudible to a card that has marched out to
+  // CR 601.1d makes a home-region spawn inaudible to a card that has marched out to
   // attack. The pin says WHEN; the region says WHERE; both are needed.
   {
     name: 'allySpawn@inBattle',
@@ -617,7 +617,7 @@ const FIXTURES: Fixture[] = [
     phase: 'inBattle',
     // Galerider Eel ("whenever one or more OTHER cards enter YOUR hand during
     // battle"), Rider of the Tides and Xenopod Progenitor ("a player's hand").
-    // A draw is a `toHand`, so it fires 'handEntered' (R179) — the event does
+    // A draw is a `toHand`, so it fires 'handEntered' (CR 402.4) — the event does
     // NOT carry a region, which is exactly why all three cards pin the listener
     // to `g.s.battle?.region === self.region` themselves.
     run: (e, seat) => { for (const who of [seat, (1 - seat) as Seat]) e.draw(who, 1); },
@@ -627,7 +627,7 @@ const FIXTURES: Fixture[] = [
     phase: 'inBattle',
     // Colony of the Interworld: "When you gain or lose life during battle, put
     // three +1/+1 counters on me." `E.loseLife` stamps the event with
-    // `battle.region` (R12), so only units standing in the battle hear it.
+    // `battle.region` (CR 601.1d), so only units standing in the battle hear it.
     run: (e, seat) => {
       e.gainLife(seat, 3, 'drill fixture');
       e.loseLife(seat, 3, 'drill fixture');
@@ -682,7 +682,7 @@ const FIXTURES: Fixture[] = [
   {
     name: 'modApplied@inBattle',
     phase: 'inBattle',
-    // ⚠ ON SOMEBODY ELSE, never on the subject — R79 would make the card
+    // ⚠ ON SOMEBODY ELSE, never on the subject — CR 720.7 would make the card
     // {Unstable} and turn its next death into an erase. Same rule as the soft
     // twin; the only difference is which region the ally is found in.
     run: (e, seat, subject) => {
@@ -729,7 +729,7 @@ const FIXTURES: Fixture[] = [
     last: true,
     run: (e, seat, subject) => {
       if (!subject || !e.entity(subject.id)) return;
-      // 'is sacrificed' rather than 'dies': R70 rides the verb on the event,
+      // 'is sacrificed' rather than 'dies': the event carries the verb (CR 714.9),
       // and Ghord reads it ("When you sacrifice a unit"). A sacrifice is also
       // a death, so every "when I die" listener hears it too — one verb
       // covers both families, where 'dies' covers only one.
@@ -864,7 +864,7 @@ function modestDiff(a: ReturnType<typeof snapshot>, b: ReturnType<typeof snapsho
  * the board can make that true, so it cannot be evidence for anything else.
  *
  * ⚠ NUMBERS ONLY, NEVER ATTRIBUTES. Every augment makes its host {Unstable}
- * (R79), so an attribute-aware comparison is true for all 117 cards whatever
+ * (CR 720.7), so an attribute-aware comparison is true for all 117 cards whatever
  * their box says — the exact blindness `modestDiff` exists to avoid.
  */
 function staticBite(s: GameState, modId: EntityId | undefined): boolean {
@@ -920,7 +920,7 @@ export function seedBoard(s: GameState, seat: Seat): void {
       try { e.spawnUnit(who, body, e.homeRegion(who), body === 'Unit Token' ? { token: true } : {}); } catch { /* not registered */ }
     }
     // a stocked bin (exhume / "target card in a bin" / trash costs) and a
-    // stocked cache (R41 targets) — real cards, so the zones are well-formed
+    // stocked cache (CR 403.6 targets) — real cards, so the zones are well-formed
     const p = s.players[who]!;
     // a cheap unit (Resurrect: "cost 2 or less") and a real SPELL (Delver of
     // Mysteries: "target spell in your bin") — a bin of only expensive units
@@ -1023,7 +1023,7 @@ export function drillCard(
      *  per quiescent window, so the events its "When …" clauses listen for
      *  actually happen. */
     press?: boolean;
-    /** R211 / CARD-TODO #87 POSITIVE CONTROL ONLY. Reinstates the pre-R211
+    /** CARD-TODO #87 POSITIVE CONTROL ONLY (see 181-inconclusive-activation-window). Reinstates the old
      *  unbounded "ran out of steps" tail, which credited every event from an
      *  unresolved activation to the end of the run as this card's evidence.
      *  It exists so `181-inconclusive-activation-window.test.ts` can drive one
@@ -1061,7 +1061,7 @@ export function drillCard(
   let { state } = createGame(seed);
   const seat: Seat = 0;
   (opts.setup ?? seedBoard)(state, seat);
-  // R51's bin- and cache-anchored listeners ("If I am in your bin, after
+  // CR 400.5's bin- and cache-anchored listeners ("If I am in your bin, after
   // combat …" — Lurking Dread, Inexorable Miasma, Cinder Scuttler) are not
   // entities at all, just names in a zone, so `fireZoneTriggers` can only find
   // them if the name is THERE. press mode puts it there.
@@ -1087,7 +1087,7 @@ export function drillCard(
   let pendingAct: {
     snap: ReturnType<typeof snapshot>;
     marker: number;
-    /** R211: the same cut into `res.events`. `types` and `events` are NOT
+    /** the same cut into `res.events` (see 181-inconclusive-activation-window). `types` and `events` are NOT
      *  parallel — a typed event with no `msg` pushes only the type — so the
      *  message span has to be marked separately. */
     evMarker: number;
@@ -1105,7 +1105,7 @@ export function drillCard(
   let hostId: EntityId | undefined;
   /** the attach's own evidence window, closed at the first quiescence after
    *  it. It cannot be closed in the same step: a Virus augment applied during
-   *  BATTLE goes on the STACK first (R79) and only becomes a mod when it
+   *  BATTLE goes on the STACK first (CR 723.3) and only becomes a mod when it
    *  resolves, so reading the delta at the action would see the card leave the
    *  hand and nothing else — which is exactly what it did, on every static
    *  augment in the pool, until this was split out. */
@@ -1122,7 +1122,7 @@ export function drillCard(
   let pressIdle = 0;
   /** ordinary cards press mode plays alongside the card under test, so the
    *  "when you play a …" families have something to hear. `spellPlayed` and
-   *  `cardPlayed` are different events (R129) and "whenever you play a UNIT"
+   *  `cardPlayed` are different events (CR 108.1a) and "whenever you play a UNIT"
    *  (Bloomcaster) hears neither of them from a spell, so both a spell and a
    *  unit are played, through `legalActions` like any other play. */
   const pressPlays = ['Protective Adaptations', 'Tidal Menace'];
@@ -1183,7 +1183,7 @@ export function drillCard(
   };
 
   /**
-   * R199: IS THE CARD ACTUALLY IN THE BATTLE?
+   * IS THE CARD ACTUALLY IN THE BATTLE?
    *
    * Not "is it the battle phase" — that was already true while the card stood
    * at home in the declare step, and it is why the whole REGION family read as
@@ -1203,7 +1203,7 @@ export function drillCard(
     return s !== undefined && s.region === state.battle.region;
   };
 
-  /** R211 / CT-87: WHICH exit the loop took, so an unclosed activation window
+  /** CT-87 (see 181-inconclusive-activation-window): WHICH exit the loop took, so an unclosed activation window
    *  can say why it could not be closed. Defaults to `maxSteps` because that
    *  is the exit taken by falling out of the `for`, and the two `break`s below
    *  overwrite it. */
@@ -1231,7 +1231,7 @@ export function drillCard(
     // "if your life total is odd" is a printed condition (Ploosh, Insatiable
     // Want) and pinning it even would decide those clauses for them.
     //
-    // ⚠ R199 RAISED IT FROM `< 12 → 25`. The top-up runs once per window, but a
+    // ⚠ CARD-TODO #49 RAISED IT FROM `< 12 → 25`. The top-up runs once per window, but a
     // whole combat damage step happens inside ONE `apply`, so a seat sitting on
     // 25 can be taken to zero between two top-ups — and the old numbers had
     // only just enough margin for the old board. Adding the `inBattle` beats
@@ -1241,7 +1241,7 @@ export function drillCard(
     // the 31 fixtures fired. Measured over the pool at that intermediate point:
     // 227/316, against the 264 the round started from — A Pile of Rubbish,
     // Spirit of Vengeance, Ghord, Blightmound and their whole "when I die"
-    // family, a far bigger loss than the R12 family this round set out to win.
+    // family, a far bigger loss than the region-scoping (CR 601.1d) family this round set out to win.
     // The numbers stay ODD for the reason above; only the headroom changed.
     if (tracking) for (const p of state.players) if (p.life < 40) p.life = 61;
 
@@ -1267,11 +1267,11 @@ export function drillCard(
     }
 
     // ── stage 4: APPLY the card to a host instead of casting it ──────────
-    // `legalActions` already offers the `augment` action out of hand (R41's
-    // pushMods), so this needs no new machinery either — the engine's own
+    // `legalActions` already offers the `augment` action out of hand (`pushMods`,
+    // CR 507.2), so this needs no new machinery either — the engine's own
     // legality decides when a mod may be applied, exactly as for playCard.
     // ⚠ DEPLOYMENT, not battle. A card that is also a Virus is offered in
-    // BATTLE too (R79), and that route puts the augment on the STACK — so the
+    // BATTLE too (CR 723.3), and that route puts the augment on the STACK — so the
     // window from the action to the next quiescence swallows the whole combat
     // damage step, and Ploosh and Skybreaker both read as granting stats their
     // boxes never mention. The deployment attach resolves in the action.
@@ -1392,7 +1392,7 @@ export function drillCard(
        *  delta taken from before the poke reads "counters/damage changed" and
        *  would evidence a `counters` promise the card never kept. */
       let mid: ReturnType<typeof snapshot> | null = null;
-      // R199: the subject and the battle AS THEY STAND when the beat becomes
+      // the subject and the battle AS THEY STAND when the beat becomes
       // eligible, read before the beat's own poke can move either.
       const sBefore = subject();
       const bRegBefore = state.battle?.region;
@@ -1424,7 +1424,7 @@ export function drillCard(
       }
       // asked again after every beat, because a static's SUBJECT can arrive
       // later than the augment does: Towering Colossus's "Enemies gain +2/+2"
-      // is region-scoped (R12) and there is no enemy in this region until the
+      // is region-scoped (CR 601.1d) and there is no enemy in this region until the
       // `enemyHere` fixture puts one there.
       if (!biting && staticBite(state, modId)) {
         biting = true;
@@ -1573,7 +1573,7 @@ export function drillCard(
   const after = snapshot(state, seat);
   res.changed = diff(before, after, card, state);
   if (pendingAct) {
-    // ── R211 / CARD-TODO #87: THE WINDOW THAT NEVER CLOSED ────────────────
+    // ── CARD-TODO #87 (see 181-inconclusive-activation-window): THE WINDOW THAT NEVER CLOSED ────────────────
     //
     // The loop ended with an activation still on the stack. The window that
     // opened at `activateAbility` (line ~1241) is closed in-loop only by the
@@ -1588,11 +1588,11 @@ export function drillCard(
     // the rest of the game. Any event any card produced in that span became
     // this card's evidence. It had a live victim: Slag Spewer read as OBSERVED
     // because the span swallowed an `erased` emitted when its HOST was
-    // destroyed several beats later (CT-86). R199 made press runs end cleanly,
+    // destroyed several beats later (CT-86). The battle-position fix made press runs end cleanly,
     // which shut the window and the card went dark — that is how the EVENTLESS
     // category in 84-card-semantics was discovered at all.
     //
-    // R199 reported it rather than changing it, correctly: a late unverified
+    // CARD-TODO #49 reported it rather than changing it, correctly: a late unverified
     // edit to the drill would have invalidated that round's measurements.
     // CT-87 is the follow-through. The tail is now a REFUSAL: the events are
     // recorded so the refusal can be measured and controlled for, and nothing
@@ -1632,7 +1632,7 @@ function safeLegal(s: GameState, seat: Seat): Action[] {
 function progressAction(s: GameState, answerSeat?: Seat, blockFully = false): Action | null {
   if (s.decision) {
     const d = s.decision;
-    // R197: a numeric entry carries NO options — `choice` is the value itself.
+    // CR D7.2a: a numeric entry carries NO options — `choice` is the value itself.
     // The FLOOR is the answer, because that is what this driver was already
     // sending when the same question was a menu (it took option 0, and the
     // menu opened at its smallest legal value). Deliberately not `suggest`:

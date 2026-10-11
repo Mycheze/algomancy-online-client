@@ -1,4 +1,4 @@
-/* R151 (CT-31) — the resource row, as a view model.
+/* CT-31 — the resource row, as a view model.
  *
  * DOM-free, like ui/cardtext.ts and ui/inspect.ts: main.ts renders the answer
  * and test/127-token-x-and-dormant.test.ts checks it.
@@ -24,7 +24,7 @@
  *
  * ── why it asks the engine what is spendable ──────────────────────────
  *
- * R132 just reversed R116 (a Prismite DOES activate its new resource), so what
+ * The Prismite ruling (now CR 106.8c) just reversed the exchange ruling (a Prismite DOES activate its new resource), so what
  * counts as spendable is live rules surface. If the row re-derived it, the row
  * would drift the next time the rule moved. `spendable` is therefore checked
  * against the engine's OWN two answers — `E.openMana` for the count and

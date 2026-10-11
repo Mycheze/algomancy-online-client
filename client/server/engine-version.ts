@@ -1,4 +1,4 @@
-/* R200 — WHICH ENGINE WAS THIS GAME RECORDED AGAINST?
+/* WHICH ENGINE WAS THIS GAME RECORDED AGAINST?
  *
  * A saved game is a CLAIM: seed + actions reproduces this game. The claim was
  * true when it was written and is checked by an engine that has moved since,
@@ -33,7 +33,7 @@
  *
  * This module deliberately imports nothing from `rooms.ts` and pulls in no
  * `ws`: `replay-room.ts` reads it, `engine/test/171` reads it through that,
- * and R181 is the story of what happens when the server's socket layer leaks
+ * and the tooling round (CT-59/60) is the story of what happens when the server's socket layer leaks
  * into the engine's typecheck.
  */
 import { execFileSync } from 'node:child_process';

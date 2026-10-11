@@ -90,7 +90,7 @@ export interface RevealRow {
   ids: EntityId[];
   /** how many things it stands for: 1, or the size of a merged run */
   count: number;
-  /** R35/R105: mods applied to it during the segment — the thing the report
+  /** mods applied to it during the segment — the thing the report
    * asked for by name, on the card it was applied to */
   mods: { card: CardName; how: string }[];
   /** the lines about this card that the scan and the chips do not already
@@ -393,10 +393,10 @@ export function revealWorthShowing(view: RevealView): boolean {
  * see them right now."*
  *
  * ⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING.
- * R188 drove a restored game in a real browser as the opponent seat and found
- * the names really do arrive, really do render, and are inspectable. (R222/R235
- * then made them arrive IMMEDIATELY even inside a hidden segment; R310 reversed
- * that on report #192 — inside a hidden step a glimpse now waits for the recap
+ * The glimpse investigation drove a restored game in a real browser as the opponent seat and found
+ * the names really do arrive, really do render, and are inspectable. (Two later rulings
+ * then made them arrive IMMEDIATELY even inside a hidden segment; the owner reversed
+ * that on report #192 — inside a hidden step a glimpse now waits for the recap (CR D6.2)
  * and pops in the playback frame of the action that made it.) So this is not a
  * delivery bug, which is exactly why it was easy to close the report and leave
  * the complaint standing.
@@ -409,7 +409,7 @@ export function revealWorthShowing(view: RevealView): boolean {
  *
  * `E.glimpse` writes NO structured record into `GameState` — only the
  * transient `glimpsed` event, which inside a hidden step is held for the
- * barrier like every other event (R310), just as R41's public cache is held by
+ * barrier like every other event (CR D6.2), just as CR 403.2's public cache is held by
  * the frozen STATE channel. So there is nothing for a client to re-render from,
  * and a surface that pretended otherwise would be lying on the first reconnect.
  *
@@ -435,7 +435,7 @@ export interface GlimpseNotice {
  * not need a second copy, so their own glimpse is skipped. Everything the
  * server chose to send us about someone ELSE's is worth a surface — and what
  * it chose is already the whole of the privacy decision (`visibleToSeat`,
- * `redactEvent`, and R310's hold, which keeps a hidden step's glimpse for the
+ * `redactEvent`, and CR D6.2's hold, which keeps a hidden step's glimpse for the
  * recap — whose playback frame is where this then runs). Nothing here re-decides it; a client
  * that filtered on its own opinion of what is public would be a second,
  * quieter redactor, and this repo has shipped two information leaks that way.
@@ -463,7 +463,7 @@ export function glimpseNotice(
  * How long the notice stays up: a base dwell plus one tempo-step per card, so
  * a glimpse of five is readable and a glimpse of one does not linger.
  *
- * Both knobs are the client's ONE tempo (R242) rather than numbers of this
+ * Both knobs are the client's ONE tempo (CR D5.4) rather than numbers of this
  * surface's own — the whole point of that ruling is that there is a single
  * opinion about how fast a human reads, and a reveal is not exempt from it.
  */

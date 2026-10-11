@@ -88,7 +88,7 @@ export const costHtml = (r: CardRow): string => {
  * player goes to look something up; this panel is read while choosing a card.
  * Nothing was deleted: 177 still reads `rule` as the rules document, and
  * shortening what a player reads is still a different edit from deleting a
- * rule (R248 §2).
+ * rule (CR D6.11b).
  *
  * A reminder that opens with its own term — "Virus cards can also be applied
  * …", "Evasive units require two blockers." — is drawn as one sentence with
@@ -101,12 +101,12 @@ export const costHtml = (r: CardRow): string => {
  * cards' own markup, and it escapes first.
  *
  * Which terms: the union of the type line (`r.attrs`, `r.keywords`) and a
- * scan of the text box (`glossaryHits`) — R257 / CT-129, CT-130: Brough
+ * scan of the text box (`glossaryHits`) — CR D6.11c / CT-129, CT-130: Brough
  * GRANTS {Balanced} in its text with `attrs: []`, and Rot is a player counter
  * no type line can carry. 236 asserts the union is a superset of what the
  * in-game inspector explains.
  *
- * `inBox` (R282): on a card whose whole rules content is a type-line marker,
+ * `inBox` (CR D6.10): on a card whose whole rules content is a type-line marker,
  * the text box above already prints that marker's reminder, so its row is
  * dropped rather than stated twice (report #149, "the text is often
  * redundant"). The default is unchanged behaviour: 236 and 227 call this with
@@ -165,7 +165,7 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
   const box = r.scripted ? printedTextBox(r.name) : null;
   const lines = box ? box.lines.map(l => l.text) : [r.text];
   // A row gives way to the text box wherever the box already states it: the
-  // type-line reminders R282 injects (`attrReminders`), and any reminder the
+  // type-line reminders injected under CR D6.10 (`attrReminders`), and any reminder the
   // card PRINTS in its own box — Blessed Thing's whole text is "(Damage dealt
   // by a blessed source …)", the {Blessed} sentence word for word, and the
   // panel drew it twice. Compared with markup and punctuation stripped, so a

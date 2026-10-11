@@ -1,10 +1,10 @@
-/* R251 — THREE PASS BUTTONS, TWO PROMISES, ONE RELEASE LIST.
+/* CR D2.2 — THREE PASS BUTTONS, TWO PROMISES, ONE RELEASE LIST.
  *
  * Ledger #123, "Pass All still isn't working right", is the THIRD visit to
  * this chip (#68 → #123 → here) and the first one that is not a bug report.
  * Round 31 investigated it against room VYTV (265/265 FAITHFUL) and found the
  * code behaving exactly as designed: the chip came off because the opponent
- * put something on the stack, which is what the button said it would do. R245
+ * put something on the stack, which is what the button said it would do. The no-second-opinion round (CR D1.3)
  * fixed two real derivation defects on the way past — an "ability" clause that
  * was empty at all 107 pass-windows of that game, and a stack clause comparing
  * HEIGHTS so a same-height replacement was invisible — and both of those make
@@ -22,14 +22,14 @@
  *
  * It was named for the third option and behaved like the second: it released
  * on any change, and it ran to the end of the battle. It was neither, because
- * its snapshot was RE-TAKEN at every window it declined (R245, ui/main.ts) —
+ * its snapshot was RE-TAKEN at every window it declined (the no-second-opinion round, ui/main.ts) —
  * so "new" meant "new since the last window I passed", a running diff with no
  * fixed scope. A running diff cannot express "the effects that are CURRENTLY
  * on the stack": an item that was already there when you armed keeps being
  * compared against a baseline that has moved on, and nothing ever FINISHES,
  * which is why the chip could only stop at the end of the battle.
  *
- * So the chip became "Pass through stack" — it keeps every clause R245 derived
+ * So the chip became "Pass through stack" — it keeps every clause the no-second-opinion round derived
  * and gains the one thing it never had, a scope that can run out ('done') —
  * and "Pass all" is a new, much thinner promise on the same seam: the change
  * clauses are not asked at all.
@@ -45,7 +45,7 @@
  * two tests broke on a pure refactor in round 30).
  *
  * ── WHAT IS DELIBERATELY NOT HERE
- * The haste-step auto-answer (R245(b), `hasteAutoOut`) is a separate mechanism
+ * The haste-step auto-answer (CR D2.5, `hasteAutoOut`) is a separate mechanism
  * that happens to ride in the same AutoPassPlan union. Nothing here touches it.
  *
  * Seeds 23000-23099.
@@ -90,7 +90,7 @@ function push(s: GameState, id: number, card = 'Good Whale'): void {
 /**
  * The arm ui/main.ts really holds, in the mode named — ONE definition, shared
  * with the client through `armSnapshot`, so this cannot drift from what the
- * board carries (R245).
+ * board carries (CR D1.3).
  */
 const armFor = (s: GameState, legal: readonly Action[], mode: PassMode): AutoPassArm => ({
   armed: true, mode, prefOn: false, yieldIds: new Set<EntityId>(), ...armSnapshot(s, legal),
@@ -137,7 +137,7 @@ test('[123] a stack item outside the armed scope hands priority back', () => {
   push(s, 900);
   const arm = armFor(s, legalActions(s, D), 'stack');
   // the VYTV shape: the top resolves and something new goes on in the same
-  // server batch, so the HEIGHT never moves. R245 made the clause ask by id.
+  // server batch, so the HEIGHT never moves. The no-second-opinion round made the clause ask by id.
   const swapped = structuredClone(s);
   swapped.stack = [];
   push(swapped, 901);
@@ -215,7 +215,7 @@ test('[123] pass all still stops on the one pass that would erase castable spell
       const dec = h.state.decision;
       h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, j) => j) });
     } else if (b.step === 'blocks' && b.defender === D) {
-      // no blockers and nobody sent: round 1 ends the phase outright (R11 path)
+      // no blockers and nobody sent: round 1 ends the phase outright (CR 506.2 path)
       h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [] });
     } else if (h.state.priority === D) {
       const legal = legalActions(h.state, D);
@@ -234,7 +234,7 @@ test('[123] pass all still stops on the one pass that would erase castable spell
   assert.ok(legal.some(a => a.type === 'castSpellToken'), 'positive control: a token is still castable');
   for (const mode of ['stack', 'all'] as const) {
     assert.equal(passAllRelease(end, D, legal, armFor(end, legal, mode)), 'tokens',
-      `${mode}: R11 erases them at Regroup and there is no undo`);
+      `${mode}: CR 506.2 erases them at Regroup and there is no undo`);
   }
 });
 
@@ -246,7 +246,7 @@ test('[123] a promise with no scope cannot finish, so an arm naming no stack nev
   assert.deepEqual(arm.armedItems, [], 'so the arm names no scope at all');
   assert.equal(passAllRelease(s, D, legalActions(s, D), arm), null,
     'a scope that was empty at the arm was never a promise, and cannot be spent');
-  // the pre-R245 arm (no snapshot fields at all) is the same case, and the
+  // the older arm (no snapshot fields at all) is the same case, and the
   // suites that build one by hand — 77, 223 — go on meaning what they meant.
   const legacy: AutoPassArm = {
     armed: true, armedStack: 0, armedSig: [], prefOn: false, yieldIds: new Set<EntityId>(),
@@ -270,13 +270,13 @@ const show = (s: GameState, seat: Seat): string =>
  * watches the chip vanish for the wrong reason and passes whatever the release
  * list says. (It did, before this comment existed.)
  *
- * R150 then paces updates while a standing pass is armed (`holdable`), which
+ * CR D5.4b then paces updates while a standing pass is armed (`holdable`), which
  * is exactly the case every test below is in, so the throttle is drained
  * through its own skip key (S) rather than by waiting a real second.
  */
 function arrive(s: GameState, seat: Seat): string {
   ui.update(viewFor(s, seat), legalActions(s, seat));
-  // ⚠ WAS TRUE UNTIL R258, AND IS NOT ANY MORE: "a HELD update paints nothing
+  // ⚠ WAS TRUE UNTIL CT-123, AND IS NOT ANY MORE: "a HELD update paints nothing
   // at all, so the skip chip is not on screen until something else repaints."
   // The chip is now a LIVE SLOT — a node `render()` leaves empty and
   // `paintLive()` fills from `pumpPace`, which is also where an arrival lands
@@ -344,7 +344,7 @@ test('[123] pass through stack hands the window back once that stack has resolve
   assert.match(ui.click({ btn: 'passstack' }), /passing through the stack/);
   ui.sent();
 
-  // the item resolved and the window came back round. Under the pre-R251 chip
+  // the item resolved and the window came back round. Under the old single pass chip
   // this was a window like any other: the snapshot was re-taken, nothing was
   // "new", and it passed straight through into the rest of the battle.
   const after = structuredClone(s);
@@ -361,8 +361,7 @@ test('[123] pass through stack hands the window back once that stack has resolve
 
 test('[123] an option that was on offer at the arm is not news several windows later', () => {
   /*
-   * THE ONE BOUNDARY THE OTHER TESTS CANNOT SEE, and it is the R245 behaviour
-   * this ruling removes: `ui/main.ts` used to RE-TAKE the snapshot at every
+   * THE ONE BOUNDARY THE OTHER TESTS CANNOT SEE, and it is the earlier re-take behaviour this change removes: `ui/main.ts` used to RE-TAKE the snapshot at every
    * window the chip declined, so "what I had when I armed" quietly became
    * "what I had at the previous window".
    *
@@ -376,7 +375,7 @@ test('[123] an option that was on offer at the arm is not news several windows l
    *
    * The disappearance is arranged rather than played out (a spell token off
    * the board and back), because the PROPERTY is the promise and the route to
-   * it is not: R213 made the point that a client judgement must be tested for
+   * it is not: the battle-end announcement round (CR D2.6b) made the point that a client judgement must be tested for
    * what it answers, not for the one story that produced it.
    */
   const { h, D } = battleWindow(23014);

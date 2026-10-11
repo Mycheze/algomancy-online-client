@@ -41,9 +41,9 @@ function borrow(h: Harness, A: Seat, target: number): number {
   return unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!.id;
 }
 
-// ── R333 / CT-215: a cast spell token is a token ─────────────────────────
+// ── CR 304.11d / CT-215: a cast spell token is a token ─────────────────────────
 
-test('R333: Download takes a Fireball already on the stack, and its new controller may aim it elsewhere', () => {
+test('CR 304.11d: Download takes a Fireball already on the stack, and its new controller may aim it elsewhere', () => {
   const h = new Harness(40301);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -72,7 +72,7 @@ test('R333: Download takes a Fireball already on the stack, and its new controll
   finishBattle(h);
 });
 
-test('R333: Arcane Echo copies a Fireball already on the stack as a fresh Fireball token', () => {
+test('CR 304.11d: Arcane Echo copies a Fireball already on the stack as a fresh Fireball token', () => {
   const h = new Harness(40302);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -97,9 +97,9 @@ test('R333: Arcane Echo copies a Fireball already on the stack as a fresh Fireba
   finishBattle(h);
 });
 
-// ── R334 / CT-216: a grafted [cost] is mandatory ─────────────────────────
+// ── CR 722.6 / CT-216: a grafted [cost] is mandatory ─────────────────────────
 
-test('R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all', () => {
+test('CR 722.6a: an activated graft cause whose grafted [cost] cannot be paid is not offered at all', () => {
   const h = new Harness(40303);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -120,7 +120,7 @@ test('R334: an activated graft cause whose grafted [cost] cannot be paid is not 
     'with a card to discard it is offered');
 });
 
-test('R334: an unpayable grafted [cost] on a triggered composite withholds it whole, and says so on the host', () => {
+test('CR 722.6a: an unpayable grafted [cost] on a triggered composite withholds it whole, and says so on the host', () => {
   const h = new Harness(40304);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -140,9 +140,9 @@ test('R334: an unpayable grafted [cost] on a triggered composite withholds it wh
   finishBattle(h);
 });
 
-// ── R335 / CT-218: a recalled spell token passes through the hand ───────
+// ── CR 410.5b / CT-218: a recalled spell token passes through the hand ───────
 
-test('R335: Dream Lapse recalls a cast Fireball token — it enters the hand (Rider of the Tides hears it) and is erased', () => {
+test('CR 801.7d: Dream Lapse recalls a cast Fireball token — it enters the hand (Rider of the Tides hears it) and is erased', () => {
   const h = new Harness(40305);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -168,9 +168,9 @@ test('R335: Dream Lapse recalls a cast Fireball token — it enters the hand (Ri
   finishBattle(h);
 });
 
-// ── R336 / CT-219: a copy is priced and typed by its face ───────────────
+// ── CR 710.1a / CT-219: a copy is priced and typed by its face ───────────────
 
-test('R336: Abduct for X = 0 can take a Borrower of Forms that copied a Robot (its cost is the Robot, 0)', () => {
+test('CR 710.1a: Abduct for X = 0 can take a Borrower of Forms that copied a Robot (its cost is the Robot, 0)', () => {
   const h = new Harness(40306);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -193,7 +193,7 @@ test('R336: Abduct for X = 0 can take a Borrower of Forms that copied a Robot (i
   finishBattle(h);
 });
 
-test('R336: Leave None Pure sees a Borrower that copied an untouched Good Whale as untouched', () => {
+test('CR 710.2: Leave None Pure sees a Borrower that copied an untouched Good Whale as untouched', () => {
   const h = new Harness(40307);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -210,9 +210,9 @@ test('R336: Leave None Pure sees a Borrower that copied an untouched Good Whale 
   finishBattle(h);
 });
 
-// ── R336 / CT-225: a fresh copy of a modded unit is not Unstable ─────────
+// ── CR 710.2a / CT-225: a fresh copy of a modded unit is not Unstable ─────────
 
-test('R336: a Borrower that copied a modded unit dies to the bin; a mod put on it later makes it Unstable the usual way', () => {
+test('CR 720.7e: a Borrower that copied a modded unit dies to the bin; a mod put on it later makes it Unstable the usual way', () => {
   const h = new Harness(40308);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -231,9 +231,9 @@ test('R336: a Borrower that copied a modded unit dies to the bin; a mod put on i
   finishBattle(h);
 });
 
-// ── R331 / CT-213: the old host keeps its mark too ───────────────────────
+// ── CR 720.10b / CT-213: the old host keeps its mark too ───────────────────────
 
-test('R331: a moved mod carries its spent augment budget; the mark is copied, so nothing is refreshed anywhere', () => {
+test('CR 720.10b: a moved mod carries its spent augment budget; the mark is copied, so nothing is refreshed anywhere', () => {
   const h = new Harness(40309);
   toDeployment(h);
   const A = h.state.deployPlayer!;

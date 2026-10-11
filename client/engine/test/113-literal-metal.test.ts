@@ -1,6 +1,6 @@
 /* Literal-reading audit, batch earth-c + metal-a/b/c (2026-08-24).
  *
- * The owner's ruling behind R125 — "all the cards in Algomancy are pretty
+ * The owner's Rotspore ruling (CR 707.7) — "all the cards in Algomancy are pretty
  * literal" — applied to the four batches above. These tests PIN the literal
  * reading of two printed clauses whose code carried a qualifier the card does
  * not print. Seeds 11300-11399.
@@ -10,7 +10,7 @@
  *     `augmentText`, `spellEffect`, `graftEffect`) and no others, so any card
  *     whose text is a static, a cost modifier, a permission or a replacement
  *     counted as ability-free: 44 of the pool's cards, Sandstone Defender and
- *     Towering Colossus among them. The engine's own R62 note settles it — "a
+ *     Towering Colossus among them. The engine's own suppression note (now CR 712.1a) settles it — "a
  *     static IS an ability" — so the test is now "no behaviour at all", with
  *     attributes and type-line [Augment] grants still excused by the card's
  *     own reminder text.
@@ -50,7 +50,7 @@ test('The Bonesculptor: a statics-only [Augment] card is NOT "a unit with no abi
   const labels = h.state.decision!.options.map(o => o.label);
   assert.ok(labels.includes('Curio Drifter'), 'the genuinely ability-free unit is still offered');
   assert.ok(!labels.includes('Sandstone Defender'),
-    '"[Augment] Your other units gain +0/+2" is an ability — R62: a static IS an ability');
+    '"[Augment] Your other units gain +0/+2" is an ability — CR 712.1a: a static IS an ability');
 });
 
 test('The Bonesculptor: cost-modifier, permission and replacement text all count as abilities', () => {
@@ -87,7 +87,7 @@ test('The Bonesculptor: the resolution re-check refuses a text-bearing card too'
   // resolution guard has to refuse it independently of the menu
   const labels = h.state.decision!.options.map(o => o.label);
   assert.ok(!labels.includes('Towering Colossus'), 'a 10/15 statics card is not ability-free');
-  pick(h, -1);                                       // decline — the budget is refunded (R113)
+  pick(h, -1);                                       // decline — the budget is refunded (CR 109.9b)
   assert.ok(!unitsOf(h, p).some(u => u.card === 'Towering Colossus'), 'nothing came out of the bin');
   assert.ok(h.state.players[p]!.bin.includes('Towering Colossus'), 'it is still there');
 });

@@ -1,4 +1,4 @@
-/* R297 — Learn to Play: the decks and the lesson flow, played for real.
+/* CR D8.1 — Learn to Play: the decks and the lesson flow, played for real.
  *
  * Every claim here is read off a real tutorial game: a SoloServer running the
  * real tutorial deal, a scripted learner who plays sensibly, and the lessons

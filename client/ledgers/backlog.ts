@@ -622,7 +622,7 @@ const OPEN: Entry[] = [
     touches: [
       'client/ui/main.ts',
       'client/ui/glossary.ts',
-      'client/docs/digital-rules.md',
+      'data/comprehensive-rules',
       'data/rules',
     ],
     notes:
@@ -783,13 +783,13 @@ const OPEN: Entry[] = [
       'A badged account can review the questions players asked the rules bot, and flag a bad or problematic one',
       'A flagged question lands in a queue that survives a restart and is visibly ahead of unflagged reports when the owner works through them',
       'Nothing a judge writes is returned into a live game — no human answer appears in the in-game "Ask the judge" box',
-      'Nothing a judge does edits digital-rules.md or the rulings corpus',
+      'Nothing a judge does edits the comprehensive rules or the rulings corpus',
     ],
     decided: [
       'Humans, not the bot. The existing in-client "Ask the judge" box goes to the rules bot; badges are about people.',
       'L3 = word of law / creators. L2 = highly knowledgeable community, long-time players. L1 = above genpop, not yet fully trusted.',
       'NO LIVE ESCALATION. Judges review and flag instead. Owner, 2026-08-25, asked whether a human answer can flow back into the in-game box: "Not live, but judges should be able to review questions and flag problematic ones." — so the in-game box stays bot-answered, and what badges buy is an after-the-fact review queue over the questions that were asked, with a flag on the bad ones. Do not build in-game escalation.',
-      'AN L3 JUDGE MAY NOT EDIT THE RULINGS CORPUS. Owner, 2026-08-25: "No, but their feedback needs to be prioritized during updates and engine fixes." — digital-rules.md and the rulings corpus stay the owner\'s hand. The obligation this creates is on the OTHER side: a judge\'s flag has to land somewhere durable and visibly prioritized, so that the next rules update or engine fix actually sees it. A flag that only exists as a chat message does not satisfy this.',
+      'AN L3 JUDGE MAY NOT EDIT THE RULINGS CORPUS. Owner, 2026-08-25: "No, but their feedback needs to be prioritized during updates and engine fixes." — the comprehensive rules (until 2026-10, the ruling register) and the rulings corpus stay the owner\'s hand. The obligation this creates is on the OTHER side: a judge\'s flag has to land somewhere durable and visibly prioritized, so that the next rules update or engine fix actually sees it. A flag that only exists as a chat message does not satisfy this.',
     ],
     asks: [],
     deps: ['BL-16'],
@@ -798,7 +798,7 @@ const OPEN: Entry[] = [
       'client/server/api-accounts.ts',
       'client/ui/main.ts',
       'client/ui/inspect.ts',
-      'client/docs/digital-rules.md',
+      'data/comprehensive-rules',
     ],
     notes:
       'The client already has a judge question box (the ⚖ entry on the card right-click menu '
@@ -935,7 +935,7 @@ const OPEN: Entry[] = [
       + 'wood/metal resources and never offers them"). The rules do not: any resource can be '
       + 'created by recycling. So in draft, the other elements should be legal too — offered '
       + 'behind the recycle menu\'s "more…" (and the Prismite exchange menu\'s), never on the '
-      + 'main menu, exactly as a constructed deck\'s off-elements already are (R99/R299).',
+      + 'main menu, exactly as a constructed deck\'s off-elements already are (CR D6.14b).',
     doneWhen: [
       'In a draft game, recycling a hand card → "more…" lists the four elements not in the trio, then Shard',
       'Choosing one makes that resource, and an active Prismite can be exchanged into one too',
@@ -951,7 +951,7 @@ const OPEN: Entry[] = [
       'client/engine/test/21-fixes.test.ts',
     ],
     notes:
-      'Found shipping R299 (#168). The menu already splits show/hidden through '
+      'Found shipping the recycle-for-Prismite change (#168). The menu already splits show/hidden through '
       + 'resourceMenuElements; the engine check is the real change, and it will drift every '
       + 'draft fuzz walk, so expect to re-seed the fixtures that pin one (143, 171, test-accounts '
       + 'search for theirs now).',

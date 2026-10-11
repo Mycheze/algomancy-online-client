@@ -1,4 +1,4 @@
-/* R244 — A MOD IS PART OF THE UNIT IT SITS ON.
+/* CR 720.6 — A MOD IS PART OF THE UNIT IT SITS ON.
  *
  * Playtest report #129 (room DSVQ, 2026-08-29, actionIndex 117). Rashi cast
  * the {Virus} Malformed Monstrosity onto BEN's The Everywhere; the -7/-7 killed
@@ -25,16 +25,17 @@
  *   2. THE ERASE IS NOT A TRASH. A nontoken mod swept out of the bin with its
  *      {Unstable} host is not trashed at all.
  *
- * ⚠ Half 2 OVERRULES [R137]'s "The mods ride with it" section, which was
+ * ⚠ Half 2 OVERRULES the Unstable-trash ruling's "The mods ride with it" section, which was
  * reasoning and not a log (the ANBB mod was a Wraith token, which has no card
- * to trash either way). Everything else in R137 stands, and the FIRST thing
+ * to trash either way). Everything else in that ruling stands, and the FIRST thing
  * this file does is prove it: the BODY of an {Unstable} unit that dies is
  * still binned and still trashed. That is report #93, and an implementation of
- * R244 that stops the body trashing has silently reopened it.
+ * the mod rule (CR 801.2g) that stops the body trashing has silently reopened
+ * it in the engine — though CR 801.2h says the body is not trashed either (CT-246).
  *
  * The log line the owner objected to disappears entirely; the one above it stays.
  *
- * Report #121 (Cosmic Reversal) used to be here too; R250 ruled it and its
+ * Report #121 (Cosmic Reversal) used to be here too; the owner ruled it and its
  * coverage moved to test/229-cosmic-and-control.test.ts. Seeds 9200-9299.
  */
 import { test } from 'node:test';
@@ -91,14 +92,14 @@ function moddedEnemyUnit(seed: number, mod = 'Ignis Sprite', host = 'Good Whale'
   return { h, A, D, hostId, mark: h.events.length };
 }
 
-// ── R137 first: the boundary this ruling must not cross ─────────────────
+// ── The engine's Unstable-body trash first (CT-246; CR 801.2h differs): the boundary this must not cross ──
 
-test('R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {
-  // ⚠ THIS TEST IS THE FENCE. R137 (owner, 2026-08-24, report #93) overruled
+test('CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {
+  // ⚠ THIS TEST IS THE FENCE. The owner's call of 2026-08-24 (report #93) overruled
   // BOTH the printed reminder text ("If they would enter a bin, erase them
   // instead") AND a direct Caleb ruling, on purpose: an {Unstable} unit that
-  // dies passes THROUGH the bin, is trashed there, and is only then erased.
-  // R244 changes what happens to its MODS and nothing else. If this reddens,
+  // dies passes THROUGH the bin, is trashed there, and is only then erased. CR 801.2h and 405.5 follow the print instead (CT-246).
+  // CR 720.8a changes what happens to its MODS and nothing else. If this reddens,
   // report #93 is open again and Dropslime is broken exactly as it was.
   const { h, A, hostId, mark } = moddedEnemyUnit(9200);
   assert.equal(ent(h, hostId)!.controller, A);
@@ -109,12 +110,12 @@ test('R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods 
   assert.equal(body[0]!.seat, A, 'and it is trashed by the seat whose bin it entered');
   assert.ok(h.log.some(l => l.includes('trashes Good Whale')),
     'and the trash is in the log, where report #93 could not find it');
-  assert.ok(erasedOf(h, A).includes('Good Whale'), 'then erased, R137 step 4');
+  assert.ok(erasedOf(h, A).includes('Good Whale'), 'then erased — the engine sweeps it out of the bin (CR 405.5 erases it instead of binning; CT-246)');
   assert.equal(binOf(h, A).filter(c => c === 'Good Whale').length, 0,
     'the bin is empty again before anybody can look');
 });
 
-test('R137 GUARD: the per-battle trashed ledger still counts an Unstable body', () => {
+test('CT-246 GUARD (engine; CR 801.2h says not trashed): the per-battle trashed ledger still counts an Unstable body', () => {
   // The other half of #93, and the half Dropslime reads: its damage is the
   // battle-wide `trashed` counter, not a per-seat one. Derived from the card,
   // not from the counter key, so the guard cannot drift from what the card
@@ -139,7 +140,7 @@ test('R137 GUARD: the per-battle trashed ledger still counts an Unstable body', 
 
 // ── half 2: the erase is not a trash ────────────────────────────────────
 
-test('R244: a nontoken mod erased with its Unstable host is not trashed at all', () => {
+test('CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all', () => {
   const { h, A, D, hostId, mark } = moddedEnemyUnit(9202);
   withE(h, e => { e.destroy(e.entity(hostId)!, 'dies'); });
 
@@ -150,12 +151,12 @@ test('R244: a nontoken mod erased with its Unstable host is not trashed at all',
     'and it is gone from the log too, which is where the owner read it');
 
   // it still GOES where the host goes — this is a change of what the departure
-  // is called, not of whether the card leaves. ⚠ R250 §4 moved WHICH SEAT's
+  // is called, not of whether the card leaves. ⚠ The zones-follow-control ruling (CR 400.4) moved WHICH SEAT's
   // pile that is: zones follow control, and a mod's controller is its host's.
   assert.ok(erasedOf(h, A).includes('Ignis Sprite'),
-    'the mod reaches the HOST CONTROLLER erased pile (R65 + R250)');
+    'the mod reaches the HOST CONTROLLER erased pile (CR 410.4b, 400.4)');
   assert.ok(!erasedOf(h, D).includes('Ignis Sprite'),
-    'and not the mod owner one — R244 destination half is superseded');
+    'and not the mod owner one — the mod ruling\'s destination half is superseded');
   assert.equal(binOf(h, D).filter(c => c === 'Ignis Sprite').length, 0,
     'and it does not linger in a bin');
   assert.equal(binOf(h, A).filter(c => c === 'Ignis Sprite').length, 0,
@@ -164,10 +165,10 @@ test('R244: a nontoken mod erased with its Unstable host is not trashed at all',
     'the erase is still announced — the player is told what happened to it');
 });
 
-test('R244: Pull Under still trashes the mods it deliberately keeps binned', () => {
+test('CR 405.4: Pull Under still trashes the mods it deliberately keeps binned', () => {
   // The one caller that suppresses the {Unstable} sweep (`keepBinned`) — "put
   // it and all of its mods into your bin". Those cards really do STAY in a
-  // bin, so they really are trashed, and R244 does not touch them. This is why
+  // bin, so they really are trashed, and CR 720.8a does not touch them. This is why
   // the engine tests the SWEEP condition rather than special-casing the erase.
   const { h, D, hostId, mark } = moddedEnemyUnit(9203);
   withE(h, e => { e.destroy(e.entity(hostId)!, 'is deleted', { binTo: D, keepBinned: true }); });
@@ -183,10 +184,10 @@ test('R244: Pull Under still trashes the mods it deliberately keeps binned', () 
 
 // ── half 1: attribution follows the host ────────────────────────────────
 
-test('R244: a mod trashed on a recall is trashed by the host controller, not by its owner', () => {
+test('CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner', () => {
   // The route where a mod IS genuinely trashed: the host leaves for a hand, the
-  // mod is left behind in a bin and STAYS there (R70, Caleb 2024-09-15). Before
-  // R244 this said "Player 2 trashes Ignis Sprite" — the mod owner. It is part
+  // mod is left behind in a bin and STAYS there (CR 801.2f, Caleb 2024-09-15). Before
+  // the mod-trash ruling this said "Player 2 trashes Ignis Sprite" — the mod owner. It is part
   // of a unit under the other seat control, so it is that seat that trashed it.
   const { h, A, D, hostId, mark } = moddedEnemyUnit(9204);
   withE(h, e => { e.recall(e.entity(hostId)!); });
@@ -196,21 +197,21 @@ test('R244: a mod trashed on a recall is trashed by the host controller, not by 
   assert.equal(modTrashes[0]!.seat, A,
     'by the HOST controller — a mod is part of the unit it sits on');
   assert.notEqual(modTrashes[0]!.seat, D, 'and no longer by the mod owner');
-  // ⚠ R250 §4 REVERSED R244's destination half. This block used to read "the
+  // ⚠ The zones-follow-control ruling reversed the mod ruling's destination half. This block used to read "the
   // DESTINATION is untouched: a card still goes to its own owner bin". The
   // owner has since ruled the general form: *"Zones ALWAYS follow control. One
   // rule, no split. Whoever CONTROLLED the card at the moment it left play
-  // gets it in their bin."* R244's ATTRIBUTION half — the two assertions above
+  // gets it in their bin."* The mod ruling's ATTRIBUTION half (CR 720.8) — the two assertions above
   // — is what stands, and the title of this test is about that half.
   assert.ok(binOf(h, A).includes('Ignis Sprite'),
-    'R250: the destination follows control too, so it lands in the trasher bin');
+    'CR 410.4a: the destination follows control too, so it lands in the trasher bin');
   assert.equal(binOf(h, D).filter(c => c === 'Ignis Sprite').length, 0,
     'the mod owner does not get their card back');
   assert.equal(modTrashes[0]!.binNth, 0,
-    'and because the two seats now agree, the R131 bin ref is STAMPED');
+    'and because the two seats now agree, the CR 405.6 bin ref is STAMPED');
 });
 
-test('R244: the per-seat trash ledger on a recall counts for the host controller', () => {
+test('CR 720.8: the per-seat trash ledger on a recall counts for the host controller', () => {
   // What actually moves at the table. "When you trash a card during battle,
   // Draw a card" (Muck Rummager) and "When you trash another card" (Murkstalker,
   // Cthyrian Rector, Murkdrop Distiller, Unrelenting Horror) all read
@@ -231,30 +232,30 @@ test('R244: the per-seat trash ledger on a recall counts for the host controller
   assert.equal(dOwner, 0, 'the mod owner did not');
 });
 
-test('R244: a cached host attributes its left-behind mods the same way a recalled one does', () => {
+test('CR 720.8: a cached host attributes its left-behind mods the same way a recalled one does', () => {
   // Same seam, the other caller of leavePlay + afterDespawn. Kept because the
-  // two used to be one copy-paste apart (R153/CT-43) and this is exactly the
+  // two used to be one copy-paste apart (CT-43) and this is exactly the
   // kind of change that fixes one and not the other.
   const { h, A, D, hostId, mark } = moddedEnemyUnit(9206);
   withE(h, e => { e.cacheUnit(e.entity(hostId)!); });
   const modTrashes = trashEvents(h, mark).filter(t => t.card === 'Ignis Sprite');
   assert.equal(modTrashes.length, 1);
   assert.equal(modTrashes[0]!.seat, A, 'the host controller, on the cache route too');
-  assert.ok(binOf(h, A).includes('Ignis Sprite'), 'R250: and into that same seat bin');
+  assert.ok(binOf(h, A).includes('Ignis Sprite'), 'CR 410.4a: and into that same seat bin');
   assert.ok(!binOf(h, D).includes('Ignis Sprite'), 'not the mod owner one');
 });
 
-test('R250 + R140: the bin ref names the copy just trashed, not the innocent older one', () => {
-  // ⚠ THIS TEST REPLACES R244's HAZARD WITH R250's. R244 split the trasher
+test('the bin ref names the copy just trashed, not the innocent older one', () => {
+  // ⚠ THIS TEST REPLACES THE MODS RULING'S HAZARD WITH THE ZONES-FOLLOW-CONTROL ONE (CR 400.4). The mods ruling split the trasher
   // from the bin, so `noteTrashed` had to REFUSE to stamp a bin ref (counting
   // the name in a bin the card was not in would have answered with an innocent
   // older copy, and Cthyrian Rector — "recall THAT card from your bin" — would
-  // have recalled it; that is R140 one seat over). R250 §4 closes the split:
+  // have recalled it; that is the wrong-copy bug (CR 405.6) one seat over). CR 801.2e closes the split:
   // the card really is in the trasher bin now, so the stamp is BACK, and the
   // whole question becomes whether it names the right copy.
   //
   // The older copy below is what makes the nth mean something. Get this wrong
-  // and R140 is reopened by the fix that was supposed to make it unnecessary.
+  // and the wrong-copy bug (CR 405.6) is reopened by the fix that was supposed to make it unnecessary.
   const { h, A, D, hostId, mark } = moddedEnemyUnit(9207);
   h.state.players[A]!.bin.push('Ignis Sprite');           // an innocent older copy
   withE(h, e => { e.recall(e.entity(hostId)!); });
@@ -272,7 +273,7 @@ test('R250 + R140: the bin ref names the copy just trashed, not the innocent old
 
 // ── the whole-pool sweep ────────────────────────────────────────────────
 
-test('R244 whole pool: no nontoken mod is trashed by its host death, and the body always is', () => {
+test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is', () => {
   // Derived over every card that can BE a nontoken mod (203 of them today),
   // not over the one card the report named. Three of them — the [Augment] "I
   // gain -X/-X" viruses, Malformed Monstrosity among them — shrink the host to
@@ -303,12 +304,12 @@ test('R244 whole pool: no nontoken mod is trashed by its host death, and the bod
   }
   assert.equal(checked, cards.length, 'every candidate was actually exercised');
   assert.deepEqual(modTrashed, [],
-    'R244: not one of them is trashed when it is erased with its host');
+    'CR 720.8a: not one of them is trashed when it is erased with its host');
   assert.deepEqual(bodyNotTrashed, [],
-    'R137 GUARD, whole pool: the body is trashed under every one of them');
+    'CT-246 GUARD (engine, not CR 801.2h), whole pool: the body is trashed under every one of them');
 });
 
-test('R244 whole pool: every mod trashed on a recall is attributed to the host controller', () => {
+test('CR 720.8 whole pool: every mod trashed on a recall is attributed to the host controller', () => {
   const wrong: string[] = [];
   let checked = 0;
   for (const name of moddable()) {
@@ -335,9 +336,9 @@ test('R244 whole pool: every mod trashed on a recall is attributed to the host c
 // tell a player what the sweep had considered. Both said in as many words that
 // the reading was an owner call that had not been made.
 //
-// It has been made — **R250** (owner, 2026-08-29): *"It returns all spell
+// It has been made — the owner, 2026-08-29: *"It returns all spell
 // effects on the stack … and recalls all spell units FROM THE BOARD."* So the
-// pins are gone and the coverage lives with the rest of R250, in
+// pins are gone and the coverage lives with the rest of that ruling, in
 // `test/229-cosmic-and-control.test.ts` §1, which asserts the ruled behaviour
 // over the whole derived Spell Unit population instead of the one fixture.
 // Nothing cited these two by name (checked against `playtest-ledger.ts` and

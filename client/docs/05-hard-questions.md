@@ -37,12 +37,12 @@ channel are the mine; some may need Caleb):
     battle order (Temporal Rift): what happens to the rest of region 3's stack? To regions
     4 and 5 that haven't resolved?
 
-**Recommendation:** keep a `digital-rules.md` decisions log from day one. Every question gets a
+**Recommendation:** keep a decisions log (`digital-rules.md`, the ruling register, since retired) from day one. Every question gets a
 numbered ruling with rationale. This document *is* the engine spec, and it's also genuinely
 useful content for the community/RAG bot regardless of how far the client goes.
 
-> **STATUS 2026-07-16: done — see [digital-rules.md](digital-rules.md).** Bena adjudicated
-> all twelve as R1–R12 (R1 provisional pending a re-explained question). New questions go
+> **STATUS 2026-07-16: done — see the retired ruling register.** Bena adjudicated
+> all twelve as twelve numbered rulings (the first one provisional pending a re-explained question). New questions go
 > there, not here.
 
 ## B. Product decisions (Bena's call, not researchable)

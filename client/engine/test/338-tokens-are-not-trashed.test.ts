@@ -1,8 +1,8 @@
 /**
- * R306 (owner, 2026-09-28) — TOKENS ARE NOT TRASHED.
+ * CR 801.2d (owner, 2026-09-28) — TOKENS ARE NOT TRASHED.
  *
- * R133 (2026-08-24) recorded the owner saying *"Tokens are trashed, yes"*, and
- * the engine had trashed a dying token ever since R40's 2026-08-21 amendment:
+ * The tokens-are-not-cards ruling (2026-08-24) recorded the owner saying *"Tokens are trashed, yes"*, and
+ * the engine had trashed a dying token ever since the trashing ruling's 2026-08-21 amendment (since reversed):
  * it enters the bin, so it was trashed there, and only then swept. The owner:
  *
  *   > "that ruling was my fault. It is just false."
@@ -10,7 +10,7 @@
  *   >  semantics of the game. A card is an actual physical card that has an
  *   >  algomancy card back only … A token dying should never count."
  *
- * So a dying token still passes THROUGH the bin and is erased there (R69 — a
+ * So a dying token still passes THROUGH the bin and is erased there (CR 410.5a — a
  * zone fact, unchanged), but it fires no `trashed` event, bumps no `trashed` /
  * `trashed:<seat>` battle counter, and fires no "when I am trashed", its own
  * included. Its `died` event is unchanged: a token is still a unit.
@@ -58,7 +58,7 @@ function inBattle(seed: number): { h: Harness; A: Seat; D: Seat; region: number 
 
 /** a nontoken unit of `name` for `seat`, standing in the BATTLE region (the
  * `spawn` helper puts it in the seat's home, which is not where A's attack is,
- * and the trash ledger and every watcher are region-scoped — R12/R14) */
+ * and the trash ledger and every watcher are region-scoped — CR 601.1d, 505.6) */
 function put(h: Harness, seat: Seat, name: string, region: number): EntityId {
   let id = -1;
   withE(h, e => { id = e.spawnUnit(seat, name, region).id; });
@@ -73,7 +73,7 @@ function killToken(h: Harness, seat: Seat, region: number, name = 'Unit Token'):
   });
 }
 
-test('R306: the derived population is the one the ruling names', () => {
+test('CR 801.2d: the derived population is the one the ruling names', () => {
   const watchers = trashListeners(false);
   const own = trashListeners(true);
   for (const n of ['Cerebrox', 'Cthyrian Culler', 'Cthyrian Rector', 'Muck Rummager',
@@ -85,7 +85,7 @@ test('R306: the derived population is the one the ruling names', () => {
   }
 });
 
-test('R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads', () => {
+test('CR 801.2i: a token unit dying in battle does not bump the trashed ledger that Dropslime reads', () => {
   const { h, A, D, region } = inBattle(33801);
   const start = h.events.length;
   let before = -1, after = -1, beforeA = -1, afterA = -1;
@@ -100,14 +100,14 @@ test('R306: a token unit dying in battle does not bump the trashed ledger that D
   const died = h.events.slice(start).filter(ev => ev.type === 'died');
   assert.equal(died.length, 2, 'both tokens DIED — a token is still a unit');
   assert.ok(died.every(ev => ev.data!['token'] === true && ev.data!['to'] === 'bin'),
-    'each death says token, into the bin (R69/R70)');
+    'each death says token, into the bin (CR 410.5a)');
   const swept = h.events.slice(start).filter(ev => ev.type === 'erased' && ev.data!['from'] === 'bin');
-  assert.equal(swept.length, 2, 'and each was erased out of the bin by the sweep (R69)');
+  assert.equal(swept.length, 2, 'and each was erased out of the bin by the sweep (CR 713.5)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token') && !h.state.players[D]!.bin.includes('Unit Token'),
     'no token is left in a bin');
 });
 
-test('R306: Dropslime deals damage for the CARDS trashed this battle and not for the tokens', () => {
+test('CR 801.2i: Dropslime deals damage for the CARDS trashed this battle and not for the tokens', () => {
   const { h, A, D, region } = inBattle(33802);
   const victim = put(h, D, 'Good Whale', region);      // a real card, dies below
   const target = put(h, D, 'Good Whale', region);      // takes Dropslime's damage
@@ -129,7 +129,7 @@ test('R306: Dropslime deals damage for the CARDS trashed this battle and not for
     'the damage is 2 — the dead card and Dropslime itself — not 5 with the three tokens');
 });
 
-test('R306: Splort, Cthyrian Culler and Muck Rummager do not fire on a token death', () => {
+test('CR 801.2d: Splort, Cthyrian Culler and Muck Rummager do not fire on a token death', () => {
   const { h, A, D, region } = inBattle(33803);
   for (const n of ['Splort', 'Cthyrian Culler', 'Muck Rummager']) put(h, A, n, region);
   const lifeD = h.state.players[D]!.life;
@@ -146,7 +146,7 @@ test('R306: Splort, Cthyrian Culler and Muck Rummager do not fire on a token dea
   assert.equal(h.state.players[A]!.hand.length, handA, 'Rummager drew nothing');
 });
 
-test('R306 control: a NONTOKEN death still counts and still fires the same three watchers', () => {
+test('CR 801.2 control: a NONTOKEN death still counts and still fires the same three watchers', () => {
   const { h, A, region } = inBattle(33804);
   for (const n of ['Splort', 'Cthyrian Culler', 'Muck Rummager']) put(h, A, n, region);
   const victim = put(h, A, 'Good Whale', region);
@@ -162,7 +162,7 @@ test('R306 control: a NONTOKEN death still counts and still fires the same three
   }
 });
 
-test('R306 whole pool: no trash watcher hears a token die, whoever controls it', () => {
+test('CR 801.2d whole pool: no trash watcher hears a token die, whoever controls it', () => {
   const watchers = trashListeners(false).filter(n => getCard(n).kind === 'unit');
   assert.ok(watchers.length >= 8, `the watcher population is derived (${watchers.length})`);
   for (const w of watchers) {
@@ -178,10 +178,10 @@ test('R306 whole pool: no trash watcher hears a token die, whoever controls it',
 
 // A token that carries its OWN "when I am trashed". In play the only token
 // copy maker is Hooba-God ("a token that is a copy of me"), which would need to
-// be wearing one of these faces (R118 layer 0); Swarmling's token copy has one,
+// be wearing one of these faces (as a copy, CR 710.1); Swarmling's token copy has one,
 // but it narrows to a discard, which a token can never be. So this is a
 // white-box spawn of the token copy, which is the object those routes make.
-test('R306: a token copy of an own-trash card does not fire its own when-I-am-trashed', () => {
+test('CR 801.2d: a token copy of an own-trash card does not fire its own when-I-am-trashed', () => {
   const own = trashListeners(true).filter(n => getCard(n).kind === 'unit');
   assert.ok(own.includes('Dropslime'), 'Dropslime is in the derived population');
   for (const n of own) {
@@ -195,7 +195,7 @@ test('R306: a token copy of an own-trash card does not fire its own when-I-am-tr
   }
 });
 
-test('R306 control: the same Dropslime as a CARD dying in battle does fire', () => {
+test('CR 801.2 control: the same Dropslime as a CARD dying in battle does fire', () => {
   const { h, A, region } = inBattle(33821);
   const slime = put(h, A, 'Dropslime', region);
   const start = h.events.length;
@@ -204,7 +204,7 @@ test('R306 control: the same Dropslime as a CARD dying in battle does fire', () 
   assert.equal(triggersOf(h, 'Dropslime', start).length, 1, 'and its own trigger fires');
 });
 
-test('R306: a token MOD on a dying card host is erased and not trashed; the host is', () => {
+test('CR 410.4c: a token MOD on a dying card host is erased and not trashed; the host is', () => {
   const { h, A, region } = inBattle(33830);
   const host = put(h, A, 'Good Whale', region);
   withE(h, e => { e.augmentWraith(e.entity(host)!, A); });   // a token MOD
@@ -212,6 +212,6 @@ test('R306: a token MOD on a dying card host is erased and not trashed; the host
   withE(h, e => { e.destroy(e.entity(host)!, 'dies'); });
   const t = trashes(h, start);
   assert.deepEqual(t.map(ev => ev.data!['card']), ['Good Whale'],
-    'one trash: the CARD host (R137, Unstable by its mod); the token mod never (R69/R306)');
-  assert.ok(h.state.players[A]!.erased?.includes('Wraith'), 'the token mod reached the erased pile (R65)');
+    'one trash: the CARD host (Unstable by its mod; the engine trashes it, CR 801.2h does not, CT-246); the token mod never (CR 410.4c)');
+  assert.ok(h.state.players[A]!.erased?.includes('Wraith'), 'the token mod reached the erased pile (CR 407.3a)');
 });

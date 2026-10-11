@@ -1,4 +1,4 @@
-/* R217 — THE UNREACHED LEDGER, EXTRACTED SO IT CAN BE READ WITHOUT PARSING.
+/* THE UNREACHED LEDGER, EXTRACTED SO IT CAN BE READ WITHOUT PARSING (see 187-scenario-queue).
  *
  * This literal used to live inside `84-card-semantics.test.ts`. It moved here
  * for one reason: **anything else that needs to know which cards are unreached
@@ -24,12 +24,12 @@
  * the form CARD-TODO #49 says it closes in ("the remainder are clauses no
  * fixture can reach, named individually rather than counted").
  *
- * 36 claims over 35 cards, down from 52 at the end of R180 and from 218 over
+ * 36 claims over 35 cards, down from 52 at the end of CARD-TODO #49 stage 4 and from 218 over
  * the whole gated heap when the ticket was filed.
  *
  * ⚠ THOSE TWO NUMBERS ARE RE-DERIVED, NOT MAINTAINED. They said "38 claims
  * over 37 cards" until CT-147 measured them in round 36 and both were wrong:
- * Slag Spewer left the ledger at R219 and Cinder Scuttler at R261, and the
+ * Slag Spewer left the ledger when its erase began filing the pile and Cinder Scuttler when combat-damage triggers moved to after combat, and the
  * sentence did not move. That is the fourth instance of the exact failure
  * `84-card-semantics.test.ts` lists three of beside its own tally — *"a card
  * count that was really a claim count"*, *"a number nobody re-derives decays
@@ -43,9 +43,9 @@
  *   REAL   — the clause is not implemented. Cite a CARD-TODO id. (None yet:
  *            stages 3 and 4 found no broken card, and that null result is
  *            measured by the positive controls below, not assumed.)
- *   REGION — R12. The clause is scoped to the region its event fires in, and
+ *   REGION — CR 601.1d. The clause is scoped to the region its event fires in, and
  *            the card is standing in its home region while the battle is being
- *            fought in the other seat's. ⚠ R199 CLOSED FIVE OF THE SIX — see
+ *            fought in the other seat's. ⚠ CARD-TODO #49 CLOSED FIVE OF THE SIX — see
  *            the block on the family below, and 170-battle-position-promises
  *            for the per-card assertions that keep them closed.
  *   EVENTLESS
@@ -73,9 +73,9 @@
  *            honest members of the denominator.
  */
 export const UNREACHED: Record<string, string> = {
-  // ── REGION (R12): the clause needs the card to be IN the battle's region ──
+  // ── REGION (CR 601.1d): the clause needs the card to be IN the battle's region ──
   //
-  // ⚠ R199 CLOSED FIVE OF THE SIX. The family was never a property of the
+  // ⚠ CARD-TODO #49 CLOSED FIVE OF THE SIX. The family was never a property of the
   // cards and it was not, as the plan assumed, a missing attacking position
   // either: `progressAction` has always declared the fullest attack on offer,
   // so the card marches into the defender's region every game. What was missing
@@ -90,7 +90,7 @@ export const UNREACHED: Record<string, string> = {
     'REGION — "each opponent loses 3 life" loops over `regions[ctx.region].presentSeats`, and the '
     + "trigger resolves in the drill's home region where no opponent is present, so the loop runs "
     + 'zero times. ⚠ It does this SILENTLY; its sibling Boreal Wanderer announces the same no-op. '
-    + '⚠ THE LAST OF THE SIX, and R199 measured exactly why the `inBattle` pin does not reach it: '
+    + '⚠ THE LAST OF THE SIX, and the battle-position round measured exactly why the `inBattle` pin does not reach it: '
     + 'this card is a 2/2 that the `counters` and `damage` beats leave dead before the declare '
     + 'step, and the drill\'s "keep the card on the table" respawn puts it back AT HOME, mid-battle '
     + 'and too late to join the attack. It never stands in a battle at all (`inBattleBeats` is '
@@ -121,7 +121,7 @@ export const UNREACHED: Record<string, string> = {
     'BOARD — "skip your draft step" only exists in a drafted game; the drill plays constructed.',
   'Prediction Prophet':
     'BOARD — "create a 5/5 unit IF YOU MATCHED THE PREDICTION". The trigger fires and resolves; '
-    + 'the drill answers the prediction with the FLOOR of R197\'s numeric entry (0) and the life '
+    + 'the drill answers the prediction with the FLOOR of CR D7.2a\'s numeric entry (0) and the life '
     + 'total moves.',
   'Sporebloom Siren':
     'BOARD — "delete all units with -1/-1 counters on them", resolved on a board where the units '
@@ -136,7 +136,7 @@ export const UNREACHED: Record<string, string> = {
     + 'a spell effect, so there is correctly nothing of that kind to aim at.',
   'Perpetual Construct':
     'BOARD — "whenever a mod is applied to ME". The `modApplied` fixture deliberately mods somebody '
-    + 'else: modding the card under test makes it {Unstable} (R79), which turns its next death into '
+    + 'else: modding the card under test makes it {Unstable} (CR 720.7), which turns its next death into '
     + 'an erase and takes it out of the game for every later beat.',
   'Earnest Defender':
     'BOARD — "whenever an ally becomes the target of an ENEMY SPELL". The `targeted` fixture is a '
@@ -196,7 +196,7 @@ export const UNREACHED: Record<string, string> = {
     + 'tokenCreated/spawned. ⚠ Widening it would let a card promising "create a 2/2 unit" pass by '
     + 'making a resource instead.',
   'Swirling Shardform': 'VOCAB — the same Shard/resource mismatch as Hooba-Lan.',
-  // R261 DELETED THE 'Cinder Scuttler' ENTRY THAT USED TO SIT HERE, and how it
+  // THE AFTER-COMBAT ROUND DELETED THE 'Cinder Scuttler' ENTRY THAT USED TO SIT HERE, and how it
   // went stale is the thing worth keeping. It read:
   //
   //   'VOCAB — the card recalls itself from the BIN into play. `recall` has no
@@ -205,10 +205,10 @@ export const UNREACHED: Record<string, string> = {
   //    observed instead.'
   //
   // Every word of that was true and none of it was the reason. The card's
-  // trigger fires on combat damage, and before R261 a combat-damage trigger
+  // trigger fires on combat damage, and before combat-damage triggers were held to after combat a combat-damage trigger
   // resolved INSIDE the damage sub-step with no stack entry of its own — so
   // `ownResolution` had nothing to attribute the payload to, whatever the
-  // vocabulary said. R261 gives it a real resolution window and the card is
+  // vocabulary said. Holding it to after combat (CR 608.9b) gives it a real resolution window and the card is
   // now observed delivering. Proved by experiment rather than argued: with
   // `src/engine.ts` restored from HEAD this file is green, and red on the new
   // engine.
@@ -240,7 +240,7 @@ export function unreachedOpener(card: string): string | null {
 
 // ── WITNESSED — the entries a human has now watched deliver ────────────
 // (docs/14 §5, the verdict log. No ruling number: nothing here decides a rule,
-//  it records who watched what. R215 §2 fails a minted-but-unwritten R-number,
+//  it records who watched what. The old register check failed a minted-but-unwritten ruling number,
 //  and inventing one to look official is how that gap gets minted.)
 /**
  * **An entry here is still unreached, and stays in `UNREACHED` above.** The
@@ -265,13 +265,13 @@ export function unreachedOpener(card: string): string | null {
  * transcription of the LATEST verdict per scenario, taken 2026-08-27.
  * (It was `server/verdicts.jsonl` until the 2026-08-30 reorg moved all runtime
  * state to `var/`. `npm run reports` from client/ brings a copy down beside the
- * playtest snapshot; R275 — the same stale spelling in the playtest fetch cost
+ * playtest snapshot — the same stale spelling in the playtest fetch cost
  * twelve unread bug reports.)
  */
 export interface Witness {
   /** the scenario id in server/scenarios*.ts that built the board */
   scenario: string;
-  /** engine SHA the judgement was made against (R200) */
+  /** engine SHA the judgement was made against (see replay-room.ts) */
   engine: string;
   /** ISO date of the verdict */
   on: string;
@@ -282,7 +282,7 @@ export const WITNESSED: Readonly<Record<string, Witness>> = {
   'Nothyr': { scenario: 'nothyr-negates-a-trigger', engine: 'ca91df7', on: '2026-08-26' },
   'Skybreaker': { scenario: 'skybreaker-negates-spells', engine: '7864bb8', on: '2026-08-27' },
   'Void Mandible': { scenario: 'void-mandible-negates', engine: '7864bb8', on: '2026-08-27' },
-  // R261: Cinder Scuttler's witness note went with its UNREACHED entry above —
+  // Cinder Scuttler's witness note went with its UNREACHED entry above —
   // a witness for a card the drill now reaches is a note about nothing (187).
   'Automaton of Abundance': { scenario: 'automaton-augmented-batch', engine: '7864bb8', on: '2026-08-27' },
   'Scholar of the Void': { scenario: 'scholar-transforms', engine: '7864bb8', on: '2026-08-27' },
@@ -307,7 +307,7 @@ export const WITNESSED: Readonly<Record<string, Witness>> = {
  * than typed out, because a hand-kept second list is the exact mistake the
  * header of this file is a post-mortem of.
  *
- * 15 of 35 as of 2026-08-30 (R261 made Cinder Scuttler reachable and its entry
+ * 15 of 35 as of 2026-08-30 (the after-combat hold made Cinder Scuttler reachable and its entry
  * went with it). Both numbers are pinned by `187-scenario-queue.test.ts`, so
  * this sentence goes red rather than stale. Two of the 15 are one board away:
  *   · Pestilent Mycelion — `mycelion-minus-counters-in-battle` exists, never opened.

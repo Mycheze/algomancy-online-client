@@ -1,6 +1,6 @@
 {
   "//": [
-    "R181 (CARD-TODO #59). server/ had NO tsconfig at all, so nothing typechecked",
+    "CARD-TODO #59. server/ had NO tsconfig at all, so nothing typechecked",
     "it — `npm run check` at the client root ran the server's node --test and",
     "called that covered. Nine real type errors had accumulated, including one",
     "that destroyed an action payload during undo. The flags below deliberately",

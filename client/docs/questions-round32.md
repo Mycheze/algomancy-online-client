@@ -197,7 +197,7 @@ only**, so any card that grants an attribute from its *text box* shows no rules
 text for it — 12 cards for attributes, and 141 term pairs and ten whole glossary
 rows overall that the browser never draws. The in-game inspector gets it right;
 the browser uses the wrong one of the client's two glossary paths. (The irony:
-Brough is the only card in the pool that prints a {Balanced} reminder, so R248
+Brough is the only card in the pool that prints a {Balanced} reminder, so the reminder-source ruling (now CR D6.11)
 took **Brough's own sentence** as the game's words for {Balanced} — and now shows
 it on Child of Aether while refusing to show it on Brough.)
 

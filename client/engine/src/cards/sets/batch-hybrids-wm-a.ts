@@ -6,24 +6,24 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (mid-resolution payments/choices via ctx.choose),
- * R9 (bounded [Switch1]/[once] budgets per card), R12/R25 ("each player/
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 704.1a (mid-resolution payments/choices via ctx.choose),
+ * CR 803.4 (bounded [Switch1]/[once] budgets per card), CR 601.1b, 601.4d ("each player/
  * opponent" and "your units" read the region's present seats / unitsOf(region)),
- * R115 (created UNITS spawn where their SOURCE is — ctx.region — exactly as
- * spell tokens always did), R31 (damage-sub-step triggers resolve
- * immediately).
+ * CR 601.5 (created UNITS spawn where their SOURCE is — ctx.region — exactly as
+ * spell tokens always did), CR 608.9 (combat-damage triggers trigger in the
+ * sub-step and go on the stack after it).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - MAELSTROM CHARGER IS NOT AN ABILITY (R178). Its printed line is a
+ *  - MAELSTROM CHARGER IS NOT AN ABILITY (CR 109.6). Its printed line is a
  *    `CardBehavior.asYouPlay` option — a cost-shaped, non-stack, as-you-play
  *    decision collected by `E.collectAsYouPlay` in the cast window. It used to
  *    be an ordinary `triggered` ability, which made three things false that
  *    the designer names: it reached the stack (so it could be negated before
- *    the copy was ever made), R121's pay-to-trigger gate taxed it, and
+ *    the copy was ever made), CR 111.10g's pay-to-trigger gate taxed it, and
  *    anything keying off the two ability KINDS reached it. See the card's own
  *    block below and `AsYouPlayOption` in dsl.ts for the RAQ in full.
- *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): FIXED (R164).
+ *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): FIXED (CR 710.8).
  *    A copy is a real `StackItem` now — `E.pushSpellCopy` clones the original
  *    item, marks it `copy: true` and pushes it ABOVE the original, so it is
  *    respondable, negatable (Dematerialize, Malevolent Machinations) and
@@ -43,8 +43,8 @@
  *        Siphoner, Void Mandible, Origon and The Silent — every one of which
  *        prints "play"/"played" — correctly do not see a copy either.
  *      · *"you DON'T pay additional cost again and the X value is the one
- *        from original"* — the R35 receipt (`part.costPaid`), `item.x` and
- *        R57's declared `part.mode` are cloned, never re-collected.
+ *        from original"* — the CR 111.5 receipt (`part.costPaid`), `item.x` and
+ *        CR 710.8a's declared `part.mode` are cloned, never re-collected.
  *    A copy has no CARD (the card is the original's, on the stack underneath
  *    or already binned), so it bins nothing on resolution or negation and
  *    "Erase me." on a copy of Suspend / Temporal Rift correctly erases
@@ -53,12 +53,12 @@
  *    keep-path clones what the original declared, which fixed a second bug —
  *    Earthbound Replicator used to force `[self]` as the copy's only target
  *    and threw away every other target of a multi-target spell.
- *    ⚠ STILL APPROXIMATED: R79 viruses augmented onto the ORIGINAL while it
+ *    ⚠ STILL APPROXIMATED: CR 723.4 viruses augmented onto the ORIGINAL while it
  *    sat on the stack are NOT copied (their attributes therefore do not
  *    donate to the copy). Copying the list would erase those virus cards a
  *    second time when the copy discharges; the {Modular} `mods` cast cost IS
  *    copied, which is the case Caleb ruled on (2025-02-07).
- *  - Earthbound Replicator: NO LONGER an approximation (R178). This entry used
+ *  - Earthbound Replicator: NO LONGER an approximation (CR 706.9). This entry used
  *    to end "the current path is correct, just roundabout", and it was not
  *    correct: the trigger queued on EVERY nonunit spell and checked "targeting
  *    me" at RESOLUTION, against the item's live targets. So a retarget landing
@@ -66,7 +66,7 @@
  *    one — RAQ, verbatim: *"He must be targeted while playing the spell. If
  *    the spell is played and target is changed later to him (through
  *    Gravitational Correction or Enigmatic Warder mod), you don't get a
- *    copy"*. It is a CONDITION, so R1 puts it in `when`: the 'spellPlayed'
+ *    copy"*. It is a CONDITION, so CR 109.3a puts it in `when`: the 'spellPlayed'
  *    event carries the item's declared `targets` (and its `item` id) now,
  *    because that event fires before pushItem and there is no stack for a
  *    `when` to consult. Listening to 'targeted' instead — the alternative this
@@ -75,7 +75,7 @@
  *    targets (which is the infinite loop the RAQ's title refuses), and it
  *    fires for modding, which is not playing a spell. "Nonunit" = kind
  *    spell/spellToken (spellUnits and ambushes excluded).
- *    ⚠ CT-176 / owner report #158 then found the half R178 could not see: the
+ *    ⚠ CT-176 / owner report #158 then found the half the first fix could not see: the
  *    id it put on the event names a STACK ITEM, and a play made outside battle
  *    (`commitItem(…, 'resolve')` — deployment and the haste step) never
  *    reaches the stack at all. So the resolution-time lookup missed on every
@@ -89,48 +89,48 @@
  *    damage event too (engine dealEffectDamage), so "one of YOUR spell
  *    effects deals damage" is exact: my spells only, face hits included.
  *    Combat damage never counts (its event has no source). The 1/1s spawn
- *    in the CARRIER's region (R33, absorbed by R115: everything created
+ *    in the CARRIER's region (CR 601.5: everything created
  *    arrives at ctx.region).
- *  - Scrapyard Custodian: NO LONGER an approximation (R130) — 'countersChanged'
+ *  - Scrapyard Custodian: NO LONGER an approximation (CR 708.8b) — 'countersChanged'
  *    carries `by`, the seat that placed the counters, so "when YOU put
  *    counters on an ally" is exact: my placement, either sign, onto a unit I
  *    control. Robots spawning with counters still do NOT fire it (spawn
  *    counters are on before the spawn event — engine note).
- *  - Soulforger: "nontoken" is a FACT ON THE DEATH EVENT (R70's `token`,
+ *  - Soulforger: "nontoken" is a FACT ON THE DEATH EVENT (`token`, CR 714.9,
  *    stamped by E.leftPlayFacts precisely because the entity is erased before
  *    the event fires). This entry used to say the event had no token flag and
  *    the discriminator was the rendered death message; the card reads
  *    ev.data.token.
- *  - Malevolent Machinations: R64 — the "/[Sacrifice X units]" bracket is a
+ *  - Malevolent Machinations: CR 702.6b, 110.1a — the "/[Sacrifice X units]" bracket is a
  *    real cast cost (paid before the item reaches the stack, and the units
  *    sacrificed ARE X) and the "up to X target effects" are declared targets.
- *    "Effects" is R60's superset: any un-negated stack item that is an effect,
+ *    "Effects" is CR 700.1's superset: any un-negated stack item that is an effect,
  *    triggered abilities included.
- *  - Hearthwood Ancient: UN-PARKED (R49). This used to say the sacrifice was
+ *  - Hearthwood Ancient: UN-PARKED (CR 111.7). This used to say the sacrifice was
  *    "an activation cost paid at resolution … with no other unit the ability
  *    resolves without effect". `AbilityCost.sacrificeOther` is the real slot:
  *    it gates the activation and is paid in the cast window, before priority.
  *  - Reconfigure: the moved unit leaves play SILENTLY (no died/despawned
  *    event — it is moved, not removed); its mod entities move along through
- *    `E.moveMod` (R178, shared with Rotbeast) with budgets intact — the entity
- *    is the same one, so a bounded [Switch1] already spent stays spent. R64: "the first target must have [Augment]" is a
+ *    `E.moveMod` (CR 720.10b, shared with Rotbeast) with budgets intact — the entity
+ *    is the same one, so a bounded [Switch1] already spent stays spent. CR 110.3a: "the first target must have [Augment]" is a
  *    TARGETING restriction on slot 0 — only augments are offered — and the
  *    resolution check stays for a redirect that lands a non-augment there.
  *  - "your units" amounts (Colossal Construction's greatest defense) and
- *    "each player/opponent" are region-scoped at resolution (R12/R25/R27).
+ *    "each player/opponent" are region-scoped at resolution (CR 601.1b, 601.4d, 107.8).
  *
  * UN-PARKED (kept as history; nothing in this batch is parked — the ⚠ markers
  * below are two open sub-QUESTIONS, not parks):
- *  - Rook: UN-PARKED (R95). The permission layer it was waiting on exists now
+ *  - Rook: UN-PARKED (CR 723.5). The permission layer it was waiting on exists now
  *    and is `CardBehavior.modPermissions` — CostMod's sibling in shape,
  *    OR-folded rather than summed because a permission is granted or it is
  *    not. `augmentable: true` replaces the inert augmentText stand-in. ⚠ Two
- *    things are open and listed in R95: whether "as if they were [Virus]" also
- *    unlocks R79 STACK hosts (it does, as shipped), and whether the card grants
+ *    things are open (the retired register listed them): whether "as if they were [Virus]" also
+ *    unlocks CR 723.4 STACK hosts (it does, as shipped), and whether the card grants
  *    {Virus} itself or only the timing permission (only the permission, as
  *    shipped). GRAFT is deliberately not covered — the printed word is
  *    "augment", and doGraft is deployment-only.
- *  - The Silent: UN-PARKED (R59), and has been for a while — this entry was
+ *  - The Silent: UN-PARKED (CR 111.10), and has been for a while — this entry was
  *    left behind. "Spells cost each player [two] more … per spell their team
  *    played this battle" IS a continuous COST modifier, and CostMod is the
  *    layer; the card is `augmentable: true` + a live `costMods` entry further
@@ -156,19 +156,19 @@ const NONUNIT_SPELL_KINDS = new Set(['spell', 'spellToken']);
  * Charger) — the printed choice, asked before the copy is put on the stack.
  *
  * The copying player (`copier` — the copy's controller on both cards) is
- * offered a mid-resolution decision (R6): keep the original cast's targets,
+ * offered a mid-resolution decision (CR 704.1a): keep the original cast's targets,
  * or re-collect the copy's targets FRESH against the copied spell's own
- * TargetSpec — slot by slot through E.targetCandidates, so R64 restrictions
- * (and R58 per-slot specs) are judged NOW, at the re-collection, not at the
+ * TargetSpec — slot by slot through E.targetCandidates, so CR 110.3a restrictions
+ * (and CR 110.9 per-slot specs) are judged NOW, at the re-collection, not at the
  * original cast.
  *
- * R164: returns TARGET REFS, not resolved targets, and `undefined` for "keep
+ * CR 710.8a: returns TARGET REFS, not resolved targets, and `undefined` for "keep
  * what the original declared". The copy is a `StackItem` now, and a stack item
  * carries refs — which also means the keep-path no longer has to re-resolve
  * anything: `E.pushSpellCopy` clones the original's own `part.targets` and
  * `resolveParts` looks them up at resolution, exactly as it does for the
  * original. A target that has died between the two therefore fizzles the copy
- * through the ordinary R86 path with an announcement, instead of silently
+ * through the ordinary CR 704.6 path with an announcement, instead of silently
  * shortening a list.
  *
  * If the FIRST slot has no legal candidate at all, the "choose new targets"
@@ -177,7 +177,7 @@ const NONUNIT_SPELL_KINDS = new Set(['spell', 'spellToken']);
  * originals ride, with an info line saying why.
  *
  * Plan-then-commit: nothing here mutates — every pick is a ctx.choose, so a
- * suspension replays the part cleanly (R85) and the picks survive the JSON
+ * suspension replays the part cleanly and the picks survive the JSON
  * round trip on the suspension.
  */
 function chooseCopyTargets(
@@ -187,7 +187,7 @@ function chooseCopyTargets(
   const spec = getCard(cardName).spellEffect?.targets;
   if (!spec) return undefined;   // a targetless spell has nothing to re-aim
   // slot arithmetic mirrors E.collectPartTargets: count ('X' = the copy's
-  // inherited X) plus R83's fixed extraSlots; min gates the "no more" option
+  // inherited X) plus the fixed extraSlots; min gates the "no more" option
   const counted = spec.count === 'X' ? (x ?? 0) : (spec.count ?? 1);
   const max = counted + (spec.extraSlots ?? 0);
   const min = Math.min(spec.min ?? 1, max);
@@ -235,13 +235,13 @@ function chooseCopyTargets(
 }
 
 /**
- * R164 — put a copy of `it` ON THE STACK, above the original, under the
+ * CR 710.8 — put a copy of `it` ON THE STACK, above the original, under the
  * copying player, optionally re-aimed.
  *
  * This used to re-run the copied card's `spellEffect` in place, off the stack,
  * which is the approximation the batch header spent forty lines apologising
  * for. `E.pushSpellCopy` is the primitive it was waiting for; everything the
- * old inline call had to hand-thread (the R35 cost receipt, the R57 declared
+ * old inline call had to hand-thread (the CR 111.5 cost receipt, the CR 710.8a declared
  * mode, X, the inert `eraseSelf`) is now simply what a clone of the item
  * already carries, and the copy is respondable, negatable and sweepable
  * because it is genuinely there.
@@ -273,10 +273,10 @@ function runSpellCopy(
 
 // "[Switch1] Create a Robot X, where X is the greatest defense among your
 // units." — em/3 2/4 Primordial Technology Spell. X is live at resolution
-// (R27): the greatest effStats defense among the controller's units in the
-// resolving region (R12). Robot X = the 0/0 Robot token with X +1/+1
+// (CR 107.8): the greatest effStats defense among the controller's units in the
+// resolving region (CR 601.1b). Robot X = the 0/0 Robot token with X +1/+1
 // counters (the water-metal batch precedent); a created UNIT spawns where its
-// SOURCE is — ctx.region (R115). No unit → X = 0 → no Robot.
+// SOURCE is — ctx.region (CR 601.5). No unit → X = 0 → no Robot.
 const buildRobot: EffectDef = {
   creates: ['Robot'],
   run: (g, ctx) => {
@@ -304,12 +304,12 @@ card('Colossal Construction', {
 // afterwards and can do it twice, collapsing both onto one unit. Resolving
 // that augmented the unit onto ITSELF: the entity was deleted and then made a
 // mod pointing at its own dead id, an orphan the fuzz caught at seed 1132.
-// R64: the printed parenthesis — "the first target must have [Augment] to be
+// CR 110.3a: the printed parenthesis — "the first target must have [Augment] to be
 // able to be augmented" — is a TARGETING RESTRICTION, so the first slot now
 // offers only cards that have one. It was offering the whole board and doing
 // nothing on most of it ("I was allowed to choose illegal targets for
 // Reconfigure"). The resolution check stays: a redirect can put a
-// non-augment card in that slot after the cast (R56/R58).
+// non-augment card in that slot after the cast (CR 704.5).
 // It leaves play silently (⚠ header — moved, not despawned), becomes an
 // augment mod on the host via attachMod (modApplied fires), and its existing
 // mod entities move along, budgets intact.
@@ -357,19 +357,19 @@ card('Reconfigure', {
         if (si !== -1) bt.sentAttackers.splice(si, 1);
       }
       g.attachMod(b, a.card, a.owner, 'augment');
-      // R178: one primitive, no hand-rolled re-parenting. Everything follows
+      // CR 720.10: one primitive, no hand-rolled re-parenting. Everything follows
       // the mod — statics, cost mods and donated text re-anchor through
       // `anchored()`, {Unstable} is derived from `mods.length` so it lands on
       // `b` by itself, and each mod's bounded budgets ride along because the
       // ENTITY is the same one.
       for (const m of movedMods) g.moveMod(m, b, a);
       if (movedMods.length) g.ev('info', `Reconfigure: ${movedMods.length} mod(s) move along with ${a.card}.`);
-      // R332 / CT-214: the card prints "Augment target unit AND ALL OF ITS
+      // CR 721.5a / CT-214: the card prints "Augment target unit AND ALL OF ITS
       // MODS onto another target unit", so each mod that rides along is
       // applied to `b` too, and says so. The RAQ ("Reconfigure onto Perpetual
       // Construct"): "Perpetual Construct will trigger separetly for each of
       // the Mods." moveMod itself stays silent — moving is not applying in
-      // general (R178); here the card says it is.
+      // general (CR 720.10c); here the card says it is.
       for (const m of movedMods) {
         if (!g.entity(m.id) || m.modOf !== b.id) continue;
         const ev = g.ev('modApplied', `${m.card} is augmented onto ${b.card} with ${a.card}.`,
@@ -382,11 +382,11 @@ card('Reconfigure', {
 
 // "[Augment] You may augment cards from hand and bin during battle as if
 // they were [Virus]." — me/4 4/4 Polyform Crab Unit. Live as of round 17
-// (R95); this text is the whole card, and until now it was a vanilla 4/4.
+// (CR 723.5); this text is the whole card, and until now it was a vanilla 4/4.
 //
 // A `modPermissions` mod — CostMod's sibling in shape (same ctx, same
 // anchored() radiation from a unit in play or an augment mod reading from its
-// HOST, same R12 region scoping) but folded as an OR rather than summed,
+// HOST, same CR 601.1d region scoping) but folded as an OR rather than summed,
 // because a permission is granted or it is not and two Rooks are not twice as
 // permissive.
 //
@@ -412,7 +412,7 @@ card('Reconfigure', {
 // the printed zone list is this card's, not the rules': Rook says "hand and
 // bin", so Rook is what refuses the cache.
 //
-// R157 §26 / R161 — IT CONFERS {Virus}, NOT MERELY THE WINDOW. Owner,
+// CR 723.5a — IT CONFERS {Virus}, NOT MERELY THE WINDOW. Owner,
 // 2026-08-25, asked (a) does the permission reach spells on the stack and (b)
 // can the augment go on an ENEMY unit: *"(a) yes it does. and for (b) yes it
 // can also go to an enemy. That's the whole point of the card."*
@@ -423,7 +423,7 @@ card('Reconfigure', {
 // it. Everything downstream of that predicate is the battle-window branch of
 // `doAugment`, which asks about priority and REGION and never about who
 // controls the host; `pushBattleAugments` offers `unitsIn(region)` — both
-// sides — and every stack item R79 allows. So (b) was already true the moment
+// sides — and every stack item CR 723.4a allows. So (b) was already true the moment
 // the permission returned true, and (a) was shipped behind an ⚠ OPEN flag in
 // apply.ts that this ruling closes. What changed is that both halves are now
 // GUARDED (136-triggers-and-modes): an enemy host and a stack host, each with
@@ -431,7 +431,7 @@ card('Reconfigure', {
 // are the same board until something says so.
 card('Rook', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     modPermissions: [{
@@ -442,13 +442,13 @@ card('Rook', {
 });
 
 // "When you put one or more counters on an ally, [Switch1] Draw a card." —
-// me/3 3/3 Robot Druid Unit. 'countersChanged' trigger. R130: the event
+// me/3 3/3 Robot Druid Unit. 'countersChanged' trigger. CR 708.8b: the event
 // carries `by`, the seat that placed them, so "YOU put" is the printed word
 // and not "anyone put" — an opponent's Wraith shrinking one of my units is
 // their placement, not mine. Either sign counts ("counters" — all counters
 // count as counters), the amount doesn't matter ("one or more"), and the
 // recipient is an ally of mine. Bounded graft cause + bounded graft
-// ([Switch1], R9). Region-scoped automatically (fireEvent reads the counted
+// ([Switch1], CR 722.5). Region-scoped automatically (fireEvent reads the counted
 // unit's region).
 const custodianDraw: EffectDef = { run: (g, ctx) => g.draw(ctx.controller, 1) };
 card('Scrapyard Custodian', {
@@ -456,7 +456,7 @@ card('Scrapyard Custodian', {
     type: 'triggered', events: ['countersChanged'], bounded: true, graftCause: true,
     label: 'draw a card (counters were put on an ally)',
     when: (g, self, ev) => {
-      if (ev.data?.['by'] !== self.controller) return false;      // R130: "YOU put"
+      if (ev.data?.['by'] !== self.controller) return false;      // CR 708.8b: "YOU put"
       const uid = ev.data?.unit as EntityId | undefined;
       const u = uid !== undefined ? g.entity(uid) : undefined;
       return !!u && u.controller === self.controller;             // …"on an ally"
@@ -468,13 +468,13 @@ card('Scrapyard Custodian', {
 
 // "[Augment] Spells cost each player [two] more to play for each spell their
 // team has previously played in this battle." — em/3 3/4 Cosmic Arcane Unit.
-// LIVE as of the R59 cost-modifier layer (it was parked for want of one).
+// LIVE as of the CR 111.10 cost-modifier layer (it was parked for want of one).
 //
 //  - "each player … their team": 1v1, so a team is one seat. The count is the
 //    payer's OWN spells, which is why the tax is asymmetric — the player who
 //    has been slinging spells pays, their opponent does not.
 //  - "each spell … previously played in this battle" is the token-inclusive
-//    spellsPlayedAny:<seat> battle counter (R166), bumped by commitItem for
+//    spellsPlayedAny:<seat> battle counter (CR 701.1b), bumped by commitItem for
 //    every spell kind — a spell TOKEN included — and reset with
 //    battleCounters each battle phase. It is bumped when the spell commits, so
 //    at the moment THIS spell's cost is read the counter still holds only the
@@ -482,25 +482,25 @@ card('Scrapyard Custodian', {
 //    (A {Burst} group is priced whole before any of it commits — see
 //    doCastSpellToken — so three Crystals cast together pay the same tax each.)
 //  - "Spells … to play": `isPlayedSpellKind` — spell, spell unit AND spell
-//    token. R305, the owner (2026-09-28), asked whether casting a spell token
+//    token (CR 702.7a). The owner (2026-09-28), asked whether casting a spell token
 //    counts as playing a spell: *"Yes, taxed + counted."* This card is the
 //    report that asked it — playtest #174, room UYRX: Reconfigure played, then
 //    a Crystal 4 cast untaxed. It used to read the NONTOKEN ledger and skip a
-//    token on both halves, on R59's old "cast from play, not played". Never a
-//    mod application (R37): `purpose: 'mod'` stays exempt.
+//    token on both halves, on the old reading, "cast from play, not played". Never a
+//    mod application (CR 701.2b): `purpose: 'mod'` stays exempt.
 //  - No "during battle" clause, but the counter only exists during a battle,
 //    so a deployment cast is naturally untaxed.
 //  - Animated Spark keeps the narrow `spellsPlayed:` ledger: it prints
 //    "nontoken spell". Two printed nouns, two counters.
 card('The Silent', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     costMods: [{
       delta: (g, self, ctx) => {
         if (ctx.purpose !== 'play') return 0;
-        if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // R305
+        if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // CR 111.10c
         return 2 * g.battleCounter(self.region, `spellsPlayedAny:${ctx.seat}`);
       },
     }],
@@ -520,9 +520,9 @@ card('The Silent', {
 // "[Augment] Whenever another nontoken ally spawns, create a Crystal 1." —
 // eg/2 2/3 Plant Primordial Unit. Text-box [Augment], live when played
 // normally. 'spawned' fires with the entity already in play, so token-ness
-// and controller are read live at event time (R1). "Another" excludes the
+// and controller are read live at event time (CR 109.3a). "Another" excludes the
 // carrier itself (when donated: the host). Spell tokens appear where the
-// effect resolves (R115).
+// effect resolves (CR 601.5).
 card('Aether Channeler', {
   augmentText: [{
     type: 'triggered', events: ['spawned'],
@@ -537,8 +537,8 @@ card('Aether Channeler', {
 });
 
 // "[Switch1] Create a Crystal 1 and a Poison 1." — eg/1 0/7 Arcane Blight
-// Crystal Spell. Both spell tokens appear where the effect resolves (R115).
-// Bounded graft ([Switch1], R9).
+// Crystal Spell. Both spell tokens appear where the effect resolves (CR 601.5).
+// Bounded graft ([Switch1], CR 722.5).
 const alchemyTokens: EffectDef = {
   creates: ['Crystal', 'Poison'],
   run: (g, ctx) => {
@@ -554,7 +554,7 @@ card('Corroded Alchemy', {
 // "[Augment] Whenever I am dealt damage, put that many -1/-1 counters on
 // target unit." — eg/4 0/7 {Haste} Primordial Blight Unit. Text-box
 // [Augment]. Fires on the 'damage' event (self; combat damage included);
-// "that many" is the event snapshot's amount (R1 — the event IS the amount's
+// "that many" is the event snapshot's amount (the event IS the amount's
 // definition, the Mirrorback Ambusher precedent). Targeted trigger.
 card('Decay Distributor', {
   augmentText: [{
@@ -580,10 +580,10 @@ card('Decay Distributor', {
 // pattern — my trigger sits above the spell, so the copy resolves first).
 // The copy is controlled by the spell's player ("THEY copy it"), and that
 // player "may choose new targets for the copy": chooseCopyTargets asks them
-// to keep what the spell declared or re-aim the copy fresh (R64 legality at
+// to keep what the spell declared or re-aim the copy fresh (CR 110.3a legality at
 // the re-collection).
 //
-// R164: the copy is a real STACK ITEM now (E.pushSpellCopy), pushed above the
+// CR 710.8: the copy is a real STACK ITEM now (E.pushSpellCopy), pushed above the
 // original, so it can be responded to and negated. Two consequences here:
 //
 //  · The KEEP half no longer forces the carrier as the copy's only target. It
@@ -598,7 +598,7 @@ card('Decay Distributor', {
 //    a reader can see it, and keeps `.find()` honest if a copy of the same
 //    card is sitting on the stack at the same time.
 //
-// R178 — "TARGETING ME" IS ASKED AT THE MOMENT OF THE PLAY, AND THE ITEM IS
+// CR 706.9, 706.13 — "TARGETING ME" IS ASKED AT THE MOMENT OF THE PLAY, AND THE ITEM IS
 // FOUND BY IDENTITY. Two live wrong answers, both from doing the work at
 // resolution instead of at event time:
 //
@@ -609,15 +609,15 @@ card('Decay Distributor', {
 //    one that was already owed. The RAQ is explicit — *"He must be targeted
 //    while playing the spell. If the spell is played and target is changed
 //    later to him (through Gravitational Correction or Enigmatic Warder mod),
-//    you don't get a copy"* — and R1 already says where a condition belongs:
+//    you don't get a copy"* — and CR 109.3a already says where a condition belongs:
 //    in `when`, at event time. `spellPlayed` now carries the item's declared
-//    targets (R178, engine.ts) precisely because the event fires BEFORE
+//    targets (CR 706.9, engine.ts) precisely because the event fires BEFORE
 //    pushItem and there is no stack to consult yet.
-//  · The lookup was a bottom-up `.find()`, the third instance of the bug R166
+//  · The lookup was a bottom-up `.find()`, the third instance of the bug
 //    fixed on Origon and Hexbane Shiitake: with two same-card same-seat spells
 //    on the stack it copied the OLDER one. The event carries `item`, the id,
 //    so this is now identity rather than any kind of scan — strictly better
-//    than R166's `[...stack].reverse().find(...)`, which is a top-down
+//    than the `[...stack].reverse().find(...)`, which is a top-down
 //    heuristic that only happens to be right. The `!i.copy` /
 //    NONUNIT_SPELL_KINDS guards stay as assertions of what that id must be.
 card('Earthbound Replicator', {
@@ -628,7 +628,7 @@ card('Earthbound Replicator', {
       const name = ev.data?.card;
       if (typeof name !== 'string') return false;
       try { if (!NONUNIT_SPELL_KINDS.has(getCard(name).kind)) return false; } catch { return false; }
-      // R178: "targeting me", asked NOW (R1) against what the spell declared
+      // CR 706.9: "targeting me", asked NOW (CR 109.3a) against what the spell declared
       // as it was played — not against what it is aimed at when I resolve.
       const targets = (ev.data?.['targets'] ?? []) as TargetRef[];
       return targets.some(t => !!t && typeof t === 'object' && 'unit' in t && t.unit === self.id);
@@ -639,7 +639,7 @@ card('Earthbound Replicator', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         const itemId = ctx.event?.data?.['item'] as number | undefined;
         const self = selfOf(g, ctx);
-        // R84 surfaced this one: the Alluring trigger changed what the
+        // The Alluring rework surfaced this one: its trigger changed what the
         // conformance drive reaches, and this guard aborted in silence.
         // ("A guard that aborts an effect must LOG why" — test/65.)
         if (name === undefined || seat === undefined || !self) {
@@ -648,11 +648,11 @@ card('Earthbound Replicator', {
         }
         // CT-176: `E.playedItem` and not a stack scan of my own. A play
         // committed with `then: 'resolve'` never reaches the stack at all, so
-        // R178's id named nothing and this line refused a copy that was owed —
+        // the item id named nothing and this line refused a copy that was owed —
         // owner report #158 (room HTEW [146]): Overbloom, deploy timing,
         // played straight at this card, no copy.
         //
-        // R286 fixed that at the source: a DEPLOYMENT play is committed with
+        // The deployment-stack ruling (now CR 507.5) fixed that at the source: a DEPLOYMENT play is committed with
         // `'push'` now, so the id names a real item and `playedItem` finds it
         // on the stack. The `offStack` fallback is still what this reads
         // through, because the haste step, a spell token cast in deployment
@@ -661,7 +661,7 @@ card('Earthbound Replicator', {
         // rather than repeating a list.
         //
         // `itemId` is still what identifies the play; the guards below stay
-        // exactly as R178 left them, as ASSERTIONS about what that id must
+        // exactly as the first fix left them, as ASSERTIONS about what that id must
         // be rather than as a search.
         const it = g.playedItem(ctx.event);
         if (!it || it.id !== itemId || it.controller !== seat || it.copy
@@ -670,7 +670,7 @@ card('Earthbound Replicator', {
           return;
         }
         // "may choose new targets for the copy" — THEY (the spell's player)
-        // choose; declining keeps everything the spell declared (R164)
+        // choose; declining keeps everything the spell declared (CR 710.8a)
         const declared = it.parts.reduce((n, p) => n + p.targets.length, 0);
         const targets = chooseCopyTargets(g, ctx, name, seat, it.region, it.x, declared);
         runSpellCopy(g, ctx, it, seat, targets);
@@ -681,7 +681,7 @@ card('Earthbound Replicator', {
 
 // "After combat, [Switch1] Create a [Poison or Crystal] 2." — eg/3 2/3 Plant
 // Crystal Unit. afterCombat trigger (no source unit — the Unfinished
-// Creation precedent; region-scoped by the event). R57 — the printed
+// Creation precedent; region-scoped by the event). CR 702.5 — the printed
 // "[Poison or Crystal]" is declared in the CAST window (`EffectDef.modes`), so
 // the trigger sits on the stack already saying which token it will make and
 // the opponent responds to a fully declared effect. It used to be a
@@ -689,20 +689,20 @@ card('Earthbound Replicator', {
 // end-of-turn resolution; that auto-pick is gone, because E.finishTurnEnd
 // resumes out of settle() and the cast window already suspends there.
 // Spell token appears where the effect resolves. Bounded cause + bounded graft
-// ([Switch1], R9) — `modes` is per EFFECT, so a graft composite asks per part.
+// ([Switch1], CR 722.5) — `modes` is per EFFECT, so a graft composite asks per part.
 const conjureTwo: EffectDef = {
   creates: ['Poison', 'Crystal'],
   modes: {
     key: 'tok',
     prompt: () => 'Spirit of Nature: create a Poison 2 or a Crystal 2?',
-    // R284 `half`: printed "[Poison {i1}or Crystal]"
+    // CR D6.10a `half`: printed "[Poison {i1}or Crystal]"
     options: () => [
       { label: 'Poison 2', value: 'Poison', half: 0 },
       { label: 'Crystal 2', value: 'Crystal', half: 1 },
     ],
   },
   run: (g, ctx) => {
-    const kind = ctx.mode;   // R57: declared at cast
+    const kind = ctx.mode;   // CR 702.5: declared at cast
     g.createSpellToken(ctx.controller, kind === 'Poison' ? 'Poison' : 'Crystal', 2, ctx.region);
   },
 };
@@ -721,7 +721,7 @@ card('Spirit of Nature', {
 // spell and you may choose new targets for the copy." — rm/3 4/2 Elemental
 // Maelstrom Unit.
 //
-// R178 — THIS IS NOT AN ABILITY. It was built as an ordinary `triggered`
+// CR 109.6 — THIS IS NOT AN ABILITY. It was built as an ordinary `triggered`
 // ability on 'spellPlayed', and the designer names three things that made
 // false. RAQ "[Solved] Maelstrom Charger - all you need to know." (_passer):
 //
@@ -736,7 +736,7 @@ card('Spirit of Nature', {
 //
 // As a trigger it reached the stack, so it could be NEGATED before the copy
 // was ever made — the enemy interacting with the copying rather than with the
-// copy — and R121's pay-to-trigger gate (Crevice Lurker) taxed it, because
+// copy — and CR 111.10g's pay-to-trigger gate (Crevice Lurker) taxed it, because
 // that gate is applied to every `PendingTrigger` on its way to the stack.
 // Both follow from the KIND, so both are fixed by the kind: `asYouPlay` is a
 // `CardBehavior` channel and a stage of the CAST WINDOW (E.collectAsYouPlay),
@@ -747,14 +747,14 @@ card('Spirit of Nature', {
 // The four consequences, each of them the printed word:
 //  · "AS YOU PLAY" — the question is asked in the cast window, before the
 //    opponent has any window at all, and the answer is spent immediately.
-//  · "YOU MAY" — a *may*, which is why this is not `pendingCosts`/R122's
+//  · "YOU MAY" — a *may*, which is why this is not `pendingCosts`/CR 111.10d's
 //    imposed [Sacrifice a unit]: a cost is mandatory once the play is
 //    declared, and Decline here is always legal and always free.
 //  · "COPY THAT SPELL … above original spell effect" — commitItem pushes the
 //    copy AFTER the original, so it sits above it and resolves first, and it
 //    inherits the paid cost and X (*"you DON'T pay additional cost again and
 //    the X value is the one from original spell"*) because it is a clone of
-//    the item, R164's `E.pushSpellCopy`.
+//    the item, `E.pushSpellCopy` (CR 710.8a).
 //  · MULTIPLE CHARGERS — *"you can decide to Sac none/one/two for 0/1/2
 //    copies"*: the collector asks once per offering BODY, so two Chargers are
 //    two questions and two copies. *"This works with Ancient One adjacent to
@@ -764,7 +764,7 @@ card('Spirit of Nature', {
 //
 // "you may choose new targets for the copy" is collected in the same window
 // (`copySpell.reaim`), so the copy is fully declared before anyone answers it
-// — R57, and the same rule the trigger version already followed for a
+// — CR 110.1a, and the same rule the trigger version already followed for a
 // different reason.
 card('Maelstrom Charger', {
   asYouPlay: [{
@@ -781,7 +781,7 @@ card('Maelstrom Charger', {
 });
 
 // "/[Sacrifice X units]: Negate up to X target effects." — rrm/2 5/3
-// {Battle} Occult Technology Spell. R64, un-parked: the bracket is an
+// {Battle} Occult Technology Spell. CR 702.6b, 110.1a, un-parked: the bracket is an
 // ADDITIONAL COST, paid at cast — the units are sacrificed before the spell is
 // on the stack, X is fixed by how many, and the up-to-X effects it negates are
 // declared targets that everyone can see it aiming at. It used to do all of
@@ -791,7 +791,7 @@ card('Maelstrom Charger', {
 card('Malevolent Machinations', {
   spellEffect: {
     castCost: { kind: 'sacrificeUnits', n: 'X' },
-    xZeroWarning: 'X = 0 negates nothing — "up to X effects" is up to none',   // R74
+    xZeroWarning: 'X = 0 negates nothing — "up to X effects" is up to none',   // CR D7.1a
     targets: {
       what: 'stackEffect', count: 'X', min: 0,
       symmetric: true,
@@ -807,7 +807,7 @@ card('Malevolent Machinations', {
 // "[Augment] Whenever one of your units dies, each opponent sacrifices a
 // unit." — mmr/5 5/6 Robot Insect Horror Unit. Text-box [Augment]. "One of
 // your units" = same controller (tokens count, the carrier itself counts —
-// a dying unit sees its own death). "Each opponent" is region-scoped (R25);
+// a dying unit sees its own death). "Each opponent" is region-scoped (CR 601.4d);
 // each picks their own unit, plan-then-commit.
 card('Malicious Hardware', {
   augmentText: [{
@@ -816,7 +816,7 @@ card('Malicious Hardware', {
     when: (g, self, ev) => ev.data?.seat === self.controller,
     effect: {
       run: (g, ctx) => {
-        // R187/CT-70: R25 scopes "each opponent" to the effect's region, and a
+        // CR D7.3b/CT-70: CR 601.4d scopes "each opponent" to the effect's region, and a
         // home region out of battle holds only the carrier's controller.
         const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
         if (!foes.length) {
@@ -845,7 +845,7 @@ card('Malicious Hardware', {
 
 // "Each player sacrifices two units. If four or more units were sacrificed
 // this way, repeat this." — rm/4 5/3 {Battle} Bedlam Maelstrom Spell.
-// "Each player" = the region's present seats (R25); each picks two of their
+// "Each player" = the region's present seats (CR 601.4d); each picks two of their
 // units (as many as able). Per round: all picks are planned, then committed;
 // 4+ actual sacrifices repeat the round (fresh pools — replay after a
 // suspension is deterministic given the stored answers, so the round-wise
@@ -864,7 +864,7 @@ card('Maw of Damnation', {
             picks.push(id);
           }
         }
-        // R209/CT-74: `pickUnit` returns null on an empty pool, so a round in
+        // CR D7.3/CT-74: `pickUnit` returns null on an empty pool, so a round in
         // which no present seat has a unit collects NOTHING, commits nothing
         // and — before this — broke out saying nothing at all.
         if (!picks.length) {
@@ -886,9 +886,9 @@ card('Maw of Damnation', {
 
 // "[Augment] Whenever one of your nontoken units dies, create a Fireball 1."
 // — rrm/2 2/2 Demon Robot Unit. Text-box [Augment]. Nontoken-ness is read off
-// the death event's token flag (R70 — the entity is gone before the event
+// the death event's token flag (CR 714.9 — the entity is gone before the event
 // fires, so the fact rides the event). Spell token at the resolving region
-// (R115).
+// (CR 601.5).
 card('Soulforger', {
   augmentText: [{
     type: 'triggered', events: ['died'],
@@ -908,10 +908,10 @@ card('Soulforger', {
 // an opponent's spell never fires me. Spell-effect damage to a PLAYER also
 // emits a damage event (face hits count; "deals damage" is unqualified);
 // combat damage never counts (no source on the event). Created UNITS spawn in
-// the CARRIER's region (R33, now just R115: ctx.region, which for a carrier
+// the CARRIER's region (CR 601.5: ctx.region, which for a carrier
 // trigger IS where the carrier is).
 //
-// R80: "that many" is what the SPELL EFFECT dealt, not what one victim took.
+// CR 112.8: "that many" is what the SPELL EFFECT dealt, not what one victim took.
 // Playtest VEAV: "I only made 2 units from my Channel Through, but it dealt 6
 // damage to my allies and 6 to my opponent's units, so I should have made 12
 // units." Effect damage is one batch (E.dealEffectDamageAll), and every event
@@ -938,7 +938,7 @@ card('Ember of Life', {
       run: (g, ctx) => {
         const d = ctx.event?.data;
         // `total` is the whole batch; `n` is this victim's share, and is the
-        // fallback for an event minted before R80 (a replayed saved game)
+        // fallback for an event minted before damage batches existed (a replayed saved game)
         const n = (d?.total as number | undefined) ?? (d?.n as number | undefined) ?? 0;
         if (n <= 0) { g.ev('info', 'Ember of Life: no damage was dealt — no units.'); return; }
         for (let i = 0; i < n; i++) {
@@ -954,7 +954,7 @@ card('Ember of Life', {
 // — rg/4 0/4 Ancient Tree Structure Unit. An ACTIVATED ability in the
 // [Augment] text box (the Slag Spewer precedent): live when played normally
 // (via: 'augment') and donated to hosts (via: { mod }). The sacrifice is a
-// real ACTIVATION cost (R49, `cost: { sacrificeOther: 1 }` — see two lines
+// real ACTIVATION cost (CR 111.7, `cost: { sacrificeOther: 1 }` — see two lines
 // below); it gates the activation and is paid in the cast window, not at
 // resolution as this line used to say. "another" excludes the activating unit
 // (the carrier / the host when donated). The buff lands after the sacrifice
@@ -962,13 +962,13 @@ card('Ember of Life', {
 // region, until regroup (addTemp).
 card('Hearthwood Ancient', {
   augmentText: [{
-    // R49 UN-PARKED: a real activation cost (gates the activation, paid in the
+    // CR 111.6, 111.7 UN-PARKED: a real activation cost (gates the activation, paid in the
     // cast window) rather than a resolution-time pick
     type: 'activated', cost: { sacrificeOther: 1 },
     label: 'sacrifice another unit: your units gain +1/+1 until regroup',
     effect: {
       run: (g, ctx) => {
-        // the sacrifice is already paid; "your units" is the survivors (R12)
+        // the sacrifice is already paid; "your units" is the survivors (CR 601.1b)
         const mine = g.unitsOf(ctx.controller, ctx.region);
         if (!mine.length) {
           g.ev('info', 'Hearthwood Ancient: you control no unit here — nothing gains +1/+1.');

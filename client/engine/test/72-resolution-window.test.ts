@@ -1,4 +1,4 @@
-/* R85 — what the table can SEE while a resolution is waiting on somebody.
+/* CR D6.3b — what the table can SEE while a resolution is waiting on somebody.
  *
  * Playtest UFAB, 2026-08-22: *"During the resolution of Insidious Invitation,
  * I should have seen what my opponent played during the resolution and what
@@ -35,7 +35,7 @@ const lines = (h: Harness, needle: string): number =>
 
 // ── the report ─────────────────────────────────────────────────────────
 
-test('R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table', () => {
+test('CR D6.3b Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table', () => {
   const h = new Harness(7201, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -63,7 +63,7 @@ test('R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play 
 
   // ── the SECOND question: everything the caster just did is public.
   //
-  // ⚠ R198 changed WHAT there is to look at and did not weaken the report. The
+  // ⚠ the mid-resolution stack fix changed WHAT there is to look at and did not weaken the report. The
   // play goes on the STACK now — that is the whole ruling, the opponent is
   // owed a window before it lands — so at their prompt they are looking at a
   // declared, paid-for stack item instead of a body already in the region. The
@@ -81,14 +81,14 @@ test('R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play 
 
   // ── and the resolution still finishes exactly as it always did.
   answer(h, 'Hooba-Pon');
-  pass(h); pass(h); pass(h); pass(h);                       // R198: one window per play
+  pass(h); pass(h); pass(h); pass(h);                       // CR 703.5: one window per play
   assert.ok(unitsOf(h, D).some(u => u.card === 'Hooba-Pon'), 'D played theirs too');
   assert.equal(openMana(h.state, A), 0, 'A paid 1 + 4');
   assert.equal(openMana(h.state, D), 0, 'D paid 2');
   finishBattle(h);
 });
 
-test('R85 Insidious Invitation: the replay narrates nothing twice', () => {
+test('CR D6.3b Insidious Invitation: the replay narrates nothing twice', () => {
   const h = new Harness(7202, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -105,11 +105,11 @@ test('R85 Insidious Invitation: the replay narrates nothing twice', () => {
   h.do({ type: 'passPriority', seat: h.state.priority! });
   answer(h, 'Echo of Despair');
   answer(h, 'Hooba-Pon');
-  pass(h); pass(h); pass(h); pass(h);                       // R198: one window per play
+  pass(h); pass(h); pass(h); pass(h);                       // CR 703.5: one window per play
 
   // The part ran three times over (once per suspension plus the finish) and
   // re-emitted its whole prefix each time. Exactly one of each line survives.
-  // R198 moved the spawns OUT of the replayed part and onto the stack, which
+  // The mid-resolution stack fix moved the spawns OUT of the replayed part and onto the stack, which
   // is a stronger form of the same guarantee — but the line that is now
   // re-emitted per attempt is the PLAY, so that is counted too.
   assert.equal(lines(h, 'Echo of Despair → stack.'), 1, 'the caster’s play was announced once');
@@ -150,7 +150,7 @@ registerSynthetic(stepper, {
   },
 });
 
-test('R85 a multi-step resolution shows each step as it is reached, and each step once', () => {
+test('CR D6.3b a multi-step resolution shows each step as it is reached, and each step once', () => {
   const h = new Harness(7203, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -173,7 +173,7 @@ test('R85 a multi-step resolution shows each step as it is reached, and each ste
     'three steps, three lines, no doubles');
 });
 
-test('R85 the mid-resolution board is a PREVIEW: only decide and concede are legal on it', () => {
+test('CR D6.3c the mid-resolution board is a PREVIEW: only decide and concede are legal on it', () => {
   const h = new Harness(7204, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -194,7 +194,7 @@ test('R85 the mid-resolution board is a PREVIEW: only decide and concede are leg
   h.do({ type: 'decide', seat: A, choice: 0 });
 });
 
-test('R85 the suspension’s rollback snapshot never reaches the state twice over', () => {
+test('the suspension’s rollback snapshot never reaches the state twice over', () => {
   const h = new Harness(7205, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -211,7 +211,7 @@ test('R85 the suspension’s rollback snapshot never reaches the state twice ove
   assert.equal(h.state.suspension, null, 'and it is gone once the resolution finishes');
 });
 
-test('R85 chained questions get chained decision ids (the rewind must not reuse one)', () => {
+test('chained questions get chained decision ids (the rewind must not reuse one)', () => {
   const h = new Harness(7206, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -227,7 +227,7 @@ test('R85 chained questions get chained decision ids (the rewind must not reuse 
 
 // ── the replay path (saved games) ──────────────────────────────────────
 
-test('R85 seed + actions still reproduces a game that suspended mid-resolution', () => {
+test('seed + actions still reproduces a game that suspended mid-resolution', () => {
   const h = new Harness(7207, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -249,24 +249,24 @@ test('R85 seed + actions still reproduces a game that suspended mid-resolution',
   assert.equal(s.suspension, null, 'and finishes, rather than stranding mid-resolution');
 });
 
-test('R85 a whole game replays byte-for-byte through a mid-resolution suspension', () => {
+test('a whole game replays byte-for-byte through a mid-resolution suspension', () => {
   const h = new Harness(7208, ['Ben', 'Rashi']);
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
   const r = replay(7208, h.actions, ['Ben', 'Rashi']);
-  assert.deepEqual(r.state, h.state, 'the replay path is untouched by R85');
+  assert.deepEqual(r.state, h.state, 'the replay path is untouched by the resume-time rollback');
 });
 
-// ── a pre-R85 suspension (an old saved state, mid-resolution) ──────────
+// ── a pre-resume-rollback suspension (an old saved state, mid-resolution) ──────────
 
-test('R85 a suspension with no snapshot still resumes — old saved states load', () => {
+test('a suspension with no snapshot still resumes — old saved states load', () => {
   const h = new Harness(7209, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   h.state.players[A]!.hand.push('Test Stepper');
   h.do({ type: 'playCard', seat: A, handIndex: h.state.players[A]!.hand.length - 1 });
   const life = h.state.players[A]!.life;
-  // exactly what a state serialized before R85 looks like: the world already
+  // exactly what a state serialized before resume-rollback looks like: the world already
   // rolled back to the part boundary, and no snapshot on the suspension
   const sus = h.state.suspension!;
   assert.equal(sus.type, 'resolve');

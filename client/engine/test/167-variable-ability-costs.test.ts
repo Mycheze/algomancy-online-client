@@ -1,4 +1,4 @@
-/* R196 — VARIABLE AND CHOICE-BEARING ACTIVATION COSTS ARE PAID AT ACTIVATION.
+/* CR 111.7 — VARIABLE AND CHOICE-BEARING ACTIVATION COSTS ARE PAID AT ACTIVATION.
  *
  * The last of `docs/16-divergence-inventory.md` §2a's cost rows. Six cards
  * print a cost that `AbilityCost` could not express — an X-mana "[x]",
@@ -11,9 +11,9 @@
  * knowing X, and a negation removed the ability without a single point of it
  * ever being paid.
  *
- * That is R64's founding complaint, one card family over. The playtest report
+ * That is the founding complaint about Discharge, one card family over. The playtest report
  * it was raised on, verbatim: *"Shouldn't Discharge have you remove counters
- * as an additional cost? Not on resolution"*. And R157 §21 settles the general
+ * as an additional cost? Not on resolution"*. And CR 205.3 settles the general
  * shape: ANY `[bracketed]` clause is a COST or a MODE, fixed when the item
  * goes on the stack — never a sum, never a resolution-time pick.
  *
@@ -24,7 +24,7 @@
  *     prices each candidate through `manaToPlay` and pays the whole bill on
  *     the answer, writing `StackItem.x`. It runs inside `castChain`, i.e.
  *     AFTER `playAtTiming`'s `take(); payAll();` — which is why a cost mod
- *     that wants to raise an X spell TO 3 (Stasis Sentry, R157 §20) needed an
+ *     that wants to raise an X spell TO 3 (Stasis Sentry, CR 107.5) needed an
  *     engine seam rather than a card change, and why the paid X rides the play
  *     EVENT as well as the item (Floral Singularity is `timing: deploy` and is
  *     never pushed, so a stack lookup could not find it).
@@ -45,8 +45,8 @@
  * the choice-free half of an activation cost is charged one collector EARLIER
  * than the choice-bearing half, so a compound cost could pay its mana and then
  * declare "nothing is paid". Instrument of Reassignment, Auric Ascendant and
- * Slag Spewer are all compound now. It is fixed at the root, with R110's own
- * rule one scope up: `E.gateCompoundCost` asks ALL OR NOTHING at the top of
+ * Slag Spewer are all compound now. It is fixed at the root, with the all-or-nothing rule of
+ * CR 111.14 one scope up: `E.gateCompoundCost` asks ALL OR NOTHING at the top of
  * the cast window, before any collector has charged anything. The last test
  * here is that gate, and it also measures WHY the audit's own scenario ("a
  * response took the last unit") was never reachable.
@@ -85,7 +85,7 @@ function spawnToken(h: Harness, seat: Seat): EntityId {
 
 /**
  * A battle in the DEFENDER's region with the defender holding priority: the
- * activator is D, everything D controls is in the battle region (R12), and A
+ * activator is D, everything D controls is in the battle region (CR 601.2), and A
  * is the opponent who will be asked to respond.
  */
 function battle(seed: number): { h: Harness; A: Seat; D: Seat } {
@@ -120,7 +120,7 @@ const receipt = (h: Harness): NonNullable<StackItem['parts'][number]['costPaid']
 
 /** THE MOMENT THIS WHOLE FILE IS ABOUT: pushing an item onto the stack hands
  * priority straight to the opponent, so this is where they decide whether to
- * answer. Before R196 they decided it against an ability whose size was not
+ * answer. Before the activation-cost fix (CR 111.7), they decided it against an ability whose size was not
  * yet chosen; the per-card tests read the receipt here. */
 function opponentResponds(h: Harness, A: Seat): void {
   assert.equal(h.state.priority, A, 'the opponent holds priority over the live ability');
@@ -135,7 +135,7 @@ function resolve(h: Harness): void { pass(h); pass(h); }
 //
 // "[Augment] [x]: I become base X/X until regroup."
 
-test('R196 Celestial Shifter "[Augment] [x]: I become base X/X until regroup" — the [x] is paid at ACTIVATION and the opponent sees X', () => {
+test('CR 705.3b Celestial Shifter "[Augment] [x]: I become base X/X until regroup" — the [x] is paid at ACTIVATION and the opponent sees X', () => {
   const { h, A, D } = battle(16701);
   const sh = spawn(h, D, 'Celestial Shifter');                // 2/2
   giveResources(h, D, 'metal', 5);
@@ -153,7 +153,7 @@ test('R196 Celestial Shifter "[Augment] [x]: I become base X/X until regroup" �
   // THE PAYMENT HAS ALREADY HAPPENED, and the item has not resolved
   assert.equal(open(h, D), 2, 'three mana are GONE before anybody may respond');
   assert.equal(receipt(h).mana, 3, 'the receipt says [3] was paid');
-  assert.equal(receipt(h).x, 3, 'and that R157 §1 X — what was actually paid — is 3');
+  assert.equal(receipt(h).x, 3, 'and that CR 705.3b X — what was actually paid — is 3');
   assert.deepEqual(effStats(h, sh), [2, 2], 'still a printed 2/2: nothing has resolved yet');
 
   opponentResponds(h, A);
@@ -169,7 +169,7 @@ test('R196 Celestial Shifter "[Augment] [x]: I become base X/X until regroup" �
 // "[Augment] [x], Sacrifice another nontoken unit: Create a Robot X.
 //  X can't be 0."
 
-test('R196 Instrument of Reassignment "[x], Sacrifice another nontoken unit: Create a Robot X. X can\'t be 0." — both halves paid at ACTIVATION', () => {
+test('CR 111.2 Instrument of Reassignment "[x], Sacrifice another nontoken unit: Create a Robot X. X can\'t be 0." — both halves paid at ACTIVATION', () => {
   const { h, A, D } = battle(16702);
   const inst = spawn(h, D, 'Instrument of Reassignment');
   const slime = spawn(h, D, 'Lurking Slimebeast');            // the nontoken victim
@@ -179,7 +179,7 @@ test('R196 Instrument of Reassignment "[x], Sacrifice another nontoken unit: Cre
 
   h.do({ type: 'activateAbility', seat: D, entityId: inst, abilityIndex: 0, via: 'augment' });
   // "X can't be 0" is `xMin: 1` — a floor that FORBIDS, so at X = 0 there is
-  // no way to stop (contrast R157 §22/R161's warning-only `xZeroWarning`)
+  // no way to stop (contrast CR 109.9c's warning-only `xZeroWarning`)
   assert.deepEqual(offered(h), ['{"payMana1":true}'],
     "X can't be 0: stopping at zero is not on the menu");
   pick(h, { payMana1: true });
@@ -215,7 +215,7 @@ test('R196 Instrument of Reassignment "[x], Sacrifice another nontoken unit: Cre
 // "[once] [one], Recall another ally: I gain {g}flying and +2/+0 until
 //  regroup."
 
-test('R196 Auric Ascendant "[once] [one], Recall another ally: I gain {Flying} and +2/+0" — the RECALL is a cost, named before the opponent answers', () => {
+test('CR 111.7 Auric Ascendant "[once] [one], Recall another ally: I gain {Flying} and +2/+0" — the RECALL is a cost, named before the opponent answers', () => {
   const { h, A, D } = battle(16703);
   const auric = spawn(h, D, 'Auric Ascendant');               // 2/1
   const ally = spawn(h, D, 'Unit Token');
@@ -242,10 +242,9 @@ test('R196 Auric Ascendant "[once] [one], Recall another ally: I gain {Flying} a
   assert.deepEqual(effStats(h, auric), [4, 1], '+2/+0 until regroup');
 });
 
-test('R196 Auric Ascendant with no other ally is NOT OFFERED — an unpayable cost gates, it does not whiff (R49)', () => {
+test('CR 705.4 Auric Ascendant with no other ally is NOT OFFERED — an unpayable cost gates, it does not whiff (CR 111.6)', () => {
   // ⚠ THIS IS A DELIBERATE CHANGE OF WHEN THE [once] IS SPENT. The run used to
-  // carry a "no other ally to recall — no effect" branch, and R113 put it in
-  // the SPENDS family: you activated it and whiffed. A COST cannot whiff. With
+  // carry a "no other ally to recall — no effect" branch, and it used to count as spending the use: you activated it and whiffed. A COST cannot whiff. With
   // nothing to recall the ability is not offered, the [one] is never paid and
   // the use is never spent — the same answer `canPayCastCost` already gives
   // Deformant's "sacrifice me AND another ally".
@@ -275,7 +274,7 @@ test('R196 Auric Ascendant with no other ally is NOT OFFERED — an unpayable co
 // "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any
 //  target."
 
-test('R196 Slag Spewer "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any target" — the mod is erased at ACTIVATION, after the target is declared (R57)', () => {
+test('CR 111.2 Slag Spewer "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any target" — the mod is erased at ACTIVATION, after the target is declared (CR 705.3c)', () => {
   const { h, A, D } = battle(16705);
   const spewer = spawn(h, D, 'Slag Spewer');
   const victim = spawn(h, D, 'Unit Token');                   // the 2 damage kills it
@@ -287,10 +286,10 @@ test('R196 Slag Spewer "[Augment][once] [one], Erase one of my mods: I deal 2 da
   joinBattle(h, A, D);
 
   h.do({ type: 'activateAbility', seat: D, entityId: spewer, abilityIndex: 0, via: 'augment' });
-  // R57 is preserved and visible in the collector order: the TARGET is chosen
+  // CR 705.3c is preserved and visible in the collector order: the TARGET is chosen
   // before the mod is spent, because a FIXED castCost is collected after
   // `collectPartTargets`. You never lose the mod to a misclick you can't aim.
-  assert.ok(offered(h).includes(`{"unit":${victim}}`), 'the damage target comes first (R57)');
+  assert.ok(offered(h).includes(`{"unit":${victim}}`), 'the damage target comes first (CR 705.3c)');
   pick(h, { unit: victim });
   assert.equal(ent(h, spewer)!.mods.length, 1, 'the mod is still on — the cost is not paid yet');
   assert.deepEqual(offered(h), [`{"eraseMod":${modId}}`],
@@ -316,7 +315,7 @@ test('R196 Slag Spewer "[Augment][once] [one], Erase one of my mods: I deal 2 da
 //
 // "[once] Discard X cards: Glimpse 1, X times."
 
-test('R196 Glook "[once] Discard X cards: Glimpse 1, X times" — X cards leave the hand at ACTIVATION', () => {
+test('CR 705.3b Glook "[once] Discard X cards: Glimpse 1, X times" — X cards leave the hand at ACTIVATION', () => {
   const { h, A, D } = battle(16706);
   const glook = spawn(h, D, 'Glook');
   joinBattle(h, A, D);
@@ -331,7 +330,7 @@ test('R196 Glook "[once] Discard X cards: Glimpse 1, X times" — X cards leave 
 
   assert.equal(h.state.players[D]!.hand.length, hand0.length - 2,
     'two cards are gone from hand before anybody may respond');
-  assert.ok(h.state.players[D]!.bin.includes(hand0[0]!), 'each discard is still a TRASH (R40)');
+  assert.ok(h.state.players[D]!.bin.includes(hand0[0]!), 'each discard is still a TRASH (CR 801.3)');
   assert.ok(h.state.players[D]!.bin.includes(hand0[1]!));
   assert.equal(receipt(h).x, 2, 'X = the cards actually paid');
   assert.equal(h.q.cache(D).length, 0, 'and nothing has been glimpsed yet');
@@ -341,15 +340,15 @@ test('R196 Glook "[once] Discard X cards: Glimpse 1, X times" — X cards leave 
     'the responder knows two glimpses are coming, not "some"');
 
   resolve(h);
-  assert.equal(h.q.cache(D).length, 2, '"Glimpse 1, X times" — X separate glimpses (R45)');
-  assert.equal(h.q.cachePermission(D, 0), 'glimpse', 'playable until end of turn (R45)');
+  assert.equal(h.q.cache(D).length, 2, '"Glimpse 1, X times" — X separate glimpses (CR 801.9c)');
+  assert.equal(h.q.cachePermission(D, 0), 'glimpse', 'playable until end of turn (CR 801.9e)');
 });
 
 // ── 6. Infernal Cultivator ──────────────────────────────────────────────
 //
 // "[Augment] [once] Sacrifice X units: Create X Fireball 1."
 
-test('R196 Infernal Cultivator "[Augment] [once] Sacrifice X units: Create X Fireball 1" — the units die at ACTIVATION, so a negation cannot refund them', () => {
+test('CR 111.7 Infernal Cultivator "[Augment] [once] Sacrifice X units: Create X Fireball 1" — the units die at ACTIVATION, so a negation cannot refund them', () => {
   const { h, A, D } = battle(16707);
   const cult = spawn(h, D, 'Infernal Cultivator');
   const f1 = spawn(h, D, 'Conduit of Pain');
@@ -371,7 +370,7 @@ test('R196 Infernal Cultivator "[Augment] [once] Sacrifice X units: Create X Fir
 
   opponentResponds(h, A);
   assert.equal(onStack(h).parts[0]!.costPaid!.x, 2,
-    'the responder is answering a KNOWN two Fireballs — R64\'s whole point');
+    'the responder is answering a KNOWN two Fireballs — CR 111.7\'s whole point');
 
   resolve(h);
   const fires = fireballs(h, D);
@@ -381,7 +380,7 @@ test('R196 Infernal Cultivator "[Augment] [once] Sacrifice X units: Create X Fir
 
 // ── 7. THE COMPOUND COST, and the half-pay hazard it would have hit ─────
 
-test('R196 the COMPOUND half-pay hazard: an unpayable half of Instrument of Reassignment\'s cost pays NOTHING, neither the mana nor the unit', () => {
+test('CR 111.6a the COMPOUND half-pay hazard: an unpayable half of Instrument of Reassignment\'s cost pays NOTHING, neither the mana nor the unit', () => {
   // `collectItemCosts` carried this note for a year: "nothing is paid holds
   // ONLY because no pool ability combines a choice-free half (charged by
   // payActivationCost one call EARLIER) with a choice half like this one. The
@@ -426,7 +425,7 @@ test('R196 the COMPOUND half-pay hazard: an unpayable half of Instrument of Reas
   }
 });
 
-test('R196 the compound-cost GATE: a compound activation cost whose choice-bearing half is unpayable charges NEITHER half', () => {
+test('CR 111.6a the compound-cost GATE: a compound activation cost whose choice-bearing half is unpayable charges NEITHER half', () => {
   // The seam itself, white-box, because no card in the pool can reach it
   // through the reducer — see the next test for why. It is worth an engine
   // test all the same: this is the exact state the 2026-08-23 audit note
@@ -464,7 +463,7 @@ test('R196 the compound-cost GATE: a compound activation cost whose choice-beari
   assert.ok(h.log.some(l => /can no longer be paid/.test(l)), 'the abandonment is announced');
 });
 
-test('R196 nothing may act INSIDE the cast window — which is why the audit\'s "a response took the last unit" was never reachable', () => {
+test('CR 705.3 nothing may act INSIDE the cast window — which is why the audit\'s "a response took the last unit" was never reachable', () => {
   // The 2026-08-23 note imagined the opponent removing the payment between the
   // activation gate and the collection. They cannot: every suspension the cast
   // window raises is a question for the PAYER, triggers only queue (settle()
@@ -487,7 +486,7 @@ test('R196 nothing may act INSIDE the cast window — which is why the audit\'s 
     'and the item is not on the stack yet, so it cannot be negated mid-payment either');
 });
 
-test('R196 a variable "[x]" cannot eat the ability\'s own R121 tax — Celestial Shifter under a Crevice Lurker', () => {
+test('CR 111.6a a variable "[x]" cannot eat the ability\'s own CR 111.10f tax — Celestial Shifter under a Crevice Lurker', () => {
   // `collectCastCosts('variable')` runs BEFORE `payActivationCost`, so without
   // a reserve the payer could put every open point into X and leave the tax
   // unpayable. `E.activationManaReserve` holds back exactly what the fixed
@@ -517,7 +516,7 @@ test('R196 a variable "[x]" cannot eat the ability\'s own R121 tax — Celestial
 
 // ── 8. the row itself: no card in the six still pays at resolution ──────
 
-test('R196 all six inventory cards declare a real cost — none of them chooses one at resolution', () => {
+test('CR 111.7 all six inventory cards declare a real cost — none of them chooses one at resolution', () => {
   // The inventory row named these six and said `AbilityCost` atoms are fixed-N,
   // so all of them paid at RESOLUTION. Read off the CARDS, so a seventh added
   // next month is measured too rather than a list being edited.
@@ -543,6 +542,6 @@ test('R196 all six inventory cards declare a real cost — none of them chooses 
   }
   assert.deepEqual(bad, [],
     'these are the six cards of the VARIABLE-COST ACTIVATED ABILITIES row of\n'
-    + 'docs/16-divergence-inventory.md §2a. A cost belongs in the cast window (R157 §21);\n'
+    + 'docs/16-divergence-inventory.md §2a. A cost belongs in the cast window (CR 205.3);\n'
     + 'a `ctx.choose` in one of these runs is the divergence coming back.');
 });

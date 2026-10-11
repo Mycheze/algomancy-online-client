@@ -7,7 +7,7 @@
     "examples": [
       {
         "text": "Glook's \"[once] Discard X cards: Glimpse 1, X times\" — discarding X cards is the cost, and glimpsing X times is the effect.",
-        "test": "167-variable-ability-costs.test.ts::R196 Glook"
+        "test": "167-variable-ability-costs.test.ts::CR 705.3b Glook"
       }
     ],
     "see": [
@@ -30,14 +30,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -50,11 +50,11 @@
     "examples": [
       {
         "text": "Grox's ability is marked {Battle}, so it cannot be activated during deployment.",
-        "test": "43-dark-c.test.ts::Grox: R49 — the printed [Battle] marker is enforced at ACTIVATION"
+        "test": "43-dark-c.test.ts::Grox: CR 705.2 — the printed [Battle] marker is enforced at ACTIVATION"
       },
       {
         "text": "Cadaverous Cultivator's {Battle} ability is refused when activated outside battle, rather than doing nothing when it resolves.",
-        "test": "45-hybrids-ld-b.test.ts::Cadaverous Cultivator: R49 — [Battle] is enforced at ACTIVATION, not at resolution"
+        "test": "45-hybrids-ld-b.test.ts::Cadaverous Cultivator: CR 705.2 — [Battle] is enforced at ACTIVATION, not at resolution"
       }
     ],
     "see": [
@@ -65,17 +65,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R49 (its activation-timing marker)",
-          "quote": "`{Battle}` / `{Deployment}` marker on the ability itself (Grox, Cadaverous"
+          "quote": "`{Battle}` / `{Deployment}` marker on the ability itself (Grox, Cadaverous",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R49 (its activation-timing marker)",
-          "quote": "Cultivator), enforced at activation rather than fudged at resolution."
+          "quote": "Cultivator), enforced at activation rather than fudged at resolution.",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "43-dark-c.test.ts",
@@ -83,11 +84,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R49 is partly superseded only in its closing X-cost note (by R64); the timing-marker paragraph stands. The \"no icon is no restriction\" half (Dropslime) is 109.2b, not repeated here.",
-    "sourceHashes": {
-      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) is partly superseded only in its closing X-cost note (by the owner ruling of 2026-08-21 (“A bracketed cost is paid at…”)); the timing-marker paragraph stands. The \"no icon is no restriction\" half (Dropslime) is 109.2b, not repeated here.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.procedure",
@@ -97,7 +97,7 @@
     "examples": [
       {
         "text": null,
-        "test": "167-variable-ability-costs.test.ts::R196 nothing may act INSIDE the cast window"
+        "test": "167-variable-ability-costs.test.ts::CR 705.3 nothing may act INSIDE the cast window"
       }
     ],
     "see": [
@@ -108,29 +108,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R57 (targets before fixed costs; costs paid before the stack)",
-          "quote": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no"
+          "quote": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R49 (its costs-at-cast rule)",
-          "quote": "item reaches the stack, so no one may respond between a cost and its effect."
+          "quote": "item reaches the stack, so no one may respond between a cost and its effect.",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364",
-      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.procedure.gates",
@@ -140,7 +139,7 @@
     "examples": [
       {
         "text": "Instrument of Reassignment costs [x] and \"sacrifice another nontoken unit\". With only a token beside it, it cannot be activated, and the 3 open mana are not spent either.",
-        "test": "167-variable-ability-costs.test.ts::R196 the COMPOUND half-pay hazard"
+        "test": "167-variable-ability-costs.test.ts::CR 111.6a the COMPOUND half-pay hazard"
       }
     ],
     "see": [
@@ -151,29 +150,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R77",
-          "quote": "| a printed precondition is false | R77 |"
+          "quote": "| a printed precondition is false | R77 |",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R77",
-          "quote": "| a bracketed [cost] on the effect cannot be paid | R64 |"
+          "quote": "| a bracketed [cost] on the effect cannot be paid | R64 |",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R77",
-          "quote": "| a mandatory target has nothing legal | R64 |"
+          "quote": "| a mandatory target has nothing legal | R64 |",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R77",
-          "quote": "**Ordering is load-bearing and it is checked first.** The condition is about the"
+          "quote": "**Ordering is load-bearing and it is checked first.** The condition is about the",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R196",
-          "quote": "once, before the first payment** — which is not a new principle but R110's, one"
+          "quote": "once, before the first payment** — which is not a new principle but R110's, one",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts",
@@ -181,12 +184,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
-      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.procedure.variable-cost",
@@ -196,7 +197,7 @@
     "examples": [
       {
         "text": "Celestial Shifter's \"[x]\" is paid while activating, so the opponent sees X before deciding whether to respond.",
-        "test": "167-variable-ability-costs.test.ts::R196 Celestial Shifter"
+        "test": "167-variable-ability-costs.test.ts::CR 705.3b Celestial Shifter"
       }
     ],
     "see": [
@@ -207,29 +208,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R196",
-          "quote": "* **An ABILITY's X is a BRACKETED COST.** There is no card being played, no mana"
+          "quote": "* **An ABILITY's X is a BRACKETED COST.** There is no card being played, no mana",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R64 (its cost half)",
-          "quote": "A **variable** cost is where X comes from. You pay one unit of it at a time"
+          "quote": "A **variable** cost is where X comes from. You pay one unit of it at a time",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R64 is not in the U15 pack; read from client/docs/digital-rules.md (its cost half is current; only its no-recheck statement was amended by R324).",
-    "sourceHashes": {
-      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
-      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
-    }
+    "notes": "The owner ruling of 2026-08-21 (“A bracketed cost is paid at…”) is not in the U15 pack; read from client/docs/digital-rules.md (its cost half is current; only its no-recheck statement was amended by the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.procedure.targets",
@@ -239,7 +239,7 @@
     "examples": [
       {
         "text": "Slag Spewer's target is declared before its mod is erased to pay the cost.",
-        "test": "167-variable-ability-costs.test.ts::R196 Slag Spewer"
+        "test": "167-variable-ability-costs.test.ts::CR 111.2 Slag Spewer"
       }
     ],
     "see": [
@@ -249,28 +249,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R57 (targets before fixed costs)",
-          "quote": "Every cast-time *question* is asked in this order: **X → {Modular} mods →"
+          "quote": "Every cast-time *question* is asked in this order: **X → {Modular} mods →",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R57 (targets before fixed costs)",
-          "quote": "TARGETS → costs.** Nothing that requires a decision, and nothing irreversible,"
+          "quote": "TARGETS → costs.** Nothing that requires a decision, and nothing irreversible,",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.procedure.fixed-costs",
@@ -291,29 +291,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R64 (its cost half)",
-          "quote": "Fixed costs stay where R57 put them, **after** targets"
+          "quote": "Fixed costs stay where R57 put them, **after** targets",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R57 (targets before fixed costs)",
-          "quote": "The precise scope: an **activated ability** pays its entire cost after"
+          "quote": "The precise scope: an **activated ability** pays its entire cost after",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R57 is narrowed by R64: only the fixed costs stay after targets; variable costs moved to step 2.",
-    "sourceHashes": {
-      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f",
-      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Targets are chosen before costs are…”) is narrowed by the owner ruling of 2026-08-21 (“A bracketed cost is paid at…”): only the fixed costs stay after targets; variable costs moved to step 2.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.procedure.stack",
@@ -323,7 +322,7 @@
     "examples": [
       {
         "text": "Infernal Cultivator's sacrificed units are gone while the ability waits on the stack, so negating it refunds nothing.",
-        "test": "167-variable-ability-costs.test.ts::R196 Infernal Cultivator"
+        "test": "167-variable-ability-costs.test.ts::CR 111.7 Infernal Cultivator"
       }
     ],
     "see": [
@@ -333,24 +332,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R57 (targets before fixed costs; costs paid before the stack)",
-          "quote": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no"
+          "quote": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.cost-cannot-whiff",
@@ -360,7 +358,7 @@
     "examples": [
       {
         "text": "Auric Ascendant with no other ally cannot be activated, so its [one] is not paid and its [once] is kept.",
-        "test": "167-variable-ability-costs.test.ts::R196 Auric Ascendant with no other ally is NOT OFFERED"
+        "test": "167-variable-ability-costs.test.ts::CR 705.4 Auric Ascendant with no other ally is NOT OFFERED"
       }
     ],
     "see": [
@@ -371,28 +369,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R196",
-          "quote": "**An unpayable cost GATES; it does not whiff.** Auric Ascendant's \"no other ally"
+          "quote": "**An unpayable cost GATES; it does not whiff.** Auric Ascendant's \"no other ally",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R196",
-          "quote": "offers the ability, the `[one]` is never paid and the `[once]` is never spent."
+          "quote": "offers the ability, the `[one]` is never paid and the `[once]` is never spent.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.from-mod",
@@ -416,17 +414,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R77",
-          "quote": "ability was donated by an augment — so \"I have an adjacent ally\" reads"
+          "quote": "ability was donated by an augment — so \"I have an adjacent ally\" reads",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (its §6)",
-          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts",
@@ -434,12 +433,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R157 §6 answers \"you\" on a Virus [Augment] (the unit's controller); R77 states \"I/self\" is the host for a donated activated ability.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) answers \"you\" on a Virus [Augment] (the unit's controller); the owner ruling of 2026-08-22 (“\"Activate this ability only if …\"…”) states \"I/self\" is the host for a donated activated ability.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.activated.not-activations",
@@ -449,7 +446,7 @@
     "examples": [
       {
         "text": "during battle Crevice Lurker taxes activated abilities, but applying an augment costs nothing extra.",
-        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)"
+        "test": "16-earth-a.test.ts::Crevice Lurker: CR 720.4a — applying an augment during battle is NOT taxed (a mod is not an activation)"
       }
     ],
     "see": [
@@ -461,21 +458,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R121 (its activation tax and designer rulings)",
-          "quote": "- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not"
+          "quote": "- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R121 (its activation tax and designer rulings)",
-          "quote": "spell-token casts are not ability activations and are untaxed."
+          "quote": "spell-token casts are not ability activations and are untaxed.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R178 (its §3)",
-          "quote": "> *\"Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker"
+          "quote": "> *\"Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "16-earth-a.test.ts",
@@ -483,12 +482,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R121 line: \"Resource activations and spell-token casts are not ability activations and are untaxed.\" The Maelstrom Charger sentence is the designer (_passer) quoted inside R178.",
-    "sourceHashes": {
-      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83",
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
-    }
+    "notes": "The owner ruling of 2026-08-24 (“the ability-cost tax and the pay-to-trigger…”) line: \"Resource activations and spell-token casts are not ability activations and are untaxed.\" The Maelstrom Charger sentence is the designer (_passer) quoted inside the owner ruling of 2026-08-25 (“a condition belongs at the event…”).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.what",
@@ -525,14 +522,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "11-fire-wood.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -545,11 +542,11 @@
     "examples": [
       {
         "text": "a \"whenever I am dealt damage\" ability triggers inside the combat damage step, but is put on the stack, and has its target chosen, after the step.",
-        "test": "239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it"
+        "test": "239-damage-triggers-after-combat.test.ts::CR 608.9: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it"
       },
       {
         "text": "the {Alluring} trigger chooses its target as it goes on the stack, and can then be negated.",
-        "test": "53-playtest-round7.test.ts::R84: the trigger goes on the stack, targets at cast (R67), and can be NEGATED"
+        "test": "53-playtest-round7.test.ts::the trigger goes on the stack, targets at cast (CR 110.1a), and can be NEGATED"
       }
     ],
     "see": [
@@ -560,21 +557,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R261 (its firing-versus-stacking distinction)",
-          "quote": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what"
+          "quote": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R261 (its firing-versus-stacking distinction)",
-          "quote": "(target selection) and the **resolution**. So a combat trigger's shape in the log is"
+          "quote": "(target selection) and the **resolution**. So a combat trigger's shape in the log is",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R144 (its half (b))",
-          "quote": "1. it is **chosen when the effect is declared**, not when it resolves;"
+          "quote": "1. it is **chosen when the effect is declared**, not when it resolves;",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "239-damage-triggers-after-combat.test.ts",
@@ -582,12 +581,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061",
-      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.when-stacked",
@@ -605,13 +602,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R250 (its §3 outside the combat damage step)",
-          "quote": "> **A trigger is respondable wherever the game hands out priority, and the game"
+          "quote": "> **A trigger is respondable wherever the game hands out priority, and the game",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "229-cosmic-and-control.test.ts",
@@ -620,11 +617,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "A heading rule for the four sub-rules; R250 §3's combat half is reversed by R261 and its deployment half amended by R286, so only its general sentence is cited here.",
-    "sourceHashes": {
-      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53"
-    }
+    "notes": "A heading rule for the four sub-rules; the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”)’s combat half is reversed by the owner ruling of 2026-08-30 (“Combat-damage triggers resolve AFTER combat, on…”) and its deployment half amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”), so only its general sentence is cited here.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.when-stacked.battle",
@@ -634,7 +630,7 @@
     "examples": [
       {
         "text": "Eminence of the Barrens dealt damage by a spell in battle puts its trigger on the stack, and the opponent may respond to it.",
-        "test": "229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable"
+        "test": "229-cosmic-and-control.test.ts::CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable"
       }
     ],
     "see": [
@@ -644,33 +640,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R250 (its §3 outside the combat damage step)",
-          "quote": "demonstrates both answers** — Eminence hit by a spell in an open battle window"
+          "quote": "demonstrates both answers** — Eminence hit by a spell in an open battle window",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R250 (its §3 outside the combat damage step)",
-          "quote": "goes on the stack and the opponent may respond; Eminence hit by combat damage"
+          "quote": "goes on the stack and the opponent may respond; Eminence hit by combat damage",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R53",
-          "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+          "quote": "the stack **above** the spell that targeted — the trigger resolves first.",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "229-cosmic-and-control.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
-      "R53": "ac71cc78da3271b40af86b4b02ff9861dd8646ae2c63bafa07076c7755ce8531"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.when-stacked.combat-damage",
@@ -680,7 +676,7 @@
     "examples": [
       {
         "text": "a \"when I die\" ability of a unit killed by combat damage waits with the others and goes on the stack after combat.",
-        "test": "239-damage-triggers-after-combat.test.ts::R261: a combat DEATH trigger waits with the rest"
+        "test": "239-damage-triggers-after-combat.test.ts::CR 608.9b: a combat DEATH trigger waits with the rest"
       }
     ],
     "see": [
@@ -696,23 +692,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R300",
-          "quote": "> dying (if it happens) will happen, but be pushed into the next step since the combat"
+          "quote": "> dying (if it happens) will happen, but be pushed into the next step since the combat",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "239-damage-triggers-after-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R300 is the owner's statement of the model; the RAQ thread is the designer source. The detail lives in 608.9b/608.9c (U12).",
+    "notes": "The owner ruling of 2026-09-20 (“Bin and cache text is not…”) is the owner's statement of the model; the RAQ thread is the designer source. The detail lives in 608.9b/608.9c (U12).",
     "sourceHashes": {
-      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338",
       "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
     }
   },
@@ -724,7 +720,7 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves"
+        "test": "37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves"
       }
     ],
     "see": [
@@ -734,20 +730,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R144 (deployment triggers use the stack)",
-          "quote": "- **(a)** deployment-phase triggers go through the **stack**, like everything"
+          "quote": "- **(a)** deployment-phase triggers go through the **stack**, like everything",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R102",
-          "quote": "> -1/-1 counters on during deployment (which still has and uses a stack). But"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R144",
-          "relation": "its single shared deployment stack and its \"no priority in deployment\" were amended by R286: one stack per player, and that player holds priority over it"
+          "quote": "> -1/-1 counters on during deployment (which still has and uses a stack). But",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -756,12 +748,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381",
-      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.when-stacked.end-of-turn",
@@ -794,14 +784,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -835,23 +825,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R53",
-          "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+          "quote": "the stack **above** the spell that targeted — the trigger resolves first.",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R53": "ac71cc78da3271b40af86b4b02ff9861dd8646ae2c63bafa07076c7755ce8531",
       "RAQ 1353862592661164152#0": "b8900e5634fbf608f3841fe20f39a2a1330bd12286120aa061d5273d2c0002c0",
       "RAQ 1353862592661164152#1": "b2755977f37b7fd5c0c0a6935c5a3df8015c2ce388d03d05adda10105fd6fed4"
     }
@@ -864,7 +854,7 @@
     "examples": [
       {
         "text": "a player with a \"when I die\" ability triggered by combat damage and an \"after combat\" ability orders the two in one choice.",
-        "test": "239-damage-triggers-after-combat.test.ts::R261 THE RAQ BATCH"
+        "test": "239-damage-triggers-after-combat.test.ts::CR 608.9b THE RAQ BATCH"
       }
     ],
     "see": [
@@ -888,23 +878,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R2",
-          "quote": "All simultaneous triggers are ordered **by their owner, however they choose**; then all go"
+          "quote": "All simultaneous triggers are ordered **by their owner, however they choose**; then all go",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "239-damage-triggers-after-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R2 says \"owner\"; the Manual and the RAQ say each player orders \"their\" effects. The abilities a player controls are theirs to order; no source covers a stolen unit's trigger.",
+    "notes": "The owner ruling of 2026-08-18 (“Ordering of simultaneous triggers”) says \"owner\"; the Manual and the RAQ say each player orders \"their\" effects. The abilities a player controls are theirs to order; no source covers a stolen unit's trigger.",
     "sourceHashes": {
-      "R2": "d70a36c8b83a36f5395c670a59121d87a6722fe6c2c39a4acd7e556f5b3813d9",
       "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708"
     }
   },
@@ -916,7 +906,7 @@
     "examples": [
       {
         "text": "an enemy spell that targets two allies triggers Earnest Defender twice, and two 1/1s are created.",
-        "test": "136-triggers-and-modes.test.ts::R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two"
+        "test": "136-triggers-and-modes.test.ts::CR 109.3d: two targeted allies are TWO TRIGGERS on the stack, not one that makes two"
       }
     ],
     "see": [
@@ -926,24 +916,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §16)",
-          "quote": "> *\"Once per targeted ally — two targets, two triggers, two 1/1s.\"*"
+          "quote": "> *\"Once per targeted ally — two targets, two triggers, two 1/1s.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "136-triggers-and-modes.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.once-per-event.one-move",
@@ -961,28 +950,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R179",
-          "quote": "1. **ONE EVENT FOR A MULTI-CARD MOVE.** The printed text is \"one or more\", and"
+          "quote": "1. **ONE EVENT FOR A MULTI-CARD MOVE.** The printed text is \"one or more\", and",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R179",
-          "quote": "the Tides +2/+2 *per card*, which no reading of the sentence supports."
+          "quote": "the Tides +2/+2 *per card*, which no reading of the sentence supports.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "152-hand-entry.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R179": "3182e34830acb735bedd78d8bfa82b37c3583f82f7d92ceee5fe8ba8f20522ac"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.once-per-event.moved-mods",
@@ -1007,23 +996,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R332",
-          "quote": "Reconfigure is the exception, because its printed text says the mods are augmented."
+          "quote": "Reconfigure is the exception, because its printed text says the mods are augmented.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Moving a mod in general is not applying it (R178 §4); Reconfigure is the exception because its printed text augments the mods (R332).",
+    "notes": "Moving a mod in general is not applying it (owner ruling of 2026-08-25, “a condition belongs at the event…”); Reconfigure is the exception because its printed text augments the mods (owner ruling of 2026-10-09, “Reconfigure applies every moved mod to…”).",
     "sourceHashes": {
-      "R332": "a4514ee56e3f362eaf3d41bd562810d04ba83246c325c861cc9eab50acfc63ef",
       "RAQ 1353856176558706769#0": "c3645e5b668d8436865f988b6ed50c8ecfa1a408c4ef86303565ad1719173a20"
     }
   },
@@ -1035,7 +1024,7 @@
     "examples": [
       {
         "text": "Refuse Reclaimer does not grow when a unit dies in a region it is not in.",
-        "test": "28-metal-c.test.ts::Refuse Reclaimer: a death in a region it is not in leaves it cold (R12)"
+        "test": "28-metal-c.test.ts::Refuse Reclaimer: a death in a region it is not in leaves it cold (CR 601.1d)"
       }
     ],
     "see": [
@@ -1054,14 +1043,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "28-metal-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1097,14 +1086,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1117,7 +1106,7 @@
     "examples": [
       {
         "text": "A \"when I die\" ability of a unit that died in the battle region can target things in the battle region, not in its controller's home region.",
-        "test": "62-death-facts.test.ts::R70: a \"when I die\" trigger resolves in the region the unit DIED in"
+        "test": "62-death-facts.test.ts::CR 714.9a: a \"when I die\" trigger resolves in the region the unit DIED in"
       }
     ],
     "see": [
@@ -1127,29 +1116,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R278",
-          "quote": "*\"a unit sees its own death\"*."
+          "quote": "*\"a unit sees its own death\"*.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R70",
-          "quote": "The fix is the general one: `PendingTrigger` carries the **region its source"
+          "quote": "The fix is the general one: `PendingTrigger` carries the **region its source",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "62-death-facts.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R278 also quotes \"a unit sees its own death\" (R70/R137). R70 is an engine-structure ruling; the region rule is its point 1.",
-    "sourceHashes": {
-      "R278": "7600281fcd0d850ecc6a90e36891616608e829fab1907b6f897508b47bcd230d",
-      "R70": "312b8e32266c89e279f69cda34416803de7c707afb44468168fb6b8bc9678f2b"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“a body that dies in a…”) also quotes \"a unit sees its own death\" (owner rulings of 2026-08-22, “Facts about a leaving unit ride…” and 2026-08-24, “an {Unstable} unit that dies IS…”). The owner ruling of 2026-08-22 (“Facts about a leaving unit ride…”) is an engine-structure ruling; the region rule is its point 1.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.own-death.despawn",
@@ -1159,11 +1147,11 @@
     "examples": [
       {
         "text": "a host carrying Growing Plague that is recalled to its hand triggers Growing Plague's despawn ability.",
-        "test": "141-despawn-mods.test.ts::R167 (i)"
+        "test": "141-despawn-mods.test.ts::CR 721.1f (i)"
       },
       {
         "text": "the same host cached triggers it too.",
-        "test": "141-despawn-mods.test.ts::R167 (ii)"
+        "test": "141-despawn-mods.test.ts::CR 721.1f (ii)"
       }
     ],
     "see": [],
@@ -1171,24 +1159,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R167",
-          "quote": "a printed \"when I despawn\" means it whichever way the unit leaves play"
+          "quote": "a printed \"when I despawn\" means it whichever way the unit leaves play",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "141-despawn-mods.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R167": "7b3b795a55a9c9e8a63cd25ecd39a570d9a767790a2890de421ba72020f75770"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.own-death.reconfigure",
@@ -1213,14 +1200,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1235,7 +1222,7 @@
     "examples": [
       {
         "text": "Muck Rummager killed by combat damage alongside two allies still draws for its controller trashing those allies.",
-        "test": "258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
+        "test": "258-simultaneous-disposal-listeners.test.ts::CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
       }
     ],
     "see": [
@@ -1245,28 +1232,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R278",
-          "quote": "**A batch of deaths that is simultaneous in the rules is simultaneous to the"
+          "quote": "**A batch of deaths that is simultaneous in the rules is simultaneous to the",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R278",
-          "quote": "every disposal event of its batch-mates — their `died`, their `trashed`,"
+          "quote": "every disposal event of its batch-mates — their `died`, their `trashed`,",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "258-simultaneous-disposal-listeners.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R278": "7600281fcd0d850ecc6a90e36891616608e829fab1907b6f897508b47bcd230d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.targets-as-played",
@@ -1276,11 +1263,11 @@
     "examples": [
       {
         "text": "a spell played at another unit and then retargeted onto Earthbound Replicator makes no copy.",
-        "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy"
+        "test": "151-copy-and-moved-mods.test.ts::CR 706.9 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy"
       },
       {
         "text": "a spell played at Earthbound Replicator and then retargeted away still makes its copy.",
-        "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy"
+        "test": "151-copy-and-moved-mods.test.ts::CR 706.9 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy"
       }
     ],
     "see": [
@@ -1295,23 +1282,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R178 (its §1)",
-          "quote": "retargeting away **cancelled** one that was. R1 already says where a condition"
+          "quote": "retargeting away **cancelled** one that was. R1 already says where a condition",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "151-copy-and-moved-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The designer states the \"changed onto it\" half; the \"changed away\" half is R178 (owner), from the same R1 principle.",
+    "notes": "The designer states the \"changed onto it\" half; the \"changed away\" half is the owner ruling of 2026-08-25 (“a condition belongs at the event…”) (owner), from the same the owner ruling of 2026-08-18 (“Trigger conditions vs effect values”) principle.",
     "sourceHashes": {
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
       "RAQ 1355613076506017894#3": "0db171ac91f02b31b348258a244f14a3637f58f92cfc89de216bef9832be5df6"
     }
   },
@@ -1331,28 +1318,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R121 (its activation tax and designer rulings)",
-          "quote": "- An ability's *\"if you do\"* clause is **not** its own trigger — it resolves"
+          "quote": "- An ability's *\"if you do\"* clause is **not** its own trigger — it resolves",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R121 (its activation tax and designer rulings)",
-          "quote": "inside the one queued trigger's parts and is never double-taxed."
+          "quote": "inside the one queued trigger's parts and is never double-taxed.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "426-cr-abilities-and-replacement.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.attributes",
@@ -1370,7 +1357,7 @@
       },
       {
         "text": "a {Resonant} source's extra damage waits on the stack after combat as that source's ability, and can be negated.",
-        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat, as its source, and can be negated"
+        "test": "399-raq-fix-combat.test.ts::the Resonant rider waits on the stack after combat, as its source, and can be negated"
       }
     ],
     "see": [
@@ -1386,20 +1373,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R315 (its ruling)",
-          "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
+          "quote": "the resonant source**, put on the stack as that source's trigger — not life loss",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R315 (its ruling)",
-          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R94",
-          "relation": "its \"OPEN\" note that the engine riders the undoubled {Resonant} amount is overtaken by R315 (the rider is damage from the source); not marked in the register (D-U15-7)"
+          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1409,10 +1392,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Caleb ruled the tax (stop them triggering). That Containment Protocol can negate them is R315 and the engine; the RAQ question about Containment Protocol is unanswered (D-U15-1).",
+    "notes": "Caleb ruled the tax (stop them triggering). That Containment Protocol can negate them is the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) and the engine; the RAQ question about Containment Protocol is unanswered (D-U15-1).",
     "sourceHashes": {
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
       "RAQ 1366446116274442291#0": "8377357b3934e6a3da06ecc08116930b252d309294440fba64594ce8378308dd"
     }
   },
@@ -1424,11 +1407,11 @@
     "examples": [
       {
         "text": "three Wraith abilities all choose one 1/1 ally. The first kills it, and the other two fizzle.",
-        "test": "37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles"
+        "test": "37-attrs-wight.test.ts::CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles"
       },
       {
         "text": "a Wraith with no other ally is its own only ally. Its ability chooses it without asking, resolves on it (it shrinks to 2/2), and nothing fizzles.",
-        "test": "37-attrs-wight.test.ts::R144(b): \"no ally at all\" still does nothing"
+        "test": "37-attrs-wight.test.ts::CR 706.12: \"no ally at all\" still does nothing"
       }
     ],
     "see": [
@@ -1438,28 +1421,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R144 (its half (b))",
-          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R144 (its half (b))",
-          "quote": "> its defense (the final triggers would just fizzle).\""
+          "quote": "> its defense (the final triggers would just fizzle).\"",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.chosen-unit.not-target",
@@ -1469,7 +1452,7 @@
     "examples": [
       {
         "text": "a Wraith ability choosing Mohruung does not give its controller a Crystal.",
-        "test": "37-attrs-wight.test.ts::R144(b): a subject is not a target"
+        "test": "37-attrs-wight.test.ts::CR 706.12a: a subject is not a target"
       }
     ],
     "see": [],
@@ -1477,28 +1460,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R144 (its half (b))",
-          "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
+          "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R144 (its half (b))",
-          "quote": "and withholds **3 and 4**. The expensive one is 3: **Mohruung** prints *\"when I"
+          "quote": "and withholds **3 and 4**. The expensive one is 3: **Mohruung** prints *\"when I",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The owner's words say \"target\"; R144 reads them as an aim with no targeting event and no redirect. Recorded as an owner question (D-U15-8).",
-    "sourceHashes": {
-      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
-    }
+    "notes": "The owner's words say \"target\"; the owner ruling of 2026-08-24 (“deployment uses the stack, and a…”) reads them as an aim with no targeting event and no redirect. Recorded as an owner question (D-U15-8).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.what",
@@ -1523,14 +1506,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1547,7 +1530,7 @@
       },
       {
         "text": "Aetherflux Golem's \"I gain +2/+2\" never goes on the stack, so Containment Protocol cannot negate it.",
-        "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC"
+        "test": "142-static-conformance.test.ts::CR 721.1e: Aetherflux Golem is a STATIC"
       }
     ],
     "see": [],
@@ -1560,13 +1543,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R168",
-          "quote": "* **it stops being respondable.** A triggered ability reaches the stack, so"
+          "quote": "* **it stops being respondable.** A triggered ability reaches the stack, so",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -1574,10 +1557,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f",
       "RAQ 1355103348378042515#3": "5d04262e5542382abe3a5347592d54af46ce4dcea94eb75c1094a496a3d483c6"
     }
   },
@@ -1617,29 +1600,33 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its stack rule)",
-          "quote": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
+          "quote": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R104 (its stack rule)",
-          "quote": "> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to"
+          "quote": "> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R168",
-          "quote": "It is a `StaticMod` on the anchor now, and the ruling is that the printed"
+          "quote": "It is a `StaticMod` on the anchor now, and the ruling is that the printed",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R315 (its ruling)",
-          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R102",
-          "quote": "effect that later fizzles for want of a target does **not** resurrect it:"
+          "quote": "effect that later fizzles for want of a target does **not** resurrect it:",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "142-static-conformance.test.ts",
@@ -1647,14 +1634,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Round 1: the When/Whenever gloss was widened. The owner's R104 sentence is a heuristic; the Manual's stated times, R315's trigger-like attributes and R102's targeted substitute all reach the stack without saying When/Whenever.",
-    "sourceHashes": {
-      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381",
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
-      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f",
-      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f"
-    }
+    "notes": "Round 1: the When/Whenever gloss was widened. The owner's the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) sentence is a heuristic; the Manual's stated times, the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”)’s trigger-like attributes and the owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”)’s targeted substitute all reach the stack without saying When/Whenever.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.continuous",
@@ -1683,14 +1666,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whether such a static also removes an attribute a unit gains later is the open thread 1355685844467581081 (D-U15-2); timestamps are rule 709.",
     "sourceHashes": {
@@ -1734,14 +1717,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1758,7 +1741,7 @@
     "examples": [
       {
         "text": null,
-        "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence"
+        "test": "142-static-conformance.test.ts::CR 721.1e: Aetherflux Golem is a STATIC, like the two cards printing its sentence"
       }
     ],
     "see": [],
@@ -1766,28 +1749,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R168",
-          "quote": "* **counter-matters cards stop seeing counters.** The card says \"I gain +2/+2\","
+          "quote": "* **counter-matters cards stop seeing counters.** The card says \"I gain +2/+2\",",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R168",
-          "quote": "A layer is true while its source is there and false afterwards."
+          "quote": "A layer is true while its source is there and false afterwards.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "142-static-conformance.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.spawn-counters",
@@ -1809,28 +1792,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "**The ruling: \"I spawn with N counters\" is a DECLARATION about the body, not an"
+          "quote": "**The ruling: \"I spawn with N counters\" is a DECLARATION about the body, not an",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R165",
-          "quote": "*\"I spawn with N counters\"* is a statement about what the"
+          "quote": "*\"I spawn with N counters\"* is a statement about what the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "139-spawn-and-play.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.spawn-counters.modifiers",
@@ -1852,17 +1835,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "- **SILENT.** No `countersChanged` fires, so no \"when **you** put a counter\""
+          "quote": "- **SILENT.** No `countersChanged` fires, so no \"when **you** put a counter\"",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R130 (its counter-attribution ruling)",
-          "quote": "reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X"
+          "quote": "reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts",
@@ -1870,12 +1854,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000",
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.region",
@@ -1885,7 +1867,7 @@
     "examples": [
       {
         "text": "Rotspore Herald (\"Everything is {deadly}\") in its home region does not make a spell resolving in the battle region deadly.",
-        "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — the scope is the REGION"
+        "test": "107-semantics-statics.test.ts::Rotspore Herald: CR 601.1d — the scope is the REGION"
       }
     ],
     "see": [
@@ -1904,28 +1886,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "> **Caleb Gannon:** *\"Yeah.\"* … *\"Every single effect without exception will"
+          "quote": "> **Caleb Gannon:** *\"Yeah.\"* … *\"Every single effect without exception will",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         },
         {
-          "ref": "R237",
-          "quote": "> only ever work in a single zone.\"*"
+          "quote": "> only ever work in a single zone.\"*",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "107-semantics-statics.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.42 (Prickly Protector sees only its region) supports this only partly, as one card's count; the general statement is Caleb's 2023 answer quoted in R237.",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "notes": "Manual p.42 (Prickly Protector sees only its region) supports this only partly, as one card's count; the general statement is Caleb's 2023 answer quoted in the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.literal",
@@ -1935,11 +1917,11 @@
     "examples": [
       {
         "text": "with Rotspore Herald in the region, a spell that deals 1 damage destroys a 7/5.",
-        "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — a SPELL resolving in the region is deadly"
+        "test": "107-semantics-statics.test.ts::Rotspore Herald: CR 707.7 — a SPELL resolving in the region is deadly"
       },
       {
         "text": "a Fireball 1 spell token in Rotspore Herald's region is {Deadly} too.",
-        "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — a SPELL TOKEN standing in the region is deadly too"
+        "test": "107-semantics-statics.test.ts::Rotspore Herald: CR 707.7 — a SPELL TOKEN standing in the region is deadly too"
       }
     ],
     "see": [],
@@ -1947,33 +1929,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R125",
-          "quote": "tokens. Literally everything in its region. I think you're underestimating"
+          "quote": "tokens. Literally everything in its region. I think you're underestimating",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R125",
-          "quote": "carries no qualifier, do not invent one. The narrow reading here was not a"
+          "quote": "carries no qualifier, do not invent one. The narrow reading here was not a",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R237",
-          "quote": "> 1 damage kills the front unit, **the second damage kills the herald**.\"*"
+          "quote": "> 1 damage kills the front unit, **the second damage kills the herald**.\"*",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "107-semantics-statics.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R125": "349a75c7891354248b00e90d386d39cb71bf772baa118887f837a7f7e6055e8d",
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.literal.spell-tokens",
@@ -1993,29 +1975,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §13)",
-          "quote": "> *\"Yes. Tokens are spells.\"*"
+          "quote": "> *\"Yes. Tokens are spells.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R94",
-          "quote": "R157 §13, the owner: *\"Yes. Tokens are spells.\"* Emberflame doubles a Burst Fireball, as the engine"
+          "quote": "R157 §13, the owner: *\"Yes. Tokens are spells.\"* Emberflame doubles a Burst Fireball, as the engine",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "111-literal-fire.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.declared-targets",
@@ -2033,28 +2014,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R94",
-          "quote": "> **A:** \"No, it still has 2 targets, but one of them is invalid (but could become valid"
+          "quote": "> **A:** \"No, it still has 2 targets, but one of them is invalid (but could become valid",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R94",
-          "quote": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the"
+          "quote": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R94 quotes the RAQ \"[Solved] Envoy of Lightning vs Twin Flame.\" verbatim; that thread is not in the U15 pack, so the designer answer is cited through R94.",
-    "sourceHashes": {
-      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) quotes the RAQ \"[Solved] Envoy of Lightning vs Twin Flame.\" verbatim; that thread is not in the U15 pack, so the designer answer is cited through the owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.from-mod",
@@ -2068,7 +2049,7 @@
       },
       {
         "text": "Crevice Lurker as a mod taxes abilities in its host's region.",
-        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax"
+        "test": "16-earth-a.test.ts::Crevice Lurker: CR 707.9 — donated as an augment, the HOST's region carries the tax"
       },
       {
         "text": null,
@@ -2082,21 +2063,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §6)",
-          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R94",
-          "quote": "division `StaticMod` already uses — so an Enlightener augmented onto an ENEMY unit"
+          "quote": "division `StaticMod` already uses — so an Enlightener augmented onto an ENEMY unit",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R94",
-          "quote": "boosts *that enemy's* spells, matching the units half exactly."
+          "quote": "boosts *that enemy's* spells, matching the units half exactly.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "28-metal-c.test.ts",
@@ -2105,12 +2088,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.static.permission",
@@ -2128,30 +2109,30 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "deployment\"* is not an effect anyone should be able to answer, but it is built"
+          "quote": "deployment\"* is not an effect anyone should be able to answer, but it is built",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R168",
-          "quote": "should simply be true reaches the stack and Containment Protocol can negate"
+          "quote": "should simply be true reaches the stack and Containment Protocol can negate",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
+    "digitalClause": "(engine differs, see F-U15-1)",
     "confidence": "medium",
-    "notes": "R165 and R168 both say the permission \"should simply be true\" and both leave the engine building it as a bounded activated ability; filed, not fixed.",
+    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) and the owner ruling of 2026-08-25 (“the STATIC half of 75 gets…”) both say the permission \"should simply be true\" and both leave the engine building it as a bounded activated ability; filed, not fixed.",
     "engineDiffers": [
       "F-U15-1"
     ],
-    "sourceHashes": {
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d",
-      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.what",
@@ -2180,14 +2161,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2217,13 +2198,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its stack rule)",
-          "quote": "> a ':' activated ability. All cards that say 'instead' or 'as' or 'if'"
+          "quote": "> a ':' activated ability. All cards that say 'instead' or 'as' or 'if'",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "87-replacement-layer.test.ts",
@@ -2231,11 +2212,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.no-stack.targeted",
@@ -2245,7 +2225,7 @@
     "examples": [
       {
         "text": "Beyond, Codex Incarnate replaces its controller's rot damage with -1/-1 counters on a target unit; the damage never lands, whatever becomes of the counters.",
-        "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands"
+        "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: CR 112.13d — the rot replacement asks its controller for a target, and the damage never lands"
       }
     ],
     "see": [
@@ -2255,28 +2235,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R102",
-          "quote": "resolved. The damage IS replaced — that is what \"instead\" means — so a queued"
+          "quote": "resolved. The damage IS replaced — that is what \"instead\" means — so a queued",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R102",
-          "quote": "effect that later fizzles for want of a target does **not** resurrect it:"
+          "quote": "effect that later fizzles for want of a target does **not** resurrect it:",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "43-dark-c.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.substitute",
@@ -2294,7 +2274,7 @@
       },
       {
         "text": "with Blightsea Polyp in play, Zephyrzoa's column still deals combat damage to the opponent, although the opponent gains rot instead of losing life.",
-        "test": "210-zephyrzoa-hears-a-replaced-hit.test.ts::R238: Zephyrzoa fires on a hit that was REPLACED and cost no life"
+        "test": "210-zephyrzoa-hears-a-replaced-hit.test.ts::CR 608.8a: Zephyrzoa fires on a hit that was REPLACED and cost no life"
       }
     ],
     "see": [
@@ -2304,17 +2284,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "`spawned` for it, asked, and erased it — so a token the card says was never"
+          "quote": "`spawned` for it, asked, and erased it — so a token the card says was never",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R238",
-          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q5; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "87-replacement-layer.test.ts",
@@ -2322,12 +2303,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Whether a REDIRECTED hit (Oorblak: \"dealt to me instead\") counts as damage dealt to the player is not stated by any source (D-U15-10).",
-    "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
-      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.once",
@@ -2357,13 +2336,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "> \"a replacement only happens once … The replacement just takes what would be 1"
+          "quote": "> \"a replacement only happens once … The replacement just takes what would be 1",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -2371,10 +2350,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The engine-differs flag (F-U12-1) moved to effects.replacement.once.one-applies: the verifier measured the engine agreeing for the SAME effect (one Oorblak never re-absorbs its own leftover; one inversion per Nullbringer gain); the divergence is a second, different holder re-replacing the product.",
     "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
       "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
     }
   },
@@ -2399,17 +2378,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
+          "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "thief puts the counters on itself, and that is a counter placement — and two"
+          "quote": "thief puts the counters on itself, and that is a counter placement — and two",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "46-hybrids-ld-c.test.ts",
@@ -2417,10 +2397,11 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "(engine differs, see F-U15-3)",
     "confidence": "medium",
-    "notes": "Which one applies is not stated by any designer or printed source; R104 takes the first by entity id (D-U15-3). The verifier's probe measured two Oorblaks both redirecting one 10-point Piercing hit (the player loses 2, not 6; both die): F-U15-3, the same defect as F-U12-1 (D-U15-11).",
+    "notes": "Which one applies is not stated by any designer or printed source; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) takes the first by entity id (D-U15-3). The verifier's probe measured two Oorblaks both redirecting one 10-point Piercing hit (the player loses 2, not 6; both die): F-U15-3, the same defect as F-U12-1 (D-U15-11).",
     "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
       "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
     },
     "engineDiffers": [
@@ -2448,17 +2429,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "> \"a replacement only happens once … The replacement just takes what would be 1"
+          "quote": "> \"a replacement only happens once … The replacement just takes what would be 1",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "So two **different** modifiers both apply (two Conduits of Pain make a 1 into a"
+          "quote": "So two **different** modifiers both apply (two Conduits of Pain make a 1 into a",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts",
@@ -2467,11 +2449,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.multipliers",
@@ -2481,7 +2462,7 @@
     "examples": [
       {
         "text": "three Arbiters of Vitality multiply a life loss by 8.",
-        "test": "137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply"
+        "test": "137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply"
       }
     ],
     "see": [],
@@ -2489,24 +2470,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R264",
-          "quote": "**The claiming factors MULTIPLY. n mods each declaring ×2 give 2^n.** Three"
+          "quote": "**The claiming factors MULTIPLY. n mods each declaring ×2 give 2^n.** Three",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R264",
-          "quote": "Arbiters give **×8**, where they used to give ×6."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R157",
-          "relation": "its §23 formula n*2*v (linear) was amended by R264 to 2^n; n = 2 is unchanged"
-        },
-        {
-          "ruling": "R162",
-          "relation": "its summed fold was superseded by R264"
+          "quote": "Arbiters give **×8**, where they used to give ×6.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2515,11 +2488,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R264": "95b7d61f66f2efa6b8ad89acef4b28f40cfa6eb372d3468b7470806548b75018"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.multipliers.additive-first",
@@ -2543,20 +2515,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R316",
-          "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+          "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit =",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R264",
-          "quote": "does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R104",
-          "relation": "its order (Conduit after Powerful) was reversed by R316"
+          "quote": "does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2566,12 +2534,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "For damage and {Powerful} the order is the designer's (R316 quotes the RAQ). For a life multiplier (Arbiter) R264 calls the same order an interim decision, unruled (D-U15-4).",
-    "sourceHashes": {
-      "R264": "95b7d61f66f2efa6b8ad89acef4b28f40cfa6eb372d3468b7470806548b75018",
-      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128"
-    }
+    "notes": "For damage and {Powerful} the order is the designer's (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”) quotes the RAQ). For a life multiplier (Arbiter) the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) calls the same order an interim decision, unruled (D-U15-4).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.multipliers.lethal",
@@ -2595,24 +2561,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R162 (its Arbiter of Vitality section)",
-          "quote": "now committed in one go, BEFORE the lethal check."
+          "quote": "now committed in one go, BEFORE the lethal check.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "137-multiplier-and-mode.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R162": "cce03aedbad6ba5b735880d7acb96b463e250174b38e8f23e2f7f449b087412b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.amount-before-redirect",
@@ -2630,28 +2595,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "**In `addCounters`**, the amount runs before the redirect. \"Put that many"
+          "quote": "**In `addCounters`**, the amount runs before the redirect. \"Put that many",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "beside a Flux Resonator steals the plus-one too."
+          "quote": "beside a Flux Resonator steals the plus-one too.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "87-replacement-layer.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.scope",
@@ -2669,28 +2634,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R179",
-          "quote": "> *\"Resonater says 'put on' so this question is irrelevant. Removing counters"
+          "quote": "> *\"Resonater says 'put on' so this question is irrelevant. Removing counters",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R179",
-          "quote": "**THE GENERALISABLE FORM, which is the half worth keeping: the scope of a layer"
+          "quote": "**THE GENERALISABLE FORM, which is the half worth keeping: the scope of a layer",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "152-hand-entry.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R179": "3182e34830acb735bedd78d8bfa82b37c3583f82f7d92ceee5fe8ba8f20522ac"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.scope.all-counters",
@@ -2708,24 +2673,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R130 (its counter-attribution ruling)",
-          "quote": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,"
+          "quote": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "120-counter-attribution.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.scope.who-put",
@@ -2747,28 +2711,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R130 (its counter-attribution ruling)",
-          "quote": "fact.** Three cards print an ACTOR (\"when **you** put\", \"by an **allied**"
+          "quote": "fact.** Three cards print an ACTOR (\"when **you** put\", \"by an **allied**",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R130 (its counter-attribution ruling)",
-          "quote": "another are still counters you put."
+          "quote": "another are still counters you put.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "120-counter-attribution.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.token-batch",
@@ -2778,11 +2742,11 @@
     "examples": [
       {
         "text": "Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
-        "test": "136-triggers-and-modes.test.ts::R157 §24: end to end"
+        "test": "136-triggers-and-modes.test.ts::CR 708.9: end to end"
       },
       {
         "text": "three identical Robot 2s created together are one unique token and yield one extra.",
-        "test": "136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s"
+        "test": "136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s"
       }
     ],
     "see": [],
@@ -2790,20 +2754,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its token-batch section)",
-          "quote": "**One resolving part is one creation batch**, which is the unit R80 already gave"
+          "quote": "**One resolving part is one creation batch**, which is the unit R80 already gave",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (its §24)",
-          "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R104",
-          "relation": "its \"UNIQUE is by token kind, the X is not part of it\" was reversed by R157 §24"
+          "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2813,12 +2773,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.locked-life",
@@ -2836,28 +2794,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "`gainLife` and `loseLife`: once the change cannot happen at all, there is"
+          "quote": "`gainLife` and `loseLife`: once the change cannot happen at all, there is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R104 (its two families and hooks)",
-          "quote": "nothing left to replace."
+          "quote": "nothing left to replace.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "87-replacement-layer.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.replacement.prevention",
@@ -2887,13 +2845,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevention rules)",
-          "quote": "{Lethal} still kills through it\"*. **Replacement is a substitution; prevention is a"
+          "quote": "{Lethal} still kills through it\"*. **Replacement is a substitution; prevention is a",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -2901,10 +2859,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
       "RAQ 1354148437355925554#1": "0cee7d451013b6afaa95e382f1b150732182e144830830fbfe16e51ceaef2394"
     }
   },
@@ -2929,19 +2887,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [
-        {
-          "ruling": "R98",
-          "relation": "its open item 1 (prevention counters capped at lethal) was superseded by R114: the whole assigned hit is dealt"
-        }
-      ],
+      "owner": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2966,28 +2919,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevention rules)",
-          "quote": "{Vulnerable}'s doubling (\"all damage that WOULD BE DEALT\" to a Vulnerable unit is the"
+          "quote": "{Vulnerable}'s doubling (\"all damage that WOULD BE DEALT\" to a Vulnerable unit is the",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R98 (its prevention rules)",
-          "quote": "floor: those are planned against the unit's real toughness as if it were unprotected. The"
+          "quote": "floor: those are planned against the unit's real toughness as if it were unprotected. The",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.triggered.that-item",
@@ -3001,7 +2954,7 @@
       },
       {
         "text": "A copy of Burgeon sits below a newly played Burgeon. Void Mandible negates the played Burgeon and leaves the copy alone.",
-        "test": "178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — R164, a copy was not played"
+        "test": "178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy was not played"
       },
       {
         "text": "Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack.",
@@ -3020,25 +2973,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R191 (§1)",
-          "quote": "A card that acts on \"the thing the event was about\" matches the event's"
+          "quote": "A card that acts on \"the thing the event was about\" matches the event's",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R191 (§1)",
-          "quote": "description; two items can satisfy it at once, and which one a scan reaches"
+          "quote": "description; two items can satisfy it at once, and which one a scan reaches",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R207",
-          "quote": "A play event names the item it made, and a listener matches on that id."
+          "quote": "A play event names the item it made, and a listener matches on that id.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R207",
-          "quote": "played — RAQ (_passer): *\"the 1st copy wasn't 'played'\"* — so a card keying"
+          "quote": "played — RAQ (_passer): *\"the 1st copy wasn't 'played'\"* — so a card keying",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "178-played-item-and-erased-mods.test.ts",
@@ -3046,11 +3002,9 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R191 and R207 (their game half: which item a play-triggered ability acts on). Not drafted: R207's \"an item-less play leaves nothing to negate\" (it is the asPlay spawn approximation; 703.5 states R198, and the divergence is already a CT entry), and R191 §2-§4 (log event types, despawn dispatch, restore drift: not game rules). had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R191": "7c77fd10bf5323c3197c2485e3de424a63324afe2f3b232d32113b764f3caf23",
-      "R207": "be4a59cc9fa163488f9f9dd900bc9fba3e183729e2f388254386f5664514796e"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-26 (“the item the event NAMES, and…”) and the owner ruling of 2026-08-26 (“the WIDE play event learns which…”) (their game half: which item a play-triggered ability acts on). Not drafted: The owner ruling of 2026-08-26 (“the WIDE play event learns which…”)’s \"an item-less play leaves nothing to negate\" (it is the asPlay spawn approximation; 703.5 states the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”), and the divergence is already a CT entry), and the owner ruling of 2026-08-26 (“the item the event NAMES, and…”)-§4 (log event types, despawn dispatch, restore drift: not game rules). had no CR rule before the register is retired.",
+    "sourceHashes": {}
   }
 ]

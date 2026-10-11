@@ -1,4 +1,4 @@
-/* R347 — A CARD NEVER HEARS ITS OWN PLAY. Whole pool, derived.
+/* CR 701.1e — A CARD NEVER HEARS ITS OWN PLAY. Whole pool, derived.
  *
  * The owner, answering D-U14-11 (reading B), 2026-10-11: an ability that
  * triggers when its controller plays a unit, a spell or a card works only
@@ -15,8 +15,8 @@
  *   · every triggered ability (own text or [Augment] text, not a bin/cache
  *     `zone` clause) listening on a PLAY event, `cardPlayed` or `spellPlayed`;
  *   · every one listening on `spawned` whose printed text is a play clause
- *     ("When you play …"). A plain unit play is announced on its own 'spawned'
- *     (R263), so a card that reads 'spawned' as a play is a play listener too.
+ *     ("When you play …"). A plain unit play is announced on its own 'spawned',
+ *     so a card that reads 'spawned' as a play is a play listener too.
  *     A 'spawned' listener that says "When I spawn" or "another ally spawns" is
  *     about arriving, not about playing, and is outside this rule.
  *
@@ -24,9 +24,9 @@
  * played, each by a real effect or action:
  *
  *   hand   playCard in deployment (the stack, then resolution);
- *   cache  playCached after cacheTopOfDeck (R41);
+ *   cache  playCached after cacheTopOfDeck (CR 403.3b);
  *   bin    Wake the Dead, "Play up to two units in any bin" (the `asPlay` spawn);
- *   deck   Tides of the Cosmos, "You may play them now, for free" (R198 push).
+ *   deck   Tides of the Cosmos, "You may play them now, for free" (CR 701.4 push).
  *
  * The check is on the trigger LOG, not on a side effect, so it reads every card
  * the same way: no "Trigger: <card> — <that ability's label>." line may be
@@ -196,7 +196,7 @@ const driven = (route?: Route) => RESULTS.filter(r => r.heard && (!route || r.ro
 
 // ── reach ────────────────────────────────────────────────────────────────
 
-test('R347 reach: the derived population of play listeners holds the known ones and has not collapsed', () => {
+test('CR 701.1e reach: the derived population of play listeners holds the known ones and has not collapsed', () => {
   for (const known of ['Stalwart Sentinel', 'Proph', 'Bloomcaster', 'Void Mandible', 'Sparkwraith']) {
     assert.ok(CARDS.includes(known), `${known} is a play listener and must be in the derived population`);
   }
@@ -207,7 +207,7 @@ test('R347 reach: the derived population of play listeners holds the known ones 
   assert.ok(CARDS.length >= 20, `only ${CARDS.length} play-listening cards derived (21 on 2026-10-11)`);
 });
 
-test('R347 reach: every route drove the population into play', () => {
+test('CR 701.1e reach: every route drove the population into play', () => {
   const floors: Record<Route, number> = { hand: 20, cache: 20, bin: 20, deck: 20 };
   const skips = RESULTS.filter(r => r.skip).map(r => `${r.card} via ${r.route}: ${r.skip}`);
   for (const route of ROUTES) {
@@ -221,13 +221,13 @@ test('R347 reach: every route drove the population into play', () => {
   }
 });
 
-test('R347 reach: the coverage, as a diagnostic', t => {
+test('CR 701.1e reach: the coverage, as a diagnostic', t => {
   t.diagnostic(`${CARDS.length} play-listening cards: ${CARDS.join(', ')}`);
   for (const route of ROUTES) t.diagnostic(`${route}: ${driven(route).length} driven`);
   for (const r of RESULTS.filter(x => x.skip)) t.diagnostic(`not driven: ${r.card} via ${r.route} (${r.skip})`);
 });
 
-test('R347 calibration: the detector sees a Stalwart Sentinel hear a unit played after it', () => {
+test('CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit played after it', () => {
   // Wake the Dead plays the Sentinel FIRST and a second unit after it. The
   // second play is heard (the Sentinel is in play by then): 2 counters, and
   // the trigger line this sweep looks for is logged. The first play, its own,
@@ -271,12 +271,12 @@ function noneHeardItself(route: Route): void {
     .map(r => `${r.card} (${r.heard!.join(' / ')})`);
   assert.deepEqual(convicted, [], `these cards heard their own play from ${route}:\n  ${convicted.join('\n  ')}`);
 }
-test('R347: no play listener hears its own play from hand', () => noneHeardItself('hand'));
-test('R347: no play listener hears its own play from a cache', () => noneHeardItself('cache'));
-test('R347: no play listener hears its own play from a bin', () => noneHeardItself('bin'));
-test('R347: no play listener hears its own play from the deck', () => noneHeardItself('deck'));
+test('CR 701.1e: no play listener hears its own play from hand', () => noneHeardItself('hand'));
+test('CR 701.1e: no play listener hears its own play from a cache', () => noneHeardItself('cache'));
+test('CR 701.1e: no play listener hears its own play from a bin', () => noneHeardItself('bin'));
+test('CR 701.1e: no play listener hears its own play from the deck', () => noneHeardItself('deck'));
 
-test('R347: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play', () => {
+test('CR 701.1e: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play', () => {
   const r = RESULTS.find(x => x.card === 'Stalwart Sentinel' && x.route === 'bin')!;
   assert.ok(r.heard, `not driven: ${r.skip}`);
   assert.deepEqual(r.heard, [], 'Stalwart Sentinel heard its own play from the bin');

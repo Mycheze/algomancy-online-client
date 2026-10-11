@@ -1,4 +1,4 @@
-/* R293 / playtest report #167 — FORMLESS REMOVES ATTRIBUTES FROM THE COLUMN,
+/* CR 712.3 / playtest report #167 — FORMLESS REMOVES ATTRIBUTES FROM THE COLUMN,
  * not from the target alone.
  *
  * The card, in full: *"When I attack or block, [Switch] Target unit becomes a
@@ -74,7 +74,7 @@ function btux(seed: number) {
 
 /* ══ §1 — THE REPORT ═════════════════════════════════════════════════ */
 
-test('R293 §1 the report: Formless takes {Blessed} off the whole column, not just its target', () => {
+test('CR 712.3 the report: Formless takes {Blessed} off the whole column, not just its target', () => {
   const { h, front, mate } = btux(29901);
   const g = new E(h.state);
   assert.ok(!g.ownAttrs(g.entity(front)!).size, 'the target lost its own layer (this always worked)');
@@ -84,7 +84,7 @@ test('R293 §1 the report: Formless takes {Blessed} off the whole column, not ju
     'so the column is not Blessed any more, which is what the printed reminder promises');
 });
 
-test('R293 §1b and therefore nobody gains life when the column connects', () => {
+test('CR 712.3 and therefore nobody gains life when the column connects', () => {
   // ⚠ THIS ASSERTION WAS VACUOUS ONCE, and the mutation found it. `btux()`
   // stops with the Formless trigger resolved and the block window reopened —
   // no combat damage has happened yet. Reading the life total there compares
@@ -102,7 +102,7 @@ test('R293 §1b and therefore nobody gains life when the column connects', () =>
   finishBattle(h);
 });
 
-test('R293 §1c the control: without Formless the same column DOES gain', () => {
+test('CR 712.3 the control: without Formless the same column DOES gain', () => {
   const h = new Harness(29903);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -116,7 +116,7 @@ test('R293 §1c the control: without Formless the same column DOES gain', () => 
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [wall] } });
   pass(h); pass(h);
   throughDamageWindows(h);
-  assignDefault(h);   // R319: the blocking {Piercing} Whale elects
+  assignDefault(h);   // CR 802.16c: the blocking {Piercing} Whale elects
   throughDamageWindows(h);
   assert.ok(h.state.players[A]!.life > life0,
     'a live {Blessed} column gains its controller life — §1b is not passing on a board that '
@@ -126,7 +126,7 @@ test('R293 §1c the control: without Formless the same column DOES gain', () => 
 
 /* ══ §2 — ONLY THE ATTRIBUTE HALF IS COLUMN-WIDE ════════════════════ */
 
-test('R293 §2 the base rewrite still hits the TARGET alone', () => {
+test('CR 712.3 the base rewrite still hits the TARGET alone', () => {
   const { h, front, mate } = btux(29904);
   assert.deepEqual(effStats(h, front), [4, 4], 'the target became a base 4/4');
   assert.deepEqual(effStats(h, mate), [1, 3],
@@ -134,11 +134,11 @@ test('R293 §2 the base rewrite still hits the TARGET alone', () => {
     + 'and only the parenthesis is about the column');
 });
 
-test('R293 §2b abilities are untouched, on both of them (R62)', () => {
+test('CR 712.3 abilities are untouched, on both of them (CR 712.1)', () => {
   const { h, front, mate } = btux(29905);
   const g = new E(h.state);
   assert.equal(g.entity(front)!.suppressed?.abilities, undefined,
-    'Formless removes ATTRIBUTES; R62 keeps the ability layer separate');
+    'Formless removes ATTRIBUTES; CR 712.1 keeps the ability layer separate');
   assert.equal(g.entity(mate)!.suppressed?.abilities, undefined, 'and the same for the mate');
   assert.equal(g.entity(mate)!.suppressed?.attrs, 'Formless',
     'what the mate carries is the attribute stamp, named for what stamped it');
@@ -146,7 +146,7 @@ test('R293 §2b abilities are untouched, on both of them (R62)', () => {
 
 /* ══ §3 — THE STAMP IS THE UNIT'S OWN STATE ═════════════════════════ */
 
-test('R293 §3 the stamp outlives the column, and expires exactly where the card says: regroup', () => {
+test('CR 712.3b the stamp outlives the column, and expires exactly where the card says: regroup', () => {
   // "If you remove the attributes from a guy for the turn, it wouldn't make
   // sense for it to get them back." The stamp is the UNIT's state, not the
   // column's — so it survives the column, and the only thing that clears it is
@@ -171,7 +171,7 @@ test('R293 §3 the stamp outlives the column, and expires exactly where the card
 
 /* ══ §4 — AND A LATER ARRIVAL WAS NEVER STAMPED ═════════════════════ */
 
-test('R293 §4 a unit that joins the column afterwards keeps its own attributes', () => {
+test('CR 712.3b a unit that joins the column afterwards keeps its own attributes', () => {
   // The stamp is applied at RESOLUTION, to the units standing there. It is not
   // a continuous column effect, because nothing in the engine models one and
   // the printed text is a one-shot event ("When I attack or block…").
@@ -188,7 +188,7 @@ test('R293 §4 a unit that joins the column afterwards keeps its own attributes'
 
 /* ══ §5 — NO COLUMN IS A COLUMN OF ONE ══════════════════════════════ */
 
-test('R293 §5 a target with no column (or no battle) is stamped alone, and nothing throws', () => {
+test('CR 712.3a a target with no column (or no battle) is stamped alone, and nothing throws', () => {
   const h = new Harness(29908);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

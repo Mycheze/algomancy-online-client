@@ -96,7 +96,7 @@ test('#85: Soul Siphon previews a row PER PLAYER, and the row is the size of the
   // now BIND IT: cast it at D and check the row was telling the truth
   const opp = rows![1]!.x;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Soul Siphon') });
-  decide(h, v => JSON.stringify(v) === JSON.stringify({ player: D }));   // R67: target at cast
+  decide(h, v => JSON.stringify(v) === JSON.stringify({ player: D }));   // CR 110.1a: target at cast
   pass(h); pass(h);
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1, 'the X/X unit was created');
@@ -161,9 +161,9 @@ test('#85: the older single-number xPreview still reads as one unlabelled row', 
   finishBattle(h);
 });
 
-test('R157 §21: Retribution Thing previews BOTH ledgers, because the caster picks one', () => {
-  // It used to be a single-number xPreview showing lost PLUS gained. §21 makes
-  // the bracket a cast-time mode, so the badge has to show the two numbers the
+test('CR 205.3: Retribution Thing previews BOTH ledgers, because the caster picks one', () => {
+  // It used to be a single-number xPreview showing lost PLUS gained. CR 205.3
+  // makes the bracket a cast-time mode, so the badge has to show the two numbers the
   // choice is between — a sum is a value nobody can now cast for.
   const { h, A, D } = battleWhereDefenderLost7(9610);
   assert.deepEqual(previewRows(h.state, 'Retribution Thing', D),
@@ -234,16 +234,16 @@ const READS_A_LEDGER = /battleCounters?\b|lifeLostThisBattle|lifeGainedThisBattl
  * fails this test until someone decides which side it is on.
  */
 const NO_PREVIEW_NEEDED: Record<string, string> = {
-  // R143 removed Hush Mush's entry: it no longer reads a ledger at all. The
+  // Hush Mush's entry is gone (CR 303.10): it no longer reads a ledger at all. The
   // negated effect's controller rides on its own stack item (StackItem
   // .spawnUnder) and the body ENTERS as that seat's unit — the `hushMushGiveTo`
   // scratch slot and the spawn trigger that read it are both gone.
-  // R147 removed Borrower of Forms' entry for the same reason and by the same
+  // Borrower of Forms' entry went (CR 303.11) for the same reason and by the same
   // route: the `bof:*` counters and the `copyParks` slot are gone, the copied
   // body rides the spell's own stack item (StackItem.spawnWearing), and the
   // self-spawn trigger that read them has been deleted.
-  Origon: 'FLAG-STYLE, and it arrived here as of R166 (2026-08-25) — before that it counted '
-    + 'spells on a PER-CARRIER counter, which is exactly the bug R166 fixed ("their first spell" '
+  Origon: 'FLAG-STYLE, and it arrived here on 2026-08-25 — before that it counted '
+    + 'spells on a PER-CARRIER counter, which is exactly the bug fixed then ("their first spell" '
     + 'is the PLAYER\'s first, not the first this Origon has seen). Reading the seat-wide '
     + '`spellsPlayedAny:<seat>` ledger is the fix, and it is what brings the card into this '
     + 'census. There is no X and no hand card to hang a number on: the ledger is read inside a '

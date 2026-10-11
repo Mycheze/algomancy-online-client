@@ -1,4 +1,4 @@
-/* R229 — report #108: A COPY IS DRAWN AS THE CARD IT COPIED.
+/* CR D6.8 — report #108: A COPY IS DRAWN AS THE CARD IT COPIED.
  *
  * Owner, SBCM action 136: *"Borrower of Forms should also copy/borrow the card
  * ART of the thing its copying. Just the little note at the bottom (and the
@@ -12,8 +12,8 @@
  *
  * ── WHY IT WAS WRONG ─────────────────────────────────────────────────────
  *
- * R118 deliberately never rewrites `Entity.card`: the physical card is what
- * bins (ruling 1), and the worn face lives in `Entity.copies` behind
+ * The copy layer deliberately never rewrites `Entity.card`: the physical card is
+ * what bins (CR 201.5), and the worn face lives in `Entity.copies` behind
  * `E.nameOf`. ui/cardtext.ts already read the face, so the NAME and the TEXT
  * followed the copy. `ui/main.ts unitHtml` fed `u.card` — the cardboard — to
  * `art()`, so the picture did not. One entity, two answers to "which card is
@@ -44,14 +44,14 @@
  *
  * §3 is the guard, and it is the reason this file is worth its length. Ancient
  * One `projects` with `facets: ['statics','activated','behavior']` and NO
- * `name` — R127's stated exclusion. It is a copy that deliberately keeps its
+ * `name` — CR 710.7's stated exclusion. It is a copy that deliberately keeps its
  * own face, so it must keep its own PORTRAIT. A fix reaching for `facesOf(u)`,
  * `facesWith(u, …)` or `u.copies[0].card` instead of `E.nameOf` renders an
  * Ancient One as its neighbour and passes §1 and §2 while doing it. §3 makes
  * the projection provably live on the very board it then reads the art off.
  *
  * ⚠ `117-copy-everything.test.ts` is NOT coverage for any of this: it is
- * R127/Ancient One, contains no Borrower and no Apex Prime, and says nothing
+ * CR 710.7/Ancient One, contains no Borrower and no Apex Prime, and says nothing
  * about rendering.
  *
  * ⚠ HOW THE CLIENT IS DRIVEN. test/ui-driver.ts in hotseat mode — main.ts's
@@ -143,7 +143,7 @@ function copyNote(h: Harness, id: EntityId): string | undefined {
 
 /* ═══ §1 BORROWER OF FORMS ════════════════════════════════════════════ */
 
-test('R229 §1: a Borrower of Forms is DRAWN as the card it borrowed', () => {
+test('CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed', () => {
   const h = new Harness(19801);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -154,13 +154,13 @@ test('R229 §1: a Borrower of Forms is DRAWN as the card it borrowed', () => {
   giveResources(h, A, 'metal', 7);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: whale });
-  pass(h); pass(h);                                          // R147: one resolution
+  pass(h); pass(h);                                          // CR 303.11: one resolution
 
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
   // disbelieve the ticket first: the engine really has put a face on this body
   assert.ok(bof, 'the Borrower body spawned');
   assert.equal(new E(h.state).nameOf(bof), 'Good Whale', 'and it really is wearing the face');
-  assert.equal(bof.card, 'Borrower of Forms', 'R118 ruling 1: the cardboard is untouched');
+  assert.equal(bof.card, 'Borrower of Forms', 'CR 201.5: the cardboard is untouched');
   assert.ok(!ent(h, whale), 'the original was erased, so any Whale art on screen is the copy');
 
   const html = ui.show(structuredClone(h.state));
@@ -191,7 +191,7 @@ test('R229 §1: a Borrower of Forms is DRAWN as the card it borrowed', () => {
 
 /* ═══ §2 APEX PRIME — N BODIES, ONE RESOLUTION ════════════════════════ */
 
-test('R229 §2: Apex Prime redraws EVERY unit it copied onto, in one resolution', () => {
+test('CR D6.8: Apex Prime redraws EVERY unit it copied onto, in one resolution', () => {
   const h = new Harness(19802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -201,8 +201,8 @@ test('R229 §2: Apex Prime redraws EVERY unit it copied onto, in one resolution'
   const whale = spawn(h, D, 'Good Whale');                   // 7/5
   h.state.players[A]!.life = 29;                             // "if your life total is odd"
   toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[ap, t1], [t2]] });   // R72: 2 per column
-  pick(h, { unit: whale });                                  // R67: declared at cast
+  h.do({ type: 'declareAttack', seat: A, columns: [[ap, t1], [t2]] });   // CR 603.1: 2 per column
+  pick(h, { unit: whale });                                  // CR 702.3c: declared at cast
   pass(h); pass(h);
   pick(h, true);                                             // "you MAY"
 
@@ -236,7 +236,7 @@ test('R229 §2: Apex Prime redraws EVERY unit it copied onto, in one resolution'
 
 /* ═══ §3 THE GUARD: ANCIENT ONE MUST NOT MOVE ═════════════════════════ */
 
-test('R229 §3: an Ancient One keeps its OWN art — a projection is not an identity', () => {
+test('CR D6.8: an Ancient One keeps its OWN art — a projection is not an identity', () => {
   const h = new Harness(19803);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -254,7 +254,7 @@ test('R229 §3: an Ancient One keeps its OWN art — a projection is not an iden
   assert.ok(e.facesWith(ent(h, ancient)!, 'statics').includes('Good Whale'),
     'and the face really is in `facesWith`, which is what an over-broad fix would read');
   assert.equal(e.nameOf(ent(h, ancient)!), 'Ancient One',
-    'but `nameOf` is unmoved: R127 omits the `name` facet on purpose');
+    'but `nameOf` is unmoved: CR 710.7 omits the `name` facet on purpose');
 
   const html = ui.show(structuredClone(h.state));
   for (const file of artOf(html, ancient)) {
@@ -270,7 +270,7 @@ test('R229 §3: an Ancient One keeps its OWN art — a projection is not an iden
 
 /* ═══ §3b THE HOLE THE ART FIX OPENS, AND THE CHIP THAT CLOSES IT ═════ */
 
-test('R229 §3b: a copy is marked even when the borrowed body matches its own', () => {
+test('CR D6.8: a copy is marked even when the borrowed body matches its own', () => {
   /* The green plate marks a copy only when the numbers CHANGED. Borrower of
    * Forms prints 2/2 and Sporebloom Siren is a 2/2, so with the art now
    * following the face there was nothing left on the board to tell the copy
@@ -308,10 +308,10 @@ test('R229 §3b: a copy is marked even when the borrowed body matches its own', 
 
 /* ═══ §4 THE PHYSICAL CARD IS STILL THE PHYSICAL CARD ═════════════════ */
 
-test('R229 §4: the borrowed face is a PICTURE — the bin still shows the cardboard', () => {
-  // R118 ruling 1 in the one place a player can check it without hovering: a
+test('CR D6.8: the borrowed face is a PICTURE — the bin still shows the cardboard', () => {
+  // CR 410.3a in the one place a player can check it without hovering: a
   // Borrower that died bins as Borrower of Forms, and the bin draws that card.
-  // If the art fix had been done by rewriting `Entity.card` — the shortcut R118
+  // If the art fix had been done by rewriting `Entity.card` — the shortcut CR 201.5
   // forbids — this is what would have broken.
   const h = new Harness(19804);
   toDeployment(h);
@@ -334,7 +334,7 @@ test('R229 §4: the borrowed face is a PICTURE — the bin still shows the cardb
   e.settle();
   h.state = e.s;
   assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'),
-    'R118 ruling 1: the card that bins is the one that came out of the deck');
+    'CR 201.5: the card that bins is the one that came out of the deck');
 
   const after = ui.show(structuredClone(h.state));
   assert.ok(after.includes('data-prev="Borrower of Forms"'),

@@ -28,14 +28,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Definitional; the Manual's own opening sentence of the Modifications chapter.",
     "sourceHashes": {}
@@ -68,14 +68,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual names only two mod symbols (augment, graft); Virus is a timing icon and Modular an attribute. Card text taken from extract.json cards[] (Spellbind is not in the pack's cards.md).",
     "sourceHashes": {}
@@ -112,14 +112,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Print and Caleb agree. The exceptions are 720.2b.",
     "sourceHashes": {
@@ -168,24 +168,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The haste half (a Haste card is still grafted only in deployment) is 722.3a, from Graft 101. The two exceptions are the ones 720.2b lists; the verifier's probe applied Immolate, a {Battle} graft, to Spellbind in battle.",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.special-action.exceptions",
@@ -220,24 +219,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R95 (its opt-in permission half)",
-          "quote": "So the seam is opt-in per card, never a general widening of the battle window."
+          "quote": "So the seam is opt-in per card, never a general widening of the battle window.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The list of exceptions is assembled from the cards that print a window plus R95's \"opt-in per card\". No source enumerates them in one place. Rook and Slurpr card text from extract.json cards[] (Slurpr and Rook appear in the pack's cards.md).",
-    "sourceHashes": {
-      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
-    }
+    "notes": "The list of exceptions is assembled from the cards that print a window plus the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”)’s \"opt-in per card\". No source enumerates them in one place. Rook and Slurpr card text from extract.json cards[] (Slurpr and Rook appear in the pack's cards.md).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.special-action.tides",
@@ -251,7 +249,7 @@
       },
       {
         "text": null,
-        "test": "404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play"
+        "test": "404-raq-fix-tides.test.ts::CR 701.2c: a Virus card played by Tides as a Virus augments a unit and never enters play"
       }
     ],
     "see": [
@@ -274,13 +272,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R337",
-          "quote": "are not plays, and Tides cannot apply them (Caleb: \"augment in general is a"
+          "quote": "are not plays, and Tides cannot apply them (Caleb: \"augment in general is a",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -288,10 +286,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Also stated at 701.2c (U14); kept here because it is the mod side of the same answer.",
     "sourceHashes": {
-      "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
       "RAQ 1357483405276614856#1": "6596eb521f6e565e13e38310b494ea231a98a3f040a434a97e8646b90b63f1b4",
       "RAQ 1396955380000755795#3": "03340644aaa8569500998dccb31c10ba56d4e70ad629c4c3acb533a0b4c485fb",
       "RAQ 1537748882501668934#2": "1fd1e7b02083233cc1970fdb0f2fe6be108e789c03e043b2d7717258f46a9293"
@@ -305,7 +303,7 @@
     "examples": [
       {
         "text": "Stalwart Sentinel counts a spell played from the bin, but not a mod applied from the bin.",
-        "test": "105-semantics-playwatch.test.ts::Stalwart Sentinel: R96/R123"
+        "test": "105-semantics-playwatch.test.ts::Stalwart Sentinel: CR 405.9"
       },
       {
         "text": "A Virus applied during battle is not a spell: Origon does not negate it, and it does not count as a spell played.",
@@ -325,13 +323,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R37",
-          "quote": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,"
+          "quote": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "105-semantics-playwatch.test.ts",
@@ -339,10 +337,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R37 was the owner's errata before the RAQ thread; the thread now backs it (R37's own stale warning is about that).",
+    "notes": "The owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”) was the owner's errata before the RAQ thread; the thread now backs it (the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”)’s own stale warning is about that).",
     "sourceHashes": {
-      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
       "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
     }
   },
@@ -383,14 +381,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "408-raq-new-threads.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The cache's prices are the exception (720.4b).",
     "sourceHashes": {
@@ -405,7 +403,7 @@
     "examples": [
       {
         "text": "Under Crevice Lurker, applying an augment during battle costs only its own mana.",
-        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed"
+        "test": "16-earth-a.test.ts::Crevice Lurker: CR 720.4a — applying an augment during battle is NOT taxed"
       }
     ],
     "see": [
@@ -416,17 +414,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R303",
-          "quote": "(R37/R59 — applying a mod is not playing, so a \"spells cost more to play\" modifier must"
+          "quote": "(R37/R59 — applying a mod is not playing, so a \"spells cost more to play\" modifier must",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R121 (its mod-not-taxed half)",
-          "quote": "activated abilities — applying a mod is not taxed (`purpose: 'mod'`)."
+          "quote": "activated abilities — applying a mod is not taxed (`purpose: 'mod'`).",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "16-earth-a.test.ts",
@@ -434,12 +433,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The play-cost half rests on R37 (applying is not playing) as R303 restates it. The ability-tax half is R121 (\"applying a mod is not taxed\"), read from client/docs/digital-rules.md; R121 is partly superseded by R261 only in its combat-trigger half.",
-    "sourceHashes": {
-      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83",
-      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
-    }
+    "notes": "The play-cost half rests on the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”) (applying is not playing) as the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) restates it. The ability-tax half is the owner ruling of 2026-08-24 (“the ability-cost tax and the pay-to-trigger…”) (\"applying a mod is not taxed\"), read from client/docs/digital-rules.md; the owner ruling of 2026-08-24 (“the ability-cost tax and the pay-to-trigger…”) is partly superseded by the owner ruling of 2026-08-30 (“Combat-damage triggers resolve AFTER combat, on…”) only in its combat-trigger half.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.cost.cache",
@@ -449,15 +446,15 @@
     "examples": [
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
+        "test": "315-cache-mod-permission.test.ts::CR 801.9g: a LIVE glimpse grafts for the card's mana, ignoring affinity"
       },
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free, affinity and all"
+        "test": "315-cache-mod-permission.test.ts::CR 803.7k: a FULFILLED prophecy still grafts for free, affinity and all"
       },
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana"
+        "test": "315-cache-mod-permission.test.ts::CR 801.9g: the glimpse waives the pips, NOT the mana"
       }
     ],
     "see": [
@@ -468,21 +465,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R303",
-          "quote": "| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |"
+          "quote": "| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R303",
-          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
+          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R303",
-          "quote": "yes you can graft or augment for free if the prophecy is completed"
+          "quote": "yes you can graft or augment for free if the prophecy is completed",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "315-cache-mod-permission.test.ts",
@@ -490,11 +489,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The prophecy price is Caleb's (2024-12-03, quoted inside R303); the glimpse price is the owner's (2026-09-20, R303). Neither reaches the pack as a RAQ claim, so basis owner.",
-    "sourceHashes": {
-      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
-    }
+    "notes": "The prophecy price is Caleb's (2024-12-03, quoted inside the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”)); the glimpse price is the owner's (2026-09-20, the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”)). Neither reaches the pack as a RAQ claim, so basis owner.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.zones",
@@ -536,8 +534,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -545,6 +542,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -559,11 +557,11 @@
     "examples": [
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything"
+        "test": "315-cache-mod-permission.test.ts::CR 801.9i: an expired glimpse is not a graft, not an augment, not anything"
       },
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted"
+        "test": "315-cache-mod-permission.test.ts::CR 803.7k: an UNFULFILLED prophecy cannot be grafted"
       }
     ],
     "see": [
@@ -579,17 +577,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R303",
-          "quote": "**grafting or augmenting with it is gated on that same permission, at that same price.**"
+          "quote": "**grafting or augmenting with it is gated on that same permission, at that same price.**",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R303",
-          "quote": "do that. You can only play cached cards that allow you to play them (like glimpse). But"
+          "quote": "do that. You can only play cached cards that allow you to play them (like glimpse). But",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "315-cache-mod-permission.test.ts",
@@ -597,10 +596,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The glossary's Graft row (ours) still says a cached card can be grafted only under a fulfilled prophecy, omitting the glimpse: F-U17-2.",
     "sourceHashes": {
-      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
       "RAQ 1537748882501668934#4": "df4d0cd9f8f8f6ffe2cb2d5cb96411c53fe72b7bdf7ebd4d83a69d41061fd0ec"
     }
   },
@@ -631,24 +630,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R244 (its part-of-the-unit half)",
-          "quote": "> \"When a mod goes onto a unit, it becomes PART of that unit. Here, it says"
+          "quote": "> \"When a mod goes onto a unit, it becomes PART of that unit. Here, it says",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"Host\" is this document's word (the rulings use it throughout); print says \"the base card\".",
-    "sourceHashes": {
-      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.one-card.control",
@@ -681,24 +679,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R244 (its trasher half)",
-          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "23-wood-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Ownership does not move: the mod card still belongs to the player who brought it.",
-    "sourceHashes": {
-      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.one-card.you",
@@ -718,29 +715,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R216",
-          "quote": "> **On text donated by a mod, \"you\" is the controller of the HOST, not the"
+          "quote": "> **On text donated by a mod, \"you\" is the controller of the HOST, not the",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (its §6)",
-          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "17-earth-b.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Restates 102.6a (U01) at the mod section. R216's scenario test lives in client/server/test/185-scenario-determinism.test.ts.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R216": "2ee0f4a54ffe9e00c7c89393897f88f6c84faaf5aca812758970bdf0408ca214"
-    }
+    "notes": "Restates 102.6a (U01) at the mod section. The owner ruling of 2026-08-26 (“a scenario is a DEAL, not…”)’s scenario test lives in client/server/test/185-scenario-determinism.test.ts.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.one-card.me",
@@ -758,13 +754,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R131",
-          "quote": "being worn as a mod, and \"my\" means the HOST — which is exactly why the trigger"
+          "quote": "being worn as a mod, and \"my\" means the HOST — which is exactly why the trigger",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
@@ -772,11 +768,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Follows from print's \"treated as a single card\" (720.6), but no printed sentence says it.",
-    "sourceHashes": {
-      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.one-card.other",
@@ -786,7 +781,7 @@
     "examples": [
       {
         "text": "A host wearing two Rotbeast augments: each Rotbeast moves the other.",
-        "test": "121-another-identity.test.ts::R131 Rotbeast: a SECOND Rotbeast augment is \"another\""
+        "test": "121-another-identity.test.ts::CR 720.6d Rotbeast: a SECOND Rotbeast augment is \"another\""
       }
     ],
     "see": [],
@@ -794,24 +789,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R131",
-          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "121-another-identity.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.one-card.control-change",
@@ -831,17 +825,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R112",
-          "quote": "the unit, so yes, they go with them to the unit's new controller. That's the"
+          "quote": "the unit, so yes, they go with them to the unit's new controller. That's the",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R148",
-          "quote": "> \"a stolen unit's mods are part of the unit, so yes, they go with them to the"
+          "quote": "> \"a stolen unit's mods are part of the unit, so yes, they go with them to the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -850,12 +845,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "04-mods' older test of the same claim hand-assigns the controller and never checks the mods: F-U17-3.",
-    "sourceHashes": {
-      "R112": "728a644cedd30998f520d22c619ac8d9ba14096de087aace58dff41ef917db12",
-      "R148": "3e651a34bc4e9de9d3d72192531464bcd66075bd5eef10a28c55750be73ca389"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.one-card.no-limit",
@@ -886,14 +879,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -926,8 +919,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -935,6 +927,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "How a dying {Unstable} body reaches the erased pile (through the bin, trashed on the way) is U07's and U21's question: see D-U07 and F-U07-6.",
     "sourceHashes": {}
@@ -947,7 +940,7 @@
     "examples": [
       {
         "text": null,
-        "test": "141-despawn-mods.test.ts::R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes"
+        "test": "141-despawn-mods.test.ts::CR 801.2f (iv): a nontoken mod is binned and trashed exactly once on all three routes"
       }
     ],
     "see": [
@@ -971,16 +964,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "141-despawn-mods.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Whose bin: 410.4a (the host's controller's, by R250). The example test asserts more than this rule (that a death also bins nontoken mods); its own title is the route-count invariant.",
+    "notes": "Whose bin: 410.4a (the host's controller's, by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”)). The example test asserts more than this rule (that a death also bins nontoken mods); its own title is the route-count invariant.",
     "sourceHashes": {}
   },
   {
@@ -991,7 +984,7 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin"
+        "test": "36-cache-prophecy.test.ts::caching a unit sheds its mods to the bin"
       }
     ],
     "see": [
@@ -1001,24 +994,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R46",
-          "quote": "When a unit in play is cached, the mods attached to it go to the bin rather"
+          "quote": "When a unit in play is cached, the mods attached to it go to the bin rather",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R46 credits Caleb (2024-09-15), but the words reach us only through the ruling.",
-    "sourceHashes": {
-      "R46": "b5a11201ce99a44ead0cf242a1d16bae8f03d8fd6d51d7064c725bbe3ab19665"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Mods do not follow a card…”) credits Caleb (2024-09-15), but the words reach us only through the ruling.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.unstable.token-mod",
@@ -1028,7 +1020,7 @@
     "examples": [
       {
         "text": "A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin and is not trashed: it is erased.",
-        "test": "141-despawn-mods.test.ts::R167 (v): a token mod reaches the erased pile exactly once"
+        "test": "141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches the erased pile exactly once"
       }
     ],
     "see": [
@@ -1039,13 +1031,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R156 (its announce-on-every-route half)",
-          "quote": "has no card of its own, so it can never enter a bin — whichever way its host"
+          "quote": "has no card of its own, so it can never enter a bin — whichever way its host",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "141-despawn-mods.test.ts",
@@ -1053,11 +1045,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R156 restates R69 (not in the pack). Whether a token mod erased off a host that STAYS in play is filed on the erased pile is open: D-U17-1.",
-    "sourceHashes": {
-      "R156": "a26d61b2a352d6e842fef1b8ee918a040eebaf7250d67127a0cef48bdd4db492"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) restates the owner ruling of 2026-08-22 (“A token entering a ZONE is…”) (not in the pack). Whether a token mod erased off a host that STAYS in play is filed on the erased pile is open: D-U17-1.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.unstable.moves",
@@ -1067,7 +1058,7 @@
     "examples": [
       {
         "text": "Rotbeast moves its host's other augments onto an enemy; the enemy becomes Unstable and the augment's static goes with it.",
-        "test": "151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable} and its static with it"
+        "test": "151-copy-and-moved-mods.test.ts::CR 720.7d Rotbeast: a moved augment takes {Unstable} and its static with it"
       }
     ],
     "see": [
@@ -1077,16 +1068,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R178 (its §4 Unstable half)",
-          "quote": "Unstable is just an attribute granted to all entities that are modded."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R178",
-          "relation": "§4's claim that every bounded budget rides with the moved mod corrected by R331; the Unstable half stands"
+          "quote": "Unstable is just an attribute granted to all entities that are modded.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1095,11 +1081,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "The owner's words: \"Of course it moves with the mods.\" A card can also have {Unstable} for other reasons (printed, or played from a bin); those do not move.",
-    "sourceHashes": {
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.unstable.copy",
@@ -1113,7 +1098,7 @@
       },
       {
         "text": null,
-        "test": "403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin"
+        "test": "403-raq-fix-mods.test.ts::CR 720.7e: a Borrower that copied a modded unit dies to the bin"
       }
     ],
     "see": [
@@ -1128,16 +1113,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R336",
-          "quote": "- **A fresh copy of a modded unit is NOT Unstable.** This reverses the second half of R118 ruling 2"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R118",
-          "relation": "ruling 2's 'the copy IS Unstable' half reversed by R336"
+          "quote": "- **A fresh copy of a modded unit is NOT Unstable.** This reverses the second half of R118 ruling 2",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1148,10 +1128,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The not-Unstable half is R336 reading the RAQ thread (the owner deferred to it). Copies are 710 (U16).",
+    "notes": "The not-Unstable half is the owner ruling of 2026-10-09 (“A copy is read by its…”) reading the RAQ thread (the owner deferred to it). Copies are 710 (U16).",
     "sourceHashes": {
-      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
       "RAQ 1372468222158180424#3": "23747815b7bd89b093607c9a5079da5836888a900a5c555c74ac83f09562b82d"
     }
   },
@@ -1163,11 +1143,11 @@
     "examples": [
       {
         "text": null,
-        "test": "224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner"
+        "test": "224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner"
       },
       {
         "text": null,
-        "test": "224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does"
+        "test": "224-mod-trash.test.ts::CR 720.8: a cached host attributes its left-behind mods the same way a recalled one does"
       }
     ],
     "see": [
@@ -1177,24 +1157,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R244 (its trasher half)",
-          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R244 (its trasher half)",
-          "quote": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R244",
-          "relation": "§1's 'THE DESTINATION DOES NOT MOVE' paragraph (owner's bin) reversed by R250: the mod goes to the controller's bin"
-        },
-        {
-          "ruling": "R152",
-          "relation": "§2 (each mod to its owner's bin; trashed before the sweep) superseded by R244 and R250"
+          "quote": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1203,11 +1175,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.trash.erased-with-host",
@@ -1217,7 +1188,7 @@
     "examples": [
       {
         "text": null,
-        "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
+        "test": "224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all"
       }
     ],
     "see": [
@@ -1227,16 +1198,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R244 (its erased-with-host half)",
-          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R152",
-          "relation": "§2's trash of a nontoken mod on an {Unstable} host superseded by R244"
+          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1245,11 +1211,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner, from playtest #129. The body's own trash (R137) is U07/U21's.",
-    "sourceHashes": {
-      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
-    }
+    "notes": "Owner, from playtest #129. The body's own trash (owner ruling of 2026-08-24, “an {Unstable} unit that dies IS…”) is U07/U21's.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.erase-off-host",
@@ -1263,7 +1228,7 @@
       },
       {
         "text": "A mod on a stolen unit is erased off it; it goes to the erased pile of the player who stole the unit, not its owner's.",
-        "test": "246-zones-follow-control.test.ts::R262 §5: the erased pile files a stolen mod under the THIEF"
+        "test": "246-zones-follow-control.test.ts::CR 720.9: the erased pile files a stolen mod under the THIEF"
       }
     ],
     "see": [
@@ -1274,24 +1239,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R219",
-          "quote": "> **\"Obviously the card says where it should end up. It's erased… It should just"
+          "quote": "> **\"Obviously the card says where it should end up. It's erased… It should just",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R208 (its primitive half)",
-          "quote": "afterwards, exactly as `moveMod` leaves it, because a host that loses a +X/+X"
+          "quote": "afterwards, exactly as `moveMod` leaves it, because a host that loses a +X/+X",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R262",
-          "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R208",
-          "relation": "its held behaviour that a mod erased off a living host files nothing reversed by R219"
+          "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1303,17 +1265,14 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "engineDiffers": [
       "F-U17-1"
     ],
-    "notes": "R262 is not in the U17 pack; read from client/docs/digital-rules.md. Return to Nature files by mod OWNER (F-U17-1; measured by the r1 verifier). The 178 tests titled for the old no-filing law are F-U07-4.",
-    "sourceHashes": {
-      "R208": "749420ea3ab5eecb5fd1f599fbfacecad281193be579f5c923ed3f2fc823ab1f",
-      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb",
-      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
-    },
-    "rebuttal": "Text kept: it states R262 (the erased pile follows control). engineDiffers F-U17-1 was already set for Return to Nature filing by owner (stripped from the verifier's copy); F-U17-1 now carries the verifier's probe measurement. The Return to Nature example claims only negation and erasure, which its test asserts; a second example now binds the controller-pile clause to the R262 §5 test."
+    "notes": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) is not in the U17 pack; read from client/docs/digital-rules.md. Return to Nature files by mod OWNER (F-U17-1; measured by the r1 verifier). The 178 tests titled for the old no-filing law are F-U07-4.",
+    "sourceHashes": {},
+    "rebuttal": "Text kept: it states the owner ruling of 2026-08-30 (“zones follow control, in all four…”) (the erased pile follows control). engineDiffers F-U17-1 was already set for Return to Nature filing by owner (stripped from the verifier's copy); F-U17-1 now carries the verifier's probe measurement. The Return to Nature example claims only negation and erasure, which its test asserts; a second example now binds the controller-pile clause to the owner ruling of 2026-08-30 (“zones follow control, in all four…”) test."
   },
   {
     "key": "effects.mods.erase-off-host.token",
@@ -1333,24 +1292,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R219",
-          "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
+          "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "low",
-    "notes": "R219 says this disagrees with how a token mod is filed when its host leaves play (R156), and left it: D-U17-1. The verifier measured that the cost route (eraseMod) files nothing for a token mod, but Return to Nature files it: F-U17-4.",
-    "sourceHashes": {
-      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb"
-    },
+    "notes": "The owner ruling of 2026-08-26 (“an erased card goes to the…”) says this disagrees with how a token mod is filed when its host leaves play (owner ruling of 2026-08-25, “[…] is about the ERASE, not about…”), and left it: D-U17-1. The verifier measured that the cost route (eraseMod) files nothing for a token mod, but Return to Nature files it: F-U17-4.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U17-4"
     ]
@@ -1379,8 +1337,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -1388,6 +1345,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1412,22 +1370,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R178 (its §4 controller half)",
-          "quote": "- **Controller** follows the new host, exactly as `attachMod` sets it. That is"
+          "quote": "- **Controller** follows the new host, exactly as `attachMod` sets it. That is",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Follows from 720.6a; stated because a move is not an application.",
-    "sourceHashes": {
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.moving.once",
@@ -1441,7 +1398,7 @@
       },
       {
         "text": null,
-        "test": "403-raq-fix-mods.test.ts::R331: a moved mod carries its spent augment budget"
+        "test": "403-raq-fix-mods.test.ts::CR 720.10b: a moved mod carries its spent augment budget"
       }
     ],
     "see": [
@@ -1456,16 +1413,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R331",
-          "quote": "Reconfigure moves a mod. It does not refresh it."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R178",
-          "relation": "§4's claim that every bounded budget rides with the moved mod entity corrected by R331"
+          "quote": "Reconfigure moves a mod. It does not refresh it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1475,10 +1427,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R331": "223245cca189e0e0c7d67f18a07e3cfafd19f417166b9da103ed8d95d8de206b",
       "RAQ 1353848722974445658#0": "c1e3d4b977462f57865aca1c6de0458031bbd80fb4632d8d8df6811b0e080a3e"
     }
   },
@@ -1500,29 +1452,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R178 (its §4 no-event half)",
-          "quote": "- **No `modApplied` event.** Moving is not applying (R37's spirit), so nothing"
+          "quote": "- **No `modApplied` event.** Moving is not applying (R37's spirit), so nothing",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R332",
-          "quote": "R178 says moving is not applying, and that holds in general."
+          "quote": "R178 says moving is not applying, and that holds in general.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Rotbeast says \"move\", so it is the general case; Reconfigure says \"augment\", so it is the exception. No test in the pack watches a Rotbeast move for an applied-mod trigger.",
-    "sourceHashes": {
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
-      "R332": "a4514ee56e3f362eaf3d41bd562810d04ba83246c325c861cc9eab50acfc63ef"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.timestamps",
@@ -1548,14 +1499,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Layers and the dependency rule are 709 (U16).",
     "sourceHashes": {
@@ -1594,8 +1545,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "17-earth-b.test.ts",
@@ -1603,6 +1553,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Perpetual Construct text from extract.json cards[] (not in the pack's cards.md).",
     "sourceHashes": {
@@ -1640,14 +1591,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The card text writes the symbol [Augment].",
     "sourceHashes": {}
@@ -1679,14 +1630,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "23-wood-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1718,8 +1669,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "16-earth-a.test.ts",
@@ -1727,6 +1677,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "\"No stats\" is what an augment's own words imply (it gives text) and what 208.3 states; no printed sentence says it outright.",
     "sourceHashes": {}
@@ -1753,17 +1704,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R268",
-          "quote": "**The ruling.** When a card is applied as an augment, only the text printed"
+          "quote": "**The ruling.** When a card is applied as an augment, only the text printed",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R268",
-          "quote": "inside its `[Augment]` box is live. Its body text — statics, cost modifiers,"
+          "quote": "inside its `[Augment]` box is live. Its body text — statics, cost modifiers,",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "248-augment-box-scope.test.ts",
@@ -1771,11 +1723,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "The owner's general rule from playtest ERJZ. Print says the augment adds \"the text in the paragraph following the augment symbol\", which agrees.",
-    "sourceHashes": {
-      "R268": "af4e96c5de37b7d0e395e7b84d029ca5f0301d21e2d4137907574594b95ba3e5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.what.played",
@@ -1805,13 +1756,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R268",
-          "quote": "**And it is NOT symmetric.** A card that is PLAYED reads its whole text box, its"
+          "quote": "**And it is NOT symmetric.** A card that is PLAYED reads its whole text box, its",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "248-augment-box-scope.test.ts",
@@ -1819,11 +1770,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R268": "af4e96c5de37b7d0e395e7b84d029ca5f0301d21e2d4137907574594b95ba3e5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.what.kind-kept",
@@ -1833,7 +1783,7 @@
     "examples": [
       {
         "text": null,
-        "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC"
+        "test": "142-static-conformance.test.ts::CR 721.1e: Aetherflux Golem is a STATIC"
       }
     ],
     "see": [
@@ -1843,17 +1793,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R168",
-          "quote": "It is a `StaticMod` on the anchor now, and the ruling is that the printed"
+          "quote": "It is a `StaticMod` on the anchor now, and the ruling is that the printed",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R168",
-          "quote": "sentence decides the mechanism — the same rule 88 already runs on. Three things"
+          "quote": "sentence decides the mechanism — the same rule 88 already runs on. Three things",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "142-static-conformance.test.ts",
@@ -1861,11 +1812,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.what.despawn",
@@ -1875,11 +1825,11 @@
     "examples": [
       {
         "text": null,
-        "test": "141-despawn-mods.test.ts::R167 (i): a donated \"[Augment] When I despawn\" fires on a RECALL"
+        "test": "141-despawn-mods.test.ts::CR 721.1f (i): a donated \"[Augment] When I despawn\" fires on a RECALL"
       },
       {
         "text": null,
-        "test": "141-despawn-mods.test.ts::R167 (ii): a donated \"[Augment] When I despawn\" fires on a CACHE"
+        "test": "141-despawn-mods.test.ts::CR 721.1f (ii): a donated \"[Augment] When I despawn\" fires on a CACHE"
       }
     ],
     "see": [
@@ -1889,24 +1839,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R167",
-          "quote": "## R167 — a printed \"when I despawn\" means it whichever way the unit leaves play"
+          "quote": "## R167 — a printed \"when I despawn\" means it whichever way the unit leaves play",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "141-despawn-mods.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Moving the host's mods (Reconfigure) is not a despawn: 720.10.",
-    "sourceHashes": {
-      "R167": "7b3b795a55a9c9e8a63cd25ecd39a570d9a767790a2890de421ba72020f75770"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.which-cards",
@@ -1931,24 +1880,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R55",
-          "quote": "If a card prints the `[Augment]` marker in its text box, it **can be applied as"
+          "quote": "If a card prints the `[Augment]` marker in its text box, it **can be applied as",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 208.4 (U05) at the augment section.",
-    "sourceHashes": {
-      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.procedure",
@@ -1986,14 +1934,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "408-raq-new-threads.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Step 4 is the physical table; a client shows the stack of mods instead.",
     "sourceHashes": {}
@@ -2030,14 +1978,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Print says \"typically\" and gives the reason (modding happens in deployment, when a player reaches only their own units). The Rulebook also says \"You may augment cards onto any legal target\". No test in the pack checks that an enemy unit is refused as a deployment host.",
     "sourceHashes": {}
@@ -2050,11 +1998,11 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
+        "test": "78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment"
       },
       {
         "text": "An augmented token deals {Powerful} damage when cast.",
-        "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
+        "test": "78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer"
       }
     ],
     "see": [
@@ -2065,24 +2013,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "> deployment but currently that would only be possible with spell tokens. Also"
+          "quote": "> deployment but currently that would only be possible with spell tokens. Also",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R89",
-          "quote": "> you can only do this with attributes.**\" (calebgannon, rules-questions"
+          "quote": "> you can only do this with attributes.**\" (calebgannon, rules-questions",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R89",
-          "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R79",
-          "relation": "its 'not in scope' bullet excluding deployment augmenting of a spell token superseded by R89"
+          "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2091,11 +2036,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Caleb (quoted in R89) says spell tokens can be augmented in deployment, attributes only. \"Not only a Virus\" is R89's reading of a player's chat (_passer outside a [Solved] write-up): D-U17-11.",
-    "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
-    }
+    "notes": "Caleb (quoted in the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)) says spell tokens can be augmented in deployment, attributes only. \"Not only a Virus\" is the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)’s reading of a player's chat (_passer outside a [Solved] write-up): D-U17-11.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.hosts.spell",
@@ -2105,11 +2049,11 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, and says so"
+        "test": "78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing, and says so"
       },
       {
         "text": "An augment-text mod applied to Spellbind is accepted and does nothing.",
-        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+        "test": "91-modular.test.ts::CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing"
       }
     ],
     "see": [
@@ -2120,17 +2064,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)"
+          "quote": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "cannot gain static abilities like that, so the only useful thing you can do is"
+          "quote": "cannot gain static abilities like that, so the only useful thing you can do is",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
@@ -2139,11 +2084,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb's words (2025-04-06, 2025-04-24) reach us through R79; no RAQ claim in the pack.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "Caleb's words (2025-04-06, 2025-04-24) reach us through the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”); no RAQ claim in the pack.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.augment.reconfigure",
@@ -2172,8 +2116,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "29-hybrids-wm-a.test.ts",
@@ -2181,6 +2124,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2208,23 +2152,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R332",
-          "quote": "Reconfigure is the exception, because its printed text says the mods are augmented."
+          "quote": "Reconfigure is the exception, because its printed text says the mods are augmented.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R332": "a4514ee56e3f362eaf3d41bd562810d04ba83246c325c861cc9eab50acfc63ef",
       "RAQ 1353856176558706769#0": "c3645e5b668d8436865f988b6ed50c8ecfa1a408c4ef86303565ad1719173a20"
     }
   },
@@ -2252,21 +2196,21 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R336",
-          "quote": "Reconfigure's `[Augment]` check also stays printed, because the thread says \"True BoFy doesn't have :augment: symbol on him\"."
+          "quote": "Reconfigure's `[Augment]` check also stays printed, because the thread says \"True BoFy doesn't have :augment: symbol on him\".",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The 393 guard for this claim asserts nothing (Reconfigure is never castable in its setup): F-U05-2, so no example is bound to it.",
     "sourceHashes": {
-      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
       "RAQ 1372468222158180424#6": "d85bf21ea2b82c2373151dc7f1a82b03c80b7d150a101f7fc9c04cf28a251916"
     }
   },
@@ -2278,11 +2222,11 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R71: \"augment a Wraith onto a unit\" makes the same token, directly as a mod"
+        "test": "37-attrs-wight.test.ts::CR 721.6: \"augment a Wraith onto a unit\" makes the same token, directly as a mod"
       },
       {
         "text": "An augmented Wraith gives its host its first line: at the start of deployment the host puts a -1/-1 counter on an ally, here itself, its only ally, so a 4/4 host becomes 3/3.",
-        "test": "37-attrs-wight.test.ts::R71: an augmented Wraith donates BOTH lines to its host"
+        "test": "37-attrs-wight.test.ts::CR 721.1a: an augmented Wraith donates BOTH lines to its host"
       }
     ],
     "see": [
@@ -2305,16 +2249,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R71 (Wraith; Wight is the same card) is not in the U17 pack. Card texts from extract.json cards[] (Blight's End and Xzydris are in cards.md). Blight's End is a {Battle} spell, so an effect may augment during battle. Sources do not say whether such an augment targets or is a special action.",
+    "notes": "The owner ruling of 2026-08-22 (“The Wraith token, redesigned; and \"an…”) (Wraith; Wight is the same card) is not in the U17 pack. Card texts from extract.json cards[] (Blight's End and Xzydris are in cards.md). Blight's End is a {Battle} spell, so an effect may augment during battle. Sources do not say whether such an augment targets or is a special action.",
     "sourceHashes": {}
   },
   {
@@ -2348,14 +2292,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The [Switch]/[Switch1] spelling is the transcription's (printed.json).",
     "sourceHashes": {}
@@ -2391,14 +2335,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2426,14 +2370,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2469,14 +2413,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2517,8 +2461,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -2526,6 +2469,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A copy's graft cause is its face's (722.8).",
     "sourceHashes": {
@@ -2569,14 +2513,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2626,13 +2570,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2641,10 +2585,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "That Slurpr's \"other mods\" includes grafts is R95's reading (\"R37's word for both\"). The Modular exception (verifier r1): Spellbind is a {Battle} card and R105 lets ANY card be applied to it, grafts included; the verifier's probe applied Immolate as a mod to Spellbind in battle. Graft 101's \"only during Deployment Phase\" is read as being about grafting onto a unit: D-U17-12.",
+    "notes": "That Slurpr's \"other mods\" includes grafts is the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”)’s reading (\"the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”)’s word for both\"). The Modular exception (verifier r1): Spellbind is a {Battle} card and the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) lets ANY card be applied to it, grafts included; the verifier's probe applied Immolate as a mod to Spellbind in battle. Graft 101's \"only during Deployment Phase\" is read as being about grafting onto a unit: D-U17-12.",
     "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5",
       "RAQ 1355115946032889914#0": "570bdde45f267e2fa36e032e03d4220f54649c976e64bfc3afdf08fb321d1661"
     }
   },
@@ -2671,24 +2615,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R95 (its Rook-grant half)",
-          "quote": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,"
+          "quote": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Printed text answers it (\"augment\"); R95 left it as an open question with the recommendation no: D-U17-5. No test checks it.",
-    "sourceHashes": {
-      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
-    }
+    "notes": "Printed text answers it (\"augment\"); the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”) left it as an open question with the recommendation no: D-U17-5. No test checks it.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.graft.applying.targets",
@@ -2714,8 +2657,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2723,6 +2665,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The designer says only \"he will trigger first\". Whether the trigger must also RESOLVE before the graft attaches is D-U03-13 (owner question); the verifier measured that the engine attaches the graft before the trigger resolves (F-U03-5, which applies under reading (1) only). The verifier also measured that the graft being applied does not join the triggered composite (0 Fireballs): sources silent, D-U17-13.",
     "sourceHashes": {
@@ -2767,8 +2710,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2776,6 +2718,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2811,12 +2754,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The example is the Manual's own (p.33).",
     "sourceHashes": {}
@@ -2842,8 +2785,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -2851,6 +2793,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2897,8 +2840,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2906,6 +2848,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2944,14 +2887,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"The host's own effect first\" follows from it being the top card; no source says it in so many words.",
     "sourceHashes": {
@@ -2986,14 +2929,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3023,19 +2966,19 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "engineDiffers": [
       "F-U14-1"
     ],
-    "notes": "The engine reaches the same visible result by stacking and fizzling the item (F-U14-1; measured by the r1 verifier's probe: \"Megadeath: Create a Poison 5 → stack.\" then a fizzle). The difference shows in a bounded use spent by the fizzle (R113), a response window, and a tax.",
+    "notes": "The engine reaches the same visible result by stacking and fizzling the item (F-U14-1; measured by the r1 verifier's probe: \"Megadeath: Create a Poison 5 → stack.\" then a fizzle). The difference shows in a bounded use spent by the fizzle (owner ruling of 2026-08-23, “a bounded use is spent by…”), a response window, and a tax.",
     "sourceHashes": {
       "RAQ 1410252965276684418#2": "db27f57d93e2c1e65f0238cbb4d49645cdd87eb58adcf9d058fa1a7dc8b0e104"
     },
@@ -3049,19 +2992,19 @@
     "examples": [
       {
         "text": "Spewing Mushroom carries Biotoxicity and Technological Superiority as grafts. It attacks, and its composite trigger targets Spewing Mushroom, the only target it declares. The opponent deletes the Mushroom with Leaping Lillik in response: the composite fizzles, and Biotoxicity's untargeted Poisons are not created either.",
-        "test": "78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole"
+        "test": "78-round17-core.test.ts::CR 722.4f: a graft composite that loses its ONLY target fizzles whole"
       },
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through"
+        "test": "78-round17-core.test.ts::CR 704.6b: one surviving target carries the untargeted grafts through"
       },
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles"
+        "test": "78-round17-core.test.ts::CR 704.6d: an item that declares NO target anywhere never fizzles"
       },
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R86: a required target with no legal candidate at cast still fizzles"
+        "test": "78-round17-core.test.ts::CR 704.6g: a required target with no legal candidate at cast still fizzles"
       }
     ],
     "see": [
@@ -3071,48 +3014,53 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R86",
-          "quote": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
+          "quote": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R86",
-          "quote": "> when resolving **(yielding no card draw from 2nd and 3rd graft)**."
+          "quote": "> when resolving **(yielding no card draw from 2nd and 3rd graft)**.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R86",
-          "quote": "1 target must remain for whole effect to be carried out\"*, and *\"in order for"
+          "quote": "1 target must remain for whole effect to be carried out\"*, and *\"in order for",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R86",
-          "quote": "| no targeting **anywhere** (Ignis Sprite's spawn trigger) | resolves | resolves — it has nothing to lose |"
+          "quote": "| no targeting **anywhere** (Ignis Sprite's spawn trigger) | resolves | resolves — it has nothing to lose |",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R86",
-          "quote": "a targeted part whose spec is **min 0** with nothing declared (\"Recall **up to one** target cached card. You gain 3 life.\")"
+          "quote": "a targeted part whose spec is **min 0** with nothing declared (\"Recall **up to one** target cached card. You gain 3 life.\")",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R86",
-          "quote": "resolves — declaring no target was a legal choice, and the unconditional half must happen"
+          "quote": "resolves — declaring no target was a legal choice, and the unconditional half must happen",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R86",
-          "quote": "still a fizzle; only *\"was never targeted in the first place\"* is not."
+          "quote": "still a fizzle; only *\"was never targeted in the first place\"* is not.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R86 quotes the RAQ thread \"[Solved] When does effect fizzles?\" verbatim, but the pack has no claim for that half, so the basis is the ruling. The same thread says Caleb may change this: D-U17-6. Redrafted 2026-10-11 (polish): the round-4 verifier found the old third sentence (\"declared no target anywhere never fizzles\") is the gate R86 rejected; R86's table and its \"only was never targeted in the first place\" line now give the cases; sentence 1 lost its \"only\", which row 3 contradicted. A required target never had is left to effects.resolution.fizzle.never-had-target (a triggered composite in that state is not put on the stack: effects.graft.composite.no-target).",
-    "sourceHashes": {
-      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“An effect fizzles when it loses…”) quotes the RAQ thread \"[Solved] When does effect fizzles?\" verbatim, but the pack has no claim for that half, so the basis is the ruling. The same thread says Caleb may change this: D-U17-6. Redrafted 2026-10-11 (polish): the round-4 verifier found the old third sentence (\"declared no target anywhere never fizzles\") is the gate the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”) rejected; the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”)’s table and its \"only was never targeted in the first place\" line now give the cases; sentence 1 lost its \"only\", which row 3 contradicted. A required target never had is left to effects.resolution.fizzle.never-had-target (a triggered composite in that state is not put on the stack: effects.graft.composite.no-target).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.graft.composite.tax",
@@ -3137,14 +3085,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3182,8 +3130,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "17-earth-b.test.ts",
@@ -3191,8 +3138,9 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "When a bounded use is spent is 109.9a (R113).",
+    "notes": "When a bounded use is spent is 109.9a (owner ruling of 2026-08-23, “a bounded use is spent by…”).",
     "sourceHashes": {}
   },
   {
@@ -3223,8 +3171,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -3232,6 +3179,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3266,8 +3214,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -3275,6 +3222,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3294,24 +3242,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R113",
-          "quote": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of"
+          "quote": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "94-bounded-uses.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 109.9k (U03) at the graft section.",
-    "sourceHashes": {
-      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.graft.bounded.new-object",
@@ -3336,14 +3283,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3377,16 +3324,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R334",
-          "quote": "- A grafted `[cost]` cannot be declined."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R35",
-          "relation": "its grafted riders 'may be declined' and 'an unpayable rider is skipped' reversed by R334"
+          "quote": "- A grafted `[cost]` cannot be declined.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3396,10 +3338,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 111.15 (U04) at the graft section. A Modular spell's graft part is different: 724.4c.",
     "sourceHashes": {
-      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
       "RAQ 1355115946032889914#11": "1a03577e8ae2aecb76a6b2b7fe9d3c4d7a66dd9bc8bf481524856a9808e43420"
     }
   },
@@ -3415,7 +3357,7 @@
       },
       {
         "text": null,
-        "test": "403-raq-fix-mods.test.ts::R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all"
+        "test": "403-raq-fix-mods.test.ts::CR 722.6a: an activated graft cause whose grafted [cost] cannot be paid is not offered at all"
       }
     ],
     "see": [
@@ -3430,16 +3372,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R334",
-          "quote": "- If it cannot be paid, the **whole composite** stays off the stack: the graft cause's own effect and every other graft with it."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R110",
-          "relation": "narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not just that graft"
+          "quote": "- If it cannot be paid, the **whole composite** stays off the stack: the graft cause's own effect and every other graft with it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3449,10 +3386,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
       "RAQ 1355115946032889914#10": "c58ce2f15368b2ff1de72b60b7a77e93dab77f75a7f1d12d9c1530a82bff1ed7"
     }
   },
@@ -3479,14 +3416,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "17-earth-b.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The example is the RAQ register's guard; it shows payment at cast, not the unrespondability.",
     "sourceHashes": {
@@ -3533,8 +3470,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts",
@@ -3543,8 +3479,9 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Witness of the Crossing prints three graft symbols and no reminder; R110 groups it with the others. A multiplier grafted under a multiplier is unruled: D-U17-8.",
+    "notes": "Witness of the Crossing prints three graft symbols and no reminder; the owner ruling of 2026-08-23 (“\"Trigger two/three copies of this graft…”) groups it with the others. A multiplier grafted under a multiplier is unruled: D-U17-8.",
     "sourceHashes": {
       "RAQ 1353859961855148103#0": "ec001774d0204b0ac1afc724eb2609f348e58247e7c8ff03af0e41e1f9106fb6"
     }
@@ -3572,14 +3509,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3594,11 +3531,11 @@
     "examples": [
       {
         "text": "Amphivore triples a bounded \"Create three\" graft into nine Fireballs.",
-        "test": "14-water-a.test.ts::R110: Amphivore triples a BOUNDED [Switch1] graft"
+        "test": "14-water-a.test.ts::CR 109.9j: Amphivore triples a BOUNDED [Switch1] graft"
       },
       {
         "text": null,
-        "test": "17-earth-b.test.ts::R110: Lost Guardian repeats a BOUNDED [Switch1] graft too"
+        "test": "17-earth-b.test.ts::CR 722.7b: Lost Guardian repeats a BOUNDED [Switch1] graft too"
       }
     ],
     "see": [
@@ -3613,8 +3550,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts",
@@ -3622,6 +3558,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3636,7 +3573,7 @@
     "examples": [
       {
         "text": null,
-        "test": "14-water-a.test.ts::R110: a TARGETED graft under Amphivore aims each of its three copies separately"
+        "test": "14-water-a.test.ts::CR 722.7c: a TARGETED graft under Amphivore aims each of its three copies separately"
       }
     ],
     "see": [
@@ -3646,13 +3583,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R110 (its copy-targeting half)",
-          "quote": "- A targeted graft aims each copy separately (each part collects its own"
+          "quote": "- A targeted graft aims each copy separately (each part collects its own",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts",
@@ -3660,11 +3597,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The RAQ register's own note says the thread does not say this in so many words; R110 reads it out of the thread.",
-    "sourceHashes": {
-      "R110": "8776d97c50c209e6c9ee10cb7fa563ce5c67dd9b40041ab43e45de0c35fddb30"
-    }
+    "notes": "The RAQ register's own note says the thread does not say this in so many words; the owner ruling of 2026-08-23 (“\"Trigger two/three copies of this graft…”) reads it out of the thread.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.graft.multiplier.costs",
@@ -3674,7 +3610,7 @@
     "examples": [
       {
         "text": "With one card in hand, a doubled [Discard a card] cannot be paid: nothing is paid and nothing happens.",
-        "test": "17-earth-b.test.ts::R110: all or nothing — one card in hand cannot pay a doubled [Discard a card]"
+        "test": "17-earth-b.test.ts::CR 111.14: all or nothing — one card in hand cannot pay a doubled [Discard a card]"
       }
     ],
     "see": [
@@ -3694,16 +3630,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R334",
-          "quote": "That covers paying it N times (R110's multiplied grafts) as well."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R110",
-          "relation": "its 'skip only that effect' reading of an unpayable multiplied cost narrowed by R334 to the whole composite"
+          "quote": "That covers paying it N times (R110's multiplied grafts) as well.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3712,10 +3643,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"You don't get the effect\" (Amphivore thread) read narrowly by R110 and widely by R334 (from Graft 101 point 11): D-U17-7.",
+    "notes": "\"You don't get the effect\" (Amphivore thread) read narrowly by the owner ruling of 2026-08-23 (“\"Trigger two/three copies of this graft…”) and widely by the owner ruling of 2026-10-09 (“A grafted [cost] is mandatory, and…”) (from Graft 101 point 11): D-U17-7.",
     "sourceHashes": {
-      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
       "RAQ 1353859961855148103#4": "71d29601ef74cb10c94e3e126818f3f837800cf444b4ebef77603263c6f734a0",
       "RAQ 1353859961855148103#5": "e76eb85747e60fd292c770c1843f8184363e120947d683bf484fd432d9730029"
     }
@@ -3743,14 +3674,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3788,24 +3719,24 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R336",
-          "quote": "- **Copied grafts run.** \"It inherits all of the combined text\": a copy of a grafted unit runs its graft cause with the copied grafts."
+          "quote": "- **Copied grafts run.** \"It inherits all of the combined text\": a copy of a grafted unit runs its graft cause with the copied grafts.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Copies are 710 (U16).",
     "sourceHashes": {
-      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
-      "RAQ 1372468222158180424#4": "7df1d2347ae80bbe46d437f62c7841dd43e74c3ee3fb7eb1aeacdbcc7a628037",
+      "RAQ 1372468222158180424#4": "fa3423ed0c8af541951d9ce99db39a7441ac923ab8c699d224f2e358cbe17154",
       "RAQ 1372468222158180424#5": "82edfb53d8bbdcf31bee61244484fef0741789970ea31ed2dec111a502e0eaad"
     }
   },
@@ -3840,14 +3771,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The transcription writes it {Virus} on the type line. The cache also reaches the battle window: 723.2a.",
     "sourceHashes": {}
@@ -3879,14 +3810,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "17-earth-b.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -3914,24 +3845,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
+          "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R89 says its reading is sourced to the community (_passer in chat, not a [Solved] write-up): D-U17-11.",
-    "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) says its reading is sourced to the community (_passer in chat, not a [Solved] write-up): D-U17-11.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.battle",
@@ -3960,13 +3890,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "modifier taxes it. The battle branch of `doAugment` already required priority"
+          "quote": "modifier taxes it. The battle branch of `doAugment` already required priority",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -3974,11 +3904,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Print gives the opposing-unit half. The priority and battle-region conditions come only from R79's description of the engine (\"required priority and the battle region\") and R311's KEMX account; no printed or designer sentence states them.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "Print gives the opposing-unit half. The priority and battle-region conditions come only from the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s description of the engine (\"required priority and the battle region\") and the owner ruling of 2026-10-04 (“The cache plays like the hand…”)’s KEMX account; no printed or designer sentence states them.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.battle.cache",
@@ -3988,15 +3917,15 @@
     "examples": [
       {
         "text": "A glimpsed Virus in the cache goes onto an enemy unit in battle, ignoring affinity.",
-        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
+        "test": "370-cached-virus-in-battle.test.ts::CR 723.2a: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
       },
       {
         "text": null,
-        "test": "370-cached-virus-in-battle.test.ts::R311: a Virus whose prophecy is fulfilled augments in battle for FREE"
+        "test": "370-cached-virus-in-battle.test.ts::CR 723.2a: a Virus whose prophecy is fulfilled augments in battle for FREE"
       },
       {
         "text": null,
-        "test": "370-cached-virus-in-battle.test.ts::R311: an EXPIRED glimpse is still nothing in battle"
+        "test": "370-cached-virus-in-battle.test.ts::CR 723.2a: an EXPIRED glimpse is still nothing in battle"
       }
     ],
     "see": [
@@ -4012,16 +3941,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R311",
-          "quote": "functions 100% like the hand* except *for the fact that it's not considered your"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R95",
-          "relation": "its sentence that the base battle-augment rule refuses the cache corrected by R311"
+          "quote": "functions 100% like the hand* except *for the fact that it's not considered your",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -4031,10 +3955,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The Manual's \"the virus ability only works from hand\" is already recorded against R311 as D-U07-2.",
+    "notes": "The Manual's \"the virus ability only works from hand\" is already recorded against the owner ruling of 2026-10-04 (“The cache plays like the hand…”) as D-U07-2.",
     "sourceHashes": {
-      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
       "RAQ 1537748882501668934#3": "58d15a8f21bd69d98736c68f7e52c872ebcbec1bd08dd995eedac13a2d589288"
     }
   },
@@ -4085,8 +4009,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "418-cr-zones.test.ts",
@@ -4095,6 +4018,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual's sentence is the base case. The exceptions are the card windows listed at effects.mods.special-action.exceptions; the r2 verifier measured Rook opening the bin in battle (probe u17-r2-probes). Spellbind's Modular reminder is cited as effects.mods.special-action.timing-icons cites it. Manual vs Rook: D-U17-14.",
     "sourceHashes": {}
@@ -4130,14 +4054,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -4170,13 +4094,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R88",
-          "quote": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\""
+          "quote": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "16-earth-a.test.ts",
@@ -4185,11 +4109,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R88": "7b7716c44586ac56b8b7dd3462406bac05b08622d6293893fda6dd740a5edb5a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.stack.negated",
@@ -4199,11 +4122,11 @@
     "examples": [
       {
         "text": "A Virus aimed at a spell on the stack: the spell leaves the stack first, so the Virus fizzles and goes to the bin.",
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: a virus whose host leaves the stack first fizzles to the bin"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.3a: a virus whose host leaves the stack first fizzles to the bin"
       },
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4b: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it"
       }
     ],
     "see": [
@@ -4223,8 +4146,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts",
@@ -4232,6 +4154,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -4263,13 +4186,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R37",
-          "quote": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,"
+          "quote": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "04-mods.test.ts",
@@ -4277,10 +4200,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The sources say a mod is not PLAYED; that it is not a spell effect for negation scoping is the tests' and 700.1b's reading.",
     "sourceHashes": {
-      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
       "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
     }
   },
@@ -4292,11 +4215,11 @@
     "examples": [
       {
         "text": "Chitin Shredder on Arc Lightning doubles its damage.",
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: the powerful guy on a giant fireball"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4: the powerful guy on a giant fireball"
       },
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: you can hit an ENEMY spell"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4: you can hit an ENEMY spell"
       }
     ],
     "see": [
@@ -4306,28 +4229,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "> \"It's very similar to how regular viruses work, so **you can hit enemy spells"
+          "quote": "> \"It's very similar to how regular viruses work, so **you can hit enemy spells",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)"
+          "quote": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb's words (2025-03-06, 2025-04-06) through R79; no RAQ claim in the pack.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "Caleb's words (2025-03-06, 2025-04-06) through the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”); no RAQ claim in the pack.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.spell-host.which",
@@ -4337,7 +4260,7 @@
     "examples": [
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: a spell TOKEN is a legal host too"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4a: a spell TOKEN is a legal host too"
       }
     ],
     "see": [
@@ -4347,24 +4270,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
+          "quote": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R79 names spells (Caleb: \"you can hit enemy spells\"); spell units and spell tokens are R79's and R89's reading. The exclusions are a separate engine-basis rule (effects.virus.spell-host.not-hosts), because R79 marks them unruled.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) names spells (Caleb: \"you can hit enemy spells\"); spell units and spell tokens are the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”)’s and the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)’s reading. The exclusions are a separate engine-basis rule (effects.virus.spell-host.not-hosts), because the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) marks them unruled.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.spell-host.not-hosts",
@@ -4374,7 +4296,7 @@
     "examples": [
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: only SPELLS are legal hosts"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4e: only SPELLS are legal hosts"
       }
     ],
     "see": [
@@ -4384,13 +4306,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
+          "quote": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "apply.ts:STACK_VIRUS_HOSTS"
       ],
@@ -4399,11 +4321,10 @@
       ]
     },
     "basis": "engine",
+    "scope": "game",
     "confidence": "low",
-    "notes": "Engine-only: R79 itself calls the four exclusions \"judgement calls, not sourced answers\" awaiting the owner (D-U17-2). The verifier read the host set off apply.ts:STACK_VIRUS_HOSTS = spell, spellUnit, spellToken. Only the triggered-ability exclusion is tested.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "Engine-only: The owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) itself calls the four exclusions \"judgement calls, not sourced answers\" awaiting the owner (D-U17-2). The verifier read the host set off apply.ts:STACK_VIRUS_HOSTS = spell, spellUnit, spellToken. Only the triggered-ability exclusion is tested.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.spell-host.erased",
@@ -4413,11 +4334,11 @@
     "examples": [
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79 ⚠: a spell that carried a virus is Unstable"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4b ⚠: a spell that carried a virus is Unstable"
       },
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4b: negating the CARRIER erases it too"
       }
     ],
     "see": [
@@ -4432,13 +4353,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "> and the spell gets erased on resolution**. You can augment spells during"
+          "quote": "> and the spell gets erased on resolution**. You can augment spells during",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts",
@@ -4446,11 +4367,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb's \"the spell gets erased on resolution\" names the resolution case; R79 extends it to the fizzle and negation exits through Unstable as a bin replacement (R69), and the owner confirmed the reading through R105.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "Caleb's \"the spell gets erased on resolution\" names the resolution case; the owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) extends it to the fizzle and negation exits through Unstable as a bin replacement (owner ruling of 2026-08-22, “A token entering a ZONE is…”), and the owner confirmed the reading through the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.spell-host.spell-unit",
@@ -4460,7 +4380,7 @@
     "examples": [
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R79: a spell UNIT carries its virus into play as an augment mod"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR 723.4c: a spell UNIT carries its virus into play as an augment mod"
       }
     ],
     "see": [
@@ -4470,28 +4390,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "**The spell UNIT exception.** A `spellUnit` does not *leave* on resolution — it"
+          "quote": "**The spell UNIT exception.** A `spellUnit` does not *leave* on resolution — it",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "they always were, via `attachMod` — which makes the **body** Unstable, exactly"
+          "quote": "they always were, via `attachMod` — which makes the **body** Unstable, exactly",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R79 says \"no ruling asks for\" erasing a spell unit and decides the exception itself: D-U17-3.",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“A Virus may be augmented onto…”) says \"no ruling asks for\" erasing a spell unit and decides the exception itself: D-U17-3.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.spell-host.resolving",
@@ -4501,7 +4421,7 @@
     "examples": [
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR D6.3: a resolving item cannot be responded to, negated or targeted"
       }
     ],
     "see": [
@@ -4511,24 +4431,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R79 (its stack-host half)",
-          "quote": "you cannot virus a spell that is RESOLVING.**"
+          "quote": "you cannot virus a spell that is RESOLVING.**",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.permission",
@@ -4557,14 +4476,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "29-hybrids-wm-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rook is the only such card in the pool as far as the pack shows.",
     "sourceHashes": {}
@@ -4577,11 +4496,11 @@
     "examples": [
       {
         "text": null,
-        "test": "136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle"
+        "test": "136-triggers-and-modes.test.ts::CR 723.5a: a Rook-enabled augment lands on an ENEMY unit during battle"
       },
       {
         "text": null,
-        "test": "136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK"
+        "test": "136-triggers-and-modes.test.ts::CR 723.5a: a Rook-enabled augment reaches a SPELL ON THE STACK"
       }
     ],
     "see": [
@@ -4591,20 +4510,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §26)",
-          "quote": "> *\"(a) yes it does. and for (b) yes it can also go to an enemy. That's the"
+          "quote": "> *\"(a) yes it does. and for (b) yes it can also go to an enemy. That's the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R161",
-          "quote": "### §26 — Rook grants {Virus} itself, and reaches stack hosts"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R95",
-          "relation": "its OPEN question 2 default (Rook grants only the timing permission) reversed by R157 §26"
+          "quote": "### §26 — Rook grants {Virus} itself, and reaches stack hosts",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -4613,12 +4528,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R161": "65276815ee877bd9e2976a66608a7c4105a3b44fd4aded63f8cad52dc6c88006"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.permission.zones",
@@ -4643,24 +4556,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R311",
-          "quote": "they were [Virus]\", still names its own zones. A non-Virus card in the cache"
+          "quote": "they were [Virus]\", still names its own zones. A non-Virus card in the cache",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "29-hybrids-wm-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.virus.permission.region",
@@ -4684,17 +4596,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R95 (its Rook-grant half)",
-          "quote": "`self` is the ANCHOR, so the `[Augment]` half is free: augmented onto a host, the"
+          "quote": "`self` is the ANCHOR, so the `[Augment]` half is free: augmented onto a host, the",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R95 (its Rook-grant half)",
-          "quote": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
+          "quote": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "29-hybrids-wm-a.test.ts",
@@ -4702,11 +4615,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The region scope rests on a player's chat remark (rodanaw), quoted in R95; players are not authority: D-U17-10.",
-    "sourceHashes": {
-      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
-    }
+    "notes": "The region scope rests on a player's chat remark (rodanaw), quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”); players are not authority: D-U17-10.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.what",
@@ -4731,8 +4643,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
@@ -4740,6 +4651,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Spellbind text from extract.json cards[] (not in the pack's cards.md). The attribute's own entry is 802.26 (U20).",
     "sourceHashes": {}
@@ -4765,24 +4677,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "`{Modular}` is printed on exactly one card, **Spellbind** — *\"(You can apply"
+          "quote": "`{Modular}` is printed on exactly one card, **Spellbind** — *\"(You can apply",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "428-cr-modifications.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "A fact about the current pool, as of R105 (2026-08-23).",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "notes": "A fact about the current pool, as of the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) (2026-08-23).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.any-card",
@@ -4792,11 +4703,11 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for"
+        "test": "91-modular.test.ts::CR 724.2: the {Modular} menu offers every card you can pay for"
       },
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: a card in the BIN is offered beside the hand, and an unaffordable one is not"
+        "test": "91-modular.test.ts::CR 724.2: a card in the BIN is offered beside the hand, and an unaffordable one is not"
       }
     ],
     "see": [],
@@ -4804,28 +4715,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R105",
-          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R105's quoted rule is not attributed in its body; its header says \"Owner rulings\" sourced to Caleb's messages.",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”)’s quoted rule is not attributed in its body; its header says \"Owner rulings\" sourced to Caleb's messages.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.any-card.no-op",
@@ -4835,7 +4746,7 @@
     "examples": [
       {
         "text": "Sparkwraith's augment text applied to Spellbind is accepted and does nothing.",
-        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+        "test": "91-modular.test.ts::CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing"
       }
     ],
     "see": [
@@ -4845,24 +4756,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.any-card.cost",
@@ -4872,7 +4782,7 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: \"you still pay their costs\""
+        "test": "91-modular.test.ts::CR 724.3: \"you still pay their costs\""
       }
     ],
     "see": [
@@ -4887,14 +4797,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"Not playing\" is 720.3.",
     "sourceHashes": {}
@@ -4922,24 +4832,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "offered was the bug**, and it was one line: `if (!isGraftable(name) …) return;`"
+          "quote": "offered was the bug**, and it was one line: `if (!isGraftable(name) …) return;`",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "\"As it is played\" is the printed timing; the cast-window stage is R35's collection (R105: \"The window was built correctly in R35's cast-time collection\"). The R105 quote is weak support; the rule leans on print and the tests.",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "notes": "\"As it is played\" is the printed timing; the cast-window stage is the owner ruling of 2026-08-18 (“Bracketed [costs] and X on spells…”)’s collection (the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”): \"The window was built correctly in the owner ruling of 2026-08-18 (“Bracketed [costs] and X on spells…”)’s cast-time collection\"). The owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) quote is weak support; the rule leans on print and the tests.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.effects",
@@ -4949,11 +4858,11 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part"
+        "test": "91-modular.test.ts::CR 724.4: a GRAFT mod still contributes its [Switch] effect as an extra part"
       },
       {
         "text": "A player casts Spellbind and applies Primordial Coalescence from their bin to it. When Spellbind resolves, Primordial Coalescence's graft effect happens too: three Wraiths, and its 2 Rot on top of Spellbind's one.",
-        "test": "91-modular.test.ts::R105: the flashback line"
+        "test": "91-modular.test.ts::CR 724.5: the flashback line"
       }
     ],
     "see": [
@@ -4963,24 +4872,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "| a `[Switch]` graft effect | joins the item as an **extra part** |"
+          "quote": "| a `[Switch]` graft effect | joins the item as an **extra part** |",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.effects.attributes",
@@ -4990,7 +4898,7 @@
     "examples": [
       {
         "text": "{Powerful} turns a Spellbind-carried Twin Flame from 2 damage into 4.",
-        "test": "91-modular.test.ts::R105: a type-line [Augment] mod really donates"
+        "test": "91-modular.test.ts::CR 724.4a: a type-line [Augment] mod really donates"
       }
     ],
     "see": [
@@ -5000,24 +4908,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |"
+          "quote": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.effects.text",
@@ -5027,7 +4934,7 @@
     "examples": [
       {
         "text": "Sparkwraith on Spellbind: a spell played while it rides the stack puts no counter anywhere.",
-        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+        "test": "91-modular.test.ts::CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing"
       }
     ],
     "see": [
@@ -5037,28 +4944,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "| **text-box** `[Augment]` text, statics | **nothing** |"
+          "quote": "| **text-box** `[Augment]` text, statics | **nothing** |",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R105",
-          "quote": "A spell has no body for a triggered ability or a static to live on."
+          "quote": "A spell has no body for a triggered ability or a static to live on.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.effects.graft-cost",
@@ -5082,16 +4989,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R334",
-          "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R35",
-          "relation": "its declinable and skippable grafted riders reversed by R334, except this Modular per-part skip"
+          "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -5100,11 +5002,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "An owner carve-out with no designer source; Graft 101 point 11 withholds a unit's whole composite: D-U17-9. No test in the pack exercises it.",
-    "sourceHashes": {
-      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.unstable",
@@ -5114,15 +5015,15 @@
     "examples": [
       {
         "text": "A graft card replayed from the bin by Spellbind is erased, so it cannot be used that way twice.",
-        "test": "91-modular.test.ts::R105: the flashback line"
+        "test": "91-modular.test.ts::CR 724.5: the flashback line"
       },
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too"
+        "test": "91-modular.test.ts::CR 724.5: a NEGATED modded Spellbind is erased too"
       },
       {
         "text": null,
-        "test": "91-modular.test.ts::R105 = R79"
+        "test": "91-modular.test.ts::CR 803.8f: "
       }
     ],
     "see": [
@@ -5138,13 +5039,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "> \"A modded Spellbind should also have unstable. It basically works as a"
+          "quote": "> \"A modded Spellbind should also have unstable. It basically works as a",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts",
@@ -5152,11 +5053,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.modular.unstable.unmodded",
@@ -5166,7 +5066,7 @@
     "examples": [
       {
         "text": null,
-        "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
+        "test": "91-modular.test.ts::CR 724.5a: an UNMODDED {Modular} spell is not Unstable"
       }
     ],
     "see": [],
@@ -5174,23 +5074,22 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R105",
-          "quote": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is"
+          "quote": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
-    }
+    "sourceHashes": {}
   }
 ]

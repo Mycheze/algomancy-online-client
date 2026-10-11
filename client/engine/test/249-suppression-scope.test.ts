@@ -1,5 +1,5 @@
 /*
- * 249 · R269 — SUPPRESSION IS AS WIDE AS THE CLAUSE THAT PRINTS IT
+ * 249 · CR 712.4 — SUPPRESSION IS AS WIDE AS THE CLAUSE THAT PRINTS IT
  *
  * `StaticMod.suppressAbilities` switches off a unit's WHOLE ability layer.
  * That is the right shape for exactly one kind of printed sentence — "…lose
@@ -45,7 +45,7 @@ function textOf(name: string): string {
 
 /** every StaticMod a card declares, from every channel that can carry one.
  * Read by NAME off an untyped view so this file compiles unchanged before and
- * after R268 adds the augment-box channel — a guard that cannot be run
+ * after the augment-box change (CR 721.1) adds that channel — a guard that cannot be run
  * against the code it is guarding proves nothing. */
 function staticsOf(name: string): Record<string, unknown>[] {
   const def = getCard(name) as unknown as Record<string, unknown>;

@@ -1,10 +1,10 @@
-/* R238 — a REPLACED combat hit was still DEALT.
+/* CR 608.8a — a REPLACED combat hit was still DEALT.
  *
  * Owner, 2026-08-28, on a hit Blightsea Polyp turned into rot: "Yes, blightsea
  * pollup says it deals damage as, so its still damage. Just not as life."
  * Caleb had already ruled it on 2024-10-24 ("Is combat damage still applied
- * after this replacement effect?" — "Yes"), and R197 measured the gap on
- * 2026-08-26 and filed it "Reported, not fixed". See scratchpad/rulings/R238.md.
+ * after this replacement effect?" — "Yes"), and an audit measured the gap on
+ * 2026-08-26 and filed it "Reported, not fixed".
  *
  * The complete set of hooks that can consume a combat hit to a player is
  * DERIVED here, not typed: every card declaring `replaceCombatDamageToPlayer`.
@@ -35,12 +35,12 @@ function throughCombat(h: Harness, defender: Seat): void {
 /** every card that can consume a combat hit to a player — the hook IS the
  * class, so it is asked for rather than listed. */
 function combatHitReplacers(): string[] {
-  // R268: Oorblak and Blightsea Polyp print the hook inside their [Augment]
+  // CR 721.1: Oorblak and Blightsea Polyp print the hook inside their [Augment]
   // box, so it is declared in `augmentBox` — read both halves or the class is empty.
   return allCardNames().filter(n => radiantHook(n, 'replaceCombatDamageToPlayer') !== undefined);
 }
 
-test('R238: the replacer class is derived from the hook, and it is not empty', () => {
+test('the replacer class is derived from the hook, and it is not empty', () => {
   const who = combatHitReplacers();
   assert.ok(who.length > 0, 'at least one card can consume a combat hit to a player');
   assert.ok(allCardNames().length === 496, `the pool is 496, saw ${allCardNames().length}`);
@@ -52,7 +52,7 @@ test('R238: the replacer class is derived from the hook, and it is not empty', (
 
 // ── the gap itself ────────────────────────────────────────────────────
 
-test('R238: a fully replaced hit still fires the face-damage event, with the DEALT amount', () => {
+test('CR 608.8a: a fully replaced hit still fires the face-damage event, with the DEALT amount', () => {
   const h = new Harness(2381);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -78,12 +78,12 @@ test('R238: a fully replaced hit still fires the face-damage event, with the DEA
   finishBattle(h);
 });
 
-test('R238: "when my column deals combat damage" pays out through the replacement', () => {
+test('CR 608.8a: "when my column deals combat damage" pays out through the replacement', () => {
   const h = new Harness(2382);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   // Vroot: "[Augment] When my column deals combat damage, each opponent gains
-  // that much life." R26: its own [Augment] text is live when played normally.
+  // that much life." CR 305.4: its own [Augment] text is live when played normally.
   const vroot = spawn(h, A, 'Vroot');
   spawn(h, D, 'Blightsea Polyp');
   const lifeD = h.state.players[D]!.life;
@@ -94,7 +94,7 @@ test('R238: "when my column deals combat damage" pays out through the replacemen
     'Vroot saw a hit the engine used to hide from it, and paid out "that much life"');
 });
 
-test('R238: the payout is the DAMAGE DEALT, not the life lost', () => {
+test('CR 608.8a: the payout is the DAMAGE DEALT, not the life lost', () => {
   const h = new Harness(2383);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -103,11 +103,11 @@ test('R238: the payout is the DAMAGE DEALT, not the life lost', () => {
   const lifeD = h.state.players[D]!.life;
   attackWith(h, A, [[vroot]]);
   throughCombat(h, D);
-  resolveAfterCombat(h);   // R261: Vroot's column-damage trigger pays out after combat
+  resolveAfterCombat(h);   // CR 608.9b: Vroot's column-damage trigger pays out after combat
   const face = h.events.find(e => e.type === 'combatFaceDamage')!;
   const n = face.data?.['n'] as number;
   // measured BEFORE the battle is finished: the rot the replacement handed out
-  // is its own damage on its own schedule (R38) and is not part of this sum.
+  // is its own damage on its own schedule (CR 112.13) and is not part of this sum.
   assert.equal(h.state.players[D]!.life, lifeD + n,
     'the opponent gained exactly the damage the column dealt, though it lost no life to it');
   finishBattle(h);
@@ -115,7 +115,7 @@ test('R238: the payout is the DAMAGE DEALT, not the life lost', () => {
 
 // ── what must NOT change ──────────────────────────────────────────────
 
-test('R238: an ordinary unreplaced hit is unchanged — one event, dealt === lost', () => {
+test('CR 608.8a: an ordinary unreplaced hit is unchanged — one event, dealt === lost', () => {
   const h = new Harness(2384);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -134,7 +134,7 @@ test('R238: an ordinary unreplaced hit is unchanged — one event, dealt === los
   finishBattle(h);
 });
 
-test('R238: PREVENTION is still the other thing — a blocked column deals nothing to the face', () => {
+test('CR 708.11: PREVENTION is still the other thing — a blocked column deals nothing to the face', () => {
   const h = new Harness(2385);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

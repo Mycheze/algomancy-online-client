@@ -5,7 +5,7 @@
  * anywhere is Recyclable Sentinel's "…or die" branch actually PAYING OUT:
  * 08-cards2 drives the death only on the spawn turn, where the [Switch1]
  * budget is already spent, so the death branch has only ever been observed
- * being correctly BLOCKED (R9). This file pins the positive case — a fresh
+ * being correctly BLOCKED (CR 722.5). This file pins the positive case — a fresh
  * turn's budget, a death, a second Robot. Seeds are 10400-10499.
  */
 import { test } from 'node:test';
@@ -17,7 +17,7 @@ import { effStats, ent, spawn, toDeployment, unitsOf, withE as whiteBox } from '
 //
 // "When I spawn or die, [Switch1] Create a Robot 1."
 //
-// The spawn branch and the R9 same-turn bound are pinned in
+// The spawn branch and the CR 722.5 same-turn bound are pinned in
 // 08-cards2.test.ts. This is the death branch DELIVERING: on a later turn
 // the [Switch1] budget is fresh, so the death itself must mint a Robot.
 
@@ -28,7 +28,7 @@ test('Recyclable Sentinel: dying on a LATER turn creates a second Robot 1 (fresh
   const sent = spawn(h, p, 'Recyclable Sentinel');        // spawn branch → Robot #1
   assert.equal(unitsOf(h, p).filter(u => u.card === 'Robot').length, 1, 'spawn branch fired');
 
-  // roll into the next turn's deployment: the R9 budget resets, the Robot
+  // roll into the next turn's deployment: the CR 722.5 budget resets, the Robot
   // (a unit token) persists through regroup
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });

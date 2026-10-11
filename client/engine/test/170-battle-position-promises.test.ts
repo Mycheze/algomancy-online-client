@@ -1,5 +1,5 @@
 /**
- * THE CARD IS STANDING IN THE BATTLE — R199, CARD-TODO #49.
+ * THE CARD IS STANDING IN THE BATTLE — CARD-TODO #49.
  *
  * The owner's standing requirement, and the reason this file exists rather than
  * a bumped number in `84-card-semantics`:
@@ -10,13 +10,13 @@
  *
  * `84-card-semantics` counts. An aggregate that goes up while no INDIVIDUAL
  * card can go red is exactly the failure this repo keeps rediscovering, so
- * every card R199 newly reached gets a named assertion here quoting the clause
+ * every card this round newly reached gets a named assertion here quoting the clause
  * it prints. Delete the implementation of any one of them and this file names
  * that card and that clause; the aggregate would only wobble by one.
  *
  * ── WHAT WAS ACTUALLY WRONG ──────────────────────────────────────────────
  *
- * R180 left 52 printed promises never observed, and named REGION (R12) as the
+ * Stages 3-4 of CARD-TODO #49 left 52 printed promises never observed, and named REGION (CR 601.1d) as the
  * biggest remaining family: six cards whose clause is scoped to the region its
  * event fires in. The brief for this round said those cards needed
  * "an attacking position with the card actually in the battle".
@@ -39,11 +39,11 @@
  * ── WHAT A BLIND CHECKER WOULD PRINT ─────────────────────────────────────
  *
  * The ticket's standing warning is that a coverage number going UP is the
- * direction that flatters, so the honest thing to say first is what R199 did
+ * direction that flatters, so the honest thing to say first is what the battle-position fix did
  * NOT touch: it adds no evidence channel at all. Attribution is still
  * `ownResolution` — a slice of the event stream bounded by the engine's own
  * stack-item label — and the continuous-layer reading is still `staticBite`,
- * both built and blind-checked in R180 and both unchanged here. R199 changes
+ * both built and blind-checked in stages 3-4 and both unchanged here. This round changes
  * only WHEN and WHERE the world acts. That is why the two failure modes here
  * are not the ones that flatter:
  *
@@ -58,7 +58,7 @@
  *   ALWAYS FALSE — no beat ever fires in battle, the six cards go dark again,
  *     and `84-card-semantics`'s per-gate floors catch it.
  *
- * MEASURED, at this commit: 264/316 gated promises observed before R199,
+ * MEASURED, at this commit: 264/316 gated promises observed before the battle-position fix,
  * 278/316 after. The one card that came out of it in the OTHER direction is
  * Slag Spewer, and it is a REAL DEFECT this round found rather than a
  * regression — see `84-card-semantics`'s UNREACHED entry.
@@ -130,7 +130,7 @@ test('a card with no body on the board never reports a battle position — the p
   // THE ALWAYS-TRUE CONTROL. Immolate is a spell: it is cast, it resolves, it
   // goes to the bin, and it never stands anywhere. A `standingInBattle()` that
   // had been hard-wired true — or one that read the PHASE instead of the
-  // card's region, which is exactly the bug R199 fixed — would report beats
+  // card's region, which is exactly the bug the drill's battle-position work fixed — would report beats
   // here, because the battle phase happens in every game whether or not the
   // card under test has a body in it.
   const r = pressed('Immolate');
@@ -144,7 +144,7 @@ test('a card with no body on the board never reports a battle position — the p
     + 'the empty in-battle list above proves nothing');
 });
 
-// ── REGION (R12): the six cards CARD-TODO #49 named ─────────────────────
+// ── REGION (CR 601.1d): the six cards CARD-TODO #49 named ─────────────────────
 
 test('Galerider Eel delivers "I gain +4/+4 and flying until regroup" once it stands in the battle', () => {
   printsClause('Galerider Eel', 'cards enter your hand during battle');
@@ -167,7 +167,7 @@ test('Colony of the Interworld delivers "Put three +1/+1 counters on me" when li
   assert.ok(r.ownTypes.includes('countersChanged'),
     'Colony of the Interworld prints "When you gain or lose life during battle, [Switch1] Put '
     + 'three +1/+1 counters on me" and put none on. `E.loseLife` stamps the event with the '
-    + 'battle region (R12), so only a unit standing in the battle can hear it — this run put it '
+    + 'battle region (CR 601.1d), so only a unit standing in the battle can hear it — this run put it '
     + `there. Its own window saw: ${[...new Set(r.ownTypes)].join(', ') || '(nothing)'}`);
 });
 
@@ -180,7 +180,7 @@ test('Boreal Wanderer delivers "I deal 2 damage to each opponent" when an ally s
     'Boreal Wanderer prints "When another ally spawns during battle, [Switch1] I deal 2 damage to '
     + 'each opponent" and dealt none. Its payload loops `regions[ctx.region].presentSeats`, so it '
     + 'needs BOTH the spawn and an opponent in the same region — and its [Switch1] gives it one '
-    + 'bounded use per turn (R9), which is why `allySpawn@battle` waits for `battle.happened` '
+    + 'bounded use per turn (CR 722.5), which is why `allySpawn@battle` waits for `battle.happened` '
     + 'rather than spending that use on a home-region spawn. '
     + `Its own window saw: ${[...new Set(r.ownTypes)].join(', ') || '(nothing)'}`);
 });
@@ -212,7 +212,7 @@ test('Xenopod Progenitor delivers its [Augment] "create a 2/2 unit" on a host in
 
 test('Bloated Manablub is still unreached, and it is the POSITION it lacks — not an implementation', () => {
   // The honest half of the tally. This card is the sixth of the REGION family
-  // and R199 did NOT reach it; the entry that says so lives in
+  // and the battle-position fix did NOT reach it; the entry that says so lives in
   // 84-card-semantics' UNREACHED list, and this assertion is what keeps that
   // entry truthful rather than stale. It asserts the CAUSE, not the failure:
   // the trigger fires and resolves, and the payload finds nobody to hit.
@@ -237,7 +237,7 @@ test('Spiteful Shadow delivers "Each player sacrifices a unit" — the die beat 
   const r = pressed('Spiteful Shadow');
   assert.ok(r.fired.includes('die'),
     'the `die` beat never became eligible. It was recorded UNREACHED for exactly this reason '
-    + 'before R199 — the run ended with two of the beats unfired because the seeded board killed '
+    + 'before the battle-position fix — the run ended with two of the beats unfired because the seeded board killed '
     + 'the game before two battles had finished.');
   assert.ok(r.ownTypes.includes('died') || r.ownTypes.includes('trashed'),
     'Spiteful Shadow prints "When I die, [Switch] Each player sacrifices a unit" and nothing was '
@@ -288,10 +288,10 @@ const LAYERS: [string, string, string][] = [
   // but cannot close the gap it left.
   ['Animated Spark', "token spell you've played in this battle",
     'Your units gain +1/+0 for each nontoken spell you have played IN THIS BATTLE. The augment is '
-    + 'applied in deployment; before R199 the press run\'s spell landed in a different battle, so '
+    + 'applied in deployment; before the battle-position fix the press run\'s spell landed in a different battle, so '
     + 'the count was 0 and the layer was a no-op that changed no stat.'],
   ['Riftspawn Remnant', 'if you have gained or lost life in this battle',
-    'I gain +4/-4 IF YOU HAVE GAINED OR LOST LIFE IN THIS BATTLE — the same shape: before R199 '
+    'I gain +4/-4 IF YOU HAVE GAINED OR LOST LIFE IN THIS BATTLE — the same shape: before the battle-position fix '
     + 'the life beats and the attach did not share a battle.'],
   ['Inspiration', 'your units adjacent to me gain +2/+2',
     'Your units ADJACENT TO ME gain +2/+2 — it needs neighbours, and an attacking formation is '
@@ -312,7 +312,7 @@ for (const [card, phrase, why] of LAYERS) {
 test('a triggered [Augment] box must NOT read as a continuous layer', () => {
   // The blind-check on the three assertions above, in the direction that
   // flatters. `staticBite` compares per-entity NUMBERS on purpose: every
-  // augment makes its host {Unstable} (R79) and lengthens its counters array,
+  // augment makes its host {Unstable} (CR 720.7) and lengthens its counters array,
   // so an attribute-aware or array-aware comparison reads as true for every
   // augment in the pool whatever its box says. A Pile of Rubbish's box is a
   // TRIGGER ("when I die, draw a card") and grants no stats at all.

@@ -1,4 +1,4 @@
-# 17 — Oracle-text audit — the whole pool, 2026-08-28 (R240)
+# 17 — Oracle-text audit — the whole pool, 2026-08-28 (owner request)
 
 Commissioned by the owner: *"there have been several minor issues found in our oracle
 text. Can you have that all checked for typoos and minor errors?"*
@@ -47,7 +47,7 @@ that was consulted, otherwise against the pool's own derived convention.
 ### 1.2 Lurking Dread — a **lost line break**, not a style choice
 - **printed:** `...sacrifice two non-token units...` — **should be:** `nontoken`
 - Confidence: **certain.** The card art wraps the word across a line as `non-` / `token`.
-  This is the **fifth instance of the R142 hyphenation artifact** (Flamebreath Initiate,
+  This is the **fifth instance of the hyphenation layout artifact** (Flamebreath Initiate,
   Cinder Scuttler, Ghord, Molten Tormentor were the first four) and it slipped past that
   guard because the guard matches `letter-hyphen-SPACE-lowercase` and this one lost the
   space too. Every one of the other **25 cards in the pool** (26 in the whole file) writes `nontoken` closed.
@@ -68,7 +68,7 @@ that was consulted, otherwise against the pool's own derived convention.
 - Confidence: **certain that it is an inconsistency**; the fix is Caleb's call (rename on
   the card, or accept Wight as an alternate name). The card art does print "Wight", so the
   transcription is faithful — **the physical card carries the old name.**
-- The client already handles it: `registerAlias('Wight', 'Wraith')` in `registry.ts`, R71.
+- The client already handles it: `registerAlias('Wight', 'Wraith')` in `registry.ts`.
 
 ### 1.5 Blurf — a prophecy grant written in a different format from every sibling
 - **printed:** `It gains 'Prophecy: 1 turn passes'.`
@@ -103,7 +103,7 @@ that was consulted, otherwise against the pool's own derived convention.
 
 ### 1.9 Arbiter of Armistice — *already ruled, still uncorrected upstream*
 - **printed:** `{Haste} {Switch} Holy Unit` — **should be:** `{Haste} Holy Unit`
-- Ruled by the owner in R157 §25. Same situation as 1.8: overridden downstream, still
+- Ruled by the owner on 2026-08-25. Same situation as 1.8: overridden downstream, still
   wrong at source. It is the only `{Switch}` on a type line in the file (the other 27 are
   rules-text markers).
 
@@ -125,7 +125,7 @@ on Biomass Devourer, Eminence of the Barrens, Reclaimer of Secrets, Soul Tithe, 
 Oracle, Xenopod Progenitor.
 
 **What would settle it:** whether the printed cards draw a different icon for the two
-(R141 already concluded they are the same thing and taught the client to render both, but
+(the bare-digit cost fix already concluded they are the same thing and taught the client to render both, but
 that was a rendering decision, not a data ruling). One question to Caleb: *"are `[one]`
 and `[1]` the same symbol on the card?"* If yes, one of the two spellings should go.
 
@@ -168,7 +168,7 @@ typesetting. **Low value; listed so nobody re-derives it.**
 
 ### 2.6 `Wither and Bloom` puts `{i1}` on the far side of its "or"
 Five cards write the modal marker as `{i1}or` (Burgeon, Floral Singularity, Spirit of
-Nature, Transmutide Enigma, Void Memory); Wither and Bloom writes `or{i1}`. R142 already
+Nature, Transmutide Enigma, Void Memory); Wither and Bloom writes `or{i1}`. The no-markup fix already
 established this is a **printed line-break artifact** (the marker sits on whichever side
 the line wrap left it) and taught the renderer to preserve the space either way. Almost
 certainly not a defect — noted because it is the only asymmetry in the family.
@@ -207,7 +207,7 @@ Each of these was computed over the parsed data, not sampled.
    (§1.8, already ruled). Nothing else.
 6. **English spelling.** All 635 distinct prose words run through `aspell`; 15 unknown,
    and every one is either game vocabulary (`mana`, `despawn(s)`, `nontoken`, `nonunit`,
-   `nonspell`, `prismite`, `Polyform`, `activations`) or a known R142 hyphenation fragment
+   `nonspell`, `prismite`, `Polyform`, `activations`) or a known hyphenation-artifact fragment
    (`adja`, `cre`, `fices`, `nent`, `oppo`, `sacri`). **`Sacrifce` is gone** — the owner's
    source fix on 2026-08-24 held.
 7. **Real-word typos.** `its`/`it's`, `lose`/`loose`, `then`/`than`, `affect`/`effect`,
@@ -222,7 +222,7 @@ Each of these was computed over the parsed data, not sampled.
     (14 flagged, **all 14 false positives** — "cache **one**", "for example, a 4/4 and a
     2/2"), and every card that names a cost was checked against its own mana. **Zero real
     numeric contradictions.**
-11. **Reminder-text drift — the R190 class.** All 98 `{i}(…)` reminders were grouped by
+11. **Reminder-text drift — the Glimpse-reminder class (report #106).** All 98 `{i}(…)` reminders were grouped by
     normalised body. Every attribute family (Blessed ×4, Flying ×5, Piercing ×2, Deadly,
     Powerful, Poisonous, Balanced, Inverted, Electric, Lethal, Modular, Pure, Afflicting,
     Swift/Sluggish, Unstable ×2) is **word-for-word identical across its cards**, and none
@@ -252,7 +252,7 @@ Each of these was computed over the parsed data, not sampled.
 >    `{Battle} Tree Druid Spell`. (Bena confirmed this on 2026-08-25 — both the missing
 >    space and the duplicated "Tree".)
 > 2. **Arbiter of Armistice** — type reads `{Haste} {Switch} Holy Unit`; the `{Switch}`
->    isn't on the card. Should be `{Haste} Holy Unit`. (Bena, R157: *"The card does not
+>    isn't on the card. Should be `{Haste} Holy Unit`. (Bena, 2026-08-25: *"The card does not
 >    have a [Switch] thing."*)
 > 3. **Rime Wraith** — type reads `{Swift}{Sluggish}` with no space; the card prints
 >    "Swift Sluggish". Should be `{Swift} {Sluggish}`.

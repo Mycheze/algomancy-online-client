@@ -8,8 +8,8 @@
  * the client's OWN release list — this file.
  *
  * MOVED, NOT WRITTEN. Every function and type below is the one that lived in
- * ui/battle.ts ([66] passEndsBattlePhase / tokensAtRisk, R245 inPassWindow,
- * R251 passAllRelease) or ui/inspect.ts (the option keys and the arm's types),
+ * ui/battle.ts ([66] passEndsBattlePhase / tokensAtRisk, CR D1.3 inPassWindow,
+ * CR D2.2 passAllRelease) or ui/inspect.ts (the option keys and the arm's types),
  * cut out verbatim. Both modules re-export them, so every client caller and
  * every test still imports from where it always did, and the client's
  * behaviour is byte-for-byte what it was.
@@ -37,7 +37,7 @@ export function activationKeys(legal: readonly Action[]): string[] {
       const aa = a as Extract<Action, { type: 'activateAbility' }>;
       const via = aa.via === undefined ? 'own'
         : aa.via === 'augment' ? 'aug'
-          // R118: a projected face is its own identity — two neighbours'
+          // CR 710.7: a projected face is its own identity — two neighbours'
           // abilities at the same index are two different options
           : 'face' in aa.via ? `face:${aa.via.face}:${aa.via.text ?? 'ability'}`
             : `mod${aa.via.mod}`;
@@ -46,7 +46,7 @@ export function activationKeys(legal: readonly Action[]): string[] {
 }
 
 /**
- * R245 — EVERY OPTION THIS WINDOW OFFERS, keyed by identity.
+ * CR D2.2b — EVERY OPTION THIS WINDOW OFFERS, keyed by identity.
  *
  * `activationKeys` above is one action type out of the several a priority
  * window can hold, and the reason it was written down — *"a new option that
@@ -114,7 +114,7 @@ export function castableTokens(legal: readonly Action[]): number {
 }
 
 /**
- * R251 — WHICH OF THE TWO PROMISES THE CHIP IS KEEPING.
+ * CR D2.2 — WHICH OF THE TWO PROMISES THE CHIP IS KEEPING.
  *
  * The owner named three buttons (round-31 sheet Q6): *"Pass just does a single
  * effect resolution. Pass through the stack assumes a pass is given to all
@@ -138,32 +138,32 @@ export type PassMode = 'stack' | 'all';
 
 /** what the client's own settings say about passing without being asked */
 export interface AutoPassArm {
-  /** one of the two standing pass promises is armed (R251) */
+  /** one of the two standing pass promises is armed (CR D2.2) */
   armed: boolean;
   /**
-   * R251 — which promise it is keeping. Absent means 'stack': every release
-   * clause live, which is what the single pre-R251 chip did and what an arm
+   * CR D2.2 — which promise it is keeping. Absent means 'stack': every release
+   * clause live, which is what the old single chip did and what an arm
    * built without a mode still means.
    */
   mode?: PassMode;
   /**
-   * R251 — the phase the chip was armed IN, so "until the next phase" is the
+   * CR D2.2 — the phase the chip was armed IN, so "until the next phase" is the
    * arm's own answer rather than a hard-coded `'battle'`. Absent means
    * 'battle', which is the only phase the chip has ever been armable in.
    */
   armedPhase?: Phase;
   /**
-   * ⚠ PRE-R245 ARM, kept only so an arm built without the two snapshots below
+   * ⚠ LEGACY ARM, kept only so an arm built without the two snapshots below
    * still answers. Stack height at the last window the chip looked at; growth
    * disarms it. `armedItems` SUBSUMES it — the stack only grows by gaining an
    * id that was not there — so it is asked only when `armedItems` is absent.
    */
   armedStack: number;
-  /** ⚠ PRE-R245, subsumed by `armedOpts` exactly as `armedStack` is by
+  /** ⚠ Legacy arm field, subsumed by `armedOpts` exactly as `armedStack` is by
    * `armedItems`: activationKeys() at the last window, a NEW key disarming it. */
   armedSig: readonly string[];
   /**
-   * R245 — the stack, BY IDENTITY, at the last window the chip declined.
+   * CR D2.2b — the stack, BY IDENTITY, at the last window the chip declined.
    *
    * A height cannot tell "the top resolved and something new went on" apart
    * from "nothing happened", and one server batch routinely carries both: a
@@ -174,7 +174,7 @@ export interface AutoPassArm {
    * "an id I have not seen" is the question the height was approximating.
    */
   armedItems?: readonly EntityId[];
-  /** R245 — `optionKeys` at the last window the chip declined. A key that is
+  /** CR D2.2b — `optionKeys` at the last window the chip declined. A key that is
    * here now and was not then is an option the game handed the player while
    * the chip was doing the passing for them. */
   armedOpts?: readonly string[];
@@ -188,7 +188,7 @@ export interface AutoPassArm {
 
 /**
  * Would passing priority RIGHT NOW take the game out of the battle phase and
- * into Regroup — the step that erases spell tokens (R11)?
+ * into Regroup — the step that erases spell tokens (CR 506.2)?
  *
  * This is derived from the engine's own transition, and it is worth spelling
  * out because the answer is not "the last window I can see":
@@ -204,7 +204,7 @@ export interface AutoPassArm {
  *                    sent nobody: `endBattleRound` then declines round 2 on the
  *                    spot and recurses straight into `startRegroup`.
  *
- * ⚠ R213 / CARD-TODO #82(a): THAT LIST IS THREE OF FOUR, AND THE FOURTH IS
+ * ⚠ CR D2.6b / CARD-TODO #82(a): THAT LIST IS THREE OF FOUR, AND THE FOURTH IS
  * NOT COVERABLE HERE. `endBattleRound` has a caller that is not the engine
  * deciding anything — **Temporal Rift** (`batch-hybrids-wm-b.ts`), a CARD that
  * ends the battle mid-resolution. This function answers "would passing RIGHT
@@ -215,7 +215,7 @@ export interface AutoPassArm {
  *
  * It IS a bug to enumerate the transitions as if they were all of them, which
  * is how CT-82(a) came to be filed: the comment read as a complete invariant
- * and was not one. R194's token-loss announcement still reaches all four
+ * and was not one. CR D2.6a's token-loss announcement still reaches all four
  * paths, because every exit from `endBattleRound` funnels through
  * `startRegroup` — that is asserted in `183-end-battle-round-paths.test.ts`,
  * along with the caller count, so a fifth path fails the suite instead of
@@ -275,7 +275,7 @@ export function tokensAtRisk(s: GameState, seat: Seat, legal: readonly Action[])
  *   'ability' the game handed me an option I did not have when the chip was
  *             armed (a negate, typically). Deliberate: it is a new option that
  *             appeared BECAUSE the game moved.
- *             ⚠ R245 / ledger #123 — the name is historical and the CLAUSE IS
+ *             ⚠ CR D2.2b / ledger #123 — the name is historical and the CLAUSE IS
  *             NOT ABOUT ABILITIES. It read `activateAbility` alone, which is
  *             one action type out of several a window can hold; measured over
  *             the room the report came from, that list was empty at all 107
@@ -283,7 +283,7 @@ export function tokensAtRisk(s: GameState, seat: Seat, legal: readonly Action[])
  *             card appeared out of resolutions and moved nothing. The set is
  *             derived by exclusion now (ui/inspect.ts `optionKeys`), so a new
  *             kind of option extends the clause without anyone editing it.
- *   'done'    R251 — the stack the player said yes to has resolved. NOT a
+ *   'done'    CR D2.2 — the stack the player said yes to has resolved. NOT a
  *             change and not a failure: it is "Pass through stack" reaching the
  *             end of its own scope, and it is the reason that mode terminates
  *             at all.
@@ -300,13 +300,13 @@ export function tokensAtRisk(s: GameState, seat: Seat, legal: readonly Action[])
 export type PassAllRelease = 'phase' | 'stack' | 'ability' | 'done' | 'tokens' | null;
 
 /**
- * R245 — is this a window the chip is being asked to PASS?
+ * CR D2.2 — is this a window the chip is being asked to PASS?
  *
  * Everything the chip declines a window for is a judgement ABOUT that window,
  * and a state where nothing is being asked of this seat is not a window it can
  * decline: the declare step, the block step, the opponent's own priority and
  * the far side of a decision all pass through here on the way to the next real
- * pass. Before R245 the two "something changed" clauses were asked at those
+ * pass. Before this fix the two "something changed" clauses were asked at those
  * states too, so arriving at the block step with a different option list on
  * offer could take the chip off — through no act of the opponent's, and while
  * its own promise ("keep passing until the battle ends") was still standing.
@@ -321,12 +321,12 @@ export function inPassWindow(s: GameState, seat: Seat, legal: readonly Action[])
 }
 
 /**
- * R251 — ONE RELEASE LIST, TWO PROMISES, AND THE MODE IS THE ONLY DIFFERENCE.
+ * CR D2.2 — ONE RELEASE LIST, TWO PROMISES, AND THE MODE IS THE ONLY DIFFERENCE.
  *
  * The clauses are not per-button: every one of them is computed the same way
  * for both modes, and the mode says which of them the promise HONOURS. That is
  * deliberate — a second copy of "what counts as a change", written for the
- * stronger button, is precisely the second opinion R245 exists to forbid, and
+ * stronger button, is precisely the second opinion CR D1.3 exists to forbid, and
  * it is how #68 and #123 both happened.
  *
  * ── 'stack' (the button reading "Pass through stack")
@@ -344,7 +344,7 @@ export function inPassWindow(s: GameState, seat: Seat, legal: readonly Action[])
  * `passEndsBattlePhase` is true only of the pass that LEAVES the phase — the
  * very boundary 'all' is aiming at — so this fires at the terminus rather than
  * before it, and all it does is make the last step of the promise the player's
- * own click. R11 erases spell tokens at Regroup and there is no undo; #66 fixed
+ * own click. CR 506.2 erases spell tokens at Regroup and there is no undo; #66 fixed
  * the warning to fire exactly there and nowhere else, and a chip that skated
  * past it would re-open the report it closed. A player holding no castable
  * token never sees it.
@@ -355,9 +355,9 @@ export function passAllRelease(
   if (!arm.armed) return null;
   const mode = arm.mode ?? 'stack';
   // the promise's own outer terminus, asked first in both modes because a phase
-  // that has turned over is not a judgement about a window (R245)
+  // that has turned over is not a judgement about a window (CR D2.2d)
   if (s.phase !== (arm.armedPhase ?? 'battle')) return 'phase';
-  // R245: every clause below is about the window in front of the player
+  // CR D2.2: every clause below is about the window in front of the player
   if (!inPassWindow(s, seat, legal)) return null;
   if (mode === 'stack') {
     // 'stack' — by identity where the arm carries one, by height where it does
@@ -367,14 +367,14 @@ export function passAllRelease(
       ? s.stack.some(it => !arm.armedItems!.includes(it.id))
       : s.stack.length > arm.armedStack;
     if (fresh) return 'stack';
-    // 'ability' — likewise: every option, or the one action type the pre-R245
+    // 'ability' — likewise: every option, or the one action type the legacy
     // arm knew how to snapshot.
     const gained = arm.armedOpts
       ? optionKeys(s, legal).some(k => !arm.armedOpts!.includes(k))
       : activationKeys(legal).some(k => !arm.armedSig.includes(k));
     if (gained) return 'ability';
     // 'done' — the scope has resolved. The scope IS `armedItems`, so an arm
-    // that carries none (a pre-R245 arm, or one taken at an empty stack) has
+    // that carries none (a legacy arm, or one taken at an empty stack) has
     // no scope to exhaust and this cannot fire for it. That is not a special
     // case being excused: `ui/main.ts` only offers the button while there is a
     // stack to pass through, so a scopeless 'stack' arm is unreachable from

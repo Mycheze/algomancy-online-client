@@ -1,4 +1,4 @@
-/* THE ZONE DELTA — the tail of every R191 reference key, and the reader for it.
+/* THE ZONE DELTA — the tail of every reference key, and the reader for it.
  *
  * rooms.ts writes one reference key per action (`referenceKey`): the action's
  * type, what it RESOLVED to in the state it was applied to, and, last, what it
@@ -10,7 +10,7 @@
  * such a game that no rules change can move.
  *
  * The format is FROZEN by the files already on disk: every saved game since
- * R191 carries these strings. Change a character of what zoneDelta emits and
+ * reference keys were added carries these strings. Change a character of what zoneDelta emits and
  * every old file's refs read as drifted (driftedAgainst) and every refs-only
  * card ledger misreads. 333-zone-delta-parse pins it.
  */

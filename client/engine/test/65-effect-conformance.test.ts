@@ -2,16 +2,16 @@
  * both enforced by ONE recording wrapper driven over EVERY EffectDef in the
  * registry, deterministically.
  *
- * ── WHY THE DRIVE IS WHAT IT IS (CARD-TODO #61, R182)
+ * ── WHY THE DRIVE IS WHAT IT IS (CARD-TODO #61)
  *
  * This file used to be driven by 140 FUZZ GAMES. The two assertions were right
  * and are unchanged; the DRIVE was the defect, and it was a structural one:
  * which branches a random walk reaches is a function of UNRELATED BEHAVIOUR,
  * so a change to one card file reddened this test inside a DIFFERENT card file
- * that nobody had touched. The R166 agent had to edit three files outside its
+ * that nobody had touched. The agent for that round had to edit three files outside its
  * own set for exactly that (Adversary of the Deep, Aethercap Siphoner, Flux
  * Constructor) and wrote "this will recur every round"; Channeled Amalgam's own
- * comment records the same thing happening under R84, and Earthbound
+ * comment records the same thing happening, and Earthbound
  * Replicator's records it again. It was never one card's bug — it was the fuzz
  * arriving at a pre-existing hole on a schedule nobody chose.
  *
@@ -20,7 +20,7 @@
  * context built from the engine's own machinery. What this file reaches is now
  * a function of THIS FILE and the effect under test, and of nothing else.
  *
- * ── THE THIRD BOARD, AND THE CLASS ITS ABSENCE HID (CT-74 / R209, 2026-08-26)
+ * ── THE THIRD BOARD, AND THE CLASS ITS ABSENCE HID (CT-74 / CR D7.3, 2026-08-26)
  *
  * The pass shipped with two boards and reported the pool clean, and the reason
  * it could was a property of the RIG that nobody had written down: **both
@@ -51,7 +51,7 @@
  * bar this replacement had to clear: a stabler test that reached less would
  * have been a bad trade. The sixteen silent completions it found on its first
  * run are listed in SILENT_KNOWN below, itemised — fifteen of them are one
- * defect shape (R25's "each opponent" over an empty region) that the fuzz had
+ * defect shape (CR 601.4d's "each opponent" over an empty region) that the fuzz had
  * found three instances of and walked past the rest of.
  *
  * WHAT THE CHANGE COSTS, said out loud. The fuzz composed its contexts through
@@ -62,7 +62,7 @@
  *     target this pass supplies is one the cast window would have offered;
  *   · a triggered ability's event is accepted only if the ability's OWN `when`
  *     returns true for it (asked on a throwaway clone, because a `when` may
- *     stamp state — R172's Ancient One does);
+ *     stamp state — the Ancient One's does);
  *   · a modal effect's `mode` comes from that effect's own `modes.options`;
  *   · and `81-card-drill` still drives 490/491 cards through the REAL action
  *     path — hand, `legalActions`, `playCard`, priority, resolution — carrying
@@ -70,13 +70,13 @@
  *     this one is the exhaustive-but-synthetic net. Neither subsumes the other
  *     and both are needed.
  *
- * One observation did not survive: the fuzz occasionally saw the R104
+ * One observation did not survive: the fuzz occasionally saw the
  * REPLACEMENT layer create a token, and printed what it made. This pass never
  * arranges a replacement, so `byReplacement` stays empty here. That coverage
  * lives in `87-replacement-layer` and `88-replacement-conformance`, which test
  * the layer directly; the orphan assertion below is unchanged and still holds.
  *
- * ── 1. R69: every token an effect creates is DECLARED (`EffectDef.creates`).
+ * ── 1. Every token an effect creates is DECLARED (`EffectDef.creates`).
  *
  * The inspector's "tokens it creates" panel used to scrape a card's PRINTED
  * text for a registered token name. That was wrong three ways at once: it
@@ -109,7 +109,7 @@
  * which slot the `EffectDef` was read out of: `spellEffect`, `graftEffect`
  * (the graft rider and every composite built on it), `abilities[i]`,
  * `augmentText[i]` (a card's own [Augment] text AND the same object donated to
- * a host by a mod), and `ambushEffect()`. R63's GRANTED text is the same
+ * a host by a mod), and `ambushEffect()`. CR 109.8's GRANTED text is the same
  * object again — `collectTriggersFrom` looks the granted card's ability up in
  * this very registry — so it is covered by the enumeration, not missed by it.
  */
@@ -168,7 +168,7 @@ function triggeredOf(s: Slot): {
 
 /** token names an EffectDef was actually observed putting onto the board */
 const recorded = new Map<EffectDef, Set<string>>();
-/** tokens created by the R104 REPLACEMENT LAYER, which is not an effect */
+/** tokens created by the REPLACEMENT LAYER, which is not an effect */
 const byReplacement = new Set<string>();
 /** a token that reached the board with no effect running — see the test below */
 const orphans: string[] = [];
@@ -182,9 +182,9 @@ let live = false;
 /**
  * Attribute one token to the effect being driven.
  *
- * ⚠ R104: a token created while a REPLACEMENT is running belongs to no effect
+ * ⚠ a token created while a REPLACEMENT is running belongs to no effect
  * and is exempt from both guarantees below. That is not a hole, it is what a
- * replacement IS: `EffectDef.creates` is a property of an effect (R69 built it
+ * replacement IS: `EffectDef.creates` is a property of an effect (it was built
  * for the inspector's "tokens it creates" panel, which shows what a STACK ITEM
  * will do), and a replacement has no `EffectDef`, never reaches the stack and
  * has no item to inspect. The exemption is gated on the engine's own
@@ -235,7 +235,7 @@ E.prototype.augmentWraith = function (host: Entity, by: Seat): Entity {
 // here are chosen for the one distinction that decides the largest number of
 // branches in this pool:
 //
-//   'home'   — deployment, the caster's own home region. R25: a home region
+//   'home'   — deployment, the caster's own home region. CR 601.4d: a home region
 //              out of battle lists only its OWNER in `presentSeats`, so every
 //              "each opponent" loop runs zero times. An ordinary, reachable
 //              situation, and the one 85-silent-branches §9 already fixed
@@ -295,7 +295,7 @@ function battleBoard(): Board {
 
 /**
  * 'barren' — an attack was declared, so BOTH seats are present in the battle
- * region, and then every unit in it left. CT-74 / R209.
+ * region, and then every unit in it left. CT-74 / CR D7.3.
  *
  * ⚠ WHY THIS BOARD EXISTS, AND WHY ITS ABSENCE HID A WHOLE BRANCH CLASS.
  * The two boards above share a property nobody had written down: **every seat
@@ -384,11 +384,11 @@ const runs: Run[] = [];
 /** runs the rig could not furnish AND that then threw — see the catch below.
  * Reported, never asserted on: a game fizzles these before `run` is called. */
 const unfairThrows: string[] = [];
-/** R227: what threw when the drive handed the effect an EMPTY `targets`. */
+/** CR D7.3a: what threw when the drive handed the effect an EMPTY `targets`. */
 const starvedThrows: string[] = [];
 
 /**
- * R227 — when true, the drive hands the effect an EMPTY `targets` list on
+ * CR D7.3a — when true, the drive hands the effect an EMPTY `targets` list on
  * purpose and records what throws instead of rethrowing. See §3 at the foot of
  * this file for what that sweep is for; `driveOne` carries it rather than a
  * second rig so the two passes cannot drift apart in how they build a context.
@@ -463,7 +463,7 @@ function driveOne(board: Board, s: Slot): void {
           for (const [n, w] of shapes) {
             const cand = synthEvent(type, region, seat, src, n, w);
             if (!trig.when) { event = cand; break outer; }
-            // ⚠ a `when` may MUTATE — R172's Ancient One stamps a scan budget
+            // ⚠ a `when` may MUTATE — the Ancient One stamps a scan budget
             // on itself — so it is asked on a throwaway clone and the board
             // the effect actually runs on is never touched by the search.
             const probe = new E(structuredClone(g.s) as GameState);
@@ -480,7 +480,7 @@ function driveOne(board: Board, s: Slot): void {
     }
   }
 
-  // ── the receipt for a bracketed cast cost (R35) ─────────────────────
+  // ── the receipt for a bracketed cast cost (CR 702.4) ─────────────────────
   const costPaid = s.def.castCost ? ((): EffectCtx['costPaid'] => {
     const cc = s.def.castCost!;
     const amt = costAmount(cc) ?? x;
@@ -507,7 +507,7 @@ function driveOne(board: Board, s: Slot): void {
     }
   })() : undefined;
 
-  // ── the declared mode (R57) and subject (R144), from their own specs ─
+  // ── the declared mode (CR 702.5) and subject (CR 706.12), from their own specs ─
   const item = {
     id: 7777, kind: 'spell', card: s.card as CardName, label: s.card, controller: A,
     region, negated: false, x, parts: [{ effectKey: `${s.route}:${s.card}`, targets: [] }],
@@ -538,7 +538,7 @@ function driveOne(board: Board, s: Slot): void {
 
   const before = g.events.length;
   let completed = false;
-  // R227: the starve pass is a THROW hunt, not a creation census — recording
+  // CR D7.3a: the starve pass is a THROW hunt, not a creation census — recording
   // stays off so a token spawned on a starved path can never be attributed to
   // an effect as something it "creates".
   live = !starve; frame = starve ? null : s.def;
@@ -556,13 +556,13 @@ function driveOne(board: Board, s: Slot): void {
     // suspended run from the top once the decision is answered. Anything else
     // rethrows: a card that throws is a defect this file must not swallow.
     //
-    // ⚠ ONE NARROW EXCEPTION, ADDED WITH THE 'barren' BOARD (CT-74 / R209).
+    // ⚠ ONE NARROW EXCEPTION, ADDED WITH THE 'barren' BOARD (CT-74).
     // A run the rig could NOT furnish is being asked a question a game never
     // asks, and the silence check already refuses to convict on it (`fair`).
     // A THROW on such a run is the same artifact wearing a louder hat: on the
     // barren board `Luminous Arc` — `g.dealEffectDamage(ctx, ctx.targets[0]!, 6)`
     // — is handed an empty `targets` and dereferences `undefined`, which in a
-    // real game cannot happen because R86 fizzles an item that has lost every
+    // real game cannot happen because CR 704.6 fizzles an item that has lost every
     // target it declared BEFORE `run` is ever called (E.resolveItem; see
     // engine.ts's collectSubjects comment). So an unfair throw is recorded and
     // printed, never rethrown, and a FAIR run that throws still takes the file
@@ -587,8 +587,8 @@ test('effect conformance: drive every effect in the registry', () => {
   assert.equal(runs.length, slots.length * BOARDS.length,
     'every effect must be driven in every board state');
   if (unfairThrows.length) {
-    console.log(`    R209: ${unfairThrows.length} unfurnishable run(s) threw and were NOT `
-      + `convicted (a game fizzles these before \`run\` — R86):\n      ${unfairThrows.join('\n      ')}`);
+    console.log(`    CR D7.3: ${unfairThrows.length} unfurnishable run(s) threw and were NOT `
+      + `convicted (a game fizzles these before \`run\` — CR 704.6):\n      ${unfairThrows.join('\n      ')}`);
   }
 });
 
@@ -663,7 +663,7 @@ test('a token never reaches the board outside an effect or a replacement', () =>
   // mistaken for one.
   assert.deepEqual([...new Set(orphans)], []);
   if (byReplacement.size) {
-    console.log('    R104: tokens created by a REPLACEMENT (no EffectDef to declare them): '
+    console.log('    tokens created by a REPLACEMENT (no EffectDef to declare them): '
       + `${[...byReplacement].sort().join(', ')}`);
   }
 });
@@ -699,7 +699,7 @@ test('tokens are the only thing declared: no deck card is listed as created', ()
 /**
  * Effects that COMPLETE A RUN AND SAY NOTHING, each with the reason it is
  * tolerated for now. Every one of these was found by the deterministic pass on
- * the day it replaced the fuzz (R182); the fuzz had reached three members of
+ * the day it replaced the fuzz; the fuzz had reached three members of
  * the first family and walked past the other twelve for weeks.
  *
  * It is deliberately not a `{ todo: true }` test — a todo can never fail,
@@ -721,7 +721,7 @@ interface KnownSilence {
 }
 
 /**
- * ⚠ R209/CT-74 — WHY THIS IS A RECORD AND NOT A STRING ANY MORE.
+ * ⚠ CR D7.3/CT-74 — WHY THIS IS A RECORD AND NOT A STRING ANY MORE.
  *
  * The entry used to be `label -> reason`, and the accuracy test below checked
  * the reason ONLY for `length > 40`. That makes the reason unfalsifiable: an
@@ -739,11 +739,11 @@ interface KnownSilence {
  * the file even when "is it still silent?" would have said yes.
  */
 const SILENT_KNOWN: Record<string, KnownSilence> = {
-  // ── R25's "each opponent" over a region that holds nobody else: GONE.
+  // ── CR 601.4d's "each opponent" over a region that holds nobody else: GONE.
   //
   // Thirteen labels (nine EffectDefs — four of them reached twice, once as an
   // ability/spell and once as the graft rider on the same object) sat here
-  // until R187/CT-70. "Each opponent" reads the EFFECT REGION's `presentSeats`
+  // until CT-70. "Each opponent" reads the EFFECT REGION's `presentSeats`
   // and a home region out of battle lists only its owner, so the loop ran zero
   // times and said nothing. Each now announces the empty region the way
   // 85-silent-branches §9 made Restitution, Vroot and Flzzz announce it, and
@@ -751,7 +751,7 @@ const SILENT_KNOWN: Record<string, KnownSilence> = {
   // card. The loops were NOT made to run — the region genuinely holds nobody
   // else and the effect genuinely does nothing; only the silence was the bug.
   //
-  // `augment:Stellarspore Harvester#0` went with them (R187): its "each of your
+  // `augment:Stellarspore Harvester#0` went with them (in the CT-70 repair): its "each of your
   // units with a -1/-1 counter" is a quantity counted at RESOLUTION, and a zero
   // count now says so instead of handing the opponent nothing in silence.
 
@@ -762,7 +762,7 @@ const SILENT_KNOWN: Record<string, KnownSilence> = {
     // only some boards is silent for a board-dependent reason instead.
     boards: ['home', 'battle', 'barren'],
     why:
-    "R123 — `run: () => {}` BY CONSTRUCTION. The spellEffect exists solely to hang the "
+    "`run: () => {}` BY CONSTRUCTION. The spellEffect exists solely to hang the "
     + '"[Discard two cards]" cast cost on; a `kind: \'unit\'` StackItem resolves by spawning '
     + 'and `resolveItem` returns before parts ever run, so this run is unreachable in a game. '
     + "Already declared in 71-card-ledger's NOT_A_GAP for the same reason.",
@@ -795,7 +795,7 @@ test('the known-silent list is still accurate — tick an entry off when it is f
     const seen = v.get(label);
     if (!seen) { stale.push(`${label}: no such effect any more — delete the entry`); continue; }
     if (!seen.silent) { stale.push(`${label} no longer resolves silently — delete its SILENT_KNOWN entry`); continue; }
-    // R209/CT-74: the half that makes the REASON falsifiable. Silence on a set
+    // CR D7.3/CT-74: the half that makes the REASON falsifiable. Silence on a set
     // of boards the entry does not claim means the effect is silent for a
     // cause the entry does not describe — a NEW defect wearing an old
     // exemption, which the previous `length > 40` check could never see.
@@ -831,24 +831,24 @@ test('the known-silent list is still accurate — tick an entry off when it is f
  */
 const UNJUDGED: Record<string, string> = {
   'augment:Ancient One#0':
-    'R118/R127 — its `when` grants a neighbour\'s triggered text and returns true only when '
+    'CR 710.7 — its `when` grants a neighbour\'s triggered text and returns true only when '
     + '`adjacentInFormation` finds an ally next to it. The rig spawns its carrier straight into '
     + 'a region rather than into a formation column, so it never has a neighbour and its own '
     + '`when` never accepts an event. 117-copy-everything drives the mimicry directly.',
   'augment:Riftwalker#0':
-    'R64 — "another target ally IN MY FORMATION": the restrict demands that some battle grid '
+    'CR 110.3a — "another target ally IN MY FORMATION": the restrict demands that some battle grid '
     + '(`battle.columns` or a block) holds both the carrier and the target. The rig spawns the '
     + 'carrier into the region after the attack is declared, so it is in no grid and the target '
     + 'menu is empty.',
   'spell:Boon of Protection':
-    'R256 — "negate target effect THAT TARGETS an allied effect, player or unit": the restrict '
+    'CR 110.3 — "negate target effect THAT TARGETS an allied effect, player or unit": the restrict '
     + 'demands a stack item aiming at something the CASTER controls, and the rig\'s stack holds '
-    + 'only the item it is driving, which aims at nobody. Exactly the Riftwalker shape above: an '
-    + 'R64/R88 cast-time predicate whose world the synthetic board does not build. Its real '
+    + 'only the item it is driving, which aims at nobody. Exactly the Riftwalker shape above: a '
+    + 'CR 110.3a cast-time predicate whose world the synthetic board does not build. Its real '
     + 'behaviour — the negate, the refused illegal cast, and the Virus arm — is driven by '
     + '23-wood-a.test.ts, and its unfurnished silence by 85-silent-branches (STACK_GONE).',
   'augment:Roving Quillback#0':
-    "R13 — its `when` demands at least one BLOCKED COLUMN (`battle.blocks` non-empty). The "
+    "CR 608.4c — its `when` demands at least one BLOCKED COLUMN (`battle.blocks` non-empty). The "
     + "rig's battle board stops at the attack declaration and never walks to the blocking step, "
     + 'so no event it can synthesise is one this ability would ever be handed.',
 };
@@ -907,13 +907,13 @@ test('the drive states its reach in CARDS, not only in EffectDefs (and in token-
   // enough to make its token depends on the board the rig builds.
   assert.ok(seen.length >= 70,
     `only ${seen.length}/${declaring.length} token-making effects were observed creating `
-    + 'anything — the rig has lost reach the R182 pass had (76). Find out what stopped being '
+    + 'anything — the rig has lost reach the pass had (76). Find out what stopped being '
     + 'furnishable rather than lowering this number.');
 });
 
-// ── 3. R227/R223: NO LEGAL TARGET IS AN OUTCOME, NOT A CRASH ──────────
+// ── 3. CR D7.3a: NO LEGAL TARGET IS AN OUTCOME, NOT A CRASH ──────────
 //
-// The owner's ruling (R223, 2026-08-28), asked what a spell should do when it
+// The owner's ruling (2026-08-28, now CR D7.3a), asked what a spell should do when it
 // resolves with no legal target: **"Fizzle, and say so in the log."** Not
 // silently, and not by throwing.
 //
@@ -931,13 +931,13 @@ test('the drive states its reach in CARDS, not only in EffectDefs (and in token-
 // than a second rig precisely so the context a starved run is judged on is the
 // same object the fair pass builds — a separate rig would drift.
 //
-// Why the class is latent rather than live today: `E.resolveItem` applies R86
+// Why the class is latent rather than live today: `E.resolveItem` applies CR 704.6
 // FIRST — an item that has lost every target it declared fizzles before `run`
 // is ever entered — so in a real game these dereferences are not reached
 // through the ordinary path. That is a property of one caller, not of the
 // effect: the empty-targets branch has no engine-side guarantee behind it, and
 // `unfairThrows` above has been printing these as artifacts for two rounds.
-// R223 makes the cards themselves answer the question.
+// The owner's ruling makes the cards themselves answer the question.
 //
 // The fix each card carries is `firstTarget(g, ctx)` (engine/src/cards/dsl.ts):
 // one helper, one wording, a logged fizzle and an early return.
@@ -982,7 +982,7 @@ const CONTROL_GOOD: Slot = {
   },
 };
 
-test('R227 positive control: the empty-targets sweep can actually SEE a defect', () => {
+test('CR D7.3a positive control: the empty-targets sweep can actually SEE a defect', () => {
   const convicted = starveSweep([CONTROL_BAD]);
   assert.equal(convicted.length, BOARDS.length,
     'the sweep did not convict a deliberately unguarded `ctx.targets[0]!` on every board — '
@@ -995,8 +995,8 @@ test('R227 positive control: the empty-targets sweep can actually SEE a defect',
     'the sweep convicted a CORRECTLY guarded effect — it is not measuring what it claims to');
 });
 
-test('R227 positive control: the guarded twin fizzles AND says so', () => {
-  // the other half of R223: not throwing is not enough, the player must be
+test('CR D7.3a positive control: the guarded twin fizzles AND says so', () => {
+  // the other half of CR D7.3a: not throwing is not enough, the player must be
   // told. Driven on the same rig, asserting the log line rather than the throw.
   const before = starvedThrows.length;
   starve = true;
@@ -1013,7 +1013,7 @@ test('R227 positive control: the guarded twin fizzles AND says so', () => {
   assert.equal(said, BOARDS.length, 'the guarded control fizzled without logging why');
 });
 
-test('R227: an effect handed NO LEGAL TARGET fizzles and logs — it never throws', () => {
+test('CR D7.3a: an effect handed NO LEGAL TARGET fizzles and logs — it never throws', () => {
   const convicted = starveSweep(targeting);
   const byCard = new Map<string, Set<string>>();
   for (const c of convicted) {
@@ -1025,7 +1025,7 @@ test('R227: an effect handed NO LEGAL TARGET fizzles and logs — it never throw
     .map(([card, labels]) => `${card}: ${[...labels].sort().join(', ')}`);
   assert.deepEqual(summary, [],
     `${convicted.length} throw(s) over ${byCard.size} card(s) — these effects dereference a `
-    + 'target they were not given, instead of fizzling and saying so (R223, the owner: '
+    + 'target they were not given, instead of fizzling and saying so (CR D7.3a, the owner: '
     + `"Fizzle, and say so in the log"):\n  ${summary.join('\n  ')}\n\n`
     + 'Route the site through `firstTarget(g, ctx)` from engine/src/cards/dsl.ts:\n'
     + '  const t = firstTarget(g, ctx); if (!t) return;\n'
@@ -1078,7 +1078,7 @@ function scanCardSources(): { file: string; line: number; text: string }[] {
   return hits;
 }
 
-test('R227 positive control: the source scan can actually SEE the idiom', () => {
+test('CR D7.3a positive control: the source scan can actually SEE the idiom', () => {
   // docs/13 §7.4 again, for the second guard. The regex is shown the exact
   // shapes it must convict and the exact shapes it must not.
   const convict = (line: string): boolean => {
@@ -1098,11 +1098,11 @@ test('R227 positive control: the source scan can actually SEE the idiom', () => 
   ]) assert.ok(!convict(ok), `the scan over-convicts: ${ok}`);
 });
 
-test('R227: no card reads a declared target without the shared fizzle helper', () => {
+test('CR D7.3a: no card reads a declared target without the shared fizzle helper', () => {
   const hits = scanCardSources();
   assert.deepEqual(hits.map(h => `${h.file}:${h.line}  ${h.text}`), [],
     'a non-null assertion on `ctx.targets` — the `!` is a TypeScript token, not a guard, and '
-    + 'the list IS empty when the effect was aimed at something that has gone. R223 (the owner): '
+    + 'the list IS empty when the effect was aimed at something that has gone. CR D7.3a (the owner): '
     + '"Fizzle, and say so in the log." Use the shared helper:\n'
     + '  const t = firstTarget(g, ctx); if (!t) return;\n'
     + '(pass an index — `firstTarget(g, ctx, 1)` — for a later slot). engine/src/cards/dsl.ts.');
@@ -1111,7 +1111,7 @@ test('R227: no card reads a declared target without the shared fizzle helper', (
     + 'report "clean" about nothing');
 });
 
-test('R227: the sweep is computed from the registry, not from a typed list', () => {
+test('CR D7.3a: the sweep is computed from the registry, not from a typed list', () => {
   // docs/13 §7.2. The thing that keeps the guard alive as cards are added: its
   // subject list is derived every run. A NEW card with an unguarded first-target
   // dereference reddens the test above without anyone editing this file.
@@ -1119,6 +1119,6 @@ test('R227: the sweep is computed from the registry, not from a typed list', () 
   assert.ok(targeting.length > 100,
     `only ${targeting.length} targeting effect slots found — the derivation has lost its grip `
     + 'on the pool. Do not lower this: find out what stopped being enumerated.');
-  console.log(`    R227: empty-targets sweep drove ${targeting.length} targeting effect slots `
+  console.log(`    CR D7.3a: empty-targets sweep drove ${targeting.length} targeting effect slots `
     + `× ${BOARDS.length} boards = ${targeting.length * BOARDS.length} starved runs`);
 });

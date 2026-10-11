@@ -1,5 +1,5 @@
 /**
- * THE CORRECTNESS SAMPLE — R212, `docs/13-assessment.md` §7.1.
+ * THE CORRECTNESS SAMPLE — `docs/13-assessment.md` §7.1.
  *
  * WHAT THIS FILE IS FOR
  *
@@ -33,7 +33,7 @@
  * `registerSynthetic` and a sweep driven off `printed.json` alone silently
  * misses them (that is how an earlier sweep skipped the exact card in a
  * report). `.sort()` before shuffling makes the draw independent of
- * registration order, which R150 showed is not stable.
+ * registration order, which has proved not to be stable.
  *
  * `test('the sample is the one seed 212 draws')` below RE-DERIVES the list at
  * run time and asserts it equals the hard-coded `SAMPLE`. The sample cannot be
@@ -53,7 +53,7 @@
  * (see `OPEN_QUESTIONS` at the foot of this file) rather than resolved
  * silently in the engine's favour.
  *
- * The standing steer (R157, `card-ruling-steer` memory): take the PERMISSIVE
+ * The standing steer (CR 101.4, 101.1, `card-ruling-steer` memory): take the PERMISSIVE
  * reading, and **printed text beats engine defaults**. If the engine narrows
  * what the card says, the engine is probably wrong.
  *
@@ -71,7 +71,7 @@
  * **As first run: 125 of 127 clauses correct (98.4%).** Both misses were the
  * same sentence of Torrential Reclamation, and both were raised as ruling
  * questions rather than assumed to be bugs. That was the right call, because
- * the owner's answer (R221, 2026-08-28) split them:
+ * the owner's answer (2026-08-28) split them:
  *
  *  · the AMOUNT clause was CORRECT ALL ALONG — the "for each" does distribute
  *    over the sacrifice. This file was wrong about the card, and said so in a
@@ -98,18 +98,18 @@
  * WHAT THIS FILE STILL CANNOT SEE, stated so the number is not over-read:
  *
  *  · **Fizzle and target loss.** Nothing here kills a target between cast and
- *    resolution (R86), so "the amount is right" is measured only on the happy
+ *    resolution (CR 704.6), so "the amount is right" is measured only on the happy
  *    path.
  *  · **The donated path, for ten of the eleven [Augment] cards.** A card's own
  *    [Augment] text is live while it stands as a unit (docs/08), which is what
  *    most of these tests drive. "Me" and "you" resolve differently when the
- *    same text is donated to a HOST (R131). Only Biomass Devourer is checked
+ *    same text is donated to a HOST (CR 720.6c, 720.6b). Only Biomass Devourer is checked
  *    both ways.
  *  · **Trigger ORDER.** Where several triggers queue, the tests answer the
  *    ordering question with the identity order and assert only the outcome.
  *  · **More than two players.** "Each opponent" and "each player" are measured
  *    against the one opponent `createGame` builds.
- *  · **Copies and projected faces (R118).**
+ *  · **Copies and projected faces (CR 710).**
  *
  * Seeds 18200-18299.
  */
@@ -143,8 +143,8 @@ const SAMPLE = [
 ];
 
 test('the sample is the one seed 212 draws — nobody curated it', () => {
-  // R297: the sample was drawn from the pool of real cards; Learn to Play's
-  // lessonOnly card arrived later and is not in the population it was drawn from
+  // The sample was drawn from the pool of real cards; Learn to Play's
+  // lessonOnly card (CR D8.1b) arrived later and is not in the population it was drawn from
   const pool = allCardNames().filter(n => !getCard(n).lessonOnly).sort();
   assert.equal(pool.length, 495,
     'the pool is 495 = 492 printed + 3 synthetics; a smaller number means a '
@@ -167,12 +167,12 @@ function ok(card: string, clause: string): void {
 function wrong(card: string, clause: string, detail: string): void {
   LEDGER.push({ card, clause, verdict: 'wrong', detail });
 }
-// ⚠ `wrong` HAS NO CALLERS AS OF R221 AND IS KEPT ON PURPOSE. Both of this
+// ⚠ `wrong` HAS NO CALLERS AS OF 2026-08-28 AND IS KEPT ON PURPOSE. Both of this
 // sample's divergences resolved on 2026-08-28 — one fixed, one ruled correct —
 // so KNOWN_WRONG is empty and nothing calls this. Deleting it would mean the
 // next agent who finds a real divergence has to re-invent the recording half of
 // this file's design, and would probably just assert the printed behaviour and
-// watch it fail instead. The `void` is the same idiom R219 used to stop
+// watch it fail instead. The `void` is the same idiom used earlier to stop
 // `opts.leavesGame` being tidied away while its seam was still needed.
 void wrong;
 
@@ -182,7 +182,7 @@ void wrong;
  * Filled in as the file was written; see the report for expected/actual/line.
  */
 /**
- * ⚠ EMPTY AS OF R221 (2026-08-28), AND THE TWO ROWS LEFT FOR DIFFERENT REASONS.
+ * ⚠ EMPTY AS OF 2026-08-28, AND THE TWO ROWS LEFT FOR DIFFERENT REASONS.
  * Do not read `[]` as "the sample found nothing wrong" — it found two things
  * and they resolved in opposite directions:
  *
@@ -275,7 +275,7 @@ test('Luminous Arc: exactly 6 damage, to the ONE unit chosen, and any unit is ch
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
 
   // TARGET — "target unit" carries no qualifier, so every unit in reach is
-  // legal, my own attacker included (R125: do not invent a qualifier).
+  // legal, my own attacker included (CR 110.3: do not invent a qualifier).
   assert.ok(offered(h).includes(JSON.stringify({ unit: victim })), 'an enemy unit is targetable');
   assert.ok(offered(h).includes(JSON.stringify({ unit: attacker })),
     '"target unit" is unqualified — my own unit is a legal target too');
@@ -311,13 +311,13 @@ test('Throw off a Cliff: only defense>=4 is offered, and the target is DELETED (
   intoBattle(h, A, [[attacker], [myBig]]);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Throw off a Cliff') });
 
-  // TARGET RESTRICTION — an illegal target is never OFFERED (R64).
+  // TARGET RESTRICTION — an illegal target is never OFFERED (CR 110.3a).
   assert.ok(offered(h).includes(JSON.stringify({ unit: big })), 'a 0/13 has 4+ defense');
   notOffered(h, { unit: small }, 'a 1/1 has 1 defense, not 4 or more');
   notOffered(h, { unit: attacker }, 'my own 1/1 has 1 defense either');
   ok('Throw off a Cliff', 'target restriction: defense >= 4 only');
   assert.ok(offered(h).includes(JSON.stringify({ unit: myBig })),
-    '"target unit with 4 or more defense" names no side — my own 4+ unit is legal (R125)');
+    '"target unit with 4 or more defense" names no side — my own 4+ unit is legal (CR 110.3)');
   ok('Throw off a Cliff', 'target: unqualified as to side — my own unit is choosable');
 
   pick(h, { unit: big });
@@ -462,7 +462,7 @@ test('All-Consuming Blight: one Poison 1 per unit of MINE — not the enemy’s,
 // ════════════════════════════════════════════════════════════════════════
 // LINKED EXTINCTION — m/1 {Battle} Technology Spell
 //   "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices a unit."
-//   (`/[…]` is a printed cost panel — R142/docs 12 §"/[…]". Malevolent
+//   (`/[…]` is a printed cost panel — docs 12 §"/[…]". Malevolent
 //    Machinations prints the same panel with no [Switch] at all, so the panel
 //    is a COST of playing the card, and [Switch1] only marks it graftable.)
 // ════════════════════════════════════════════════════════════════════════
@@ -554,7 +554,7 @@ test('Finality: EVERY bin is erased — both players’, and the cards go to the
     'my bin holds only Finality, which arrived after the erase');
   assert.equal(h.state.players[D]!.bin.length, 0, '"all cards in bins" — the opponent’s too');
   ok('Finality', 'scope: both players’ bins');
-  // ERASE, not delete: R65's erased pile is where a card leaves the game through.
+  // ERASE, not delete: CR 407.1's erased pile is where a card leaves the game through.
   assert.deepEqual(h.state.players[A]!.erased?.slice().sort(), ['Luminous Arc', 'Unit Token'],
     'my bin’s cards are in my ERASED pile');
   assert.ok(h.state.players[D]!.erased?.includes('Jelly'), 'and theirs in theirs');
@@ -654,7 +654,7 @@ test('Torrential Reclamation: the targets are X NONTOKEN ALLIES, recalled to my 
   h.state.players[A]!.hand = [];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Torrential Reclamation') });
 
-  // X is chosen and paid at cast (R35)
+  // X is chosen and paid at cast (CR 107.2a)
   const xq = h.state.decision!;
   assert.ok(xq.prompt.includes('choose X'), 'X is chosen at cast');
   h.do({ type: 'decide', seat: A, choice: xq.options.findIndex(o => o.value === 2) });
@@ -692,7 +692,7 @@ test('Torrential Reclamation: the targets are X NONTOKEN ALLIES, recalled to my 
   finishBattle(h);
 });
 
-test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY (R221)', () => {
+test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY (owner ruling, 2026-08-28)', () => {
   // PRINTED: "Recall X target nontoken allies. Then each player sacrifices a
   // unit and you lose 1 life for each ally recalled this way."
   //
@@ -727,10 +727,10 @@ test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER R
     else pass(h);
   }
   assert.equal(unitsOf(h, A).length, 1,
-    'A: 5 units − 2 recalled − 2 sacrificed = 1. R221: the sacrifice scales with X, so X=2 is TWO.');
+    'A: 5 units − 2 recalled − 2 sacrificed = 1. The 2026-08-28 owner ruling: the sacrifice scales with X, so X=2 is TWO.');
   assert.equal(unitsOf(h, D).length, 1,
-    'D: 3 units − 2 sacrificed = 1. R221: the opponent scales too — "each player".');
-  ok('Torrential Reclamation', 'amount: the sacrifice scales per ally recalled (R221)');
+    'D: 3 units − 2 sacrificed = 1. The same ruling: the opponent scales too — "each player".');
+  ok('Torrential Reclamation', 'amount: the sacrifice scales per ally recalled (owner ruling, 2026-08-28)');
   finishBattle(h);
 });
 
@@ -854,7 +854,7 @@ test('Plague Bellower: the OPPONENT picks, one of THEIRS, and it takes exactly o
   const t2 = spawn(h, D, VANILLA);
   giveResources(h, A, 'wood', 3);
   // in BATTLE, so both players are present in the region an effect reaches
-  // (R25). During deployment the opponent is in their own region and the
+  // (CR 601.4d). During deployment the opponent is in their own region and the
   // ability finds nobody — an engine-wide presence rule, not this card.
   intoBattle(h, A, [[bellower, mine]]);
   h.do({ type: 'activateAbility', seat: A, entityId: bellower, abilityIndex: 0, via: 'augment' });
@@ -890,7 +890,7 @@ test('Plague Bellower: the OPPONENT picks, one of THEIRS, and it takes exactly o
 test('Hand Peeper: exactly 3 life, any player is targetable, and only I see the hand', () => {
   const { h, A, D } = open(18218);
   const peeper = spawn(h, A, 'Hand Peeper');
-  intoBattle(h, A, [[peeper]]);            // both players present (R25)
+  intoBattle(h, A, [[peeper]]);            // both players present (CR 601.4d)
   h.state.players[D]!.hand = ['Luminous Arc', 'Jelly'];
   h.state.players[A]!.hand = [];
   const lifeBefore = h.state.players[A]!.life;
@@ -909,13 +909,13 @@ test('Hand Peeper: exactly 3 life, any player is targetable, and only I see the 
   ok('Hand Peeper', 'cost: exactly 3 life');
 
   // EFFECT — the ACTIVATOR is shown the hand. `seenHand` is the private
-  // channel a client renders; the log is the public one (R197b), so the look
+  // channel a client renders; the log is the public one (CR D6.5a), so the look
   // is read off the former and the absence of a leak off the latter.
   assert.deepEqual(h.state.seenHand[A]?.cards, ['Luminous Arc', 'Jelly'],
     'the activator is actually shown the cards — "LOOK AT target player\'s hand"');
   ok('Hand Peeper', 'effect: the activator sees the whole hand');
   assert.ok(!h.state.seenHand[D], 'the hand’s owner learns nothing new about mine');
-  // "LOOK AT", not "reveals": the cards must not reach the table (R197b).
+  // "LOOK AT", not "reveals": the cards must not reach the table (CR 402.2a).
   for (const s of [A, D] as Seat[]) {
     assert.deepEqual(logFor(h, s).filter(l => l.includes('Luminous Arc')), [],
       `a LOOK is private — no log line names the hand to seat ${s}`);
@@ -1089,7 +1089,7 @@ test('Stoneborn Progenitor: my unit SURVIVING damage makes one 2/2 — a death m
   finishBattle(h);
 });
 
-test('Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221)', () => {
+test('Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (CR 107.2b)', () => {
   // The same sentence, the other end of it, and the half of the ticket that
   // survived the ruling. "Recall X target nontoken allies. THEN each player
   // sacrifices a unit …" — the sacrifice is not GATED on the recall, so X = 0
@@ -1117,13 +1117,13 @@ test('Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs 
     if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
     else pass(h);
   }
-  assert.equal(unitsOf(h, A).length, 1, 'R221: the sacrifice is not gated on the recall — 2 → 1');
-  assert.equal(unitsOf(h, D).length, 1, 'R221: "EACH player" — the opponent sacrifices at X=0 too, 2 → 1');
+  assert.equal(unitsOf(h, A).length, 1, 'CR 107.2b: the sacrifice is not gated on the recall — 2 → 1');
+  assert.equal(unitsOf(h, D).length, 1, 'CR 107.2b: "EACH player" — the opponent sacrifices at X=0 too, 2 → 1');
   assert.equal(h.state.players[A]!.life, lifeBefore,
     'no ally recalled, no life lost. THIS IS THE ASSERTION THAT SEPARATES THE TWO CLAUSES: the '
     + 'sacrifice is unconditional, the life loss is purely scaled. If a future change makes X=0 '
     + 'cost life, it has collapsed them back together.');
-  ok('Torrential Reclamation', 'timing: the sacrifice clause is not gated on X > 0 (R221)');
+  ok('Torrential Reclamation', 'timing: the sacrifice clause is not gated on X > 0 (CR 107.2b)');
   finishBattle(h);
 });
 
@@ -1325,12 +1325,12 @@ test('Trashling: {Unaware} on its own body, and donated to a host when it is app
   giveResources(h, A, 'metal', 2);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Trashling'), hostId: host });
   assert.ok(ownAttrs(h, host).has('Unaware'),
-    'the [Augment] marker on the type line donates the type line’s attributes (R55/mods.py rule)');
+    'the [Augment] marker on the type line donates the type line’s attributes (CR 721.1b/mods.py rule)');
   ok('Trashling', 'augment: applying it donates {Unaware} to the host');
 });
 
 test('Trashling: the type line’s {Virus} is live — only a Virus may augment a SPELL ON THE STACK', () => {
-  // R79 / Caleb 2025-04-06: "you can augment a spell with a virus, such as
+  // CR 723.4 / Caleb 2025-04-06: "you can augment a spell with a virus, such as
   // applying Chitin Shredder as an augment on Arc Lightning — yes". Asserting
   // `getCard('Trashling').virus` would only prove printed.json agrees with
   // itself, so the flag is checked through the permission it is supposed to buy
@@ -1659,7 +1659,7 @@ test('Shoreline Specter: AFTER COMBAT, an ALLY (never an enemy) is recalled and 
 test('Murkdrop Distiller: a trashed card may be cached, and cached is where it goes', () => {
   const { h, A } = open(18239);
   spawn(h, A, 'Murkdrop Distiller');
-  const gorger = spawn(h, A, 'Pallid Gorger');    // its cost is "Discard a card" — R40: a trash
+  const gorger = spawn(h, A, 'Pallid Gorger');    // its cost is "Discard a card" — CR 801.3: a trash
   h.state.players[A]!.hand = ['Luminous Arc'];
   h.do({ type: 'activateAbility', seat: A, entityId: gorger, abilityIndex: 0, via: 'augment' });
   const cost = h.state.decision!;
@@ -1686,7 +1686,7 @@ test('Murkdrop Distiller: a trashed card may be cached, and cached is where it g
   while (h.state.stack.length && !h.state.decision && guard-- > 0) pass(h);
 
   assert.deepEqual((h.state.players[A]!.cache ?? []).map(c => c.card), ['Luminous Arc'],
-    'the trashed card is in the CACHE (R41), not the bin');
+    'the trashed card is in the CACHE (CR 403.1), not the bin');
   assert.ok(!h.state.players[A]!.bin.includes('Luminous Arc'), '…and not in the bin');
   ok('Murkdrop Distiller', 'effect: the trashed card is cached');
 
@@ -1812,7 +1812,7 @@ test('All-Consuming Blight: a unit TOKEN is one of "your units" — the word is 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'All-Consuming Blight') });
   drain(h);
   assert.equal(tokensOf(h, A).filter(t => t.card === 'Poison').length, 3,
-    '"for each of YOUR UNITS" carries no "nontoken" — 1 real + 2 tokens = 3 (R125)');
+    '"for each of YOUR UNITS" carries no "nontoken" — 1 real + 2 tokens = 3 (CR 304.9)');
   ok('All-Consuming Blight', 'scope: "your units" includes token units');
 });
 
@@ -1896,10 +1896,10 @@ test('Biomass Devourer: DECLINE and nothing happens — no erase, no counters, n
 
 // ── the DONATED path: [Augment] text living on somebody else's body ───────
 
-test('Biomass Devourer as a MOD: "put two +1/+1 counters on ME" means the HOST (R131)', () => {
+test('Biomass Devourer as a MOD: "put two +1/+1 counters on ME" means the HOST (CR 720.6c)', () => {
   // Eleven of the thirty sampled cards carry [Augment] text and this file
   // exercises it on their own bodies, which docs/08 says is live. The DONATED
-  // path is a different resolution of "me" and "you" (R131), so at least one
+  // path is a different resolution of "me" and "you" (CR 720.6c, 720.6b), so at least one
   // card is checked there too.
   const { h, A, D } = open(18252);
   const host = spawn(h, A, VANILLA);                 // 3/3
@@ -1999,7 +1999,7 @@ const OPEN_QUESTIONS = [
 
   'Hand Peeper / Bripp / Thought Extraction — "Look at target PLAYER\'s hand" lets '
   + 'you aim at yourself. Confirmed deliberate for Bripp and Thought Extraction '
-  + '(R197b); assumed the same here. Correct?',
+  + '(CR 402.2a); assumed the same here. Correct?',
 ];
 
 test('THE NUMBER — clauses asserted vs clauses correct, printed for the next round to quote', () => {
@@ -2017,7 +2017,7 @@ test('THE NUMBER — clauses asserted vs clauses correct, printed for the next r
 
   const lines: string[] = [];
   lines.push('');
-  lines.push('══ R212 · CORRECTNESS SAMPLE (docs/13-assessment.md §7.1) ═══════════════');
+  lines.push('══ CORRECTNESS SAMPLE (docs/13-assessment.md §7.1) ═══════════════');
   lines.push(`  sample          : 30 cards drawn from allCardNames() (495) with seed ${SEED}`);
   lines.push(`  cards checked   : ${cards.size} / 30`);
   lines.push(`  clauses asserted: ${total}`);

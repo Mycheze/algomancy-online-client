@@ -3,23 +3,23 @@
  * parallel card registration can't shift assertions; seeds are 2700-2799.
  *
  * Covers: counter-bonus trigger in both forms (Flux Resonator), Glimpse 1
- * (Foretell — R45: the top card is CACHED and playable until end of turn
+ * (Foretell — CR 801.9b, 801.9e: the top card is CACHED and playable until end of turn
  * ignoring affinity, never put into hand), base-4/4 reshaping
- * plus R62 attribute suppression (Formless), a battle-local Robot
+ * plus CR 712.1 attribute suppression (Formless), a battle-local Robot
  * (Hooba-Bot), resolution-paid X + sacrifice costs (Instrument of
  * Reassignment), opponent-chosen negation (Interdiction Rift), stat swapping
  * + card-code Reaping (Invasive Reassignment), linked sacrifices (Linked
  * Extinction), activated [Augment] abilities own AND donated (Living Forge),
- * a Robot 3+2+1 spread at the source's region per R115 (Manufacture — deploy
+ * a Robot 3+2+1 spread at the source's region per CR 601.5 (Manufacture — deploy
  * timing, so that IS home), a battle-timing unit
- * that switches the battle's attribute and ability layers off (Monke, R62),
+ * that switches the battle's attribute and ability layers off (Monke, CR 712.1),
  * type-line augment attrs (Nebula Drifter), an
  * activated graft cause carrying a grafted Foretell (Omniwield Evoker),
  * region-scoped mass sacrifice (Perish), spawn counters + a died-trigger
- * counter move under R31 (Powerforge Synergist), and R63 ability granting
+ * counter move under CR 608.9 (Powerforge Synergist), and CR 109.8 ability granting
  * (Reforge the Dead). Nothing here is parked any more: Flux Constructor's
  * "died-event counter snapshot" turned out to already exist (destroy() stamps
- * `counters` onto the event), so R67 implemented it.
+ * `counters` onto the event), so the target-at-cast round implemented it.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,7 +32,7 @@ import {
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
 
-/** R41: the cache zone — optional field, so read it through here. */
+/** CR 403.1: the cache zone — optional field, so read it through here. */
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
 const homeOf = (h: Harness, seat: number): number =>
@@ -72,14 +72,14 @@ test("Flux Constructor: a dead ally's counters move onto another target unit", (
   const enemy = spawn(h, D, 'Unit Token');
   whiteBox(h, e => e.addCounters(e.entity(donor)!, 3));   // the ally dies holding +3
   whiteBox(h, e => e.destroy(e.entity(donor)!, 'dies'));
-  // R67: the heir is a DECLARED target, asked as the trigger goes on the stack
+  // CR 110.1a: the heir is a DECLARED target, asked as the trigger goes on the stack
   assert.equal(h.state.decision?.kind, 'targets');
   assert.equal(h.state.decision!.seat, A, 'the augment controller chooses');
   // "another target unit" is unqualified, but targeting is REGION-scoped
-  // (R12): in deployment each player sits in their own home region, so the
+  // (CR 601.1b): in deployment each player sits in their own home region, so the
   // enemy is not reachable here — not because it is an enemy.
   assert.ok(!h.state.decision!.options.some(o =>
-    JSON.stringify(o.value) === JSON.stringify({ unit: enemy })), 'another region (R12)');
+    JSON.stringify(o.value) === JSON.stringify({ unit: enemy })), 'another region (CR 601.1b)');
   pick(h, { unit: heir });
   assert.deepEqual(effStats(h, heir), [10, 8], 'the 3 counters landed on the heir');
 });
@@ -125,7 +125,7 @@ test('Flux Resonator: a counter you put on an allied unit becomes one more', () 
   const ally = spawn(h, p, 'Lurking Slimebeast');           // 8/3, trigger-free
   {
     const e = new E(h.state);
-    // R130: `by` is the seat placing them — "by an ALLIED source" is the
+    // CR 708.8b: `by` is the seat placing them — "by an ALLIED source" is the
     // printed clause now, not "onto an allied unit".
     e.addCounters(h.state.entities[ally]!, 1, p);
     e.settle();
@@ -248,7 +248,7 @@ test('Foretell: Glimpse 1 — the top card goes to the CACHE, playable this turn
     'nothing reached hand beyond the copy the test put there');
   assert.equal(h.q.deckOf(A).length, deckLen - 1, 'it left the deck');
   assert.ok(h.state.players[A]!.bin.includes('Foretell'), 'the spell resolved → bin');
-  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn (R45)');
+  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn (CR 801.9e)');
   const mana = h.q.openMana(A);
   assert.ok(h.legal(A).some(a => a.type === 'playCached' && a.index === 0),
     'the cached copy IS offered — glimpse ignores affinity');
@@ -275,7 +275,7 @@ test('Formless: attack trigger — target unit becomes a base 4/4 until regroup'
   assert.deepEqual(effStats(h, big), [8, 3], 'restored at regroup');
 });
 
-test('Formless: R62 — "and loses all attributes", abilities untouched', () => {
+test('Formless: CR 712.1 — "and loses all attributes", abilities untouched', () => {
   const h = new Harness(2722);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -322,7 +322,7 @@ test('Formless: BRDM — "target unit" includes ME, and self-targeting really wo
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[fl]] });
 
-  // R64: a legal target is one you are OFFERED, so the menu is the assertion
+  // CR D1.2a: a legal target is one you are OFFERED, so the menu is the assertion
   assert.ok(offered(h).includes(JSON.stringify({ unit: fl })),
     `Formless must be on its own trigger's menu; it offered [${offered(h)}]`);
   assert.ok(offered(h).includes(JSON.stringify({ unit: them })), 'and so is everyone else');
@@ -346,7 +346,7 @@ test('Hooba-Bot: attack → a Robot 2 joins my formation (battle-local)', () => 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hb]] });
   pass(h); pass(h);                                         // resolve the trigger
-  pick(h, 1);                                               // R75: behind me, not auto-picked
+  pick(h, 1);                                               // CR 602.6: behind me, not auto-picked
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'the Robot joined my column');
   const robot = ent(h, col[1]!)!;
@@ -367,7 +367,7 @@ test('Instrument of Reassignment: [x] + sacrifice another nontoken unit → a Ro
   const slime = spawn(h, p, 'Lurking Slimebeast');
   giveResources(h, p, 'metal', 3);
   h.do({ type: 'activateAbility', seat: p, entityId: inst, abilityIndex: 0, via: 'augment' });
-  // R196: "[x]" is a `payMana` cast cost with xMin 1 — at X = 0 the only
+  // CR 705.3b: "[x]" is a `payMana` cast cost with xMin 1 — at X = 0 the only
   // option is to pay, because the card prints "X can't be 0"
   assert.deepEqual(offered(h), ['{"payMana1":true}'], "X can't be 0 — no way to stop at zero");
   pick(h, { payMana1: true });
@@ -380,7 +380,7 @@ test('Instrument of Reassignment: [x] + sacrifice another nontoken unit → a Ro
   const robot = unitsOf(h, p).find(u => u.card === 'Robot')!;
   assert.ok(robot, 'a Robot was created');
   assert.equal(robot.counters, 2, 'a Robot X = 2');
-  assert.equal(robot.region, homeOf(h, p), 'created at ctx.region — the carrier is at home here (R115)');
+  assert.equal(robot.region, homeOf(h, p), 'created at ctx.region — the carrier is at home here (CR 601.5)');
   assert.equal(h.state.players[p]!.resources.filter(r => r.state === 'open').length, 1, 'X = 2 was paid');
 });
 
@@ -413,7 +413,7 @@ test('Interdiction Rift: target opponent negates an effect they control', () => 
   pick(h, { player: D });                                   // target opponent
   pass(h); pass(h);                                         // resolve the Rift
   // D controls exactly one effect → it is negated without a choice
-  assert.equal(h.state.stack.length, 0, 'R68: the only effect D controls is negated and off the stack');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the only effect D controls is negated and off the stack');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, tok), [1, 1], 'the token was never shrunk');
   finishBattle(h);
@@ -470,11 +470,11 @@ test('Linked Extinction: you sacrifice a unit; each opponent here sacrifices one
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Linked Extinction') });
-  // cast cost (R35): paid BEFORE the stack push, region-scoped — the home
+  // cast cost (CR 111.3): paid BEFORE the stack push, region-scoped — the home
   // Slimebeast (a2) is not in the battle region and cannot pay
   assert.equal(h.state.decision!.seat, A, 'the caster pays the sacrifice cost at cast');
   assert.ok(!h.state.decision!.options.some(o => JSON.stringify(o.value) === JSON.stringify({ unit: a2 })),
-    'home units are outside the battle region — not offered as the cost (R35)');
+    'home units are outside the battle region — not offered as the cost (CR 111.3)');
   pick(h, { unit: a1 });                                    // pay with the attacker
   assert.ok(!ent(h, a1), 'the cost was paid at cast');
   pass(h); pass(h);                                         // resolve
@@ -498,7 +498,7 @@ test('Living Forge: [three]: create a Robot 2 (own [Augment] text, played normal
   const robots = unitsOf(h, p).filter(u => u.card === 'Robot');
   assert.equal(robots.length, 1, 'one Robot created');
   assert.equal(robots[0]!.counters, 2, 'a Robot 2');
-  assert.equal(robots[0]!.region, homeOf(h, p), 'at ctx.region — the carrier is at home here (R115)');
+  assert.equal(robots[0]!.region, homeOf(h, p), 'at ctx.region — the carrier is at home here (CR 601.5)');
   assert.equal(h.state.players[p]!.resources.filter(r => r.state === 'open').length, 0, '[three] paid');
 });
 
@@ -519,7 +519,7 @@ test('Living Forge: donated on a host, the [three] ability activates via the mod
 
 // ── Manufacture ──────────────────────────────────────────────────────────
 
-test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at the source\'s region (R115)', () => {
+test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at the source\'s region (CR 601.5)', () => {
   const h = new Harness(2714);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -527,7 +527,7 @@ test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at the source\'s r
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Manufacture') });
   const robots = unitsOf(h, p).filter(u => u.card === 'Robot');
   assert.deepEqual(robots.map(r => r.counters).sort(), [1, 2, 3], 'a 3, a 2 and a 1');
-  assert.ok(robots.every(r => r.region === homeOf(h, p)), 'all at ctx.region — home, since this is a deploy-timing spell (R115)');
+  assert.ok(robots.every(r => r.region === homeOf(h, p)), 'all at ctx.region — home, since this is a deploy-timing spell (CR 601.5)');
   assert.ok(robots.every(r => r.token), 'tokens');
   assert.ok(h.state.players[p]!.bin.includes('Manufacture'), 'the spell → bin');
 });
@@ -551,7 +551,7 @@ test('Monke: plays as a battle-timing 1/1 into the battle', () => {
   finishBattle(h);
 });
 
-test('Monke: R62 — other units lose all attributes and abilities during battle', () => {
+test('Monke: CR 712.1 — other units lose all attributes and abilities during battle', () => {
   const h = new Harness(2723);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -623,7 +623,7 @@ test('Omniwield Evoker: [three] puts a counter on me; a grafted Foretell rides t
   assert.equal(ent(h, ev)!.counters, 1, 'a +1/+1 counter on me');
   assert.deepEqual(effStats(h, ev), [3, 2]);
   assert.deepEqual(cacheOf(h, p).map(c => c.card), [top],
-    'the grafted Foretell Glimpsed the top card into the cache (R45), not into hand');
+    'the grafted Foretell Glimpsed the top card into the cache (CR 801.9b), not into hand');
   assert.ok(!h.state.players[p]!.hand.includes(top), 'and it is NOT in hand');
   assert.equal(h.q.cachePermission(p, 0), 'glimpse');
   assert.equal(h.state.players[p]!.resources.filter(r => r.state === 'open').length, 0, '1 + 3 paid');
@@ -660,7 +660,7 @@ test('Perish: each player here sacrifices half of their units, rounded up', () =
 });
 
 test("Perish: every player's half is measured at RESOLUTION, before anyone sacrifices", () => {
-  // Found 2026-08-25 by the divergence sweep. R1: "amounts are computed at
+  // Found 2026-08-25 by the divergence sweep. The ruling (now CR 107.8): "amounts are computed at
   // resolution" — and Perish resolves ONCE, so each player's half is the half
   // they had at that single moment. The count used to be recomputed as each
   // seat's picks began, CASTER FIRST, so anything that shrank the opponent's
@@ -680,7 +680,7 @@ test("Perish: every player's half is measured at RESOLUTION, before anyone sacri
   spawn(h, D, 'Unit Token');
   spawn(h, D, 'Unit Token');
   const d3 = spawn(h, D, 'Unit Token');
-  // R25: a HOME region lists only its owner in presentSeats, so "each player"
+  // CR 601.4d: a HOME region lists only its owner in presentSeats, so "each player"
   // reaches nobody else outside battle. Both seats have to actually be present
   // for this test to be about what it says it is about.
   giveResources(h, A, 'metal', 4);
@@ -732,7 +732,7 @@ test('Powerforge Synergist: spawns with two +1/+1 counters (0/0 base → 2/2)', 
   assert.deepEqual(effStats(h, pf), [2, 2]);
 });
 
-test('Powerforge Synergist: dies in combat → move my counters onto target unit (R31)', () => {
+test('Powerforge Synergist: dies in combat → move my counters onto target unit (CR 608.9)', () => {
   const h = new Harness(2720);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -744,7 +744,7 @@ test('Powerforge Synergist: dies in combat → move my counters onto target unit
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
   pass(h); pass(h);                                         // combat: the Synergist dies
-  // R31 still fires the died trigger in combat rather than at regroup. R261
+  // CR 608.9 still fires the died trigger in combat rather than at regroup. Stacking after combat (CR 608.9b)
   // changed only WHERE it resolves: it is stacked in the after-combat window,
   // aiming as it goes on the stack (which is why the pick below did not move)
   // and paying out when the stack drains.
@@ -760,7 +760,7 @@ test('Powerforge Synergist: dies in combat → move my counters onto target unit
 
 // ── Reforge the Dead ─────────────────────────────────────────────────────
 
-test('Reforge the Dead: R63 — your units gain "When I die, create a Robot 3."', () => {
+test('Reforge the Dead: CR 109.8 — your units gain "When I die, create a Robot 3."', () => {
   const h = new Harness(2721);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -820,7 +820,7 @@ test('Hooba-Bot: one attack trigger makes exactly ONE Robot (report #90)', () =>
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hb]] });
   pass(h); pass(h);                                         // resolve the trigger
-  pick(h, 1);                                               // R75: the slot is chosen, not auto-picked
+  pick(h, 1);                                               // CR 602.6: the slot is chosen, not auto-picked
   const robots = unitsOf(h, A).filter(u => u.card === 'Robot');
   assert.equal(robots.length, 1,
     'exactly one Robot per trigger — the trigger fired once and created once');
@@ -829,9 +829,9 @@ test('Hooba-Bot: one attack trigger makes exactly ONE Robot (report #90)', () =>
 
 // The owner solved #90 himself the next day: "Hooba bot actually wasn't a
 // bug. There was an Automaton of Abundance in play." One trigger, one
-// creation batch of one Robot 2 — and R104's batch replacement adds a copy of
+// creation batch of one Robot 2 — and CR 708.9's batch replacement adds a copy of
 // each unique token created. This pins the exact reported board — and its
-// R12 nuance: the batch hook anchors by REGION (settleTokenBatch filters
+// CR 601.1d nuance: the batch hook anchors by REGION (settleTokenBatch filters
 // `a.region === batch[0].region`), the robot spawns in the BATTLE region, so
 // the Automaton only copies when it came along to the battle. It did (first
 // draft of this test left it at home and correctly got ONE robot).
@@ -844,7 +844,7 @@ test('Hooba-Bot + Automaton of Abundance: the reported two robots, by design (re
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hb, aoa]] });
   pass(h); pass(h);                                         // resolve the trigger
-  pick(h, 1);                                               // R75: the original's slot is chosen
+  pick(h, 1);                                               // CR 602.6: the original's slot is chosen
   const robots = unitsOf(h, A).filter(u => u.card === 'Robot');
   assert.equal(robots.length, 2, 'ONE trigger, TWO robots — the Automaton copies the batch');
   assert.ok(robots.every(r => r.counters === 2), 'both are Robot 2s (the copy mirrors the original)');

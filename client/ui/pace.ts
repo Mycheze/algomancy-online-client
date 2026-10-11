@@ -1,4 +1,4 @@
-/* R150 / CT-28: HOW FAST THE TABLE IS ALLOWED TO MOVE.
+/* CR D5.4 / CT-28: HOW FAST THE TABLE IS ALLOWED TO MOVE.
  *
  * Playtest #94 (SMVJ): *"We need a 'max speed' that the gamestate can
  * resolve/put things onto the stack. When someone has auto pass on and has
@@ -56,7 +56,7 @@ export const PACE_MS = 1000;
  * slightly faster."* Nine copies of one trigger tell the story once; the
  * second to ninth are the same sentence again.
  *
- * Derived from PACE_MS rather than typed, for R242's reason: one tempo, and
+ * Derived from PACE_MS rather than typed, for CR D5.4's reason: one tempo, and
  * this is a fraction of it. Used at the three places the client spaces a
  * resolution — between flashed items (ui/flash.ts queueFlashes), between held
  * updates (`pace` below) and before an automatic pass (ui/main.ts
@@ -290,7 +290,7 @@ export function paceSequence<T>(
  *
  * A stop is a queued item that the clock never lets out (`paceDue` and
  * `paceWake` both halt at it). Everything behind it stays queued behind it —
- * an arrival included (`paceBehind`), so the R150 exemption above still holds
+ * an arrival included (`paceBehind`), so the CR D5.4b exemption above still holds
  * while the player sits on a stop.
  */
 

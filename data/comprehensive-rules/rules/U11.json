@@ -31,8 +31,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -40,6 +39,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.20 ATTACKING paragraph; Rulebook 2023 p.9 says the same.",
     "sourceHashes": {}
@@ -67,14 +67,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual's note continues 'directed by a spell (such as Battle above)'; the card name is left out of the rule text.",
     "sourceHashes": {}
@@ -116,13 +116,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -131,11 +131,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Free-for-all attacking (intent cards, Rulebook 2023 p.9) is left to section 903/905 (unit U22).",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.declaring",
@@ -164,14 +163,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "How a formation is built (front row first, two rows) is section 602 (unit U10). Rulebook 2023 p.9 citation dropped in round 1: it is about entering the region, not about setting the formation.",
     "sourceHashes": {}
@@ -199,14 +198,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual note presupposes the initiative player may decide not to attack.",
     "sourceHashes": {}
@@ -239,14 +238,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Q&A is about units that spawn during battle. Read literally ('as long as a unit is in play, it can attack') it would also let any unit attack in the second battle round; the round-2 pool rule (combat.attack.declaring.round-two) is the more specific printed rule. See D-U11-8.",
     "sourceHashes": {}
@@ -259,7 +258,7 @@
     "examples": [
       {
         "text": "A player sending a counterattack names a Poison token and no unit when declaring blocks. The declaration is refused.",
-        "test": "78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in"
+        "test": "78-round17-core.test.ts::CR 604.2c: spell tokens still travel only with units, and only from the region they stand in"
       },
       {
         "text": "A player declares an attack naming a Poison token and no unit. The Poison does not go: with no unit, the declaration is no attack at all.",
@@ -287,17 +286,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R87",
-          "quote": "Spell tokens travel with a formation, in either direction, and they need a"
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R87",
-          "quote": "a spell token you control, standing in the region this formation"
+          "quote": "a spell token you control, standing in the region this formation",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
@@ -305,11 +305,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Printed text gives the 'needs a unit' half; R87 gives 'you control' and 'in the region the formation leaves from'. Round 1: the engine takes an ATTACK naming only spell tokens as declining to attack (the token stays home), where a counterattack naming only tokens is refused; measured by the verifier's probe. See D-U11-10.",
-    "sourceHashes": {
-      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
-    }
+    "notes": "Printed text gives the 'needs a unit' half; the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) gives 'you control' and 'in the region the formation leaves from'. Round 1: the engine takes an ATTACK naming only spell tokens as declining to attack (the token stays home), where a counterattack naming only tokens is refused; measured by the verifier's probe. See D-U11-10.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.declaring.tokens-irreversible",
@@ -334,14 +333,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -354,11 +353,11 @@
     "examples": [
       {
         "text": "An Alluring attacker targets a defending unit. That unit cannot be sent out to counterattack when blocks are declared.",
-        "test": "53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack"
+        "test": "53-playtest-round7.test.ts::CR 604.2e: a lured unit cannot be sent out to counterattack"
       },
       {
         "text": null,
-        "test": "53-playtest-round7.test.ts::R84: a lured unit may not be declared as an attacker (a guard, by hand)"
+        "test": "53-playtest-round7.test.ts::CR 604.2e: a lured unit may not be declared as an attacker (a guard, by hand)"
       }
     ],
     "see": [
@@ -369,16 +368,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "may not be sent out as a counterattacker, and may not be declared as an"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R76",
-          "relation": "its Alluring rule was replaced by R84"
+          "quote": "may not be sent out as a counterattacker, and may not be declared as an",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -387,11 +381,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R84 rests on Caleb's Discord words ('It won't be able to counter-attack into your region'), which are not in a RAQ thread in the register, so the basis is the ruling. R84 notes the 'may not be declared as an attacker' half is unreachable on its own in 1v1, because the round-2 pool is the sent units.",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) rests on Caleb's Discord words ('It won't be able to counter-attack into your region'), which are not in a RAQ thread in the register, so the basis is the ruling. The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) notes the 'may not be declared as an attacker' half is unreachable on its own in 1v1, because the round-2 pool is the sent units.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.declaring.round-two",
@@ -417,13 +410,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -431,11 +424,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R15 is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units').",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units').",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.effects",
@@ -469,14 +461,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -489,7 +481,7 @@
     "examples": [
       {
         "text": "After an attack, both players are present in the battle region, so each sees every death in it.",
-        "test": "314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region, so both seats see every death in it"
+        "test": "314-prophecy-units-die.test.ts::CR 803.7m: combat puts the attacker in the region, so both seats see every death in it"
       }
     ],
     "see": [
@@ -508,14 +500,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "314-prophecy-units-die.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -552,14 +544,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A unit put INTO the formation by an effect (Hooba-Bot's Robot, Tiderunner Initiate) is in formation; whether it then counts as having attacked for 'when I attack' triggers is not stated by any source.",
     "sourceHashes": {}
@@ -593,13 +585,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "It goes on the stack and can be negated."
+          "quote": "It goes on the stack and can be negated.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -608,11 +600,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Printed cards say 'When I attack'; R84 says the Alluring trigger goes on the stack and can be negated. That every attack trigger is on the stack when the attack window opens is generalised from Alluring and from the tests; no source states it for all of them. See D-U11-9.",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "Printed cards say 'When I attack'; the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) says the Alluring trigger goes on the stack and can be negated. That every attack trigger is on the stack when the attack window opens is generalised from Alluring and from the tests; no source states it for all of them. See D-U11-9.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.effects.alone",
@@ -622,7 +613,7 @@
     "examples": [
       {
         "text": "Whispering Mantid (Sneaky) attacking by itself cannot be blocked; attacking beside another unit, it can.",
-        "test": "08-cards2.test.ts::Whispering Mantid: Sneaky — unblockable only when attacking alone (R20)"
+        "test": "08-cards2.test.ts::Whispering Mantid: Sneaky — unblockable only when attacking alone (CR 802.14)"
       }
     ],
     "see": [
@@ -637,24 +628,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R20",
-          "quote": "(spell tokens riding along don't count as company)"
+          "quote": "(spell tokens riding along don't count as company)",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R20 defines 'attacking alone' for Sneaky (assigned to U20). Applying the same definition to Surly Stalker's 'attack ... alone' is my reading; no source says so for that card.",
-    "sourceHashes": {
-      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”) defines 'attacking alone' for Sneaky (assigned to U20). Applying the same definition to Surly Stalker's 'attack ... alone' is my reading; no source says so for that card.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.decline",
@@ -680,29 +670,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R194",
-          "quote": "A declined attack fights no combat, so there is no"
+          "quote": "A declined attack fights no combat, so there is no",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R15",
-          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "165-token-loss-warning.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Printed text skips combat and after combat in a region that was not attacked; that the attack window and block window are skipped too is R194/R15 (owner calls). See D-U11-1. 'No combat', not 'no battle': the engine still counts a declined round as a completed battle for 'One Battle Passes'. See D-U11-11.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c",
-      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
-    }
+    "notes": "Printed text skips combat and after combat in a region that was not attacked; that the attack window and block window are skipped too is the owner rulings of 2026-08-26 (“a warning is not worth a…”) and 2026-08-18 (“Round-2 attackers when round 1 had…”) (owner calls). See D-U11-1. 'No combat', not 'no battle': the engine still counts a declined round as a completed battle for 'One Battle Passes'. See D-U11-11.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack.decline.next-round",
@@ -727,13 +716,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -742,11 +731,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "RAQ 1353986897902567424#2 says the same, but its thread is still open ([Considered]), so it is not cited as a designer source. See D-U11-4.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack-window.general",
@@ -779,14 +767,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "425-cr-casting-and-stack.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -818,8 +806,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "425-cr-casting-and-stack.test.ts",
@@ -827,6 +814,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Rulebook example has the attacking player A as the initiative player. In the second round the initiative player is the defender; the Manual's rule (initiative first) still applies, since the initiative player is present in its own region.",
     "sourceHashes": {}
@@ -855,14 +843,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "425-cr-casting-and-stack.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -875,7 +863,7 @@
     "examples": [
       {
         "text": "The middle column of a three-column attack is killed in the block step, before blocks are declared. The right-hand column slides left into the gap, and the attack is two columns wide.",
-        "test": "64-formation-collapse.test.ts::R72: a middle column emptied before blocks collapses"
+        "test": "64-formation-collapse.test.ts::CR 602.5: a middle column emptied before blocks collapses"
       }
     ],
     "see": [
@@ -895,13 +883,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 its gravity half",
-          "quote": "the line closes ranks only before blocks"
+          "quote": "the line closes ranks only before blocks",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts",
@@ -909,11 +897,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The full gravity rule is 602 (unit U10). R72 is partly superseded only in its side-block note. The bound test kills the column in the block step before the declaration; the verifier's probe (data/comprehensive-rules/build/probes/U11/u11-probes.test.ts) showed the same closing-up for a column killed in the attack window.",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "notes": "The full gravity rule is 602 (unit U10). The owner ruling of 2026-08-22 (“Formation gravity: the back row always…”) is partly superseded only in its side-block note. The bound test kills the column in the block step before the declaration; the verifier's probe (data/comprehensive-rules/build/probes/U11/u11-probes.test.ts) showed the same closing-up for a column killed in the attack window.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.attack-window.general.still-present",
@@ -943,14 +930,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -987,14 +974,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.11 says the same.",
     "sourceHashes": {}
@@ -1026,14 +1013,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1046,7 +1033,7 @@
     "examples": [
       {
         "text": "Against a three-column attack, the defending player blocks only the third column. The first two columns are unblocked, and the attack stays three columns wide.",
-        "test": "66-formation-placement.test.ts::R75: a blocking formation may legitimately have EMPTY columns"
+        "test": "66-formation-placement.test.ts::CR 602.5d: a blocking formation may legitimately have EMPTY columns"
       }
     ],
     "see": [
@@ -1065,8 +1052,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
@@ -1074,6 +1060,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "'Never closed up' is the test's title ('never repaired'); the Manual's closing-up rule speaks of a column whose last unit is removed, which an empty blocking column never had.",
     "sourceHashes": {}
@@ -1099,14 +1086,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "'may place' — blocking is a choice, subject to any compulsion such as Alluring (combat.blocks.who.lured).",
     "sourceHashes": {}
@@ -1139,14 +1126,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The late-blocker rule is combat.block-window.late-blocker.",
     "sourceHashes": {}
@@ -1174,8 +1161,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [
         "apply.ts:checkBlocks"
       ],
@@ -1184,6 +1170,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The printed text gives 'a unit placed in front of an attacking column blocks that column'. That a unit may block in ONE column only is the engine's (apply.ts:checkBlocks, 'a unit can only block in one column', per the round-1 verifier); no source says it in words. See D-U11-7.",
     "sourceHashes": {}
@@ -1196,7 +1183,7 @@
     "examples": [
       {
         "text": "A unit created in the enemy region during the first round's attack is not in its controller's region when the counterattack arrives, so it cannot block it.",
-        "test": "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
+        "test": "98-spawn-region.test.ts::CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
       }
     ],
     "see": [
@@ -1211,24 +1198,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "is a property of the unit and that column only** — region, controller,"
+          "quote": "is a property of the unit and that column only** — region, controller,",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "98-spawn-region.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The Manual says the attacked player places 'units'; 'controls' and 'in the battle region' come from R84's list of what 'able' depends on (region, controller, still in play) and from the region rule (601: effects never reach another region).",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The Manual says the attacked player places 'units'; 'controls' and 'in the battle region' come from the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”)’s list of what 'able' depends on (region, controller, still in play) and from the region rule (601: effects never reach another region).",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.who.recent",
@@ -1253,14 +1239,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1273,7 +1259,7 @@
     "examples": [
       {
         "text": "An Alluring column lures a defending unit. The defending player cannot excuse it by putting it on another column instead; it is still able to block the Alluring column, so it must.",
-        "test": "53-playtest-round7.test.ts::R84 UFAB: an Alluring column may not be side-stepped by blocking the OTHERS"
+        "test": "53-playtest-round7.test.ts::CR 606.2b UFAB: an Alluring column may not be side-stepped by blocking the OTHERS"
       }
     ],
     "see": [
@@ -1283,28 +1269,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "\"Able\" is a property of the unit and that column only"
+          "quote": "\"Able\" is a property of the unit and that column only",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "depends on what the defender chose to do with that unit elsewhere."
+          "quote": "depends on what the defender chose to do with that unit elsewhere.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R84's 'Two duties on one unit' paragraph is the only exception, an owner call (Bena 2026-08-22); its detail belongs to 802.15 (unit U20).",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”)’s 'Two duties on one unit' paragraph is the only exception, an owner call (Bena 2026-08-22); its detail belongs to 802.15 (unit U20).",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.who.attributes",
@@ -1350,13 +1336,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "still in play, {Feeble}, {Flying}, lone-{Sneaky}, {Evasive}, {Pure}."
+          "quote": "still in play, {Feeble}, {Flying}, lone-{Sneaky}, {Evasive}, {Pure}.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
@@ -1365,11 +1351,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A pointer rule; each attribute's own rule is in 802 (units U19/U20).",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.who.not-sent",
@@ -1399,14 +1384,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "'Cannot also block' is inferred from 'leave the region and are treated as if they don't exist'; no source says it in words.",
     "sourceHashes": {}
@@ -1419,7 +1404,7 @@
     "examples": [
       {
         "text": "An Alluring column lures unit A. The defending player tries to block that column with unit B instead. The declaration is refused.",
-        "test": "53-playtest-round7.test.ts::R84: a substitute is not good enough — the lured unit must be in the column"
+        "test": "53-playtest-round7.test.ts::CR 606.2e: a substitute is not good enough — the lured unit must be in the column"
       },
       {
         "text": "The Alluring column is also Evasive and the defending player has only the lured unit. It cannot block an Evasive column alone, so it need not block it, and may block another column.",
@@ -1443,16 +1428,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "If `blocks[ci]` is non-empty, `A` must be one of its members."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R76",
-          "relation": "its Alluring rule ('defenders that are able to block it must block it') was replaced by R84"
+          "quote": "If `blocks[ci]` is non-empty, `A` must be one of its members.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1462,10 +1442,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The detail of Alluring (one target per column, Evasive, two duties) belongs to 802.15 (unit U20).",
     "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
       "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8",
       "RAQ 1460216519731577027#2": "d7698cffd19e07f01e242174c16a8c42a56a6e360df249219dc77b641e0d1bee"
     }
@@ -1502,14 +1482,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The RAQ answer '1.) yes' confirms a column with a declared blocker is blocked.",
     "sourceHashes": {
@@ -1524,11 +1504,11 @@
     "examples": [
       {
         "text": "The only blocker dies in the block window. The vanilla attacker's column is still blocked and deals no damage to the defending player.",
-        "test": "157-blocked-stays-blocked.test.ts::R185: a blocker that DIES leaves the column blocked"
+        "test": "157-blocked-stays-blocked.test.ts::CR 606.3a: a blocker that DIES leaves the column blocked"
       },
       {
         "text": "The only blocker is stolen by Download mid-combat. The column is still blocked.",
-        "test": "157-blocked-stays-blocked.test.ts::R185: a blocker STOLEN mid-combat (Download) leaves the column blocked"
+        "test": "157-blocked-stays-blocked.test.ts::CR 606.3a: a blocker STOLEN mid-combat (Download) leaves the column blocked"
       }
     ],
     "see": [
@@ -1553,17 +1533,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R185",
-          "quote": "the column stays blocked."
+          "quote": "the column stays blocked.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R185",
-          "quote": "it DIES, it is RECALLED,"
+          "quote": "it DIES, it is RECALLED,",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "157-blocked-stays-blocked.test.ts",
@@ -1571,10 +1552,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R185 lists the four routes (dies, recalled, erased, stolen) and calls it the owner's answer; the Manual and the RAQ answer ('2.) yes') already state it. R13's conclusion says the same and stands; only its reason was corrected by R319.",
+    "notes": "The owner ruling of 2026-08-25 (“a blocked column stays blocked, however…”) lists the four routes (dies, recalled, erased, stolen) and calls it the owner's answer; the Manual and the RAQ answer ('2.) yes') already state it. The owner ruling of 2026-08-18 (“Piercing through a fully-dead blocked column […]”)’s conclusion says the same and stands; only its reason was corrected by the owner ruling of 2026-10-09 (“{Piercing} is elective in combat […]”).",
     "sourceHashes": {
-      "R185": "a2baa6ebf7628aa9c8a0d6542c2ed9993d9d44ba4ad0db5d8e342b3e7135306d",
       "RAQ 1366447016653361192#0": "05620a5837cacb4b273019696423e12208483f1a8d94503ce4ad383e93009888"
     }
   },
@@ -1602,14 +1583,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A pointer; the damage rules are 608 (unit U12).",
     "sourceHashes": {}
@@ -1622,7 +1603,7 @@
     "examples": [
       {
         "text": "One unit attacks. The defending player places two units to the side of it, each in its own column, and leaves the attacker unblocked.",
-        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+        "test": "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is"
       }
     ],
     "see": [
@@ -1642,16 +1623,11 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "Side-blocks: a defender may block where no attacker is"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R72",
-          "relation": "its note that a blocker may not be assigned where no attacker is was replaced by R321"
+          "quote": "Side-blocks: a defender may block where no attacker is",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1661,11 +1637,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "'Side-block' is R321's term (and the RAQ's), not printed.",
-    "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
-    }
+    "notes": "'Side-block' is the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s term (and the RAQ's), not printed.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.side.either-side",
@@ -1675,7 +1650,7 @@
     "examples": [
       {
         "text": "A unit side-blocks to the left of a one-column attack. A new column opens before the attacking column, and the attacking column is still unblocked.",
-        "test": "400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1"
+        "test": "400-raq-fix-blocks.test.ts::CR 606.4a a side-block on the left opens a column before column 1"
       }
     ],
     "see": [],
@@ -1683,24 +1658,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "Side-blocks may stand to either side of the attack."
+          "quote": "Side-blocks may stand to either side of the attack.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The Manual's 'slots where attackers aren't' puts no side on it; R321 takes the permissive reading.",
-    "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
-    }
+    "notes": "The Manual's 'slots where attackers aren't' puts no side on it; the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”) takes the permissive reading.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.side.any-number",
@@ -1710,7 +1684,7 @@
     "examples": [
       {
         "text": "Two units side-block beside a one-column attack; each makes its own side-blocking column.",
-        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+        "test": "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is"
       }
     ],
     "see": [],
@@ -1723,23 +1697,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "of units may side-block, each as its own column"
+          "quote": "of units may side-block, each as its own column",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Round 1: the register's claim summary was removed as a quote; Caleb's words are 'Yep you should be able to'.",
     "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
       "RAQ 1366447016653361192#3": "124742aaacf8865f4c690dbb58502525babe350889ba1b3e13c54d6e324965e6"
     }
   },
@@ -1751,7 +1725,7 @@
     "examples": [
       {
         "text": "Against a one-column attack, a single side-block may stand right beside the attack on either side, but not three columns out.",
-        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks reach no further out than the declaration is wide"
+        "test": "400-raq-fix-blocks.test.ts::CR 606.4c side-blocks reach no further out than the declaration is wide"
       }
     ],
     "see": [],
@@ -1759,28 +1733,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "reach no further out than it has blocking columns"
+          "quote": "reach no further out than it has blocking columns",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R321",
-          "quote": "so a single side-block stands next to the line"
+          "quote": "so a single side-block stands next to the line",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R321 states this under 'How it is encoded'; no printed or designer source limits where a side-block may stand. See D-U11-2.",
-    "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”) states this under 'How it is encoded'; no printed or designer source limits where a side-block may stand. See D-U11-2.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.side.counts-as-blocked",
@@ -1790,7 +1764,7 @@
     "examples": [
       {
         "text": "Roving Quillback attacks alone and two units side-block beside it. Quillback deals 1 damage to the defending player for each blocked column: 2, for the two side-blocking columns.",
-        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+        "test": "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is"
       }
     ],
     "see": [],
@@ -1807,23 +1781,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "A side-blocking column counts as **blocked**"
+          "quote": "A side-blocking column counts as **blocked**",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
       "RAQ 1366447016653361192#2": "5b05603d2f9ed0a5d5beb73ade78f1a37809fe0abf3a6e3bd6deea3db7c83a8a"
     }
   },
@@ -1847,28 +1821,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it"
+          "quote": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R321",
-          "quote": "answers no {Flying} or {Evasive} rule."
+          "quote": "answers no {Flying} or {Evasive} rule.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R321's 'answers no {Flying} or {Evasive} rule' is read here as: a side-block is neither restricted by those rules nor counts towards satisfying them. Whether a side-block is allowed at all beside a lone Sneaky attacker is my reading of 'does not count as blocking'.",
-    "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s 'answers no {Flying} or {Evasive} rule' is read here as: a side-block is neither restricted by those rules nor counts towards satisfying them. Whether a side-block is allowed at all beside a lone Sneaky attacker is my reading of 'does not count as blocking'.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.side.no-damage",
@@ -1878,7 +1852,7 @@
     "examples": [
       {
         "text": "A 5/5 Piercing unit side-blocks. It deals no combat damage to the attacking player.",
-        "test": "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player"
+        "test": "400-raq-fix-blocks.test.ts::CR 606.4f a Piercing side-blocker deals no combat damage to the attacking player"
       }
     ],
     "see": [
@@ -1894,23 +1868,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "A side-block deals **no combat damage**, Piercing included"
+          "quote": "A side-block deals **no combat damage**, Piercing included",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "A pointer; the damage rule is 608 (unit U12).",
     "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
       "RAQ 1365594171867664445#2": "bd777f7785251cf1029a2d7f5ba322510404ca15361576cb748a4deb7f88b3e3"
     }
   },
@@ -1941,14 +1915,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The Manual gives adjacency as the reason to side-block, which presupposes side-blockers are adjacent to their neighbours; it does not say so in words.",
     "sourceHashes": {}
@@ -1984,14 +1958,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2004,7 +1978,7 @@
     "examples": [
       {
         "text": "The defending player sends a unit to counterattack and names a Poison token to go with it. The token leaves with the unit and arrives with it for round 2.",
-        "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens"
+        "test": "78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens"
       }
     ],
     "see": [
@@ -2015,24 +1989,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R87",
-          "quote": "Spell tokens travel with a formation, in either direction, and they need a"
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R87 quotes Caleb ('or you can bring them into enemy regions during an attack') and _passer from Discord, outside the RAQ register, so the basis is the ruling.",
-    "sourceHashes": {
-      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes Caleb ('or you can bring them into enemy regions during an attack') and _passer from Discord, outside the RAQ register, so the basis is the ruling.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.counterattack.second-round",
@@ -2061,14 +2034,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2101,13 +2074,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "the declaration fires those"
+          "quote": "the declaration fires those",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "182-correctness-sample.test.ts",
@@ -2115,11 +2088,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The printed cards give the trigger; that it fires at the declaration is R322's 'the declaration fires those' (said of the 'blocked' event) and the tests. When it reaches the stack relative to the block window is not stated by any source. See D-U11-9.",
-    "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
-    }
+    "notes": "The printed cards give the trigger; that it fires at the declaration is the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s 'the declaration fires those' (said of the 'blocked' event) and the tests. When it reaches the stack relative to the block window is not stated by any source. See D-U11-9.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.empty-attack",
@@ -2129,7 +2101,7 @@
     "examples": [
       {
         "text": "The only attacker is destroyed before blocks and the attack collapses to nothing. The defending player declares no blocks, and the block window follows.",
-        "test": "53-playtest-round7.test.ts::R84: an attack that has collapsed to nothing still lets the defender declare"
+        "test": "53-playtest-round7.test.ts::CR 606.2f: an attack that has collapsed to nothing still lets the defender declare"
       }
     ],
     "see": [
@@ -2139,14 +2111,14 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "engine",
+    "scope": "game",
     "confidence": "medium",
     "notes": "ENGINE-ONLY: only the test states this. Printed text says the attacking player stays present after its units are removed (Manual p.19) but not whether the block step still happens. See D-U11-6.",
     "sourceHashes": {}
@@ -2182,14 +2154,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2221,14 +2193,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2241,7 +2213,7 @@
     "examples": [
       {
         "text": "After blocks, the middle attacking column dies. It stays as a hole, and the columns beside it do not move.",
-        "test": "64-formation-collapse.test.ts::R72 (Manual): after blocks are declared, an emptied column stays as a HOLE"
+        "test": "64-formation-collapse.test.ts::CR 602.5a (Manual): after blocks are declared, an emptied column stays as a HOLE"
       }
     ],
     "see": [
@@ -2257,24 +2229,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 its gravity half",
-          "quote": "the line closes ranks only before blocks"
+          "quote": "the line closes ranks only before blocks",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A pointer; the gravity rule is 602 (unit U10).",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.block-window.general.promotion",
@@ -2284,7 +2255,7 @@
     "examples": [
       {
         "text": "After blocks, the front unit of a column dies; the unit behind it moves to the front.",
-        "test": "64-formation-collapse.test.ts::R72 (Manual): the back row promotes AFTER blocks too"
+        "test": "64-formation-collapse.test.ts::CR 602.4 (Manual): the back row promotes AFTER blocks too"
       }
     ],
     "see": [
@@ -2299,16 +2270,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The Manual sentence has no timing qualifier; R72 reads it as untimed.",
+    "notes": "The Manual sentence has no timing qualifier; the owner ruling of 2026-08-22 (“Formation gravity: the back row always…”) reads it as untimed.",
     "sourceHashes": {}
   },
   {
@@ -2319,7 +2290,7 @@
     "examples": [
       {
         "text": "The defending player declares no blocks, then plays Tiderunner Initiate in front of the unblocked attacker. The attacker deals its damage to the Tiderunner, not to the player.",
-        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+        "test": "400-raq-fix-blocks.test.ts::CR 608.4d a Tiderunner put in front of an unblocked attacker fights it"
       }
     ],
     "see": [
@@ -2340,13 +2311,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "A blocker put in after blocks may block an unblocked column"
+          "quote": "A blocker put in after blocks may block an unblocked column",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts",
@@ -2354,10 +2325,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb's 'even against an empty column' has two readings; R322 offers the spot only where the column still has an attacker. See D-U11-3 (question for the owner).",
+    "notes": "Caleb's 'even against an empty column' has two readings; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) offers the spot only where the column still has an attacker. See D-U11-3 (question for the owner).",
     "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
       "RAQ 1366447016653361192#1": "bb2e9add4233c31bbcfbc92538edbd8db613375135196b284f67dc344abb26c3"
     }
   },
@@ -2384,14 +2355,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2406,7 +2377,7 @@
     "examples": [
       {
         "text": "The defending player declared no blocks; Tiderunner Initiate is still offered the spot in front of the attacker.",
-        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+        "test": "400-raq-fix-blocks.test.ts::CR 608.4d a Tiderunner put in front of an unblocked attacker fights it"
       }
     ],
     "see": [],
@@ -2414,24 +2385,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "defender may start a formation this way even having declared no blockers."
+          "quote": "defender may start a formation this way even having declared no blockers.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The RAQ question assumed an unblocked column; that the defender need have no formation at all is R322's reading.",
-    "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
-    }
+    "notes": "The RAQ question assumed an unblocked column; that the defender need have no formation at all is the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s reading.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.block-window.late-blocker.defender-only",
@@ -2441,7 +2411,7 @@
     "examples": [
       {
         "text": "After blocks, the attacking player is offered no blocking spot; the defending player is offered one, in front of the unblocked column.",
-        "test": "400-raq-fix-blocks.test.ts::R322 the attacker is never offered a blocking spot"
+        "test": "400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot"
       }
     ],
     "see": [],
@@ -2449,24 +2419,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand"
+          "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.block-window.late-blocker.when",
@@ -2486,24 +2455,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "attacker and no block entry, from the block window until combat damage is"
+          "quote": "attacker and no block entry, from the block window until combat damage is",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R322 states the window under 'How it is encoded'. The RAQ question speaks only of the 'after block' window. See D-U11-5.",
-    "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) states the window under 'How it is encoded'. The RAQ question speaks only of the 'after block' window. See D-U11-5.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.block-window.late-blocker.not-declared",
@@ -2523,24 +2491,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "No `blocked` event fires for the late blocker"
+          "quote": "No `blocked` event fires for the late blocker",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "low",
-    "notes": "R322 says no 'blocked' event fires for the late blocker. That 'when I block' card triggers listen to that event is my reading; I did not read the engine. See D-U11-5.",
-    "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) says no 'blocked' event fires for the late blocker. That 'when I block' card triggers listen to that event is my reading; I did not read the engine. See D-U11-5.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.block-window.after-blocking-triggers",
@@ -2550,7 +2517,7 @@
     "examples": [
       {
         "text": "Roving Quillback attacks and two units side-block. Once both players pass in the block window, its trigger resolves and the defending player loses 2 life, before any combat damage.",
-        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+        "test": "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is"
       }
     ],
     "see": [
@@ -2565,14 +2532,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The card says 'after the blocking step'; that this is the block window (and not, say, the start of combat damage) is shown by the test: the life loss lands after two passes, before combat damage.",
     "sourceHashes": {}
@@ -2605,27 +2572,26 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 its adjacency definition",
-          "quote": "- `(ci - 1, ri)` — the neighbouring column, **same row**"
+          "quote": "- `(ci - 1, ri)` — the neighbouring column, **same row**",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "422-cr-attacking-blocking.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Added in round 1 from the verifier's measured engine behaviour. R75 (not in the pack; read from digital-rules.md) defines adjacency by grid position; the Manual makes empty blocking columns real. The engine compresses the block keys, so blockers on columns 1 and 3 read as adjacent (F-U11-3).",
+    "notes": "Added in round 1 from the verifier's measured engine behaviour. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) (not in the pack; read from digital-rules.md) defines adjacency by grid position; the Manual makes empty blocking columns real. The engine compresses the block keys, so blockers on columns 1 and 3 read as adjacent (F-U11-3).",
     "engineDiffers": [
       "F-U11-3"
     ],
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.blocks.who.always-legal",
@@ -2635,7 +2601,7 @@
     "examples": [
       {
         "text": "Two attacking columns both have Alluring, and their triggers targeted the same defending unit. The defending player is still offered a legal declaration.",
-        "test": "53-playtest-round7.test.ts::R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang)"
+        "test": "53-playtest-round7.test.ts::CR 606.2f: legalActions always offers a legal declaration (the fuzz-1993 hang)"
       }
     ],
     "see": [
@@ -2645,17 +2611,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "to offer at least one legal block declaration, because Alluring is conjunctive"
+          "quote": "to offer at least one legal block declaration, because Alluring is conjunctive",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R76 (its legalActions contract)",
-          "quote": "*if a legal action exists, at least one must be offered.*"
+          "quote": "*if a legal action exists, at least one must be offered.*",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts",
@@ -2663,11 +2630,9 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R76 (its surviving legalActions contract) had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R76": "887b57987fc71345add55a3b24ebaa22c6f4cbab7ab13689445b5f3c765cd442",
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-22 (“Alluring duties are discharged TOGETHER, and…”) (its surviving legalActions contract) had no CR rule before the register is retired.",
+    "sourceHashes": {}
   }
 ]

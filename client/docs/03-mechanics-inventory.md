@@ -102,7 +102,7 @@ changes — a pairwise-relative modifier).
 
 Other state: marked damage (persists the whole battle phase, cleared at regroup); expended/
 dormant; formation position; ordered mod stack; **Unstable** (any modded card → erased on
-death, "permadeath" — R137: it still passes through the bin and IS trashed on the way);
+death, "permadeath" — CR 801.2h: it is not trashed, though the engine still passes it through the bin and trashes it on the way, CT-246);
 control vs ownership; negative power deals 0; defense ≤ 0 dies.
 
 ## 5. Stack, priority, responses
@@ -142,7 +142,7 @@ the sharer leaves the column — the game's combo engine)
 | Feeble | can't block | restriction |
 | Evasive | needs two blockers | restriction |
 | Sneaky | unblockable if attacking alone | restriction |
-| Alluring | target enemy can't attack, must block this column | targeted on-attack trigger + forced-block (R84) |
+| Alluring | target enemy can't attack, must block this column | targeted on-attack trigger + forced-block (CR 802.15) |
 | Piercing | excess damage → defending player (trample) | damage assignment |
 | Electric | excess damage → adjacent unit, **recursively, non-overlapping path** | damage assignment + pathfinding |
 | Poisonous | damage dealt as −1/−1 counters | damage replacement |
@@ -163,8 +163,8 @@ Non-combat (purple, not column-shared): Burst, Unstable, timing markers.
   composition — grafts add effects to the topmost card's cause, resolving top-to-bottom as ONE
   ability, negatable as one. New grafts insert anywhere below the base; existing order
   immutable. A bounded *cause* limits the whole composite.
-- Mod shared rules: modded card gains Unstable → dies = card + mods **erased** (R137: via the
-  bin, so card and nontoken mods are all **trashed** on the way out). Leaves play
+- Mod shared rules: modded card gains Unstable → dies = card + mods **erased** (CR 410.4b; neither is
+  trashed, CR 801.2h and 801.2g, though the engine still bins and trashes the card on the way out, CT-246). Leaves play
   without dying → mods to bin, base to hand. **Controller of the unit controls its mods** —
   augmenting an enemy unit donates the text (drawback-donation is a real strategy). Grafts
   detach if graftability is lost.

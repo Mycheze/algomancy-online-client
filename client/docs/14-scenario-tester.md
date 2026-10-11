@@ -37,7 +37,7 @@ situation the clause needs. A human placing cards solves that in seconds.
 ## 2. The one architectural decision, and why it is this one
 
 **A room's state is a function of `(seed, mode, els, decks, actions)`.** That is
-what makes `replay-room.ts`, `replay-probe.ts`, the R200 divergence diff and the
+what makes `replay-room.ts`, `replay-probe.ts`, the replay divergence diff and the
 whole forensic stack work. Injecting a hand-built `GameState` into a room would
 break every one of them, permanently, for exactly the games we most want to be
 able to re-examine.
@@ -70,7 +70,7 @@ Room { seed, mode, els, decks, scenario?: ScenarioId, actions }
 `dealScenario()` is the choke point, and `rebuild()` reaches it — so a scenario
 room rebuilds, replays, undoes, saves and diffs like any other. **A verdict is
 therefore fully replayable from `(scenario id, engine SHA, action log)`**, which
-is the property R200 exists to protect and the reason the existing corpus is
+is the property replay versioning exists to protect and the reason the existing corpus is
 only ~39% usable.
 
 ⚠ The mutation must be **pure and total**: same scenario id + same engine → same
@@ -154,7 +154,7 @@ off**, so a multi-clause card still yields clause-level precision without
 multiplying the queue.
 
 Every verdict is written to `var/verdicts.jsonl`, one line, stamped with the
-scenario id, the engine SHA (R200), the room code and the action index — the
+scenario id, the engine SHA, the room code and the action index (see replay-room.ts) — the
 same shape as `issues.jsonl`, for the same reason.
 
 ---
@@ -186,9 +186,9 @@ simple. The queue is **derived**, per `docs/13-assessment.md` §7.2, from:
 1. the **37 cards** whose printed promise has never once been observed, each
    already annotated with the precondition it lacks (`84-card-semantics`'s
    `UNREACHED`);
-2. the **donated `[Augment]` path** — R212 named this its single biggest hole:
+2. the **donated `[Augment]` path** — the round-28 correctness sample named this its single biggest hole:
    ten of eleven augment cards are only ever checked on their own body, and
-   "me"/"you" resolve differently on a host under R131;
+   "me"/"you" resolve differently on a host under CR 720.6c, 720.6b;
 3. cards **carrying a ruling** — weird by definition, or nobody would have had
    to rule on them;
 4. cards whose text has the shapes that keep producing bugs — *"that effect"*,
@@ -198,7 +198,7 @@ simple. The queue is **derived**, per `docs/13-assessment.md` §7.2, from:
 
 A first cut of the scoring puts **99 cards at score ≥ 20** and the top of the
 list is almost entirely `[Augment]` cards — which is the ranking agreeing with
-R212's independent finding, not a coincidence.
+the correctness sample's independent finding, not a coincidence.
 
 ⚠ **The queue must not be all augment cards.** Breadth is part of the value:
 interleave, so a session covers several mechanics rather than proving one.
@@ -236,3 +236,23 @@ Worth writing down before building, because each has a precedent in this repo:
   scenario needs the same treatment every guard in this round got: break the
   implementation, watch it redden, revert. A pinned scenario with no positive
   control is `docs/13-assessment.md` §5 with extra steps.
+
+## 10. Two rules for authoring scenarios
+
+These were written up as process rulings while the library was built
+(2026-08-26/27); they live here now.
+
+**Parallel authoring needs one keyspace, checked.** Each batch is its own module,
+spread into `SCENARIOS`. A duplicate id does not collide — the later spread
+silently wins and the earlier scenario vanishes — so `186 §0` sums the batches
+and asserts the total equals the merged key count. A batch may import only TYPES
+from `scenarios.ts`: importing a value back closes a cycle and the server dies
+at boot. A comment that names a guard must name one that exists.
+
+**Rank by how rare the action is, and build every board out of two rules
+meeting.** "The drill has never staged it" measures the fixture, not risk: a
+card can appear in every real game and still be unreached. Rank candidates by
+how seldom the action fires in real saved games, and make each scenario a board
+where two rules meet at one instant, so the owner's hour goes on what only comes
+up in play.
+

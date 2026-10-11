@@ -9,7 +9,7 @@ Four packages and two directories of data:
 
 | | what |
 |---|---|
-| [`engine/`](engine/README.md) | the rules, as a pure TypeScript reducer: `apply(state, action)`, `legalActions`, seeded replay, every card's behaviour, and the test suite that is the ruling register made executable |
+| [`engine/`](engine/README.md) | the rules, as a pure TypeScript reducer: `apply(state, action)`, `legalActions`, seeded replay, every card's behaviour, and the test suite that is the comprehensive rules made executable |
 | [`ui/`](ui/README.md) | the browser client. One esbuild bundle that imports the engine, so it can also run a game with no server at all |
 | [`server/`](server/README.md) | the WebSocket game server: rooms, per-seat redacted views, hidden simultaneous steps, persistence, accounts, decks, matchmaking, and the HTTP the bot uses |
 | [`ledgers/`](ledgers/README.md) | every work queue, open and closed: card tickets, playtest reports, the backlog, the owner's card verdicts |
@@ -56,7 +56,6 @@ README explains the loop.
 
 | doc | what |
 |---|---|
-| [`digital-rules.md`](docs/digital-rules.md) | **the engine's spec.** Every adjudication the paper rules forced, R1–R350 and counting, each with its source and the test that encodes it. One `## R<n>` heading per ruling; `engine/test/184-ruling-register.test.ts` checks the register against the code |
 | [`deck-format.md`](docs/deck-format.md) | the deck file the client exports and imports, meant to be read by other tools |
 
 **The design docs**, in the order they were written. Each is the spec for a
@@ -76,13 +75,13 @@ subsystem and is kept current when that subsystem changes.
 | [`16-divergence-inventory.md`](docs/16-divergence-inventory.md) | everything known to differ from printed text, across all card-set files |
 | [`17-oracle-text-audit.md`](docs/17-oracle-text-audit.md) | the whole-pool oracle-text typo sweep |
 | [`18-board-layout-v2.md`](docs/18-board-layout-v2.md) | the regions board: two interlocking Ls, region ≠ control, never scrolls — behind the ▦ board toggle |
-| `questions-round*.md` | the open-question sheets put to the owner each round, live: `engine/test/238-question-sheets.test.ts` cross-checks every answer against the register |
+| `questions-round*.md` | the open-question sheets put to the owner each round, live: `engine/test/238-question-sheets.test.ts` cross-checks every answer against the owner calls recorded in the comprehensive rules |
 
 **The July 2026 research pass**, `01` to `06`: what the bot project already
 had, how other digital card games are built, the mechanics inventory, the
 architecture as proposed, the hard questions, the roadmap. They are the record
 of how the design was arrived at and are not updated; where they and the code
-disagree, the code and the register are right.
+disagree, the code and the comprehensive rules are right.
 
 ⚠ `docs/` is also a **test fixture directory**. Eleven of these files are read
 off disk by tests, by name. Rename or restructure them and the suite fails.

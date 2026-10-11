@@ -85,7 +85,7 @@ async function shown(seed: number): Promise<Awaited<ReturnType<typeof client>>> 
   const legal = legalActions(h.state, seat) as Action[];
   ui.join(viewFor(h.state, seat), seat, legal);
   ui.update(viewFor(h.state, seat), legal, { events });
-  // R80 paces the tail and R150 throttles updates; run both out or the modal
+  // The pacing rule (CR D5.4) paces the tail and throttles updates; run both out or the modal
   // is read half-told and the sweep below measures the beat queue instead
   for (let i = 0; i < 8; i++) { ui.tick(); ui.key('s'); }   // S: the pacing's skip key
   return ui;
@@ -166,7 +166,7 @@ test('§2 the generic right-click menu opens it, and the menu decides that', asy
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat) as Action[]);
 
-  // R241: WHERE the entry is declared is the point. `boardMenuEntries` is the
+  // CR D6.15: WHERE the entry is declared is the point. `boardMenuEntries` is the
   // one place the table menu is decided, and 216-menu-scoping asserts the
   // card-back menu equals it exactly — an entry wired only into main.ts's
   // contextmenu handler would be a silent divergence between the two ways into
@@ -324,7 +324,7 @@ test('§5 the rail did not become dead space, and the modal is still painted', a
   /* `#app.board .side` is `overflow: hidden` on purpose, so every child has to
    * manage its own height and exactly one of them has to absorb the slack. The
    * log used to be that child. Removing it without handing the job on is the
-   * dead-space regression the R219 note in style.css records as already fixed
+   * dead-space regression the note in style.css records as already fixed
    * once — and no markup assertion can see it. */
   const board = CSS.slice(CSS.indexOf('#app.board {'));
   const fillers = [...board.matchAll(/^#app\.board (\.[a-z]+) \{[^}]*flex: 1 1 0/gm)].map(x => x[1]);

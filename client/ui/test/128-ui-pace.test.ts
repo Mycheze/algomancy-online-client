@@ -1,4 +1,4 @@
-/* R150 / CT-28 — the client's drain scheduler (ui/pace.ts).
+/* CR D5.4 / CT-28 — the client's drain scheduler (ui/pace.ts).
  *
  * Playtest #94 (SMVJ): *"We need a 'max speed' that the gamestate can
  * resolve/put things onto the stack. When someone has auto pass on and has
@@ -44,7 +44,7 @@ function burst(n: number, now = T0): PaceQueue<string> {
 // The whole ask, stated as arithmetic: N events, an injected clock, one item
 // per interval — in a burst AND in a drip.
 
-test('R150 #94: a BURST of updates surfaces ONE per PACE_MS, on an injected clock', () => {
+test('CR D5.4 #94: a BURST of updates surfaces ONE per PACE_MS, on an injected clock', () => {
   const q = burst(4);
   // the first arrival is never delayed: the player must not wait to be told
   // about a board they can already see
@@ -63,7 +63,7 @@ test('R150 #94: a BURST of updates surfaces ONE per PACE_MS, on an injected cloc
   assert.equal(rest.queue.length, 0, 'the queue is spent');
 });
 
-test('R150 #94: a DRIP is throttled too — the queue emptying is not a reset', () => {
+test('CR D5.4 #94: a DRIP is throttled too — the queue emptying is not a reset', () => {
   // THE BROWSER BUG. Updates 300ms apart, each fully drained before the next
   // arrives. A queue that remembers only what is waiting sees an empty queue
   // every time and paces nothing.
@@ -84,7 +84,7 @@ test('R150 #94: a DRIP is throttled too — the queue emptying is not a reset', 
   assert.deepEqual(paceDue(q, T0 + 3 * PACE_MS).out, ['d1', 'd2', 'd3']);
 });
 
-test('R150 #94: a lone update after a long quiet spell is NOT delayed', () => {
+test('CR D5.4 #94: a lone update after a long quiet spell is NOT delayed', () => {
   // the floor is a rate limit, not a cooldown: nobody waits a second to be
   // shown the only thing that has happened in a minute
   let q = emptyPace<string>();
@@ -94,12 +94,12 @@ test('R150 #94: a lone update after a long quiet spell is NOT delayed', () => {
   assert.deepEqual(paceDue(q, T0 + 60_000).out, ['b'], 'straight through');
 });
 
-test('R150 #94: PACE_MS is the single named knob, and it is the owner\'s one second', () => {
+test('CR D5.4 #94: PACE_MS is the single named knob, and it is the owner\'s one second', () => {
   assert.equal(PACE_MS, 1000,
     'the owner asked for "a max speed of 1 thing per second" — change this constant, not the callers');
 });
 
-test('R150 #94: the wake time is the next moment the screen changes, then null', () => {
+test('CR D5.4 #94: the wake time is the next moment the screen changes, then null', () => {
   const q = burst(3);
   assert.equal(paceWake(q, T0), T0 + PACE_MS, 'the timer is set for the next release, not a poll');
   const { rest } = paceDue(q, T0 + PACE_MS);
@@ -107,7 +107,7 @@ test('R150 #94: the wake time is the next moment the screen changes, then null',
   assert.equal(paceWake(emptyPace(), T0), null, 'a spent queue arms no timer at all');
 });
 
-test('R150 #94: the queue never falls further than PACE_MAX_HELD intervals behind', () => {
+test('CR D5.4e #94: the queue never falls further than PACE_MAX_HELD intervals behind', () => {
   const q = burst(PACE_MAX_HELD + 6);
   const last = q.queue[q.queue.length - 1]!;
   assert.equal(last.at, T0 + PACE_MS * PACE_MAX_HELD,
@@ -118,11 +118,11 @@ test('R150 #94: the queue never falls further than PACE_MAX_HELD intervals behin
   }
 });
 
-test('R150 #94: released updates keep arrival order, so game states never reorder', () => {
+test('CR D5.4 #94: released updates keep arrival order, so game states never reorder', () => {
   assert.deepEqual(paceDue(burst(3), T0 + 10 * PACE_MS).out, ['u0', 'u1', 'u2']);
 });
 
-test('R150 #94: timer jitter cannot make the cadence drift slower', () => {
+test('CR D5.4 #94: timer jitter cannot make the cadence drift slower', () => {
   // the floor advances to the released item's own `at`, not to the wall clock
   // the timer happened to fire at
   const q = burst(3);
@@ -135,7 +135,7 @@ test('R150 #94: timer jitter cannot make the cadence drift slower', () => {
 //
 // A player who does not want the pacing must not be held hostage by it.
 
-test('R150 #94: skip flushes the whole queue to the live state in ONE step', () => {
+test('CR D5.5 #94: skip flushes the whole queue to the live state in ONE step', () => {
   const { out, rest } = paceFlush(burst(5));
   assert.deepEqual(out, ['u0', 'u1', 'u2', 'u3', 'u4'],
     'every held update, in order, in a single drain');
@@ -143,14 +143,14 @@ test('R150 #94: skip flushes the whole queue to the live state in ONE step', () 
   assert.equal(paceWake(rest, T0), null, 'so no timer survives the skip');
 });
 
-test('R150 #94: a skip does not then make the player wait for the NEXT update', () => {
+test('CR D5.5 #94: a skip does not then make the player wait for the NEXT update', () => {
   const rest = paceFlush(burst(4)).rest;
   const next = pace(rest, 'after', T0 + 5, true);
   assert.deepEqual(paceDue(next, T0 + 5).out, ['after'],
     'they just said "stop making me wait"; the throttle does not argue');
 });
 
-test('R150 #94: the skip chip counts what is actually still held', () => {
+test('#94: the skip chip counts what is actually still held', () => {
   const q = burst(4);
   assert.equal(paceHeld(q, T0), 3, 'u0 is already due; three are waiting');
   assert.equal(paceHeld(q, T0 + 2 * PACE_MS), 1);
@@ -167,12 +167,12 @@ test('R150 #94: the skip chip counts what is actually still held', () => {
 
 const GATE = { mine: false, askedOfMe: false, legal: 0, autoPassArmed: false, over: false };
 
-test('R150 #94: a decision of MINE is never held', () => {
+test('CR D5.4b #94: a decision of MINE is never held', () => {
   assert.equal(holdable({ ...GATE, askedOfMe: true }), false,
     'server/view.ts nulls a decision that is not yours, so a visible decision is always mine');
 });
 
-test('R150 #94: a state with legal actions is never held unless auto-pass will answer it', () => {
+test('CR D5.4b #94: a state with legal actions is never held unless auto-pass will answer it', () => {
   assert.equal(holdable({ ...GATE, legal: 3 }), false,
     'three things I could do is my turn, whatever else is going on');
   assert.equal(holdable({ ...GATE, legal: 3, autoPassArmed: true }), true,
@@ -180,24 +180,24 @@ test('R150 #94: a state with legal actions is never held unless auto-pass will a
     + 'gives them a readable second instead of 280ms, which IS the ask');
 });
 
-test('R150 #94: my OWN action\'s echo is never held — the throttle adds no input latency', () => {
+test('CR D5.4d #94: my OWN action\'s echo is never held — the throttle adds no input latency', () => {
   assert.equal(holdable({ ...GATE, mine: true }), false);
   assert.equal(holdable({ ...GATE, mine: true, autoPassArmed: true }), false,
     'even with auto-pass armed: I clicked, so I am waiting on this one');
 });
 
-test('R150 #94: the game ending is never held', () => {
+test('CR D5.4b #94: the game ending is never held', () => {
   assert.equal(holdable({ ...GATE, over: true }), false);
   assert.equal(holdable({ ...GATE, over: true, autoPassArmed: true }), false);
 });
 
-test('R150 #94: the ONE thing that is held is a state I cannot act on at all', () => {
+test('CR D5.4b #94: the ONE thing that is held is a state I cannot act on at all', () => {
   assert.equal(holdable(GATE), true,
     'no decision, no legal action, not mine, not over — the opponent is resolving '
     + 'their stack and I am a spectator. This is #94\'s whole scenario.');
 });
 
-test('R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it', () => {
+test('CR D5.4c #94: an urgent arrival FLUSHES the backlog rather than jumping it', () => {
   const held = burst(3);                       // three spectator updates, paced out to +2s
   assert.equal(paceHeld(held, T0), 2);
   // …and now the server asks me something. It must not appear on top of a
@@ -210,7 +210,7 @@ test('R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it', (
   assert.deepEqual(rest.queue, [], 'and the queue is spent, so nothing lingers behind the ask');
 });
 
-test('R150 #94: …and that is exactly what the gate produces for a real ask', () => {
+test('CR D5.4b #94: …and that is exactly what the gate produces for a real ask', () => {
   // the two pieces wired together the way ui/main.ts wires them
   const q = pace(burst(2), 'ASK', T0 + 1, holdable({ ...GATE, askedOfMe: true }));
   assert.equal(paceHeld(q, T0 + 1), 0, 'nothing is held once a question for me arrives');

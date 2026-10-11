@@ -64,7 +64,7 @@ class Client {
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
 }
 
-/* R204/CT-85: the server picks its own port and tells us which — see
+/* CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
  * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
  * in the child, which left the port held by nobody for as long as node took
  * to boot; anything else on the box could take it in that window.
@@ -143,7 +143,7 @@ try {
   console.log('\n[bottomCards over the wire]');
   c0.send({ t: 'action', action: { type: 'bottomCards', seat: 0, handIndices: [0, 1] } });
   await c0.next(m => m.t === 'update' && m.view?.bottomDone?.[0] === true);
-  // R296: the draw phase's put-2-back is a recycle, so the pair goes PAST THE
+  // CR 408.2a: the draw phase's put-2-back is a recycle, so the pair goes PAST THE
   // MARK — the live deck stays at 22 and the seat's own pile holds the two.
   // This read `decks[0].length === 24` on the old rule, where they went
   // straight back onto the bottom of the deck they had just been drawn from.
@@ -169,7 +169,7 @@ try {
   await c2.open();
   c2.send({ t: 'join', room: ROOM, seat: 0 });
   await c2.next(m => m.t === 'joined' && !!m.view);
-  // R296: 22 in the live deck and 2 behind the mark, not 24 in the deck — and
+  // CR 408.2: 22 in the live deck and 2 behind the mark, not 24 in the deck — and
   // the restore is exactly where that matters, because a room is rebuilt by
   // REPLAYING its actions. The pile has to come back out of the replay like
   // any other zone; a number that only looked right because both halves were

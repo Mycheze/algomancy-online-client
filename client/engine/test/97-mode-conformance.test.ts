@@ -1,8 +1,7 @@
 /* MODE CONFORMANCE — a card that prints a modal bracket picks its half at
  * CAST, not at resolution.
  *
- * The playtest report (Siphon Life, 2026-08-23) is the same shape as R67's
- * targeting report and has the same answer:
+ * The playtest report (Siphon Life, 2026-08-23) is the same shape as the target-at-cast report and has the same answer:
  *
  *   "Target player [gains or loses] X life" sat on the stack without saying
  *    WHICH. I spent a card responding to it. The response resolved. Only then
@@ -12,7 +11,7 @@
  * That is free information the opponent paid for. A response window is only
  * meaningful if what you are responding to is fully declared, which is exactly
  * why X, {Modular} mods, targets and bracketed costs are all settled in the
- * cast window (R35/R57). A MODE is one more of those, and `EffectDef.modes` /
+ * cast window (CR 702.3). A MODE is one more of those, and `EffectDef.modes` /
  * `EffectPart.mode` / `E.collectModes` are the seam that makes it one.
  *
  * Six cards moved: Burgeon, Wither and Bloom, Spirit of Nature, Transmutide
@@ -21,7 +20,8 @@
  * Spirit of Nature) additionally auto-picked a half FOR you during end-of-turn
  * resolution, which is a silent wrong answer rather than a late one.
  *
- * R157 §21 then added Retribution Thing, and R284 added the eighth and last —
+ * The owner's bracket ruling (now CR 205.3) then added Retribution Thing, and his ruling
+ * on whose bracket it is (now CR 205.3a) added the eighth and last —
  * Void Memory, which had been going one worse than late: it asked the WRONG
  * PLAYER. *"All modal/additional costs are paid/chosen by the owner of the
  * spell. No exceptions."* (owner, 2026-09-01.) So the pool's eight modal
@@ -51,7 +51,7 @@ import type { Decision, EntityId, Seat, Suspension } from '../src/types.ts';
 
 /** spawn a REAL token entity with chosen stats — the util spawn() makes
  * nontoken entities, and a stat token is the yardstick with no attributes on
- * it (R106's {Unaware} makes a printed vanilla body a bad ruler). Same local
+ * it (CR 802.9a's {Unaware} makes a printed vanilla body a bad ruler). Same local
  * as 23-wood-a's. */
 function spawnToken(h: Harness, seat: Seat, p = 1, t = 1): EntityId {
   const e = new E(h.state);
@@ -95,18 +95,18 @@ const MODAL = /\[[^\]]*\bor\b[^\]]*\]/i;
  * with the reason. Asserted still-needed below: an exempt card that starts
  * declaring modes, or stops printing a bracket, fails there.
  *
- * IT IS EMPTY, AND R284 IS WHY IT SHOULD STAY EMPTY. Two entries have stood
+ * IT IS EMPTY, AND CR 205.3a IS WHY IT SHOULD STAY EMPTY. Two entries have stood
  * here and both were wrong in the same direction — a reason for reading a
  * printed bracket as something other than the caster's own declaration.
  *
- *  · Retribution Thing, deleted by R157 §21 (owner, 2026-08-25): *"All text on
+ *  · Retribution Thing, deleted by the owner (2026-08-25; now CR 205.3): *"All text on
  *    cards that's in [square brackets] like that is either an additional cost
  *    or a modal choice."* The entry had read the bracket as one QUANTITY (lost
  *    PLUS gained) rather than a choice.
- *  · Void Memory, deleted by R284 (owner, 2026-09-01): *"All modal/additional
+ *  · Void Memory, deleted by the owner (2026-09-01; now CR 205.3a): *"All modal/additional
  *    costs are paid/chosen by the owner of the spell. No exceptions."* The
  *    entry had read "each opponent discards a [unit or spell]" as the
- *    DISCARDING player's pick, under R67's not-a-target carve-out — which made
+ *    DISCARDING player's pick, under CR 704.1a's not-a-target carve-out — which made
  *    each victim choose the half while looking at their own hand, so the card
  *    never missed. It is the caster's guess, declared at cast, like every
  *    other one.
@@ -136,7 +136,7 @@ const printsModal = (name: string): boolean => MODAL.test(getCard(name).text ?? 
 
 /* ── (a) printed ⇒ declared ────────────────────────────────────────────── */
 
-test('R57: a card printing a modal bracket declares EffectDef.modes', () => {
+test('CR 205.3: a card printing a modal bracket declares EffectDef.modes', () => {
   const late: string[] = [];
   for (const name of allCardNames()) {
     if (!printsModal(name)) continue;
@@ -151,7 +151,7 @@ test('R57: a card printing a modal bracket declares EffectDef.modes', () => {
 
 /* ── (b) the converse: declared ⇒ printed ──────────────────────────────── */
 
-test('R57: nothing declares a mode it does not print', () => {
+test('CR 205.3c: nothing declares a mode it does not print', () => {
   const invented: string[] = [];
   for (const name of allCardNames()) {
     if (!declaresModes(name)) continue;
@@ -164,12 +164,12 @@ test('R57: nothing declares a mode it does not print', () => {
 
 /* ── (c) every exemption is still needed ───────────────────────────────── */
 
-test('R57: every mode exemption is still needed, and still names a real card', () => {
+test('CR 205.3: every mode exemption is still needed, and still names a real card', () => {
   const stale: string[] = [];
-  // R284 emptied it. The loop below is kept, not deleted, because the day
+  // The owner's 2026-09-01 ruling (now CR 205.3a) emptied it. The loop below is kept, not deleted, because the day
   // somebody adds an entry is the day it has to be checked.
   assert.deepEqual(Object.keys(EXEMPT), [],
-    'a printed bracket is the OWNER\'s declaration, with no exceptions (R284) — a new '
+    'a printed bracket is the OWNER\'s declaration, with no exceptions (CR 205.3a) — a new '
     + 'exemption needs a ruling, not a comment');
   for (const [name, why] of Object.entries(EXEMPT)) {
     assert.ok(why.length > 20, `${name}'s exemption needs a reason, not a shrug`);
@@ -200,7 +200,7 @@ test('R57: every mode exemption is still needed, and still names a real card', (
 const modesOnStack = (h: Harness): unknown[] =>
   h.state.stack.flatMap(i => i.parts.map(p => p.mode));
 
-test('R57: Burgeon names its half before the stack, and the opponent can read it there', () => {
+test('CR 702.5: Burgeon names its half before the stack, and the opponent can read it there', () => {
   const h = new Harness(9700);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -214,7 +214,7 @@ test('R57: Burgeon names its half before the stack, and the opponent can read it
   pick(h, { unit: whale });
   assert.equal(h.state.decision?.kind, 'mode', 'the half is a cast-time question');
   assert.equal(h.state.stack.length, 0, 'and nothing is on the stack while it is open');
-  // R57's ordering, and the reason for it: the mode comes AFTER the target, so
+  // CR 702.3d's ordering, and the reason for it: the mode comes AFTER the target, so
   // the options can name what it is aimed at.
   assert.ok(h.state.decision!.options.some(o => /5 → 10/.test(o.label)),
     'the options read the declared target\'s live stats');
@@ -226,7 +226,7 @@ test('R57: Burgeon names its half before the stack, and the opponent can read it
   finishBattle(h);
 });
 
-test('R57: Wither and Bloom declares which half before anyone may respond', () => {
+test('CR 702.5: Wither and Bloom declares which half before anyone may respond', () => {
   const h = new Harness(9701);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -249,7 +249,7 @@ test('R57: Wither and Bloom declares which half before anyone may respond', () =
   finishBattle(h);
 });
 
-test('R57: Siphon Life says whether it is a burn or a heal before the response window', () => {
+test('CR 702.5: Siphon Life says whether it is a burn or a heal before the response window', () => {
   const h = new Harness(9702);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -259,7 +259,7 @@ test('R57: Siphon Life says whether it is a burn or a heal before the response w
   const dLife = h.state.players[D]!.life;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Siphon Life') });
-  pick(h, 3);                                   // X, first (R57's order)
+  pick(h, 3);                                   // X, first (CR 702.3a's order)
   pick(h, { player: D });                       // then the target
   assert.equal(h.state.decision?.kind, 'mode', 'then the half');
   assert.equal(h.state.stack.length, 0, 'still nothing on the stack');
@@ -271,7 +271,7 @@ test('R57: Siphon Life says whether it is a burn or a heal before the response w
   finishBattle(h);
 });
 
-test('R57: Spirit of Nature\'s trigger declares Poison-or-Crystal as it goes on the stack', () => {
+test('CR 205.3a: Spirit of Nature\'s trigger declares Poison-or-Crystal as it goes on the stack', () => {
   const h = new Harness(9703);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -292,7 +292,7 @@ test('R57: Spirit of Nature\'s trigger declares Poison-or-Crystal as it goes on 
   finishBattle(h);
 });
 
-test('R57: Transmutide Enigma picks the stat off the pre-response board', () => {
+test('CR 205.3a: Transmutide Enigma picks the stat off the pre-response board', () => {
   const h = new Harness(9704);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -317,7 +317,7 @@ test('R57: Transmutide Enigma picks the stat off the pre-response board', () => 
   finishBattle(h);
 });
 
-test('R57: Floral Singularity settles X and then its half, all before it resolves', () => {
+test('CR 702.3: Floral Singularity settles X and then its half, all before it resolves', () => {
   // A DEPLOY-timing spell resolves without ever touching the stack (there is
   // no response window in deployment), so the property here is the other half
   // of the same statement: the mode is answered while the effect has not run.
@@ -328,7 +328,7 @@ test('R57: Floral Singularity settles X and then its half, all before it resolve
   giveResources(h, p, 'metal', 3);
   const before = unitsOf(h, p).length;
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Floral Singularity') });
-  pick(h, 2);                                   // X = 2, chosen and paid at cast (R35)
+  pick(h, 2);                                   // X = 2, chosen and paid at cast (CR 107.2a)
   assert.equal(h.state.decision?.kind, 'mode', 'the half comes next, still in the cast window');
   assert.equal(h.state.stack.length, 0);
   assert.equal(unitsOf(h, p).length, before, 'and NOTHING has resolved yet');
@@ -357,7 +357,7 @@ E.prototype.suspend = function (susp: Suspension, dec: Omit<Decision, 'id'>): ne
   return origSuspend.call(this, susp, dec);
 };
 
-test('R57: no \'mode\' decision is ever raised mid-resolution', () => {
+test('CR 205.3a: no \'mode\' decision is ever raised mid-resolution', () => {
   for (let seed = 9700; seed <= 9759; seed++) fuzzGame(seed, 2500);
   for (let seed = 9760; seed <= 9779; seed++) fuzzGame(seed, 2500, 'draft');
 
@@ -394,14 +394,14 @@ test('R57: no \'mode\' decision is ever raised mid-resolution', () => {
  *
  * This is that claim, checked rather than believed. If it ever stops holding,
  * this goes red and the auto-picks — or a better fix — have to come back. */
-test('R57: a modal effect resolving in the END-OF-TURN window asks, and the turn still flips', () => {
+test('CR 205.3a: a modal effect resolving in the END-OF-TURN window asks, and the turn still flips', () => {
   const h = new Harness(9706);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const walker = spawn(h, p, 'Mirage Walker');   // "at the end of turn, [Switch1] …"
   giveResources(h, p, 'wood', 2);
   giveResources(h, p, 'metal', 1);
-  // Wither and Bloom rides the Walker's end-of-turn cause as a graft (R9/R110)
+  // Wither and Bloom rides the Walker's end-of-turn cause as a graft (CR 722.1)
   h.do({
     type: 'graft', seat: p, from: 'hand',
     index: give(h, p, 'Wither and Bloom'), hostId: walker, position: 0,
@@ -427,7 +427,7 @@ test('R57: a modal effect resolving in the END-OF-TURN window asks, and the turn
     'and E.finishTurnEnd resumed out of settle() — the turn flipped, nothing stranded');
 });
 
-/* ── (f) R284: every option says WHICH PRINTED HALF it is ──────────────────
+/* ── (f) CR D6.10a: every option says WHICH PRINTED HALF it is ──────────────────
  *
  * The UI narrows a declared item's printed text down to the half that was
  * picked — "Each opponent discards a [unit] if able" — which needs a mapping
@@ -444,7 +444,7 @@ test('R57: a modal effect resolving in the END-OF-TURN window asks, and the turn
  * seventh and eighth fail loudly instead.
  */
 
-test('R284: every modal option declares which printed half it is, and the halves are 0 and 1', () => {
+test('CR D6.10a: every modal option declares which printed half it is, and the halves are 0 and 1', () => {
   const bad: string[] = [];
   for (const name of allCardNames()) {
     if (!printsModal(name)) continue;
@@ -478,7 +478,7 @@ test('R284: every modal option declares which printed half it is, and the halves
     'a mode whose options do not name their printed half:\n  ' + bad.join('\n  '));
 });
 
-/* ── (g) R284: Void Memory — the CASTER guesses, the victims answer ────────
+/* ── (g) CR 205.3a: Void Memory — the CASTER guesses, the victims answer ────────
  *
  * The defect, in the owner's words (2026-09-01): *"Void Memory (and maybe
  * more) improperly has the OPPONENT choose the mode when discarding, making it
@@ -491,7 +491,7 @@ test('R284: every modal option declares which printed half it is, and the halves
  * could never reach, because it let the discarding player pick the half.
  */
 
-test('R284: Void Memory declares its half at cast, and a hand with no card of that type reveals', () => {
+test('CR 205.3a: Void Memory declares its half at cast, and a hand with no card of that type reveals', () => {
   const h = new Harness(9707);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -518,7 +518,7 @@ test('R284: Void Memory declares its half at cast, and a hand with no card of th
   finishBattle(h);
 });
 
-test('R284: Void Memory\'s victim still picks WHICH card, among the ones the half admits', () => {
+test('Void Memory\'s victim still picks WHICH card, among the ones the half admits', () => {
   const h = new Harness(9708);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

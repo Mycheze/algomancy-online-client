@@ -79,7 +79,7 @@ const COMBOS: [Seat, Seat][] = [[0, 0], [0, 1], [1, 0], [1, 1]];
 
 /**
  * Roll from the current deployment through a battle into the NEXT start of
- * deployment (where R50's 'startOfDeployment' event fires), PINNING the
+ * deployment (where CR 507.4's 'startOfDeployment' event fires), PINNING the
  * initiative — and with it the deployPlayer the next deployment opens on —
  * to `init`. The pin happens after the turn flip (which recomputes
  * initiative) and before startDeployment reads it.
@@ -168,7 +168,7 @@ for (const [owner, init] of COMBOS) {
     const sv = spawn(h, owner, 'Scholar of the Void');
     give(h, owner, 'Good Whale');               // a real hand to lose
     toNextDeploymentAs(h, init);
-    assert.ok(h.state.decision, 'R50 delivers the event and the "you may" asks');
+    assert.ok(h.state.decision, 'CR 507.4 delivers the event and the "you may" asks');
     assert.equal(h.state.decision!.seat, owner,
       '"you" is the OWNER seat, not deployPlayer — the ask goes to the controller');
     pickBy(h, o => String(o.label).includes('transform into Beyond, Codex Incarnate'));
@@ -242,7 +242,7 @@ for (const [owner, init] of COMBOS) {
     assert.equal(h.state.decision!.seat, owner,
       '"your life total" — the OWNER predicts, whichever seat holds initiative');
     const life = h.state.players[owner]!.life;
-    // R197: `kind: 'number'` — `choice` IS the value, not an index (there are
+    // CR D7.2a: `kind: 'number'` — `choice` IS the value, not an index (there are
     // no options at all), which is what lets the card take ANY number
     assert.equal(h.state.decision!.kind, 'number');
     h.do({ type: 'decide', seat: owner, choice: life });   // nothing will change it
@@ -281,7 +281,7 @@ for (const [owner, init] of COMBOS) {
     h.do({ type: 'augment', seat: owner, from: 'hand', index: idx, hostId: host });
     assert.equal(ent(h, host)!.mods.length, 1, 'the augment landed during [Haste]');
     h.do({ type: 'doneHaste', seat: owner });
-    h.do({ type: 'doneHaste', seat: 1 - owner });   // R228: both seats close it
+    h.do({ type: 'doneHaste', seat: 1 - owner });   // CR 504.5a: both seats close it
     assert.equal(h.state.phase, 'battle', 'the step closes normally afterwards');
     finishBattle(h);
   });

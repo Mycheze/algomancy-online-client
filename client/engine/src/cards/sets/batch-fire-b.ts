@@ -4,10 +4,10 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution —
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution —
  * plus the "if I am still in formation" explicit resolution-time recheck),
- * R6 (payments are part of resolution, via ctx.choose), R9 (bounded budgets
- * per card), R12/R25 ("each opponent/player" is region-scoped), R26 ("play"
+ * CR 111.9 (payments are part of resolution, via ctx.choose), CR 803.4 (bounded budgets
+ * per card), CR 601.1b, 601.4d ("each opponent/player" is region-scoped), CR 304.15 ("play"
  * excludes token creation — the nontoken gate doubles as the loop guard).
  *
  * Approximations (existing primitives, semantics slightly reshaped):
@@ -15,12 +15,12 @@
  *    this list is GONE, and so is its "each flagged ⚠ at the card" promise —
  *    the per-card ⚠ markers it promised never existed anywhere in this file.
  *    All three cards it named carry REAL costs now: Sacrificial Burst
- *    `castCost: { kind: 'sacrificeUnit' }` (R35), Soul Swallower
- *    `cost: { sacrificeOther: 1 }` (R49, see its own UN-PARKED note), and
- *    Wildfire's X is chosen and paid at cast (R35), so `ctx.x` is fixed before
+ *    `castCost: { kind: 'sacrificeUnit' }` (CR 702.4), Soul Swallower
+ *    `cost: { sacrificeOther: 1 }` (CR 111.2, see its own UN-PARKED note), and
+ *    Wildfire's X is chosen and paid at cast (CR 107.2a), so `ctx.x` is fixed before
  *    anyone can respond.)
  *  - "target ... in your bin" (Resurrect, Reclaimer of Secrets, Rousing
- *    Spirit) is REAL TARGETING as of R64: TargetSpec has a 'binCard' kind, and
+ *    Spirit) is REAL TARGETING (CR 110.3, 405.6): TargetSpec has a 'binCard' kind, and
  *    a bin holds names, so naming the card IS the reference (BinRef).
  */
 import type { EntityId, Seat } from '../../types.ts';
@@ -68,7 +68,7 @@ card('Molten Riftbreaker', {
     effect: {
       run: (g, ctx) => {
         let negated = 0;
-        for (const it of [...g.s.stack]) {   // R68: negate() splices
+        for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
           if ((it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush')
             && it.controller === ctx.controller) { g.negate(it.id); negated++; }
         }
@@ -80,8 +80,8 @@ card('Molten Riftbreaker', {
 
 // "When you play a token spell, [Switch1] Target unit gains +2/+0 and
 // {g}flying until regroup." — r/2 2/1. Token-spell gate is the inverse of the
-// usual nontoken one (R26 family: the spellPlayed event carries token:true for
-// spell tokens). Bounded graft ([Switch1], R9). The flying grant uses
+// usual nontoken one (the spellPlayed event carries token:true for
+// spell tokens). Bounded graft ([Switch1], CR 722.5). The flying grant uses
 // E.addTempAttr (until-regroup attribute, cleared with temp stats).
 const eelBuff: EffectDef = {
   targets: { what: 'unit', prompt: 'Nimbus Eel: target unit gains +2/+0 and flying until regroup' },
@@ -124,7 +124,7 @@ card('Ravenous Fireslinger', {
 });
 
 // "When I die, you may pay [two] to recall target spell in your bin." — rr/2
-// 4/1. R64: "target spell in your bin" is a declared target, chosen as the
+// 4/1. CR 110.1a: "target spell in your bin" is a declared target, chosen as the
 // trigger goes on the stack (min 0 for the "you may"); the [two] stays a
 // resolution-time pay-or-decline — it is optional mana, not a cost of using
 // the ability. Its own card is already in the bin when the trigger resolves
@@ -154,9 +154,9 @@ card('Reclaimer of Secrets', {
         });
         if (!pays) { g.ev('info', 'Reclaimer of Secrets: the [two] is declined — nothing is recalled.'); return; }
         g.payMana(ctx.controller, 2);
-        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
         if (name !== undefined) {
-          g.toHand(ctx.controller, name, 'bin');   // R179
+          g.toHand(ctx.controller, name, 'bin');   // CR 402.4
           g.ev('info', `Reclaimer of Secrets: ${name} recalled to ${g.pname(ctx.controller)}'s hand.`);
         }
       },
@@ -165,13 +165,13 @@ card('Reclaimer of Secrets', {
 });
 
 // "[Switch1] Put target unit with cost 2 or less from your bin into play." —
-// r/2 Occult Spell. R64: the card in the bin is a REAL TARGET, declared at
+// r/2 Occult Spell. CR 110.1a: the card in the bin is a REAL TARGET, declared at
 // cast — "target" is printed, and it used to be a mid-resolution pick, so the
 // spell went on the stack with nobody able to see what it was reaching for.
 // A bin holds names, so naming the card IS the reference (BinRef); it is
 // looked up again at resolution and fizzles if it has left. spawnUnit fires
 // the unit's spawn triggers, exactly as if it entered play. Bounded graft
-// ([Switch1], R9).
+// ([Switch1], CR 722.5).
 const resurrectEffect: EffectDef = {
   targets: {
     what: 'binCard', prompt: 'Resurrect: put target unit with cost 2 or less from your bin into play',
@@ -180,7 +180,7 @@ const resurrectEffect: EffectDef = {
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!t || !('binCard' in t) || t.binCard.index === -1) return;
-    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
+    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
     if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
   },
 };
@@ -191,10 +191,10 @@ card('Resurrect', {
 
 // "When I attack, if I am still in formation, you may put target unit with
 // cost 2 or less from your bin into the empty slot behind me." — rrr/4 4/3
-// {Haste}. "If I am still in formation" is the R1 explicit exception: a
+// {Haste}. "If I am still in formation" is the CR 109.3c explicit exception: a
 // RESOLUTION-time recheck, encoded per card. "The empty slot behind me" =
 // I am the front unit of my column and its back slot is free (columns hold
-// 1-2 units). R64: the bin card is a declared target ("target unit … from
+// 1-2 units). CR 110.1a: the bin card is a declared target ("target unit … from
 // your bin" is printed), min 0 for the "you may".
 card('Rousing Spirit', {
   abilities: [{
@@ -209,7 +209,7 @@ card('Rousing Spirit', {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Rousing Spirit: the carrier is gone — nothing is put into play.'); return; }
-        const col = g.columnOf(self.id);            // R1 recheck: still in formation?
+        const col = g.columnOf(self.id);            // CR 109.3c recheck: still in formation?
         if (!col || col.indexOf(self.id) !== 0 || col.length !== 1) {
           g.ev('info', 'Rousing Spirit: there is no empty slot behind me — nothing is put into play.');
           return;
@@ -219,7 +219,7 @@ card('Rousing Spirit', {
           g.ev('info', 'Rousing Spirit: no bin unit is targeted (or it has left) — nothing is put into play.');
           return;
         }
-        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
         if (name === undefined) { g.ev('info', 'Rousing Spirit: the card left the bin — nothing is put into play.'); return; }
         const u = g.spawnUnit(ctx.controller, name, ctx.region);
         col.push(u.id);                             // straight into the slot behind me
@@ -229,7 +229,7 @@ card('Rousing Spirit', {
 });
 
 // "[Switch] /[Sacrifice a unit]: I deal 4 damage to any target." — r/1
-// {Battle} Occult Spell. The sacrifice is a CAST COST (R35): chosen and paid
+// {Battle} Occult Spell. The sacrifice is a CAST COST (CR 702.4): chosen and paid
 // before the spell reaches the stack — no unit, no cast. Unbounded graft
 // ([Switch]) — the grafted rider's cost is paid (or declined) when the
 // composite collects its cast-time decisions.
@@ -241,7 +241,7 @@ const burstEffect: EffectDef = {
       g.ev('info', 'Sacrificial Burst: no unit was sacrificed — no damage.');
       return;   // rider declined / unpayable
     }
-    const t = firstTarget(g, ctx);   // R227 — one def, two routes (spell + graft)
+    const t = firstTarget(g, ctx);   // CR D7.3a — one def, two routes (spell + graft)
     if (!t) return;
     g.dealEffectDamage(ctx, t, 4);
   },
@@ -255,7 +255,7 @@ card('Sacrificial Burst', {
 // An ACTIVATED ability inside the [Augment] text box: activatable on the card
 // played normally (via 'augment') and on a host it augments (via {mod}).
 //
-// UN-PARKED (R49). The note here used to read "the DSL's activated costs are
+// UN-PARKED (CR 111.7). The note here used to read "the DSL's activated costs are
 // mana/sacrificeSelf only, so the victim is the ability's TARGET and dies at
 // resolution instead (picking the carrier itself — not 'another' — no-ops)".
 // `AbilityCost.sacrificeOther` is exactly the missing slot: it GATES the
@@ -280,7 +280,7 @@ card('Soul Swallower', {
 });
 
 // "The controller of target effect may pay [one]. If they don't, negate that
-// effect and draw a card." — r/1 {Battle} Arcane Spell. The exact R6 pattern:
+// effect and draw a card." — r/1 {Battle} Arcane Spell. The exact CR 111.9, 704.1b pattern:
 // the payment is part of resolution (pay-or-decline for the TARGET's
 // controller, no priority window); decline → negate + Soul Tithe's controller
 // draws. Paying is only offered when they have the mana.
@@ -337,8 +337,8 @@ card('Sparkwraith', {
 
 // "[Augment] Whenever a unit dies, I deal 1 damage to each opponent." — rr/2
 // 2/1. Text-box [Augment]. ANY unit death (either side, tokens included, its
-// own death included) — region-scoped by fireEvent (R12). "Each opponent" is
-// the region's present seats minus the controller (R25).
+// own death included) — region-scoped by fireEvent (CR 601.1d). "Each opponent" is
+// the region's present seats minus the controller (CR 601.4d).
 card('Spirit of Vengeance', {
   augmentText: [{
     type: 'triggered', events: ['died'],
@@ -347,14 +347,14 @@ card('Spirit of Vengeance', {
       run: (g, ctx) => {
         const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
         if (!foes.length) { g.ev('info', 'Spirit of Vengeance: no opponent is present here — no damage.'); return; }
-        g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 1 })));   // R80
+        g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 1 })));   // CR 112.8
       },
     },
   }],
 });
 
 // "When I die, [Switch] Each player sacrifices a unit." — r/1 0/1 {Haste}.
-// "Each player" is region-scoped (R25): every seat present in the event's
+// "Each player" is region-scoped (CR 601.4d): every seat present in the event's
 // region with a unit there picks one and it dies — all picks are made first
 // (choose-before-mutate), then all sacrifices happen. A seat with exactly one
 // unit has no choice to make. Unbounded graft ([Switch]).
@@ -388,7 +388,7 @@ card('Spiteful Shadow', {
 });
 
 // "[Augment] When I die, create a Fireball X, where X is my power." — r/3
-// 3/2. Text-box [Augment]. R1 nuance: a dead unit has no live state to read
+// 3/2. Text-box [Augment]. CR 714.3 nuance: a dead unit has no live state to read
 // at resolution, so "my power" is its LAST-KNOWN value — captured into the
 // event snapshot by when() (which runs at event time, while the dying entity
 // is still readable: counters/temp stats included).
@@ -412,7 +412,7 @@ card('Static Courier', {
 });
 
 // "[Augment] Whenever you play a nontoken spell, create a 1/1 unit." — rr/3
-// 2/3. Text-box [Augment]; the Bloomcaster family (R26): the nontoken gate is
+// 2/3. Text-box [Augment]; the Bloomcaster family (CR 304.15): the nontoken gate is
 // on the SPELL (token spells don't count), and the created 1/1 is a unit
 // token whose spawn is not a "play" — no loop.
 card('Stormsowing Nimbus', {
@@ -432,9 +432,9 @@ card('Stormsowing Nimbus', {
 // "[Switch1] I deal 2 damage to each of up to two target units." — rr/3
 // {Battle} Mystic Elemental Spell. Both targets are chosen AT CAST TIME
 // (count: 2, min: 1); each surviving target takes 2. Bounded graft
-// ([Switch1], R9).
+// ([Switch1], CR 722.5).
 //
-// R126 — "UP TO" MEANS YOU MAY DECLARE NONE. `min: 1` forced the caster to
+// CR 110.1c — "UP TO" MEANS YOU MAY DECLARE NONE. `min: 1` forced the caster to
 // shoot whenever any unit was legal, their own board included. Declaring
 // nothing is a legal declaration for an "up to" spell, and `min: 0` is this
 // repo's own spelling of it on every other card that prints the words
@@ -445,7 +445,7 @@ card('Stormsowing Nimbus', {
 const twinFlame: EffectDef = {
   targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 0, symmetric: true },
   run: (g, ctx) => {
-    // R126: "up to two" — declaring none is legal, and a cast that shot
+    // CR 110.1c: "up to two" — declaring none is legal, and a cast that shot
     // nothing must still SAY so (65-effect-conformance: no effect resolves
     // into silence). The same line covers every target having died before
     // resolution.
@@ -466,9 +466,9 @@ card('Twin Flame', {
 
 // "[Augment][once] When you play a nontoken spell, create a Fireball X, where
 // X is the spell's cost." — rr/3 3/3. Text-box [Augment], [once] = bounded
-// (R9). X = the played spell's cost, read from the event snapshot (R1). For an
-// X spell that is the X actually paid (R157 §1: "paying X replaces the letter
-// X on the printed card temporarily"; R158 puts it on the event), so a
+// (CR 109.9). X = the played spell's cost, read from the event snapshot. For an
+// X spell that is the X actually paid (CR 111.11; the owner's words: "paying X replaces the letter
+// X on the printed card temporarily"; the event carries it), so a
 // Wildfire cast for 4 makes a Fireball 4. Only a cost of 0 makes no Fireball.
 card('Unstable Apparition', {
   augmentText: [{
@@ -498,7 +498,7 @@ card('Voltwrath Behemoth', {
     effect: {
       targets: { what: 'any', prompt: 'Voltwrath Behemoth deals 1 damage to any target' },
       run: (g, ctx) => {
-        const t = firstTarget(g, ctx);   // R227
+        const t = firstTarget(g, ctx);   // CR D7.3a
         if (!t) return;
         g.dealEffectDamage(ctx, t, 1);
       },
@@ -507,7 +507,7 @@ card('Voltwrath Behemoth', {
 });
 
 // "I deal X damage to any target." — rr/X {Battle} Infernal Spell. X is
-// chosen AND paid AT CAST (R35): the caster picks an affordable X before the
+// chosen AND paid AT CAST (CR 107.2a): the caster picks an affordable X before the
 // spell reaches the stack, it is stored on the item, and responses happen
 // with X already fixed (the playtest "paid 0" confusion is impossible now).
 card('Wildfire', {
@@ -516,7 +516,7 @@ card('Wildfire', {
     run: (g, ctx) => {
       const x = ctx.x ?? 0;
       if (x <= 0) { g.ev('info', 'Wildfire: X = 0 — no damage.'); return; }
-      const t = firstTarget(g, ctx);   // R227
+      const t = firstTarget(g, ctx);   // CR D7.3a
       if (!t) return;
       g.dealEffectDamage(ctx, t, x);
     },

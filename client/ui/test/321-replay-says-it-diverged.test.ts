@@ -63,7 +63,7 @@ test('BL-38 §5b the explanation distinguishes where they PARTED from where it R
     'the explanation never mentions the refusal, so the reader cannot tell the '
     + 'two numbers apart');
   assert.match(open, new RegExp(`${REFUSED - PARTED} actions earlier`),
-    'the gap between the two is the whole of R200 and should be stated, not left '
+    'the gap between the two is the whole point of the divergence report and should be stated, not left '
     + 'as arithmetic for the reader');
   ui.click({ replay: 'detail' });
 });

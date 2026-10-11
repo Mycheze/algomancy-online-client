@@ -1,6 +1,6 @@
-/* R301 — the prophecy banner costs AFFINITY, not just mana.
+/* CR 803.7d — the prophecy banner costs AFFINITY, not just mana.
  *
- * R42 said the opposite from 2026-08-19 to 2026-09-20: "costs the banner's
+ * The register said the opposite from 2026-08-19 to 2026-09-20: "costs the banner's
  * plain mana number, no affinity". It was never adjudicated. It was inferred
  * from a transcription in which all ten printed banners had lost their pips,
  * and the pipeline made the inference unfalsifiable — `PROPHECY_RE` had no pip
@@ -15,7 +15,7 @@
  *      satisfiable and every behavioural assertion below would still hold.
  *      That is exactly how the original bug survived a year of green suites.
  *   §2 the RULE — the pips are required to prophesy, the offer and the refusal
- *      agree about it, and nothing else in R42 moved.
+ *      agree about it, and nothing else in the prophecy rules moved.
  *
  * Seeds 4600-4699.
  */
@@ -35,7 +35,7 @@ const BANNERED = DECK_LIST
 
 // ── §1 the data ───────────────────────────────────────────────────────
 
-test('R301 §1: every printed prophecy banner carries affinity pips', () => {
+test('CR 203.1: every printed prophecy banner carries affinity pips', () => {
   // NINE UNTIL 2026-09-21, EIGHT NOW: Caleb removed the Prophecy banner from
   // Tithe Enforcer, and this census is what reported it — correctly, since a
   // card entering or leaving the bannered pool is the event it exists to
@@ -43,7 +43,7 @@ test('R301 §1: every printed prophecy banner carries affinity pips', () => {
   // do not soften it to `>= 1`.
   //
   // ⚠ AND THE DIRECTION MATTERS. A DROP can mean two very different things: a
-  // banner lost in TRANSCRIPTION (the original R301 bug, where the scan still
+  // banner lost in TRANSCRIPTION (the original affinity-pips bug, where the scan still
   // showed it) or a banner Caleb actually removed (this). They are told apart
   // by the scan, never by this file — bot/pipeline/read_card_faces.py's
   // BANNER_CONTROL reads the printed banner off all 527 jpgs and is what
@@ -55,12 +55,12 @@ test('R301 §1: every printed prophecy banner carries affinity pips', () => {
   const bare = BANNERED.filter(([, c]) => !c.prophecy!.cost);
   assert.deepEqual(bare.map(([n]) => n), [],
     'a banner with no affinity at all. Every printed banner carries pips (read '
-    + 'off the scans 2026-09-20, R301); a bare one means the pips were lost in '
+    + 'off the scans 2026-09-20, CR 203.1); a bare one means the pips were lost in '
     + 'transcription again, which is the original bug. '
     + 'Re-run bot/pipeline/read_card_faces.py before touching this test.');
 });
 
-test('R301 §1: a banner only ever demands the card\'s own elements', () => {
+test('§1: a banner only ever demands the card\'s own elements', () => {
   for (const [name, c] of BANNERED) {
     for (const pip of c.prophecy!.cost) {
       assert.ok(c.cost.includes(pip),
@@ -89,21 +89,21 @@ function deployWith(seed: number, res: Array<['light' | 'dark', number]>) {
 const prophesies = (h: Harness, P: Seat): boolean =>
   legalActions(h.state, P).some(a => a.type === 'prophesy');
 
-test('R301 §2: mana without the affinity does not buy a prophecy', () => {
+test('CR 803.7d: mana without the affinity does not buy a prophecy', () => {
   const banner = getCard(ANGEL).prophecy!;
   assert.equal(banner.cost, 'ld', 'the fixture assumes Angel of Anguish is [1ld]');
 
   // four light: mana to spare, the light pip satisfied, no dark at all
   const { h, P, index } = deployWith(4601, [['light', 4]]);
   assert.equal(prophesies(h, P), false,
-    'not offered — the dark pip is missing, and R301 makes that a refusal');
+    'not offered — the dark pip is missing, and CR 803.7d makes that a refusal');
   assert.throws(() => h.do({ type: 'prophesy', seat: P, from: 'hand', index }),
     (err: unknown) => err instanceof IllegalAction
       && /cannot pay the prophecy cost/.test((err as Error).message),
     'and refused if asked for directly — the offer and the refusal agree');
 });
 
-test('R301 §2: the affinity is REQUIRED, not spent', () => {
+test('§2: the affinity is REQUIRED, not spent', () => {
   // exactly one of each: one mana is spent, both pips are merely met
   const { h, P, index } = deployWith(4602, [['light', 1], ['dark', 1]]);
   assert.equal(prophesies(h, P), true, 'offered once both elements are present');
@@ -121,7 +121,7 @@ test('R301 §2: the affinity is REQUIRED, not spent', () => {
     + 'payMana() rather than anything new');
 });
 
-test('R301 §2: the log names the pips it required', () => {
+test('§2: the log names the pips it required', () => {
   const { h, P, index } = deployWith(4603, [['light', 1], ['dark', 1]]);
   h.do({ type: 'prophesy', seat: P, from: 'hand', index });
   assert.ok(h.log.some(l => l.includes('[1ld]')),
@@ -129,14 +129,14 @@ test('R301 §2: the log names the pips it required', () => {
     + `what was actually demanded. Log was:\n${h.log.join('\n')}`);
 });
 
-test('R301 §2: R42 is otherwise untouched — a fulfilled release still ignores affinity', () => {
+test('CR 803.7h: the rest of prophecy is untouched — a fulfilled release still ignores affinity', () => {
   const { h, P, index } = deployWith(4604, [['light', 1], ['dark', 1]]);
   h.do({ type: 'prophesy', seat: P, from: 'hand', index });
   const cached = (h.state.players[P]!.cache ?? [])[0]!;
   assert.equal(cached.prophecy?.condition, 'Two Turns Pass',
-    'the condition rode along with the card, exactly as before R301');
+    'the condition rode along with the card, exactly as before the affinity fix');
   assert.equal(cached.prophecy?.fulfilled ?? false, false,
-    'and it is not fulfilled on the turn it was made (R43) — the free release '
+    'and it is not fulfilled on the turn it was made (CR 803.7e) — the free release '
     + 'that ignores affinity is 36-cache-prophecy.test.ts\'s business, not '
-    + 'this file\'s. R301 changed the way IN to the cache, nothing after it');
+    + 'this file\'s. The affinity requirement changed the way IN to the cache, nothing after it');
 });

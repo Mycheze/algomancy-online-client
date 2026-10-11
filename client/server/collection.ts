@@ -250,7 +250,7 @@ export function deckRecords(account: Account): Record<string, DeckRecord> {
     // for the rows already written, which it repairs with no migration.
     if (game.mode !== 'constructed') continue;
     if (game.custom) continue;   // BL-43: a custom-rules game is in no deck record
-    if (game.single) continue;   // R298: nor is a single card duel
+    if (game.single) continue;   // CR D8.2e: nor is a single card duel
     for (const seat of [0, 1] as Seat[]) {
       if (game.users[seat] !== account.id) continue;
       const id = game.deckIds?.[seat];

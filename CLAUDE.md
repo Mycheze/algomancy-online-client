@@ -70,18 +70,21 @@ Read it before touching that string.
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
 | `data/comprehensive-rules/Algomancy-Comprehensive-Rules.{md,html,txt,json}`, `Annex-D-Digital-Conventions.md`, `discrepancies.md`, `owner-questions.md`, `changelog.md` | **generated** by `client/engine/scripts/cr/`. A wrong rule is fixed in its record (`rules/*.json`), re-verified and re-rendered — never in the output. The `.json` is the same document as data, and what the judge bot's corpus (`bot/pipeline/build_cr.py`) is chunked from. |
 | `data/comprehensive-rules/ledger.json` | **committed reviewed state, append-only**: rule key → number. A number is allocated once, never moved or reused; a removed rule is a tombstone. Only the cr scripts write it. |
-| `data/comprehensive-rules/supersession.json`, `classification.json`, `verdicts/` | **committed reviewed state**: decisions nothing can rebuild. Edit only through the cr scripts. |
+| `data/comprehensive-rules/verdicts/` | **committed reviewed state**: decisions nothing can rebuild. Edit only through the cr scripts. Frozen history: the R-numbers in them refer to the retired register (`verdicts/README.md`). |
 
 ## Things that are not what they look like
 
-- **`client/docs/` is a test fixture directory.** Six tests read `digital-rules.md`,
-  `13-assessment.md` and `questions-round*.md` off disk. Renaming or
-  restructuring them breaks the suite.
-- **`digital-rules.md` is the engine's spec**, not documentation — R1–R350 (a number
-  `184-ruling-register.test.ts` checks against the register, here and in `client/README.md`), every
-  adjudication the engine forced. A ruling gets exactly one `## R<n>` heading;
-  demote every heading inside a pasted write-up or `184-ruling-register` will
-  read it as a new ruling.
+- **`client/docs/` is a test fixture directory.** Tests read `13-assessment.md`
+  and `questions-round*.md` off disk. Renaming or restructuring them breaks the
+  suite.
+- **The comprehensive rules are the engine's spec** (`data/comprehensive-rules/`,
+  its README is the contract). Code cites them as `CR 608.2b`, and
+  `184-ruling-register.test.ts` fails on a CR number that names no live rule. An
+  owner decision goes into the record it settles — `sources.owner {quote, from:
+  "comment <id>", adopted}` — then re-verify and re-render; there is no separate
+  register. The R-ruling register (`client/docs/digital-rules.md`, `R1`–`R350`)
+  was retired on 2026-10-11 and is archived at `refs/archive/r-register-final`;
+  184 fails on any `R<n>` citation that comes back.
 - **`client/ledgers/` holds every work queue** — `card-todo.ts` (the one that
   matters), `playtest-ledger.ts`, `backlog.ts` and the derived queues. They are
   data, not tests; four of them used to sit in `engine/test/` and read as tests.
@@ -112,10 +115,8 @@ That one command fans out to engine, ui, server and ledgers, and
   foreground.
 - **Never run two at once.** The server suite binds a port; two runs deadlock and
   the second just stalls with no error.
-- Python: `.venv/bin/python bot/test/run_all.py` runs all eight scripts
-  (`test_slash`, `test_components`, `test_embeds`, `test_queuewatch`,
-  `test_gameserver`, `test_draft`, `test_mods`, `test_search`)
-  and fails if any does; `run_all.py slash` runs one. Standalone scripts, not
+- Python: `.venv/bin/python bot/test/run_all.py` runs every `bot/test/test_*.py`
+  script and fails if any does; `run_all.py slash` runs one. Standalone scripts, not
   pytest — each prints its own pass line. They point `ALGO_VAR_DIR` at a
   throwaway directory (`bot/test/_scratch_var.py`, imported first): the suite
   used to append to the deployment's own logs.
@@ -184,8 +185,8 @@ it deploys with the change it describes:
 ```
 
 Write for a player, not for this repo: what changed at the table, not how (no
-ruling numbers, ticket ids or file names — `323-recent-updates.test.ts` fails
-on `R303`, `BL-45`, `CT-12`, `#163`, and on anything over 240 characters or out
+rule numbers, ticket ids or file names — `323-recent-updates.test.ts` fails
+on `CR 608.2b`, `BL-45`, `CT-12`, `#163`, and on anything over 240 characters or out
 of date order). Three unrelated visible changes can be three entries. A push
 with nothing a player can see — tests, ledgers, deploy scripts, docs — gets
 none.

@@ -1,5 +1,5 @@
 /**
- * R157 §3 / §8 / §10 / §27 — WHAT LEAVES PLAY, AND WHERE IT LANDS.
+ * THE OWNER'S ANSWERS OF 2026-08-25 ON WHAT LEAVES PLAY, AND WHERE IT LANDS.
  *
  * Four of the owner's twenty-seven answers of 2026-08-25, and three of them
  * are the same question from different sides: when a card stops being in play,
@@ -11,7 +11,7 @@
  *
  * §8 (Dropslime's discard line is an activated ability from hand, usable in
  * battle) is the odd one out and is here because it was filed as a defect and
- * is not one: R65 already implemented it. Its test is a REGRESSION LOCK on
+ * is not one: the engine already implemented it (CR 111.12a). Its test is a REGRESSION LOCK on
  * behaviour that shipped, plus the correction of two comments in
  * batch-dark-b.ts that claimed the mode "can never deal damage".
  *
@@ -95,17 +95,17 @@ const evs = (h: Harness, type: string): EngineEvent[] => h.events.filter(e => e.
 //                    an entity. If a death fired, it is 1.
 //  · IS a despawn  → Entropic Entity, "draw a card when a unit with counters
 //                    despawns". A card in a hand is proof a listener RAN;
-//                    R152 was an entire round spent on an exchange that logged
+//                    an earlier repair round was spent entirely on an exchange that logged
 //                    a despawn it never fired.
-//  · IS a trashing → the card in the bin and the 'trashed' event on it (R40).
-test('R157 §3: Necromorph’s exchange fires NO death trigger — but it despawns and it trashes', () => {
+//  · IS a trashing → the card in the bin and the 'trashed' event on it (CR 801.13a).
+test('CR 801.13a: Necromorph’s exchange fires NO death trigger — but it despawns and it trashes', () => {
   const h = new Harness(13501);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Grox');
   const victim = spawn(h, D, 'Good Whale');                 // cost 6
   // both witnesses stand in D's home region, which IS the battle region A
-  // attacks into — every listener in this engine is region-scoped (R12)
+  // attacks into — every listener in this engine is region-scoped (CR 601.1d)
   const deathWatch = spawn(h, D, 'Refuse Reclaimer');
   spawn(h, D, 'Entropic Entity');
   // Entropic Entity's `when` reads the counter count OFF THE EVENT, so the
@@ -132,7 +132,7 @@ test('R157 §3: Necromorph’s exchange fires NO death trigger — but it despaw
 
   // ── NOT A DEATH ────────────────────────────────────────────────────
   assert.deepEqual(evs(h, 'died').map(e => e.data!['card']), [],
-    'no died event at all — an exchange is not a death (R157 §3)');
+    'no died event at all — an exchange is not a death (CR 801.13a)');
   assert.equal(ent(h, deathWatch)!.counters, 0,
     'and a real "whenever another unit dies" listener did NOT fire. This is the assertion the '
     + 'old code failed: g.destroy(victim, "is deleted") fired every death trigger in the region.');
@@ -141,15 +141,15 @@ test('R157 §3: Necromorph’s exchange fires NO death trigger — but it despaw
   const despawns = evs(h, 'despawned').filter(e => e.data!['card'] === 'Good Whale');
   assert.equal(despawns.length, 1, 'the departure was announced as a despawn…');
   assert.equal(despawns[0]!.data!['counters'], 1,
-    '…carrying the leftPlayFacts a despawn listener reads (R70) — the counter count included');
+    '…carrying the leftPlayFacts a despawn listener reads (CR 714.9) — the counter count included');
   assert.equal(hand(h, D).length, handD + 1,
-    '…and a third-party despawn watcher actually RAN. A log line is not proof: R152 spent a '
+    '…and a third-party despawn watcher actually RAN. A log line is not proof: an earlier repair spent a '
     + 'whole round on an exchange that logged a despawn it never fired.');
 
   // ── IS A TRASHING ──────────────────────────────────────────────────
   assert.equal(countIn(bin(h, D), 'Good Whale'), 1, 'the exchanged card is in its owner’s bin');
   assert.ok(evs(h, 'trashed').some(e => e.data!['card'] === 'Good Whale'),
-    'and entering a bin from play is a trash (R40)');
+    'and entering a bin from play is a trash (CR 801.2)');
   drainStack(h);
 });
 
@@ -158,8 +158,8 @@ test('R157 §3: Necromorph’s exchange fires NO death trigger — but it despaw
 // replaced with a counting wrapper and both cards are driven. Re-inline the
 // operation at either call site, even perfectly, and that route's counter
 // stays at zero. (129-disposal-tail makes the same argument one layer down,
-// for E.disposeToBin; this is the layer R157 §3 added.)
-test('R157 §3: Hooba-Mon and Necromorph are ONE exchange — both go through E.exchangeInPlace', () => {
+// for E.disposeToBin; this is the layer the exchange ruling added.)
+test('CR 410.2a: Hooba-Mon and Necromorph are ONE exchange — both go through E.exchangeInPlace', () => {
   const real = E.prototype.exchangeInPlace;
   let calls = 0;
   const wrapped = function (this: E, ...args: Parameters<E['exchangeInPlace']>) {
@@ -201,7 +201,7 @@ test('R157 §3: Hooba-Mon and Necromorph are ONE exchange — both go through E.
     assert.equal(ent(h2, victim), undefined, 'Necromorph really exchanged the unit away');
     assert.equal(calls, 1,
       'Necromorph must exchange through E.exchangeInPlace. It used to call destroy() — two cards, '
-      + 'one printed operation, two implementations, which is exactly the shape R153/CT-43 removed '
+      + 'one printed operation, two implementations, which is exactly the shape CT-43 removed '
       + 'from the disposal tail one layer down.');
   } finally {
     (E.prototype as { exchangeInPlace: E['exchangeInPlace'] }).exchangeInPlace = real;
@@ -215,12 +215,12 @@ test('R157 §3: Hooba-Mon and Necromorph are ONE exchange — both go through E.
 // > "Turns back over. In all zones, other than play, it exists as the front
 // >  side. And the back is NOT a token."   — Bena, 2026-08-25
 //
-// R101 shipped the opposite of both halves — `self.token = true`, and no
+// The original transform reading shipped the opposite of both halves — `self.token = true`, and no
 // flip-back — and said so in its own comment, flagging the alternative as a
 // real reading it would not invent without the owner. This is that reading,
 // and the stake is the card: an erased Scholar is gone from the game for
 // having used its own printed ability.
-test('R157 §10: a transformed Scholar killed in play BINS as "Scholar of the Void"', () => {
+test('CR 201.4: a transformed Scholar killed in play BINS as "Scholar of the Void"', () => {
   const h = new Harness(13504);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -245,7 +245,7 @@ test('R157 §10: a transformed Scholar killed in play BINS as "Scholar of the Vo
   assert.equal(countIn(bin(h, P), 'Beyond, Codex Incarnate'), 0,
     'the back face reaches no zone but play, so no exhume or bin-play can ever fetch a 0-cost 8/3');
   assert.equal(countIn(erasedOf(h, P), 'Beyond, Codex Incarnate'), 0,
-    'and NOTHING is erased: it was never a token, so R69 has nothing to sweep');
+    'and NOTHING is erased: it was never a token, so CR 713.5 has nothing to sweep');
   assert.ok(h.log.some(l => l.includes('turns back over')),
     'the flip is announced — whether a card is recoverable is a real play decision');
 });
@@ -254,8 +254,8 @@ test('R157 §10: a transformed Scholar killed in play BINS as "Scholar of the Vo
 // reach is a technicality; this drives a real recursion effect at it. Hooba-Mon
 // fetches "target unit in your bin with cost 3 or less" and Scholar of the Void
 // is a dd/1, so a Scholar that transformed, fought as an 8/3 and died comes
-// back — as a Scholar. Under R101 that bin entry did not exist at all.
-test('R157 §10: a transformed Scholar that died is RECURRABLE from the bin, as a Scholar', () => {
+// back — as a Scholar. Under the original transform reading that bin entry did not exist at all.
+test('CR 201.4: a transformed Scholar that died is RECURRABLE from the bin, as a Scholar', () => {
   const h = new Harness(13505);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -272,7 +272,7 @@ test('R157 §10: a transformed Scholar that died is RECURRABLE from the bin, as 
   h.do({ type: 'declareAttack', seat: P, columns: [[hooba]] });
   assert.ok(h.state.decision!.options.some(o => String(o.label).includes('Scholar of the Void')),
     'the binned Scholar is on the menu of a real recursion effect — this is the whole point of '
-    + '§10: under R101 the card had been ERASED and there was nothing here to offer');
+    + '§10: under the original transform reading the card had been ERASED and there was nothing here to offer');
   pick(h, { bin: { seat: P, card: 'Scholar of the Void' } });
   drainStack(h);
 
@@ -292,8 +292,8 @@ test('R157 §10: a transformed Scholar that died is RECURRABLE from the bin, as 
 // Grob prints "Up to one target unit's CONTROLLER caches it". E.cacheUnit
 // always cached to `u.owner`, and the two differ only after a control change —
 // which four cards in the pool produce. `giveControl` is the choke point all of
-// them go through (R148/CT-38), so it is what this drives.
-test('R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache, not the owner’s', () => {
+// them go through (CT-38), so it is what this drives.
+test('§27: Grob caches a STOLEN unit into the CONTROLLER’s cache, not the owner’s', () => {
   const h = new Harness(13506);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -306,7 +306,7 @@ test('R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache, not th
 
   toNextBattle(h, A);
   // both attack, so both stand in the battle region — every target is
-  // region-scoped (R12)
+  // region-scoped (CR 601.1b)
   h.do({ type: 'declareAttack', seat: A, columns: [[grob], [stolen]] });
   pick(h, { unit: stolen });
   drainStack(h);
@@ -319,16 +319,16 @@ test('R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache, not th
   assert.ok(new E(h.state).cache(A)[0]!.prophecy, 'the granted prophecy rode along');
 });
 
-// …and R157 §27 read this as the OTHER half of "printed text wins": Waxen
+// …and the printed-text answer was read as the OTHER half of "printed text wins": Waxen
 // Witness prints a bare "Cache target unit", names no seat, so the base-rules
 // default stood and the same stolen unit went to its OWNER's cache. Same
 // primitive, same board, opposite answer, decided by what the card says.
 //
-// ⚠ R262 CHANGED THE DEFAULT, SO HALF OF THAT IS NOW WRONG — and the half that
-// stands is the half R157 §27 was actually about. The old expectation, kept
+// ⚠ THE ZONES-FOLLOW-CONTROL RULING CHANGED THE DEFAULT, SO HALF OF THAT IS NOW WRONG — and the half that
+// stands is the half the printed-text answer was actually about. The old expectation, kept
 // here rather than deleted:
 //
-//     'R157 §27 control: Waxen Witness names no seat, so a stolen unit still
+//     '[…] control: Waxen Witness names no seat, so a stolen unit still
 //      caches to its OWNER'
 //     assert.deepEqual(cacheOf(h, D), ['Good Whale'], 'the OWNER's cache');
 //     assert.deepEqual(cacheOf(h, A), [], 'and the controller gets nothing');
@@ -339,13 +339,13 @@ test('R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache, not th
 // a stolen unit to the THIEF's cache, and Grob's printed "into your cache" is
 // no longer the only route there.
 //
-// WHAT R157 §27 KEEPS, and why this test is still worth having: PRINTED TEXT
+// WHAT CR 101.1 KEEPS, and why this test is still worth having: PRINTED TEXT
 // STILL WINS. `opts.to` is untouched, so a card that names a seat still
 // overrides the default — it is just that the default it overrides has moved.
 // The pair of tests still shows two answers from one primitive on one board;
 // they simply no longer DIFFER, and the assertion that they now agree is what
 // catches a future edit that takes the override away.
-test('R262: Waxen Witness names no seat, so a stolen unit follows CONTROL like everything else', () => {
+test('CR 400.4: Waxen Witness names no seat, so a stolen unit follows CONTROL like everything else', () => {
   const h = new Harness(13507);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -361,11 +361,11 @@ test('R262: Waxen Witness names no seat, so a stolen unit follows CONTROL like e
 
   assert.equal(ent(h, stolen), undefined, 'the unit left play');
   assert.deepEqual(cacheOf(h, A), ['Good Whale'],
-    'R262: the CONTROLLER’s cache. Waxen Witness prints no seat, and the default it falls back '
+    'CR 801.8: the CONTROLLER’s cache. Waxen Witness prints no seat, and the default it falls back '
     + 'to now follows control — "all four follow control, one rule, no seam".');
   assert.deepEqual(cacheOf(h, D), [],
     'and the owner gets nothing. ⚠ THIS IS THE ASSERTION THAT FLIPPED; if it ever reads the '
-    + 'other way again, R262 has been reverted, not simplified.');
+    + 'other way again, the zones-follow-control ruling (CR 400.4) has been reverted, not simplified.');
   drainStack(h);
 });
 
@@ -378,21 +378,21 @@ test('R262: Waxen Witness names no seat, so a stolen unit follows CONTROL like e
 // >   — Bena, 2026-08-25
 //
 // ⚠ THIS ONE WAS FILED AS A DEFECT AND IS NOT ONE, and the test is worth more
-// for saying so than for what it changes: nothing. The claim under R157 §8 was
+// for saying so than for what it changes: nothing. The claim under the Dropslime answer was
 // that `printed.json` gives the discardMe mode no `timing` key, so it inherits
 // the card's `deploy` timing, so the mode "can never deal damage" because the
-// per-battle trash ledger is 0 outside battle. Measured, that is false. R65
-// had already ruled a missing {Battle} marker to be NO restriction — the
+// per-battle trash ledger is 0 outside battle. Measured, that is false. A ruling
+// had already made a missing {Battle} marker NO restriction (CR 207.8) — the
 // timing field is consulted in exactly one direction, `(c.discardMe.timing ??
 // c.timing) !== 'battle'`, which keeps a {Battle}-MARKED line (Nothyr) out of
 // DEPLOYMENT — and `legalBattlePriorityActions` offers every payable
 // discard-me line with no timing gate at all. So the mode is live in battle,
 // the ledger it reads counts its own trash, and the damage lands.
 //
-// What R157 §8 does change is two comments in batch-dark-b.ts that asserted
+// What the Dropslime answer does change is two comments in batch-dark-b.ts that asserted
 // the opposite; they are corrected, and this locks the behaviour they were
 // wrong about.
-test('R157 §8: Dropslime’s discard-me mode is offered IN BATTLE and deals damage there', () => {
+test('CR 111.12a: Dropslime’s discard-me mode is offered IN BATTLE and deals damage there', () => {
   const h = new Harness(13508);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -406,7 +406,7 @@ test('R157 §8: Dropslime’s discard-me mode is offered IN BATTLE and deals dam
   assert.ok(h.legal(A).some(a =>
     a.type === 'playCard' && a.handIndex === idx && a.mode === 'discardMe'),
   'the discard-me mode is OFFERED in battle. The missing {Battle} marker is not a restriction '
-  + '(R65, confirmed by R157 §8) — it only ever restricts a MARKED line out of deployment.');
+  + '(CR 111.12a) — it only ever restricts a MARKED line out of deployment.');
 
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: A, handIndex: idx, mode: 'discardMe' });

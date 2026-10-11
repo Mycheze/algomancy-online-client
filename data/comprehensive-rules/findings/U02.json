@@ -2,16 +2,16 @@
   {
     "id": "F-U02-1",
     "rule": "concepts.numbers.x-minimum",
-    "title": "X-cost test titles still cite R157 §20, which R326 reversed",
-    "summary": "Three tests in 133-x-cost-semantics are titled \"R157 §20 — …\" although R326 reversed §20. Their assertions agree with R326 (X = 3 costs [3], X = 5 costs [5]; no Sentry costs exactly X), and one of them is the guard for RAQ 1359629594512068770#1. The labels point a reader at reversed law. Retitle them to R326 (or to R157 §1 for the no-Sentry cases).",
+    "title": "X-cost test titles still cite the owner ruling of 2026-08-25 (“the owner's answers to the 27…”), which the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) reversed",
+    "summary": "Three tests in 133-x-cost-semantics are titled \"the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) — …\" although the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) reversed §20. Their assertions agree with the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) (X = 3 costs [3], X = 5 costs [5]; no Sentry costs exactly X), and one of them is the guard for RAQ 1359629594512068770#1. The labels point a reader at reversed law. Retitle them to the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) (or to the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) for the no-Sentry cases).",
     "evidence": [
       {
         "file": "client/engine/test/133-x-cost-semantics.test.ts",
-        "quote": "test('R157 §20 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry', () => {"
+        "quote": "test('CR 107.5 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry', () => {"
       },
       {
         "file": "client/engine/test/133-x-cost-semantics.test.ts",
-        "quote": "test('R157 §20 — with no Stasis Sentry an X spell costs exactly X', () => {"
+        "quote": "test('CR 107.2 — with no Stasis Sentry an X spell costs exactly X', () => {"
       },
       {
         "file": "client/docs/digital-rules.md",
@@ -23,8 +23,8 @@
   {
     "id": "F-U02-2",
     "rule": "concepts.numbers.cost-reference.not-cast",
-    "title": "R158 section 1 still says Living Vault refuses X cards in hand",
-    "summary": "R158 §1 (current) says Living Vault's printedMana returns null, so an X card in hand is never offered, and calls it the odd one out. Test 39-light-b now asserts the opposite: Living Vault offers an X card in hand at [0]. The ruling text is stale. It should be marked as corrected, or the sentence amended, so the register does not describe a bug that is fixed.",
+    "title": "The owner ruling of 2026-08-25 (“the three cost contexts of an…”) section 1 still says Living Vault refuses X cards in hand",
+    "summary": "The owner ruling of 2026-08-25 (“the three cost contexts of an…”) (current) says Living Vault's printedMana returns null, so an X card in hand is never offered, and calls it the odd one out. Test 39-light-b now asserts the opposite: Living Vault offers an X card in hand at [0]. The ruling text is stale. It should be marked as corrected, or the sentence amended, so the register does not describe a bug that is fixed.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -32,7 +32,7 @@
       },
       {
         "file": "client/engine/test/39-light-b.test.ts",
-        "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {"
+        "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (CR 107.3a)', () => {"
       }
     ],
     "ct": "CT-236"
@@ -41,7 +41,7 @@
     "id": "F-U02-3",
     "rule": "concepts.resources.prismite.exchange.element-only",
     "title": "A Prismite cannot be exchanged into a Shard, though the printed card says \"a non-prismite resource\"",
-    "summary": "doExchangePrismite accepts only an element of the game. The printed Prismite reads \"Erase me: Create a non-prismite resource, then activate it\" and Manual p.18 says active Prismites \"may be exchanged for other resources\"; a Shard is a non-prismite resource. No ruling forbids the Shard (R299 rules the Prismite-into-Prismite case), and test 308's title asserts the refusal. Low impact: a Shard is never better than an element resource.",
+    "summary": "doExchangePrismite accepts only an element of the game. The printed Prismite reads \"Erase me: Create a non-prismite resource, then activate it\" and Manual p.18 says active Prismites \"may be exchanged for other resources\"; a Shard is a non-prismite resource. No ruling forbids the Shard (the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) rules the Prismite-into-Prismite case), and test 308's title asserts the refusal. Low impact: a Shard is never better than an element resource.",
     "evidence": [
       {
         "file": "client/engine/src/apply.ts",
@@ -57,7 +57,7 @@
       },
       {
         "file": "client/engine/test/308-recycle-for-prismite.test.ts",
-        "quote": "R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard"
+        "quote": "CR 106.8d what stays illegal: exchanging a Prismite into a Prismite or a Shard"
       }
     ],
     "ct": "CT-237"

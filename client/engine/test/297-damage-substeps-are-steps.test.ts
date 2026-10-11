@@ -1,4 +1,4 @@
-/* R295 — A SPLIT DAMAGE STEP IS SEVERAL STEPS.
+/* CR 608.3b — A SPLIT DAMAGE STEP IS SEVERAL STEPS.
  *
  * PLAYTEST REPORT #165, room KAWJ, 2026-09-15, filed by the owner (judge L1)
  * at action [246]: *"Damage got combined here Adversary of the Deep. All
@@ -9,7 +9,7 @@
  * NORMAL sub-step for 6, and {Sluggish} Adversary of the Deep struck in the
  * Sluggish sub-step for 2. Adversary prints *"[Augment] Whenever a player
  * loses life, put that many +1/+1 counters on me"* — so its trigger heard the
- * 6, was HELD by R261, and Adversary struck as a printed 2/2. Both triggers
+ * 6, was HELD by the after-combat hold, and Adversary struck as a printed 2/2. Both triggers
  * then landed after combat, on a board where the damage they were for had
  * already been dealt.
  *
@@ -25,18 +25,17 @@
  *   > and resolution (allowing for responses and priority and everything), then
  *   > the adversary does 8 damage to Karanda."
  *
- * ⚠ THE CONDITION WAS ALWAYS IN R261 AND R261 DROPPED IT. Its own source quote
+ * ⚠ THE CONDITION WAS ALWAYS IN THE AFTER-COMBAT RULING, AND THAT RULING DROPPED IT. Its own source quote
  * opens *"**If there are no units in combat with sluggish or [swift]**, there
  * will be no triggers during the damage step"*; the implementation kept the
- * sentence after it and made the hold unconditional. R295 is not a new rule so
- * much as the other half of an old one.
+ * sentence after it and made the hold unconditional. The split-step rule (CR 608.3b) is not a new rule so much as the other half of an old one.
  *
- * ⚠ AND IT IS NOT A REVERT TO THE PRE-R261 ENGINE. That one resolved a
+ * ⚠ AND IT IS NOT A REVERT TO THE OLD IN-SUB-STEP ENGINE. That one resolved a
  * sub-step's triggers INSIDE the sub-step: built, aimed and resolved to
  * completion, never on the stack, never respondable, never taxed — which is
- * what report #119 (room YFUE) was filed about. R295 resolves them at the
+ * what report #119 (room YFUE) was filed about. CR 608.9c resolves them at the
  * sub-step BOUNDARY, on the stack, in an open priority window. The ordering
- * came back; R261's machinery is what carries it. 21-fixes' Flowstone Arcanite
+ * came back; the after-combat hold's machinery is what carries it. 21-fixes' Flowstone Arcanite
  * test tells that story against a card.
  *
  * Seeds 29700-29799.
@@ -54,7 +53,7 @@ import type { Seat } from '../src/types.ts';
 
 /* ══ §1 — THE REPORT ═════════════════════════════════════════════════ */
 
-test('R295 §1 the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes', () => {
+test('CR 802.5b the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes', () => {
   const h = new Harness(29701);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -89,7 +88,7 @@ test('R295 §1 the report: a {Sluggish} Adversary of the Deep grows on the norma
 
 /* ══ §2 — PRIORITY IS REAL AT THE BOUNDARY ══════════════════════════ */
 
-test('R295 §2 the boundary is a real priority window: the other seat can respond before the next strike', () => {
+test('CR 608.3b the boundary is a real priority window: the other seat can respond before the next strike', () => {
   const h = new Harness(29702);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -114,7 +113,7 @@ test('R295 §2 the boundary is a real priority window: the other seat can respon
 
 /* ══ §3 — THE CONTROL: AN UNSPLIT STEP IS UNCHANGED ═════════════════ */
 
-test('R295 §3 the control: with no {Swift} and no {Sluggish} anywhere, R261 is untouched', () => {
+test('CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, the unsplit step is untouched', () => {
   const h = new Harness(29703);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -130,12 +129,12 @@ test('R295 §3 the control: with no {Swift} and no {Sluggish} anywhere, R261 is 
   assert.deepEqual(h.state.battle!.damageSubs, ['normal'],
     'one striking sub-step — the step is not split');
   assert.equal(h.state.battle!.step, 'afterWindow',
-    'so combat runs straight through to after-combat, exactly as R261 leaves it');
+    'so combat runs straight through to after-combat, exactly as CR 608.3a leaves it');
   assert.equal(h.state.players[D]!.life, 30 - 5, 'and all of it landed as one number');
   finishBattle(h);
 });
 
-test('R295 §3b an EMPTY sub-step opens no window — a Swift-only battle gets one boundary, not two', () => {
+test('CR 608.3c an EMPTY sub-step opens no window — a Swift-only battle gets one boundary, not two', () => {
   const h = new Harness(29704);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -159,7 +158,7 @@ test('R295 §3b an EMPTY sub-step opens no window — a Swift-only battle gets o
 
 /* ══ §4 — WHAT IS FIXED ONCE, STAYS FIXED ═══════════════════════════ */
 
-test('R295 §4 damageSubs is fixed when the step opens: a Swift unit dying cannot unsplit the battle', () => {
+test('CR 608.3d damageSubs is fixed when the step opens: a Swift unit dying cannot unsplit the battle', () => {
   const h = new Harness(29705);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -185,9 +184,9 @@ test('R295 §4 damageSubs is fixed when the step opens: a Swift unit dying canno
   finishBattle(h);
 });
 
-/* ══ §5 — R157 §5: A {Swift}{Sluggish} COLUMN ═══════════════════════ */
+/* ══ §5 — CR 608.2c: A {Swift}{Sluggish} COLUMN ═══════════════════════ */
 
-test('R295 §5 a {Swift}{Sluggish} column strikes in two sub-steps, with a boundary between them', () => {
+test('CR 608.2c a {Swift}{Sluggish} column strikes in two sub-steps, with a boundary between them', () => {
   const h = new Harness(29706);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -199,7 +198,7 @@ test('R295 §5 a {Swift}{Sluggish} column strikes in two sub-steps, with a bound
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   assert.deepEqual(h.state.battle!.damageSubs, ['Swift', 'Sluggish'],
-    'R157 §5: "both apply" — the column is scheduled in two sub-steps, and the empty normal '
+    'the owner: "both apply" (CR 608.2c) — the column is scheduled in two sub-steps, and the empty normal '
     + 'one between them is not a step');
   assert.equal(h.state.battle!.step, 'damageWindow', 'so there is a boundary between them');
   assert.equal(h.state.battle!.pendingSub, 'normal',
@@ -212,7 +211,7 @@ test('R295 §5 a {Swift}{Sluggish} column strikes in two sub-steps, with a bound
 
 /* ══ §6 — THE PUMP SURVIVES A SUSPENSION AT THE BOUNDARY ════════════ */
 
-test('R295 §6 a decision raised INSIDE a boundary window still resumes the pump when it closes', () => {
+test('CR 608.3b a decision raised INSIDE a boundary window still resumes the pump when it closes', () => {
   const h = new Harness(29707);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

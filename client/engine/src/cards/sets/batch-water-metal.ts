@@ -5,8 +5,8 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R9 (bounded [Switch1]/[once] budgets per card), R12 (regions are exclusive —
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 803.4 (bounded [Switch1]/[once] budgets per card), CR 601.2, 101.6 (regions are exclusive —
  * the engine region-scopes trigger listeners and presentSeats, so "each
  * opponent" is read from the event's region).
  *
@@ -34,10 +34,10 @@ import { selfOf, isEnt, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** the mana cost of the spell in the triggering event (R1: read from the event
+/** the mana cost of the spell in the triggering event (read from the event
  * snapshot).
  *
- * R157 §1 SETTLED THE X QUESTION this used to be parked on: *"Pips aren't a
+ * THE X RULING (now CR 107.2) SETTLED THE X QUESTION this used to be parked on: *"Pips aren't a
  * relevant part of looking at the cost of a card in Algomancy. And paying X
  * replaces the letter X on the printed card temporarily."* An X spell's cost
  * is the X ACTUALLY PAID — Null Drone's reading, not pips-plus-X and not the
@@ -49,7 +49,7 @@ import { selfOf, isEnt, eventCardCost } from './helpers.ts';
  *
  * The paid X now rides on the 'spellPlayed' event itself (engine.ts, where
  * `item.x` is final and in scope), so `eventCardCost` is a snapshot read like
- * every other R1 condition. It is NOT a lookup of the item on the stack:
+ * every other CR 109.3a condition. It is NOT a lookup of the item on the stack:
  * 'spellPlayed' fires before `pushItem`, and a deploy-timing X spell
  * (Floral Singularity) goes through `commitItem(…, 'resolve')` and is never
  * pushed at all — a stack lookup would silently answer 0 for it. */
@@ -66,10 +66,10 @@ card('Ambling Mountaintop', {});
 // "When I despawn, [Switch1] Each opponent loses 3 life." — b/1 2/1.
 // Despawn = ANY leave-play, so listen to BOTH 'died' (destroy) and 'despawned'
 // (recall); self-filtered to the leaving unit. "Each opponent" is region-scoped
-// (R12): the opponents present in the event's region (in battle, both seats).
+// (CR 601.4d): the opponents present in the event's region (in battle, both seats).
 const eachOpponentLoses3: EffectDef = {
   run: (g, ctx) => {
-    // R187/CT-70: a HOME region out of battle lists only its owner, so this
+    // CR D7.3b/CT-70: a HOME region out of battle lists only its owner, so this
     // loop legitimately runs zero times. Saying nothing is the defect, not the
     // no-op — Boreal Wanderer below is the same repair.
     const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
@@ -99,7 +99,7 @@ const dealTwoToEachOpponent: EffectDef = {
   run: (g, ctx) => {
     const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
     if (!foes.length) { g.ev('info', `${ctx.sourceName}: no opponent is present here — no damage.`); return; }
-    g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 2 })));   // R80
+    g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 2 })));   // CR 112.8
   },
 };
 card('Boreal Wanderer', {
@@ -117,18 +117,18 @@ card('Boreal Wanderer', {
 
 // "[Augment] [once] When you play a nontoken spell, put X +1/+1 counters on me,
 // where X is that spell's cost." — bb/2 1/1. Text-box [Augment] (text only,
-// never attrs). [once] = bounded per host per card (R9). X is the played
-// spell's mana cost, read from the event (R1); "me" = the unit carrying the
+// never attrs). [once] = bounded per host per card (CR 803.4). X is the played
+// spell's mana cost, read from the event; "me" = the unit carrying the
 // ability (ctx.sourceId: the host when donated, the card itself when normal).
 const amalgamCounters: EffectDef = {
   run: (g, ctx) => {
     const x = eventSpellCost(ctx);
     const self = selfOf(g, ctx);
-    // CARD-TODO #3 / R109: "nothing happened" is a legitimate outcome, not
+    // CARD-TODO #3 / CR D7.3: "nothing happened" is a legitimate outcome, not
     // saying so never is. Its sibling three definitions down (Arcane
     // Concentrator, the same [once]/spellPlayed/X-is-the-cost shape) has said
     // this since it was written; this one was simply missed, and 65's fuzz
-    // drive only reached the branch once R144 moved the deployment triggers
+    // drive only reached the branch once deployment triggers moved
     // onto the stack and shifted the drive's trajectory. Pre-existing, not
     // caused by that change.
     if (!self || x <= 0) {
@@ -170,13 +170,13 @@ card('Arcane Concentrator', {
 // "[Augment] Whenever a player loses life, put that many +1/+1 counters on me.
 // (Damage causes life loss.)" — bm/4 2/2, {Sluggish} (printed attr, not an
 // augment grant: the [Augment] here is on the TEXT box). Fires on 'lifeLost'
-// for ANY player; X = the amount lost, from the event (R1). Region-scoped in
+// for ANY player; X = the amount lost, from the event. Region-scoped in
 // battle (lifeLost carries a region only then), global otherwise.
 const adversaryGrow: EffectDef = {
   run: (g, ctx) => {
     const n = (ctx.event?.data?.n as number | undefined) ?? 0;
     const self = selfOf(g, ctx);
-    // R166: the guard must say why (test/65). Reached whenever the carrier has
+    // the guard must say why (test/65). Reached whenever the carrier has
     // left before the trigger resolves, or a 'lifeLost' event carries no
     // amount — the Earthbound Replicator precedent, where another card's
     // behaviour change moved the conformance drive onto a silent branch.

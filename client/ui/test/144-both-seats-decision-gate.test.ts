@@ -1,10 +1,10 @@
-/* R170 / CT-46 — THE HOTSEAT DECISION GATE, ONE LAYER ABOVE R154.
+/* CR D2.1 / CT-46 — THE HOTSEAT DECISION GATE, one layer above the engine's seat-aware gate.
  *
- * R154 taught `apply()` and `legalActions()` that a decision belongs to a
+ * The engine's seat-aware gate (CR D2.1b) taught `apply()` and `legalActions()` that a decision belongs to a
  * SEAT: inside a hidden simultaneous segment, and where answering it will not
  * rewind the world, the seat that is NOT being asked may carry on deploying.
- * It stopped, deliberately, at the engine — and said so itself (digital-rules
- * R154 §"FOR THE OWNER" 3): *"The hotseat UI is still gated, one layer above
+ * It stopped, deliberately, at the engine — and said so itself (the retired register,
+ * §"FOR THE OWNER" 3): *"The hotseat UI is still gated, one layer above
  * this."*
  *
  * ⚠ THE FIRST THING THIS FILE DOES IS DISBELIEVE ITS OWN TICKET. The last
@@ -21,11 +21,11 @@
  *     and the free seat's hand card still wearing its green `playable` ring —
  *     drawn live, taking clicks, doing nothing.
  * §2  THE ASKER. Still gets its own question, still cannot act around it.
- * §3  THE NEGATIVE CONTROLS — R154's cases 2 and 3 are UI-visible too: a
+ * §3  THE NEGATIVE CONTROLS — the engine gate's cases 2 and 3 (CR D2.1a, D2.1c) are UI-visible too: a
  *     battle question and a rewinding (snapshot) question still freeze the
  *     whole screen. Widen the gate by accident and these go red.
  * §4  BOTH SEATS AT ONCE. It cannot happen: `GameState.decision` is a single
- *     slot, and R154's after-the-fact fingerprint refuses the action that
+ *     slot, and the engine's after-the-fact fingerprint (CR D2.1d) refuses the action that
  *     would take it. Asserted directly, including what the client says.
  * §5  ONLINE, NOTHING CHANGES. `server/view.ts` nulls a decision that is not
  *     yours, so a net client's `s.decision` is always its own — the online
@@ -66,7 +66,7 @@ const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** A free deployment spell, so "seat 1 can still deploy" is a real play and
  * not a resource fixture that might drift. Gaining life is the receipt. */
-const FREE = 'R170 Free Deploy';
+const FREE = 'CR D2.1 Free Deploy';
 registerSynthetic({
   name: FREE, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -75,7 +75,7 @@ registerSynthetic({
 }, { spellEffect: { run: (g, ctx) => { g.gainLife(ctx.controller, 1, FREE); } } });
 
 /** …and one that ASKS, for §3's rewind control and §4's clobber. */
-const ASKS = 'R170 Halt And Ask';
+const ASKS = 'CR D2.1 Halt And Ask';
 registerSynthetic({
   name: ASKS, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -95,8 +95,8 @@ registerSynthetic({
 
 /** A unit with a FREE activated ability, for the other input path a hidden
  * segment has: the board. Clicking a unit is how an ability is used, and it
- * was gated by the same pre-R154 `!s.decision`. */
-const PUMP = 'R170 Free Pump';
+ * was gated by the same old bare `!s.decision`. */
+const PUMP = 'CR D2.1 Free Pump';
 registerSynthetic({
   name: PUMP, cost: '', mana: 0, power: 1, toughness: 4,
   type: 'Test Unit', kind: 'unit', timing: 'deploy', attrs: [],
@@ -114,7 +114,7 @@ registerSynthetic({
  * needs that: with a mid-resolution suspension instead it would pass for the
  * wrong reason (blocked by the rewind rule, not the phase rule) and stay green
  * if the phase rule were deleted. */
-const BATTLE_ASKS = 'R170 Battle Ask';
+const BATTLE_ASKS = 'CR D2.1 Battle Ask';
 registerSynthetic({
   name: BATTLE_ASKS, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'battle', attrs: [],
@@ -133,8 +133,8 @@ registerSynthetic({
 
 /** Turn 1 into DEPLOYMENT with `n` Wraiths on `seat` — their start-of-
  * deployment triggers are what raises a real question for that seat, with more
- * of the pile still queued behind it. Same fixture shape as R154's own tests
- * (130-seat-aware-gate), deliberately: this file is about the layer above it. */
+ * of the pile still queued behind it. Same fixture shape as the engine gate's own
+ * tests (130-seat-aware-gate), deliberately: this file is about the layer above it. */
 function deployment(seat: Seat, n: number): Harness {
   const h = new Harness(424242);
   h.do({ type: 'donePlanning', seat: 0 });
@@ -159,13 +159,13 @@ function askedSeat0(): { state: GameState; hand1: number; hand0: number } {
   assert.equal(h.state.phase, 'deploy');
   assert.equal(hiddenSegment(h.state), 'deploy');
   assert.equal(h.state.decision?.seat, 0, 'the fixture really does suspend seat 0');
-  assert.equal(h.state.suspension?.type, 'cast', 'and on a cast-time suspension (no R85 snapshot)');
+  assert.equal(h.state.suspension?.type, 'cast', 'and on a cast-time suspension (no rollback snapshot)');
   return { state: h.state, hand1, hand0 };
 }
 
 /* ═══ §0 THE RULES LAYER FIRST ════════════════════════════════════════ */
 
-test('R170 §0: the rules layer really does offer AND accept what the client is about to draw', () => {
+test('CR D2.1: the rules layer really does offer AND accept what the client is about to draw', () => {
   const { state, hand1 } = askedSeat0();
 
   // OFFERED. If this were empty the ticket would be mis-filed and the fix
@@ -188,7 +188,7 @@ test('R170 §0: the rules layer really does offer AND accept what the client is 
 
 /* ═══ §1 THE BUG, ON SCREEN ═══════════════════════════════════════════ */
 
-test('R170 §1: with both seats on screen the seat NOT being asked is offered its deployment affordances', () => {
+test('CR D2.1: with both seats on screen the seat NOT being asked is offered its deployment affordances', () => {
   const { state, hand1 } = askedSeat0();
   const html = ui.show(structuredClone(state));
 
@@ -200,12 +200,12 @@ test('R170 §1: with both seats on screen the seat NOT being asked is offered it
   assert.match(html, /Deployment/, 'and the bar under it really is the deployment bar');
 
   assert.ok(ui.has({ btn: 'donedeploy', p: 1 }),
-    'seat 1 is offered its "done deploying" button — the affordance R154 made legal');
+    'seat 1 is offered its "done deploying" button — the affordance CR D2.1b allows');
   assert.ok(ui.has({ act: 'hand', p: 1, i: hand1 }),
     'and its hand card is on the board');
 });
 
-test('R170 §1: and the affordance is real — the free seat\'s hand click plays the card', () => {
+test('CR D2.1: and the affordance is real — the free seat\'s hand click plays the card', () => {
   const { state, hand1 } = askedSeat0();
   ui.show(structuredClone(state));
   const life = ui.state().players[1]!.life;
@@ -222,7 +222,7 @@ test('R170 §1: and the affordance is real — the free seat\'s hand click plays
   assert.equal(ui.state().decision?.seat, 0, "while seat 0's question stands untouched");
 });
 
-test('R170 §1: ending the free seat\'s deployment goes through, from the button on screen', () => {
+test('CR D2.1: ending the free seat\'s deployment goes through, from the button on screen', () => {
   const { state } = askedSeat0();
   ui.show(structuredClone(state));
   ui.click({ btn: 'donedeploy', p: 1 });
@@ -230,13 +230,13 @@ test('R170 §1: ending the free seat\'s deployment goes through, from the button
   assert.equal(ui.state().decision?.seat, 0, 'and seat 0 is still being asked');
 });
 
-test('R170 §1: the free seat\'s other two deployment inputs work too — its board and its cache', () => {
+test('CR D2.1: the free seat\'s other two deployment inputs work too — its board and its cache', () => {
   // The hand is not the only way to spend a deployment. Both of these were
-  // gated on the same pre-R154 "any decision at all", and both are things a
+  // gated on the same old "any decision at all", and both are things a
   // player does every single deployment step.
   const h = deployment(0, 3);
   const unit = spawn(h, 1, PUMP);
-  // R45 glimpse: a cached card playable this turn, for its (zero) mana
+  // CR 801.9e glimpse: a cached card playable this turn, for its (zero) mana
   h.state.players[1]!.cache = [{ card: FREE, uid: 90001, playableUntilTurn: h.state.turn }];
   assert.equal(h.state.decision?.seat, 0, 'seat 0 is the one being asked');
 
@@ -255,7 +255,7 @@ test('R170 §1: the free seat\'s other two deployment inputs work too — its bo
 
 /* ═══ §2 THE ASKER ════════════════════════════════════════════════════ */
 
-test('R170 §2: the seat being asked still gets its own decision bar, and no way around it', () => {
+test('CR D2.1: the seat being asked still gets its own decision bar, and no way around it', () => {
   const { state, hand0 } = askedSeat0();
   const html = ui.show(structuredClone(state));
 
@@ -264,7 +264,7 @@ test('R170 §2: the seat being asked still gets its own decision bar, and no way
   assert.match(html, /data-btn="decide"|class="[^"]*\bcandidate\b/, 'seat 0 is shown its question, with answers to click');
   assert.match(html, /Wraith/, 'and the bar names what is asking');
   assert.ok(!ui.has({ btn: 'donedeploy', p: 0 }),
-    'but NOT a "done deploying" button — R65: only decide and concede get past your own '
+    'but NOT a "done deploying" button — CR D2.1: only decide and concede get past your own '
     + 'question, and a button apply() would throw on is the refusal-screen half-fix');
 
   const life = ui.state().players[0]!.life;
@@ -273,10 +273,10 @@ test('R170 §2: the seat being asked still gets its own decision bar, and no way
     'and its own hand is still inert — the gate did not simply come off');
 });
 
-/* ═══ §3 NEGATIVE CONTROLS — R154's other two cases, on screen ════════ */
+/* ═══ §3 NEGATIVE CONTROLS — the engine gate's other two cases (CR D2.1a, D2.1c), on screen ═══ */
 
-test('R170 §3: a rewinding (snapshot) question still freezes the whole screen', () => {
-  // R154 case 3: a 'resolve' suspension carries an R85 whole-GameState
+test('CR D2.1: a rewinding (snapshot) question still freezes the whole screen', () => {
+  // Case 3 (CR D2.1c): a 'resolve' suspension carries a whole-GameState
   // snapshot and answering it does `this.s = snap`, so anything the other seat
   // did in that window is ERASED. The engine keeps the full gate there — and
   // so must the screen, or it offers a move that later un-happens.
@@ -289,13 +289,13 @@ test('R170 §3: a rewinding (snapshot) question still freezes the whole screen',
   assert.ok(decisionBlocks(h.state, 0), 'so the ENGINE still refuses seat 0');
 
   const html = ui.show(structuredClone(h.state));
-  assert.equal(bars(html), 1, 'and the screen shows the question alone, as before R154');
+  assert.equal(bars(html), 1, 'and the screen shows the question alone, as it always has');
   assert.ok(!ui.has({ btn: 'donedeploy', p: 0 }),
     'seat 0 is offered nothing the engine would refuse');
 });
 
-test('R170 §3: a BATTLE question still freezes the whole screen', () => {
-  // R154 case 2: in battle priority is sequential and an opponent
+test('CR D2.1: a BATTLE question still freezes the whole screen', () => {
+  // Case 2 (CR D2.1a): in battle priority is sequential and an opponent
   // mid-resolution genuinely does hold the game. A real battle, a real
   // priority window, and the same CAST-time suspension §1 lets straight
   // through in deployment — so the only thing that can differ is the phase.
@@ -319,16 +319,16 @@ test('R170 §3: a BATTLE question still freezes the whole screen', () => {
   const html = ui.show(structuredClone(h.state));
   assert.equal(bars(html), 1, 'one bar: the question, and nothing offered underneath it');
   assert.ok(!ui.has({ btn: 'pass' }),
-    'the idle seat gets no Pass button — the priority bar is exactly what R154 case 2 keeps shut');
+    'the idle seat gets no Pass button — the priority bar is exactly what CR D2.1a keeps shut');
 });
 
 /* ═══ §4 BOTH SEATS AT ONCE ═══════════════════════════════════════════ */
 
-test('R170 §4: both seats can never have a question open — the slot is single, and the second is refused', () => {
+test('CR D2.1: both seats can never have a question open — the slot is single, and the second is refused', () => {
   // The brief asked what happens if both seats have a decision open. Nothing
   // does: `GameState.decision` is ONE SLOT and `E.suspend` writes it
-  // unconditionally, which is precisely why R154 pairs its permissive gate
-  // with an after-the-fact fingerprint — without it seat 1's play would
+  // unconditionally, which is precisely why the engine pairs its permissive gate
+  // with an after-the-fact fingerprint (CR D2.1d) — without it seat 1's play would
   // OVERWRITE seat 0's open question and take the suspension with it.
   const { state } = askedSeat0();
   const h = new Harness(424242);
@@ -354,7 +354,7 @@ test('R170 §4: both seats can never have a question open — the slot is single
 
 /* ═══ §5 ONLINE, NOTHING CHANGES ══════════════════════════════════════ */
 
-test('R170 §5: ONLINE the state that drives this branch cannot even reach the client', () => {
+test('CR D2.1: ONLINE the state that drives this branch cannot even reach the client', () => {
   // THE REASON the whole change is a no-op online, and the reason the online
   // client never had to make this distinction: server/view.ts nulls a decision
   // that is not yours before it goes on the wire. HOTSEAT is the only caller
@@ -367,7 +367,7 @@ test('R170 §5: ONLINE the state that drives this branch cannot even reach the c
   assert.equal(mine.decision?.seat, 0, 'while the seat being asked still gets it');
 });
 
-test('R170 §5: ONLINE the real client still draws exactly one bar over its own question', () => {
+test('CR D2.1: ONLINE the real client still draws exactly one bar over its own question', () => {
   // A process gets one ui/main.ts (module cache) and this one is hotseat, so
   // the online client is driven in a child. It is the SAME driver and the same
   // main.ts — only the URL differs, which is the only thing that differs
@@ -393,7 +393,7 @@ test('R170 §5: ONLINE the real client still draws exactly one bar over its own 
   });
   const got = JSON.parse(out.slice(out.indexOf('###') + 3)) as Record<string, unknown>;
   assert.equal(got['bars'], 1,
-    'ONE bar, exactly as before R170 — the online client is handed only its own question, '
+    'ONE bar, exactly as before the hotseat change — the online client is handed only its own question, '
     + 'so it must never grow the second bar hotseat grew');
   assert.equal(got['decide'], true, 'and that bar is the question, with answers to click');
   assert.equal(got['done0'], false, 'no done-deploying button for the seat being asked…');

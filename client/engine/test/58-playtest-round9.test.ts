@@ -1,4 +1,4 @@
-/* Playtest round 9 (game PEMC, 2026-08-21) — R64 and R65.
+/* Playtest round 9 (game PEMC, 2026-08-21) — bracketed costs and targeting restrictions; discarding, conceding and the erased pile.
  *
  * The report that named the whole class:
  *
@@ -37,9 +37,9 @@ import {
   pass, pick, spawn, toDeployment, toNextBattle,
 } from './util.ts';
 
-/* ── R64: a bracketed cost is paid at CAST ─────────────────────────────── */
+/* ── CR 702.4: a bracketed cost is paid at CAST ─────────────────────────────── */
 
-test('R64: Discharge pays its counters before the spell is respondable, and X is fixed there', () => {
+test('Discharge pays its counters before the spell is respondable, and X is fixed there', () => {
   const h = new Harness(5800);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -66,7 +66,7 @@ test('R64: Discharge pays its counters before the spell is respondable, and X is
   finishBattle(h);
 });
 
-test('R64: negating a spell does not refund the cost it already paid', () => {
+test('CR 702.4b: negating a spell does not refund the cost it already paid', () => {
   const h = new Harness(5801);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -97,7 +97,7 @@ function drain(h: Harness): void {
   }
 }
 
-test('R64: an unpayable variable cost is simply X = 0 — the cast is still legal', () => {
+test('CR 702.6b: an unpayable variable cost is simply X = 0 — the cast is still legal', () => {
   const h = new Harness(5802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -114,9 +114,9 @@ test('R64: an unpayable variable cost is simply X = 0 — the cast is still lega
   finishBattle(h);
 });
 
-/* ── R64: targets are declared at cast, and only legal ones ────────────── */
+/* ── CR 110.1a, 110.3: targets are declared at cast, and only legal ones ────────────── */
 
-test('R64: Download names its token as it is cast, and only the enemy\'s', () => {
+test('CR 110.1a: Download names its token as it is cast, and only the enemy\'s', () => {
   const h = new Harness(5803);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -139,7 +139,7 @@ test('R64: Download names its token as it is cast, and only the enemy\'s', () =>
   finishBattle(h);
 });
 
-test("R64: Reconfigure's first slot only offers cards that have [Augment]", () => {
+test("CR 110.3a: Reconfigure's first slot only offers cards that have [Augment]", () => {
   const h = new Harness(5804);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -163,7 +163,7 @@ test("R64: Reconfigure's first slot only offers cards that have [Augment]", () =
   finishBattle(h);
 });
 
-test('R64: a target menu says whose each unit is', () => {
+test('a target menu says whose each unit is', () => {
   const h = new Harness(5805);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -183,7 +183,7 @@ test('R64: a target menu says whose each unit is', () => {
   finishBattle(h);
 });
 
-test('R64: an ability with nothing legal to aim at is not offered and is refused', () => {
+test('CR 705.3a: an ability with nothing legal to aim at is not offered and is refused', () => {
   const h = new Harness(5806);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -200,7 +200,7 @@ test('R64: an ability with nothing legal to aim at is not offered and is refused
   finishBattle(h);
 });
 
-test('R64: a bin is a targetable zone, and two copies of one card are two targets', () => {
+test('a bin is a targetable zone, and two copies of one card are two targets', () => {
   const h = new Harness(5812);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -224,9 +224,9 @@ test('R64: a bin is a targetable zone, and two copies of one card are two target
   finishBattle(h);
 });
 
-/* ── R65: discard-me at instant speed ──────────────────────────────────── */
+/* ── CR 111.12a: discard-me at instant speed ──────────────────────────────────── */
 
-test('R65: a "Discard me" line works during battle, whatever the card\'s own timing says', () => {
+test('CR 207.8: a "Discard me" line works during battle, whatever the card\'s own timing says', () => {
   const h = new Harness(5807);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -244,9 +244,9 @@ test('R65: a "Discard me" line works during battle, whatever the card\'s own tim
   finishBattle(h);
 });
 
-/* ── R65: concede ──────────────────────────────────────────────────────── */
+/* ── CR 104.4: concede ──────────────────────────────────────────────────────── */
 
-test('R65: conceding ends the game the way a lethal blow does', () => {
+test('CR 104.4: conceding ends the game the way a lethal blow does', () => {
   const h = new Harness(5808);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -256,7 +256,7 @@ test('R65: conceding ends the game the way a lethal blow does', () => {
   assert.ok(h.log.some(l => l.includes('conceded')), 'and the log says why');
 });
 
-test('R65: you may concede even while a decision is pending against you', () => {
+test('CR 104.4a: you may concede even while a decision is pending against you', () => {
   const h = new Harness(5809);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -273,9 +273,9 @@ test('R65: you may concede even while a decision is pending against you', () => 
   assert.equal(h.state.winner, D);
 });
 
-/* ── R65: the erased pile ──────────────────────────────────────────────── */
+/* ── CR 407.1: the erased pile ──────────────────────────────────────────────── */
 
-test('R65: erased cards are kept in a public pile', () => {
+test('CR 407.1a: erased cards are kept in a public pile', () => {
   const h = new Harness(5810);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -295,7 +295,7 @@ test('R65: erased cards are kept in a public pile', () => {
   finishBattle(h);
 });
 
-test('R65: an erase-from-bin cost lands in the erased pile', () => {
+test('CR 407.1: an erase-from-bin cost lands in the erased pile', () => {
   const h = new Harness(5811);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

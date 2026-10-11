@@ -622,7 +622,7 @@
   },
   {
     "key": "turn.draw.state-checks",
-    "textHash": "14611b85a7cf20d0",
+    "textHash": "3eb59d0d7e637700",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",
@@ -668,7 +668,7 @@
   },
   {
     "key": "turn.draw.state-checks.constructed",
-    "textHash": "94dc8039fba454f2",
+    "textHash": "ace1f7397769f3f6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -716,7 +716,7 @@
   },
   {
     "key": "turn.draw.state-checks.draft-pile",
-    "textHash": "076b1dec55f150f8",
+    "textHash": "50bc68209c913c8c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1159,7 +1159,7 @@
   },
   {
     "key": "turn.haste.always",
-    "textHash": "d2cd193c869bfa4e",
+    "textHash": "4aef46d06c998905",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1211,7 +1211,7 @@
   },
   {
     "key": "turn.haste.always.no-auto-done",
-    "textHash": "a295323af44add6f",
+    "textHash": "250a58b53c638ca7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1266,7 +1266,7 @@
   },
   {
     "key": "turn.haste.end-event",
-    "textHash": "5677a86330e14106",
+    "textHash": "af02f590d9e032c4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1332,7 +1332,7 @@
   },
   {
     "key": "turn.haste.end-event.during",
-    "textHash": "bc419eb4ce561fb0",
+    "textHash": "b9f13e8a62b5ee13",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1375,7 +1375,7 @@
   },
   {
     "key": "turn.haste.ends",
-    "textHash": "1f3de220a21026fe",
+    "textHash": "14c3b71362b51b7b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1431,7 +1431,7 @@
   },
   {
     "key": "turn.haste.grants",
-    "textHash": "4aa3c991b703e11f",
+    "textHash": "a611d861cd86e1a1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1548,7 +1548,7 @@
   },
   {
     "key": "turn.haste.immediate",
-    "textHash": "1300532b98102999",
+    "textHash": "edfa780302830b56",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1724,7 +1724,7 @@
   },
   {
     "key": "turn.haste.plays",
-    "textHash": "9ea3692363b8470e",
+    "textHash": "6f31406aecd5867e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1849,7 +1849,7 @@
   },
   {
     "key": "turn.haste.prophesy",
-    "textHash": "7b16734b1b6cc9a2",
+    "textHash": "ee7cb57d8cb6e3f4",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U08-r4",
@@ -1899,7 +1899,7 @@
   },
   {
     "key": "turn.haste.prophesy.release",
-    "textHash": "80ad6c462b74c359",
+    "textHash": "56ac801b2da68396",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1944,7 +1944,7 @@
   },
   {
     "key": "turn.haste.what",
-    "textHash": "a5c207bca1ca9b4a",
+    "textHash": "c79f2767fbf2cc4f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2297,7 +2297,7 @@
   },
   {
     "key": "turn.planning.steps.refresh",
-    "textHash": "d17b4c0287011851",
+    "textHash": "099f61abcdefbeb1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2528,7 +2528,7 @@
   },
   {
     "key": "turn.resource.actions.exchange",
-    "textHash": "7c2aa17dd05df44b",
+    "textHash": "cb1c3d21ec9cc38a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2575,7 +2575,7 @@
   },
   {
     "key": "turn.resource.debt",
-    "textHash": "e984073b6a91ab6c",
+    "textHash": "24090fa26bdd2966",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2617,7 +2617,7 @@
   },
   {
     "key": "turn.resource.debt.last",
-    "textHash": "04915c575c9be873",
+    "textHash": "e5e145dd16b9d561",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",

@@ -1,4 +1,4 @@
-/* R197 — THREE ROWS OF THE DIVERGENCE INVENTORY (§2b), ONE CARD EACH.
+/* THREE ROWS OF THE DIVERGENCE INVENTORY (§2b), ONE CARD EACH.
  *
  * `docs/16-divergence-inventory.md` §2 is what CARD-TODO #50 means. Three of
  * its remaining rows are one card each, and each gets a NAMED test here that
@@ -17,8 +17,8 @@
  * §2  UNTIL-REGROUP PLAY WINDOW — Spell Excavation, "You may play target spell
  *     from your bin until regroup". It was collapsed to "right now": the spell
  *     was played INLINE during the Excavation's own resolution. The window is
- *     real now (`E.grantBinCardPlay`, R96's single-card sibling), and — the
- *     part that had to be got right — R157 §12 says **a bin-play grant does
+ *     real now (`E.grantBinCardPlay`, CR 405.9's single-card sibling), and — the
+ *     part that had to be got right — CR 702.2a says **a bin-play grant does
  *     not waive printed timing**, so §2c pins that the window is a permission
  *     to play and nothing more.
  *
@@ -50,14 +50,14 @@ import {
 import { numberEntry, numberEntrySubmit, stepNumberEntry } from '../inspect.ts';
 import type { Seat } from '../../engine/src/types.ts';
 
-/* ── the client, hotseat (R170/CT-46) ─────────────────────────────────── */
+/* ── the client, hotseat (CR D2.1/CT-46) ─────────────────────────────────── */
 // set BEFORE the driver is imported, and the import must therefore be dynamic:
 // a static one is hoisted and would run the driver (and ui/main.ts with it)
 // before this line ever executed.
 const { local } = await import('./ui-driver.ts');
 
 /** roll into the endOfHaste window and stop the moment the prediction is asked
- * for — R50's settle window, before skipHasteStep has anything left to do */
+ * for — CR 504.6's settle window, before skipHasteStep has anything left to do */
 function toPrediction(h: Harness): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -71,7 +71,7 @@ function toPrediction(h: Harness): void {
 // "During [Haste], predict your life total. At the start of deployment, create
 // a 5/5 unit if you matched the prediction."
 
-test('R197 §1a Prediction Prophet: "predict your life total" is UNCAPPED — the '
+test('§1a Prediction Prophet: "predict your life total" is UNCAPPED — the '
   + 'question carries no options and no ceiling', () => {
   const h = new Harness(16800);
   toDeployment(h);
@@ -94,7 +94,7 @@ test('R197 §1a Prediction Prophet: "predict your life total" is UNCAPPED — th
   finishBattle(h);
 });
 
-test('R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and '
+test('CR 107.9 Prediction Prophet: a prediction ABOVE `life + 5` is accepted and '
   + 'pays out the 5/5 — the old cap would not have offered it', () => {
   const h = new Harness(16801);
   toDeployment(h);
@@ -116,7 +116,7 @@ test('R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted an
   assert.equal(made.length, 1, 'the match the old menu could not express pays its 5/5');
 });
 
-test('R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar '
+test('CR D7.2a Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar '
   + 'dials past the old cap and puts the VALUE on the wire, not an index', () => {
   const h = new Harness(16802);
   toDeployment(h);
@@ -176,7 +176,7 @@ function excavate(h: Harness, seed: number, name: string): { A: Seat; D: Seat } 
 const binPlays = (h: Harness, seat: Seat): number[] =>
   legalActions(h.state, seat).flatMap(a => a.type === 'playFromBin' ? [a.binIndex] : []);
 
-test('R197 §2a Spell Excavation: "you may play target spell from your bin" is a '
+test('CR 405.9 Spell Excavation: "you may play target spell from your bin" is a '
   + 'GRANT — the spell stays in the bin, unpaid for, until you take it up', () => {
   const h = new Harness(16810);
   toDeployment(h);
@@ -200,7 +200,7 @@ test('R197 §2a Spell Excavation: "you may play target spell from your bin" is a
   finishBattle(h);
 });
 
-test('R197 §2b Spell Excavation: the window SURVIVES to regroup — the grant is '
+test('CR 506.2d Spell Excavation: the window SURVIVES to regroup — the grant is '
   + 'still live in a later battle window — and EXPIRES there', () => {
   const h = new Harness(16811);
   toDeployment(h);
@@ -244,8 +244,8 @@ test('R197 §2b Spell Excavation: the window SURVIVES to regroup — the grant i
   finishBattle(h);
 });
 
-test('R197 §2c Spell Excavation: the grant does NOT waive printed timing '
-  + '(R157 §12) — a deploy-timing spell in the bin is not a legal target, and '
+test('CR 702.2a Spell Excavation: the grant does NOT waive printed timing '
+  + '— a deploy-timing spell in the bin is not a legal target, and '
   + 'a grant forced onto one is still refused', () => {
   const h = new Harness(16812);
   toDeployment(h);
@@ -258,7 +258,7 @@ test('R197 §2c Spell Excavation: the grant does NOT waive printed timing '
   // played is its printed timing, which is precisely what is under test
   assert.ok(new E(h.state).canPayCard(D, DEPLOY), 'the seat can pay for it');
   const dec = h.state.decision;
-  // R64: an illegal target is not something you pick and have refused, it is
+  // CR D1.2a: an illegal target is not something you pick and have refused, it is
   // something you were never shown — and with nothing legal at all and `min 0`
   // carrying the "You may", the question is not even raised.
   if (dec) {
@@ -291,7 +291,7 @@ test('R197 §2c Spell Excavation: the grant does NOT waive printed timing '
 //
 // "If I am in your bin and you deal combat damage to an opponent, recall me."
 
-test('R197 §3a Cinder Scuttler: the MULTIPLAYER premise is UNREACHABLE — the '
+test('CR 900.6 Cinder Scuttler: the MULTIPLAYER premise is UNREACHABLE — the '
   + 'engine is 1v1 by construction, so no third player\'s damage exists to '
   + 'be misattributed', () => {
   // MEASURED, not assumed. This is the whole deliverable for the row: a fix
@@ -308,7 +308,7 @@ test('R197 §3a Cinder Scuttler: the MULTIPLAYER premise is UNREACHABLE — the 
   assert.equal(e.nit, other(e.initiative), 'and the turn order is the same two seats');
 });
 
-test('R197 §3b Cinder Scuttler: "YOU deal combat damage to an OPPONENT" — the '
+test('§3b Cinder Scuttler: "YOU deal combat damage to an OPPONENT" — the '
   + 'attacker\'s bin copy recalls and the victim\'s does not', () => {
   const h = new Harness(16821);
   toDeployment(h);
@@ -329,7 +329,7 @@ test('R197 §3b Cinder Scuttler: "YOU deal combat damage to an OPPONENT" — the
   assert.ok(!h.state.players[D]!.hand.includes('Cinder Scuttler'));
 });
 
-test('R197 §3c Cinder Scuttler: NONCOMBAT life loss never recalls it — the '
+test('§3c Cinder Scuttler: NONCOMBAT life loss never recalls it — the '
   + '"why" on the event is doing real work', () => {
   const h = new Harness(16822);
   toDeployment(h);

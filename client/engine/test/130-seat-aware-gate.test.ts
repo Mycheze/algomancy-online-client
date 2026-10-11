@@ -1,10 +1,10 @@
-/* R154 / CT-44 — THE SEAT-AWARE DECISION GATE, IN THE ENGINE.
+/* CR D2.1b / CT-44 — THE SEAT-AWARE DECISION GATE, IN THE ENGINE.
  *
  * Playtest #98 (SMVJ, action 238): *"Rashi's start of combat (doing all her
  * Wraith triggers) doesn't need to take away from what I'm doing in
  * Deployment."*
  *
- * R150 (CT-32) fixed that entirely in server/rooms.ts, on the belief that the
+ * The server fix for CT-32 settled that entirely in server/rooms.ts, on the belief that the
  * engine had to stay a pure reducer with a global decision gate. Which left
  * everything that calls `apply()` directly still frozen — HOTSEAT, and the
  * `Harness` this whole test suite is written on. That is what this file is
@@ -19,14 +19,14 @@
  *
  * §1  THE FIX. A real start-of-deployment Wraith pile, driven from a Harness.
  *     Both halves together: OFFERED, and ACCEPTED. Either alone is the
- *     half-fix R150's own notes warn about — a screen full of refusals.
+ *     half-fix the CT-32 fix's own notes warn about — a screen full of refusals.
  * §2  THE CLOBBER. `GameState.decision` is ONE SLOT and `E.suspend` writes it
  *     unconditionally, so a permissive gate on its own lets seat B's action
  *     destroy seat A's open question. Trading a freeze for lost state is the
  *     worse trade, so this asserts the question SURVIVES.
  * §3  THE REWIND. ⚠ The hazard CT-44 did not know about, and the reason the
  *     server's deferral queue is not redundant: a 'resolve' suspension carries
- *     an R85 whole-GameState snapshot, and answering it does `this.s = snap`.
+ *     a whole-GameState snapshot, and answering it does `this.s = snap`.
  *     Anything the other seat landed in that window would be ERASED. So that
  *     one case keeps the full gate.
  * §4  THE NEGATIVE CONTROLS. Battle is sequential; your own question is still
@@ -72,8 +72,8 @@ const kinds = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 /** A deployment spell that RESOLVES HALFWAY and then asks — the only way to
  * raise a snapshot-carrying 'resolve' suspension inside deployment, since no
  * printed deployment card does it today. Same shape server/e2e/test-view-snapshot
- * registers for R85. */
-const HALTS = 'R154 Gate Halt';
+ * registers for its snapshot. */
+const HALTS = 'Gate Halt';
 registerSynthetic({
   name: HALTS, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -95,7 +95,7 @@ registerSynthetic({
  * therefore reaches `settle()`, which is what §1's trigger-pile test needs to
  * exercise. (`doneDeploying` never calls settle, so it cannot reach the
  * guard.) Free, so no resource fixture can drift out from under it. */
-const QUIET = 'R154 Quiet';
+const QUIET = 'Gate Quiet';
 registerSynthetic({
   name: QUIET, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -105,12 +105,12 @@ registerSynthetic({
   spellEffect: { run: (g, ctx) => { g.gainLife(ctx.controller, 1, QUIET); } },
 });
 
-/** A BATTLE-timed spell that asks its question in the CAST window (R57 modes),
+/** A BATTLE-timed spell that asks its question in the CAST window (CR 702.5 modes),
  * i.e. the same suspension kind §1's Wraith pile raises. §4's control needs
  * that: if the battle-phase test used a mid-resolution suspension instead it
  * would pass for the wrong reason, blocked by the rewind rule rather than by
  * the phase rule, and deleting the phase rule would leave it green. */
-const BATTLE_ASKS = 'R154 Battle Ask';
+const BATTLE_ASKS = 'Gate Battle Ask';
 registerSynthetic({
   name: BATTLE_ASKS, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'battle', attrs: [],
@@ -129,7 +129,7 @@ registerSynthetic({
 
 /* ═══ §1 THE FIX — offered AND accepted ═══════════════════════════════ */
 
-test('R154 §1: a Wraith pile suspends its own seat, not the other one', () => {
+test('CR 507.5a: a Wraith pile suspends its own seat, not the other one', () => {
   const h = withWraiths(1, 3);
   // the fixture is the real thing, not a stub: assert it before asserting on it
   assert.equal(h.state.phase, 'deploy');
@@ -147,7 +147,7 @@ test('R154 §1: a Wraith pile suspends its own seat, not the other one', () => {
     'including finishing their own deployment');
 
   // half two: ACCEPTED. Offering an action that then gets refused is the exact
-  // half-fix R150's notes warn about, so `apply()` has to be driven for real.
+  // half-fix the notes warn about, so `apply()` has to be driven for real.
   h.do({ type: 'doneDeploying', seat: 0 });
   assert.equal(h.state.deployDone?.[0], true, 'seat 0 really is done deploying');
   assert.equal(h.state.decision?.seat, 1, "and seat 1 is still being asked, undisturbed");
@@ -161,7 +161,7 @@ test('R154 §1: a Wraith pile suspends its own seat, not the other one', () => {
   assert.equal(h.state.decision, null, 'the pile drains once its owner answers');
 });
 
-test('R154 §1: every kind of action seat 0 had is still theirs', () => {
+test('CR D2.1b: every kind of action seat 0 had is still theirs', () => {
   const h = withWraiths(1, 3);
   const seat: Seat = 0;
   // what seat 0 would have been offered with nothing pending at all
@@ -170,10 +170,10 @@ test('R154 §1: every kind of action seat 0 had is still theirs', () => {
     "the opponent's question changes nothing about what this seat may do");
 });
 
-test('R154 §1: seat 0 acting does not drain seat 1\'s trigger pile for them', () => {
+test('CR D2.1d: seat 0 acting does not drain seat 1\'s trigger pile for them', () => {
   // The other half of "undisturbed", and the one that needed an engine change
   // of its own. Almost every action ends in `settle()`, and `settle()` used to
-  // reach `processTriggerQueue` unconditionally — because before R154 nothing
+  // reach `processTriggerQueue` unconditionally — because before the gate became seat-aware nothing
   // could run at all while a decision was open, so it was never entered with
   // the slot full. Let the other seat act and it would build, aim and resolve
   // the ASKING seat's triggers on the acting seat's tick, and re-enter
@@ -202,7 +202,7 @@ test('R154 §1: seat 0 acting does not drain seat 1\'s trigger pile for them', (
 
 /* ═══ §2 THE CLOBBER — one slot, and it is not up for grabs ═══════════ */
 
-test('R154 §2: seat 0 may not overwrite seat 1\'s open decision', () => {
+test('CR D2.1d: seat 0 may not overwrite seat 1\'s open decision', () => {
   const h = withWraiths(1, 3);
   const asked = h.state.decision!;
   assert.equal(asked.seat, 1);
@@ -236,9 +236,9 @@ test('R154 §2: seat 0 may not overwrite seat 1\'s open decision', () => {
   assert.notDeepEqual(h.state.decision, asked, 'seat 1 answers it as if nothing had happened');
 });
 
-/* ═══ §3 THE REWIND — R85's snapshot, and why the queue survives ══════ */
+/* ═══ §3 THE REWIND — the resolve snapshot, and why the queue survives ══════ */
 
-test('R154 §3: a mid-resolution suspension still blocks the other seat', () => {
+test('CR D2.1c: a mid-resolution suspension still blocks the other seat', () => {
   const h = withWraiths(1, 0);
   assert.equal(h.state.phase, 'deploy');
   assert.equal(h.state.decision, null, 'no Wraiths, so deployment opens quietly');
@@ -247,7 +247,7 @@ test('R154 §3: a mid-resolution suspension still blocks the other seat', () => 
   h.do({ type: 'playCard', seat: 1, handIndex: h.state.players[1]!.hand.length - 1 });
   const sus = h.state.suspension as { type: string; snapshot?: GameState };
   assert.equal(sus.type, 'resolve', 'seat 1 stopped HALFWAY through a resolution');
-  assert.ok(sus.snapshot, 'carrying an R85 snapshot of the whole GameState');
+  assert.ok(sus.snapshot, 'carrying a snapshot of the whole GameState');
 
   // THE REASON. `E.resumeResolve` does `this.s = snapshot`, carrying forward
   // only actionCount, decisionHigh and the seat names — so a deploy seat 0
@@ -270,7 +270,7 @@ test('R154 §3: a mid-resolution suspension still blocks the other seat', () => 
 
 /* ═══ §4 NEGATIVE CONTROLS ════════════════════════════════════════════ */
 
-test('R154 §4: in BATTLE the gate refuses the non-owning seat, exactly as before', () => {
+test('CR D2.1a: in BATTLE the gate refuses the non-owning seat, exactly as before', () => {
   const h = withWraiths(1, 3);
   // the SAME state, moved into the battle phase: only the phase differs, so a
   // difference in verdict can only be the segment rule
@@ -287,7 +287,7 @@ test('R154 §4: in BATTLE the gate refuses the non-owning seat, exactly as befor
     'and refused by name');
 });
 
-test('R154 §4: a REAL battle decision blocks the other seat', () => {
+test('CR D2.1a: a REAL battle decision blocks the other seat', () => {
   // not a hand-edited phase: a genuine battle, a genuine priority window, and
   // a genuine CAST-time suspension — the same suspension kind §1 lets straight
   // through in deployment, so the only thing that can differ here is the phase
@@ -317,28 +317,28 @@ test('R154 §4: a REAL battle decision blocks the other seat', () => {
     'and refused by the decision gate itself, not by some later check that happens to say no');
 });
 
-test('R154 §4: your own question still gates your own input', () => {
+test('CR D2.1: your own question still gates your own input', () => {
   const h = withWraiths(1, 3);
   const owner = h.state.decision!.seat;
   assert.ok(decisionBlocks(h.state, owner), 'the seat being asked is still blocked');
   assert.ok(legalActions(h.state, owner).every(a => a.type === 'decide'),
     'and offered nothing but answers');
   assert.throws(() => h.do({ type: 'doneDeploying', seat: owner }), IllegalAction,
-    'R65: only `decide` and `concede` get past your own question');
+    'CR D2.1: only `decide` and `concede` get past your own question');
 });
 
-test('R154 §4: concede is always reachable, from either seat', () => {
+test('CR D2.1e: concede is always reachable, from either seat', () => {
   for (const seat of [0, 1] as Seat[]) {
     const h = withWraiths(1, 3);
     assert.equal(h.state.decision?.seat, 1);
     h.do({ type: 'concede', seat });
-    assert.equal(h.state.phase, 'gameover', `seat ${seat} may always stop (R65)`);
+    assert.equal(h.state.phase, 'gameover', `seat ${seat} may always stop (CR 104.4a)`);
   }
 });
 
 /* ═══ §5 WHY §2 IS SOUND ══════════════════════════════════════════════ */
 
-test('R154 §5: apply() never mutates its input, so a draft may be discarded', () => {
+test('CR D2.1d: apply() never mutates its input, so a draft may be discarded', () => {
   const h = withWraiths(1, 3);
   const frozen = structuredClone(h.state);
   give(h, 0, HALTS);

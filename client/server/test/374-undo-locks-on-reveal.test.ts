@@ -1,4 +1,4 @@
-/* R312 — SEEING HIDDEN CARDS ENDS YOUR UNDO.
+/* CR D4.3 — SEEING HIDDEN CARDS ENDS YOUR UNDO.
  *
  * The owner, 2026-10-04: an action that showed you hidden cards cannot be
  * taken back, nor anything before it — "once you've seen the cards, it
@@ -101,7 +101,7 @@ function glimpse(mod: Rooms, room: Room, seat: Seat): CardName[] {
   return ask.options.map(o => o.card!);
 }
 
-test('R312 §1: a Glimpse in deployment cannot be undone — "you\'ve seen those cards"', () => {
+test('CR D4.3: a Glimpse in deployment cannot be undone — "you\'ve seen those cards"', () => {
   const { room, P } = deploying(R, 'R312A', 37401);
   const top = glimpse(R, room, P);
   assert.equal(top.length, 2, 'two cards shown');
@@ -118,7 +118,7 @@ test('R312 §1: a Glimpse in deployment cannot be undone — "you\'ve seen those
     'answering the glimpse does not reopen it: that answer is after the reveal, and so is the reveal');
 });
 
-test('R312 §2: an undo of an earlier play BEFORE any glimpse still works', () => {
+test('CR D4.1: an undo of an earlier play BEFORE any glimpse still works', () => {
   const { room, P } = deploying(R, 'R312B', 37402);
   const hand = room.state.players[P]!.hand.length;
   spawnSprite(R, room, P);
@@ -131,7 +131,7 @@ test('R312 §2: an undo of an earlier play BEFORE any glimpse still works', () =
   assert.deepEqual(R.undoForSeat(room, P), { ok: false, why: SEEN_REFUSAL });
 });
 
-test('R312 §3: a plain spawn after the glimpse is undoable back to the glimpse, and not past it', () => {
+test('CR D4.3a: a plain spawn after the glimpse is undoable back to the glimpse, and not past it', () => {
   const { room, P } = deploying(R, 'R312C', 37403);
   spawnSprite(R, room, P);                 // before the glimpse: will be locked behind it
   glimpse(R, room, P);
@@ -147,7 +147,7 @@ test('R312 §3: a plain spawn after the glimpse is undoable back to the glimpse,
   assert.equal(room.actions.length, atGlimpse, 'and the glimpse, and the spawn before it, stand');
 });
 
-test('R312 §4: the lock survives a restart — a restored room measures it again', async () => {
+test('CR D4.3f: the lock survives a restart — a restored room measures it again', async () => {
   const { room, P } = deploying(R, 'R312D', 37404);
   glimpse(R, room, P);
   tick(R, room, { type: 'decide', seat: P, choice: 0 });
@@ -166,7 +166,7 @@ test('R312 §4: the lock survives a restart — a restored room measures it agai
     'and the glimpse is still locked — the floor was rebuilt, not forgotten');
 });
 
-test("R312 §5: the opponent's glimpse of the SHARED deck does not lock your undo", () => {
+test("CR D4.3c: the opponent's glimpse of the SHARED deck does not lock your undo", () => {
   const { room, P, O } = deploying(R, 'R312E', 37405);
   assert.equal(room.state.mode, 'shared', 'one deck for both seats');
   // yours, before their peek: deploying() ends on each seat setting its mana.
@@ -192,7 +192,7 @@ test("R312 §5: the opponent's glimpse of the SHARED deck does not lock your und
   assert.deepEqual(R.undoForSeat(room, O), { ok: false, why: SEEN_REFUSAL }, 'while THEY stay locked');
 });
 
-test('R312 §6: measured, not listed — a spawn trigger\'s Glimpse 1 in the haste step locks too', () => {
+test('CR D4.3e: measured, not listed — a spawn trigger\'s Glimpse 1 in the haste step locks too', () => {
   const room = R.createRoom('R312F', 37406, [...NAMES], 'shared', undefined, undefined, 'sandbox');
   const S: Seat = 0;
   tick(R, room, { type: 'sandboxSpawn', seat: S, card: 'Seer of Empty Spaces', to: 'hand' });
@@ -212,7 +212,7 @@ test('R312 §6: measured, not listed — a spawn trigger\'s Glimpse 1 in the has
     'no Lilbot, no question, no "glimpse" anywhere in the undo code — and still locked');
 });
 
-test('R312 §7: Learn to Play applies the same floor — a turn\'s draw ends the undo of the turn before', async () => {
+test('CR D4.4: Learn to Play applies the same floor — a turn\'s draw ends the undo of the turn before', async () => {
   // ui/solo.ts's undo has no phase gate (it truncates, it never splices), so
   // the floor is all it has — and it comes from the same server/seen.ts.
   await import('../../engine/src/cards/registry.ts');

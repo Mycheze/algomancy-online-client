@@ -5,18 +5,18 @@
  * is here is the class of defect each layer is exposed to, which no single
  * card test covers:
  *
- *  1. R97 — a permission asked at THREE gates that must agree. The fuzzer's
+ *  1. The haste play grant (CR 803.2b) — a permission asked at THREE gates that must agree. The fuzzer's
  *     "legalActions lied" check exists because this class of split is real:
  *     an action the client is offered and the reducer refuses (or worse, one
  *     the reducer accepts and the client never offers) is a playtest report
  *     waiting to be filed. Asserted directly, both directions.
- *  2. R98 — PREVENTION and REPLACEMENT are two different layers and must never
+ *  2. CR 708.11 — PREVENTION and REPLACEMENT are two different layers and must never
  *     be collapsed into one. Caleb 2024-10-24 on replacement: the damage still
  *     counts as having been DEALT. The Phytochemical RAQ on prevention: "if
  *     there is not damage being dealt, then no counters are placed." The two
  *     rulings point opposite ways, so one test drives both through the same
  *     board and asserts they behave differently.
- *  3. R100 — a zone restriction that is REFUSED, not merely un-offered.
+ *  3. CR 702.2b — a zone restriction that is REFUSED, not merely un-offered.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,9 +43,9 @@ function accepted(h: Harness, a: Action): boolean {
   }
 }
 
-// ── 1. R97: the three gates agree, in both directions ──────────────────
+// ── 1. CR 803.2b: the three gates agree, in both directions ──────────────────
 
-test('R97: every hand play legalActions offers in the haste step is really accepted', () => {
+test('CR 803.2b: every hand play legalActions offers in the haste step is really accepted', () => {
   const h = new Harness(8001);
   const A: Seat = 0;
   spawn(h, A, 'Dispatch Courier');
@@ -63,7 +63,7 @@ test('R97: every hand play legalActions offers in the haste step is really accep
   }
 });
 
-test('R97: nothing legalActions withholds in the haste step is accepted behind its back', () => {
+test('CR 803.2b: nothing legalActions withholds in the haste step is accepted behind its back', () => {
   const h = new Harness(8002);
   const A: Seat = 0;
   spawn(h, A, 'Dispatch Courier');
@@ -84,8 +84,8 @@ test('R97: nothing legalActions withholds in the haste step is accepted behind i
   });
 });
 
-test('R97: the grant is REGION-scoped and belongs to the grantor’s controller', () => {
-  // R12, and the same rule R95 spells out for Rook: "I am 99% sure that Rook
+test('the grant is REGION-scoped and belongs to the grantor’s controller', () => {
+  // CR 101.6 and 723.5c — the same rule the Rook ruling spelled out: "I am 99% sure that Rook
   // has to be in the region, since there are no global effects in Algomancy".
   const h = new Harness(8003);
   const A: Seat = 0, D: Seat = 1;
@@ -102,9 +102,9 @@ test('R97: the grant is REGION-scoped and belongs to the grantor’s controller'
     'and it is refused, not merely un-offered');
 });
 
-// ── 2. R98: prevention and replacement are different layers ────────────
+// ── 2. CR 708.11: prevention and replacement are different layers ────────────
 
-test('R98: a REPLACED hit still counts as dealt; a PREVENTED one never happened', () => {
+test('CR 708.11: a REPLACED hit still counts as dealt; a PREVENTED one never happened', () => {
   // Caleb 2024-10-24 on replacement (Blightsea Polyp): the damage still counts
   // as having been DEALT. The Phytochemical RAQ on prevention: "if there is
   // not damage being dealt, then no counters are placed." Same board, same
@@ -136,7 +136,7 @@ test('R98: a REPLACED hit still counts as dealt; a PREVENTED one never happened'
   assert.equal(ent(h, u)!.counters, 3, 'and the prevented amount comes back as counters');
 });
 
-test('R98: the shield is per-UNIT, not per-controller', () => {
+test('the shield is per-UNIT, not per-controller', () => {
   const h = new Harness(8005);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -158,9 +158,9 @@ test('R98: the shield is per-UNIT, not per-controller', () => {
   assert.equal(ent(h, bare)!.counters, 0);
 });
 
-// ── 3. R100: refused, not merely un-offered ────────────────────────────
+// ── 3. CR 702.2b: refused, not merely un-offered ────────────────────────────
 
-test('R100: a card that "can\'t be played from your hand" is refused at every window', () => {
+test('CR 702.2b: a card that "can\'t be played from your hand" is refused at every window', () => {
   const h = new Harness(8006);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

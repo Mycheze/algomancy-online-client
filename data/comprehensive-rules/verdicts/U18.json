@@ -1,7 +1,7 @@
 [
   {
     "key": "keywords.actions.cache",
-    "textHash": "f03c9d78ef9bb170",
+    "textHash": "af4f013c528ae07b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -210,7 +210,7 @@
   },
   {
     "key": "keywords.actions.discard",
-    "textHash": "0924eb4cbb25c00f",
+    "textHash": "37cdc692c32908a5",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -322,7 +322,7 @@
   },
   {
     "key": "keywords.actions.erase.not-death",
-    "textHash": "eaa34b07000a252d",
+    "textHash": "8774b1583f7b97b3",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -456,7 +456,7 @@
   },
   {
     "key": "keywords.actions.exchange.unit-for-bin",
-    "textHash": "d7b781869bf5a6ed",
+    "textHash": "95b13f101930da1f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -651,7 +651,7 @@
   },
   {
     "key": "keywords.actions.fight.source",
-    "textHash": "8db830fbc294c8de",
+    "textHash": "3abd83f3cc0fa1bb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -731,7 +731,7 @@
   },
   {
     "key": "keywords.actions.glimpse",
-    "textHash": "7245aa662e9b737e",
+    "textHash": "1247f3b435f75598",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -781,7 +781,7 @@
   },
   {
     "key": "keywords.actions.glimpse.choice",
-    "textHash": "a0e307f12f157756",
+    "textHash": "2ba0820074dd458a",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U18-r4",
@@ -823,7 +823,7 @@
   },
   {
     "key": "keywords.actions.glimpse.one",
-    "textHash": "0f7719217a46be81",
+    "textHash": "1742e90e97259288",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -867,7 +867,7 @@
   },
   {
     "key": "keywords.actions.glimpse.permission",
-    "textHash": "147a36f4cba3dcb5",
+    "textHash": "f63035772dababe2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -915,7 +915,7 @@
   },
   {
     "key": "keywords.actions.glimpse.permission.cost-timing",
-    "textHash": "76ef669fb4daed6e",
+    "textHash": "eb253d301e5e5871",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -970,7 +970,7 @@
   },
   {
     "key": "keywords.actions.glimpse.permission.ends",
-    "textHash": "1b22eff1babbacfb",
+    "textHash": "6e27d0688f77f1a1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1041,7 +1041,7 @@
   },
   {
     "key": "keywords.actions.glimpse.permission.mods",
-    "textHash": "cd468b3927f5e353",
+    "textHash": "7ecc9328f45ec889",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1102,7 +1102,7 @@
   },
   {
     "key": "keywords.actions.glimpse.permission.prophesy",
-    "textHash": "ae9737cc3c705d62",
+    "textHash": "997ee474858c8b0e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1146,7 +1146,7 @@
   },
   {
     "key": "keywords.actions.glimpse.repeated",
-    "textHash": "f1290154a40672ff",
+    "textHash": "0ceb7853ee24b658",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1263,7 +1263,7 @@
   },
   {
     "key": "keywords.actions.prophesy",
-    "textHash": "129e809bf07ddc69",
+    "textHash": "782bcb7760949ae4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1384,7 +1384,7 @@
   },
   {
     "key": "keywords.actions.recall.destination",
-    "textHash": "6bfbd3ad12750f8f",
+    "textHash": "bac0aaa7b59c960b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1484,7 +1484,7 @@
   },
   {
     "key": "keywords.actions.recall.from-stack",
-    "textHash": "0248e7969ffe4d97",
+    "textHash": "2dd44a12fad9def6",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U18-r4",
@@ -1596,7 +1596,7 @@
   },
   {
     "key": "keywords.actions.recall.unstable",
-    "textHash": "fd1bea6f1e11875c",
+    "textHash": "434c6825824d6501",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1635,7 +1635,7 @@
   },
   {
     "key": "keywords.actions.recycle",
-    "textHash": "7e411ec0a12d40b3",
+    "textHash": "075351c2cf396e70",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -2094,7 +2094,7 @@
   },
   {
     "key": "keywords.actions.trash",
-    "textHash": "f2ea98fed9abbb58",
+    "textHash": "62f6bfefc61d62de",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2143,7 +2143,7 @@
   },
   {
     "key": "keywords.actions.trash.count-cards-only",
-    "textHash": "51535f0ff275f037",
+    "textHash": "bc2ea9809a274460",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2186,7 +2186,7 @@
   },
   {
     "key": "keywords.actions.trash.mods-erased-with-host",
-    "textHash": "a7bcaed64300e2d1",
+    "textHash": "6aa96e369fb81422",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2225,7 +2225,7 @@
   },
   {
     "key": "keywords.actions.trash.mods-left-behind",
-    "textHash": "553c2e90a6b69b31",
+    "textHash": "86ecd7ca433970c3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2280,7 +2280,7 @@
   },
   {
     "key": "keywords.actions.trash.not-erase",
-    "textHash": "85c6a9919628d83d",
+    "textHash": "9e1c04a04ae2d94b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2318,7 +2318,7 @@
   },
   {
     "key": "keywords.actions.trash.not-from-stack",
-    "textHash": "fe73910750a7d8b6",
+    "textHash": "5ac7a0aa99534151",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2384,7 +2384,7 @@
   },
   {
     "key": "keywords.actions.trash.tokens",
-    "textHash": "5dc54f4355915007",
+    "textHash": "f76d14ffc4202a36",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2444,7 +2444,7 @@
   },
   {
     "key": "keywords.actions.trash.trasher",
-    "textHash": "1f3912358d7faf96",
+    "textHash": "5243430e330a49df",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2504,7 +2504,7 @@
   },
   {
     "key": "keywords.actions.trash.unstable-death",
-    "textHash": "5d022ef9fb660a7c",
+    "textHash": "fa5171a1d8ddae25",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -2577,7 +2577,7 @@
   },
   {
     "key": "keywords.actions.trash.ways",
-    "textHash": "90d99dc6ffb1f642",
+    "textHash": "6fe8085475855f5a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",

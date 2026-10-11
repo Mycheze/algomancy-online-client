@@ -2,11 +2,11 @@
  * RAQ fix round F1 (2026-10-09) — combat damage, following the RAQ threads
  * (the owner: "Trust the RAQ over our rulings. Those are the actual judges").
  *
- *   R315 {Resonant} is its source's trigger: damage from an effect, on the stack
- *   R316 additive damage modifiers (Conduit of Pain) apply before {Powerful}
- *   R317 {Electric}'s jump is optional, and excess with nowhere to go is dealt
- *   R318 Squish / Fight / Battle: the unit is the source, with its own attributes
- *   R319 {Piercing} is elective in combat (reverses R7)
+ *   CR 802.19a {Resonant} is its source's trigger: damage from an effect, on the stack
+ *   CR 112.9 additive damage modifiers (Conduit of Pain) apply before {Powerful}
+ *   CR 802.17 {Electric}'s jump is optional, and excess with nowhere to go is dealt
+ *   CR 112.6 Squish / Fight / Battle: the unit is the source, with its own attributes
+ *   CR 802.16c {Piercing} is elective in combat (the old split ruling is reversed)
  *
  * The thread-by-thread claims are guarded in 387 / 388 / 390; this file holds
  * what the fixes needed beyond them.
@@ -55,9 +55,9 @@ function piercingBoard(seed: number, power: number, blockers: (h: Harness, D: Se
   return { h, A, D, atk, blk, life: h.state.players[D]!.life };
 }
 
-// ── R319 {Piercing} is elective ──────────────────────────────────────────
+// ── CR 802.16c {Piercing} is elective ──────────────────────────────────────────
 
-test('R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 and none reaches the player', () => {
+test('CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 and none reaches the player', () => {
   // RAQ "[Solved] Vulnerable + Piercing / Electric": the attacker "can also put
   // all 10 dmg into Crumbling (which will receive 20 damage)".
   const { h, D, blk, life } = piercingBoard(39901, 10, (h, D) => [spawn(h, D, 'Crumbling Ancient')]);
@@ -67,7 +67,7 @@ test('R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 and no
   assert.equal(h.state.players[D]!.life, life, 'and nothing pierced through');
 });
 
-test('R319: with Piercing the attacker may overkill the front unit and keep the excess off the player', () => {
+test('CR 802.16c: with Piercing the attacker may overkill the front unit and keep the excess off the player', () => {
   // RAQ "[Solved] Excessive Combat Damage & interaction with Piercing, Deadly
   // and Phytochemical Protection": the attacker may "overkill the front or back
   // unit, keeping that excess off the player".
@@ -79,7 +79,7 @@ test('R319: with Piercing the attacker may overkill the front unit and keep the 
   assert.equal(h.state.players[D]!.life, life, 'and nothing reached the player');
 });
 
-test('R319: a Piercing split may keep part of the excess on the back unit and send the rest', () => {
+test('CR 802.16c: a Piercing split may keep part of the excess on the back unit and send the rest', () => {
   const { h, D, life } = piercingBoard(39903, 10, (h, D) => [tok(h, D, 1, 2), tok(h, D, 1, 3)]);
   elect(h, 2);                                         // lethal to the front
   const dec = h.state.decision!;
@@ -90,7 +90,7 @@ test('R319: a Piercing split may keep part of the excess on the back unit and se
   assert.equal(h.state.players[D]!.life, life - 3);
 });
 
-test('R319: the default answer is unchanged — lethal to each, the rest to the player', () => {
+test('CR 802.16b: the default answer is unchanged — lethal to each, the rest to the player', () => {
   const { h, D, blk, life } = piercingBoard(39904, 10, (h, D) => [tok(h, D, 1, 2), tok(h, D, 1, 3)]);
   const def = h.state.decision!.options.find(o => o.value === 'default')!;
   assert.match(def.label, /2 to .*3 to .*5 to /, 'the default names the player share too');
@@ -100,15 +100,15 @@ test('R319: the default answer is unchanged — lethal to each, the rest to the 
   assert.equal(h.state.players[D]!.life, life - 5);
 });
 
-test('R319: a Piercing strike with nothing past its lone blocker\'s lethal share is not a question', () => {
+test('CR 802.16c: a Piercing strike with nothing past its lone blocker\'s lethal share is not a question', () => {
   const { h } = piercingBoard(39905, 2, (h, D) => [tok(h, D, 1, 2)]);
   assert.equal(h.state.decision, null, '2 into a 1/2: every point is owed to it, so nothing is asked');
   finishBattle(h);
 });
 
-// ── R315 {Resonant} is a trigger ─────────────────────────────────────────
+// ── CR 802.19a {Resonant} is a trigger ─────────────────────────────────────────
 
-test('R315: the Resonant rider waits on the stack after combat, as its source, and can be negated', () => {
+test('the Resonant rider waits on the stack after combat, as its source, and can be negated', () => {
   const h = new Harness(39906);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -135,7 +135,7 @@ test('R315: the Resonant rider waits on the stack after combat, as its source, a
   finishBattle(h);
 });
 
-test('R315: effect damage riders too — the 1 lands on the controller as damage from the source', () => {
+test('CR 802.19a: effect damage riders too — the 1 lands on the controller as damage from the source', () => {
   const h = new Harness(39907);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -153,9 +153,9 @@ test('R315: effect damage riders too — the 1 lands on the controller as damage
   assert.equal(face!.data!['source'], 'Resonant Form');
 });
 
-// ── R318 the unit is the source ──────────────────────────────────────────
+// ── CR 112.6 the unit is the source ──────────────────────────────────────────
 
-test('R318: Fight — a fighter that GAINED Powerful deals double; its live attributes, not its printed card', () => {
+test('CR 801.11a: Fight — a fighter that GAINED Powerful deals double; its live attributes, not its printed card', () => {
   const h = new Harness(39908);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -173,7 +173,7 @@ test('R318: Fight — a fighter that GAINED Powerful deals double; its live attr
   finishBattle(h);
 });
 
-test('R318: Fight — a Powerful virus on the Fight spell does not double either fighter', () => {
+test('Fight — a Powerful virus on the Fight spell does not double either fighter', () => {
   const h = new Harness(39909);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

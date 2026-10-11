@@ -93,27 +93,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R345",
-          "quote": "It applies whenever the card or token has it, in combat or not."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R294",
-          "relation": "its premise that an attribute is by definition a combat modifier (the 2022 Rules Glossary) corrected by R345; its conclusion stands"
+          "quote": "It applies whenever the card or token has it, in combat or not.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "REVIEW COMMENT 2026-10-10 (owner, on \"engages in combat\"): \"Not just combat, always. And more than just units can have attributes\", R345. The old text paraphrased the battle chapter's opening line (Manual p.24, Rulebook p.12) as if it defined the word; Rulebook p.3/p.4 and Manual p.25 define it wider. Non-combat attributes: attr.general.kinds.",
-    "sourceHashes": {
-      "R345": "6e0f03e07753dd3029b86b22ba6623bb7f7c33b8aeb21c1c2a5fe8396f9ace11"
-    },
+    "notes": "REVIEW COMMENT 2026-10-10 (owner, on \"engages in combat\"): \"Not just combat, always. And more than just units can have attributes\", the owner ruling of 2026-10-11 (“An attribute is a quality of…”). The old text paraphrased the battle chapter's opening line (Manual p.24, Rulebook p.12) as if it defined the word; Rulebook p.3/p.4 and Manual p.25 define it wider. Non-combat attributes: attr.general.kinds.",
+    "sourceHashes": {},
     "untestableReason": "a definition of the word attribute; the attributes themselves are executed under their own rules"
   },
   {
@@ -136,12 +130,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "For Tough, Vulnerable, Feeble and Unaware the reminder is printed under the type line, which the oracle transcription does not carry: see D-U19-8. Rules in this section quote those reminders only through the discrepancy, never as printed sources.",
     "sourceHashes": {},
@@ -175,12 +169,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -215,24 +209,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "Units in a column just share attributes in all situations"
+          "quote": "Units in a column just share attributes in all situations",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The R93 line is Caleb Gannon in #rules-questions, quoted inside the ruling (not a RAQ claim, so it cannot be a designer source here).",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) line is Caleb Gannon in #rules-questions, quoted inside the ruling (not a RAQ claim, so it cannot be a designer source here).",
+    "sourceHashes": {}
   },
   {
     "key": "attr.general.shared.not-sideways",
@@ -261,14 +254,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -281,7 +274,7 @@
     "examples": [
       {
         "text": "Lithoghul stands in a battle column with Flzzz, which is Blessed. An ability of Lithoghul deals 3 damage to an enemy unit: Lithoghul has Blessed from its column, so its controller gains 3 life.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.22e the report"
       },
       {
         "text": "Bellowing Boulder, in a column with a Deadly unit, pings with Deadly.",
@@ -300,17 +293,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "The whole card gets the attributes while it's in the column. And so when it"
+          "quote": "The whole card gets the attributes while it's in the column. And so when it",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "activates abilities or whatever, it has that attribute. Combat damage also gets"
+          "quote": "activates abilities or whatever, it has that attribute. Combat damage also gets",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts",
@@ -318,10 +312,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The designer quote says the Boulder LOSES Deadly when its partner leaves, which presupposes that its ping had the partner's Deadly while they shared a column. R294 is the owner's general statement.",
+    "notes": "The designer quote says the Boulder LOSES Deadly when its partner leaves, which presupposes that its ping had the partner's Deadly while they shared a column. The owner ruling of 2026-09-16 (“A unit in a column HAS…”) is the owner's general statement.",
     "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
       "RAQ 1353895783266516992#5": "5e462e9ca9b495a36637f73ca1979568eb4217daf77b3faee95a637f08a42aeb"
     }
   },
@@ -333,7 +327,7 @@
     "examples": [
       {
         "text": "Outside battle, a unit standing beside a Blessed unit gains nothing from it.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 712.8b outside battle there are no columns at all"
       }
     ],
     "see": [
@@ -344,13 +338,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "A column only exists"
+          "quote": "A column only exists",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts",
@@ -358,11 +352,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R294's sentence (\"A column only exists in combat\") is the ruling's own text describing E.columnOf, not an owner quote. The printed rules place formations in battle (section 602), which agrees.",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "notes": "The owner ruling of 2026-09-16 (“A unit in a column HAS…”)’s sentence (\"A column only exists in combat\") is the ruling's own text describing E.columnOf, not an owner quote. The printed rules place formations in battle (section 602), which agrees.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.general.shared.leaving",
@@ -405,8 +398,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts",
@@ -414,6 +406,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -428,7 +421,7 @@
     "examples": [
       {
         "text": "A modded (and so Unstable) unit does not make its column-mate Unstable.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 712.8e a modded (therefore Unstable) unit does not make its column-mate Unstable"
       }
     ],
     "see": [
@@ -443,24 +436,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "*are* attributes, but they're a bit special in that they're not applied to"
+          "quote": "*are* attributes, but they're a bit special in that they're not applied to",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Modular rests on the owner alone (\"Modular is also special\", R294); the Manual names only burst and unstable.",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "notes": "Modular rests on the owner alone (\"Modular is also special\", the owner ruling of 2026-09-16 (“A unit in a column HAS…”)); the Manual names only burst and unstable.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.general.present-or-not",
@@ -470,7 +462,7 @@
     "examples": [
       {
         "text": "Two sources granting Inverted to one unit invert its stat changes once, not twice.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: {Inverted} applies ONCE however many sources grant it"
+        "test": "79-round17-layers.test.ts::CR 709.4c layer 5: {Inverted} applies ONCE however many sources grant it"
       }
     ],
     "see": [],
@@ -478,29 +470,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R19",
-          "quote": "attribute is either present or not, and its first occurrence sets its position."
+          "quote": "attribute is either present or not, and its first occurrence sets its position.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R84",
-          "quote": "It's like how you can't gain flying flying"
+          "quote": "It's like how you can't gain flying flying",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R84 quotes Caleb Gannon (\"you can't gain flying flying\") from #rules-questions, so the rule is designer-backed in substance; no RAQ claim carries it, so it is typed owner. R19 marks its own content an engine call.",
-    "sourceHashes": {
-      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3",
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) quotes Caleb Gannon (\"you can't gain flying flying\") from #rules-questions, so the rule is designer-backed in substance; no RAQ claim carries it, so it is typed owner. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) marks its own content an engine call.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.general.stat-attributes",
@@ -510,7 +501,7 @@
     "examples": [
       {
         "text": "A 1/4 with Tough, Balanced and Inverted is a -6/0.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
+        "test": "79-round17-layers.test.ts::CR 802.8b layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
       },
       {
         "text": "A unit with both Inverted and Unaware is read at its printed stats: Unaware applies last.",
@@ -530,13 +521,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R19",
-          "quote": "Tough (defense doubled) and Balanced (power and defense become the max of the two) apply"
+          "quote": "Tough (defense doubled) and Balanced (power and defense become the max of the two) apply",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts",
@@ -544,11 +535,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The Manual lists only \"Attributes like Tough\" in layer 4; Balanced is placed there by R19 and by the Manual's own Tough-and-Balanced Q&A on the same page. Whether Inverted is a clean layer after all of layer 4 is open: D-U19-4.",
-    "sourceHashes": {
-      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3"
-    }
+    "notes": "The Manual lists only \"Attributes like Tough\" in layer 4; Balanced is placed there by the owner ruling of 2026-08-18 (“Stat layer 4 application order”) and by the Manual's own Tough-and-Balanced Q&A on the same page. Whether Inverted is a clean layer after all of layer 4 is open: D-U19-4.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.general.stats-then-death",
@@ -558,7 +548,7 @@
     "examples": [
       {
         "text": "A 1/1 with a -1/-1 counter and Inverted is a live 2/2, never a dead 0/0.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: hitting 0 mid-calculation is not death"
+        "test": "79-round17-layers.test.ts::CR 802.1k layer 5: hitting 0 mid-calculation is not death"
       },
       {
         "text": "Child of Aether, a 2/0 with Balanced, is a 2/2 and survives.",
@@ -573,17 +563,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "does it die if it hits 0 partway through? **calebgannon:** \"Not if it hits 0"
+          "quote": "does it die if it hits 0 partway through? **calebgannon:** \"Not if it hits 0",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R93",
-          "quote": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0."
+          "quote": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts",
@@ -591,11 +582,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb Gannon's answer, quoted in R93 from #rules-questions; typed owner because no RAQ claim carries it.",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "Caleb Gannon's answer, quoted in the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) from #rules-questions; typed owner because no RAQ claim carries it.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.general.application-order",
@@ -605,7 +595,7 @@
     "examples": [
       {
         "text": "A 3/1 augmented with Rampart Guardian (Tough) and then Child of Aether (Balanced) is a 3/3; augmented in the other order it is a 3/6.",
-        "test": "08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
+        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
       },
       {
         "text": "Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (still 2/0), then its stats balanced: it is a 2/2.",
@@ -649,21 +639,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order)",
-          "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
+          "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order)",
-          "quote": "column-shared attrs** (column order, front to back). Duplicates don't stack — an"
+          "quote": "column-shared attrs** (column order, front to back). Duplicates don't stack — an",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order)",
-          "quote": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)"
+          "quote": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -671,11 +663,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Round-1 revision. The Manual Q&A on p.42 names the exact case R19 calls an engine call: Tough augmented onto a Balanced unit is doubled, then balanced. R19 puts a unit's own printed attributes before its augments' and says \"the Manual doesn't specify an order for printed-vs-granted-vs-shared\", which p.42 answers for this pair. Printed text outranks R-rulings, so the rule states the Manual; R19 still supplies the mod-stack order, the front-to-back column order and the duplicate rule. The verifier's probe measured the engine balancing first (F-U19-5; D-U19-1). The Manual's \"applied to\" case (an effect granting Tough) is stated as printed; the guard test covers only two augments on a plain host. Round 2: the verifier noted the mod order's direction was implicit. R19 names it \"order gained\", which the guard test pins as first attached first (Rampart Guardian then Child of Aether makes a 3/1 a 3/3); the Manual's \"top to bottom\" does not say which mod is on top, so that clause rests on R19's engine reading alone: D-U19-12.",
-    "sourceHashes": {
-      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3"
-    },
+    "notes": "Round-1 revision. The Manual Q&A on p.42 names the exact case the owner ruling of 2026-08-18 (“Stat layer 4 application order”) calls an engine call: Tough augmented onto a Balanced unit is doubled, then balanced. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) puts a unit's own printed attributes before its augments' and says \"the Manual doesn't specify an order for printed-vs-granted-vs-shared\", which p.42 answers for this pair. Printed text outranks R-rulings, so the rule states the Manual; the owner ruling of 2026-08-18 (“Stat layer 4 application order”) still supplies the mod-stack order, the front-to-back column order and the duplicate rule. The verifier's probe measured the engine balancing first (F-U19-5; D-U19-1). The Manual's \"applied to\" case (an effect granting Tough) is stated as printed; the guard test covers only two augments on a plain host. Round 2: the verifier noted the mod order's direction was implicit. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) names it \"order gained\", which the guard test pins as first attached first (Rampart Guardian then Child of Aether makes a 3/1 a 3/3); the Manual's \"top to bottom\" does not say which mod is on top, so that clause rests on the owner ruling of 2026-08-18 (“Stat layer 4 application order”)’s engine reading alone: D-U19-12.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U19-5"
     ]
@@ -711,29 +702,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R289 (its per-pairing switch, which turns a Pure pairing's Unaware off)",
-          "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+          "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}.",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Printed text read literally outranks R-rulings (authority order). R289 says Tough, Balanced and Inverted \"still read (they are stat layers, R61)\" — that sentence is the ruling's engine description, not an owner quote, and R61 says only that STATS are not attributes. R289 itself turns Unaware off in a noncombat Pure pairing, while R106 says the combat Unaware collapse \"survives {Pure}\". So the rulings disagree with each other and with the print: D-U19-2. The pilot (D608-48) kept engine law here; this draft follows the authority order instead, and the owner should see the difference. Round 1: the verifier measured Tough still applying against a Pure source (probe) and Unaware switched off in a noncombat Pure pairing; both recorded on F-U19-1 and D-U19-2. Round 2: the verifier confirmed the rule and measured Balanced also staying on against a Pure source (a Balanced 4/1 survives 3 as a 4/4), added to F-U19-1. The R289/R61 conflict it asked to list for the owner is D-U19-2, which now asks the owner directly.",
+    "notes": "Printed text read literally outranks R-rulings (authority order). The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) says Tough, Balanced and Inverted \"still read (they are stat layers, the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”))\" — that sentence is the ruling's engine description, not an owner quote, and the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) says only that STATS are not attributes. The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) itself turns Unaware off in a noncombat Pure pairing, while the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”) says the combat Unaware collapse \"survives {Pure}\". So the rulings disagree with each other and with the print: D-U19-2. The pilot (D608-48) kept engine law here; this draft follows the authority order instead, and the owner should see the difference. Round 1: the verifier measured Tough still applying against a Pure source (probe) and Unaware switched off in a noncombat Pure pairing; both recorded on F-U19-1 and D-U19-2. Round 2: the verifier confirmed the rule and measured Balanced also staying on against a Pure source (a Balanced 4/1 survives 3 as a 4/4), added to F-U19-1. The owner rulings of 2026-09-05 (“{Pure} outside combat: the same switch…”) and 2026-08-20 (“{Pure}: the attribute layer, switched off…”) conflict it asked to list for the owner is D-U19-2, which now asks the owner directly.",
     "engineDiffers": [
       "F-U19-1",
       "F-U19-2"
     ],
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
-    },
-    "rebuttal": "Text kept. CONTROL's authority order puts printed text read literally above R-rulings, and Pure's printed reminder ignores \"all other attributes\"; Manual p.42 is cited only because it names Tough an attribute (\"4. Attributes like Tough\"), which is the point R289's \"they are stat layers\" disputes. Owner decision 2 has the rule state current law and flag the engine: engineDiffers F-U19-1/F-U19-2, D-U19-2. The verifier's probe (a Pure source's 5 leaves Rampart Guardian a Tough 0/8) measures F-U19-1; it does not make R289 outrank the card."
+    "sourceHashes": {},
+    "rebuttal": "Text kept. CONTROL's authority order puts printed text read literally above R-rulings, and Pure's printed reminder ignores \"all other attributes\"; Manual p.42 is cited only because it names Tough an attribute (\"4. Attributes like Tough\"), which is the point the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s \"they are stat layers\" disputes. Owner decision 2 has the rule state current law and flag the engine: engineDiffers F-U19-1/F-U19-2, D-U19-2. The verifier's probe (a Pure source's 5 leaves Rampart Guardian a Tough 0/8) measures F-U19-1; it does not make the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) outrank the card."
   },
   {
     "key": "attr.flying",
@@ -765,14 +755,14 @@
           "quote": "Only flying units can block flying units."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -808,8 +798,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -818,6 +807,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whether a non-Flying unit may block a Flying column together with a Flying unit in the same blocking column is not settled by the sources: D-U19-7.",
     "sourceHashes": {}
@@ -849,14 +839,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -893,14 +883,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "No test plays this out; 423's Swift version of the same leave-the-column rule is bound under 802.1.",
     "sourceHashes": {}
@@ -928,28 +918,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "- **Declaring blocks** — one Pure card in either column and neither evasion"
+          "quote": "- **Declaring blocks** — one Pure card in either column and neither evasion",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R61",
-          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The test covers a Pure BLOCKER; a Pure unit inside the Flying attacking column is R61's other half and has no guard here.",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "notes": "The test covers a Pure BLOCKER; a Pure unit inside the Flying attacking column is the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s other half and has no guard here.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.flying.lured",
@@ -959,7 +949,7 @@
     "examples": [
       {
         "text": "A lured unit with no Flying, facing a Flying Alluring column, may leave that column unblocked.",
-        "test": "53-playtest-round7.test.ts::R84: a lured unit with no {Flying} is not able against a Flying column"
+        "test": "53-playtest-round7.test.ts::CR 802.2e: a lured unit with no {Flying} is not able against a Flying column"
       }
     ],
     "see": [
@@ -970,24 +960,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}"
+          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly",
@@ -1019,14 +1008,14 @@
           "quote": "Any damage from a deadly source will kill a unit."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Pilot key kept. The pilot's sentence on column sharing moved to the general rule (802.1).",
     "sourceHashes": {}
@@ -1056,24 +1045,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R21 (its nonzero-kill sentence)",
-          "quote": "Any **nonzero** damage from a Deadly source kills the damaged unit, regardless of"
+          "quote": "Any **nonzero** damage from a Deadly source kills the damaged unit, regardless of",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.no-cap",
@@ -1083,7 +1071,7 @@
     "examples": [
       {
         "text": "A 10-power Deadly column blocked by a 1/1 deals all 10 to it.",
-        "test": "134-column-and-substep.test.ts::R157 §11 — a 10-power {Deadly} column deals all 10 to a 1/1 blocker"
+        "test": "134-column-and-substep.test.ts::CR 802.3b — a 10-power {Deadly} column deals all 10 to a 1/1 blocker"
       }
     ],
     "see": [
@@ -1093,13 +1081,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §11",
-          "quote": "Deadly doesn't have a cap?? A 10/10 deadly unit still deals 10 damage to"
+          "quote": "Deadly doesn't have a cap?? A 10/10 deadly unit still deals 10 damage to",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "134-column-and-substep.test.ts",
@@ -1107,11 +1095,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Pilot cited R114 as a designer source under a register ref the schema no longer accepts; R157 §11 (owner, verbatim) states the rule directly.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "Pilot cited the owner ruling of 2026-08-23 (“combat damage is DEALT in full…”) as a designer source under a register ref the schema no longer accepts; the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner, verbatim) states the rule directly.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.combat-share",
@@ -1141,16 +1128,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R23",
-          "quote": "Deadly's 1-is-lethal applies to the pool."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R21",
-          "relation": "its \"auto-assignment ... sends everything past 1-per-blocker through\" is only the default since R319 made the excess elective; its engine-call flag is resolved by the RAQ"
+          "quote": "Deadly's 1-is-lethal applies to the pool.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1160,10 +1142,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
       "RAQ 1353888077625561108#3": "66c91c974f97a373e4461c01315e9276f92dca3565803a7736d38a030f2e2df2",
       "RAQ 1353888077625561108#6": "6d01b38c9afcd84e60f587ef5271145274a2679eb3584062c18f27d111c6b292"
     }
@@ -1191,24 +1173,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R21 (its same-sub-step kill)",
-          "quote": "the same damage sub-step, before the next sub-step's recalc. Deadly works on effect"
+          "quote": "the same damage sub-step, before the next sub-step's recalc. Deadly works on effect",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R21 states it as an engine call; the Manual's Swift + Deadly combo (Dune Drifter with Tidepool Terror) only works if the kill lands inside the Swift sub-step.",
-    "sourceHashes": {
-      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Deadly specifics […]”) states it as an engine call; the Manual's Swift + Deadly combo (Dune Drifter with Tidepool Terror) only works if the kill lands inside the Swift sub-step.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.noncombat",
@@ -1218,7 +1199,7 @@
     "examples": [
       {
         "text": null,
-        "test": "206-deadly-everywhere.test.ts::R237: a plain {Deadly} effect source kills a unit"
+        "test": "206-deadly-everywhere.test.ts::CR 802.3e: a plain {Deadly} effect source kills a unit"
       }
     ],
     "see": [
@@ -1228,17 +1209,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a"
+          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         },
         {
-          "ref": "R21 (its effect-damage sentence)",
-          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "206-deadly-everywhere.test.ts",
@@ -1246,12 +1228,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215",
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.spells",
@@ -1261,11 +1241,11 @@
     "examples": [
       {
         "text": "With Rotspore Herald in the region, a Fireball 1 kills any unit it hits.",
-        "test": "206-deadly-everywhere.test.ts::R237: \"a fireball 1 with deadly would kill any unit\""
+        "test": "206-deadly-everywhere.test.ts::CR 802.3f, in the owner's words: \"a fireball 1 with deadly would kill any unit\""
       },
       {
         "text": null,
-        "test": "206-deadly-everywhere.test.ts::R237: a {Deadly} donated to a SPELL on the stack kills through the spell"
+        "test": "206-deadly-everywhere.test.ts::CR 802.3f: a {Deadly} donated to a SPELL on the stack kills through the spell"
       }
     ],
     "see": [
@@ -1276,29 +1256,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "fireball 1 with deadly would kill any unit.\"**"
+          "quote": "fireball 1 with deadly would kill any unit.\"**",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         },
         {
-          "ref": "R125",
-          "quote": "damage sources, the owner: *\"Rotspore also applies to all spells and spell"
+          "quote": "damage sources, the owner: *\"Rotspore also applies to all spells and spell",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "206-deadly-everywhere.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R125": "349a75c7891354248b00e90d386d39cb71bf772baa118887f837a7f7e6055e8d",
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.poisonous",
@@ -1308,7 +1287,7 @@
     "examples": [
       {
         "text": null,
-        "test": "206-deadly-everywhere.test.ts::R237: {Deadly} + {Poisonous} effect damage still kills"
+        "test": "206-deadly-everywhere.test.ts::CR 802.3g: {Deadly} + {Poisonous} effect damage still kills"
       }
     ],
     "see": [
@@ -1319,13 +1298,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "yeah it'll get instakilled by deadly but also trigger to"
+          "quote": "yeah it'll get instakilled by deadly but also trigger to",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "206-deadly-everywhere.test.ts",
@@ -1333,11 +1312,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb Gannon, 2023-08-23, quoted in R237 from #rules-questions; no RAQ claim carries it, so it is typed owner.",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "notes": "Caleb Gannon, 2023-08-23, quoted in the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) from #rules-questions; no RAQ claim carries it, so it is typed owner.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.prevention",
@@ -1362,13 +1340,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R98 (its prevented-damage-is-not-dealt rule)",
-          "quote": "silent), **no Poisonous -1/-1 counters**, **no {Deadly} kill**, **no {Resonant} rider** and"
+          "quote": "silent), **no Poisonous -1/-1 counters**, **no {Deadly} kill**, **no {Resonant} rider** and",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts",
@@ -1376,11 +1354,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.players",
@@ -1400,24 +1377,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R21 (its players sentence)",
-          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R21 (an engine call): 'Players don't \"die\" to Deadly — it only shortens units.' The printed reminder (\"will kill a unit\") names only units.",
-    "sourceHashes": {
-      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Deadly specifics […]”) (an engine call): 'Players don't \"die\" to Deadly — it only shortens units.' The printed reminder (\"will kill a unit\") names only units.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.deadly.pure",
@@ -1447,17 +1423,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R289 (its per-pairing switch)",
-          "quote": "{Deadly}, {Piercing}, {Electric}, {Poisonous}, {Resonant}, {Blessed} and"
+          "quote": "{Deadly}, {Piercing}, {Electric}, {Poisonous}, {Resonant}, {Blessed} and",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
@@ -1465,12 +1442,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e",
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.swift",
@@ -1502,14 +1477,14 @@
           "quote": "Swift units deal combat damage first."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1542,14 +1517,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1581,16 +1556,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The pilot bound 02-combat's \"R3/Swift\" test, whose title asserts superseded law (F-U12-2); rebound to the 423 CR test.",
+    "notes": "The pilot bound 02-combat's \"the owner ruling of 2026-08-18 (“Formation changes during combat […]”)/Swift\" test, whose title asserts superseded law (F-U12-2); rebound to the 423 CR test.",
     "sourceHashes": {}
   },
   {
@@ -1626,13 +1601,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §5",
-          "quote": "Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish unit"
+          "quote": "Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish unit",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts",
@@ -1641,10 +1616,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
       "RAQ 1363298910528864318#2": "9a14388c3403ea1748e43c0000f1dd01cffe8b12f8d9069ceca019a04a08af6e"
     }
   },
@@ -1671,20 +1646,17 @@
         }
       ],
       "ours": [],
-      "rulings": [
-        "R320"
-      ],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
       "RAQ 1363298910528864318#1": "f69fe64d58dd8da986837748f23976036e837eb8729b0dd4255d9b2250dd1c33"
     }
   },
@@ -1696,11 +1668,11 @@
     "examples": [
       {
         "text": "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. The damage step splits once: Dune Drifter strikes, then there is a window to respond, then Lithoghul strikes. No Sluggish unit is in the battle, so there is no second split.",
-        "test": "297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window"
+        "test": "297-damage-substeps-are-steps.test.ts::CR 608.3c an EMPTY sub-step opens no window"
       },
       {
         "text": "Flowstone Arcanite's counters from the Swift step land at the boundary, in time to save an ally.",
-        "test": "21-fixes.test.ts::Flowstone Arcanite (R295): the Swift-step counters land at the boundary"
+        "test": "21-fixes.test.ts::Flowstone Arcanite (CR 802.4e): the Swift-step counters land at the boundary"
       }
     ],
     "see": [
@@ -1725,19 +1697,7 @@
           "quote": "triggers from that damage resolve before normal damage."
         }
       ],
-      "rulings": [
-        "R295"
-      ],
-      "history": [
-        {
-          "ruling": "R31",
-          "relation": "superseded: it resolved sub-step triggers at once as special actions, with no priority"
-        },
-        {
-          "ruling": "R261",
-          "relation": "narrowed by R295: its hold of combat-damage triggers until after combat now applies only to an unsplit step"
-        }
-      ],
+      "owner": [],
       "engine": [],
       "tests": [
         "297-damage-substeps-are-steps.test.ts",
@@ -1745,10 +1705,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "RAQ 1540678747953569832 is not in this unit's pack (it is in the register); added here as the pilot did. The glossary line is our own text and cites R117, which does not say this (pilot D608-17).",
+    "notes": "RAQ 1540678747953569832 is not in this unit's pack (it is in the register); added here as the pilot did. The glossary line is our own text and cites the owner ruling of 2026-08-23 (“\"when my column deals combat damage\"…”), which does not say this (pilot D608-17).",
     "sourceHashes": {
-      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
       "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
       "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
     }
@@ -1777,24 +1737,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.sluggish",
@@ -1822,14 +1781,14 @@
           "quote": "Sluggish units deal combat damage last."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1858,14 +1817,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "423-cr-combat-damage.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1878,7 +1837,7 @@
     "examples": [
       {
         "text": "Adversary of the Deep (Sluggish) grows from the 6 life lost in the normal sub-step before it strikes, and deals 8.",
-        "test": "297-damage-substeps-are-steps.test.ts::R295 §1 the report"
+        "test": "297-damage-substeps-are-steps.test.ts::CR 802.5b the report"
       }
     ],
     "see": [
@@ -1894,23 +1853,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R295",
-          "quote": "so that it gets its counters BEFORE dealing damage. So there should have been 6"
+          "quote": "so that it gets its counters BEFORE dealing damage. So there should have been 6",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "297-damage-substeps-are-steps.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
       "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
     }
   },
@@ -1945,20 +1904,17 @@
         }
       ],
       "ours": [],
-      "rulings": [
-        "R320"
-      ],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
       "RAQ 1363298910528864318#2": "9a14388c3403ea1748e43c0000f1dd01cffe8b12f8d9069ceca019a04a08af6e",
       "RAQ 1363298910528864318#3": "cbb707bcad01ac4069d276f6c5d4ec40fb77ee9268a88b0c24e640fcfdd7ebf0"
     }
@@ -1987,24 +1943,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.tough",
@@ -2036,16 +1991,16 @@
           "quote": "Tough units have their defense doubled."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The card's own reminder (\"Tough units have their defense doubled.\") is printed under Rampart Guardian's type line and is not in the transcription: D-U19-8. The pilot drafted this at engine basis because R19 and the Manual Q&A were not in its pack.",
+    "notes": "The card's own reminder (\"Tough units have their defense doubled.\") is printed under Rampart Guardian's type line and is not in the transcription: D-U19-8. The pilot drafted this at engine basis because the owner ruling of 2026-08-18 (“Stat layer 4 application order”) and the Manual Q&A were not in its pack.",
     "sourceHashes": {}
   },
   {
@@ -2085,8 +2040,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -2094,6 +2048,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2121,24 +2076,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R226",
-          "quote": "defense eats its own base. Power is untouched by `{Tough}` and merely flips:"
+          "quote": "defense eats its own base. Power is untouched by `{Tough}` and merely flips:",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.tough.doubling",
@@ -2168,8 +2122,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -2177,6 +2130,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
     "sourceHashes": {
@@ -2209,14 +2163,14 @@
           "quote": "The power and defense of balanced units are equal to the greater of the two."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2249,24 +2203,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "\"1/4 tough balanced is 8/8 — Tough is +0/+4, Balanced is +7/0. If we"
+          "quote": "\"1/4 tough balanced is 8/8 — Tough is +0/+4, Balanced is +7/0. If we",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Caleb Gannon's worked example, quoted in R93. The order between Tough and Balanced is rule attr.general.application-order.",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "Caleb Gannon's worked example, quoted in the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”). The order between Tough and Balanced is rule attr.general.application-order.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.inverted",
@@ -2298,14 +2251,14 @@
           "quote": "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "43-dark-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2318,7 +2271,7 @@
     "examples": [
       {
         "text": "Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: the owner's Malformed Monstrosity"
+        "test": "79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity"
       },
       {
         "text": null,
@@ -2341,17 +2294,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "i.e. `base − (current − base)` — negate the accumulated delta from base. Caleb Gannon"
+          "quote": "i.e. `base − (current − base)` — negate the accumulated delta from base. Caleb Gannon",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R93",
-          "quote": "> **calebgannon:** \"yes … it is a mathematical operation, not a linguistic operation\""
+          "quote": "> **calebgannon:** \"yes … it is a mathematical operation, not a linguistic operation\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts",
@@ -2359,11 +2313,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.inverted.attributes",
@@ -2373,7 +2326,7 @@
     "examples": [
       {
         "text": "A 1/4 with Tough and Balanced is an 8/8; with Inverted too it is a -6/0.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
+        "test": "79-round17-layers.test.ts::CR 802.8b layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
       }
     ],
     "see": [
@@ -2384,28 +2337,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "include inverted it gains +0/-4, -7/+0 → To become a -6/0\""
+          "quote": "include inverted it gains +0/-4, -7/+0 → To become a -6/0\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R93",
-          "quote": "So Tough inverted is not \"halve the defense\", it is \"lose the +0/+4 you gained\""
+          "quote": "So Tough inverted is not \"halve the defense\", it is \"lose the +0/+4 you gained\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Caleb Gannon's worked example, quoted in R93 from #rules-questions; typed owner because no RAQ claim carries it.",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "Caleb Gannon's worked example, quoted in the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) from #rules-questions; typed owner because no RAQ claim carries it.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.inverted.base",
@@ -2415,7 +2368,7 @@
     "examples": [
       {
         "text": "A unit made base 3/3 by Aberrant Statweaver, with no other changes, is a 3/3 whether or not it is Inverted.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: a base REWRITE is the thing inverted FROM, never inverted itself"
+        "test": "79-round17-layers.test.ts::CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never inverted itself"
       }
     ],
     "see": [
@@ -2425,24 +2378,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never"
+          "quote": "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Settled by the owner on 2026-08-22 (R93 addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later R157 §14 point the other way: D-U19-3.",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "Settled by the owner on 2026-08-22 (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) point the other way: D-U19-3.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.inverted.tough",
@@ -2452,15 +2404,15 @@
     "examples": [
       {
         "text": "A 1/4 with Tough and Inverted is a 1/0, in either grant order, and dies.",
-        "test": "79-round17-layers.test.ts::R226: the TWO-attribute case, in either grant order"
+        "test": "79-round17-layers.test.ts::CR 709.4d: the TWO-attribute case, in either grant order"
       },
       {
         "text": "A 1/3 with one -1/-1 counter, Tough and Inverted survives as a 2/2.",
-        "test": "79-round17-layers.test.ts::R226: the special case his wording misses"
+        "test": "79-round17-layers.test.ts::CR 802.8d: the special case his wording misses"
       },
       {
         "text": "Inverted on the front unit of a column and Tough on the back unit: both units have both attributes, and both die.",
-        "test": "79-round17-layers.test.ts::R226: the column wipe"
+        "test": "79-round17-layers.test.ts::CR 802.8d: the column wipe"
       }
     ],
     "see": [
@@ -2471,28 +2423,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R226",
-          "quote": "> ### **final defense = −2Δ.** The base cancels out completely."
+          "quote": "> ### **final defense = −2Δ.** The base cancels out completely.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R226",
-          "quote": "> works. So tough + inverted always kills the unit since +0/+X is just -0/-X"
+          "quote": "> works. So tough + inverted always kills the unit since +0/+X is just -0/-X",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The owner's words (\"always kills\") are the special case of R226's law for a net change of zero or more; R226 pins the law. See D-U19-9.",
-    "sourceHashes": {
-      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a"
-    }
+    "notes": "The owner's words (\"always kills\") are the special case of the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”)’s law for a net change of zero or more; the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”) pins the law. See D-U19-9.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.unaware",
@@ -2520,16 +2472,11 @@
           "quote": "Unaware cards and units they are interacting with ignore all stat changes."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R10",
-          "relation": "superseded by R106; R10 counted targeting as interacting"
+          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2538,10 +2485,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The glossary line quoted under ours is the reminder printed under Bubb's type line (client/ui/scan-reminders.json), which the transcription lacks: D-U19-8.",
     "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
       "RAQ 1402292180499955884#3": "393270501459afa8f838be9e16afe7e364ff990cf4db27b2fde53826b61bf395"
     }
   },
@@ -2581,17 +2528,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "> matter how many +1/+1 counters it has. Bubb would also survive 100 -1/-1 counters just"
+          "quote": "> matter how many +1/+1 counters it has. Bubb would also survive 100 -1/-1 counters just",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R106",
-          "quote": "Layer 6 returns **layer 1 alone**. An Unaware card's own numbers never move off the"
+          "quote": "Layer 6 returns **layer 1 alone**. An Unaware card's own numbers never move off the",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "92-unaware.test.ts",
@@ -2600,10 +2548,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
       "RAQ 1353847640214999170#1": "aa53daaea457ede26807bac41ac3c597fe1234150aa478b6b8fb010492d48946"
     }
   },
@@ -2625,29 +2573,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §14",
-          "quote": "Literally any change to a unit's stats counts. If they're different from the"
+          "quote": "Literally any change to a unit's stats counts. If they're different from the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R106",
-          "quote": "card. So a Statweaver leaves Bubb a 5/6."
+          "quote": "card. So a Statweaver leaves Bubb a 5/6.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "92-unaware.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R106 also quotes Caleb: Unaware cards \"will only look at BASE STAT PRINTED on cards\".",
-    "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”) also quotes Caleb: Unaware cards \"will only look at BASE STAT PRINTED on cards\".",
+    "sourceHashes": {}
   },
   {
     "key": "attr.unaware.interaction",
@@ -2684,13 +2631,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So"
+          "quote": "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts",
@@ -2698,10 +2645,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
       "RAQ 1402292180499955884#3": "393270501459afa8f838be9e16afe7e364ff990cf4db27b2fde53826b61bf395",
       "RAQ 1402292180499955884#4": "05c049a89f9714e2361e3928bd2edf700d8633f0d224478e63f90884d3bc694b"
     }
@@ -2733,17 +2680,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So"
+          "quote": "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R106",
-          "quote": "- `assignCombatDamage`: power dealt and toughness assigned against, with **both columns of"
+          "quote": "- `assignCombatDamage`: power dealt and toughness assigned against, with **both columns of",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "92-unaware.test.ts",
@@ -2752,11 +2700,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "The whole-column scope follows from column sharing: every unit in an Unaware unit's column is Unaware (rule 802.1), and the opposing column is what they are interacting with.",
-    "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.unaware.death",
@@ -2780,28 +2727,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards"
+          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R106",
-          "quote": "> fine. Haboob kills anything that has 1 defense printed at the card level.\""
+          "quote": "> fine. Haboob kills anything that has 1 defense printed at the card level.\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "92-unaware.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.unaware.outside",
@@ -2819,24 +2766,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "participants only — outside an interaction a Robot 20 is a 20/20 and stays one. It sits"
+          "quote": "participants only — outside an interaction a Robot 20 is a 20/20 and stays one. It sits",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "92-unaware.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.unaware.spells",
@@ -2856,28 +2802,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R106",
-          "quote": "> fine. Haboob kills anything that has 1 defense printed at the card level.\""
+          "quote": "> fine. Haboob kills anything that has 1 defense printed at the card level.\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R106",
-          "quote": "modifier applied' and any Unaware units (or Spells like Haboob) will only look at BASE"
+          "quote": "modifier applied' and any Unaware units (or Spells like Haboob) will only look at BASE",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "92-unaware.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.unaware.targets",
@@ -2906,24 +2852,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R281",
-          "quote": "*\"You can target things with unaware, of course, but if that thing does a stat"
+          "quote": "*\"You can target things with unaware, of course, but if that thing does a stat",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R281",
-          "quote": "get 6 counters, but those counters won't do anything.\"* R106's \"one open edge\""
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R10",
-          "relation": "superseded by R106: it counted targeting as interacting"
-        },
-        {
-          "ruling": "R206",
-          "relation": "its Unaware row (\"targeting is deliberately not implemented\") amended by R281"
+          "quote": "get 6 counters, but those counters won't do anything.\"* R106's \"one open edge\"",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2933,10 +2871,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "A _passer write-up in the RAQ thread \"Graft 101\" says the same in passing (\"Bubb would gain +1/+1 buff (which won't do much since he is Unaware)\"); the register carries no claim for it, so it is not cited. R106's own \"open edge\" paragraph is still unmarked: D-U19-6. Round 1: Poison prints \"Put X -1/-1 counters on target unit.\"; the owner's \"Poison 6\" is X = 6. Round 2: example 2 corrected. The 0 is the Robot's printed defense (Robot prints 0/0), not Bubb's (Bubb prints 5/6); the verifier measured interactionStats(Robot, [Bubb]) = 0/0. RAQ 1402292180499955884#4 is cited because Squish targets Bubb (\"another target unit\"), so it also shows an Unaware card can be targeted. Basis mixed: the RAQ shows targeting an Unaware card; R281 (owner) states the counters clause.",
+    "notes": "A _passer write-up in the RAQ thread \"Graft 101\" says the same in passing (\"Bubb would gain +1/+1 buff (which won't do much since he is Unaware)\"); the register carries no claim for it, so it is not cited. The owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)’s own \"open edge\" paragraph is still unmarked: D-U19-6. Round 1: Poison prints \"Put X -1/-1 counters on target unit.\"; the owner's \"Poison 6\" is X = 6. Round 2: example 2 corrected. The 0 is the Robot's printed defense (Robot prints 0/0), not Bubb's (Bubb prints 5/6); the verifier measured interactionStats(Robot, [Bubb]) = 0/0. RAQ 1402292180499955884#4 is cited because Squish targets Bubb (\"another target unit\"), so it also shows an Unaware card can be targeted. Basis mixed: the RAQ shows targeting an Unaware card; the owner ruling of 2026-08-30 (“a document validated against the code…”) (owner) states the counters clause.",
     "sourceHashes": {
-      "R281": "3015e7c98d15e7daf8e1f194b93c2344f1655dc4c3777bc050d1a45310510acb",
       "RAQ 1402292180499955884#4": "05c049a89f9714e2361e3928bd2edf700d8633f0d224478e63f90884d3bc694b"
     }
   },
@@ -2966,14 +2904,14 @@
           "quote": "Powerful sources deal double damage"
         }
       ],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -3005,23 +2943,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R23",
-          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"Before it is divided\" is R23's engine call; the designer confirms only that combat damage is doubled (U12's pilot item D608-10).",
+    "notes": "\"Before it is divided\" is the owner ruling of 2026-08-18 (“Vulnerable's doubling vs assignment (and Powerful's) […]”)’s engine call; the designer confirms only that combat damage is doubled (U12's pilot item D608-10).",
     "sourceHashes": {
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
       "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec"
     }
   },
@@ -3048,25 +2986,17 @@
         }
       ],
       "ours": [],
-      "rulings": [
-        "R316"
-      ],
-      "history": [
-        {
-          "ruling": "R104",
-          "relation": "applied Conduit of Pain after the doubling; replaced on this point by R316"
-        }
-      ],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Stated for noncombat damage only: the pool's one additive modifier (Conduit of Pain) excludes combat damage.",
     "sourceHashes": {
-      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128",
       "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
     }
   },
@@ -3097,13 +3027,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a"
+          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts",
@@ -3111,10 +3041,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
       "RAQ 1362838395298119912#3": "5d2874b098ec7b0da74051103612b657047dddc39cc12900bbbd2b931fc71940",
       "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
     }
@@ -3142,21 +3072,17 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
-        "R94"
-      ],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.powerful.unit-source",
@@ -3193,11 +3119,7 @@
         }
       ],
       "ours": [],
-      "rulings": [
-        "R318",
-        "R294 (all but its premise from the 2022 Rules Glossary)"
-      ],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts",
@@ -3206,11 +3128,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
-      "R318": "b13b3ca34a471fdb76cb9272f2929ad8b0eec17d7ea5cff2cba441ffdae5947a",
       "RAQ 1402292180499955884#0": "8ca0618915f46ba0c16263c38e217d8b045a1e4767421a8e648967c065ada9d9",
       "RAQ 1402292180499955884#1": "349d662f096c2d881835be8a87a653bd4c6b51a650ab71bfbaf64c6a6d9841a7"
     }
@@ -3238,24 +3159,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.vulnerable",
@@ -3283,23 +3203,23 @@
           "quote": "Vulnerable cards receive double damage."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R23",
-          "quote": "victim *receives*: in combat assignment only half the pool is needed for lethal and the"
+          "quote": "victim *receives*: in combat assignment only half the pool is needed for lethal and the",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The card's own reminder (\"Vulnerable cards receive double damage.\") is printed under Crumbling Ancient's type line and is not in the transcription: D-U19-8.",
     "sourceHashes": {
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
       "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
     }
   },
@@ -3334,13 +3254,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R120 (its lethal-floor arithmetic)",
-          "quote": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
+          "quote": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -3348,10 +3268,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"Rounded up\" is R120's engine text; the designer's example has even defense (U12 D-U12-17).",
+    "notes": "\"Rounded up\" is the owner ruling of 2026-08-24 (“the ELECTIVE combat-damage split: the dealing…”)’s engine text; the designer's example has even defense (U12 D-U12-17).",
     "sourceHashes": {
-      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230",
       "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
     }
   },
@@ -3363,7 +3283,7 @@
     "examples": [
       {
         "text": "A Piercing attacker may put all 10 of its damage into a lone Vulnerable 3/8, which is dealt 20.",
-        "test": "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
+        "test": "399-raq-fix-combat.test.ts::CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
       }
     ],
     "see": [
@@ -3379,13 +3299,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R23",
-          "quote": "victim *receives*: in combat assignment only half the pool is needed for lethal and the"
+          "quote": "victim *receives*: in combat assignment only half the pool is needed for lethal and the",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "09-attrs.test.ts",
@@ -3393,10 +3313,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
       "RAQ 1372451771632320512#4": "c0cb696285859a76caf8c5a328ef57f3dbb7330ef74a4ddfe29d70ba791f50ca"
     }
   },
@@ -3423,10 +3343,7 @@
         }
       ],
       "ours": [],
-      "rulings": [
-        "R23"
-      ],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -3435,10 +3352,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
       "RAQ 1372451771632320512#3": "ea23f808b78cd79313aac3fbff1c8949a14188079fda3436adcefe3e6b8dea75"
     }
   },
@@ -3460,30 +3377,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R103 (its pricing order)",
-          "quote": "1. {Powerful} doubles the source's damage first (already in the per-hit loop)."
+          "quote": "1. {Powerful} doubles the source's damage first (already in the per-hit loop).",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R103 (its pricing order)",
-          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side"
-        },
-        "R23"
+          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
+        }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "82-attr-interactions.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Tested for noncombat damage only; R23 implies the same for combat. No designer source.",
-    "sourceHashes": {
-      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
-      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1"
-    }
+    "notes": "Tested for noncombat damage only; the owner ruling of 2026-08-18 (“Vulnerable's doubling vs assignment (and Powerful's) […]”) implies the same for combat. No designer source.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.vulnerable.pure",
@@ -3512,17 +3427,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R289 (its per-pairing switch)",
-          "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+          "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}.",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts",
@@ -3530,15 +3446,13 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The bound test makes the SOURCE Pure, although its title names a Pure recipient (F-U19-4). The pilot's round-2 probe found Oorblak's redirect doubling damage onto a Pure Vulnerable Oorblak (F-U19-3).",
     "engineDiffers": [
       "F-U19-3"
     ],
-    "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e",
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.feeble",
@@ -3574,13 +3488,13 @@
           "quote": "Feeble units can't block."
         }
       ],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the"
+          "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -3589,11 +3503,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Spectrogenesis's reminder describes its Wisps, whose type line prints {Feeble}. The attribute's own reminder (\"Feeble units can't block.\") is printed under Bripp's type line and is not in the transcription: D-U19-8.",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.feeble.own",
@@ -3603,7 +3516,7 @@
     "examples": [
       {
         "text": null,
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality is still the unit's own question"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.12a {Feeble} block legality is still the unit's own question"
       }
     ],
     "see": [
@@ -3614,28 +3527,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the"
+          "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "So block legality is the unit's own question, and the {Alluring} trigger is found"
+          "quote": "So block legality is the unit's own question, and the {Alluring} trigger is found",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The second sentence rests on R294's summary (\"block legality is the unit's own question\"), not on the owner's words, which address only the Feeble unit itself. The guard is a source-text test, not a played board.",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "notes": "The second sentence rests on the owner ruling of 2026-09-16 (“A unit in a column HAS…”)’s summary (\"block legality is the unit's own question\"), not on the owner's words, which address only the Feeble unit itself. The guard is a source-text test, not a played board.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.feeble.pure",
@@ -3660,17 +3573,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R61",
-          "quote": "Pure unit's own Feeble does not stop it blocking, either."
+          "quote": "Pure unit's own Feeble does not stop it blocking, either.",
+          "adopted": "2026-08-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R206 (its Feeble row)",
-          "quote": "| **Feeble** | \"It cannot block.\" | …unless it is {Pure}"
+          "quote": "| **Feeble** | \"It cannot block.\" | …unless it is {Pure}",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "177-glossary-conformance.test.ts",
@@ -3678,12 +3592,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "No played test: the 177 guard compares the glossary row with the engine source.",
-    "sourceHashes": {
-      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3",
-      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "attr.feeble.lured",
@@ -3693,7 +3605,7 @@
     "examples": [
       {
         "text": null,
-        "test": "53-playtest-round7.test.ts::R84: a {Feeble} lured unit is not able, so it is not compelled"
+        "test": "53-playtest-round7.test.ts::CR 802.12c: a {Feeble} lured unit is not able, so it is not compelled"
       }
     ],
     "see": [
@@ -3704,23 +3616,22 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R84",
-          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}"
+          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
-    }
+    "sourceHashes": {}
   }
 ]

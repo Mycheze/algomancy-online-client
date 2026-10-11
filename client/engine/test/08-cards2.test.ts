@@ -1,7 +1,7 @@
 /* Per-card tests for the mechanics-batch-2 pool (project rule: a test for
- * every card): stat layer 4 (Tough/Balanced, R19), Deadly (R21), Sneaky (R20),
- * Feeble, the planning haste step (R18), unit-token makers (Wisp/Robot), and
- * the Ambush battle mode (R22) — Orblish Horroth AND Good Whale's parked mode. */
+ * every card): stat layer 4 (Tough/Balanced, CR 802.1j), Deadly (CR 802.3), Sneaky (CR 802.14),
+ * Feeble, the planning haste step (CR 504), unit-token makers (Wisp/Robot), and
+ * the Ambush battle mode (CR 803.6) — Orblish Horroth AND Good Whale's parked mode. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
@@ -38,7 +38,7 @@ test('Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive', () =
   assert.deepEqual(effStats(h, child), [2, 2], 'Balanced: 2/0 → 2/2');
 });
 
-test('R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough', () => {
+test('CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough', () => {
   const h = new Harness(303);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -53,7 +53,7 @@ test('R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough',
   assert.deepEqual(effStats(h, host2), [3, 6], 'Balanced then Tough: 3/1 → 3/3 → 3/6');
 });
 
-test('Tidepool Terror: Deadly — 1 damage kills the 7/5 it blocks (R21)', () => {
+test('Tidepool Terror: Deadly — 1 damage kills the 7/5 it blocks (CR 802.3a)', () => {
   const h = new Harness(304);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -64,14 +64,14 @@ test('Tidepool Terror: Deadly — 1 damage kills the 7/5 it blocks (R21)', () =>
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [terror] } });
   pass(h); pass(h);
-  assignDefault(h);   // R319: the {Piercing} strike elects; the default is the split pinned below
+  assignDefault(h);   // CR 802.16c: the {Piercing} strike elects; the default is the split pinned below
   assert.ok(!ent(h, whale), 'Deadly: 1 damage killed the 7/5');
   assert.ok(!ent(h, terror), 'the blocker died to 2 of the 7');
   assert.equal(h.state.players[D]!.life, 25, 'Piercing overflow: 7 - 2 lethal = 5 through');
   finishBattle(h);
 });
 
-test('Whispering Mantid: Sneaky — unblockable only when attacking alone (R20)', () => {
+test('Whispering Mantid: Sneaky — unblockable only when attacking alone (CR 802.14)', () => {
   const h = new Harness(305);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -101,7 +101,7 @@ test('Whispering Mantid: Sneaky — unblockable only when attacking alone (R20)'
   finishBattle(h);
 });
 
-test('Molten Upheaval + the haste step: haste cards play between planning and battle (R18)', () => {
+test('Molten Upheaval + the haste step: haste cards play between planning and battle (CR 504.1, 504.2)', () => {
   const h = new Harness(306);
   toDeployment(h);
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -115,9 +115,9 @@ test('Molten Upheaval + the haste step: haste cards play between planning and ba
   h.do({ type: 'donePlanning', seat: 1 });
   assert.equal(h.state.phase, 'planning');
   assert.ok(h.state.hasteDone, 'haste step engaged (p holds a payable haste card)');
-  // R228: no seat is auto-done any more — a seat with nothing to play is
+  // CR 504.5a: no seat is auto-done any more — a seat with nothing to play is
   // served `doneHaste` and nothing else, which is what a bluff looks like.
-  assert.equal(h.state.hasteDone![o], false, 'the other seat is offered the step too (R228)');
+  assert.equal(h.state.hasteDone![o], false, 'the other seat is offered the step too (CR 504.5)');
   assert.deepEqual(h.legal(o).map(a => a.type), ['doneHaste'],
     'and is offered nothing but done');
   assert.ok(h.legal(p).some(a => a.type === 'playCard'), 'haste card offered');
@@ -130,9 +130,9 @@ test('Molten Upheaval + the haste step: haste cards play between planning and ba
   assert.equal(h.state.phase, 'battle', 'haste step ends into the battle phase');
 });
 
-test('the haste step opens even when nobody has a legal haste play (R228)', () => {
-  // Was "skipped outright when nobody has a legal haste play (R18)". R224/R228
-  // reversed it: `hasteDone` is served live and public, so a step that only
+test('the haste step opens even when nobody has a legal haste play (CR 504.5)', () => {
+  // Was "skipped outright when nobody has a legal haste play (R18)". The rulings behind
+  // CR 504.5 reversed it: `hasteDone` is served live and public, so a step that only
   // appeared when somebody COULD act broadcast the contents of a hidden hand.
   const h = new Harness(307);
   h.do({ type: 'donePlanning', seat: 0 });
@@ -238,7 +238,7 @@ test('Recyclable Sentinel: spawn → Robot 1; [Switch1] budget blocks the death 
   e.destroy(ent(h, sent)!, 'is deleted');
   e.settle();
   robots = unitsOf(h, p).filter(u => u.card === 'Robot');
-  assert.equal(robots.length, 1, 'died same turn: bounded budget already spent (R9)');
+  assert.equal(robots.length, 1, 'died same turn: bounded budget already spent (CR 722.5)');
   // Robots are unit tokens: they persist through regroup, counters intact
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -248,7 +248,7 @@ test('Recyclable Sentinel: spawn → Robot 1; [Switch1] budget blocks the death 
   assert.deepEqual(effStats(h, robots[0]!.id), [1, 1], 'counters are permanent');
 });
 
-test('Orblish Horroth: Ambush swaps into the blocker\'s formation slot (R22)', () => {
+test('Orblish Horroth: Ambush swaps into the blocker\'s formation slot (CR 803.6e)', () => {
   const h = new Harness(312);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -276,7 +276,7 @@ test('Orblish Horroth: Ambush swaps into the blocker\'s formation slot (R22)', (
   finishBattle(h);
 });
 
-test('Ambush fizzles when the target is removed — the ambusher is binned (R22)', () => {
+test('Ambush fizzles when the target is removed — the ambusher is binned (CR 803.6f)', () => {
   const h = new Harness(313);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

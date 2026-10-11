@@ -189,7 +189,7 @@ test('every attribute the pool prints has a row, and a printed reminder is shown
   assert.ok(pool.size > 20, `only ${pool.size} attributes in the pool`);
   const missing = [...pool].filter(a => !titles.has(a));
   assert.deepEqual(missing, [], 'attributes with no row in the reference');
-  // R206's intent, kept: where a card prints the reminder, the panel prints
+  // CR D6.11's intent, kept: where a card prints the reminder, the panel prints
   // THAT sentence and not a paraphrase of it
   let printed = 0;
   for (const e of attrs.entries) {

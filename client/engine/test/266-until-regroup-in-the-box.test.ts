@@ -22,7 +22,7 @@
  * arithmetic and a temp attribute is a chip in the attribute row" — which is
  * correct about the fields it was written for and silent about the rest.
  *
- * "Until regroup" is not a matter of opinion: it is the R11 step-3 sweep in
+ * "Until regroup" is not a matter of opinion: it is the CR 506.2 step-3 sweep in
  * engine.ts, and WHATEVER THAT BLOCK DELETES IS AN UNTIL-REGROUP FACT. So §1
  * parses the block and §2 requires each field it names to move the box. The
  * list is never typed here — docs/13-assessment.md §7.2, and the CT-161 shape
@@ -38,7 +38,7 @@
  * parts compact keeps, and §4 checks that claim against main.ts rather than
  * trusting this comment.
  *
- * §1 the field list, parsed out of the R11 step-3 sweep
+ * §1 the field list, parsed out of the CR 506.2 step-3 sweep
  * §2 every field moves the box, in a part `compact` keeps
  * §3 the named case: Phytochemical Protection, cast for real
  * §4 Alluring, and the compact claim measured against main.ts
@@ -71,13 +71,13 @@ const MAIN_SRC = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf
 
 /* ══ §1 — the field list, derived from the sweep itself ════════════════ */
 
-/** the R11 step-3 loop in engine.ts::startRegroup, brace-matched from its own
+/** the CR 506.2 step-3 loop in engine.ts::startRegroup, brace-matched from its own
  * comment. Anchored on the COMMENT rather than on a line number or on any one
  * field, so the block can grow, shrink or be reformatted freely. */
 function sweepBlock(): string {
   const at = ENGINE_SRC.indexOf('// (3) all temporary stat changes are removed');
   assert.ok(at > 0,
-    'engine.ts no longer carries the R11 step-3 sweep comment this file anchors on. That '
+    'engine.ts no longer carries the CR 506.2 step-3 sweep comment this file anchors on. That '
     + 'sweep IS the definition of "until regroup" — find where it went and re-anchor, do not '
     + 'delete this file.');
   const open = ENGINE_SRC.indexOf('{', ENGINE_SRC.indexOf('for (', at));
@@ -99,7 +99,7 @@ const SWEPT: string[] = [...new Set([
   ...[...BLOCK.matchAll(/\bdelete\s+e\.(\w+)/g)].map(m => m[1]!),
 ])].sort();
 
-test('CT-175 §1 the until-regroup fields are read out of the R11 sweep, and the read is complete', () => {
+test('CT-175 §1 the until-regroup fields are read out of the CR 506.2 sweep, and the read is complete', () => {
   assert.ok(SWEPT.length > 0,
     'the derived field list is EMPTY — a guard over an empty derived set passes forever '
     + '(docs/13-assessment.md §5). The parse above has stopped reading the sweep.');
@@ -165,7 +165,7 @@ const FIXTURE: Record<string, (u: Entity) => void> = {
  */
 const NO_REPRESENTATION: Record<string, string> = {
   baseSetSeq: 'a last-wins tiebreak timestamp for baseSet, with no meaning of its own',
-  tempAttrsAt: 'R328: when each tempAttrs entry was granted, read only to order it against a stripper; tempAttrs itself is represented',
+  tempAttrsAt: 'CR 712.2: when each tempAttrs entry was granted, read only to order it against a stripper; tempAttrs itself is represented',
 };
 
 /** the parts of the box `textBoxHtml` keeps when `compact` is set — i.e.
@@ -183,7 +183,7 @@ function subject(h: Harness, seat: Seat): EntityId {
 test('CT-175 §2 the fixture table covers the derived field list exactly', () => {
   const covered = [...new Set([...Object.keys(FIXTURE), ...Object.keys(NO_REPRESENTATION)])].sort();
   assert.deepEqual(covered, SWEPT,
-    'the R11 sweep and this file disagree about what "until regroup" means.\n'
+    'the CR 506.2 sweep and this file disagree about what "until regroup" means.\n'
     + `  swept but not covered here: ${SWEPT.filter(f => !covered.includes(f)).join(', ') || 'none'}\n`
     + `  covered here but not swept: ${covered.filter(f => !SWEPT.includes(f)).join(', ') || 'none'}\n`
     + 'A NEW FIELD IN THE SWEEP IS A NEW UNTIL-REGROUP EFFECT: add a fixture for it above and '

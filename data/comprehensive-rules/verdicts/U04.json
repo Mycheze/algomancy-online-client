@@ -1,7 +1,7 @@
 [
   {
     "key": "concepts.costs.activation",
-    "textHash": "0852b090181c86be",
+    "textHash": "cf649659f7971c46",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -95,7 +95,7 @@
   },
   {
     "key": "concepts.costs.activation.gate-first",
-    "textHash": "76b27a3cf58bd1ab",
+    "textHash": "753718dd0f108069",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -193,7 +193,7 @@
   },
   {
     "key": "concepts.costs.alternative",
-    "textHash": "4fab10c7095624e6",
+    "textHash": "619dfe037750c099",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -238,7 +238,7 @@
   },
   {
     "key": "concepts.costs.alternative.discard-me",
-    "textHash": "a0ba77b87b78c519",
+    "textHash": "535f8cdeb3eda00b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -295,7 +295,7 @@
   },
   {
     "key": "concepts.costs.copies",
-    "textHash": "cf31931cb0d1fff7",
+    "textHash": "c19bfb49330a56ea",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -339,7 +339,7 @@
   },
   {
     "key": "concepts.costs.free",
-    "textHash": "3be1f43af8857a8f",
+    "textHash": "53e9c8763e20b6ba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -503,7 +503,7 @@
   },
   {
     "key": "concepts.costs.kinds",
-    "textHash": "17937fb0d94bce3c",
+    "textHash": "ac20b8f27ed1c8c9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -627,7 +627,7 @@
   },
   {
     "key": "concepts.costs.modifiers.abilities",
-    "textHash": "829d38e5650a2655",
+    "textHash": "4c538504f1d8ee4b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -855,7 +855,7 @@
   },
   {
     "key": "concepts.costs.modifiers.minimum",
-    "textHash": "2b060259a7f963ce",
+    "textHash": "d297aaee289b7afe",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -909,7 +909,7 @@
   },
   {
     "key": "concepts.costs.modifiers.minimum.tokens",
-    "textHash": "ab2d2696a84ed409",
+    "textHash": "ab9b29add14e6288",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -948,7 +948,7 @@
   },
   {
     "key": "concepts.costs.modifiers.noun",
-    "textHash": "b5ccebcd4433e4b7",
+    "textHash": "3d1de0e3cedf134d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -1041,7 +1041,7 @@
   },
   {
     "key": "concepts.costs.modifiers.paid-reduction",
-    "textHash": "5b1145c5e63ee8f1",
+    "textHash": "745f9a491ab69084",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1091,7 +1091,7 @@
   },
   {
     "key": "concepts.costs.modifiers.sum",
-    "textHash": "4f97bc0a71ee3862",
+    "textHash": "a01d35aac10137f4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1130,7 +1130,7 @@
   },
   {
     "key": "concepts.costs.modifiers.trigger-tax",
-    "textHash": "3402c9c6b92ca3c0",
+    "textHash": "e0290521314685df",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U04-r4",
@@ -1194,7 +1194,7 @@
   },
   {
     "key": "concepts.costs.modifiers.trigger-tax.once",
-    "textHash": "54f04830840a558e",
+    "textHash": "bd97a0fe36aff92e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1233,7 +1233,7 @@
   },
   {
     "key": "concepts.costs.multiplied",
-    "textHash": "b325138f0727c0e9",
+    "textHash": "41ae12d70c241240",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1288,7 +1288,7 @@
   },
   {
     "key": "concepts.costs.reading-cost",
-    "textHash": "585330a9cc4783bf",
+    "textHash": "af0e59b23cd03406",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1559,7 +1559,7 @@
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me",
-    "textHash": "171770c115db3075",
+    "textHash": "c34fe6bce50c6538",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U04-r4",
@@ -1720,7 +1720,7 @@
   },
   {
     "key": "concepts.costs.unpayable",
-    "textHash": "87460bc1c985e6f9",
+    "textHash": "1230661dbc16b1f4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1769,7 +1769,7 @@
   },
   {
     "key": "concepts.costs.unpayable.all-or-nothing",
-    "textHash": "71031166f143bb59",
+    "textHash": "c1656c3d620a8026",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1813,7 +1813,7 @@
   },
   {
     "key": "concepts.costs.unpayable.life",
-    "textHash": "940550f45611b1b2",
+    "textHash": "c254c2e41bd5c197",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -2236,7 +2236,7 @@
   },
   {
     "key": "concepts.damage.one-effect",
-    "textHash": "b15fa0e2dc0342fb",
+    "textHash": "3e1f5d3efa91b429",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2320,7 +2320,7 @@
   },
   {
     "key": "concepts.damage.poisonous",
-    "textHash": "bbe19c78ee3dd7b7",
+    "textHash": "7e36d747e4340366",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2424,7 +2424,7 @@
   },
   {
     "key": "concepts.damage.replaced",
-    "textHash": "52c20888b5cb1602",
+    "textHash": "04de305612a11526",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2562,7 +2562,7 @@
   },
   {
     "key": "concepts.debt",
-    "textHash": "7a15fda8562a5ee4",
+    "textHash": "6b59d2fd42e1fde7",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -2617,7 +2617,7 @@
   },
   {
     "key": "concepts.debt.as-cost",
-    "textHash": "8f83677e2ebf8e7d",
+    "textHash": "513dbbfd40b8f707",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -2677,7 +2677,7 @@
   },
   {
     "key": "concepts.debt.automatic",
-    "textHash": "a2528c9dbcf77030",
+    "textHash": "49fe55921c3d68a2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2716,7 +2716,7 @@
   },
   {
     "key": "concepts.debt.partial",
-    "textHash": "a9463271b378da23",
+    "textHash": "cb1d49b4fbdbf476",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2986,7 +2986,7 @@
   },
   {
     "key": "concepts.life.multipliers",
-    "textHash": "0da7c59eb4d76746",
+    "textHash": "f23d8ae3b706501e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3103,7 +3103,7 @@
   },
   {
     "key": "concepts.rot",
-    "textHash": "9080b5dc72e1c1ba",
+    "textHash": "3fd79f5542757f95",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3147,7 +3147,7 @@
   },
   {
     "key": "concepts.rot.never-decays",
-    "textHash": "a0e9d2c8243398ff",
+    "textHash": "85908ebc9f864430",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3191,7 +3191,7 @@
   },
   {
     "key": "concepts.rot.replacement",
-    "textHash": "03ff129a8c329e70",
+    "textHash": "d9fd4dbba62f3218",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3245,7 +3245,7 @@
   },
   {
     "key": "concepts.rot.source",
-    "textHash": "fa8323c870a3b754",
+    "textHash": "a73563d90c70241f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3284,7 +3284,7 @@
   },
   {
     "key": "concepts.rot.timing",
-    "textHash": "2d216cf14b28191f",
+    "textHash": "073fbe769c8de57a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3338,7 +3338,7 @@
   },
   {
     "key": "concepts.rot.who-gains",
-    "textHash": "44d19fcce99d027a",
+    "textHash": "765cff6da9ddba3d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",

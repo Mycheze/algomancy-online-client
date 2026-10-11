@@ -1,4 +1,4 @@
-/* R157 §1 and §20 — what an X-cost card COSTS, and who can read it.
+/* The owner's X-cost answers §1 and §20 (CR 111.11, 107.5) — what an X-cost card COSTS, and who can read it.
  *
  * §1, verbatim: "Pips aren't a relevant part of looking at the cost of a card
  * in Algomancy. And paying X replaces the letter X on the printed card
@@ -23,7 +23,7 @@
  * layer, which is `CostCtx.x` / `CostOpts.x`, and it needs the whole mana bill
  * of an X spell to be settled at `E.collectX` rather than half at `payCard`.
  *
- * ⚠ §20 IS REVERSED BY R326 (2026-10-09). The RAQ, "[Solved] Spells with cost
+ * ⚠ §20 IS REVERSED (2026-10-09; now CR 107.5). The RAQ, "[Solved] Spells with cost
  * X vs Stasis Sentry" (_passer): the Sentry "forces the Spells with mana cost of
  * X value to be at a minimum 3, but it's not an additional cost … The X value
  * must be at least 3 (which would deal 3 damage)". The RAQ is the authority
@@ -50,7 +50,7 @@ const open = (h: Harness, seat: Seat): number => new E(h.state).openMana(seat);
 /** deployment, an attacker declared, and priority handed to the DEFENDER —
  * the seat that will be doing the casting in most of these. The Stasis Sentry
  * / Death Greeter / Amalgam under test lives in the defender's region, which
- * is where the battle lands (R12: a CostMod and a trigger are both scoped to
+ * is where the battle lands (CR 111.10, 601.1d: a CostMod and a trigger are both scoped to
  * it). */
 function battleWithDefenderOnPriority(h: Harness): { A: Seat; D: Seat; atk: number } {
   toDeployment(h);
@@ -61,7 +61,7 @@ function battleWithDefenderOnPriority(h: Harness): { A: Seat; D: Seat; atk: numb
 
 // ── §20: Stasis Sentry prices each X ─────────────────────────────────────
 
-test('R326 (reverses R157 §20) — Stasis Sentry raises an X spell\'s smallest X to 3, and X is all it costs', () => {
+test('CR 107.5 (reversing the earlier price reading) — Stasis Sentry raises an X spell\'s smallest X to 3, and X is all it costs', () => {
   const h = new Harness(13301);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   spawn(h, D, 'Stasis Sentry');                     // the battle lands in D's region
@@ -83,7 +83,7 @@ test('R326 (reverses R157 §20) — Stasis Sentry raises an X spell\'s smallest 
   finishBattle(h);
 });
 
-test('R157 §20 — with no Stasis Sentry an X spell costs exactly X', () => {
+test('CR 107.2 — with no Stasis Sentry an X spell costs exactly X', () => {
   const h = new Harness(13302);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   toNextBattle(h, A);
@@ -108,7 +108,7 @@ function castWildfireForX(seed: number, x: number, sentry: boolean): number {
   pass(h);                                          // priority -> D
   const before = open(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wildfire') });
-  pick(h, x);                                       // R35: X chosen and PAID here
+  pick(h, x);                                       // CR 107.2a: X chosen and PAID here
   pick(h, { player: A });                           // "any target"
   const spent = before - open(h, D);
   pass(h); pass(h);                                 // let it resolve
@@ -116,7 +116,7 @@ function castWildfireForX(seed: number, x: number, sentry: boolean): number {
   return spent;
 }
 
-test('R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3', () => {
+test('CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3', () => {
   // RAQ: "The X value must be at least 3 (which would deal 3 damage)"
   const h = new Harness(13303);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
@@ -137,19 +137,19 @@ test('R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3
   finishBattle(h);
 });
 
-test('R157 §20 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry', () => {
+test('CR 107.5 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry', () => {
   assert.equal(castWildfireForX(13305, 3, true), 3, 'at exactly three the tax is zero');
   assert.equal(castWildfireForX(13306, 5, true), 5,
     '"They\'re sort of exempt, but only if X => 3" — no flat +3');
 });
 
-test('R157 §20 — without the Sentry the same casts pay exactly X', () => {
+test('CR 107.2 — without the Sentry the same casts pay exactly X', () => {
   assert.equal(castWildfireForX(13307, 0, false), 0);
   assert.equal(castWildfireForX(13308, 2, false), 2);
   assert.equal(castWildfireForX(13309, 5, false), 5);
 });
 
-test('R326 (reverses R157 §20) — the floor gates castability: an X spell needs [3] open, and X starts at 3', () => {
+test('CR 111.10i (reversing the earlier price reading) — the floor gates castability: an X spell needs [3] open, and X starts at 3', () => {
   const h = new Harness(13310);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   spawn(h, D, 'Stasis Sentry');
@@ -163,8 +163,8 @@ test('R326 (reverses R157 §20) — the floor gates castability: an X spell need
     'every X below three costs [3], so [2] cannot start the cast at all');
   assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: idx }), /cannot pay/i,
     'and the reducer refuses it');
-  // more mana and the menu opens up from three — R326: below three is not
-  // offered at all (it used to be offered at a price of [3], R157 §20)
+  // more mana and the menu opens up from three — CR 111.10i: below three is not
+  // offered at all (it used to be offered at a price of [3])
   giveResources(h, D, 'fire', 5);                   // [7] open
   h.do({ type: 'playCard', seat: D, handIndex: idx });
   const menu = h.state.decision!.options.map(o => o.value);
@@ -180,7 +180,7 @@ test('R326 (reverses R157 §20) — the floor gates castability: an X spell need
 
 // ── §1: "where X is that spell's cost" ───────────────────────────────────
 
-test("R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven)", () => {
+test("CR 107.3 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven)", () => {
   const h = new Harness(13311);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   const amalgam = spawn(h, D, 'Channeled Amalgam');  // 1/1, own [Augment] text live
@@ -197,7 +197,7 @@ test("R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead ag
   finishBattle(h);
 });
 
-test('R157 §1 — Arcane Concentrator makes an X/X off the paid X', () => {
+test('CR 111.11 — Arcane Concentrator makes an X/X off the paid X', () => {
   const h = new Harness(13312);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
   spawn(h, D, 'Arcane Concentrator');                // 3/2, own [Augment] text live
@@ -236,19 +236,19 @@ function apparitionAt(seed: number, x: number): { fireballs: number[]; log: stri
   return { fireballs, log };
 }
 
-test('R157 §1 — Unstable Apparition makes a Fireball X off the paid X of an X spell (was 0, no Fireball)', () => {
+test('CR 111.11 — Unstable Apparition makes a Fireball X off the paid X of an X spell (was 0, no Fireball)', () => {
   const { fireballs, log } = apparitionAt(13314, 4);
   assert.deepEqual(fireballs, [4], `a Wildfire cast for 4 costs 4, so one Fireball 4 (log: ${log.join(' / ')})`);
   assert.ok(!log.some(l => /costs 0/.test(l)), 'the X spell is not read as costing 0');
 });
 
-test('R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball', () => {
+test('CR 202.5 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball', () => {
   const { fireballs, log } = apparitionAt(13315, 0);
   assert.deepEqual(fireballs, [], 'a Wildfire cast for 0 costs 0 — no Fireball 0');
   assert.ok(log.some(l => /costs 0/.test(l)), `the trigger did resolve and read 0 (log: ${log.join(' / ')})`);
 });
 
-test('R157 §1 — a DEPLOY-timing X spell reports its X too (the item is never pushed)', () => {
+test('CR 111.11 — a DEPLOY-timing X spell reports its X too (the item is never pushed)', () => {
   // Floral Singularity is the one X spell in the pool with deploy timing, so
   // it goes through commitItem(..., 'resolve') and never reaches the stack at
   // all. Reading "that spell's cost" off a stack lookup would silently answer
@@ -289,7 +289,7 @@ function deathGreeterAt(seed: number, x: number): { bubb: boolean; greeter: bool
   return out;
 }
 
-test("R157 §1 — Death Greeter's sacrifice bar is the paid X, not 0", () => {
+test("CR 111.11 — Death Greeter's sacrifice bar is the paid X, not 0", () => {
   assert.equal(getCard('Bubb').mana, 4);
   assert.equal(getCard('Death Greeter').mana, 3);
   // X = 0: the bar is 0, both pools are empty, "(If able.)" skips both seats
@@ -302,7 +302,7 @@ test("R157 §1 — Death Greeter's sacrifice bar is the paid X, not 0", () => {
     'cost 4 <= 4 and cost 3 <= 4 — both are sacrificed');
 });
 
-test('R157 §1 — Null Drone already read the paid X, and still does', () => {
+test('CR 111.11 — Null Drone already read the paid X, and still does', () => {
   const h = new Harness(13315);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - h.state.initiative) as Seat;
@@ -333,11 +333,11 @@ test('R157 §1 — Null Drone already read the paid X, and still does', () => {
 
 // ── §1: no X was ever paid ───────────────────────────────────────────────
 
-test('R157 §1 — a card that was never cast has no cost: an X card in hand reads 0', () => {
+test('CR 111.11 — a card that was never cast has no cost: an X card in hand reads 0', () => {
   // Prophecy Bug: "Cache a card in your hand. It gains 'Prophecy — X Turns
   // Pass', where X is half of its cost, rounded up." Nobody has paid an X for
   // a card sitting in a hand, so it has no cost — 0, giving "0 Turns Pass",
-  // which fulfils at once. Not an approximation: R157 §1 says the pips are not
+  // which fulfils at once. Not an approximation: CR 202.3 says the pips are not
   // the cost either, and the standing steer takes the reading that lets more
   // things happen over one that refuses to see the card.
   const h = new Harness(13316);
@@ -355,7 +355,7 @@ test('R157 §1 — a card that was never cast has no cost: an X card in hand rea
     'ceil(0 / 2) = 0 — an uncast X card has no cost to halve');
 });
 
-test('R157 §1 — the three answers are one rule (helpers)', () => {
+test('CR 111.11 — the three answers are one rule (helpers)', () => {
   const h = new Harness(13317);
   const e = new E(h.state);
   const A = 0 as Seat;
@@ -366,7 +366,7 @@ test('R157 §1 — the three answers are one rule (helpers)', () => {
   assert.equal(castCost('Wildfire', 5), 5, 'the X actually paid');
   assert.equal(castCost('Wildfire', 0), 0, 'including a deliberate zero');
   assert.equal(castCost('Bubb', 5), 4, 'a printed number ignores any x');
-  assert.equal(castCost('Wildfire', undefined), 0, 'a free release casts for X = 0 (R111)');
+  assert.equal(castCost('Wildfire', undefined), 0, 'a free release casts for X = 0 (CR 702.6c)');
   // the open quote -> the printed floor
   assert.equal(e.manaToPlay(A, 'Wildfire'), 0, 'no floor printed');
   assert.equal(e.manaToPlay(A, 'Frosted Denial'), 1, '"X can\'t be zero"');

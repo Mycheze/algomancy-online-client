@@ -3,7 +3,7 @@
     "id": "F-U15-1",
     "rule": "effects.static.permission",
     "title": "The Bonesculptor's bin-play permission is built as an activated ability, so it reaches the stack and can be negated",
-    "summary": "R165 and R168 both say \"You may play one unit with no abilities from your bin each deployment\" is a standing permission that no one should be able to answer, and both record that the engine builds it as a free bounded activated ability that reaches the stack, where Containment Protocol can negate it. Both left it open (\"filed rather than fixed\"). The round-1 verifier's probe confirmed it still resolves as an activated item.",
+    "summary": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) and the owner ruling of 2026-08-25 (“the STATIC half of 75 gets…”) both say \"You may play one unit with no abilities from your bin each deployment\" is a standing permission that no one should be able to answer, and both record that the engine builds it as a free bounded activated ability that reaches the stack, where Containment Protocol can negate it. Both left it open (\"filed rather than fixed\"). The round-1 verifier's probe confirmed it still resolves as an activated item.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -44,7 +44,7 @@
     "id": "F-U15-3",
     "rule": "effects.replacement.once.one-applies",
     "title": "Two Oorblaks both redirect one combat hit",
-    "summary": "replaceCombatDamage offers the damage to every holder in turn; with Piercing, the leftover the first Oorblak lets through is redirected again by a second Oorblak. The round-1 verifier's probe: 10 Piercing into two 2/4 Oorblaks, the player loses 2 and both die. Designer: 'replacement effects only apply once in an effect'; R104: a thing can only be replaced once. Expected: one Oorblak absorbs 4, the player loses 6. Same defect as F-U12-1 (there with a Blightsea Polyp); merge when ticketing.",
+    "summary": "replaceCombatDamage offers the damage to every holder in turn; with Piercing, the leftover the first Oorblak lets through is redirected again by a second Oorblak. The round-1 verifier's probe: 10 Piercing into two 2/4 Oorblaks, the player loses 2 and both die. Designer: 'replacement effects only apply once in an effect'; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”): a thing can only be replaced once. Expected: one Oorblak absorbs 4, the player loses 6. Same defect as F-U12-1 (there with a Blightsea Polyp); merge when ticketing.",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-earth-b.ts",
@@ -65,7 +65,7 @@
     "id": "F-U15-4",
     "rule": "effects.static.permission",
     "title": "The Bonesculptor's permission is an activated ability",
-    "summary": "'You may play one unit with no abilities from your bin each deployment' is built as a free bounded activated ability and resolves as an activated item (probe), where R165/R168 say a permission should simply be true and not reach the stack. Already filed in R165 'Left open'.",
+    "summary": "'You may play one unit with no abilities from your bin each deployment' is built as a free bounded activated ability and resolves as an activated item (probe), where the owner rulings of 2026-08-25 (“\"I spawn with N counters\" is…”) and 2026-08-25 (“the STATIC half of 75 gets…”) say a permission should simply be true and not reach the stack. Already filed in the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) 'Left open'.",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-earth-c.ts",

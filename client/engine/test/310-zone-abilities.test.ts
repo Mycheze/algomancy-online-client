@@ -1,5 +1,5 @@
 /**
- * A `zone:` CLAUSE IS NOT LIVE FROM PLAY — R51's missing half.
+ * A `zone:` CLAUSE IS NOT LIVE FROM PLAY — CR 400.5's missing half.
  *
  * `zone: 'bin' | 'cache'` says a triggered ability only exists while the card
  * SITS in that zone: "When you deal combat damage to an opponent, **if I am in
@@ -21,7 +21,7 @@
  * Cinder Scuttler is the one where the re-check saves nothing, because between
  * the false trigger and its resolution the card legitimately ARRIVES in the
  * bin. It attacks; its body hears `combatFaceDamage` from play and queues
- * "recall me from your bin"; R261 holds the batch to the after-combat stack;
+ * "recall me from your bin"; CR 608.9b holds the batch to the after-combat stack;
  * the blocker kills it in the meantime; `bin.lastIndexOf` then finds it and
  * recalls the card out of the combat that killed it. That is the Discord
  * report this file answers.
@@ -33,8 +33,8 @@
  * impossible for Cinder Scuttler to die to combat damage and be returned at
  * the same moment since, technically, it's not in the bin when the damage is
  * dealt."* The engine already ordered it that way — `checkDeaths()` runs after
- * the sub-step returns (R3, no priority window), the trigger queue is held
- * across sub-steps and drains after combat (R261), and R295 gives a split
+ * the sub-step returns (CR 608.3e, no priority window), the trigger queue is held
+ * across sub-steps and drains after combat (CR 608.9b), and CR 608.3b gives a split
  * damage step its reaction windows. §3 and §4 are the two halves of that
  * ruling, and §4 is the one that proves this fix did not over-correct.
  */
@@ -61,7 +61,7 @@ function zoneAbilityCards(): { card: string; zone: string; events: string[] }[] 
   return out;
 }
 
-/** the seat's own region, which every zone event below is scoped to (R12) */
+/** the seat's own region, which every zone event below is scoped to (CR 601.1d) */
 function withRegion(h: Harness, seat: Seat): number {
   return new E(h.state).homeRegion(seat);
 }
@@ -77,7 +77,7 @@ test('§1 the pool still has zone clauses for §2 to be about', () => {
   assert.ok(units.includes('Cinder Scuttler') && units.includes('Lurking Dread'),
     'the two measured cases are still units and still reachable');
 
-  // ⚠ THE ONE DISPATCHER THIS FIX DOES NOT GATE. `fireOwnTrashTrigger` (R40)
+  // ⚠ THE ONE DISPATCHER THIS FIX DOES NOT GATE. `fireOwnTrashTrigger`
   // fires `self: true` clauses for a card that is BEING trashed, off its own
   // stand-in, and it reads `card.abilities` directly rather than through
   // `collectTriggersFrom` — so the `zone` gate does not run there. Today that
@@ -111,7 +111,7 @@ test('§1 the pool still has zone clauses for §2 to be about', () => {
  */
 /**
  * WHERE THE CARD MUST BE, and WHAT THE EVENT MUST SAY, for one clause to be
- * given its fair chance. Two shapes, because R124 made `leftBin` an inversion:
+ * given its fair chance. Two shapes, because `leftBin` is an inversion (CR 405.7):
  * its subject has ALREADY left the bin, so the event itself carries the card
  * and the bin is empty — presence-in-the-bin is exactly the wrong test there,
  * and `fireZoneTriggers` says so in as many words.
@@ -170,7 +170,7 @@ test('§2 SWEEP: no zone clause fires from play, and every one still fires from 
     for (const type of events) {
       // ── in play (units only — a spell is never an entity on the board)
       //
-      // ⚠ EXCEPT `leftBin`, where there is nothing to assert. R124 inverted it:
+      // ⚠ EXCEPT `leftBin`, where there is nothing to assert. It is inverted (CR 405.7):
       // the event NAMES the card that left this seat's bin, so the event is
       // itself the qualifying condition and a copy standing in play is beside
       // the point — one Rotling on the board and another leaving the bin is a
@@ -178,7 +178,7 @@ test('§2 SWEEP: no zone clause fires from play, and every one still fires from 
       // at an in-play body and demanding silence would be asserting that a
       // legitimate trigger does not work.
       if (type === 'leftBin') {
-        rows.push(`      ${card} on ${type}: in play -> n/a (R124: the event is the condition)`);
+        rows.push(`      ${card} on ${type}: in play -> n/a (CR 405.7: the event is the condition)`);
       } else if (getCard(card).kind === 'unit') {
         const h = new Harness(1213);
         toDeployment(h);
@@ -264,7 +264,7 @@ test('§4 but a Swift unit bins it BEFORE the normal step — then it does recal
   h.do({ type: 'declareAttack', seat: A, columns: [[scut], [beater]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [swift] } });
-  // R295: a split damage step is several steps with a real reaction window
+  // CR 608.3b: a split damage step is several steps with a real reaction window
   // between them, so priority has to be driven through it.
   for (let i = 0; i < 40 && h.state.phase === 'battle' && !h.state.decision; i++) pass(h);
   assert.equal(ent(h, scut), undefined, 'the Swift blocker killed it in the Swift sub-step');

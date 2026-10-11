@@ -357,9 +357,10 @@ function aiHtml(): string {
       and the tests for it, runs the whole test suite, and reports back. Ben reads the
       result, plays with it, and says yes, no, or "that is not how the rule works".</p>
     <p>Where the printed rules leave something open, the engine does not guess. Each of those
-      questions went to Ben, and his answer is written down as a numbered ruling — nearly
-      three hundred of them so far — with the test that enforces it. That register is the
-      specification; the code follows it, not the other way round.</p>
+      questions went to Ben, and his answer goes into the client's own rulebook: a numbered
+      set of rules, each resting on the printed text, the designer's answers or Ben's call, and
+      most of them checked against a test that runs. That rulebook is the specification; the code
+      follows it, not the other way round.</p>
     <p>The bugs come from play. Every game is saved as a complete action log, and the
       Report button in a game files a report — a bug, an interface problem or a feature
       request — against the exact position you were looking at. Most of the fixes are

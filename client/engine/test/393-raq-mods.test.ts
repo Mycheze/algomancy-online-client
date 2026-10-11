@@ -69,7 +69,7 @@ test('RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robo
 // can be used again? No. … Since Graxxlid was already Activated this turn,
 // you CANNOT use his Ability again."
 
-// R331 / CT-213: was broken (the [once] mark stayed on the old host); a moved
+// CR 720.10b / CT-213: was broken (the [once] mark stayed on the old host); a moved
 // mod's spent augment budget now travels with it (E.moveMod).
 test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure onto a new host is still spent', () => {
   const h = new Harness(39302);
@@ -118,7 +118,7 @@ test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure on
 // Perpetual Construct. 3 Triggers land on the stack: Create 1/1, Create 3/3,
 // Create 4/4"
 
-// R332 / CT-214: was broken (the Construct fired once, for Bubb); each mod that
+// CR 721.5a / CT-214: was broken (the Construct fired once, for Bubb); each mod that
 // rides along is now applied to the new host and announced.
 test('RAQ Reconfigure onto Perpetual Construct: each moved mod is its own trigger — a 4/4, a 3/3 and a 1/1',
   () => {
@@ -402,7 +402,7 @@ test('RAQ Graft 101 point 10: a new graft slides between two already applied, an
 // 11. "{graft icon} [cost]: Effect … puts Additional Cost which is
 // non-optional (you MUST pay it, you can't opt out) and if you can't pay it
 // … then the whole Graft Effect won't go on the stack."
-// R334 / CT-216: was broken (a grafted [cost] was an opt-in rider, skipped
+// CR 111.15 / CT-216: was broken (a grafted [cost] was an opt-in rider, skipped
 // alone); now it is mandatory and an unpayable one withholds the composite.
 test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too', () => {
   const h = new Harness(39316);
@@ -423,7 +423,7 @@ test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composit
   finishBattle(h);
 });
 
-// R334 / CT-216: was broken (the cost question offered "Don't pay — skip this effect").
+// CR 722.6 / CT-216: was broken (the cost question offered "Don't pay — skip this effect").
 test('RAQ Graft 101 point 11: a payable [cost] graft must be paid — no opting out of it', () => {
   const h = new Harness(39317);
   toDeployment(h);
@@ -588,7 +588,7 @@ test('RAQ Download: a Fireball in the region and an X/X unit token are both toke
   finishBattle(h);
 });
 
-// R333 / CT-215: was broken (the 'token' family reached units and uncast spell
+// CR 304.11d / CT-215: was broken (the 'token' family reached units and uncast spell
 // tokens only); a cast spell token on the stack is offered now.
 test('RAQ Download: a Fireball already cast and on the stack is a token it can take', () => {
   const { h, A, D, atk, fire } = downloadBoard(39323);
@@ -680,7 +680,7 @@ test('RAQ Earthbound Replicator: a Fireball token cast at it is a played spell a
   pick(h, { unit: rep });
   pass(h); pass(h);                                           // the Replicator's trigger resolves
   while (h.state.decision) pick(h, false);
-  assert.ok(h.state.stack.some(i => i.copy), 'R305: a cast spell token is played, so the Replicator copies it');
+  assert.ok(h.state.stack.some(i => i.copy), 'CR 304.11b: a cast spell token is played, so the Replicator copies it');
   finishBattle(h);
 });
 
@@ -773,7 +773,7 @@ function suppressed(seed: number, col: (h: Harness, A: Seat) => number[], target
 const colAttrs = (h: Harness, ids: number[]): Set<string> => { let s = new Set<string>(); whiteBox(h, e => { s = e.colAttrs(ids); }); return s; };
 
 // BROKEN today: only the target is stamped. Formless was widened to its
-// column by R293 because it PRINTS "(This removes attributes from its
+// column (CR 712.3) because it PRINTS "(This removes attributes from its
 // column.)"; Suppression Field prints no such reminder, but calebgannon's
 // answer names both cards ("these would apply loss of attributes to the
 // entire column").
@@ -794,9 +794,9 @@ test('RAQ Suppression Field: aimed at either unit of a column, the whole column 
   finishBattle(h);
 });
 
-// BROKEN today (R62's veto): "loses ALL attributes" is implemented as a layer
+// BROKEN today (the suppression layer's veto): "loses ALL attributes" is implemented as a layer
 // that nothing switches back on, so a grant AFTER the field resolved is
-// stripped too. calebgannon says the opposite. ⚠ R293's owner quote ("If you
+// stripped too. calebgannon says the opposite. ⚠ The owner's quote in the Formless ruling ("If you
 // remove the attributes from a guy for the turn, it wouldn't make sense for it
 // to get them back") is about the SAME attributes coming back, and is not
 // obviously this case — the owner should rule.
@@ -865,8 +865,8 @@ test('RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not a
 // are instantly erased (this matter for the purpose of triggers like Xenopod
 // Progenitator or Rider of the Tides)."
 
-// R335 / CT-218: was broken (Cosmic Reversal erased the token straight off the
-// stack). It now goes through the hand like a recalled unit token (R69).
+// CR 801.7d / CT-218: was broken (Cosmic Reversal erased the token straight off the
+// stack). It now goes through the hand like a recalled unit token (CR 410.5b).
 test('RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand — Rider of the Tides hears it — and is erased', () => {
   const h = new Harness(39337);
   toDeployment(h);
@@ -903,7 +903,7 @@ test('RAQ counters: a -1/-1 counter put on a unit with +1/+1 counters cancels on
   spawn(h, D, 'Pestilent Mycelion');                          // whenever -1/-1 counters are put on a unit, each opponent loses 1
   const u = spawn(h, D, 'Good Whale');
   whiteBox(h, e => e.addCounters(e.entity(u)!, 2, D));
-  toNextBattle(h, A);                                         // R25: the life loss needs an opponent present
+  toNextBattle(h, A);                                         // CR 601.4d: the life loss needs an opponent present
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const life = h.state.players[A]!.life;
   whiteBox(h, e => e.addCounters(e.entity(u)!, -1, D));
@@ -1017,7 +1017,7 @@ test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be 
   finishBattle(h);
 });
 
-// R336 / CT-219: was broken (Cosmic Reversal read the PRINTED card's kind).
+// CR 710.1a / CT-219: was broken (Cosmic Reversal read the PRINTED card's kind).
 test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so Cosmic Reversal leaves it in play', () => {
   const h = new Harness(39344);
   toDeployment(h);
@@ -1036,8 +1036,8 @@ test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so C
 });
 
 // "As Caleb said 'it inherits all of the combined text'" — the copied grafts
-// included (and R118 ruling 2, the owner: "Inherit the mods text").
-// R336 / CT-219: was broken (the composite was built from mod ENTITIES only);
+// included (and the owner, now CR 710.2: "Inherit the mods text").
+// CR 722.8 / CT-219: was broken (the composite was built from mod ENTITIES only);
 // the copy now carries its copied mods and composes the copied grafts.
 test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite', () => {
   const h = new Harness(39346);
@@ -1063,7 +1063,7 @@ test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Fla
 
 // "If my BoFy copied some Graft unit, can I attach more grafts to it? Yes,
 // BUT only 'underneath' original copied grafts."
-// R336 / CT-219: was broken (the graft-host check read the PRINTED card).
+// CR 710.2b / CT-219: was broken (the graft-host check read the PRINTED card).
 test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft stack resolves below the copied grafts', () => {
   const h = new Harness(39345);
   toDeployment(h);
@@ -1100,7 +1100,7 @@ test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft sta
 // "Q: BoFy copied Robot 3. Is he a token now? A: No, true BoFy is non-token
 // Unit, but his cost would be 0. (For things like Deformant, Lumengrove
 // Lurker, Death Greeter or Abduct)"
-// R336 / CT-219: was broken (every in-play cost reader asked the PRINTED card);
+// CR 710.1a / CT-219: was broken (every in-play cost reader asked the PRINTED card);
 // E.costOf reads the face.
 test('RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it', () => {
   const h = new Harness(39347);

@@ -41,8 +41,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts",
@@ -51,6 +50,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.5 names the same sequence with older names (Untap/Draw/Draft/Mana, Attack…After Combat, Regroup, Main). The end-of-turn step at the close of deployment is 507 (U09).",
     "sourceHashes": {}
@@ -101,22 +101,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R350",
-          "quote": "Print's global turn shares the phases and syncs at the end of each step, but at a table it orders some steps by initiative."
+          "quote": "Print's global turn shares the phases and syncs at the end of each step, but at a table it orders some steps by initiative.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital.",
-    "sourceHashes": {
-      "R350": "3916c20882cd6724fde9e354d7097c1c97677c04ebf2d6d7620f73c98bd250e3"
-    },
+    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U08-4"
     ]
@@ -132,36 +131,36 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R350",
-          "quote": "This client runs those steps for both players at once, each unseen by the other until both are done."
+          "quote": "This client runs those steps for both players at once, each unseen by the other until both are done.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R350",
-          "quote": "That is a deliberate digital convention: a paper game cannot hide one player's actions while the other acts."
+          "quote": "That is a deliberate digital convention: a paper game cannot hide one player's actions while the other acts.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R18 (its hidden-segment half)",
-          "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+          "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "REVIEW COMMENT 2026-10-11 (owner, on 500.2): new subrule, R350. Deployment's half is 507.3a (R144, R286); Annex D D1.4 states the segments.",
-    "sourceHashes": {
-      "R18": "173a218909c8fb0ad90ca065574c7c87e7bc161a123c016e913e2ebd2bc3efc8",
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801",
-      "R350": "3916c20882cd6724fde9e354d7097c1c97677c04ebf2d6d7620f73c98bd250e3"
-    }
+    "notes": "REVIEW COMMENT 2026-10-11 (owner, on 500.2): new subrule, the owner ruling of 2026-10-11 (“The fully global turn is a…”). Deployment's half is 507.3a (the owner ruling of 2026-08-24 (“deployment uses the stack, and a…”), the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”)); Annex D D1.4 states the segments.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.general.initiative",
@@ -195,14 +194,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Who gets the initiative at the start is 103 (U01); passing it is 508 (U09). Which planning steps follow IT-first order: turn.planning.order. RAQ 1540678747953569832#1 (IT puts triggers on the stack first) belongs to 706. Engine differs: the initiative player acts first in battle, but the resource step, the haste step and deployment run for both seats at once as hidden simultaneous segments (a digital half of R18, Annex D). The rule states print: F-U08-1, D-U08-11. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "notes": "Who gets the initiative at the start is 103 (U01); passing it is 508 (U09). Which planning steps follow IT-first order: turn.planning.order. RAQ 1540678747953569832#1 (IT puts triggers on the stack first) belongs to 706. Engine differs: the initiative player acts first in battle, but the resource step, the haste step and deployment run for both seats at once as hidden simultaneous segments (a digital half of the owner ruling of 2026-08-18 (“Haste step engine model […]”), Annex D). The rule states print: F-U08-1, D-U08-11. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
     "sourceHashes": {},
     "engineDiffers": [
       "F-U08-1"
@@ -235,12 +234,12 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The RAQ write-up lists what is and is not a token; item 8 is \"Initiative ❌\". The second sentence restates Manual p.11.",
     "sourceHashes": {
@@ -334,14 +333,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "419-cr-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Planning has no interaction (turn.planning.no-interaction). Deployment is not interactive either: Manual p.26 \"it is not possible to interact with other players\" (507, U09). REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed.",
     "sourceHashes": {}
@@ -378,8 +377,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts",
@@ -387,6 +385,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -416,14 +415,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "419-cr-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -465,8 +464,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts",
@@ -474,6 +472,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.27 lists five numbered planning steps; the fifth reads \"5. Play [haste glyph] cards\" (the glyph is lost in the page text; the scan shows the haste chevrons). Manual p.18 places the haste step \"After the resource step\". The UI rules reference mirrors this list (ui/test 286), which is our text, not a source.",
     "sourceHashes": {}
@@ -486,7 +485,7 @@
     "examples": [
       {
         "text": "A resource expended to pay debt in one turn is open again for mana in the next.",
-        "test": "35-rot-debt-trash.test.ts::R39: partial payment is fine and the remainder carries to the next turn"
+        "test": "35-rot-debt-trash.test.ts::CR 112.14b: partial payment is fine and the remainder carries to the next turn"
       }
     ],
     "see": [
@@ -505,14 +504,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A dormant resource stays dormant: refreshing applies to expended resources (106).",
     "sourceHashes": {}
@@ -535,12 +534,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -570,14 +569,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "419-cr-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -600,12 +599,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -630,12 +629,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -666,13 +665,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R97",
-          "quote": "There is no priority during the mana step, but you can play haste cards"
+          "quote": "There is no priority during the mana step, but you can play haste cards",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -681,11 +680,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Rulebook 2023 p.7 says it of the mana step (its name for resources + haste). R97 quotes calebgannon in rules-questions; that quote is not in the RAQ register, so it is cited through R97. The draw and draft steps involve no plays at all.",
-    "sourceHashes": {
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
-    }
+    "notes": "Rulebook 2023 p.7 says it of the mana step (its name for resources + haste). The owner ruling of 2026-08-23 (“A card may be granted permission…”) quotes calebgannon in rules-questions; that quote is not in the RAQ register, so it is cited through the owner ruling of 2026-08-23 (“A card may be granted permission…”). The draw and draft steps involve no plays at all.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.planning.order",
@@ -719,19 +717,19 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Manual p.27 (The Turn, TEAMS/1V1 column) marks each step with a legend colour: steps 1-3 of planning \"SIMULTANEOUSLY\", steps 4 (Gather and activate resources) and 5 (Play haste cards) \"IT FIRST, THEN NIT\", and deployment IT first too. The colours are read off the scan (rendered page 27); the page text keeps only the legend words, so the quotes cannot carry the mapping. Rulebook 2023 p.5 states it in prose for the mana phase. R18 (its standing, digital half; not cited as a source because it states the opposite) and the hidden-simultaneous-segment model run the resource and haste steps for both seats at once, interleaved and hidden: D-U08-1, F-U08-1. Printed beats an R-ruling under the authority order, so the rule states print. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "notes": "Manual p.27 (The Turn, TEAMS/1V1 column) marks each step with a legend colour: steps 1-3 of planning \"SIMULTANEOUSLY\", steps 4 (Gather and activate resources) and 5 (Play haste cards) \"IT FIRST, THEN NIT\", and deployment IT first too. The colours are read off the scan (rendered page 27); the page text keeps only the legend words, so the quotes cannot carry the mapping. Rulebook 2023 p.5 states it in prose for the mana phase. The owner ruling of 2026-08-18 (“Haste step engine model […]”) (its standing, digital half; not cited as a source because it states the opposite) and the hidden-simultaneous-segment model run the resource and haste steps for both seats at once, interleaved and hidden: D-U08-1, F-U08-1. Printed beats an R-ruling under the authority order, so the rule states print. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
     "sourceHashes": {},
     "engineDiffers": [
       "F-U08-1"
     ],
-    "rebuttal": "Already flagged: the record carries engineDiffers [\"F-U08-1\"] (stripped from the verifier's view). The rule states print under the authority order; the verifier's measurement agrees with F-U08-1. R18 is removed from the sources because its quoted sentence states the engine model the rule departs from; the conflict stays recorded in D-U08-1."
+    "rebuttal": "Already flagged: the record carries engineDiffers [\"F-U08-1\"] (stripped from the verifier's view). The rule states print under the authority order; the verifier's measurement agrees with F-U08-1. The owner ruling of 2026-08-18 (“Haste step engine model […]”) is removed from the sources because its quoted sentence states the engine model the rule departs from; the conflict stays recorded in D-U08-1."
   },
   {
     "key": "turn.planning.order.sync",
@@ -755,12 +753,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Engine differs: 20-draft.test.ts \"planning is gated until you commit; open again after (opponent still drafting)\" lets a seat that has committed its draft activate and recycle while the other seat is still drafting, and the verifier measured the same for constructed's recycle. Not bound as an example, since it shows the divergence. F-U08-4, D-U08-10. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
     "sourceHashes": {},
@@ -792,14 +790,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "419-cr-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "What a resource is, dormant and active, the activation limit, Shards and Prismites: 106 (U02). This section is the step procedure only.",
     "sourceHashes": {}
@@ -827,8 +825,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "01-planning.test.ts",
@@ -836,6 +833,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Order among the three actions: the sources set none.",
     "sourceHashes": {}
@@ -872,8 +870,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "01-planning.test.ts",
@@ -882,8 +879,9 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Prismites and Shards may be made too (R299): 106 concepts.resources.recycle.prismite-shard (U02). Where the recycled card goes (past the mark): 408 (U07).",
+    "notes": "Prismites and Shards may be made too (owner ruling of 2026-09-19, “Recycling can make a Prismite”): 106 concepts.resources.recycle.prismite-shard (U02). Where the recycled card goes (past the mark): 408 (U07).",
     "sourceHashes": {}
   },
   {
@@ -909,14 +907,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "01-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Shards count toward the two; an affinity bonus Shard enters dormant (106, U02).",
     "sourceHashes": {}
@@ -929,7 +927,7 @@
     "examples": [
       {
         "text": "Two starting Prismites are activated, then one is exchanged for a fire resource, which keeps its active state.",
-        "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+        "test": "01-planning.test.ts::prismites: dormant start, no affinity, planning exchange into any element"
       }
     ],
     "see": [
@@ -948,24 +946,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R17",
-          "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
+          "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "01-planning.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The exchange uses no activation and can earn the affinity Shard (R132): 106 (U02). Whether the Prismite card's \"Do this only during the mana step\" also allows the exchange in the haste step: D-U08-3.",
-    "sourceHashes": {
-      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
-    }
+    "notes": "The exchange uses no activation and can earn the affinity Shard (owner ruling of 2026-08-24, “a Prismite DOES activate its new…”): 106 (U02). Whether the Prismite card's \"Do this only during the mana step\" also allows the exchange in the haste step: D-U08-3.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.resource.ends",
@@ -990,14 +987,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "419-cr-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Manual p.18 says \"the planning phase ends\" here, but places the haste step after the resource step on the same page, and p.27 lists the haste step as the fifth planning step; this rule reads the sentence as the end of the resource step: D-U08-2. In this client a player ends their own resource step by declaring done (donePlanning).",
     "sourceHashes": {}
@@ -1010,7 +1007,7 @@
     "examples": [
       {
         "text": "A player with 5 open fire and 3 debt ends the resource step with 0 debt and 2 open mana.",
-        "test": "35-rot-debt-trash.test.ts::R39: debt is paid automatically when the resource step ends — 1 mana per debt"
+        "test": "35-rot-debt-trash.test.ts::CR 502.4: debt is paid automatically when the resource step ends — 1 mana per debt"
       }
     ],
     "see": [
@@ -1020,28 +1017,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R39",
-          "quote": "must pay 1 mana per debt, each mana removing one debt. Partial payment is"
+          "quote": "must pay 1 mana per debt, each mana removing one debt. Partial payment is",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R39",
-          "quote": "penalty for being unable to pay. It is not a choice and needs no action —"
+          "quote": "penalty for being unable to pay. It is not a choice and needs no action —",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R39 attributes this to Caleb (2024-09-10, refined 2024-12-02) via the owner; no designer quote is in the pack, so the basis is the ruling. Partial payment and carry-over are 112 (U04).",
-    "sourceHashes": {
-      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Debt: mandatory, automatic, paid at the…”) attributes this to Caleb (2024-09-10, refined 2024-12-02) via the owner; no designer quote is in the pack, so the basis is the ruling. Partial payment and carry-over are 112 (U04).",
+    "sourceHashes": {}
   },
   {
     "key": "turn.resource.debt.last",
@@ -1051,7 +1048,7 @@
     "examples": [
       {
         "text": "With 3 open mana and 2 debt, the player is left 1 mana: no resource action is offered and a [3] unit cannot be played in deployment.",
-        "test": "35-rot-debt-trash.test.ts::R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable"
+        "test": "35-rot-debt-trash.test.ts::CR 502.4a: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable"
       }
     ],
     "see": [
@@ -1061,28 +1058,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R39",
-          "quote": "it is deliberately the LAST thing in the resource step so that no further"
+          "quote": "it is deliberately the LAST thing in the resource step so that no further",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R39",
-          "quote": "mana can be activated afterwards, and the mana spent is unavailable for"
+          "quote": "mana can be activated afterwards, and the mana spent is unavailable for",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.draw.draw",
@@ -1112,14 +1109,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1156,14 +1153,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "U01 states the setup side (concepts.starting.no-first-draw). For constructed's first turn see turn.draw.constructed.first-turn. The RAQ claim's 6 + 10 split is the register's arithmetic; calebgannon's own words say only \"the 16 card draft\". The split follows from Manual p.16 (first draws dealt with the opening hand) and the 10-card pack.",
     "sourceHashes": {
@@ -1197,14 +1194,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "419-cr-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Matters only with a shared deck (live draft), where it decides which cards each player gets. No test title in the pack asserts the order.",
     "sourceHashes": {}
@@ -1245,14 +1242,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.6 says the NON-TOKEN, NON-RESOURCE cards in hand join the pile; 409 (U07 zones.pack.drafting) uses that wording. Under the Manual, tokens never stay in a hand and resources are created straight into play, so the two agree in practice.",
     "sourceHashes": {}
@@ -1284,16 +1281,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "A custom live-draft game may set another pack size (R292, digital; 902/Annex D).",
+    "notes": "A custom live-draft game may set another pack size (the owner ruling of 2026-09-14 (“Custom rules on a live draft…”), digital; 902/Annex D).",
     "sourceHashes": {}
   },
   {
@@ -1317,8 +1314,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts",
@@ -1326,6 +1322,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1362,14 +1359,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1395,14 +1392,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "28-metal-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1439,16 +1436,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "U07 zones.pack.refresh states the zone side. Recycled pack cards go past the mark (R296): 408.",
+    "notes": "U07 zones.pack.refresh states the zone side. Recycled pack cards go past the mark (owner ruling of 2026-09-16, “Recycling puts a card past the…”): 408.",
     "sourceHashes": {}
   },
   {
@@ -1472,14 +1469,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "20-draft.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1533,8 +1530,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts",
@@ -1542,6 +1538,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1571,16 +1568,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The second sentence (no other planning action until the 2 go back) is asserted by the test but stated by no source; it follows from the step order (turn.planning.steps). Recycled cards go past the mark (R296, 408), so the \"any order\" of Rulebook 2023 p.6 has no effect (U07 zones.recycle.mark.order).",
+    "notes": "The second sentence (no other planning action until the 2 go back) is asserted by the test but stated by no source; it follows from the step order (turn.planning.steps). Recycled cards go past the mark (the owner ruling of 2026-09-16 (“Recycling puts a card past the…”), 408), so the \"any order\" of Rulebook 2023 p.6 has no effect (U07 zones.recycle.mark.order).",
     "sourceHashes": {}
   },
   {
@@ -1615,8 +1612,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts",
@@ -1624,6 +1620,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "low",
     "notes": "Rests on \"every turn\" (Manual p.16). The first-turn shortcut (the first draws dealt with the opening hand, so no draw on turn 1) is written for live draft, and no source gives constructed's opening hand size; the engine deals 4 and then draws 4. D-U08-5. Rulebook 2023 p.6 (\"every turn after the first\") reads the other way, but it describes an older opening and the Manual supersedes it; added to D-U08-5. No source states this rule outright: it is inferred from \"every turn\" plus the constructed draft step.",
     "sourceHashes": {}
@@ -1636,7 +1633,7 @@
     "examples": [
       {
         "text": "A Dreadspawn Horror (-1/-1 for each card in hand) taken to 0 defense by the turn's draw dies at once, before any other action is taken.",
-        "test": "380-no-action-ends-dead.test.ts::R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
       }
     ],
     "see": [
@@ -1646,13 +1643,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "point. So no action — a draw, a draft, a recycle, a resource activation — may"
+          "quote": "point. So no action — a draw, a draft, a recycle, a resource activation — may",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts",
@@ -1660,11 +1657,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "The bound test runs in shared mode (no draft step); the verifier's probe measured the same in a live draft, where the unit dies before the draft.",
-    "sourceHashes": {
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.draw.state-checks.draft-pile",
@@ -1674,7 +1670,7 @@
     "examples": [
       {
         "text": "A Dreadspawn Horror whose controller holds 1 card, draws 2 and keeps 3 through the draft ends the step a 4/2 and lives.",
-        "test": "380-no-action-ends-dead.test.ts::R313 draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5a draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives"
       }
     ],
     "see": [],
@@ -1682,24 +1678,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "the hand↔pack merge is a single action that never shows its 13-card middle."
+          "quote": "the hand↔pack merge is a single action that never shows its 13-card middle.",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.draw.state-checks.constructed",
@@ -1709,11 +1704,11 @@
     "examples": [
       {
         "text": "With 1 card in hand, a Dreadspawn Horror goes through draw 4 and put back 2 and ends a 4/2.",
-        "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5b constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2"
       },
       {
         "text": "With 3 cards in hand it nets to 5 and dies once its controller has put 2 back.",
-        "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5b constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed"
       }
     ],
     "see": [
@@ -1724,28 +1719,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+          "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         },
         {
-          "ref": "R313",
-          "quote": "actions, but a seat's units are not checked while that seat still owes its"
+          "quote": "actions, but a seat's units are not checked while that seat still owes its",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The owner's call (2026-10-06, quoted in R313); no designer source: D-U08-7.",
-    "sourceHashes": {
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "notes": "The owner's call (2026-10-06, quoted in the owner ruling of 2026-10-06 (“No action ends with a dead…”)); no designer source: D-U08-7.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.what",
@@ -1755,7 +1750,7 @@
     "examples": [
       {
         "text": null,
-        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
+        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (CR 504.1, 504.2)"
       }
     ],
     "see": [
@@ -1770,24 +1765,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R97",
-          "quote": "2. `legalActions`' `phase === 'planning' && s.hasteDone` branch — the client's affordance."
+          "quote": "2. `legalActions`' `phase === 'planning' && s.hasteDone` branch — the client's affordance.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Manual p.27 lists it as the fifth planning step; Manual p.18 says \"the planning phase ends\" when resources are done: D-U08-2. Rulebook 2023 p.7 folds haste plays into its \"mana step\": D-U08-3.",
-    "sourceHashes": {
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.plays",
@@ -1797,7 +1791,7 @@
     "examples": [
       {
         "text": "Molten Upheaval, a haste card, is refused in the resource step and accepted in the haste step.",
-        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
+        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (CR 504.1, 504.2)"
       }
     ],
     "see": [
@@ -1821,8 +1815,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -1830,6 +1823,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The haste timing glyph: 207 (U05); a haste card may also be played in deployment (Manual p.13 \"also\"). Grants and permissions that widen the step: turn.haste.grants, turn.haste.mods.slurpr, turn.haste.prophesy.",
     "sourceHashes": {}
@@ -1869,13 +1863,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R97",
-          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -1883,10 +1877,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "RAQ 1464899726796390433#1 (2025-03-24: haste adds the haste step to a card's timings, so a battle card with haste works there) is OUTDATED: calebgannon reversed it himself on 2026-01-25. D-U08-8.",
     "sourceHashes": {
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6",
       "RAQ 1464899726796390433#0": "29919fd7167ef4b5d8270f68bc27b34a37b2a2600b7c520143430f818c931ee3",
       "RAQ 1465292396664193171#0": "b9818845b89b995e2deb3a2c33684e65ecbf762c87aec010da8a4401369be1b9",
       "RAQ 1465292396664193171#1": "5dc7d77443715228d9d2f69544025a49d12a72cb332616ef18c1b528d96c8d0c"
@@ -1900,7 +1894,7 @@
     "examples": [
       {
         "text": "Tidal Menace played in the haste step is in play at once as a 7/2.",
-        "test": "15-water-b.test.ts::Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immediately (R18)"
+        "test": "15-water-b.test.ts::Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immediately (CR 504.3)"
       }
     ],
     "see": [
@@ -1916,20 +1910,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R18 (its immediate-resolution half)",
-          "quote": "finish planning: each haste play **resolves immediately** (planning is not interactive —"
+          "quote": "finish planning: each haste play **resolves immediately** (planning is not interactive —",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R97",
-          "quote": "There is no priority during the mana step, but you can play haste cards"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R18",
-          "relation": "its skip and auto-done halves reversed by R224 and R228; the immediate-resolution half stands"
+          "quote": "There is no priority during the mana step, but you can play haste cards",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1940,12 +1930,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R18": "173a218909c8fb0ad90ca065574c7c87e7bc161a123c016e913e2ebd2bc3efc8",
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.ends",
@@ -1955,7 +1943,7 @@
     "examples": [
       {
         "text": null,
-        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step"
+        "test": "200-haste-step-is-unconditional.test.ts::CR 504.5a: no seat is auto-done, and BOTH have to close the step"
       }
     ],
     "see": [
@@ -1974,8 +1962,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -1984,6 +1971,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "In this client each player declares done (doneHaste). The order between the players (IT first): turn.planning.order.",
     "sourceHashes": {}
@@ -1996,7 +1984,7 @@
     "examples": [
       {
         "text": "On turn 1, with only two dormant Prismites each, the step still opens for both players.",
-        "test": "08-cards2.test.ts::the haste step opens even when nobody has a legal haste play (R228)"
+        "test": "08-cards2.test.ts::the haste step opens even when nobody has a legal haste play (CR 504.5)"
       }
     ],
     "see": [],
@@ -2004,20 +1992,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R224",
-          "quote": "\"Always offer the step.\""
+          "quote": "\"Always offer the step.\"",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R228",
-          "quote": "could act**. Both halves are gone."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R18",
-          "relation": "reversed in part: its \"skipped outright when nobody has a legal haste play\" (by R224 and R228)"
+          "quote": "could act**. Both halves are gone.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2027,12 +2011,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Owner call with no designer source (D-U08-6). R224/R228 also give a digital reason (the step's presence must not reveal a hidden hand); that half is Annex D (U23).",
-    "sourceHashes": {
-      "R224": "3ab7ef37de58aea988afdf9d11612f4c93f1bb94cdc927d01c6655ec4a0e38d9",
-      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179"
-    }
+    "notes": "Owner call with no designer source (D-U08-6). The owner rulings of 2026-08-28 (“the haste step is ALWAYS offered…”) and 2026-08-28 (“the haste step opens unconditionally, and…”) also give a digital reason (the step's presence must not reveal a hidden hand); that half is Annex D (U23).",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.always.no-auto-done",
@@ -2042,7 +2024,7 @@
     "examples": [
       {
         "text": null,
-        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing"
+        "test": "200-haste-step-is-unconditional.test.ts::CR 504.5a: a bluff is a real move — you may sit in the step holding nothing"
       }
     ],
     "see": [],
@@ -2050,20 +2032,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R228",
-          "quote": "outright when it said no for everybody, and **mark any other seat done before it"
+          "quote": "outright when it said no for everybody, and **mark any other seat done before it",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R228",
-          "quote": "could act**. Both halves are gone."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R18",
-          "relation": "reversed in part: its \"a player with no legal haste play is auto-marked done\" (by R224 and R228)"
+          "quote": "could act**. Both halves are gone.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2073,11 +2051,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The client may send \"done\" for a player with nothing hasteable unless they turn on bluff haste (R236): a client convenience, Annex D (U23), not a change to this rule.",
-    "sourceHashes": {
-      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179"
-    }
+    "notes": "The client may send \"done\" for a player with nothing hasteable unless they turn on bluff haste (owner ruling of 2026-08-28, “the haste step readies itself, and…”): a client convenience, Annex D (U23), not a change to this rule.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.end-event",
@@ -2091,7 +2068,7 @@
       },
       {
         "text": null,
-        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once"
+        "test": "200-haste-step-is-unconditional.test.ts::CR 504.6: the step still ENDS properly — endOfHaste fires exactly once"
       }
     ],
     "see": [
@@ -2110,17 +2087,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R50",
-          "quote": "fires even when R18 **skipped** the step outright — the haste step is part of"
+          "quote": "fires even when R18 **skipped** the step outright — the haste step is part of",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R50",
-          "quote": "the turn whether or not anyone had a card for it, and an optimisation must not"
+          "quote": "the turn whether or not anyone had a card for it, and an optimisation must not",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "38-light-a.test.ts",
@@ -2130,11 +2108,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R50 is an owner call (the event seam); the cards print the trigger. R50's \"skipped\" clause is now moot (turn.haste.always) but the event still fires every turn.",
-    "sourceHashes": {
-      "R50": "fd11d0aa87980d21d5d6ceec5fd6a6799f46773021b756073facbec0a6a3346f"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“The haste step ends, and deployment…”) is an owner call (the event seam); the cards print the trigger. The owner ruling of 2026-08-19 (“The haste step ends, and deployment…”)’s \"skipped\" clause is now moot (turn.haste.always) but the event still fires every turn.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.end-event.during",
@@ -2144,7 +2121,7 @@
     "examples": [
       {
         "text": "Prediction Prophet asks its controller for a number at the end of the haste step, and creates a 5/5 at the start of deployment if it matched.",
-        "test": "40-light-c.test.ts::Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (R90)"
+        "test": "40-light-c.test.ts::Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (CR 504.6a)"
       }
     ],
     "see": [],
@@ -2157,16 +2134,11 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R90 (its end-of-step timing half)",
-          "quote": "the prediction is asked for at the tail of the step, which is"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R90",
-          "relation": "its prediction-menu cap (0 … life + 5) superseded by R197"
+          "quote": "the prediction is asked for at the tail of the step, which is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2175,11 +2147,11 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "This client asks for it as the step ends.",
     "confidence": "medium",
-    "notes": "The Everywhere also names a card \"During [Haste]\" (R91, 38-light-a); this rule does not claim when the client asks for that one.",
-    "sourceHashes": {
-      "R90": "f3b53f3681ec6c68f9c0f68e2340690a26ede79a27d8ca3966485dcb5bbeb6ae"
-    }
+    "notes": "The Everywhere also names a card \"During [Haste]\" (the owner ruling of 2026-08-23 (“\"Name a card\" is a Decision…”), 38-light-a); this rule does not claim when the client asks for that one.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.grants",
@@ -2193,7 +2165,7 @@
       },
       {
         "text": "Writhing Host in its owner's bin lets them play a deploy unit in the haste step, erasing the Host as the additional cost.",
-        "test": "42-dark-b.test.ts::Writhing Host (R123): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin"
+        "test": "42-dark-b.test.ts::Writhing Host (CR 504.7): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin"
       }
     ],
     "see": [
@@ -2213,13 +2185,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R123",
-          "quote": "it had [Haste]\" is TIMING ONLY — the played unit never carries the attribute."
+          "quote": "it had [Haste]\" is TIMING ONLY — the played unit never carries the attribute.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -2227,11 +2199,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Whether the played card GAINS haste: the RAQ write-up says \"despite gaining :haste:\", R123 says the unit never carries it. This rule states only the timing: D-U08-4. Courier prints \"mana step\"; R97 reads it as the haste step: D-U08-3.",
-    "sourceHashes": {
-      "R123": "d0fcb30a403a6a548112e80a8c50c406fcdcd37ce268553acc6c891a079cf9fb"
-    }
+    "notes": "Whether the played card GAINS haste: the RAQ write-up says \"despite gaining :haste:\", the owner ruling of 2026-08-24 (“playing cards out of a BIN…”) says the unit never carries it. This rule states only the timing: D-U08-4. Courier prints \"mana step\"; the owner ruling of 2026-08-23 (“A card may be granted permission…”) reads it as the haste step: D-U08-3.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.grants.each-turn",
@@ -2254,13 +2225,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R97",
-          "quote": "twice as permissive, but two Couriers each print \"Each turn, you may play a unit\" and two of"
+          "quote": "twice as permissive, but two Couriers each print \"Each turn, you may play a unit\" and two of",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -2268,11 +2239,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The two-Courier case is R97's reasoning; the test title covers one Courier only.",
-    "sourceHashes": {
-      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
-    }
+    "notes": "The two-Courier case is the owner ruling of 2026-08-23 (“A card may be granted permission…”)’s reasoning; the test title covers one Courier only.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.mods",
@@ -2312,13 +2282,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R95 (its Slurpr haste-sibling half)",
-          "quote": "`illegal('modding is a deployment action (or a battle Virus)')`) and in `doGraft`."
+          "quote": "`illegal('modding is a deployment action (or a battle Virus)')`) and in `doGraft`.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -2327,10 +2297,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The RAQ write-up is about grafts; the Manual p.26 and the engine refusal (quoted in R95) cover augments too. A Virus may also be applied in battle (723).",
+    "notes": "The RAQ write-up is about grafts; the Manual p.26 and the engine refusal (quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”)) cover augments too. A Virus may also be applied in battle (723).",
     "sourceHashes": {
-      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb",
       "RAQ 1355115946032889914#0": "570bdde45f267e2fa36e032e03d4220f54649c976e64bfc3afdf08fb321d1661"
     }
   },
@@ -2357,24 +2327,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R95 (its Slurpr haste-sibling half)",
-          "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
+          "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.prophesy",
@@ -2384,11 +2353,11 @@
     "examples": [
       {
         "text": "Divine Intervention's prophecy (\"Your life is 5 or less [Haste]\") may be prophesied in the haste step.",
-        "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
+        "test": "257-prophecy-release-timing.test.ts::CR 504.9: a banner marked [Haste] may be prophesied during the haste step"
       },
       {
         "text": null,
-        "test": "257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it"
+        "test": "257-prophecy-release-timing.test.ts::CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it"
       }
     ],
     "see": [
@@ -2398,20 +2367,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R277 (its release-timing and prophesy-window halves)",
-          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R277 (its release-timing and prophesy-window halves)",
-          "quote": "window** to include the haste step. R42 allows prophesying only during"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R277",
-          "relation": "its aside that the banner cost is plain mana with no affinity superseded by R301"
+          "quote": "window** to include the haste step. R42 allows prophesying only during",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2420,11 +2385,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The owner's reading of the marker (2026-08-30, quoted in R277: \"That's why it has that symbol\"); no designer source: D-U08-9. Prophecy itself is 803 (U21). F-U08-2: a test title still says prophesying is illegal in the haste step without qualification.",
-    "sourceHashes": {
-      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
-    }
+    "notes": "The owner's reading of the marker (2026-08-30, quoted in the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”): \"That's why it has that symbol\"); no designer source: D-U08-9. Prophecy itself is 803 (U21). F-U08-2: a test title still says prophesying is illegal in the haste step without qualification.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.haste.prophesy.release",
@@ -2434,7 +2398,7 @@
     "examples": [
       {
         "text": null,
-        "test": "257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step"
+        "test": "257-prophecy-release-timing.test.ts::CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step"
       }
     ],
     "see": [
@@ -2444,23 +2408,22 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R277 (its release-timing and prophesy-window halves)",
-          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "257-prophecy-release-timing.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
-    }
+    "sourceHashes": {}
   }
 ]

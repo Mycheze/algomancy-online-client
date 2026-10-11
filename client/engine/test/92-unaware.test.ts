@@ -1,4 +1,4 @@
-/* R106 — STAT LAYER 6, {Unaware}: everything in the interaction reads at the
+/* CR 802.9 — STAT LAYER 6, {Unaware}: everything in the interaction reads at the
  * numbers PRINTED on the card.
  *
  * {Unaware} was the last attribute in the pool with zero engine references
@@ -26,7 +26,7 @@
  *  2. PAIRWISE — in an interaction involving an Unaware card, EVERY
  *     participant reads at printed, not just the Unaware one. Scoped, exactly
  *     as the owner scoped it, to dealing/receiving damage and to combat.
- *     Targeting is out of scope and is R106's one open edge.
+ *     Targeting is out of scope and is the Unaware rule's one open edge.
  *
  * The three worked examples above are named tests below, quoting him.
  *
@@ -171,8 +171,8 @@ test('a lord\'s aura leaves Bubb a 5/6', () => {
 });
 
 test('a base REWRITE is ignored too — a Statweaver does NOT make Bubb a 3/3', () => {
-  // The one place R106 parts company with R93's {Inverted}. R93 keeps base
-  // rewrites because they are what {Inverted} inverts FROM; R106 drops them
+  // The one place CR 802.9b parts company with CR 802.8's {Inverted}. CR 802.8c keeps base
+  // rewrites because they are what {Inverted} inverts FROM; CR 802.9b drops them
   // because "your units are base 3/3" is not literal printed text on Bubb's
   // card. Layer 6 returns layer 1 alone.
   const h = new Harness(9213);
@@ -294,7 +294,7 @@ test('two units FIGHT: Bubb reads a Robot 7 as a 0/0 and kills it outright', () 
   finishBattle(h);
 });
 
-/* ══ column sharing (R19): the decision, unchanged ═══════════════════════ */
+/* ══ column sharing (CR 802.1c): the decision, unchanged ═══════════════════════ */
 
 test('{Unaware} is column-shared: a pumped column-mate of Bubb fights at ITS printed stats', () => {
   const h = new Harness(9230);

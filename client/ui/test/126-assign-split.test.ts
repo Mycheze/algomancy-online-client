@@ -1,11 +1,11 @@
-/* CT-34 / R149 — the R120 elective damage-split TICKER.
+/* CT-34 / CR D7.2e — the CR 608.6a elective damage-split TICKER.
  *
  * Owner report #100, room SMVJ: "The damage distribution UI is terrible and
  * confusing. Better would to have a ticker counter thing on each unit that you
  * click up/down and they always are forced to sum to the amount of damage you
  * have."
  *
- * The mechanic is R120 and is untouched — the split stays elective, because
+ * The mechanic is CR 608.6a and is untouched — the split stays elective, because
  * "never decide for the player". What changed is the affordance: a per-victim
  * ticker with the column and the running remainder around it, replacing the
  * flat wall of "1 to X / 2 to X / 3 to X / 4 to X" buttons.
@@ -25,7 +25,7 @@
  * engine's real emitted options. Test (4) is the one that would have caught
  * BL-25.
  *
- * Test (5) is the negative control: BL-25/R139's counter stepper now runs on
+ * Test (5) is the negative control: BL-25/CR D7.2's counter stepper now runs on
  * the shared `quantityStepper` core this change factored out, and must be
  * byte-for-byte the control it was.
  */
@@ -88,10 +88,10 @@ function overkillBoard(seed: number) {
 
 // ───────────────────────────────────────────────────────────────────────────
 
-test('R149 (1): the total is forced — under and over allocations are refused, with the remainder said out loud', () => {
+test('CR D7.2e (1): the total is forced — under and over allocations are refused, with the remainder said out loud', () => {
   const dec = menu('Ox', 2, 4);   // 4 damage left; the front unit is owed 2
 
-  // UNDER: less than the unit in front is owed. R120's one rule — a unit in
+  // UNDER: less than the unit in front is owed. CR 608.6b's one rule — a unit in
   // front must be assigned lethal before any damage goes behind it — so 1 is
   // not a split the engine will take, and the client must not send it.
   const under = assignSplitSubmit(dec, 1);
@@ -110,7 +110,7 @@ test('R149 (1): the total is forced — under and over allocations are refused, 
 
   // and exactly on the total is fine, remainder zero
   const all = assignSplitSubmit(dec, 4);
-  assert.equal(all.ok, true, 'spending everything on this unit is legal (R120: overkill the front)');
+  assert.equal(all.ok, true, 'spending everything on this unit is legal (CR 608.6c: overkill the front)');
   assert.equal(all.remaining, 0, 'nothing left behind it');
   assert.equal(all.index, whereValue(dec, 4));
 
@@ -127,7 +127,7 @@ test('R149 (1): the total is forced — under and over allocations are refused, 
     'total / assigned / remaining are the running sum the bar shows');
 });
 
-test('R149 (2): the ticker clamps to what THIS victim can take — the BL-25 carry-over trap', () => {
+test('CR D7.2e (2): the ticker clamps to what THIS victim can take — the BL-25 carry-over trap', () => {
   const dec = menu('Ox', 2, 4);
   assert.equal(assignSplitStepper(dec, null, 9).count, 4, 'above the ceiling lands on the ceiling');
   assert.equal(assignSplitStepper(dec, null, 4).count, 4, 'the ceiling itself is reachable');
@@ -164,7 +164,7 @@ test('R149 (2): the ticker clamps to what THIS victim can take — the BL-25 car
 
   // a decision that is not an elective split gets no ticker at all — a bare
   // number option is otherwise just a payload (an X amount, a hand index,
-  // R75's formation slot), which is the namespace collision BL-25 died on
+  // CR 602.6's formation slot), which is the namespace collision BL-25 died on
   assert.equal(assignSplitStepper(null, null, 1).mode, 'none');
   assert.equal(assignSplitStepper({ ...dec, kind: 'targets' }, null, 3).mode, 'none',
     'the ENGINE\'s decision kind is the gate, never a guess at the value shape');
@@ -172,13 +172,13 @@ test('R149 (2): the ticker clamps to what THIS victim can take — the BL-25 car
     { label: 'no', value: 'default' }] }, null, 1).mode, 'none', 'and a menu with no amounts is not a ticker');
 });
 
-test('R149 (3): "All" jumps to everything-left and does NOT submit', () => {
+test('CR D7.2e (3): "All" jumps to everything-left and does NOT submit', () => {
   const dec = menu('Ox', 2, 4);
   const all = assignSplitStep(dec, null, 2, 'all');
   assert.equal(all.count, 4, 'All sets the dial to everything the strike has left');
   assert.equal(all.submit, false,
     'and does not answer the decision — assigning combat damage is irreversible, '
-    + 'so the number is read before it is spent (R139\'s ruling, in the type)');
+    + 'so the number is read before it is spent (CR D7.2, in the type)');
   assert.equal(assignSplitStep(dec, null, 4, 'all').count, 4, 'All is idempotent');
   assert.equal(assignSplitStepper(dec, null, 4).canAll, false, 'and is dead once it would move nothing');
   assert.equal(assignSplitStepper(dec, null, 2).canAll, true);
@@ -194,7 +194,7 @@ test('R149 (3): "All" jumps to everything-left and does NOT submit', () => {
     'and over a decision with no ticker, the dial is left exactly as it was');
 });
 
-test('R149 (4): the ticker\'s option values are the ones the ENGINE really emits for an elective split', () => {
+test('CR D7.2e (4): the ticker\'s option values are the ones the ENGINE really emits for an elective split', () => {
   const { h, A, b1, b2, mark } = overkillBoard(12001);
   const dec = h.state.decision;
   assert.ok(dec, 'the 4/3 into 1/1+1/1 board really does raise an elective split');
@@ -245,10 +245,10 @@ test('R149 (4): the ticker\'s option values are the ones the ENGINE really emits
   assert.deepEqual(hits.filter(([u]) => u === b1).map(([, n]) => n), [4],
     'all 4 landed on the front blocker — the elected split, sent through the ticker');
   assert.deepEqual(hits.filter(([u]) => u === b2), [],
-    'and the back blocker was assigned nothing, which is R120\'s whole point');
+    'and the back blocker was assigned nothing, which is CR 608.6c\'s whole point');
 });
 
-test('R149 (4b): a strike whose earlier victims are already answered shows them LOCKED', () => {
+test('CR D7.2e (4b): a strike whose earlier victims are already answered shows them LOCKED', () => {
   // The engine cannot produce this today — a column is [front, back?], so a
   // two-victim strike asks exactly one question and `picks` is always empty at
   // ask time. The row states exist because AssignPlan.picks is a LIST, and if
@@ -282,7 +282,7 @@ test('R149 (4b): a strike whose earlier victims are already answered shows them 
     'no combatAssign suspension, no victims');
 });
 
-test('R149 (5): NEGATIVE CONTROL — BL-25/R139\'s counter stepper is unchanged on the shared core', () => {
+test('CR D7.2e (5): NEGATIVE CONTROL — BL-25/CR D7.2\'s counter stepper is unchanged on the shared core', () => {
   // counterStepper now builds its view from quantityStepper/stepQuantity
   // instead of its own clamp and its own arrow gates. These are the BL-25
   // assertions verbatim: if the generalisation moved anything, they go red.

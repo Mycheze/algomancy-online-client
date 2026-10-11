@@ -70,7 +70,7 @@ const made = (h: Harness, seat: Seat, ...known: EntityId[]): number =>
  * The RAQ's shielded-Awoken-Tomb board: an attacker of `power` with `attrs`,
  * blocked by a 0/5 Awoken Tomb under Phytochemical Protection in FRONT and a
  * plain 5/6 BEHIND it. (The RAQ puts Bubb behind; Bubb has since become
- * {Unaware} (R106), and an Unaware exchange strips Deadly and Piercing, which
+ * {Unaware} (CR 802.9d), and an Unaware exchange strips Deadly and Piercing, which
  * would change the question. A vanilla 5/6 keeps the thread's arithmetic.)
  */
 function shieldedTombBoard(seed: number, power: number, attrs: Attr[]) {
@@ -125,7 +125,7 @@ test('RAQ Excessive: with Deadly, 1 to the shielded Tomb unlocks the unit behind
 
 test('RAQ Excessive: with Piercing, 5 to the shielded Tomb, 6 to the unit behind, and the rest to the player', () => {
   const { h, D, tomb, back } = shieldedTombBoard(38703, 15, ['Piercing']);
-  // R319 (reverses R7): a Piercing strike elects too — "atleast" is a floor
+  // CR 802.16c (the old split ruling is reversed): a Piercing strike elects too — "atleast" is a floor
   assert.equal(h.state.decision?.kind, 'assignDamage', 'the Piercing attacker is asked how to assign');
   elect(h, 5);                                       // "Atleast 5 damage to Awoken"
   elect(h, 6);                                       // "atleast 6 damage to Bubb", the rest goes on
@@ -138,7 +138,7 @@ test('RAQ Excessive: with Piercing, 5 to the shielded Tomb, 6 to the unit behind
 
 test('RAQ Excessive: Deadly + Piercing + Phytochemical — 1 to the Tomb, 1 behind, the rest to the player', () => {
   const { h, D, tomb, back } = shieldedTombBoard(38704, 15, ['Deadly', 'Piercing']);
-  elect(h, 1);                                       // R319: the floors, elected
+  elect(h, 1);                                       // CR 802.16c: the floors, elected
   elect(h, 1);
   const t = ent(h, tomb)!;
   assert.equal(t.counters, 1, '"Atleast 1 damage to Awoken (gets atleast +1/+1, won\'t create 1/1)"');
@@ -159,7 +159,7 @@ test('RAQ Excessive: Piercing pays lethal to the front AND the back, and only th
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [front, back] } });
   pass(h); pass(h);
-  elect(h, 2); elect(h, 3);                          // R319: lethal to each, then the rest pierces
+  elect(h, 2); elect(h, 3);                          // CR 802.16b: lethal to each, then the rest pierces
   assert.ok(!ent(h, front) && !ent(h, back), '"You need to assign enough damage to front & back"');
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 30 - 5, 'the excess 10 - 2 - 3 = 5 goes to the player');
@@ -178,7 +178,7 @@ test('RAQ Excessive: Deadly + Piercing over two blockers — 1 each, the rest to
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [front, back] } });
   pass(h); pass(h);
-  elect(h, 1); elect(h, 1);                          // R319: the {Deadly} floors, elected
+  elect(h, 1); elect(h, 1);                          // CR 802.16g: the {Deadly} floors, elected
   assert.ok(!ent(h, front) && !ent(h, back), '"Atleast 1 damage to front, atleast 1 damage to back"');
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 30 - 8, '"and rest can go to Opponent Health": 10 - 1 - 1 = 8');
@@ -252,7 +252,7 @@ test('RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke l
 /**
  * Resonant Form (2/4 {Resonant}) attacks into a sturdy blocker; `lost` is the
  * defender's life lost. Conduit of Pain, when asked for, attacks too in its
- * own column into a second wall: R12 scopes it to the region it stands in, so
+ * own column into a second wall: CR 101.6 scopes it to the region it stands in, so
  * left at home it would not see the battle at all.
  */
 function resonantBoard(seed: number, opts: { powerful?: boolean; conduit?: boolean; oorblak?: boolean }) {
@@ -306,7 +306,7 @@ test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Be
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   const boulder = spawn(h, A, 'Bellowing Boulder');
-  const conduit = spawn(h, A, 'Conduit of Pain');    // attacks too, so it stands in the battle region (R12)
+  const conduit = spawn(h, A, 'Conduit of Pain');    // attacks too, so it stands in the battle region (CR 601.2)
   const wall = tok(h, D, 0, 20);
   toNextBattle(h, A);
   grant(h, boulder, 'Powerful');
@@ -321,12 +321,12 @@ test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 t
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   const boulder = spawn(h, A, 'Bellowing Boulder');  // 3/4, when I attack or block: 1 damage to each unit
-  const conduit = spawn(h, A, 'Conduit of Pain');    // attacks too, so it stands in the battle region (R12)
+  const conduit = spawn(h, A, 'Conduit of Pain');    // attacks too, so it stands in the battle region (CR 601.2)
   const wall = tok(h, D, 0, 20);
   toNextBattle(h, A);
   grant(h, boulder, 'Resonant');
   grant(h, boulder, 'Powerful');
-  // R315: the riders are the Boulder's own triggers and resolve AFTER the
+  // CR 802.19f: the riders are the Boulder's own triggers and resolve AFTER the
   // ping, so the Boulder (3/4) and the Conduit (2/1) have to live through
   // the 4 they take for the thread's board to still be there — counters,
   // which are not damage and change no number the thread computes
@@ -368,7 +368,7 @@ test('RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 — 4 of the 6 kill it, 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
   pass(h); pass(h);
-  pick(h, behind!);                                  // R317: the jump is the controller's choice
+  pick(h, behind!);                                  // CR 802.17: the jump is the controller's choice
   assert.ok(!ent(h, ancient), '"you need 4 damage to kill it, because this 4 damage would be doubled on him"');
   assert.ok(!ent(h, behind!), '"you are left with 2 damage to distribute further"');
   finishBattle(h);
@@ -403,7 +403,7 @@ test('RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — al
   const dealt = h.events.slice(mark).filter(e => e.type === 'damage' && e.data?.['unit'] === ancient)
     .map(e => e.data!['n'] as number);
   assert.deepEqual(dealt, [12],
-    '"All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play" (R114: ALL damage is dealt)');
+    '"All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play" (CR 608.6d: ALL damage is dealt)');
 });
 
 test('RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player', () => {

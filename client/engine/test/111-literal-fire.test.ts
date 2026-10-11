@@ -1,6 +1,6 @@
 /* LITERAL-READING AUDIT — fire (a, b), fire/wood and wood-a.
  *
- * R125's principle, applied as a sweep rather than to one card: *"when a
+ * The literal-reading principle applied as a sweep rather than to one card: *"when a
  * printed text carries no qualifier, do not invent one … Read the card, then
  * find the mechanism."* (Owner, 2026-08-24: "I think you're underestimating
  * most cards. All the cards in Algomancy are pretty literal.")
@@ -18,9 +18,9 @@
  *     with `token: true` — Nimbus Eel's printed "when you play a TOKEN spell"
  *     is built on that very event — and every OTHER card in the pool with
  *     that guard prints the word "nontoken".
- *  2. EMBERFLAME ENLIGHTENER / ENVOY OF LIGHTNING — the R94 ⚠ OPEN note asks
- *     whether "your spells" reaches spell TOKENS and says the engine's default
- *     is yes. It IS yes, on every path that matters, and both cards ask the
+ *  2. EMBERFLAME ENLIGHTENER / ENVOY OF LIGHTNING — an old ⚠ OPEN note asked
+ *     whether "your spells" reaches spell TOKENS and said the engine's default
+ *     is yes. It IS yes (CR 707.7a), on every path that matters, and both cards ask the
  *     same predicate. Pinned here so the two cannot drift apart.
  *
  * States are built explicitly (spawn / give / giveResources) so parallel card
@@ -69,9 +69,9 @@ test('Hexbane Shiitake: an enemy SPELL TOKEN is "a spell" — it exchanges for a
   finishBattle(h);
 });
 
-// ── 2. "Your spells" and spell tokens — the R94 ⚠ OPEN note, verified ─────
+// ── 2. "Your spells" and spell tokens — the once-open spell-token question, verified ─────
 
-test('Emberflame Enlightener: a cast Fireball 1 under the aura deals DOUBLE (R94 default)', () => {
+test('Emberflame Enlightener: a cast Fireball 1 under the aura deals DOUBLE (CR 707.7a)', () => {
   const withAura = (aura: boolean): number => {
     const h = new Harness(aura ? 11104 : 11105);
     toDeployment(h);
@@ -93,7 +93,7 @@ test('Emberflame Enlightener: a cast Fireball 1 under the aura deals DOUBLE (R94
   };
   assert.equal(withAura(false), 1, 'the boundary: a bare Fireball 1 marks one point');
   assert.equal(withAura(true), 2,
-    '"your units and SPELLS gain {Powerful}" reaches a spell token — R94 effectAttrs, '
+    '"your units and SPELLS gain {Powerful}" reaches a spell token (CR 707.7a) through effectAttrs, '
     + 'which is the only channel that can (a cast token has no entity left to read)');
 });
 
@@ -107,7 +107,7 @@ test('Emberflame and Envoy of Lightning ask the SAME question about a spell toke
   const region = g.homeRegion(A);
   const mk = (name: string) => {
     const self = g.entity(spawn(h, A, name))!;
-    const mod = radiantList(name, 'effectAttrs')[0]!;   // R268: both halves of the box
+    const mod = radiantList(name, 'effectAttrs')[0]!;   // CR 721.1: both halves of the box
     const ctx = (kind: EffectAttrCtx['kind']): EffectAttrCtx =>
       ({ seat: A, region, kind, targets: 1 });
     return { self, mod, ctx };

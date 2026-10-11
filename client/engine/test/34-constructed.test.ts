@@ -68,7 +68,7 @@ test('nothing moves until the 2 cards go back; bottoming keeps the given order',
   const deckBefore = h.state.decks![0]!.length;
   h.do({ type: 'bottomCards', seat: 0, handIndices: [5, 2] });
   assert.equal(h.state.players[0]!.hand.length, 6);
-  // R296: the draw phase's put-2-back is a RECYCLE like any other — the owner,
+  // CR 901.5a: the draw phase's put-2-back is a RECYCLE like any other — the owner,
   // 2026-09-16, scoped the mark as everything that hits the bottom — so the
   // pair goes past the mark instead of onto the live deck. This used to read
   // `decks[0].slice(-2)`.
@@ -87,7 +87,7 @@ test('nothing moves until the 2 cards go back; bottoming keeps the given order',
   assert.equal(h.state.bottomDone, null, 'both done — the step closes');
 });
 
-test('R296: recycling goes past YOUR OWN mark, and the opponent\'s zones are untouched', () => {
+test('CR 408.2e: recycling goes past YOUR OWN mark, and the opponent\'s zones are untouched', () => {
   const h = newGame();
   bottomBoth(h);
   const d0 = h.state.decks![0]!.length, d1 = h.state.decks![1]!.length;
@@ -98,8 +98,7 @@ test('R296: recycling goes past YOUR OWN mark, and the opponent\'s zones are unt
   const name = h.state.players[0]!.hand[0]!;
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'water' });
   // ⚠ THE TITLE USED TO SAY "to the bottom of YOUR deck" and asserted
-  // `decks[0].length === d0 + 1`. R296 moved the destination, not the
-  // ownership: in constructed each seat has its OWN pile, exactly as each seat
+  // `decks[0].length === d0 + 1`. The mark moved the destination, not the ownership (CR 408.2e): in constructed each seat has its OWN pile, exactly as each seat
   // has its own deck, and `E.recycleOf` is the door to it.
   assert.equal(h.state.decks![0]!.length, d0, 'my live deck is unchanged — the card went past the mark');
   assert.equal(h.state.recycled![0]!.length, p0 + 1, 'MY pile grew by one');
@@ -145,7 +144,7 @@ test('the other modes still create games without decks', () => {
   assert.equal(draft.state.players[0]!.hand.length, 6);
 });
 
-// ── R99: deck element identity (playtest ledger #63) ──────────────────
+// ── CR D6.14b: deck element identity (playtest ledger #63) ──────────────────
 
 test('deckElements: constructed records each seat’s deck element identity', () => {
   // Ledger #63 (GETD): "In constructed, the resource options from recycling
@@ -179,7 +178,7 @@ test('deckElements: it is a PRESENTATION default — all seven stay legal', () =
   const offered = new Set(legal
     .filter((a): a is Extract<typeof a, { type: 'recycleForResource' }> => a.type === 'recycleForResource')
     .map(a => a.element));
-  // R299: plus a Prismite and a Shard, which every game offers
+  // CR 106.6a: plus a Prismite and a Shard, which every game offers
   assert.deepEqual([...offered].sort(), [...ALL_ELEMENTS, 'prismite', 'shard'].sort(),
     'legalActions still offers every element — nothing legal became illegal');
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'dark' });

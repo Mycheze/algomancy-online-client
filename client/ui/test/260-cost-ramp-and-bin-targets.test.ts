@@ -1,4 +1,4 @@
-/* R280 — TWO OWNER REPORTS FROM ROOM ZSPG, both about a thing the client had
+/* CR D7.2b, D6.6d — TWO OWNER REPORTS FROM ROOM ZSPG, both about a thing the client had
  * and did not put where it was needed.
  *
  * ZSPG replays FAITHFULLY at the deployed commit (236/236 actions, 0 refused,
@@ -17,11 +17,11 @@
  * play unwound — because a variable cost is charged AS IT IS CLICKED and the
  * only way back is cancelling the whole cast.
  *
- * The word carrying the report is **also**: R197's numeric entry — the `−10 −
+ * The word carrying the report is **also**: CR D7.2a's numeric entry — the `−10 −
  * [box] + +10` bar with the typed `#num-entry` — already exists, and this
  * question never got it. So §2-§4 are about the SHARE, not about a new
  * control: the box, the arrows, the quick picks, the Enter key and
- * `snapshotViewport`'s caret rescue are R197's, reached by dressing the live
+ * `snapshotViewport`'s caret rescue are the numeric entry's (CR D7.2a), reached by dressing the live
  * cost question as the `NumberDecisionLike` it already knows how to draw.
  *
  * ── #154 / CT-169, action 200 — THE TARGETED BIN CARD ─────────────────
@@ -76,7 +76,7 @@ function payXLife(seed = 1900): Harness {
 /**
  * A Blightwalker trigger on the stack, aimed at a card BURIED in its own
  * controller's bin. The ZSPG shape, built from the same card family the game
- * used (`what: 'binCard'`, R64's declared bin target).
+ * used (`what: 'binCard'`, CR 110.1a's declared bin target).
  */
 function binTargeted(seed = 1902): { h: Harness; buried: string } {
   const h = new Harness(seed);
@@ -101,7 +101,7 @@ function aimAt(h: Harness, card: string): void {
 // FIRST, and deliberately: everything below is about how a particular question
 // is DRAWN, and a drawing assertion over the wrong question is a tripwire.
 
-test('R280 §1 the premise: a pay-X-life cost really is one repeatable option and a stop', () => {
+test('CR D7.2b the premise: a pay-X-life cost really is one repeatable option and a stop', () => {
   const h = payXLife();
   const d = h.state.decision;
   assert.ok(d, 'playing Flesh Tithe raised no decision at all');
@@ -111,7 +111,7 @@ test('R280 §1 the premise: a pay-X-life cost really is one repeatable option an
   const pays = d.options.filter(o => !!o.value && typeof o.value === 'object' && 'payLife1' in o.value);
   assert.equal(pays.length, 1, 'the engine offers exactly one "pay one more" option');
   assert.match(pays[0]!.label, /Pay 1 more life/);
-  assert.ok(optIdx(d, 'doneCost') >= 0, 'R64s "that is enough" is on the menu');
+  assert.ok(optIdx(d, 'doneCost') >= 0, 'the "that is enough" option is on the menu');
   // …and the point is charged AS IT IS ANSWERED, which is why an overshoot
   // cost the owner a whole play
   const life = h.state.players[0]!.life;
@@ -122,7 +122,7 @@ test('R280 §1 the premise: a pay-X-life cost really is one repeatable option an
 
 // ═══ §2 THE ARROWS AND THE BOX ════════════════════════════════════════
 
-test('R280 §2 the pay-X-life bar carries R197s arrows and its typed box', () => {
+test('CR D7.2b the pay-X-life bar carries the number-entry arrows and its typed box', () => {
   const h = payXLife();
   const html = ui.join(h.state, 0, []);
   assert.ok(html.includes('id="num-entry"'),
@@ -134,10 +134,10 @@ test('R280 §2 the pay-X-life bar carries R197s arrows and its typed box', () =>
   // caret of and rewireInputs binds Enter to, so a second box under a second
   // id would silently lose both.
   assert.equal((html.match(/id="num-entry"/g) ?? []).length, 1,
-    'there are two numeric boxes on screen — the ramp built its own instead of sharing R197s');
+    'there are two numeric boxes on screen — the ramp built its own instead of sharing the number entry');
 });
 
-test('R280 §2b the dial goes DOWN as well as up, and never below what is already paid', () => {
+test('CR D7.2b the dial goes DOWN as well as up, and never below what is already paid', () => {
   const h = payXLife();
   ui.join(h.state, 0, []);
   // nothing paid: the floor IS the value, so down is dark
@@ -157,7 +157,7 @@ test('R280 §2b the dial goes DOWN as well as up, and never below what is alread
 
 // ═══ §3 THE COMMIT BUTTON ═════════════════════════════════════════════
 
-test('R280 §3 that is enough is a full button, and the plain declines stay quiet', () => {
+test('CR D7.2c that is enough is a full button, and the plain declines stay quiet', () => {
   const h = payXLife();
   const html = ui.join(h.state, 0, []);
   const done = optIdx(h.state.decision!, 'doneCost');
@@ -167,12 +167,12 @@ test('R280 §3 that is enough is a full button, and the plain declines stay quie
    * doesn't???"* — the bar drew the dial AND the raw pair it dials ("Pay 1
    * more life", "That's enough — X = 0 ⚠ …"): eleven buttons, and the ⚠ read
    * X = 0 while the box read 11. So the "that is enough" button IS the
-   * dial's confirm now: full (.commitbtn), carrying R64's own label and its
+   * dial's confirm now: full (.commitbtn), carrying the ramp's own label (CR 702.6b) and its
    * warning, and the raw option is not drawn beside it. */
   const bar = html.slice(html.indexOf('promptbar pending'), html.indexOf('</div>', html.indexOf('promptbar pending')));
   assert.ok(!/data-btn="decide"/.test(bar), 'no raw engine option is drawn beside the dial on a ramp');
   assert.match(bar, /class="commitbtn" data-btn="numtake"/, 'the confirm is the full, coloured button');
-  assert.match(bar, /data-btn="numtake"[^>]*>That's enough — X = 0/, 'and it is R64\'s own "that is enough"');
+  assert.match(bar, /data-btn="numtake"[^>]*>That's enough — X = 0/, 'and it is the ramp\'s own "that is enough" (CR 702.6b)');
   assert.match(bar, /creates no unit/, 'with the card\'s ⚠ X = 0 warning, because X really is 0');
   const buttons = (bar.match(/<button/g) ?? []).length;
   assert.ok(buttons <= 7, `the ramp bar is ${buttons} buttons — the report counted eleven`);
@@ -199,7 +199,7 @@ test('R280 §3 that is enough is a full button, and the plain declines stay quie
 
 // ═══ §4 ONE CLICK SPENDS THE DIALLED X, AND NO MORE ═══════════════════
 
-test('R280 §4 one confirm walks the ramp to the dialled X and then stops', () => {
+test('CR D7.2b one confirm walks the ramp to the dialled X and then stops', () => {
   const h = payXLife();
   ui.join(h.state, 0, []);
   ui.actions();                              // drop the join traffic
@@ -238,7 +238,7 @@ test('R280 §4 one confirm walks the ramp to the dialled X and then stops', () =
 
 // ═══ §5 THE TARGETED BIN CARD, THE PREMISE ════════════════════════════
 
-test('R280 §5 the premise: a stack item really aims at a card the bin strip hides', () => {
+test('CR D6.6d the premise: a stack item really aims at a card the bin strip hides', () => {
   const { h, buried } = binTargeted();
   assert.ok(h.state.decision, 'the Blightwalker trigger raised no target question');
   aimAt(h, buried);
@@ -259,7 +259,7 @@ test('R280 §5 the premise: a stack item really aims at a card the bin strip hid
 
 // ═══ §6 IT SURFACES ═══════════════════════════════════════════════════
 
-test('R280 §6 a targeted bin card surfaces onto the region strip, on top', () => {
+test('CR D6.6d a targeted bin card surfaces onto the region strip, on top', () => {
   const { h, buried } = binTargeted();
   // the CONTROL first: before anything aims at it, the buried card is not
   // drawn — so §6 is measuring the targeting and not the fixture
@@ -284,7 +284,7 @@ test('R280 §6 a targeted bin card surfaces onto the region strip, on top', () =
   assert.ok(after.includes(`data-prev="${buried}"`), 'the thumb carries the hover handle');
 });
 
-test('R280 §6b the dialog marks it too, so one fact reaches both surfaces', () => {
+test('CR D6.6d the dialog marks it too, so one fact reaches both surfaces', () => {
   const { h, buried } = binTargeted();
   aimAt(h, buried);
   ui.join(viewFor(h.state, 0), 0, []);
@@ -306,7 +306,7 @@ test('R280 §6b the dialog marks it too, so one fact reaches both surfaces', () 
  * This passes identically before and after the fix, deliberately: it is the
  * premise, in the same role as §1 and §5. What WAS wrong is one strip with
  * three slots, and it was wrong for both seats equally. */
-test('R280 §7 the premise: either seat can already open the other seats bin, and the decision is what they cannot see', () => {
+test('CR D6.6d the premise: either seat can already open the other seats bin, and the decision is what they cannot see', () => {
   const { h, buried } = binTargeted();
   aimAt(h, buried);
   ui.join(viewFor(h.state, 1), 1, []);
@@ -318,7 +318,7 @@ test('R280 §7 the premise: either seat can already open the other seats bin, an
   assert.equal(viewFor(h.state, 1).decision, null);
 });
 
-test('R280 §7b the opponent sees the target too, which is the half the report is really about', () => {
+test('CR D6.6d the opponent sees the target too, which is the half the report is really about', () => {
   const { h, buried } = binTargeted();
   aimAt(h, buried);
   // seat 1 is NOT the controller of the trigger and not the owner of the bin.

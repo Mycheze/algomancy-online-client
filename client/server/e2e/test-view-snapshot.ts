@@ -1,4 +1,4 @@
-/* R85 — the rollback snapshot must never leave the server
+/* The rollback snapshot must never leave the server
  * (run: node test-view-snapshot.ts). No sockets: builds a real mid-resolution
  * suspension with the engine and reads viewFor() directly.
  *
@@ -59,7 +59,7 @@ function suspendedGame(): { state: GameState; seat: Seat } {
   return { state: s, seat };
 }
 
-console.log('\n[R85 rollback snapshot redaction]');
+console.log('\n[rollback snapshot redaction]');
 const { state, seat } = suspendedGame();
 const opp = (seat === 0 ? 1 : 0) as Seat;
 

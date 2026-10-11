@@ -150,7 +150,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // dead. These are the ones that lose games rather than fizzle a turn.
 
   // Deferral Drone's entry was DELETED on 2026-08-23 when the owner ruled the
-  // last residue (R119: the charge SURVIVES the Drone — "you paid for it").
+  // last residue (CR 111.10k: the charge SURVIVES the Drone — "you paid for it").
   // The entry was never a dead clause — it declared an UNSOURCED behaviour —
   // and the ruling is now code: `GameState.nextPlayDiscount`, set by
   // E.grantNextPlayDiscount, read by manaToPlay, spent at the spellPlayed /
@@ -168,7 +168,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // step, with real tests in 28-metal-c.test.ts. Per the house rule at the head
   // of this file the entry goes in the same commit as the fix — this comment is
   // a signpost for anyone following the old `todoTest` reference, not a park.
-  // Writhing Host's entry was DELETED on 2026-08-24 when R123 built both
+  // Writhing Host's entry was DELETED on 2026-08-24 when the bin-anchored play ruling (now CR 504.7) built both
   // seams it was waiting on: a play permission whose GRANTOR IS IN THE BIN
   // (`CardBehavior.binPlayPermissions`, gathered by `E.binHasteGrantorIndex`
   // over the owner's own bin — `anchored()` never learns to walk one), and
@@ -179,10 +179,10 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // the entry goes in the same commit as the fix — this comment is a signpost
   // for anyone following the old `todoTest` reference, not a park.
   // Rotling's entry was DELETED on 2026-08-24 when the 'leftBin' choke point
-  // was built (R124), per the house rule at the head of this file. The event
+  // was built (CR 405.7), per the house rule at the head of this file. The event
   // it was waiting on exists now: EVERY bin removal in the tree goes through
   // `E.removeFromBin(seat, index, reason)`, which fires 'leftBin'
-  // { seat, card, reason } once per card, and R51's zone dispatch delivers it
+  // { seat, card, reason } once per card, and the zone dispatch (CR 400.5) delivers it
   // to the card that just left (for 'leftBin' the presence test is the EVENT,
   // not the bin — the subject has already left). Its [Switch1] lives in
   // GameState.zoneBudgets — CARD-TODO #21's design question answered as per
@@ -196,8 +196,8 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // batch-light-a.ts), and the printed "(As long as I am in their region.)" is
   // `staticsFor`'s own region scope, evaluated live. Its todo was promoted to
   // real tests in 38-light-a.test.ts. Signpost, not a park.
-  // Slurpr's entry was DELETED on 2026-08-23 when the MOD-timing twin of R95
-  // was built, per the house rule at the head of this file. All three engine
+  // Slurpr's entry was DELETED on 2026-08-23 when the MOD-timing twin of the
+  // `ModPermission` seam was built, per the house rule at the head of this file. All three engine
   // seams it was waiting on are in the tree now: `E.mayApplyModAtHaste` (the
   // OR-folding gatherer beside `E.mayAugmentInBattle`), the haste branch in
   // `doAugment` and `doGraft` through apply.ts's one shared `hasteModAllowed`
@@ -211,9 +211,9 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // an "inert augmentText entry", registered so the card still counts as an
   // augment and never crashes. That is precisely what Harbinger looked like.
 
-  // Crevice Lurker's entry was DELETED on 2026-08-24 when R121 built both
+  // Crevice Lurker's entry was DELETED on 2026-08-24 when the engine built both
   // halves it was waiting on, per the house rule at the head of this file:
-  // the ability-cost TAX rides R59's CostMod layer under two new CostCtx
+  // the ability-cost TAX rides the CostMod layer (CR 111.10) under two new CostCtx
   // purposes ('activate' — folded into E.payActivationCost and the shared
   // canPayAbilityCost gate, so an unaffordable taxed activation is neither
   // offered nor accepted — and 'trigger'), and the pay-to-trigger gate is
@@ -223,19 +223,19 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // is prevented outright, announced in the log). Its `{ todo: true }` park
   // test is nine real tests in 16-earth-a.test.ts: taxed/refused activation,
   // untaxed deployment, the pay/decline/no-mana trigger gate, the kept
-  // [once] (R108/R113), the untaxed mod application (R37), the donated form,
+  // [once] (CR 109.9b), the untaxed mod application (CR 720.4a), the donated form,
   // two-Lurker summing, and a JSON round-trip of the pending question.
   // Signpost, not a park. (It also handed the 71-card-ledger CANARY role on
   // to Vengeance, the remaining card with the exact Harbinger shape.)
   // Oorblak's entry was DELETED on 2026-08-23 when its PIERCING-EXCESS half was
-  // written against R98's wider `replaceCombatDamageToPlayer` (`info.attrs` /
+  // written against the wider `replaceCombatDamageToPlayer` (`info.attrs` /
   // `info.pure`, and a numeric return meaning "damage let through"). The
   // `{ todo: true }` park test it used to cite is now four real tests in
   // 17-earth-b.test.ts, Caleb's own case among them. Signpost for anyone
   // following the old `todoTest` reference, not a park.
   //
   // Apex Prime's entry was DELETED on 2026-08-23 when the last of its four copy
-  // layers landed. R118 had already shipped the face; what was left was the two
+  // layers landed. The copy layer had already shipped the face; what was left was the two
   // reads in apply.ts this entry named — `pushActivatedOptions` and
   // `activationSource` — and both now go through `E.facesWith(u, 'activated')`,
   // with a `via: { face }` arm for a face that is not the identity one. Its
@@ -243,7 +243,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // (offered, accepted, fires; and gone again at regroup). Ancient One and
   // Borrower of Forms came off in the SAME change, exactly as this entry said
   // they would. Signpost for anyone following the old `todoTest` reference.
-  // Vengeance's entry was DELETED on 2026-08-24 when R122 landed exactly the
+  // Vengeance's entry was DELETED on 2026-08-24 when the imposed-cost ruling (now CR 111.10d) landed exactly the
   // channel it named: `CostMod` carries a third member now — `sacrifice`, an
   // IMPOSED "[Sacrifice a unit]" on card plays, counted by `E.unitsToPlay`,
   // gated in `canPayCard`/`canPayManaOnly`, attached by `playAtTiming` as a
@@ -257,27 +257,27 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // ── BARE DEFINITIONS WITH LIVE PRINTED TEXT ─────────────────────────────
 
   // Trench Stalker's entry was DELETED on 2026-08-24 when the play-from-bin
-  // ACTION landed (R123: `CardBehavior.playsFromBin`, offered through the
-  // same `playFromBin` action R96 built) — and, per this entry's own warning,
-  // the card landed WHOLE in one change: the R49 `castCost: { kind:
-  // 'discardCard', n: 2 }` and R29's `playsIntoFormation` went on in the same
+  // ACTION landed (CR 405.9: `CardBehavior.playsFromBin`, offered through the
+  // same `playFromBin` action the battle-scoped bin grant built) — and, per this entry's own warning,
+  // the card landed WHOLE in one change: the CR 111.2 `castCost: { kind:
+  // 'discardCard', n: 2 }` and CR 602.7's `playsIntoFormation` went on in the same
   // commit, so it is no longer strictly BETTER than printed from hand (the
   // discard now gates every play) nor strictly LESS flexible than printed
   // anywhere else (bin and direct formation entry both work). No {Unstable}
-  // from the bin route — the R96 stamp is the granting card's text, and this
+  // from the bin route — the CR 405.9a stamp is the granting card's text, and this
   // card's line grants none. Its todo was promoted to three real tests in
   // 46-hybrids-ld-c.test.ts. Signpost, not a park.
 
   // ── PARTIAL: one clause works, another does not ─────────────────────────
   // EMPTY as of 2026-08-23, and kept as a heading because the class recurs:
-  // R118's copy layer took the last three off it at once.
+  // The copy layer took the last three off it at once.
   //
   // Ancient One's entry was DELETED on 2026-08-23 with Apex Prime's and
   // Borrower of Forms': "one change unparks all three" is what it said, and it
   // was one change. `CardDef.projects` already radiated the neighbours' faces;
   // apply.ts now reads them, so an adjacent ally's ACTIVATED ability is offered
   // on the Ancient One (as `via: { face }`, so two neighbours' ability #0 are
-  // two options with two R9 budgets) and stops the instant the column breaks.
+  // two options with two budgets) and stops the instant the column breaks.
   // Real tests in 26-metal-a.test.ts. The triggered half is unchanged — the
   // bookkeeping when() still labels each mimicked trigger "Ancient One (as X)".
 
@@ -286,10 +286,10 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // and will recur. It held Bubb, Trashling and Haboob, whose whole card IS
   // {Unaware} — invisible to the shape sweep, because `card('X', {})` is the
   // CORRECT definition when there is no printed text to flag, which is the
-  // mismatch that hid Harbinger in reverse. R106 shipped stat layer 6 (an
+  // mismatch that hid Harbinger in reverse. Stat layer 6 shipped (CR 802.9: an
   // Unaware card, and everything it fights or damages, reads at PRINTED stats)
-  // and all three came off, as Its Dark Bubb and Reality Bender came off when R93
-  // shipped layer 5. Both stat-layer placeholders in effStats() are now code.
+  // and all three came off, as Its Dark Bubb and Reality Bender came off when
+  // layer 5 ({Inverted}, CR 802.8a) shipped. Both stat-layer placeholders in effStats() are now code.
 
   // ── APPROXIMATIONS SITTING BEHIND A {todo:true} ─────────────────────────
   // These cards DO something. They are here because a todo test — which can
@@ -299,7 +299,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // Borrower of Forms' entry was DELETED on 2026-08-23 with Apex Prime's and
   // Ancient One's. The borrowed face is the Borrower's IDENTITY, so the copied
   // card's activated abilities are its own — offered under the same
-  // `via: undefined` a pre-R118 action log carries, and PERMANENT, like the
+  // `via: undefined` a pre-copy-layer action log carries, and PERMANENT, like the
   // rest of the face. Real tests in 26-metal-a.test.ts, next to the ones that
   // already pinned the name, the stats, the mods text and ruling 1.
   //
@@ -309,7 +309,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // reading, because the card prints three [Switch1] marks and no reminder
   // text. The owner supplied it, verbatim: "Amphivavor is the same. It creates
   // a special Grafted ability with everything on there three times"
-  // ("Amphivavor" = Amphivore). That is R110's `graftCopies: 3`, which both
+  // ("Amphivavor" = Amphivore). That is `graftCopies: 3` (CR 722.7), which both
   // cards already share, so no code changed. Its todo was promoted to a real
   // two-graft, one-targeted test in 40-light-c.test.ts. Signpost, not a park.
   // Deformant's entry was DELETED on 2026-08-23, per the house rule at the
@@ -325,7 +325,7 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // this entry called out. Its todo was promoted to three real tests in
   // 26-metal-a.test.ts. Signpost, not a park.
   // Eldritch Dreamtender's entry was DELETED on 2026-08-23, per the house rule
-  // at the head of this file. It waited on a RULING and got one: R117 — the
+  // at the head of this file. It waited on a RULING and got one (now CR 608.9a) — the
   // trigger fires in the sub-step its OWN COLUMN strikes in. The gate is
   // `E.strikesInCurrentSubStep` (over the new public `E.combatSubStepOf`),
   // asked from `when()`, and Zephyrzoa and Blightmound carry the same one. Its

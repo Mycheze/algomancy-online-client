@@ -2,28 +2,28 @@
  *
  * Behaviour only; printed data comes from printed.json (never hand-copied).
  * Spec for the expansion's new mechanics: docs/08-light-and-dark.md,
- * rulings R38-R48 in docs/digital-rules.md.
+ * and the Comprehensive Rules.
  *
  * Every card in this batch is a HYBRID whose second element is light or dark.
  * Printed text is quoted in a comment above each card, for review.
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (trigger conditions at event time, amounts at
- * resolution), R5 (fizzle vs partial), R6 (mid-resolution choices via
- * ctx.choose, plan-then-commit), R9 (bounded [Switch1]/[once] budgets, per
- * card, reset at start of turn), R12/R25 ("each player" / "your units" read
- * the region's present seats / unitsOf(region)), R27 (amounts are live at
- * resolution), R115 (created units spawn where their SOURCE is — ctx.region;
- * this WITHDREW R28/R52 and absorbed R33),
- * R35 (bracketed cast-time costs), R37 (applying a mod is not playing a
- * card), R38 (rot), R39 (debt), R40 (trash), R41/R45 (cache + glimpse
- * permission), R42/R43/R44 (prophecy — the Big Glimpse Card banner is engine
- * side), R48 ({Blessed} / {Lethal} are engine side).
+ * Rulings referenced: CR 109.3a, 109.3b (trigger conditions at event time, amounts at
+ * resolution), CR 704.6, 704.6b (fizzle vs partial), CR 704.1a (mid-resolution choices via
+ * ctx.choose, plan-then-commit), CR 803.4 (bounded [Switch1]/[once] budgets, per
+ * card, reset at start of turn), CR 601.1b, 601.4d ("each player" / "your units" read
+ * the region's present seats / unitsOf(region)), CR 107.8 (amounts are live at
+ * resolution), CR 601.5 (created units spawn where their SOURCE is — ctx.region;
+ * the old home-region default is withdrawn),
+ * CR 702.4 (bracketed cast-time costs), CR 701.2 (applying a mod is not playing a
+ * card), CR 112.13 (rot), CR 112.14 (debt), CR 801.2 (trash), CR 403.1, 801.9e (cache + glimpse
+ * permission), CR 803.7, 803.7g (prophecy — the Big Glimpse Card banner is engine
+ * side), CR 802.22, 802.24 ({Blessed} / {Lethal} are engine side).
  *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
  *  - HYPER BEAM's printed "[Gain 4 debt]" bracketed cast cost (printed.gainDebt
- *    = 4) is now consumed by the engine (R49): playAtTiming charges it as the
+ *    = 4) is now consumed by the engine (CR 112.14c): playAtTiming charges it as the
  *    card is played, before the item reaches the stack, so a negated Hyper Beam
  *    still costs its caster the debt. The card's own effect no longer touches
  *    debt at all.
@@ -34,7 +34,7 @@
  *    detected: no damage, no life.
  * ✔ "GAINS CONTROL" (Bloppert) is E.giveControl and is no longer an
  *    approximation. This entry used to read "flip Entity.controller and drop
- *    out of any formation; regroup then walks the unit home". R112: the mods
+ *    out of any formation; regroup then walks the unit home". CR 711.2, 711.4: the mods
  *    change controller with the unit, and the walk home happens AT ONCE when
  *    the new controller is not present in the region — see batch-hybrids-wm-b's
  *    header, which this used to defer to for the older wording.
@@ -42,8 +42,8 @@
  *    Bloodwind Revenant / Rippleback Skulker reconstruction: combat damage to a
  *    player emits only 'lifeLost' ({ why: 'combat' }), with no column
  *    attribution, so when() rebuilds "my column connected" (attacking and never
- *    blocked, or Piercing / a Piercing blocking column). R157 §4 (owner,
- *    2026-08-25) moved that reconstruction into ONE engine predicate,
+ *    blocked, or Piercing / a Piercing blocking column). the owner's 2026-08-25 answer (now CR 608.9a)
+ *    moved that reconstruction into ONE engine predicate,
  *    E.columnDealtCombatDamage, shared with Vroot, Eldritch Dreamtender and
  *    Blightmound; "to an opponent" is what makes this card ask for the FACE
  *    channel alone. Zephyrzoa's power gate (the LIVE COLUMN's total, not the
@@ -51,24 +51,24 @@
  *    "Erase me" deletes the entity and its mods without a bin, a death or a
  *    despawn — resolution has no erase hook, so it is done inline (the
  *    Reconfigure precedent).
- *  - DREAM LAPSE's "recall target spell effect" is R68's removeFromStack()
+ *  - DREAM LAPSE's "recall target spell effect" is removeFromStack() (CR 801.7d)
  *    with a different destination: the item leaves the stack and its CARD goes
  *    to its controller's hand rather than to a bin. A triggered/activated item
  *    or a spell token has no card to recall, so it simply ceases to exist.
  *  - BIG GLIMPSE CARD: the printed text never says who picks which pile is
  *    cached (see the flagged-text note below); implemented as "the opponent
  *    splits, the caster chooses", the standard split-and-choose shape.
- *  - "EACH PLAYER" (Mindburn, Pale Tormentor, Uglk) is region-scoped (R25),
+ *  - "EACH PLAYER" (Mindburn, Pale Tormentor, Uglk) is region-scoped (CR 601.4d),
  *    walked in the region's presentSeats order. Bloppert's "the player with the
  *    highest life total" is a global superlative and reads all seats.
  *
- * R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE, AND IT IS NOT ONLY
+ * CR 601.4d (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE, AND IT IS NOT ONLY
  * ABOUT LOOPS. "No. Only players that are in the region as an effect can even
  * see that it exists. So anything that happens in a region where a player or
  * unit currently isn't is 100% ignored, as if that effect didn't exist."
  * Two cards in THIS file named an OPPONENT rather than looping over one, and
  * both wrote `region.find(…) ?? (1 - seat)` — Uglk's recipient and Big Glimpse
- * Card's splitter. The `??` arm reached a player R25 says is not there. It is
+ * Card's splitter. The `??` arm reached a player CR 601.4d says is not there. It is
  * gone from both: with no opponent in the region they announce and do nothing,
  * which is what the rest of the pool already did. `1 - <seat>` must not appear
  * in a card effect again — `208-region-scoping-is-absolute.test.ts` is the
@@ -90,11 +90,11 @@
  *    virus is normally applied to an ENEMY unit, where the other reading
  *    ("you" = the applier) is at least as natural.
  *
- * UNPARKED by R118 (the COPY LAYER):
+ * UNPARKED by the COPY LAYER (CR 710.1):
  *  - APEX PRIME is WHOLE. "All of your units become a copy of target unit
  *    until regroup" is now one `E.becomeCopy` face carrying every facet —
  *    name, stats, attrs, statics, triggered/[Augment] text — with
- *    `until: 'regroup'`, the card's own printed duration. R92's four-grant
+ *    `until: 'regroup'`, the card's own printed duration. The old four-grant
  *    approximation (setBase + addTempAttr + two grantText channels) is gone:
  *    it could carry neither the name nor the statics, and its stats sat at
  *    layer 2 where a copy belongs at layer 0.
@@ -105,7 +105,7 @@
  *    this batch does not own; the engine side (`E.facesWith(u, 'activated')`)
  *    is built and waiting.
  *
- * UNPARKED by the R49/R50 engine wave:
+ * UNPARKED by the costs-and-events engine wave:
  *  - Debt Plant hears the new 'endOfHaste' event (a trigger, not a static —
  *    the amount is latched at that instant).
  *  - Hyper Beam's [Gain 4 debt] is a real cast cost, charged by playAtTiming.
@@ -117,8 +117,8 @@ import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** the seats physically in a region right now (R12/R25) */
-/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+/** the seats physically in a region right now (CR 601.4) */
+/** CR 601.4c: `E.seatsHere` is the one answer for the whole pool. SIX files had
  * grown their own copy of this and they did NOT agree — most ordered it
  * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
@@ -130,28 +130,28 @@ const binUnits = (g: E, seat: Seat): [CardName, number][] =>
     .filter(([n]) => isUnitCard(n));
 
 /** "erase me" (Zephyrzoa): the unit and its mods cease to exist — no bin, no
- * death, and so (R40, Caleb: erasing never touches a bin) no trash either.
+ * death, and so (CR 801.2c, Caleb: erasing never touches a bin) no trash either.
  *
- * R172 — this is now a shim over `E.eraseFromPlay`, the engine choke point.
+ * this is now a shim over `E.eraseFromPlay`, the engine choke point.
  * The hand-rolled body it replaces was written before that primitive existed
  * and had drifted three ways from it: it never turned a transformed card back
- * over (R157 §10, so the erased pile recorded the BACK face), it fired no
- * despawn (R157 §3 — an erase is not a death but it IS a despawn), and it
- * spliced the formation columns without R72's `repairFormation`. Its comment
+ * over (CR 407.4, so the erased pile recorded the BACK face), it fired no
+ * despawn (CR 801.6a — an erase is not a death but it IS a despawn), and it
+ * spliced the formation columns without `repairFormation` (CR 602.5b). Its comment
  * also still claimed "no despawn, so nothing triggers off it", which is the
- * sentence R172 overturned. */
+ * sentence the erase-is-a-despawn ruling (now CR 801.6a) overturned. */
 const eraseUnit = (g: E, u: Entity): void => { g.eraseFromPlay(u); };
 
 /** ⚠ "my column deals combat damage TO AN OPPONENT" (see header): the shared
  * engine predicate, on the FACE channel only. The "to an opponent" narrowing
  * is exactly what excludes the unit-damage channels — this text pays out on
  * damage dealt to a PLAYER, so it hears the aggregated combat 'lifeLost' and
- * nothing else. Everything else (R117's sub-step gate, R157 §4's live-column
+ * nothing else. Everything else (CR 608.9a's sub-step gate, the live-column
  * power gate, the connect test) lives in E.columnDealtCombatDamage, which
  * Vroot, Eldritch Dreamtender and Blightmound now share — the three-way
  * divergence this comment used to flag is gone.
  *
- * R157 §4 (owner, 2026-08-25): the power gate is the COLUMN's, never the
+ * CR 608.9a (owner, 2026-08-25): the power gate is the COLUMN's, never the
  * anchor's own — "0 power units do no damage. But the other thing in the
  * column can still contribute to the shared column power." This reading was
  * already right; it is now the only reading. */
@@ -163,10 +163,10 @@ const myColumnConnected = (g: E, self: Entity, ev: EngineEvent): boolean =>
 // "When I attack or block, [Switch1] Sacrifice a unit. If you do, I deal
 // damage equal to its power to any target. You gain life equal to the damage
 // dealt this way." — lr/5 5/3 Cosmic Horror Unit. Bounded cause + bounded
-// graft ([Switch1], R9). The target is picked at cast; the sacrifice is a
-// mid-resolution choice (R6) over MY units in the region — "sacrifice a unit"
+// graft ([Switch1], CR 722.5). The target is picked at cast; the sacrifice is a
+// mid-resolution choice (CR 704.1a) over MY units in the region — "sacrifice a unit"
 // is not optional, so the only choice is which (auto when forced). Power is
-// snapshotted at the sacrifice (R27, live at resolution). ⚠ header: the life
+// snapshotted at the sacrifice (CR 714.1, live at resolution). ⚠ header: the life
 // gain equals what was DEALT, and sacrificing the targeted unit deals nothing.
 const extortion: EffectDef = {
   targets: { what: 'any', prompt: 'Abyssal Extortionist: sacrifice a unit — I deal its power to any target' },
@@ -208,7 +208,7 @@ card('Abyssal Extortionist', {
 
 // "I deal 8 damage to target unit. Draw a card." + the printed bracketed cast
 // cost "[Gain 4 debt]" (printed.gainDebt = 4) — lr/4 {Battle} Cosmic Horror
-// Spell. R49: printed.gainDebt is now a real CAST cost — playAtTiming charges
+// Spell. CR 112.14c: printed.gainDebt is now a real CAST cost — playAtTiming charges
 // it as the card is played, before the item reaches the stack, so a negated
 // Hyper Beam still cost its caster the 4 debt. Nothing to do here any more.
 card('Hyper Beam', {
@@ -227,12 +227,12 @@ card('Hyper Beam', {
 // "Reveal the top 7 cards of the deck. Target opponent splits them into two
 // piles. Cache one pile. You may play those cards until end of turn, ignoring
 // affinity. Recycle the other pile." — lb/4 {Battle} Cosmic Horror Spell, and
-// it prints a "[4] Prophecy — Two Turns Pass" banner (engine side, R42).
-// R67: "Target opponent" is a DECLARED target, chosen as the spell goes on
+// it prints a "[4] Prophecy — Two Turns Pass" banner (engine side, CR 803.7).
+// CR 110.1a: "Target opponent" is a DECLARED target, chosen as the spell goes on
 // the stack. In 1v1 it is forced, so the collector fills it without asking —
 // but it is now visible on the stack and judged by the same rules as any
 // other target, instead of being re-derived at resolution.
-// R239: an UNDECLARED opponent is looked up in the region and nowhere else —
+// CR 601.4d: an UNDECLARED opponent is looked up in the region and nowhere else —
 // the old `?? (1 - ctx.controller)` arm is gone. (The declared arm needs no
 // presence test of its own: `E.pushPlayerTargets` builds the 'opponent'
 // candidate list out of `regions[region].presentSeats`, so a target the cast
@@ -240,14 +240,14 @@ card('Hyper Beam', {
 // ⚠ header: "the deck" is read as the caster's (shared in shared mode); the
 // OPPONENT splits (picking cards into pile 1 until done) and the CASTER
 // chooses which pile is cached. The cached pile gets glimpse-style permission
-// — playable until end of turn, ignoring affinity, mana still paid (R45) —
+// — playable until end of turn, ignoring affinity, mana still paid (CR 801.9e) —
 // which is exactly cacheCard's `playable` flag. Plan-then-commit: every choice
-// is requested before the deck is touched (R6).
+// is requested before the deck is touched.
 card('Big Glimpse Card', {
   spellEffect: {
     targets: { what: 'opponent', min: 0, prompt: 'Big Glimpse Card: target opponent splits the 7' },
     run: (g, ctx) => {
-      // R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
+      // CR 601.4d (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
       // that are in the region as an effect can even see that it exists. So
       // anything that happens in a region where a player or unit currently
       // isn't is 100% ignored, as if that effect didn't exist."
@@ -264,7 +264,7 @@ card('Big Glimpse Card', {
       const opp = (t && 'player' in t) ? t.player
         : presentSeats(g, ctx.region).find(s => s !== ctx.controller);
       if (opp === undefined) {
-        g.ev('info', 'Big Glimpse Card: no opponent is in this region (R25/R239) — '
+        g.ev('info', 'Big Glimpse Card: no opponent is in this region — '
           + 'there is nobody to split the piles, so nothing is revealed.');
         return;
       }
@@ -315,9 +315,9 @@ card('Big Glimpse Card', {
 // "[4] Ambush [Battle]  (Damage dealt by a blessed source causes its
 // controller to gain that much life.)" — lb/6 7/4 {Blessed} Cosmic Jellyfish
 // Unit. No rules text of its own: {Blessed} comes from the printed attribute
-// (R48, engine side — the gain lands on the same game-state check as the
+// (CR 802.22b, engine side — the gain lands on the same game-state check as the
 // damage) and the "[4] Ambush" line is printed.ambush, an engine play mode
-// (R22). Registered so it enters DECK_LIST.
+// (CR 803.6). Registered so it enters DECK_LIST.
 card('Shib', {});
 
 // ═══════════════════════ LIGHT / EARTH (le) ═══════════════════════════
@@ -331,7 +331,7 @@ card('Shib', {});
 // a life total is a raw field, so this is safe.
 card('Burden of Life', {
   augmentable: true,   // text-box [Augment]: the static transfers when applied
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -344,7 +344,7 @@ card('Burden of Life', {
 
 // "[Augment] Your units gain +1/+1 for every 3 life an opponent has more than
 // you." — le/5 3/3 {Virus} Cosmic Unit. Statics-only [Augment] (augmentable),
-// region-scoped by staticsFor (R12) and anchored on the host when applied.
+// region-scoped by staticsFor (CR 601.1d) and anchored on the host when applied.
 // "An opponent" is the best-off opponent (in 1v1, simply the other seat); the
 // bonus is floor(lead / 3) and never negative. Raw life fields only — no
 // effStats call (reentrancy).
@@ -352,7 +352,7 @@ card('Burden of Life', {
  * The bonus, against a GIVEN set of seats.
  *
  * ⚠ ONE ARITHMETIC, TWO CALLERS, and that is deliberate. The real static
- * passes the seats present in my region (R243: "an opponent" is an opponent
+ * passes the seats present in my region (CR 101.6: "an opponent" is an opponent
  * IN MY REGION — a seat that is not here does not exist for this card and
  * cannot define the bonus). The preview passes the seats I would meet in a
  * battle. A preview computed separately from the rule is one that can come to
@@ -371,7 +371,7 @@ const dootBonus = (g: E, self: Entity): number => dootBonusFor(g, self, g.seatsH
 card('The Mighty Doot', {
   augmentable: true,
   /**
-   * R243 left this card worth nothing in a home region — correctly, because no
+   * Region scoping (CR 101.6) left this card worth nothing in a home region — correctly, because no
    * opponent is standing there — and the owner asked for the number you WILL
    * get anyway: *"They don't get the bonus in deployment, but it'd help with
    * decision making at least."*
@@ -384,7 +384,7 @@ card('The Mighty Doot', {
     if (soon <= 0 || soon === dootBonus(g, self)) return null;
     return `+${soon}/+${soon} in battle`;
   },
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -415,7 +415,7 @@ card('Bloppert', {
         if (!self) { g.ev('info', 'Bloppert: the carrier is gone — no control change.'); return; }
         let best = -Infinity;
         let winners: Seat[] = [];
-        // R243: the superlative reads THIS REGION. A player who is not here
+        // CR 601.1c: the superlative reads THIS REGION. A player who is not here
         // cannot decide who gains control of a unit standing here.
         for (const p of g.seatsHere(self.region).map(s => g.player(s))) {
           if (p.life > best) { best = p.life; winners = [p.seat]; }
@@ -437,12 +437,12 @@ card('Bloppert', {
 // every 2 expended resources you have." — lg/3 3/2 Cosmic Plant Unit.
 // ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
 // printed bonus was +1/+1 and is now +1/+0 — power only.
-// R50: the haste step now closes with an 'endOfHaste' event fired inside a
+// CR 504.6: the haste step now closes with an 'endOfHaste' event fired inside a
 // settle() window, so this is an ordinary triggered ability — and a TRIGGER is
 // the right shape, because the amount is LATCHED at that instant ("until
 // regroup") rather than tracking the resource count afterwards.
 // Text-box [Augment], so "your" is the HOLDER's controller (the host when
-// donated). R12/R25: "your units" is the holder's units in its own region.
+// donated). CR 601.1b: "your units" is the holder's units in its own region.
 card('Debt Plant', {
   augmentText: [{
     type: 'triggered', events: ['endOfHaste'],
@@ -463,15 +463,15 @@ card('Debt Plant', {
 
 // "[Augment][once] When you gain or lose life, create that many 1/1 units.
 // (Damage causes loss of life)" — lg/7 7/3 Cosmic Fungus Unit. Text-box
-// [Augment]; "[once]" is a bounded budget (R9, per card, reset each turn).
+// [Augment]; "[once]" is a bounded budget (CR 803.4, per card, reset each turn).
 // Both directions count, and only MY life changes do ("when YOU gain or lose")
-// — checked at event time against the anchor's controller (R1). "That many" is
-// the event snapshot's amount. ⚠ R115 settles where the units land, and it is
+// — checked at event time against the anchor's controller (CR 109.3a). "That many" is
+// the event snapshot's amount. ⚠ CR 304.8a settles where the units land, and it came from
 // THIS CARD's report (#83): a CREATED unit arrives where its SOURCE currently
 // is, so a Life Plant fighting in the enemy region mints its 1/1s THERE — in
 // no column, unable to block the counterattack — and they walk home at
-// regroup. (R115 withdrew R52/R28, which had moved this card to home, and
-// absorbed R33's Ember of Life carrier reading as the general rule.)
+// regroup. (Earlier readings had moved this card to home; CR 601.5, the Ember of Life
+// carrier reading made general, puts it where its source is.)
 card('Life Plant', {
   augmentText: [{
     type: 'triggered', events: ['lifeGained', 'lifeLost'], bounded: true,   // [once]
@@ -482,7 +482,7 @@ card('Life Plant', {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         for (let i = 0; i < n; i++) {
-          // R115: a created unit arrives where its SOURCE is (ctx.region)
+          // CR 601.5: a created unit arrives where its SOURCE is (ctx.region)
           g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
             { token: true, tokenStats: [1, 1] });
         }
@@ -497,25 +497,25 @@ card('Life Plant', {
 // all of your units become a copy of target unit until regroup." — lm/4 4/4
 // Technology God Unit.
 //
-// R118 — the COPY LAYER. This card is WHOLE: the name, the base stats, the
+// CR 710.1 — the COPY LAYER. This card is WHOLE: the name, the base stats, the
 // attributes, the statics, the triggered/[Augment] text and the activated
 // abilities all travel, as ONE face rather than four separate grants.
-// (The activated facet landed with R118's second half, which pointed
+// (The activated facet landed with the copy layer's second half, which pointed
 // pushActivatedOptions and activationSource at E.facesWith rather than at
 // getCard(u.card).abilities.)
 //
 // `E.becomeCopy` stamps an `Entity.copies` face carrying every facet, with
 // `until: 'regroup'` — this card's printed duration, and the reason it needs
-// the layer rather than R101's in-place rewrite of `Entity.card`: a copy has
-// to REVERT, and a rewrite would also destroy the physical card (R118 ruling
-// 1 — a copy still bins as itself).
+// the layer rather than the transform's in-place rewrite of `Entity.card`: a copy has
+// to REVERT, and a rewrite would also destroy the physical card (CR 201.5 —
+// a copy still bins as itself).
 //
-// R92's four-grant approximation (E.setBase + E.addTempAttr + two E.grantText
+// The old four-grant approximation (E.setBase + E.addTempAttr + two E.grantText
 // channels) is GONE. It could not carry the name or the statics at all, and
 // its base-stat half sat at layer 2, which meant a copied body outranked a
 // later "becomes a base 4/4" instead of being overwritten by it.
 //
-// Still region-scoped ("your units" — R12, the Flowstone Arcanite reading),
+// Still region-scoped ("your units" — CR 601.1b, the Flowstone Arcanite reading),
 // still one payOrDecline asked before anything is mutated, and still
 // idempotent across attacking and then blocking in the same battle (the face
 // is a replacement, and `E.isCopyOf` skips the re-stamp so the log stays quiet).
@@ -524,7 +524,7 @@ card('Apex Prime', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
     label: 'all of your units become a copy of target unit until regroup',
-    // R1: the condition is checked at EVENT time. Text-box [Augment], so "your"
+    // CR 109.3a: the condition is checked at EVENT time. Text-box [Augment], so "your"
     // is the HOLDER's controller — the host's, when this is donated.
     when: (g, self) => g.player(self.controller).life % 2 === 1,
     effect: {
@@ -536,12 +536,12 @@ card('Apex Prime', {
           return;
         }
         const src = g.entity(t.id)!;
-        // R12: "your units" is region-scoped, the Flowstone Arcanite reading
+        // CR 601.1b: "your units" is region-scoped, the Flowstone Arcanite reading
         const mine = g.unitsOf(ctx.controller, ctx.region);
         if (!mine.length) { g.ev('info', 'Apex Prime: you have no units here.'); return; }
         // "you MAY" — one payOrDecline, asked before anything is mutated
         // (plan-then-commit: the part is replayed from the top on suspension)
-        // R118: the prompt names the FACE — a Borrower already wearing a Good
+        // CR 710.4: the prompt names the FACE — a Borrower already wearing a Good
         // Whale is copied AS a Good Whale (a copy of a copy chains via the face)
         const face = g.nameOf(src);
         const yes = ctx.choose(APEX_COPY_KEY, {
@@ -568,13 +568,13 @@ card('Apex Prime', {
 // ═══════════════════════ LIGHT / DARK (ld) ════════════════════════════
 
 // "[Switch1] Put target unit from your bin into play. You gain debt equal to
-// its cost." — ld/3 Cosmic Spell (deployment timing). R67: the bin IS a
-// targetable zone now (R64's 'binCard'), so the printed "target" is a
+// its cost." — ld/3 Cosmic Spell (deployment timing). CR 110.1a: the bin IS a
+// targetable zone now ('binCard', CR 110.3), so the printed "target" is a
 // DECLARED target chosen as the item goes on the stack — it used to be a
 // mid-resolution pick, which put the Covenant on the stack aiming at nothing.
 // "Its cost" is the printed mana of the card put into play, taken as debt
-// (R39); an X unit counts as 0 (there is no X to have chosen). Bounded graft
-// ([Switch1], R9).
+// (CR 112.14); an X unit counts as 0 (there is no X to have chosen). Bounded graft
+// ([Switch1], CR 722.5).
 const covenant: EffectDef = {
   targets: {
     what: 'binCard',
@@ -587,10 +587,10 @@ const covenant: EffectDef = {
       g.ev('info', 'Covenant of the Damned: no unit in your bin — no effect.');
       return;
     }
-    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
+    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
     if (name === undefined) return;
     g.spawnUnit(ctx.controller, name, ctx.region);
-    g.gainDebt(ctx.controller, manaOf(name));   // R39
+    g.gainDebt(ctx.controller, manaOf(name));   // CR 112.14
   },
 };
 card('Covenant of the Damned', {
@@ -600,8 +600,8 @@ card('Covenant of the Damned', {
 
 // "[Augment] After combat, each player with an even life total gains two
 // rot." — ld/3 1/6 Cosmic Unit. Text-box [Augment], live when played normally
-// and donated when applied. "Each player" is region-scoped (R25), walked in
-// initiative order so the rot events are deterministic on replay (R38: gaining
+// and donated when applied. "Each player" is region-scoped (CR 601.4d), walked in
+// initiative order so the rot events are deterministic on replay (CR 112.13: gaining
 // rot is not damage — it only bites at the start of the next deployment).
 card('Pale Tormentor', {
   augmentText: [{
@@ -616,7 +616,7 @@ card('Pale Tormentor', {
           const life = g.player(seat).life;
           if (life % 2 !== 0) continue;
           g.ev('info', `Pale Tormentor: ${g.pname(seat)}'s life total (${life}) is even.`);
-          g.gainRot(seat, 2);   // R38
+          g.gainRot(seat, 2);   // CR 112.13
           hit++;
         }
         if (!hit) g.ev('info', 'Pale Tormentor: nobody here has an even life total — no rot.');
@@ -628,13 +628,13 @@ card('Pale Tormentor', {
 // ═══════════════════════ WATER / DARK (bd) ════════════════════════════
 
 // "Recall target spell effect, then its controller discards a card." — bd/2
-// {Battle} Mystic Spell. ⚠ header: "recall" is not "negate" — R68's removal
+// {Battle} Mystic Spell. ⚠ header: "recall" is not "negate" — negation's removal (CR 704.4)
 // with a different destination. The item leaves the stack and its CARD goes
-// back to its controller's HAND (so it is never binned, and never trashed: R40
+// back to its controller's HAND (so it is never binned, and never trashed: CR 801.2
 // only fires on a bin). An item with no card of its own (a triggered/activated
 // ability, a spell token) simply ceases to exist.
-// The discard is the item's controller's own choice (R6), and it is a TRASH
-// (R40) — discardFromHand handles that.
+// The discard is the item's controller's own choice (CR 704.1a), and it is a TRASH
+// (CR 801.3) — discardFromHand handles that.
 card('Dream Lapse', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Dream Lapse: recall target spell effect' },
@@ -642,7 +642,7 @@ card('Dream Lapse', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const stackId = (t as { stack: number }).stack;
-      // R68: removeFromStack() is the bare primitive — the item leaves the
+      // removeFromStack() is the bare primitive — the item leaves the
       // stack and NOTHING is done with its card. negate() would bin it, and
       // then the recall below would put a second copy in hand.
       const it = g.removeFromStack(stackId);
@@ -654,11 +654,11 @@ card('Dream Lapse', {
       const recallable = it.card !== undefined
         && (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'virus' || it.kind === 'ambush');
       if (recallable) {
-        // R179: off the STACK and into a hand — `from: 'stack'`
+        // CR 402.4: off the STACK and into a hand — `from: 'stack'`
         g.toHand(it.controller, it.card!, 'stack');
         g.ev('info', `Dream Lapse: ${it.card} is recalled to ${g.pname(it.controller)}'s hand.`);
       } else if (it.kind === 'spellToken' && !it.copy) {
-        // R335: a spell token enters the hand and is erased from it
+        // CR 801.7d: a spell token enters the hand and is erased from it
         g.recallSpellTokenItem(it, 'Dream Lapse');
       } else {
         g.ev('info', `Dream Lapse: ${it.label} has no card to recall — it is simply gone.`);
@@ -675,7 +675,7 @@ card('Dream Lapse', {
         prompt: 'Dream Lapse: discard a card',
         options: hand.map((n, k) => ({ label: n, value: k as unknown, card: n })),
       }) as number;
-      g.discardFromHand(seat, di);   // R40: discarding is trashing
+      g.discardFromHand(seat, di);   // CR 801.3: discarding is trashing
     },
   },
 });
@@ -683,14 +683,14 @@ card('Dream Lapse', {
 // "[Augment] When my column deals combat damage to an opponent, recall your
 // bin and erase me." — bd/4 1/1 Spirit Cloud Unit. Text-box [Augment]; "my
 // column"/"me" read from the HOST when donated. ⚠ header: the column-connected
-// test is reconstructed at event time from the combat 'lifeLost' (R1), and
+// test is reconstructed at event time from the combat 'lifeLost' (CR 109.3a), and
 // "recall" means "put into your hand" (Manual) — the whole bin at once.
 // "Erase me" removes the anchor and its mods without a bin and without a
-// death (R40: erasing is never trashing). R172: it IS a despawn, and fires
-// one — "not a death, but it is a despawn" (R157 §3).
+// death (CR 801.2c: erasing is never trashing). CR 801.6a: it IS a despawn, and fires
+// one — "not a death, but it is a despawn" (the owner, 2026-08-25).
 card('Zephyrzoa', {
   augmentText: [{
-    // R238: `combatFaceDamage`, not `lifeLost` — a combat hit that is REPLACED
+    // CR 608.8a: `combatFaceDamage`, not `lifeLost` — a combat hit that is REPLACED
     // (Blightsea Polyp, Oorblak) was still DEALT, and costs no life, so it
     // emits no `lifeLost` at all. Listening on the old event made Zephyrzoa
     // silently blind to every hit while a Polyp was out. ⚠ REPLACE, never add:
@@ -704,11 +704,11 @@ card('Zephyrzoa', {
         const bin = g.player(ctx.controller).bin;
         const n = bin.length;
         if (n) {
-          // R124: per card, back-to-front — each removal fires its own
+          // CR 405.7: per card, back-to-front — each removal fires its own
           // 'leftBin'; the order into the hand is preserved
           const moved: string[] = [];
           while (bin.length) moved.unshift(g.removeFromBin(ctx.controller, bin.length - 1, 'recalled')!);
-          // R179: the whole bin arrives at once — ONE 'handEntered'
+          // CR 706.6a: the whole bin arrives at once — ONE 'handEntered'
           g.toHand(ctx.controller, moved, 'bin');
           g.ev('info', `Zephyrzoa: ${g.pname(ctx.controller)} recalls their whole bin (${n} card(s)) to hand.`);
         } else {
@@ -724,7 +724,7 @@ card('Zephyrzoa', {
 
 // "(Any combat damage from a lethal unit will kill a player.)" — ed/9 1/4
 // {Lethal} Insect Unit. Reminder text only: {Lethal} is the printed attribute
-// and is entirely engine side (R48 — combatSubStep calls killPlayer for every
+// and is entirely engine side (CR 802.24a — combatSubStep calls killPlayer for every
 // player hit whose column carries it). Registered so it enters DECK_LIST.
 card('Gublin', {});
 
@@ -734,12 +734,12 @@ card('Gublin', {});
 // mod entity is removed and the card enters play under the MOD's controller —
 // which, per attachMod, is the host's controller for anything applied to it,
 // so a virus you stuck on an enemy comes back on THEIR side. A token mod (a
-// Wraith augmented onto a unit, R71) re-enters play as a unit token. Everything
+// Wraith augmented onto a unit) re-enters play as a unit token. Everything
 // arrives in the resolving region (the Resurrect precedent).
 card('Reclaim the Fallen', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Reclaim the Fallen: put all unit mods on target unit into play' },
-    // R69: the mods that leave the host keep their own card names, so what
+    // CR 407.2a: the mods that leave the host keep their own card names, so what
     // reaches the board is whatever was attached. Only ONE mod in the pool is
     // a token — the Wraith (E.augmentWraith is the sole attachMod with
     // token:true) — so that is the only token this can put into play.
@@ -754,19 +754,18 @@ card('Reclaim the Fallen', {
         g.ev('info', `Reclaim the Fallen: ${host.card} carries no unit mod — no effect.`);
         return;
       }
-      // R208 / CT-86: through `E.eraseMod`, which is the same unlink-and-delete
+      // CR 720.9 / CT-86: through `E.eraseMod`, which is the same unlink-and-delete
       // this hand-rolled. ⚠ `leavesGame: false` is the one thing this site says
       // that the other four do not: THIS IS NOT AN ERASE. The mod ENTITY is
       // destroyed, but the CARD is about to be put into play as a unit two
-      // lines down, so it never leaves the game and must never reach the R65
-      // public erased pile whatever round-27's Q3 answers.
+      // lines down, so it never leaves the game and must never reach the
+      // public erased pile (CR 407.2a) whatever round-27's Q3 answers.
       for (const m of mods) g.eraseMod(m, { leavesGame: false });
       for (const m of mods) {
         // CARD-TODO #17: "under their CONTROLLER's control" — a mod's
         // controller is its host's (attachMod), while its OWNER is whoever
         // applied it. So a virus you stuck on an enemy comes back on their
-        // side, as the printed text says, but it is still your card and goes
-        // to your bin when it dies (R65). Passing only the controller made it
+        // side, as the printed text says, but it is still your card (CR 102.4), though it goes to its controller's bin when it dies (CR 400.4). Passing only the controller made it
         // theirs outright.
         g.spawnUnit(m.controller, m.card, ctx.region,
           { owner: m.owner, ...(m.token ? { token: true } : {}) });
@@ -780,10 +779,10 @@ card('Reclaim the Fallen', {
 
 // "[Augment] After combat, each player puts a unit from their bin into play
 // under an opponent's control." — gd/3 3/4 Mystic Fungus Unit. Text-box
-// [Augment]. "Each player" is region-scoped (R25), each picking from their OWN
-// bin (R6, auto only when there is exactly one — the question is put even in
-// the end-of-turn window, R85); the unit then enters play under the control of
-// an opponent WHO IS IN THE REGION (R239 — never `1 - seat`; with nobody else
+// [Augment]. "Each player" is region-scoped (CR 601.4d), each picking from their OWN
+// bin (CR 704.1a, auto only when there is exactly one — the question is put even in
+// the end-of-turn window, CR D1.2); the unit then enters play under the control of
+// an opponent WHO IS IN THE REGION (CR 601.4d — never `1 - seat`; with nobody else
 // here the clause has no recipient and the card does nothing). Plan-then-commit:
 // every pick is gathered before any bin is touched.
 card('Uglk', {
@@ -798,7 +797,7 @@ card('Uglk', {
         // one list — the recipient is never recomputed from arithmetic.
         const here = presentSeats(g, ctx.region);
         for (const seat of here) {
-          // R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "anything
+          // CR 601.4d (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "anything
           // that happens in a region where a player or unit currently isn't is
           // 100% ignored, as if that effect didn't exist." This used to read
           // `… ?? (1 - seat)` and handed the unit to a seat that was not here.
@@ -806,7 +805,7 @@ card('Uglk', {
           // nobody to give a unit to, so nothing is asked and nothing moves.
           const opp = here.find(s => s !== seat);
           if (opp === undefined) {
-            g.ev('info', `Uglk: no opponent is in this region (R25/R239) — `
+            g.ev('info', `Uglk: no opponent is in this region — `
               + `${g.pname(seat)} has nobody to give a unit to.`);
             continue;
           }
@@ -825,12 +824,12 @@ card('Uglk', {
           picks.push({ seat, idx, opp });
         }
         for (const { seat, idx, opp } of picks) {
-          const name = g.removeFromBin(seat, idx, 'revived');   // R124
+          const name = g.removeFromBin(seat, idx, 'revived');   // CR 405.7
           if (name === undefined) continue;
           g.ev('info', `Uglk: ${g.pname(seat)} gives ${name} to ${g.pname(opp)}.`);
           // CARD-TODO #17: "under an opponent's control" is a CONTROL clause,
           // not a transfer of the card. It came out of `seat`'s bin, so it is
-          // still `seat`'s card (R65) and dies back to their bin; `opp` only
+          // still `seat`'s card (CR 102.5a), but it dies to its controller's bin (CR 400.4); `opp` only
           // controls it. Before the owner option existed this handed the card
           // over permanently, which the printed text never says.
           g.spawnUnit(opp, name, ctx.region, { owner: seat });
@@ -843,11 +842,11 @@ card('Uglk', {
 // ═══════════════════════ FIRE / DARK (rd) ═════════════════════════════
 
 // "Each player sacrifices a nontoken unit or discards a card. Repeat this X
-// times." — rd/X {Battle} Mystic Spell. X is chosen and paid at cast (R35).
-// "Each player" is region-scoped (R25); the choice is that player's own (R6),
+// times." — rd/X {Battle} Mystic Spell. X is chosen and paid at cast (CR 107.2a).
+// "Each player" is region-scoped (CR 601.4d); the choice is that player's own (CR 704.1a),
 // mandatory when anything is available (no decline option), and each round is
 // planned then committed before the next round reads fresh pools (the Maw of
-// Damnation precedent). Discarding is a TRASH (R40); sacrificing a nontoken
+// Damnation precedent). Discarding is a TRASH (CR 801.3); sacrificing a nontoken
 // unit is too, since it dies into a bin from play.
 card('Mindburn', {
   spellEffect: {
@@ -902,7 +901,7 @@ card('Mindburn', {
 // the first loses counters, the second gains them. Counters are ONE signed net
 // int (+1/+1 and -1/-1 cancel pairwise, Manual), so "up to two counters" moves
 // up to two OF THE SIGN THE SOURCE HAS; "you may" and "up to" together are one
-// mid-resolution choice (R6). Bounded cause + bounded graft ([Switch1], R9).
+// mid-resolution choice (CR 704.1a). Bounded cause + bounded graft ([Switch1], CR 722.5).
 const moveCounters: EffectDef = {
   targets: {
     what: 'unit', count: 2, min: 2,
@@ -927,7 +926,7 @@ const moveCounters: EffectDef = {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `Chombot: move how many counters from ${from.card} onto ${to.card}?`,
       options,
-      // BL-25/R139: an EFFECT that takes counters off a unit, not a cost — the
+      // BL-25/CR D7.2: an EFFECT that takes counters off a unit, not a cost — the
       // client's quantity stepper is driven by this ceiling, so it reaches
       // here too. `avail` is already `min(2, |from.counters|)`, so the stepper
       // and the option list are the same number by construction. Option VALUES

@@ -187,7 +187,7 @@ export function pickSetFollowUp(dec: Decision | null | undefined, actionCount: n
   if (!chain) return null;
   if (actionCount === chain.at) return null;               // still waiting on the first
   const v = pickSetView(dec);
-  // the same question is still open: the first answer has not landed (R154
+  // the same question is still open: the first answer has not landed (CR D2.1b
   // lets the other seat act meanwhile, so a new state is not proof it has).
   // Keep waiting; a refusal leaves the dialog up, and Confirm starts again.
   if (v && v.key === chain.from) return null;

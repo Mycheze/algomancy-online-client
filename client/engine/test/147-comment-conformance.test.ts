@@ -1,6 +1,6 @@
 /* COMMENT CONFORMANCE — the in-code notes on the card files must not rot.
  *
- * WHY THIS FILE EXISTS (R174)
+ * WHY THIS FILE EXISTS
  *
  * A stale comment in `src/cards/sets/**` is not a tidiness problem. A previous
  * round traced the owner's *"these bugs keep recurring"* complaint almost
@@ -25,20 +25,20 @@
  *   §2  A "the cost is paid at RESOLUTION" claim on a card that declares a
  *       real `castCost` fails.
  *   §3  A comment asserting a NEGATIVE about the card pool fails unless it
- *       WITHDRAWS itself (R210 — read over the enclosing bullet, as §2 always
+ *       WITHDRAWS itself (read over the enclosing bullet, as §2 always
  *       has) or is on an allowlist carrying its reason; every allowlisted
  *       reason is re-derived on each run, and the machine-checkable ones are
  *       asserted here against `printed.json`.
  *   §4  A helper in `src/**`, `test/**`, `scripts/**` or `ui/**` with zero
- *       call sites fails (R193/R201 — it used to read `src/cards/sets/**`
+ *       call sites fails (it used to read `src/cards/sets/**`
  *       alone).
  *
- * ⚠ R210 (CT-83): ALL FOUR SECTIONS' EXEMPTION LISTS NOW HAVE STALENESS TESTS.
- * §4's `DEAD_EXEMPT` got one from R193 after CT-68 caught it waiving two
+ * ⚠ CT-83: ALL FOUR SECTIONS' EXEMPTION LISTS NOW HAVE STALENESS TESTS.
+ * §4's `DEAD_EXEMPT` got one after CT-68 caught it waiving two
  * deleted helpers. `PARKED_EXEMPT` (§1), `POOL_CLAIM_ALLOWLIST` (§3) and
  * `NOT_SCANNED` (§4) had none — a `.filter()` each and nothing else — and
  * `POOL_CLAIM_ALLOWLIST[0]` had already gone stale, still calling a fixed bug
- * "KNOWN FALSE … assigned to whoever fixes Burgeon" months after R166 fixed
+ * "KNOWN FALSE … assigned to whoever fixes Burgeon" months after the layers-and-riders round (CR 709.7) fixed
  * it. An exemption list in the file built to stop claims outliving their
  * reasons is the last place that should happen.
  *
@@ -51,15 +51,15 @@
  * and whether any comment text survives into the code view. A check whose
  * population silently collapses fails there instead of passing vacuously.
  *
- * ✔ R193 — THE HOLE THIS HEADER USED TO DESCRIBE IS CLOSED, and saying so is
- * the point of the file. R174 measured `stripCode`'s `st === 'line'` state
+ * ✔ THE HOLE THIS HEADER USED TO DESCRIBE IS CLOSED, and saying so is
+ * the point of the file. The park-note audit measured `stripCode`'s `st === 'line'` state
  * falling through to the REGEX-LITERAL arm, so a line comment ended at its
  * first `/` and 927 comment lines across the batch files leaked into the code
- * view. `card-todo.ts` has had its own `st === 'line'` branch since R181;
+ * view. `card-todo.ts` has had its own `st === 'line'` branch since the tooling round (CT-59/60);
  * 149-strip-code.test.ts pins the behaviour directly, and re-measured on
  * 2026-08-26 the leak over `src/cards/sets/**` is ZERO lines.
  *
- * So `codeView` no longer carries the repair R174 wrote for it. Retiring it
+ * So `codeView` no longer carries the repair the park-note audit wrote for it. Retiring it
  * was not tidiness: over the WIDER corpus §4 now reads, the repair did real
  * damage. Its step 3 truncated a line at the first `//` `stripCode` had
  * blanked — which is also what a `//` inside a STRING or a REGEX looks like —
@@ -68,7 +68,7 @@
  * of those is a lost call site, i.e. a §4 false positive. An exemption that
  * outlives its cause is this file's own subject; so is a repair.
  *
- * ⚠ AND IT IS BLIND TODAY, IN A THIRD PLACE — measured, not assumed (R193).
+ * ⚠ AND IT IS BLIND TODAY, IN A THIRD PLACE — measured, not assumed.
  * `stripCode`'s `tpl` state has no notion of `${ … }`, so a NESTED template
  * literal INVERTS STRING/CODE PARITY: the inner opening backtick is read as
  * the outer's closing one, and everything up to the next backtick swaps role.
@@ -115,8 +115,8 @@ const raw = (f: string): string => fs.readFileSync(path.join(SETS, f), 'utf8');
  * is deliberately a one-line wrapper and NOT a second stripper. Line and column
  * survive, so `file:${i + 1}` in a failure message is the real line.
  *
- * R174 wrapped a two-step repair around this call for `stripCode`'s
- * line-comment early-exit. R181 fixed the stripper itself and R193 measured the
+ * The park-note audit wrapped a two-step repair around this call for `stripCode`'s
+ * line-comment early-exit. The tooling round (CT-59/60) fixed the stripper itself and the exemption-list sweep measured the
  * repair to be both unnecessary here (zero leaks over the card files) and
  * actively harmful over the wider corpus §4 now reads — see the header.
  */
@@ -365,14 +365,14 @@ const PARKED_EXEMPT: { file: string; head: string; why: string }[] = [
   {
     file: 'batch-metal-a.ts',
     head: 'PARKED (needs engine primitives that do not exist; subsets',
-    why: 'R174: all three bullets beneath are already UN-PARKED. batch-metal-a.ts was '
+    why: 'all three bullets beneath are already UN-PARKED. batch-metal-a.ts was '
        + 'held by another agent for the whole of round 26 (see STALE-WORKLIST DEFERRED); '
        + 'retitling it here would have collided on a live worktree.',
   },
   {
     file: 'batch-water-a.ts',
     head: 'PARKED (needs engine primitives that do not exist; subsets',
-    why: 'R174: same shape, same round, same reason — every entry beneath says '
+    why: 'same shape, same round, same reason — every entry beneath says '
        + '"NO LONGER parked", one of them out loud. batch-water-a.ts was held by '
        + 'another agent.',
   },
@@ -399,7 +399,7 @@ test('§1 no PARKED heading survives every card beneath it being un-parked', () 
 });
 
 test('§1 every PARKED_EXEMPT entry still names a heading this sweep flags', () => {
-  // R210 (CT-83) — the third list in this file with no staleness test, and the
+  // CT-83 — the third list in this file with no staleness test, and the
   // one the ticket did not name. Its own doc comment said "an entry that no
   // longer matches any section is dead weight and should be deleted, but it
   // does NOT fail the test", which was the right call in round 26 (both files
@@ -460,7 +460,7 @@ test('§1 every PARKED_EXEMPT entry still names a heading this sweep flags', () 
  * in the CAST WINDOW, before the item is respondable. A comment on a card that
  * declares one, saying that same cost is paid at RESOLUTION, is a flat
  * contradiction — and it is the exact shape that made Grox, No Hand Killer and
- * Sacrificial Burst look approximated for months after R49/R64 made them real.
+ * Sacrificial Burst look approximated for months after their costs were made real.
  *
  * ⚠ DELIBERATELY NOT WIDENED TO `cost:`. Auric Ascendant (batch-hybrids-wm-b)
  * declares `cost: { mana: 1 }` AND its comment correctly says "the recall is
@@ -482,10 +482,10 @@ const isBulletStart = (L: string): boolean => /^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s
  * lines above and below it, stopping at the next bullet marker in either
  * direction.
  *
- * ⚠ R210: THIS IS WHY §3 COULD NOT SEE A RETRACTION. §2 has read retractions
+ * ⚠ THIS IS WHY §3 COULD NOT SEE A RETRACTION. §2 has read retractions
  * at bullet granularity since it was written, because the claim and the words
  * that withdraw it are almost never on the same LINE — a bullet opens "BURGEON:
- * NO LONGER an approximation (R166), and the note that used to sit here was
+ * NO LONGER an approximation (CR 709.7), and the note that used to sit here was
  * false…" and the sentence being quoted lands four lines further down. §3
  * matched line by line, so it saw the quoted claim and none of the retraction
  * around it, and the only way to silence it was an allowlist entry. Lifted out
@@ -553,15 +553,15 @@ const NEGATIVE_POOL_CLAIM: RegExp[] = [
 ];
 
 /**
- * ⚠ R210 (CT-83) — THIS LIST HAD NO STALENESS TEST, AND ITS FIRST ENTRY HAD
+ * ⚠ CT-83 — THIS LIST HAD NO STALENESS TEST, AND ITS FIRST ENTRY HAD
  * ALREADY GONE STALE.
  *
  * Entry [0] said Burgeon's "No pool combo hits this today" was *"KNOWN FALSE
- * … assigned to whoever fixes Burgeon"*. Burgeon was fixed by R166 —
+ * … assigned to whoever fixes Burgeon"*. Burgeon was fixed in the layers-and-riders round (CR 709.7) —
  * `doubleStats` in `sets/helpers.ts`, regression at
  * `140-layers-and-riders.test.ts:245` — and `batch-wood-a.ts` rewrote the
  * comment into a QUOTED RETRACTION that opens "BURGEON: NO LONGER an
- * approximation (R166)" and says out loud "⚠ THE POOL DID HIT THIS, WITH NO
+ * approximation (CR 709.7)" and says out loud "⚠ THE POOL DID HIT THIS, WITH NO
  * COMBO AT ALL". There is no Burgeon ticket. The entry outlived every word of
  * its own reason and nothing could notice, because the only thing referring to
  * this list was a `.filter()`.
@@ -599,11 +599,11 @@ const POOL_CLAIM_ALLOWLIST: PoolClaim[] = [
     file: 'batch-dark-c.ts', text: 'the only card in the whole pool with a',
     basis: 'verified',
     why: 'PAST TENSE and self-limiting: "Rotling WAS the only card in the whole pool with a '
-       + '[Switch]-marked EFFECT and no `graftEffect`". R124 gave Rotling a graftEffect, '
+       + '[Switch]-marked EFFECT and no `graftEffect`". A later round gave Rotling a graftEffect, '
        + 'which is what puts the sentence in the past — so the thing to re-check is not the '
        + 'pool-wide search (it is history) but that Rotling still HAS one. If it loses it, '
        + 'the sentence silently becomes a live and unverified pool-wide negative again.\n'
-       + '⚠ R210: this entry read `basis: retracted` for about ten minutes and the staleness '
+       + '⚠ this entry read `basis: retracted` for about ten minutes and the staleness '
        + 'test below immediately said no — RETRACTED reads `*`-doc bullets and this claim is '
        + 'in a `//` block, so the retraction filter never sees it. That is the difference '
        + 'between a reason and a checked reason, on the first run.',
@@ -613,30 +613,30 @@ const POOL_CLAIM_ALLOWLIST: PoolClaim[] = [
       assert.match(rotling!.def, /graftEffect\s*:/,
         "Rotling has lost its `graftEffect`. batch-dark-c.ts's note says it WAS the only card "
         + 'in the pool with a [Switch]-marked effect and no graft — put in the past tense by '
-        + 'R124 giving it one. Without that, the sentence is a live pool-wide negative that '
-        + 'nobody has checked, and the [Switch1] marker is dead text again (R125).');
+        + 'a later round giving it one. Without that, the sentence is a live pool-wide negative that '
+        + 'nobody has checked, and the [Switch1] marker is dead text again.');
     },
   },
   {
     file: 'batch-light-a.ts', text: 'the only card in the whole pool that does',
     basis: 'verified',
     why: 'A QUOTED RETRACTION that is ALSO checkable: the line quotes the old note in '
-       + 'order to close it (R157 §25), and the thing it claims — that no card carries '
+       + 'order to close it (CR 200.2), and the thing it claims — that no card carries '
        + '{Switch} on its type line — is a fact about printed.json.',
     check: () => {
       // batch-light-a.ts, Arbiter of Armistice: "the only card in the whole pool
-      // that [carries a bare {Switch} on its type line]" — closed by R157 §25 and
+      // that [carries a bare {Switch} on its type line]" — closed as a transcription error (CR 200.2) and
       // stripped from the data by extract-printed.mjs's TYPE_OVERRIDES.
       const switchTyped = PRINTED.filter(c => /Switch/i.test(c.type ?? '')).map(c => c.name);
       assert.deepEqual(switchTyped, [],
         'a card carries {Switch} on its type line again — batch-light-a.ts\'s '
-        + 'CLOSED-by-R157-§25 note and extract-printed.mjs\'s TYPE_OVERRIDES both need re-reading');
+        + 'TRANSCRIPTION note and extract-printed.mjs\'s TYPE_OVERRIDES both need re-reading');
     },
   },
   {
     file: 'batch-metal-c.ts', text: 'no pool card answers neither',
     basis: 'verified',
-    why: 'Void Memory (R284): the caster declares "unit" or "spell", and the claim the note '
+    why: 'Void Memory (CR 204.2a): the caster declares "unit" or "spell", and the claim the note '
        + 'still makes is that the two halves TOGETHER cover the pool — so every card in a '
        + 'hand answers at least one of them, and "reveal instead" can only ever mean "you '
        + 'hold none of the declared type", never "the pool has a card that is neither".',
@@ -682,7 +682,7 @@ test('§3 every negative claim about the card pool is allowlisted with its reaso
     `only ${hits.length} negative pool claims found — the comment scan has gone blind`);
 
   const bad = hits
-    // R210: a comment that QUOTES a pool-wide negative in order to withdraw it is
+    // a comment that QUOTES a pool-wide negative in order to withdraw it is
     // not asserting it. §2 has read retractions this way since it was written.
     .filter(h => !RETRACTED.test(h.bullet))
     .filter(h => !POOL_CLAIM_ALLOWLIST.some(a => a.file === h.file && h.text.includes(a.text)))
@@ -747,7 +747,7 @@ test('§3 every POOL_CLAIM_ALLOWLIST entry still waives a live claim, and its ba
 });
 
 test('§3 the allowlisted pool claims that CAN be checked are checked', () => {
-  // R210: these two checks used to live HERE, as loose code beside a list that
+  // these two checks used to live HERE, as loose code beside a list that
   // did not know about them — so an entry could be deleted and leave its check
   // behind, or gain a "verified below" reason with nothing below. They now hang
   // off the entries they verify (`check`), and this runs them.
@@ -766,17 +766,17 @@ test('§3 the allowlisted pool claims that CAN be checked are checked', () => {
 /**
  * `payLife` sat in `batch-light-a.ts` with a doc comment saying it paid life
  * "as a COST at resolution (header note)" and ZERO call sites, long after all
- * three life-cost cards moved to real R49/R64 `castCost` costs. A dead function
+ * three life-cost cards moved to real `castCost` costs. A dead function
  * is the most confident wrong statement a file can make about how its cards
  * work, and it reads exactly like documentation.
  *
  * ⚠ THIS SWEEP AND `noUnusedLocals` ARE COMPLEMENTARY, AND NEITHER SUBSUMES
- * THE OTHER. `tsconfig.json` grew `noUnusedLocals` in R181, which is what makes
+ * THE OTHER. `tsconfig.json` grew `noUnusedLocals` in the tooling round (CT-59/60), which is what makes
  * the next unexported dead local a compile error — that is how
  * `28-metal-c::constructedTurn` and `36-cache-prophecy::cacheIdx` were caught.
  * But **`tsc` does not report an EXPORTED declaration**, no matter how dead, so
  * it would never have seen `helpers.ts::lifeGainedIn`, and it did not see
- * `src/cards/dsl.ts::printedCost` — which R193 found here, R210 deleted, and
+ * `src/cards/dsl.ts::printedCost` — which the exemption-list sweep found here, the exemption-staleness round deleted, and
  * `tsc` was clean over on both days. Do not "simplify" this away in favour of
  * the compiler flag; the exemption list below going stale is exactly why the
  * distinction has to stay written down.
@@ -784,7 +784,7 @@ test('§3 the allowlisted pool claims that CAN be checked are checked', () => {
  * exempts an unused binding only inside a DESTRUCTURING PATTERN. A plain
  * `const _x = …` and an unused import are still errors.)
  *
- * R193 WIDENED THE DECLARATION SCAN from `src/cards/sets/**` to `src/**`,
+ * CT-68 WIDENED THE DECLARATION SCAN from `src/cards/sets/**` to `src/**`,
  * `test/**` and `scripts/**`. A dead helper in `test/` was outside the old
  * sweep's reach entirely.
  */
@@ -794,21 +794,21 @@ test('§3 the allowlisted pool claims that CAN be checked are checked', () => {
 const SCAN_DIRS = ['src', 'test', 'scripts', path.join('..', 'ui')];
 
 /**
- * ⚠ `ui/` WAS EXCLUDED FOR ONE DAY AND IS SCANNED AGAIN (R201). The exclusion
+ * ⚠ `ui/` WAS EXCLUDED FOR ONE DAY AND IS SCANNED AGAIN (see 164-sweep-sight). The exclusion
  * was honest and correctly reasoned — `stripCode` mis-parsed nested template
  * literals, `ui/main.ts` has 108 of them, 911 lines of its real code were
  * blanked, and a scan over `ui/` reported 10 dead helpers of which ALL TEN were
  * false (`saveDeck`, `renderNow`, `blockBuilderHtml` and the rest are called
  * from lines the stripper could not see).
  *
- * R201 taught `stripCode` a `${ … }` brace stack, which is the cause those ten
+ * A follow-up fix (see 164-sweep-sight) taught `stripCode` a `${ … }` brace stack, which is the cause those ten
  * false positives had. THE EXCLUSION IS THEREFORE ITS OWN EXPIRY CONDITION, and
  * the test below is what enforces that it expired: leaving it in place would
  * have been a waiver outliving its reason, which is the exact failure class
  * this whole file exists to prevent — and which its own DEAD_EXEMPT list had
  * just been caught committing.
  *
- * ⚠ R210 (CT-83): "THE TEST BELOW IS WHAT ENFORCES THAT IT EXPIRED" WAS NOT
+ * ⚠ CT-83: "THE TEST BELOW IS WHAT ENFORCES THAT IT EXPIRED" WAS NOT
  * TRUE. There was no such test. `NOT_SCANNED` had exactly two references in
  * the file — this declaration and the `[...SCAN_DIRS, ...NOT_SCANNED]` spread
  * in `allSources()` — and nothing anywhere asserted that `ui/` had come back
@@ -880,18 +880,18 @@ function declarationsIn(rel: string): [string, number][] {
  * Dead helpers that this round could not delete, each with the reason.
  * `file` is a path relative to `engine/`.
  *
- * ⚠ EVERY ENTRY IS ASSERTED TO STILL NAME A REAL DECLARATION (R193). Without
+ * ⚠ EVERY ENTRY IS ASSERTED TO STILL NAME A REAL DECLARATION. Without
  * that, a waiver survives the code it waives and the list quietly turns back
  * into a blanket — the same failure as a PARKED note outliving its cause,
  * which is the thing this whole file was built to prevent. It had already
- * happened here: R174 wrote entries for `batch-metal-a.ts::tokensInRegion` and
- * `helpers.ts::lifeGainedIn`, R181 DELETED both helpers, and the two entries sat
+ * happened here: the park-note audit wrote entries for `batch-metal-a.ts::tokensInRegion` and
+ * `helpers.ts::lifeGainedIn`, the tooling round (CT-59/60) DELETED both helpers, and the two entries sat
  * on for a further round waiving nothing at all.
  */
 const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
-  // R210 (CT-83): EMPTY, and that is the whole point of the entry that was
-  // here. `src/cards/dsl.ts::printedCost` was waived by R193 with an explicit
-  // expiry — "deleting it is a one-line change for a quiet tree" — and R210
+  // CT-83: EMPTY, and that is the whole point of the entry that was
+  // here. `src/cards/dsl.ts::printedCost` was waived by CT-68 with an explicit
+  // expiry — "deleting it is a one-line change for a quiet tree" — and CT-83
   // made that deletion, so the waiver goes with it. It is worth saying that
   // this list did its job exactly as designed: the sweep found the function,
   // the waiver named it with a reason and a condition, the staleness test
@@ -899,7 +899,7 @@ const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
   // shape CT-83 asked the other lists to grow, and it is why `printedCost` was
   // a CLEANUP rather than a discovery — the ticket called it an unseen gap
   // ("outside src/cards/sets so §4 never saw it"), which stopped being true
-  // when R193 widened SCAN_DIRS to src/ test/ scripts/ and then ui/.
+  // when CT-68 widened SCAN_DIRS to src/ test/ scripts/ and then ui/.
   //
   // The list stays, empty, with its staleness test — the same way
   // 81-card-drill's SILENT_KNOWN, 90-coverage-census's BIN_PUSH_EXEMPT and
@@ -910,13 +910,13 @@ const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
 // ⚠ THE NAME IS PINNED. CARD-TODO #60's `guards` field names this test by the
 // substring 'no card-file helper has zero call sites', and 83-card-todo asserts
 // that a real, non-todo test carries it — so dropping those words is a hard
-// failure in another file. R193 widened the sweep well past the card files; the
+// failure in another file. CT-68 widened the sweep well past the card files; the
 // addition says so without breaking the pin.
-test('§4 R210: the R201 ui/ exclusion really did expire, and NOT_SCANNED is honest', () => {
+test('§4: the one-day ui/ exclusion really did expire, and NOT_SCANNED is honest', () => {
   // The assertion `NOT_SCANNED`'s own comment claimed already existed. Three
   // separate things, because the exclusion could rot in three ways.
   //
-  //  1. `ui/` is back in the DECLARATION sweep. This is the R201 expiry
+  //  1. `ui/` is back in the DECLARATION sweep. This is the ui/-exclusion expiry
   //     condition itself. A directory can silently drop out of SCAN_DIRS in a
   //     one-word edit and the sweep just reports fewer dead helpers.
   //     (It is `../ui` since the package was lifted out of engine/ on
@@ -924,7 +924,7 @@ test('§4 R210: the R201 ui/ exclusion really did expire, and NOT_SCANNED is hon
   //     drop it the way a literal 'ui' would have.)
   assert.ok(SCAN_DIRS.some(d => d === 'ui' || d.endsWith(path.sep + 'ui')),
     'ui/ has left SCAN_DIRS, so its 108-template-literal files are back outside the dead-helper '
-    + 'sweep. R201 put it back deliberately after teaching stripCode a `${ … }` brace stack; if '
+    + 'sweep. It was put back deliberately once stripCode was taught a `${ … }` brace stack; if '
     + 'that is being undone, the ten false positives it fixed are the thing to re-read first.');
 
   //  2. Every NOT_SCANNED entry names a real directory that is NOT already
@@ -950,7 +950,7 @@ test('§4 R210: the R201 ui/ exclusion really did expire, and NOT_SCANNED is hon
     + 'the directory is listed and unread, which reports as clean either way');
 });
 
-test('§4 no card-file helper has zero call sites — nor (R193) any helper in src/ test/ scripts/', () => {
+test('§4 no card-file helper has zero call sites — nor any helper in src/ test/ scripts/', () => {
   const sources = allSources();
   assert.ok(sources.length >= 200,
     `only ${sources.length} source files scanned for call sites — the walk has gone blind`);
@@ -996,7 +996,7 @@ test('§4 no card-file helper has zero call sites — nor (R193) any helper in s
 });
 
 test('§4 every DEAD_EXEMPT entry still names a real declaration', () => {
-  // The staleness check R174 left out, and the reason CARD-TODO #68 exists. An
+  // The staleness check the original sweep left out, and the reason CARD-TODO #68 exists. An
   // exemption is a claim about the code AS OF THE DAY IT WAS WRITTEN; unchecked,
   // it outlives the code and nobody finds out.
   const files = new Set(scanFiles());
@@ -1065,8 +1065,8 @@ test('§5 the batch files carry no MORE history-narrating comment phrases than t
   assert.ok(n > 100, `only ${n} phrases found — the regex or the file list has gone blind`);
   assert.ok(n <= HISTORY_CEILING,
     `${n} "used to"/"no longer" phrases in src/cards/sets/ against a ceiling of ${HISTORY_CEILING}. `
-    + 'A comment states what is true now; if the old design mattered for a ruling, it lives under its '
-    + '## R<n> in docs/digital-rules.md and the code cites the number.\n  ' + perFile.join('\n  '));
+    + 'A comment states what is true now; if the old design mattered for a rule, it is in the comprehensive '
+    + 'rules and the code cites its CR number.\n  ' + perFile.join('\n  '));
   if (n < HISTORY_CEILING) {
     console.log(`    §5: ${n} history phrases, ceiling ${HISTORY_CEILING} — lower HISTORY_CEILING to ${n} to bank the pruning`);
   }

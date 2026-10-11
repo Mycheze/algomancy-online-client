@@ -4,7 +4,7 @@
     "kind": "d-raq-open",
     "rule": "effects.triggered.attributes",
     "tier": 4,
-    "summary": "Whether Containment Protocol (\"negate all activated and triggered effects\") can negate the trigger-like attributes ({Alluring}, {Resonant}) was asked in a RAQ thread and never answered. Caleb answered only the Crevice Lurker half (the tax). R315 states that Containment Protocol can negate a {Resonant} rider, and the engine negates a waiting {Alluring} trigger.",
+    "summary": "Whether Containment Protocol (\"negate all activated and triggered effects\") can negate the trigger-like attributes ({Alluring}, {Resonant}) was asked in a RAQ thread and never answered. Caleb answered only the Crevice Lurker half (the tax). The owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) states that Containment Protocol can negate a {Resonant} rider, and the engine negates a waiting {Alluring} trigger.",
     "seeAlso": [
       {
         "id": "D-U20-5",
@@ -21,7 +21,7 @@
         "quote": "my intent is for it to stop those from triggering"
       },
       {
-        "source": "R315",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
       },
       {
@@ -29,7 +29,7 @@
         "quote": "Negate all activated and triggered effects."
       }
     ],
-    "resolution": "An open thread is not a ruling. The rule follows R315 and the engine (they are put on the stack as triggered abilities, so they can be negated), which is consistent with Caleb's answer on the tax. Revisit if the thread is answered."
+    "resolution": "An open thread is not a ruling. The rule follows the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) and the engine (they are put on the stack as triggered abilities, so they can be negated), which is consistent with Caleb's answer on the tax. Revisit if the thread is answered."
   },
   {
     "id": "D-U15-2",
@@ -58,10 +58,10 @@
     "kind": "c-owner-call-only",
     "rule": "effects.replacement.once.one-applies",
     "tier": 3,
-    "summary": "When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; R104 takes the first in entity order (\"ties break by entity id\"), an engine choice.",
+    "summary": "When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) takes the first in entity order (\"ties break by entity id\"), an engine choice.",
     "sides": [
       {
-        "source": "R104",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
       }
     ],
@@ -72,7 +72,7 @@
     "kind": "c-owner-call-only",
     "rule": "effects.replacement.multipliers.additive-first",
     "tier": 3,
-    "summary": "The order \"add, then double\" is the designer's for damage and {Powerful} (R316, from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, R264 says the composition is still unruled and the engine's order is an interim decision.",
+    "summary": "The order \"add, then double\" is the designer's for damage and {Powerful} (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”), from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) says the composition is still unruled and the engine's order is an interim decision.",
     "seeAlso": [
       {
         "id": "D-U04-6",
@@ -81,11 +81,11 @@
     ],
     "sides": [
       {
-        "source": "R316",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
       },
       {
-        "source": "R264",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
       },
       {
@@ -100,10 +100,10 @@
     "kind": "g-other",
     "rule": "effects.replacement.prevention",
     "tier": 4,
-    "summary": "Sources silent on two prevention effects on one unit (two Phytochemical Protections). R98 says nothing in the corpus addresses it; the engine treats the second as re-applying the first, so the unit gets one counter per damage prevented, not two.",
+    "summary": "Sources silent on two prevention effects on one unit (two Phytochemical Protections). The owner ruling of 2026-08-23 (“PREVENTED damage was never dealt […]”) says nothing in the corpus addresses it; the engine treats the second as re-applying the first, so the unit gets one counter per damage prevented, not two.",
     "sides": [
       {
-        "source": "R98",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "2. **Two Phytochemical Protections on ONE unit.** The shield is a single named flag, so the"
       }
     ],
@@ -114,46 +114,46 @@
     "kind": "f-register-chain-wrong",
     "rule": "effects.triggered.attributes",
     "tier": 2,
-    "summary": "R94 is presented as current, but its \"OPEN\" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. R315 later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). R94 carries no partial-supersession mark.",
+    "summary": "The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) is presented as current, but its \"OPEN\" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. The owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) carries no partial-supersession mark.",
     "sides": [
       {
-        "source": "R94",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "### ⚠ OPEN — the RESONANT rider is doubled twice in the RAQ, once in the engine"
       },
       {
-        "source": "R315",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "So everything that prices damage from that source prices the rider: {Powerful}"
       }
     ],
-    "resolution": "The rule follows R315. Mark R94's \"OPEN — the RESONANT rider\" section as superseded by R315 in the register."
+    "resolution": "The rule follows the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”). Mark the owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”)’s \"OPEN — the RESONANT rider\" section as superseded by the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) in the register. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U15-8",
     "kind": "c-owner-call-only",
     "rule": "effects.triggered.chosen-unit.not-target",
     "tier": 4,
-    "summary": "The owner ruled that several Wraith deployment triggers may \"target the same unit\" and the surplus fizzles. R144 reads \"target\" as an aim chosen when the trigger goes on the stack, which can fizzle, but not as a real target: it fires no \"when I become targeted\" ability and cannot be redirected.",
+    "summary": "The owner ruled that several Wraith deployment triggers may \"target the same unit\" and the surplus fizzles. The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”) reads \"target\" as an aim chosen when the trigger goes on the stack, which can fizzle, but not as a real target: it fires no \"when I become targeted\" ability and cannot be redirected.",
     "sides": [
       {
-        "source": "R144",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
       },
       {
-        "source": "R144",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
       }
     ],
-    "resolution": "Settled by printed text: the Wraith prints \"put a -1/-1 counter on an ally\", not \"target ally\", so the choice is not a target and fires no \"when I become targeted\" ability. R144's \"target the same unit\" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that."
+    "resolution": "Settled by printed text: the Wraith prints \"put a -1/-1 counter on an ally\", not \"target ally\", so the choice is not a target and fires no \"when I become targeted\" ability. The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”)’s \"target the same unit\" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that."
   },
   {
     "id": "D-U15-12",
     "kind": "g-other",
     "rule": "effects.static.printed-form",
     "tier": 4,
-    "summary": "R104's owner sentence names only 'When'/'Whenever' and colons as what reaches the stack, but the Manual's timed triggers ('After combat'), the trigger-like attributes (R315) and a targeted replacement's substitute (R102) also reach the stack. The sentence is a heuristic, not an exhaustive list.",
+    "summary": "The owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”)’s owner sentence names only 'When'/'Whenever' and colons as what reaches the stack, but the Manual's timed triggers ('After combat'), the trigger-like attributes (owner ruling of 2026-10-09, “{Resonant} is its source's trigger: damage…”) and a targeted replacement's substitute (owner ruling of 2026-08-23, “a REPLACEMENT may put a triggered…”) also reach the stack. The sentence is a heuristic, not an exhaustive list.",
     "sides": [
       {
-        "source": "R104",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
       },
       {
@@ -161,7 +161,7 @@
         "quote": "Triggered abilities may also take place at specified times,"
       },
       {
-        "source": "R315",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
       }
     ],

@@ -1,4 +1,4 @@
-/* R218 — scenario batch C. See scenarios.ts for the type and the worked
+/* scenario batch C (see 14-scenario-tester.md). See scenarios.ts for the type and the worked
  * example (`lithoghul-donated`), and docs/14-scenario-tester.md for why any of
  * this exists. Authored as a batch so parallel authors never share a file.
  *
@@ -6,7 +6,7 @@
  *
  * Every one is in `ledgers/unreached.ts` — the ledger of printed promises
  * the whole-pool drill has NEVER ONCE observed being delivered. That module is
- * imported, never scraped: R217's header records two independent regex scrapes
+ * imported, never scraped: 187-scenario-queue's header records two independent regex scrapes
  * of the old literal agreeing on 32 keys where the object holds 37, and all
  * five they dropped were `BOARD` entries, i.e. exactly the slice a human can
  * build and a fixture cannot. Each entry NAMES the precondition the fixture
@@ -16,15 +16,15 @@
  *                              then lets it tick."
  *   Earnest Defender    BOARD  "The `targeted` fixture is a synthesised
  *                              targeting, not an enemy's spell."
- *   Bloated Manablub    REGION the last of the six R199 could not close.
+ *   Bloated Manablub    REGION the last of the six the drill could not close.
  *   Pestilent Mycelion  BOARD  "the life loss is region-scoped to the
  *                              opponents present."
  *   Molten Riftbreaker  BOARD  "Nothing of the seat's own is on the stack when
  *                              the host leaves play."
  *   Prediction Prophet  BOARD  "the drill answers the prediction with the FLOOR
- *                              of R197's numeric entry (0)."
+ *                              of CR D7.2a's numeric entry (0)."
  *
- * ── THREE THINGS THIS FILE LEARNED THE HARD WAY (R218) ───────────────────
+ * ── THREE THINGS THIS FILE LEARNED THE HARD WAY ───────────────────
  *
  * ① A batch module CANNOT value-import `YOU` / `OPPONENT` — see the note below.
  * ② A non-{Virus} [Augment] is a DEPLOYMENT action. `apply` refuses it in
@@ -46,10 +46,10 @@
  * ④ `Scenario.prologue`'s own comment says `dealScenario` "skips [the haste
  *    step] if it is open anyway (see runPrologue)". IT DOES NOT — `runPrologue`
  *    applies the listed actions and nothing else, so a prologue whose board
- *    leaves the R18 haste step open throws `not your attack step`. No scenario
+ *    leaves the CR 504 haste step open throws `not your attack step`. No scenario
  *    here needs a `doneHaste`, and the reason is worth knowing rather than
- *    getting lucky over: R18 opens that step only for a seat HOLDING a payable
- *    haste card, and `patchSide` REPLACES the hand — so a scenario can only
+ *    getting lucky over: the haste step once opened only for a seat HOLDING a payable
+ *    haste card, and `patchSide` REPLACES the hand — so a scenario could only
  *    open it by dealing a haste card into a hand on purpose. (Earnest Defender
  *    is a {Haste} card and appears below in PLAY, which does not count.)
  *    `hasteDone` is null on all six boards; a future entry that deals a haste
@@ -86,7 +86,7 @@ const OPPONENT: Seat = 1;
 
 export const BATCH_C: Record<string, Scenario> = {
   /**
-   * WHY THIS CARD (R218) — Skittering Blight, queue #14.
+   * WHY THIS CARD (see 14-scenario-tester.md) — Skittering Blight, queue #14.
    *
    * PRINTED: "When I spawn, gain a rot. [Augment] If rot would deal damage to
    * you, instead put that many +1/+1 counters on me." The second sentence is
@@ -98,7 +98,7 @@ export const BATCH_C: Record<string, Scenario> = {
    *  · `88-replacement-conformance` only asserts that the card DECLARES a
    *    `replaceRotDamage` hook and is allowed its extra trigger. Declaration,
    *    not behaviour.
-   *  · `35-rot-debt-trash` — the file whose whole subject is R38 rot — does not
+   *  · `35-rot-debt-trash` — the file whose whole subject is CR 112.13 rot — does not
    *    use the card at all. It stands in a SYNTHETIC, `registerSynthetic(unit(
    *    'Test Rot Ward', …), { replaceRotDamage: … })`, whose body is a copy of
    *    Skittering Blight's two lines. A synthetic that passes proves the HOOK
@@ -129,7 +129,7 @@ export const BATCH_C: Record<string, Scenario> = {
   'skittering-blight-rot-into-counters': {
     id: 'skittering-blight-rot-into-counters',
     card: 'Skittering Blight',
-    why: 'the engine\'s ONE replacement effect (R38), and it has never run in a real game. '
+    why: 'the engine\'s ONE replacement effect, and it has never run in a real game. '
       + '35-rot-debt-trash tests the hook with a synthetic stand-in ("Test Rot Ward"); '
       + '88-replacement-conformance only checks the card DECLARES one; and the drill cannot '
       + 'give a seat rot and then let it tick (unreached.ts, BOARD).',
@@ -169,7 +169,7 @@ export const BATCH_C: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // the R18 haste step never engages here (neither side holds a payable
+      // the haste step never engages here (neither side holds a payable
       // haste card), so this lands straight in the round-1 attack window
       { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[1]!]] },
     ],
@@ -181,7 +181,7 @@ export const BATCH_C: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218) — Earnest Defender, queue #15.
+   * WHY THIS CARD (see 14-scenario-tester.md) — Earnest Defender, queue #15.
    *
    * PRINTED: "[Augment] Whenever an ally becomes the target of an enemy spell,
    * create a 1/1 unit." The ledger's reason it is unreached is the fixture, not
@@ -264,14 +264,14 @@ export const BATCH_C: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218) — Bloated Manablub, queue #16. ⭐ THE ONE THAT MATTERS.
+   * WHY THIS CARD (see 14-scenario-tester.md) — Bloated Manablub, queue #16. ⭐ THE ONE THAT MATTERS.
    *
    * PRINTED: "When I despawn, [Switch1] Each opponent loses 3 life."
    *
-   * THIS IS THE LAST SURVIVING `REGION` ENTRY IN THE LEDGER. R199 closed five
+   * THIS IS THE LAST SURVIVING `REGION` ENTRY IN THE LEDGER. CARD-TODO #49 closed five
    * of the six — Galerider Eel, Colony of the Interworld, Rider of the Tides,
    * Xenopod Progenitor and Boreal Wanderer all deliver now, each with a named
-   * assertion in `170-battle-position-promises`. This one resisted, and R199
+   * assertion in `170-battle-position-promises`. This one resisted, and CARD-TODO #49
    * measured exactly why: the effect loops over
    * `regions[ctx.region].presentSeats`, the card is a 2/2 that the drill's own
    * `counters` and `damage` beats leave dead before the declare step, and the
@@ -313,7 +313,7 @@ export const BATCH_C: Record<string, Scenario> = {
   'manablub-dies-in-their-region': {
     id: 'manablub-dies-in-their-region',
     card: 'Bloated Manablub',
-    why: 'THE LAST SURVIVING `REGION` CARD (unreached.ts). R199 closed the other five; this one '
+    why: 'THE LAST SURVIVING `REGION` CARD (unreached.ts). CARD-TODO #49 closed the other five; this one '
       + 'is a 2/2 the drill kills before the declare step, so it has never once stood in a '
       + 'battle. Every test that touches "each opponent loses 3 life" — 158-silent-region-branches, '
       + '179-empty-collection-branches — asserts the EMPTY loop. Nobody has ever seen it take a life.',
@@ -350,7 +350,7 @@ export const BATCH_C: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // THE WHOLE POINT: this is the step R199 could not give the card. The
+      // THE WHOLE POINT: this is the step the drill could not give the card. The
       // declaration marches it into the defender's region and the board opens
       // with it already there.
       { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!]] },
@@ -361,7 +361,7 @@ export const BATCH_C: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218) — Pestilent Mycelion, queue #17.
+   * WHY THIS CARD (see 14-scenario-tester.md) — Pestilent Mycelion, queue #17.
    *
    * PRINTED: "[Augment] Whenever one or more -1/-1 counters are put on a unit,
    * each opponent loses 1 life." Ledger: "The trigger fires and resolves; the
@@ -436,7 +436,7 @@ export const BATCH_C: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218) — Molten Riftbreaker, queue #18.
+   * WHY THIS CARD (see 14-scenario-tester.md) — Molten Riftbreaker, queue #18.
    *
    * PRINTED: "When I spawn, create two Fireball 1. [Augment] When I despawn,
    * negate all allied spells." The second sentence is the clause under test.
@@ -453,7 +453,7 @@ export const BATCH_C: Record<string, Scenario> = {
    * biggest untested hole in the round-28 sample — has never run.
    *
    * WHY THE HOST IS YOUR OWN UNIT. Riftbreaker is a {Virus}, so the augment
-   * menu offers both sides; the enemy host is the sharper R131 question ("whose
+   * menu offers both sides; the enemy host is the sharper CR 720.6b question ("whose
    * spells does 'allied' mean?"). It is not this scenario, on purpose: with the
    * text on THEIR unit, "allied" is the opponent's — and the opponent never
    * casts anything, because the scripted bot has no `playCard` in its
@@ -470,7 +470,7 @@ export const BATCH_C: Record<string, Scenario> = {
    * it did not.
    *
    * ⚠ ONE PIECE OF EXPECTED NOISE, named in `expect` so it is not mistaken for
-   * the bug: applying a {Virus} makes the host {Unstable} (R79), so The
+   * the bug: applying a {Virus} makes the host {Unstable} (CR 720.7), so The
    * Foretold is ERASED rather than binned when it dies. That is the Virus
    * keyword, not this clause.
    */
@@ -530,12 +530,12 @@ export const BATCH_C: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218) — Prediction Prophet, queue #19.
+   * WHY THIS CARD (see 14-scenario-tester.md) — Prediction Prophet, queue #19.
    *
    * PRINTED: "During [Haste], predict your life total. At the start of
    * deployment, create a 5/5 unit if you matched the prediction." Ledger:
    * "The trigger fires and resolves; the drill answers the prediction with the
-   * FLOOR of R197's numeric entry (0) and the life total moves." So the drill
+   * FLOOR of CR D7.2a's numeric entry (0) and the life total moves." So the drill
    * has never once matched.
    *
    * WHAT THE SUITE COVERS, and where the gap is. `40-light-c` has three real
@@ -558,7 +558,7 @@ export const BATCH_C: Record<string, Scenario> = {
    *
    * ⚠ THE ENTRY BOX SUGGESTS 30 ("where you stand now"), and taking the
    * suggestion is the one way to waste this scenario. `expect` says so twice.
-   * It is also the R197 regression in miniature: the numeric entry has `min: 0,
+   * It is also the CR 107.9 regression in miniature: the numeric entry has `min: 0,
    * max: null` because the old `payOrDecline` menu could not reach a prediction
    * more than five off where you stood.
    *
@@ -599,7 +599,7 @@ export const BATCH_C: Record<string, Scenario> = {
     you: {
       hand: ['Arc Lightning'],
       // [0] the card under test, at home — and it STAYS home, so the 5/5 it
-      //     creates arrives where you can see it (R115: a created unit arrives
+      //     creates arrives where you can see it (CR 601.5: a created unit arrives
       //     at its source's region).
       // [1] the 0/4 that opens the attack window without touching a life total.
       play: [{ card: 'Prediction Prophet' }, { card: 'Rampart Guardian' }],

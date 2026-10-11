@@ -11,11 +11,11 @@
  *  [67] "What happened to Rashi's Poison tokens here? She just wanted to bring
  *       them with her attackers but they somehow went onto the stack, without
  *       any targets or anything??" — the same thing on the COUNTERATTACK side.
- *       The engine grew `declareBlocks.spellTokens` (R87) this round; this file
+ *       The engine grew `declareBlocks.spellTokens` (CR 610.3) this round; this file
  *       holds the client's half of it (ui/battle.ts sendableTokens /
  *       splitCounterattack / shouldAskSend).
  *
- * …and R89, R79's missing half: a spell TOKEN is a mod host during deployment
+ * …and CR 721.4a, the half the stack-host ruling (CR 723.4) left out: a spell TOKEN is a mod host during deployment
  * (Caleb 2025-03-06). Same exposure, one layer up — the engine names the token
  * in `hostId`, exactly as it names a unit, so nothing on screen had to change
  * for the offer to be silently ignored. modHosts/modHostPhrase now tell the two
@@ -28,7 +28,7 @@
  * anything — so the Pass button grew a confirm on every window (#66) and the
  * Pass-all chip released itself on the first window after it was armed, having
  * passed exactly once (#68). The sharper question — "would THIS pass reach
- * Regroup, which is the only step that erases spell tokens (R11)?" — is
+ * Regroup, which is the only step that erases spell tokens (CR 506.2)?" — is
  * ui/battle.ts passEndsBattlePhase, and the first section here holds it against
  * the engine's own transition rather than against a description of it.
  *
@@ -311,7 +311,7 @@ test('[69] the ride-along dialogue is interposed only when a choice is being sil
   void atk;
 });
 
-/* ── [67] R87: bringing spell tokens along with a COUNTERATTACK ────────── */
+/* ── [67] CR 610.3: bringing spell tokens along with a COUNTERATTACK ────────── */
 
 /**
  * Round 1 stopped at the block step: A attacking with one unit, D holding a
@@ -407,7 +407,7 @@ test('[67] a token-only counterattack is refused by the engine, so the client ne
     'and the gate never offers the shape the engine refuses');
 });
 
-/* ── R89: a SPELL TOKEN as a mod host during deployment ───────────────── */
+/* ── CR 721.4a: a SPELL TOKEN as a mod host during deployment ───────────────── */
 
 /** Deployment, with a Fireball 3 in the home region, a unit beside it, and an
  * augment in hand that can go on either. */
@@ -427,28 +427,28 @@ function tokenDeployment(seed: number, card = 'Chitin Shredder'): {
   return { h, seat, tok, unit, legal: legalActions(h.state, seat), index };
 }
 
-test('R89: modHosts picks the spell token out of the engine’s offer instead of calling it a unit', () => {
+test('CR 721.4a: modHosts picks the spell token out of the engine’s offer instead of calling it a unit', () => {
   const { h, tok, unit, legal, index } = tokenDeployment(7740);
   const pick = { from: 'hand' as const, index, mode: 'augment' as const };
   // without the state there is nothing to tell the two apart — the engine
   // names both in `hostId`, which is exactly why this facet could ship blind
   const blind = modHosts(legal, pick);
-  assert.ok(blind.units.has(tok), 'the pre-R89 answer: a token host reads as a unit host');
+  assert.ok(blind.units.has(tok), 'the answer from before spell-token hosts existed: a token host reads as a unit host');
   // with it, the token is its own kind, and the banner says so
   const hosts = modHosts(legal, pick, h.state);
   assert.ok(hosts.tokens?.has(tok), 'the Fireball is a host the board must glow');
   assert.ok(hosts.units.has(unit), 'and the Geode is still a unit host');
   assert.equal(hosts.units.has(tok), false, 'the token is not counted twice');
   assert.equal(modHostPhrase(hosts), 'unit, or a spell token',
-    'the bar names both kinds — "a unit" over a spell token is how R79 stayed invisible');
+    'the bar names both kinds — "a unit" over a spell token is how the stack-host ruling (CR 723.4) stayed invisible');
 });
 
-test('R89: the modding bar names only the kinds really on offer, and never widens', () => {
+test('CR 721.4a: the modding bar names only the kinds really on offer, and never widens', () => {
   const empty = { units: new Set<EntityId>(), stack: new Set<number>() };
   assert.equal(modHostPhrase({ ...empty, tokens: new Set([1]) }), 'spell token');
   assert.equal(modHostPhrase({ units: new Set([1]), stack: new Set([2]), tokens: new Set([3]) }),
     'unit, or a spell token, or a spell on the stack');
-  // R79's two-kind wording is unchanged — 74-ui-stack-mod-host pins it too
+  // the two-kind wording is unchanged — 74-ui-stack-mod-host pins it too
   assert.equal(modHostPhrase({ units: new Set([1]), stack: new Set([2]) }),
     'unit, or a spell on the stack');
   for (const hosts of [empty, { ...empty, tokens: new Set([1]) },
@@ -457,7 +457,7 @@ test('R89: the modding bar names only the kinds really on offer, and never widen
   }
 });
 
-test('R89: "you can only do this with attributes" is said before the card is spent', () => {
+test('CR 721.4a: "you can only do this with attributes" is said before the card is spent', () => {
   // Caleb 2025-03-06, and the corollary: a mod whose whole payload is rules
   // text is legal on a spell token and donates nothing at all. The engine says
   // so in the log AFTER the card is gone; the bar has to say it before.
@@ -468,7 +468,7 @@ test('R89: "you can only do this with attributes" is said before the card is spe
   assert.match(spellAugmentNote('Graxxlid'), /ATTRIBUTES/, 'in the ruling’s own words');
 });
 
-test('R89: the augment the client offers on a token is one the engine really takes', () => {
+test('CR 721.4a: the augment the client offers on a token is one the engine really takes', () => {
   const { h, seat, tok, legal, index } = tokenDeployment(7741);
   const hosts = modHosts(legal, { from: 'hand', index, mode: 'augment' }, h.state);
   assert.ok(hosts.tokens?.has(tok));
@@ -480,7 +480,7 @@ test('R89: the augment the client offers on a token is one the engine really tak
 
 /* ⚠ THIS USED TO BE READ AS TEXT, and the note that justified it was wrong.
  *
- * R194/CT-55. The old guard was four `assert.match(MAIN, /…/)` reads, and its
+ * CR D2.6/CT-55. The old guard was four `assert.match(MAIN, /…/)` reads, and its
  * own comment argued that the copy and the "old trigger is gone" `doesNotMatch`
  * were "two things a rendered board cannot be asked about". A rendered board
  * can be asked about both, and the argument had the failure mode backwards: a
@@ -704,7 +704,7 @@ test('[67] the Confirm button holds the block declaration until the ride questio
   assert.equal(acts.length, 1, 'answering it declares the blocks');
   const a = acts[0] as { type: string; send?: EntityId[]; spellTokens?: EntityId[] };
   assert.equal(a.type, 'declareBlocks');
-  // one list on the board, TWO fields in the action (R87 splitCounterattack)
+  // one list on the board, TWO fields in the action (CR 610.3 splitCounterattack)
   assert.deepEqual(a.send, [ctr], 'the unit travels in `send`…');
   assert.deepEqual(a.spellTokens, [tok], '…and the token in `spellTokens`, which is the fix');
 });

@@ -1,4 +1,4 @@
-/* R203 / CT-84 — A SECRECY ASSERTION MUST BE ABLE TO FAIL.
+/* CT-84 — A SECRECY ASSERTION MUST BE ABLE TO FAIL.
  *
  * ── THE GAP
  *
@@ -8,9 +8,9 @@
  * 42-dark-b:1331 asserted
  * `h.log.some(l => l.includes('Thought Extraction reveals'))`; that line
  * published an opponent's ENTIRE HAND to the shared log, and the assertion
- * passed before R197b fixed it and passed after. **Two genuine information
- * leaks survived 153 test files for exactly this reason** — R197b's three
- * "look at a hand" cards and R202's `handEntered` — and both had to reach past
+ * passed before the look-at-a-hand fix (CR D6.5a) and passed after. **Two genuine information
+ * leaks survived 153 test files for exactly this reason** — the three
+ * "look at a hand" cards and the `handEntered` event (CR D6.5) — and both had to reach past
  * the Harness into `server/view.ts` to say anything at all (172, 173).
  * docs/13-assessment.md §5 calls it the highest-value checker gap known.
  *
@@ -42,7 +42,7 @@
  * none. The two things it has to know are both computed:
  *
  *   PRIVATE-LOOK CARDS  from PRINTED TEXT — "look at …hand" is a private look,
- *                       "reveals their hand" is a public one. That is R197b's
+ *                       "reveals their hand" is a public one. That is CR D6.5a's
  *                       partition and 173 §3 already guards the source side of
  *                       it; this is the test side of the same line. A sixth
  *                       card printing the verb joins the set on its own.
@@ -85,7 +85,7 @@ const SRC = path.resolve(HERE, '..', 'src');
 
 /** Thought Extraction aimed at its own caster: the naming line is `privateTo`
  *  the looker, and the looker IS the hand's owner, so the ONE other seat it
- *  could reach is an opponent with no claim on any of it. R197b's §1 calls
+ *  could reach is an opponent with no claim on any of it. The look-at-a-hand ruling calls
  *  this the reachable shape of the class in a 1v1 game. */
 function selfLook(seed: number): { h: Harness; A: Seat; D: Seat; secret: string } {
   const h = new Harness(seed);
@@ -106,13 +106,13 @@ function selfLook(seed: number): { h: Harness; A: Seat; D: Seat; secret: string 
   return { h, A, D, secret: 'Shard Sprite' };
 }
 
-test('R203 §1: logFor(h, seat) CAN SEE — the flat log and the seat log disagree about a private line', () => {
+test('§1: logFor(h, seat) CAN SEE — the flat log and the seat log disagree about a private line', () => {
   const { h, A, D, secret } = selfLook(17401);
 
   // (a) the old channel is blind, demonstrated rather than asserted about.
   //     `h.log` carries the naming line whether or not it is private — which
   //     is exactly why 42-dark-b's `h.log.some(…'Thought Extraction reveals')`
-  //     passed on both sides of the R197b fix.
+  //     passed on both sides of the look-at-a-hand fix.
   //
   //     ⚠ The private line is found through its OWN TAG rather than by quoting
   //     it, and that is not fastidiousness: quoting it here would make this
@@ -133,7 +133,7 @@ test('R203 §1: logFor(h, seat) CAN SEE — the flat log and the seat log disagr
   assert.ok(logFor(h, A).some(l => l.includes(secret)),
     'and it names the card the looker looked at');
 
-  // (c) and it DISAGREES with the flat log for the other seat. Before R203
+  // (c) and it DISAGREES with the flat log for the other seat. Before the seat-aware log
   //     nothing in engine/test could express this sentence.
   assert.deepEqual(logFor(h, D).filter(l => l.includes('Thought Extraction reveals')), [],
     'the opponent was served a line naming the whole hand of a spell cast on somebody else');
@@ -157,7 +157,7 @@ test('R203 §1: logFor(h, seat) CAN SEE — the flat log and the seat log disagr
   finishBattle(h);
 });
 
-test('R203 §1: the seat log is built from EVENTS, so it cannot drift from the log the way logTypes did', () => {
+test('§1: the seat log is built from EVENTS, so it cannot drift from the log the way logTypes did', () => {
   // harness.ts's own docstring records why `log` and `events` are different
   // lists: an event with an empty `msg` ('stackFlash' — a signal for the
   // client, not a line for a reader) is absorbed and never logged. A seat log
@@ -266,7 +266,7 @@ function logConstsIn(raw: string, code: string, names: Set<string>): Map<string,
 
 const printedOf = (n: string): string => getCard(n).text ?? '';
 
-/** R197b's partition, re-derived here rather than imported from 173 (which
+/** CR D6.5a's partition, re-derived here rather than imported from 173 (which
  *  derives it for the SOURCE side): a card printing "look at …hand" produces a
  *  line that belongs to one seat. "Reveals their hand" is the public verb and
  *  is deliberately NOT in this set — Bioremediation and Void Memory are §5. */
@@ -354,7 +354,7 @@ function offencesIn(raw: string, where: string): Offence[] {
   return out;
 }
 
-test('R203 §2: the lint is not blind — it names a planted leak and ignores every near miss', () => {
+test('§2: the lint is not blind — it names a planted leak and ignores every near miss', () => {
   // ⚠ 149-strip-code's rule, applied to this checker: ask "what would this look
   // like if it were blind?" and measure it. A blind version of this file
   // returns [] for everything and the suite reads clean — which is precisely
@@ -418,19 +418,19 @@ test('R203 §2: the lint is not blind — it names a planted leak and ignores ev
 
 /* ── §3 · the lint ───────────────────────────────────────────────────────── */
 
-test('R203 §3: no assertion names a card and a secret in the same breath while reading the seatless log', () => {
+test('§3: no assertion names a card and a secret in the same breath while reading the seatless log', () => {
   const offences: Offence[] = [];
   for (const f of testFiles()) offences.push(...offencesIn(fs.readFileSync(path.join(HERE, f), 'utf8'), f));
   assert.deepEqual(offences.map(o => `${o.where}  ${o.why}`), [],
     'a secrecy assertion that cannot fail. `h.log` is the hotseat firehose — every seat\'s lines '
     + 'in one array — so an assertion on it reads the same whether the information is public or '
-    + 'private, which is how two real leaks survived 153 test files (R197b, R202). The fix is '
+    + 'private, which is how two real leaks survived 153 test files (the look-at-a-hand and handEntered leaks; CR D6.5). The fix is '
     + 'never an exemption: `logFor(h, seat)` costs one import and says which seat.');
 });
 
 /* ── §4 · the reach measurement ──────────────────────────────────────────── */
 
-test('R203 §4: the lint has reach — the corpus, the receivers and both derived sets', () => {
+test('§4: the lint has reach — the corpus, the receivers and both derived sets', () => {
   // Every number below is asserted because a checker that quietly loses its
   // reach reports clean forever. docs/13 §5: six checkers in one round reported
   // more sight than they had, and every one had made a number go UP.
@@ -457,11 +457,11 @@ test('R203 §4: the lint has reach — the corpus, the receivers and both derive
     }
   }
   assert.ok(assertions > 4000, `only ${assertions} assertions parsed — the parser has lost its reach`);
-  // R203 measured 167 of these, and exactly ONE of them was a secrecy claim
+  // The seat-aware-log round measured 167 of these, and exactly ONE of them was a secrecy claim
   // (42-dark-b:1331). The other 166 assert on public events and are correct as
   // written — CT-84's "153 files still asserting against the flat log" is the
   // size of the CAPABILITY gap, not the number of unfalsifiable assertions.
-  assert.ok(flatReads > 100, `only ${flatReads} assertions read a flat Harness log — R203 measured 167`);
+  assert.ok(flatReads > 100, `only ${flatReads} assertions read a flat Harness log — 167 when this lint was written`);
   assert.ok(harnessFiles > 100, `only ${harnessFiles} files bind a Harness`);
   assert.deepEqual(unreadable, [],
     'a `.log` on a receiver this lint cannot tie to a Harness. Either it is not a game log, or '
@@ -487,7 +487,7 @@ test('R203 §4: the lint has reach — the corpus, the receivers and both derive
 
 /* ── §5 · the controls: a PUBLIC reveal keeps the shared log ─────────────── */
 
-test('R203 §5 control: Bioremediation and Void Memory print REVEALS, and stay legal readers of h.log', () => {
+test('§5 control: Bioremediation and Void Memory print REVEALS, and stay legal readers of h.log', () => {
   // CT-84 names these two, and they are the reason the rule is derived from
   // printed text instead of from vocabulary. Both say "hand" and "reveal" in
   // as many words; both are public; a lint keyed on those words needs an
@@ -496,7 +496,7 @@ test('R203 §5 control: Bioremediation and Void Memory print REVEALS, and stay l
     assert.ok(allCardNames().includes(n), `${n} is still a registered card`);
     assert.ok(!PRIVATE_LOOK_CARDS.includes(n),
       `${n} was derived into the PRIVATE-LOOK set. It prints a public reveal, so the partition `
-      + 'R197b drew has moved and §3 is now flagging the table\'s own business.');
+      + 'CR D6.5a drew has moved and §3 is now flagging the table\'s own business.');
   }
   assert.match(printedOf('Bioremediation'), /reveals?\s+their\s+hand/i,
     'the control rests on the printed verb — if the card is reworded, re-derive before trusting §3');

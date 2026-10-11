@@ -51,7 +51,7 @@ The whole problem is: *which card is this, next render?* Keys are per-zone:
 ```
 field / mod entity   e<id>              stable — the engine's entity id
 stack item           s<id>              stable — the engine's stack id
-cache entry          c<uid>             stable — R41's uid
+cache entry          c<uid>             stable — the uid
 hand / bin card      h<seat>:<name>#k   the k-th copy of that name
 ```
 
@@ -107,7 +107,7 @@ all for exactly this reason).
 | **solid amber** | hovering a stack item → each of its live targets |
 | **thin dashed amber** | always on, for the TOP of the stack only — the one thing about to happen |
 | **dashed blue** | the source of an ability → the ability on the stack, and, while a decision is pending, the card that is *asking* you → the prompt bar |
-| **solid amber (persistent)** | targets already chosen for a cast that has not reached the stack yet (#4/R57 pre-commit chain) |
+| **solid amber (persistent)** | targets already chosen for a cast that has not reached the stack yet (#4/CR 702.3 pre-commit chain) |
 
 Hovering a *unit* draws the reverse view: everything on the stack aimed at it, plus whatever
 it put on the stack itself.

@@ -16,8 +16,8 @@
  * recurs: the pool is 492 cards and the eye is not a search. So this is the
  * search, run on every `npm test`.
  *
- * THE RULE (R67): if a card's printed text says "target" N times, the card
- * declares at least N cast-time target slots across its effects. R58's
+ * THE RULE (CR 110.1b): if a card's printed text says "target" N times, the card
+ * declares at least N cast-time target slots across its effects. CR 110.3's
  * per-slot `slots`/`slotPrompts`/`slotRestricts` is what carries a spec whose
  * two slots differ in legality (Fight, Squish, Necromorph); `count: 'X'`
  * carries "X target …" and counts as many.
@@ -30,7 +30,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight). registry.ts registers
 // only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
@@ -44,8 +44,8 @@ function slotsOf(spec: TargetSpec | undefined): number {
   if (!spec) return 0;
   const c = spec.count ?? 1;
   // "X target allies" is ONE printed occurrence of the word, however many
-  // units it ends up aiming at — and X may legitimately be 1. R83's
-  // `extraSlots` are separate printed targets and each counts.
+  // units it ends up aiming at — and X may legitimately be 1. Channel Through's
+  // `extraSlots` (CR 110.1b) are separate printed targets and each counts.
   return (c === 'X' ? 1 : c) + (spec.extraSlots ?? 0);
 }
 
@@ -105,7 +105,7 @@ const EXEMPT: Record<string, string> = {
   'Boon of Protection': "'negate target effect that TARGETS an allied …' — one own target",
   'Download': "'gain control of target token. You may choose new TARGETS for spells controlled this way'",
   'Envoy of Lightning': "'your spell effects with a single TARGET are Electric' — an effectAttrs "
-    + 'mod (R94), targets nothing. It reads how many targets somebody ELSE declared.',
+    + 'mod (CR 802.17i), targets nothing. It reads how many targets somebody ELSE declared.',
   'Earnest Defender': "'whenever an ally becomes the TARGET of an enemy spell' — a trigger condition",
   'Hexbane Shiitake': "'you may choose new TARGETS for that spell' — the exchanged spell's, not mine",
   'Earthbound Replicator': "'a nonunit spell TARGETING me … new targets for the copy' — the copy's",
@@ -117,7 +117,7 @@ const EXEMPT: Record<string, string> = {
   'Stellarspore Harvester': 'the after-combat trigger targets a unit; the [Augment] death trigger targets an opponent',
 
   // ── 3. (empty) — Apex Prime lived here until round 17. Its exemption said the
-  // card "targets nothing at all" because the copy layer did not exist; R92
+  // card "targets nothing at all" because the copy layer did not exist; a 2026-08 audit
   // found that three of the four layers already did (base stats via E.setBase,
   // attributes via E.addTempAttr, triggered/[Augment] text via E.grantText),
   // so the card now declares a real target and this test rightly threw the
@@ -125,7 +125,7 @@ const EXEMPT: Record<string, string> = {
   // ACTIVATED abilities) are a card-ledger matter, not a targeting one.
 };
 
-test('R67: a card printing N targets declares N cast-time target slots', () => {
+test('CR 110.1b: a card printing N targets declares N cast-time target slots', () => {
   const wrong: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -140,7 +140,7 @@ test('R67: a card printing N targets declares N cast-time target slots', () => {
   assert.deepEqual(wrong, [], `cards that choose a printed target late (or not at all):\n  ${wrong.join('\n  ')}`);
 });
 
-test('R67: a card printing "target" at all declares a target somewhere', () => {
+test('CR 110.1b: a card printing "target" at all declares a target somewhere', () => {
   const silent: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -186,13 +186,13 @@ test('every exemption is still needed, and still names a real card', () => {
  * and dsl.ts says so at the declaration; it is not a way to reach a player.
  * `'player'` (plain "target player", yourself included) and `'opponent'`
  * ("target opponent") are the player-only kinds, and both have existed since
- * R64/R67. Nine cards had 'any' anyway, each with a comment claiming the
+ * the targeting rulings of 2026-08-21 (now CR 110.3c). Nine cards had 'any' anyway, each with a comment claiming the
  * engine had no player-only scope — one false belief, copied forward, which
  * is why this is a test and not nine fixes.
  *
  * The Ambush mode is filtered out rather than exempted: its slot is
  * synthesised by `ambushEffect()`, not printed. */
-test('R64: only a card printing "any target" declares the \'any\' target kind', () => {
+test('CR 110.3: only a card printing "any target" declares the \'any\' target kind', () => {
   const wrong: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -251,12 +251,12 @@ const KIND_PHRASES: [RegExp, Kind][] = (() => {
     [/^targets? players?\b/, 'player'],
     [/^targets? tokens?\b/, 'token'],
     [/^targets? (?:nontoken )?(?:ally|allies)\b/, 'allyUnit'],
-    // R84 {Alluring} is the only thing in the pool that prints this, and it is
+    // CR 802.15a {Alluring} is the only thing in the pool that prints this, and it is
     // rules text rather than a card — but 'enemyUnit' is a kind in the union
     // and had no phrase, so a card printing it would have gone unread too.
     [new RegExp(String.raw`^targets? units?\b${upTo}\bcontrolled by an opponent\b`), 'enemyUnit'],
     [/^targets? units?\b/, 'unit'],
-    // R184: "Create a 1/1 unit for each unit in target formation." The owner
+    // CR 110.3d: "Create a 1/1 unit for each unit in target formation." The owner
     // ruled on 2026-08-25 that a formation is THE WHOLE SIDE, and `TargetRef`
     // has an arm for it now — so the printed noun finally names a real kind
     // and Galactic Germination's UNNAMED exemption is gone.
@@ -292,11 +292,11 @@ function kindsNamedBy(text: string): Set<Kind> {
 
 /** kinds whose printed phrase the matcher cannot read, and why. */
 const UNNAMED: Record<string, string> = {
-  // (R184 retired the only entry: Galactic Germination's "target formation"
+  // (formation targeting retired the only entry: Galactic Germination's "target formation"
   // is a real kind now. The test below is what keeps this table honest.)
 };
 
-test('R64: every target kind a card declares is named by its printed text', () => {
+test('CR 110.3: every target kind a card declares is named by its printed text', () => {
   const wrong: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -334,7 +334,7 @@ test('every unnamed-kind exemption is still needed, and still names a real card'
   assert.deepEqual(stale, [], `exemptions that have outlived their reason:\n  ${stale.join('\n  ')}`);
 });
 
-/* ── R256 · A RESTRICTIVE CLAUSE ON THE TARGET NOUN IS ASKED AT CAST ─────
+/* ── CR 110.3 · A RESTRICTIVE CLAUSE ON THE TARGET NOUN IS ASKED AT CAST ─────
  *
  * Report #134 (round 32): with one enemy Channeled Boon on the stack aimed at
  * ITS OWN controller's unit, Boon of Protection lit up as playable, that
@@ -344,7 +344,7 @@ test('every unnamed-kind exemption is still needed, and still names a real card'
  * effect, player or unit" — had only ever been checked at resolution.
  *
  * That is the third time the same shape has been reported: #35 (Squish),
- * #70 (Graxxlid), #134 (Boon of Protection). R64 and R88 settled the rule
+ * #70 (Graxxlid), #134 (Boon of Protection). Two rulings (now CR 110.3a) settled the rule
  * both times — "the printed restriction is part of what makes a target LEGAL,
  * not a condition checked once the spell resolves" — and both times it was
  * applied to the one card in the report. Boon of Protection's comment even
@@ -380,7 +380,7 @@ test('every unnamed-kind exemption is still needed, and still names a real card'
  *   • WHICH SLOT the clause governs. This is a per-CARD check: a two-slot card
  *     with one qualified slot passes on any cast-time predicate. Tying a
  *     printed occurrence to a slot index is beyond what a phrase matcher can
- *     honestly claim, and the R64 kind test above makes the same trade.
+ *     honestly claim, and the kind test above makes the same trade.
  */
 
 /** the head noun phrase of a printed "target …". Everything after it is the
@@ -421,11 +421,11 @@ const VERB_CONDITION = /^if\b/;
  * X if …" cannot be added without recording why, and an entry whose card stops
  * printing the clause fails just as loudly. */
 const RESOLUTION_CONDITION: Record<string, string> = {
-  'Null Drone': 'R256: "negate target spell effect IF its cost is less than or equal to the greatest '
+  'Null Drone': 'CR 110.3a: "negate target spell effect IF its cost is less than or equal to the greatest '
     + 'amount of life lost by a player this battle" — the gate is a whole-board quantity that both '
     + 'players go on changing while the Drone sits on the stack, so a cast-time reading would promise '
     + 'an answer the resolution cannot keep. The `if` is on the verb: it negates, or it does not.',
-  'Stellarspore Harvester': 'R256: "delete target unit IF it has a -1/-1 counter on it" — the '
+  'Stellarspore Harvester': 'CR 110.3a: "delete target unit IF it has a -1/-1 counter on it" — the '
     + 'resolution-only reading is documented WITH ITS REASON at batch-wood-c.ts, where the counter '
     + 'this trigger reads is one the same combat may still be putting on. The `if` is on the verb.',
 };
@@ -473,10 +473,10 @@ function occurrences(text: string): Occurrence[] {
   return out;
 }
 
-test('R256: every printed occurrence of target is read, not skipped', () => {
+test('CR 110.3: every printed occurrence of target is read, not skipped', () => {
   // A scrape that quietly reads less than it should is this repo's recurring
   // blindness — eight sweeps saw 494 of 495 cards and none of them said so
-  // (R214, below). So before the sweep asserts anything about the clauses it
+  // (the pool-sight fix, below). So before the sweep asserts anything about the clauses it
   // found, it asserts it found ALL of them: every printed "target" is one of
   // the four readings, and the residue is named.
   const unread: string[] = [];
@@ -496,7 +496,7 @@ test('R256: every printed occurrence of target is read, not skipped', () => {
     + `reading less of the pool than the sweep below claims:\n  ${unread.join('\n  ')}`);
 });
 
-test('R256: a restrictive clause on a target noun is enforced at CAST', () => {
+test('CR 110.3: a restrictive clause on a target noun is enforced at CAST', () => {
   const late: string[] = [];
   for (const name of allCardNames()) {
     if (name in RESOLUTION_CONDITION) continue;
@@ -518,11 +518,11 @@ test('R256: a restrictive clause on a target noun is enforced at CAST', () => {
     }
   }
   assert.deepEqual(late, [], 'cards whose printed targeting restriction is not asked at cast — each '
-    + 'one offers the whole board, takes the mana and then says it did nothing (R64/R88/R256):\n  '
+    + 'one offers the whole board, takes the mana and then says it did nothing (CR 110.3a, 110.3):\n  '
     + late.join('\n  '));
 });
 
-test('R256: the if-clause exemptions are exactly the cards that print one', () => {
+test('CR 110.3: the if-clause exemptions are exactly the cards that print one', () => {
   const found = new Set<string>();
   for (const name of allCardNames()) {
     for (const o of occurrences(getCard(name).text ?? '')) {
@@ -534,11 +534,11 @@ test('R256: the if-clause exemptions are exactly the cards that print one', () =
   }
   assert.deepEqual([...found].sort(), Object.keys(RESOLUTION_CONDITION).sort(),
     'the reasoned if-clause exemptions no longer match the cards that print an if-clause on a '
-    + 'target. A NEW card here is the R256 question being asked again — decide whether the clause '
+    + 'target. A NEW card here is the CR 110.3 question being asked again — decide whether the clause '
     + 'narrows the TARGET (a restrict) or gates the VERB (an entry here, with the reason).');
 });
 
-// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+// ── POOL SIGHT ─────────────────────────────────────────────────── (see 180-pool-sight)
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
 // card entry point and it registers 494 of the 495 cards: two of the three
@@ -550,7 +550,7 @@ test('R256: the if-clause exemptions are exactly the cards that print one', () =
 // The floor is what stops that being reintroduced by an import change nobody
 // reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
 // floor for the whole suite and the guard that catches a ninth sweep.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496,
     `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `

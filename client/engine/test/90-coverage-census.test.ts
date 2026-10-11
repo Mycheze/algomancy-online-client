@@ -45,22 +45,22 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-// R214: the WHOLE pool. Until 2026-09-03 this file reached src/apply.ts (and
+// The WHOLE pool (see 180-pool-sight). Until 2026-09-03 this file reached src/apply.ts (and
 // so the third synthetic card) only because it imported stripCode from the
 // work queue, which imports the registry and the harness; stripCode has its
 // own module now, and 180-pool-sight caught the census seeing 494 of 495 the
 // same day. index.ts is the public API and pulls apply.ts on purpose.
 import '../src/index.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { stripCode } from './stripcode.ts';   // R148, appended block at the end of this file
+import { stripCode } from './stripcode.ts';   // appended block at the end of this file
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 // ════════════════════════════════════════════════════════════════════════
-// R153 / CT-43 — what the two BIN sweeps in this file read.
+// CT-43 — what the two BIN sweeps in this file read.
 // ════════════════════════════════════════════════════════════════════════
 //
-// R124's sweep (bin EXIT) and R145's sweep (bin ENTRY) are source-reading
+// The bin-EXIT sweep (CR 405.7) and the bin-ENTRY sweep (CR 400.2a) are source-reading
 // assertions, and a source-reading assertion has exactly two ways to lie.
 // Both helpers below exist to close both of them, for both sweeps.
 //
@@ -72,7 +72,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 // (2) ALIASING. Both matched `<expr>.bin.push(` and a local literally NAMED
 //     `bin`, so `const mb = g.player(m.owner).bin; mb.push(m.card);` walked
 //     straight past — and Hooba-Mon's `exchangeInPlace` contained exactly that
-//     shape until R153 (only its BODY push was caught, which is why the old
+//     shape until the disposal-tail rewrite (only its BODY push was caught, which is why the old
 //     BIN_PUSH_EXEMPT waived one line of three). A sweep that a local variable
 //     steps around measures its own regex, not the codebase.
 
@@ -80,7 +80,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
  * A file's lines with comments and string bodies removed, ONE LINE AT A TIME,
  * so line `n` of the result is still line `n` of the file.
  *
- * ⚠ `stripCode` (card-todo.ts, shared with the R148 sweep below) is the
+ * ⚠ `stripCode` (card-todo.ts, shared with the sweep below) is the
  * codebase's stripper and it is what does the work here — but it CANNOT be
  * applied to a whole file for this job, and both reasons are live in this repo:
  *
@@ -90,7 +90,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
  *    `/[[\]().,;:!?'"]/g` at src/engine.ts:175 pairs with the next quote in the
  *    file and everything between is deleted. Whole-file, that swallows 742
  *    quote-free lines of engine.ts — including all three of its `bin.push`
- *    lines, which would leave the R145 sweep below measuring nothing at all.
+ *    lines, which would leave the bin-entry sweep below measuring nothing at all.
  *
  * Per line neither can happen: a runaway quote cannot leave the line it opened
  * on, and the line count is preserved by construction. Block comments are
@@ -116,7 +116,7 @@ function codeLines(src: string): string[] {
  * followed — `const zone = from === 'bin' ? e.player(seat).bin : …hand;`
  * (src/apply.ts:634). There is exactly one in the codebase and it is NOT a
  * bypass: its `zone.splice` branch is unreachable when the zone is a bin,
- * because the line above it routes that case through `E.removeFromBin` (R124).
+ * because the line above it routes that case through `E.removeFromBin` (CR 405.7).
  * Checked by hand on 2026-08-25. A SECOND one would be invisible here.
  */
 function binAliases(lines: string[]): string[] {
@@ -189,7 +189,7 @@ function namedCounts(): Map<string, number> {
   return counts;
 }
 
-/* ── R155: THE HARBINGER TRAP IS BOLTED SHUT ──────────────────────────────
+/* ── THE HARBINGER TRAP IS BOLTED SHUT ──────────────────────────────
  *
  * The count of `{ todo: true }` tests in test/ is ZERO, and this is what keeps
  * it there.
@@ -207,7 +207,7 @@ function namedCounts(): Map<string, number> {
  * A gap still gets tracked, just not by something that cannot fail:
  *   · a card half that does nothing → ledgers/card-ledger.ts, checked in both
  *     directions by 71-card-ledger (which now also reads statics, cost mods
- *     and trigger guards — R155);
+ *     and trigger guards);
  *   · anything else → ledgers/card-todo.ts, whose entries are asserted to still
  *     be true (83-card-todo).
  *
@@ -221,7 +221,7 @@ function namedCounts(): Map<string, number> {
  *
  *  1. A dozen files in test/ MENTION `{ todo: true }` in prose — the paragraph
  *     you are reading does it twice — so the decision has to be made on CODE.
- *     That is `stripCode` (R148), applied to each `test(` HEADER rather than
+ *     That is `stripCode`, applied to each `test(` HEADER rather than
  *     to the whole file, because:
  *  2. `stripCode` is not sound over a whole test file. A REGEX LITERAL
  *     containing a quote character — `/(['"`])…/`, which 71-card-ledger uses
@@ -253,7 +253,7 @@ function testHeaders(src: string): string[] {
 const titleOf = (header: string) =>
   [...header.matchAll(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g)].map(x => x[2]!).join('');
 
-test('R155: not one test in test/ is `{ todo: true }` — a todo can never fail (the Harbinger trap)', () => {
+test('not one test in test/ is `{ todo: true }` — a todo can never fail (the Harbinger trap)', () => {
   // every .ts, not just *.test.ts: a `test()` called from an imported helper
   // registers exactly the same way, and card-todo.ts / card-ledger.ts are the
   // two files most likely to grow one.
@@ -325,33 +325,34 @@ test('the pool coverage census — printed on every run so CARD-TODO #9 cannot r
     + 'CARD-TODO #9.');
 });
 
-// ── CARD-TODO #21: bounded+zone has a real budget holder now (R124) ──────
+// ── CARD-TODO #21: bounded+zone has a real budget holder now (CR 109.9m) ──────
 //
-// R51 dispatches a zone trigger through `E.standIn`, a detached entity with a
+// A zone trigger (CR 400.5) is dispatched through `E.standIn`, a detached entity with a
 // THROWAWAY `budgets: {}` — so this census used to assert that NO ability was
 // both `bounded` and zone-dispatched: a [once] written onto the ghost bounded
 // nothing, and the honest fix while zero cards needed the combination was to
 // keep it out of the pool.
 //
-// R124 answered the design question the old census was holding open ("what is
-// a per-card budget (R9) for a card that is not in play?"): PER SEAT PER CARD
+// The bin-budget ruling (now CR 109.9m) answered the design question the old census
+// was holding open, "what is a per-card budget (R9) for a card that is not in play?":
+// PER SEAT PER CARD
 // NAME, in `GameState.zoneBudgets` — real, serialized state, written by
-// composeParts' stand-in branch, refunded by refundPart's (R113), cleared by
+// composeParts' stand-in branch, refunded by refundPart's (CR 109.9b), cleared by
 // startTurn beside the Entity.budgets wipe. A bin holds bare names, not
 // instances, so the name in that seat's zone IS the card as far as the rules
-// can see — the same reading R51 already used to give three copies one firing.
+// can see — the same reading the bin-listener rule (CR 400.5a) already used to give three copies one firing.
 //
 // WHY THE CHANGED PREMISE IS STILL HONEST: the old test's claim was "the
 // ghost budget is a silent lie, so the shape is banned". The ghost budget is
 // gone — a bounded zone firing reserves in real state, and the BEHAVIOUR is
-// pinned by the Rotling tests in 43-dark-c (bounds once per turn, R113
+// pinned by the Rotling tests in 43-dark-c (bounds once per turn, CR 109.9b
 // refund on decline, survives a JSON round-trip, wiped by startTurn). What
 // this census still holds is the POPULATION: per-seat-per-name is a design
-// decision with a written rationale (R124), not a universal truth about every
+// decision with a written rationale (CR 109.9m), not a universal truth about every
 // printed text — so a new bounded+zone ability must arrive HERE, be checked
 // against that rationale, and be added deliberately rather than slipping in
 // because the combination stopped failing.
-test('no ability is both bounded and zone-dispatched without a real budget holder — the population is enumerated (CARD-TODO #21/R124)', () => {
+test('no ability is both bounded and zone-dispatched without a real budget holder — the population is enumerated (CARD-TODO #21/CR 109.9m)', () => {
   const found: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name);
@@ -362,17 +363,17 @@ test('no ability is both bounded and zone-dispatched without a real budget holde
   }
   assert.deepEqual(found.sort(), ["Rotling (zone 'bin')"],
     'a bounded ability dispatched from a zone keeps its [once] in GameState.zoneBudgets, '
-    + 'per (seat, card name), per turn — R124 / CARD-TODO #21. That is a design decision '
+    + 'per (seat, card name), per turn — CR 109.9m / CARD-TODO #21. That is a design decision '
     + "with a rationale, not a default: check the new card's printed text against it "
     + '(is per-seat-per-name what IT means?), then add it to this list on purpose.');
 });
 
-// ── R124: the choke point stays the ONLY way out of a bin (CARD-TODO #26) ──
+// ── CR 405.7: the choke point stays the ONLY way out of a bin (CARD-TODO #26) ──
 //
-// R124's claim — every removal of a card from a player's bin goes through
+// The choke point's claim (CR 405.7) — every removal of a card from a player's bin goes through
 // `E.removeFromBin`, which fires 'leftBin' once per card — is a GUARD
 // property, not a status: it was found violated twice AFTER being declared
-// solved (zoneTake's mod-from-bin branch and the R123 grantor erase both
+// solved (zoneTake's mod-from-bin branch and the CR 504.7 grantor erase both
 // spliced bins directly, firing nothing). At the time nothing reachable
 // broke, and the reason recorded here was that Rotling — the only 'leftBin'
 // listener — had no augment/graft symbol. That was a fact about the code, not
@@ -385,7 +386,7 @@ test('no ability is both bounded and zone-dispatched without a real budget holde
 // `E.removeFromBin(seat, index, reason)` instead — that is what fires
 // 'leftBin' — and announce the removal in your own words at the call site
 // (the choke point is deliberately signal-only).
-test('R124 stays solved: the only direct bin splice in src is inside removeFromBin', () => {
+test('CR 405.7 stays solved: the only direct bin splice in src is inside removeFromBin', () => {
   const SRC = path.resolve(HERE, '..', 'src');
   const files: string[] = [];
   const walk = (dir: string): void => {
@@ -398,7 +399,7 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
   walk(SRC);
   const hits: string[] = [];
   for (const file of files) {
-    // R153: comments stripped (a comment naming `.bin.splice(` is not a splice)
+    // CT-43: comments stripped (a comment naming `.bin.splice(` is not a splice)
     // and one level of ALIASING followed — see codeLines / binAliases above.
     const lines = codeLines(fs.readFileSync(file, 'utf8'));
     const alias = aliasCall(binAliases(lines), 'splice');
@@ -406,7 +407,7 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
       // `.bin.splice(` — any player-state bin spliced through its property;
       // `bin.splice(` — a local alias of one; `[from].splice(` — a computed
       // zone access that can reach a bin (the shape bypass A hid behind);
-      // `alias` — a local bound to a bin under ANY name (R153).
+      // `alias` — a local bound to a bin under ANY name (CT-43).
       if (/\.bin\.splice\(|\bbin\.splice\(|\[from\]\.splice\(/.test(line)
         || (alias !== null && alias.test(line)))
         hits.push(`${path.basename(file)}:${i + 1}`);
@@ -414,7 +415,7 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
   }
   assert.equal(hits.length, 1,
     `direct bin splices at [${hits.join(', ')}] — every bin removal must go through `
-    + "E.removeFromBin so 'leftBin' fires (R124, CARD-TODO #26)");
+    + "E.removeFromBin so 'leftBin' fires (CR 405.7, CARD-TODO #26)");
   assert.ok(hits[0]!.startsWith('engine.ts:'), `the one legal site lives in engine.ts, not ${hits[0]}`);
   const engineLines = fs.readFileSync(path.join(SRC, 'engine.ts'), 'utf8').split('\n');
   const n = Number(hits[0]!.split(':')[1]) - 1;
@@ -422,12 +423,12 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
     'the one direct bin splice is no longer inside removeFromBin itself');
 });
 
-// ── R140: a bin-index event's responder never re-finds its card by NAME ────
+// ── CR 405.6: a bin-index event's responder never re-finds its card by NAME ────
 //
-// R131 fixed identity in a bin as (card NAME, nth occurrence), because a bin
+// Identity in a bin is fixed as (card NAME, nth occurrence), because a bin
 // holds bare names and "copies of one card there are genuinely
-// indistinguishable". Two events carry that index today: 'trashed' (R131,
-// stamped by `E.noteTrashed`) and 'died' (R140, stamped by `E.destroy`, which
+// indistinguishable". Two events carry that index today: 'trashed' (CR 405.6,
+// stamped by `E.noteTrashed`) and 'died' (stamped by `E.destroy`, which
 // also stamps `binSeat` — a death event's `seat` is the CONTROLLER while the
 // card bins to its OWNER).
 //
@@ -436,7 +437,8 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
 // `bin.lastIndexOf(name)` answers a different question, "the last copy of that
 // name in the bin right now", and the two answers diverge the instant the
 // event's copy has left: the trigger goes on the stack, the state-based sweep
-// takes the copy (a token — R69; an {Unstable} death — R137), and on
+// takes the copy (a token — CR 713.5; an {Unstable} death,
+// which the engine bins and then erases — CR 801.2h erases it instead, CT-246), and on
 // resolution the name search lands on an INNOCENT older copy. Cthyrian Rector
 // recalled it to hand having already paid a sacrifice; Murkdrop Distiller
 // cached it out of the bin; Biomass Devourer ERASED it out of the game.
@@ -466,7 +468,7 @@ const SELF_LOCATING_IN_BIN: Record<string, string> = {
     + 'a bin. Any copy of that name answers it; it is not fetching a particular one.',
   'Lurking Dread':
     "zone triggers on 'afterCombat' — \"if I am in your bin/cache, …\". It locates its own name "
-    + 'to put that body into play, and one copy is as good as another (R51 fires once per zone).',
+    + 'to put that body into play, and one copy is as good as another (CR 400.5a: it fires once per zone).',
   Xzydris:
     "zone trigger on 'startOfDeployment' — the same shape: its own name in its own bin.",
   'Cinder Scuttler':
@@ -479,7 +481,7 @@ const SELF_LOCATING_IN_BIN: Record<string, string> = {
  * COMMENTS STRIPPED. Reading SOURCE is the point: JSON.stringify drops
  * functions, which is how the first draft of CARD-TODO #27's own proof
  * silently answered "no problem here". Comments have to go because
- * `Function.prototype.toString` keeps them, and the three cards R140 FIXED all
+ * `Function.prototype.toString` keeps them, and the three cards CARD-TODO #27 FIXED all
  * explain in a comment what they no longer do — a scan that reads those would
  * report the bug it just watched being removed. (A `//` inside a string
  * literal would swallow the rest of that line; nothing in the pool does that,
@@ -495,7 +497,7 @@ function fnSource(v: unknown, depth = 0): string {
   return '';
 }
 
-test('R140: no card responding to a bin-index event re-finds its card by lastIndexOf', () => {
+test('CR 405.6: no card responding to a bin-index event re-finds its card by lastIndexOf', () => {
   const offenders: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name);
@@ -510,7 +512,7 @@ test('R140: no card responding to a bin-index event re-finds its card by lastInd
     `${unexplained.join(', ')} responds to a 'trashed'/'died' event and then re-finds its card `
     + 'with bin.lastIndexOf(name). That search cannot tell two copies of one card apart, so once '
     + "the event's copy has been swept out of the bin it silently acts on an INNOCENT older copy "
-    + "(R140, CARD-TODO #27). Resolve the event's (binSeat, binNth) stamp with `eventBinSlot` "
+    + "(CR 405.6, CARD-TODO #27). Resolve the event's (binSeat, binNth) stamp with `eventBinSlot` "
     + 'from dsl.ts and treat index === -1 as GONE — never as "take the other one". If the card '
     + 'genuinely asks about its OWN NAME rather than a particular copy, add it to '
     + 'SELF_LOCATING_IN_BIN above with that reason.');
@@ -525,51 +527,51 @@ test('R140: no card responding to a bin-index event re-finds its card by lastInd
   }
 });
 
-// ── R145: the bin-ENTRY choke point (the twin of R124's bin-EXIT sweep) ────
+// ── CR 400.2a: the bin-ENTRY choke point (the twin of the bin-EXIT sweep, CR 405.7) ────
 //
-// R145 defines the ACTIVE ZONES — in play and the stack — and {Unstable}
+// CR 400.2 defines the ACTIVE ZONES — in play and the stack — and {Unstable}
 // replaces a bin entry with an erase exactly when a card leaves one of them.
 // Every bin entry therefore has to be a decision made somewhere that KNOWS
 // which zone the card came from, and there are exactly three such places:
 //
 //   · `E.toBin(seat, name, from)`  — the general entry, and the only one that
-//     classifies the R40 trash, because `from` IS the zone.
-//   · `E.disposeToBin`             — R153, the LEAVE-PLAY-FOR-A-BIN disposal
+//     classifies the CR 801.2 trash, because `from` IS the zone.
+//   · `E.disposeToBin`             — CR 410.7, the LEAVE-PLAY-FOR-A-BIN disposal
 //     tail. It pushes the body and its nontoken mods itself so it can remember
-//     the slots R140's sweep needs, and then runs R137's bin → trash →
-//     Unstable-erase in that order. `E.destroy` used to hold this code; it is
+//     the slots the bin-copy sweep (CR 405.6) needs, and then runs the engine's bin → trash →
+//     Unstable-erase in that order (CR 405.5 erases instead; CT-246). `E.destroy` used to hold this code; it is
 //     the primitive now, and Hooba-Mon's exchange calls the same one (CT-43).
 //   · `E.leavePlay`                — the documented MODS line: a nontoken mod
-//     of a unit leaving play enters its OWNER's bin, before the caller decides
-//     where the body goes (R69/R137).
+//     of a unit leaving play enters its host controller's bin (CR 410.4a), before the caller decides
+//     where the body goes.
 //
 // A fourth `bin.push` anywhere else is a bypass: it cannot be Unstable-aware
-// and it cannot be trash-aware. R145 was itself exactly that — negate() and
+// and it cannot be trash-aware. The active-zone fix was itself exactly that — negate() and
 // dischargeItem() each rebuilt the Unstable predicate by hand and neither
 // consulted the printed face, and resolveItem's two virus-fizzle branches
-// called toBin raw. So this is the ENTRY-side twin of R124's EXIT-side splice
+// called toBin raw. So this is the ENTRY-side twin of CR 405.7's EXIT-side splice
 // sweep above, and it exists for the same reason: the next bypass should fail
 // a test rather than wait to be found by a playtester.
 //
 // The exemption list is EMPTY, and that is the point. It briefly held two
 // entries on 2026-08-25 — Hooba-Mon's exchange (batch-dark-b.ts) and Tides of
 // the Cosmos (batch-water-b.ts), both of which pushed into a bin by hand —
-// while R146 was fixing them in a parallel worktree. R146 landed (commit
+// while the bin choke-point fix was underway in a parallel worktree. The fix landed (commit
 // 8377b26) and the stale-entry assert below is what forced the waivers out
 // again the moment it did. Keep it empty: a dated waiver that outlives its
 // cause is how a two-line exemption quietly becomes a blanket.
 //
-// R153 (CT-43) emptied it AGAIN, and this time removed the reason to refill it.
+// The disposal-tail rewrite (CT-43) emptied it AGAIN, and this time removed the reason to refill it.
 // It held one dated waiver for `exchangeInPlace` (batch-dark-b.ts), a fourth
 // hand-copy of destroy()'s disposal tail that could not use `E.toBin` because
-// toBin takes neither R70's `anchor` nor reports the SLOT R140's sweep needs.
+// toBin takes neither the leave-play `anchor` (CR 714.9) nor reports the SLOT the bin-copy sweep needs.
 // The answer was not a waiver: the tail is `E.disposeToBin` now and the card
 // calls it, so there is no bin push in card code left to waive. ⚠ If you are
 // about to add an entry here, the odds are you are re-inlining a sequence that
 // already exists one layer down. Read E.disposeToBin first.
 const BIN_PUSH_EXEMPT: Record<string, string> = {};
 
-// R153: this sweep FOLLOWS ONE LEVEL OF ALIASING and strips comments — see
+// CT-43: this sweep FOLLOWS ONE LEVEL OF ALIASING and strips comments — see
 // codeLines / binAliases at the top of this file, and the two ways a
 // source-reading assertion lies that they close. The blind spot that used to be
 // declared here (`const mb = g.player(m.owner).bin; mb.push(m.card);` walks
@@ -578,11 +580,11 @@ const BIN_PUSH_EXEMPT: Record<string, string> = {};
 // ⚠ THE NAME IS PINNED. CARD-TODO #42's `guard` field names this test by the
 // substring 'every bin ENTRY goes through toBin / destroy / the leavePlay mods
 // line', and 83-card-todo asserts that a real test carries it — so renaming
-// the `destroy` in it is a hard failure in another file. R153 moved that half
+// the `destroy` in it is a hard failure in another file. The disposal-tail rewrite moved that half
 // of the work into E.disposeToBin; the addition below says so without breaking
 // the pin. Rename it properly when CT-42 is next edited, not before.
-test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods line'
-  + ' (R153: the destroy half is E.disposeToBin now)', () => {
+test('CR 400.2a: every bin ENTRY goes through toBin / destroy / the leavePlay mods line'
+  + ' (CR 410.7: the destroy half is E.disposeToBin now)', () => {
   const SRC = path.resolve(HERE, '..', 'src');
   const files: string[] = [];
   const walk = (dir: string): void => {
@@ -595,7 +597,7 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
   walk(SRC);
   // `.bin.push(` — a player-state bin pushed through its property, which is
   // every form the codebase actually uses; the bare `bin.push(` arm catches a
-  // local alias NAMED `bin`; and `alias` (R153) catches one under any other
+  // local alias NAMED `bin`; and `alias` (CT-43) catches one under any other
   // name, which is how the last bypass in card code hid.
   const hits: { at: string; file: string; line: number }[] = [];
   for (const file of files) {
@@ -618,7 +620,7 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
     }
     return '(top level)';
   };
-  // R153: `destroy` is no longer one of them — its tail moved WHOLESALE into
+  // CT-43: `destroy` is no longer one of them — its tail moved WHOLESALE into
   // `disposeToBin`, which is now the only method that pushes a leaving-play
   // body (and its mods) into a bin, for a death and for an exchange alike.
   const LEGAL = new Set(['toBin', 'disposeToBin', 'leavePlay']);
@@ -632,8 +634,8 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
   assert.deepEqual(bypasses, [],
     `a card reaches a bin at [${bypasses.join(', ')}] without going through E.toBin, E.disposeToBin `
     + 'or the leavePlay mods line. Those three are the only places that know which ZONE the card '
-    + 'came from, and R145 makes that the question {Unstable} turns on (in play and the stack are '
-    + 'ACTIVE zones — leaving one for a bin erases instead), while R40 makes it the question '
+    + 'came from, and CR 400.2a makes that the question {Unstable} turns on (in play and the stack are '
+    + 'ACTIVE zones — leaving one for a bin erases instead), while CR 801.2 makes it the question '
     + 'trashing turns on. Route the push through E.toBin(seat, name, from).');
 
   // the exemption cannot outlive its cause — a stale entry is how a two-line
@@ -654,15 +656,15 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
 });
 
 // ════════════════════════════════════════════════════════════════════════
-// R148 / CT-38 — the CONTROL-CHANGE choke point stays the only way to
+// CT-38 — the CONTROL-CHANGE choke point stays the only way to
 // change a controller. (Appended as one self-contained block; nothing above
 // this line is touched.)
 // ════════════════════════════════════════════════════════════════════════
 //
-// Exactly R124's shape, one zone over. `E.giveControl` is the single primitive
+// Exactly the bin-exit sweep's shape, one zone over. `E.giveControl` is the single primitive
 // for "this seat now controls that unit": it carries the unit's MODS across,
-// unslots it from a formation its new controller does not own, applies R112
-// region exclusivity, and (R148) fires the `controlChanged` event. A card that
+// unslots it from a formation its new controller does not own, applies CR 711.4
+// region exclusivity, and fires the `controlChanged` event. A card that
 // assigns `u.controller` by hand gets none of that, and the failure is SILENT
 // — the unit does change sides, so every test that only checks `.controller`
 // still passes. Three cards did exactly that (Mindspore Fiend, Organic
@@ -696,7 +698,7 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
  * If you are adding a third: it is far likelier that you want giveControl.
  */
 const CONTROLLER_ASSIGN_OK: { file: string; stmt: string; why: string }[] = [
-  // R178 DROPPED TWO ENTRIES, and dropping them is what this list is for.
+  // The move-a-mod primitive (CR 720.10) DROPPED TWO ENTRIES, and dropping them is what this list is for.
   // Reconfigure ('m.controller = b.controller;') and Rotbeast
   // ('mod.controller = host.controller;') each re-parented a mod BY HAND —
   // five fields and two arrays spelled out, in two places — which is exactly
@@ -738,7 +740,7 @@ function controllerAssignments(file: string, src: string): string[] {
   return hits;
 }
 
-test('R148 stays solved: no card in src/cards/ assigns a unit\'s .controller — E.giveControl is the only way', () => {
+test('stays solved: no card in src/cards/ assigns a unit\'s .controller — E.giveControl is the only way', () => {
   const unexplained: string[] = [];
   for (const { file, src } of cardSources()) {
     for (const hit of controllerAssignments(file, src)) {
@@ -752,7 +754,7 @@ test('R148 stays solved: no card in src/cards/ assigns a unit\'s .controller —
     + '`E.giveControl(unit, seat)` — it carries the unit\'s MODS across (a stolen unit whose '
     + 'augments still answer to the old seat is CT-38, and it was invisible for a day because the '
     + 'unit does change sides), unslots it from a formation its new controller does not own, '
-    + 'applies R112 region exclusivity and fires `controlChanged` (R148/CT-39). An exchange that '
+    + 'applies CR 711.4 region exclusivity and fires `controlChanged` (CT-39). An exchange that '
     + 're-slots both units itself passes `{ keepFormation: true }`. If the thing you are assigning '
     + 'is genuinely NOT a unit changing hands — a mod moving to a new host, a StackItem — add it '
     + 'to CONTROLLER_ASSIGN_OK with that reason.');
@@ -769,7 +771,7 @@ test('R148 stays solved: no card in src/cards/ assigns a unit\'s .controller —
   }
 });
 
-test('R148: the only .controller assignments in engine.ts are inside giveControl', () => {
+test('the only .controller assignments in engine.ts are inside giveControl', () => {
   const SRC = path.resolve(HERE, '..', 'src');
   const stripped = stripCode(fs.readFileSync(path.join(SRC, 'engine.ts'), 'utf8'));
   const lines = stripped.split('\n');
@@ -784,7 +786,7 @@ test('R148: the only .controller assignments in engine.ts are inside giveControl
    * still be PRESENT, so an exemption cannot outlive its cause (the same rule
    * the exemption list above this test runs on).
    *
-   * R148/R112's choke point is about an ENTITY IN PLAY changing hands, which is
+   * The giveControl choke point (CR 711.1) is about an ENTITY IN PLAY changing hands, which is
    * a real game event with triggers hanging off it. A `StackItem`'s controller
    * is a different field on a different type: it records who is casting this
    * item, it is written once while the item is being BUILT, and nothing
@@ -793,22 +795,22 @@ test('R148: the only .controller assignments in engine.ts are inside giveControl
    */
   const STACKITEM_CONTROLLER_EXEMPT: Record<string, string> = {
     'mod.controller = newHost.controller;':
-      'R178 E.moveMod — a MOD being re-parented onto a new host, taking that host\'s '
+      'CR 720.10a E.moveMod — a MOD being re-parented onto a new host, taking that host\'s '
       + 'controller. Not an entity changing hands: giveControl is about UNITS, and would '
       + 'unslot a formation spot a mod never had and relocate the wrong object entirely. '
       + 'This assignment used to live in TWO CARD FILES (Reconfigure, Rotbeast) with an '
-      + 'exemption each in CONTROLLER_ASSIGN_OK above; R178 collapsed both into this one '
+      + 'exemption each in CONTROLLER_ASSIGN_OK above; the move-a-mod primitive collapsed both into this one '
       + 'primitive, which is why those two entries are gone. The owner ruled what a move '
       + 'carries (2026-08-25: "Unstable is just an attribute granted to all entities that '
       + 'are modded. Of course it moves with the mods."), and this line is the only stored '
       + 'part of that answer — everything else is derived off `modOf`.',
     'item.controller = seat;':
-      'R333 E.giveItemControl — Download takes a spell token that is already ON THE STACK '
+      'CR 304.11d E.giveItemControl — Download takes a spell token that is already ON THE STACK '
       + '(RAQ "Download. What is a token": "Fireball effect on the stack ✅"). A StackItem, not an '
       + 'Entity: there is no formation to leave and no unit changing sides, only a new caster '
       + 'recorded on the item. It lives here, as a primitive, so no card file assigns a controller.',
     'copy.controller = opts.controller ?? orig.controller;':
-      'R164 pushSpellCopy — stamping the controller onto a freshly structuredClone\'d '
+      'pushSpellCopy — stamping the controller onto a freshly structuredClone\'d '
       + 'StackItem, not moving an entity between players. A spell copy is cast by whoever the '
       + 'copying card says casts it (Earthbound Replicator: "for any player targeting him"), so '
       + 'the field has to be settable at construction. Routing this through giveControl would be '
@@ -819,10 +821,10 @@ test('R148: the only .controller assignments in engine.ts are inside giveControl
     const stmt = lines[n]!.trim();
     if (stmt in STACKITEM_CONTROLLER_EXEMPT) continue;
     // `giveControl(` opens within a few lines above every legal assignment —
-    // the same proximity read R124 uses for its one bin splice.
+    // the same proximity read the bin-exit sweep uses for its one bin splice.
     assert.ok(lines.slice(Math.max(0, n - 8), n + 1).join('\n').includes('giveControl('),
       `engine.ts:${n + 1} assigns a controller outside giveControl: ${stmt}. `
-      + 'The choke point is the whole point (R112/R148) — route it through giveControl, or, if '
+      + 'The choke point is the whole point — route it through giveControl, or, if '
       + 'this really is a new primitive, say so here and widen this test on purpose.');
   }
 

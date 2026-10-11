@@ -1,4 +1,4 @@
-/* R179 — ONE HAND-ENTRY POINT, AND ONE EVENT PER MOVE.
+/* CR 402.4, 706.6a — ONE HAND-ENTRY POINT, AND ONE EVENT PER MOVE.
  *
  * Three cards print "whenever (one or more other) cards enter a player's hand
  * during battle" — Rider of the Tides, Xenopod Progenitor, Galerider Eel.
@@ -25,7 +25,7 @@
  *      silently. It carries its own positive control — a sweep that cannot
  *      fail is worth nothing (the `stripCode` lesson).
  *  §4  ROT/DEBT REMOVAL: Burn the Blight announces what it removes, and the
- *      removal is NOT scaled by R104's amount layer (owner ruling).
+ *      removal is NOT scaled by the amount layer (owner ruling; CR 112.15).
  *
  * Seeds: 15200-15299.
  */
@@ -101,7 +101,7 @@ test("Xenopod Progenitor: a card taken out of an OPPONENT's hand (Bioremediation
   assert.equal(entries[0]!.data?.['seat'], A, 'the hand that was entered, not the one that was emptied');
   assert.equal(queuedFor(h, 'Xenopod Progenitor'), 1, 'the Xenopod heard it, exactly once');
   pass(h); pass(h);                                      // resolve the trigger → the pay-or-decline
-  assert.equal(h.state.decision!.kind, 'payOrDecline', 'the [one] is offered (R6)');
+  assert.equal(h.state.decision!.kind, 'payOrDecline', 'the [one] is offered (CR 111.9)');
   assert.ok(String(h.state.decision!.prompt).includes('Xenopod Progenitor'));
   pick(h, true);
   assert.equal(
@@ -195,7 +195,7 @@ test('a multi-card move fires exactly ONE handEntered, like a multi-card draw', 
  * card entering one hand — a worse bug than the one being fixed.
  *
  * Each listener is measured ALONE in its own game on purpose: two queued
- * triggers under one controller raise an ordering question (R2), and a test
+ * triggers under one controller raise an ordering question (CR 706.5), and a test
  * that has to answer one cannot count what was queued. */
 const LISTENERS = ['Rider of the Tides', 'Galerider Eel', 'Xenopod Progenitor'] as const;
 
@@ -288,7 +288,7 @@ test('the hand.push sweep is not blind: it flags a planted push and ignores a co
 /* THE GUARD ITSELF. `E.toHand` is the one hand-entry point; every other push
  * is a card that will be invisible to the three "a card enters a hand" cards,
  * which is exactly the state this ruling found the pool in (18 of them). */
-test('R179 class guard: no bare hand.push survives outside E.toHand', () => {
+test('CR 402.4 class guard: no bare hand.push survives outside E.toHand', () => {
   const hits = rawPushes();
   assert.equal(hits.length, 1,
     `exactly one hand push may exist — the primitive's own. Found: [${hits.join(', ')}]`);
@@ -303,8 +303,8 @@ test('R179 class guard: no bare hand.push survives outside E.toHand', () => {
 
 /* The same class one field over: Burn the Blight used to write `p.rot = 0` /
  * `p.debt = 0` raw, and those were the only writes to either field outside the
- * gain/lose primitives. R179 gave them a primitive, so nothing needs to. */
-test('R179 class guard: no card writes a player\'s rot or debt directly', () => {
+ * gain/lose primitives. The hand-entry round gave them a primitive, so nothing needs to. */
+test('CR 112.15 class guard: no card writes a player\'s rot or debt directly', () => {
   const hits: string[] = [];
   for (const f of tsFiles(path.join(SRC, 'cards'))) {
     fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {

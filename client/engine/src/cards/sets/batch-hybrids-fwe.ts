@@ -6,11 +6,11 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded
- * [Switch1]/[once] budgets per card), R12/R25 ("each player/opponent" and
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.1a (mid-resolution payments/choices via ctx.choose), CR 803.4 (bounded
+ * [Switch1]/[once] budgets per card), CR 601.1b, 601.4d ("each player/opponent" and
  * "your/ally" read the event region's present seats / unitsOf(region)),
- * R14 ("this battle" counters are per region-battle), R22 (Ambush is an
+ * CR 505.6 ("this battle" counters are per region-battle), CR 803.6 (Ambush is an
  * engine-level play mode driven by printed.ambush).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
@@ -21,8 +21,8 @@
  *    firing the event, destroy() after — engine asymmetry, flagged).
  *  - MULTI-TARGET spells (Channel Through, Torrential Reclamation): NO LONGER
  *    an approximation. This said "the engine's cast-time targeting holds ONE
- *    target per part, so the caster picks the units mid-resolution"; R64's
- *    `count: 'X'` (with min: 0) collects them all as the spell goes on the
+ *    target per part, so the caster picks the units mid-resolution"; now
+ *    `count: 'X'` (with min: 0; CR 110.1a) collects them all as the spell goes on the
  *    stack, which both cards use. What stays mid-resolution is Channel
  *    Through's DISTRIBUTION of its 2 damage among the opponent's units — a
  *    division of damage, not a set of declared targets.
@@ -31,10 +31,10 @@
  *
  * Nothing is parked in this batch any more; both entries that used to sit here
  * have been overtaken:
- *  - Stasis Sentry, parked on "there is no cost-modification layer". R59's
- *    CostMod is that layer, and the card is a live `costMods` entry now.
+ *  - Stasis Sentry, parked on "there is no cost-modification layer". The
+ *    CostMod (CR 111.10) is that layer, and the card is a live `costMods` entry now.
  *  - Channel Through / Torrential Reclamation (X half), parked on "no
- *    cast-time 'choose and pay X' primitive exists". R35's collectX fixes X
+ *    cast-time 'choose and pay X' primitive exists". Now collectX (CR 107.2a) fixes X
  *    before the spell reaches the stack, and both cards read `ctx.x`.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
@@ -51,7 +51,7 @@ import { selfOf, pickUnit, eventCardCost } from './helpers.ts';
 // X is MY defense as I leave play — the entity no longer exists at trigger
 // resolution, so the defense is snapshotted into the event at event time
 // (the when() bookkeeping pattern, batch-water-a precedent): the last
-// in-play value IS the amount, there is no later state to re-read (R1).
+// in-play value IS the amount, there is no later state to re-read (CR 714.3).
 card('A Pile of Runes', {
   augmentText: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
@@ -74,9 +74,9 @@ card('A Pile of Runes', {
 // "[Battle] Ambush [2be] (Play me with the effect "Recall target ally, put me
 // into their position in play.") [once] When I am dealt damage, I deal that
 // much damage to target unit." — be/2 1/1 Arcane Crab Unit. The Ambush mode
-// is engine-level (printed.ambush, R22). The [once] trigger fires on the
-// 'damage' event (self); "that much" is read from the event snapshot (R1 —
-// the event IS the amount's definition); bounded per card (R9).
+// is engine-level (printed.ambush, CR 803.6). The [once] trigger fires on the
+// 'damage' event (self); "that much" is read from the event snapshot (as
+// the event IS the amount's definition); bounded per card (CR 803.4).
 card('Mirrorback Ambusher', {
   abilities: [{
     type: 'triggered', events: ['damage'], self: true, bounded: true,   // [once]
@@ -95,13 +95,13 @@ card('Mirrorback Ambusher', {
 // "[Augment] Whenever a player plays their first spell in this battle, negate
 // it." — be/5 6/7 Polyform Primordial Beast Unit. Text-box [Augment].
 //
-// R166 — "THEIR FIRST SPELL" IS THE SEAT'S, NOT THE CARRIER'S.
+// "THEIR FIRST SPELL" IS THE SEAT'S, NOT THE CARRIER'S.
 //
 // This used to count with a PER-INSTANCE battle counter bumped inside when()
 // (`origon:<self.id>:<seat>`), so it counted only the spells played while THIS
 // carrier was in play in-region: an Origon that arrived mid-battle — spawned
 // by an effect, taken with E.giveControl, or applied as an [Augment] under
-// R95's battle-time permission — negated the first spell IT saw rather than
+// CR 723.5's battle-time permission — negated the first spell IT saw rather than
 // the seat's actual first, and two Origons that arrived at different moments
 // each negated a different spell. The printed subject is the PLAYER ("a player
 // plays THEIR first spell in this battle"); nothing on the card is about when
@@ -109,9 +109,9 @@ card('Mirrorback Ambusher', {
 //
 // The seat's own ledger is `spellsPlayedAny:<seat>` (engine.ts, commitItem),
 // bumped BEFORE 'spellPlayed' fires, so the event whose counter reads 1 IS
-// that seat's first spell of this region's battle (R14). It is the
+// that seat's first spell of this region's battle (CR 505.6). It is the
 // TOKEN-INCLUSIVE ledger deliberately: this card prints a plain, unqualified
-// "spell", and R157 §13 is *"Tokens are spells"* — the same audit that put
+// "spell", and the owner's answer is *"Tokens are spells"* (CR 300.5a) — the same audit that put
 // spell tokens back into Hexbane Shiitake's "a spell" (⚠ header). Its narrow
 // sibling `spellsPlayed:<seat>` belongs to the cards that PRINT the narrow
 // noun (Animated Spark's "nontoken spell"), and reusing it here would have
@@ -119,17 +119,17 @@ card('Mirrorback Ambusher', {
 //
 // At event time the spell is not yet on the stack (commitItem fires
 // 'spellPlayed' before pushItem), so the effect finds it at resolution — BY
-// ITS ID (R191). The event carries `item`, the played item's id (R178), so
+// ITS ID (CR 706.13). The event carries `item`, the played item's id, so
 // "negate IT" is answered by IDENTITY and not by a scan at all. This used to
 // be `[...g.s.stack].reverse().find(i => i.card === name && i.controller ===
 // seat && …)` under a paragraph explaining why the TOP match is the right one
 // — true under today's push order (the trigger sits above the spell and
 // resolves first) and a heuristic under any other, which is what a paragraph
-// of justification was really admitting. Earthbound Replicator converted first
-// (R178); Hexbane Shiitake, the pool's other card that located a spell by
-// (card, controller), converts in this same ruling.
+// of justification was really admitting. Earthbound Replicator converted first;
+// Hexbane Shiitake, the pool's other card that located a spell by
+// (card, controller), converted in the same change.
 //
-// …AND NOT A COPY (R164) — a SEPARATE question from WHICH item is found, and
+// …AND NOT A COPY (CR 706.13) — a SEPARATE question from WHICH item is found, and
 // one the id must not quietly answer differently. A copy of a spell is a real
 // stack item carrying the ORIGINAL's card name and controller, which is what
 // made it reachable by the scan; it is not reachable by an id, because
@@ -173,7 +173,7 @@ card('Origon', {
 // "[Augment] Spells with base cost [three] or less have a base cost of
 // [three] to play during battle." — be/3 2/4 Arcane Beast Unit.
 //
-// UN-PARKED (R59). This was parked on "a continuous cost-modification layer
+// UN-PARKED (CR 111.10i). This was parked on "a continuous cost-modification layer
 // does not exist", with an inert augmentText stand-in; `CardBehavior.costMods`
 // is that layer (Tranquility and The Silent are the precedents), and it
 // radiates from the card in play AND from the augment mod anchored on its host
@@ -181,43 +181,43 @@ card('Origon', {
 // wants.
 //
 // Clause by clause:
-//  - "Spells" = `isPlayedSpellKind`: spell, spell unit and spell TOKEN. R305
-//    (owner, 2026-09-28): casting a spell token IS playing a spell, *"Yes,
-//    taxed + counted"* — it overturned R59's "cast from play, not played",
+//  - "Spells" = `isPlayedSpellKind`: spell, spell unit and spell TOKEN. The
+//    owner (2026-09-28, now CR 702.7a): casting a spell token IS playing a spell, *"Yes,
+//    taxed + counted"* — it overturned the old cost-modifier ruling's "cast from play, not played",
 //    which this line used to cite. A token's base cost is its printed [0] (the
 //    X in "Crystal 4" is its SIZE, not a cost, and never reaches `ctx.x`), so
 //    with this Sentry out a token cast in battle costs [3]. A unit is not a
 //    spell.
-//  - "to play" = playing it. Applying it as a mod is not playing (R37), which
+//  - "to play" = playing it. Applying it as a mod is not playing (CR 701.2b), which
 //    `purpose: 'mod'` excludes for free.
 //  - "base cost [three] or less" reads the base cost. For a card with a
 //    printed number, "have a base cost of [three]" is a RAISE to three, not a
 //    discount: the delta is `3 - base`, 0 at exactly three, never negative.
-//  - An X SPELL'S X IS RAISED, NOT ITS PRICE — R326 (2026-10-09), reversing
-//    R157 §20. The RAQ, "[Solved] Spells with cost X vs Stasis Sentry"
+//  - An X SPELL'S X IS RAISED, NOT ITS PRICE — the 2026-10-09 ruling (now CR 107.5), reversing
+//    the earlier floor-of-3 price reading. The RAQ, "[Solved] Spells with cost X vs Stasis Sentry"
 //    (_passer): it "forces the Spells with mana cost of X value to be at a
 //    minimum 3, but it's not an additional cost … The X value must be at least
 //    3 (which would deal 3 damage)". So `xMin` lifts the floor of the X menu
 //    to three and `delta` leaves an X spell alone: Wildfire is cast for X = 3
-//    or more and costs exactly X. (R157 §20 had Wildfire cast at X = 0 for [3],
+//    or more and costs exactly X. (The earlier reading had Wildfire cast at X = 0 for [3],
 //    dealing 0; the RAQ is the authority, owner 2026-10-09.) With this Sentry
 //    out you still need [3] open to begin casting an X spell at all — now
 //    because three is the smallest X there is.
-//  - Unqualified subject, so it hits BOTH players, and region-scoped (R12)
+//  - Unqualified subject, so it hits BOTH players, and region-scoped (CR 601.1d)
 //    like every continuous effect.
 card('Stasis Sentry', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     costMods: [{
       delta: (g, _self, ctx) => {
         if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
-        if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // R305
-        if (ctx.card.mana === 'X') return 0;                                 // R326: X is raised instead
+        if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // CR 111.10c
+        if (ctx.card.mana === 'X') return 0;                                 // CR 107.5: X is raised instead
         return ctx.card.mana <= 3 ? 3 - ctx.card.mana : 0;
       },
-      // R326 (CT-224) reverses R157 §20's price for an X spell. The RAQ,
+      // The 2026-10-09 ruling (CT-224, now CR 107.5) reverses the earlier price for an X spell. The RAQ,
       // "[Solved] Spells with cost X vs Stasis Sentry" (_passer): "he forces the
       // Spells with mana cost of X value to be at a minimum 3, but it's not an
       // additional cost … The X value must be at least 3 (which would deal 3
@@ -232,7 +232,7 @@ card('Stasis Sentry', {
 // "[Augment] After combat, recall me." — be/2 0/5 {Haste} Primordial Polyform
 // Unit. Text-box [Augment], live when played normally. NOT self:true — the
 // afterCombat event carries no source unit (Smouldering Inferno precedent).
-// Region-scoped (R12): fires only when combat happened in my region.
+// Region-scoped (CR 601.7): fires only when combat happened in my region.
 card('Unfinished Creation', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -249,9 +249,9 @@ card('Unfinished Creation', {
 // ─────────────────────── FIRE / WATER (rb) ────────────────────────────
 
 // "When a player loses life during battle, [Switch1] Draw a card." — rb/5
-// 3/3 Cosmic Elemental Unit. 'lifeLost' is region-scoped in battle (R12);
-// the "during battle" gate is the phase check (R1, event time). Bounded
-// graft cause + bounded graft ([Switch1], R9).
+// 3/3 Cosmic Elemental Unit. 'lifeLost' is region-scoped in battle (CR 601.1d);
+// the "during battle" gate is the phase check (CR 109.3a, event time). Bounded
+// graft cause + bounded graft ([Switch1], CR 722.5).
 const painseekerDraw: EffectDef = { run: (g, ctx) => g.draw(ctx.controller, 1) };
 card('Astral Painseeker', {
   abilities: [{
@@ -267,11 +267,11 @@ card('Astral Painseeker', {
 // a unit with cost less than or equal to the spell's cost. (If able.)" —
 // rb/3 4/2 Elemental Spirit Unit. Text-box [Augment]. Plain "spell" includes
 // spell tokens (⚠ header); the spell's cost is read from the event snapshot
-// (R1) — and R157 §1 makes that the X ACTUALLY PAID on an X spell ("paying X
+// — and CR 111.11 makes that the X ACTUALLY PAID on an X spell (the owner: "paying X
 // replaces the letter X on the printed card temporarily"), which the event now
 // carries. A Wildfire for X=4 makes both players sacrifice a unit costing 4 or
 // less; it used to make them sacrifice a 0-cost unit at most, i.e. a token.
-// "Each player" = the region's present seats (R25); each picks their own
+// "Each player" = the region's present seats (CR 601.4d); each picks their own
 // eligible unit (unit cost = printed mana — no X card in the pool is a unit,
 // and one that never was cast has no X to read; tokens cost 0),
 // plan-then-commit.
@@ -282,16 +282,16 @@ card('Death Greeter', {
     when: (g, self, ev) => g.s.phase === 'battle' && ev.data?.seat === self.controller,
     effect: {
       run: (g, ctx) => {
-        const cost = eventCardCost(ctx.event);   // R157 §1: the X paid, on an X spell
+        const cost = eventCardCost(ctx.event);   // CR 111.11: the X paid, on an X spell
         const picks: EntityId[] = [];
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
           const pool = g.unitsOf(seat as Seat, ctx.region)
-            .filter(u => g.costOf(u) <= cost);   // R336: a unit in play costs what its FACE costs
+            .filter(u => g.costOf(u) <= cost);   // CR 710.1a: a unit in play costs what its FACE costs
           const id = pickUnit(ctx, `sac:${seat}`, seat as Seat, pool,
             `Death Greeter: sacrifice a unit with cost ${cost} or less`);
           if (id !== null) picks.push(id);   // (If able.) — empty pool skips the seat
         }
-        // R209/CT-74: "if able" can be true of NOBODY — every present seat can
+        // CR D7.3/CT-74: "if able" can be true of NOBODY — every present seat can
         // be out of units cheap enough, or out of units entirely.
         if (!picks.length) {
           g.ev('info', `Death Greeter: nobody here has a unit costing ${cost} or less to sacrifice.`);
@@ -308,11 +308,11 @@ card('Death Greeter', {
 
 // "When I despawn, you may pay [one] to draw a card and lose 1 life." —
 // br/1 2/1 Infernal Sprite Oracle Unit. Despawn = died + despawned (⚠
-// header). The [one] payment is a mid-resolution pay-or-decline (R6),
+// header). The [one] payment is a mid-resolution pay-or-decline (CR 111.9),
 // skipped when the controller cannot pay — and only then. It is offered
 // wherever this resolves, the end-of-turn window included: a ctx.choose
 // suspension there is answered and E.finishTurnEnd closes the owed turn flip
-// afterwards (R85).
+// afterwards.
 card('Tempest Oracle', {
   abilities: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
@@ -342,16 +342,16 @@ card('Tempest Oracle', {
 
 // "Recall X target nontoken allies. Then each player sacrifices a unit and
 // you lose 1 life for each ally recalled this way." — br/X 1/3 {Battle}
-// Elemental Spell. X is chosen and paid AT CAST (R35) and read from item.x
-// here. R64: "X target nontoken allies" are CAST-TIME targets — they used to
+// Elemental Spell. X is chosen and paid AT CAST (CR 107.2a) and read from item.x
+// here. CR 110.1a: "X target nontoken allies" are CAST-TIME targets — they used to
 // be picked mid-resolution, so the spell went on the stack aiming at nobody.
 // The "for each" distributes over both clauses: per recalled ally, each
-// present player (R25) sacrifices a unit and the caster loses 1 life. The
+// present player (CR 601.4d) sacrifices a unit and the caster loses 1 life. The
 // SACRIFICES stay at resolution: each player picks their own, which is a
 // choice about the spell resolving, not a target it declares.
 //
-// ⚠ R221 (2026-08-28) — THE OWNER RULED ON THIS CARD AND THE ANSWER WAS
-// "TODAY'S SCALING IS RIGHT". It was the only clause the R212 correctness
+// ⚠ 2026-08-28 (now CR 107.2b) — THE OWNER RULED ON THIS CARD AND THE ANSWER WAS
+// "TODAY'S SCALING IS RIGHT". It was the only clause the round-28 correctness
 // sample called wrong (125/127), and BOTH of its failures were on this one
 // sentence. He was asked directly whether "for each ally recalled this way"
 // scales the sacrifice as well as the life loss. It does. So the `for (r)`
@@ -370,21 +370,21 @@ card('Tempest Oracle', {
 // max(1, recalled.length) rounds, and it is why the early return is gone.
 //
 // ⚠⚠ AND THIS CARD WAS ALREADY RULED ON, WHICH NOBODY NOTICED FOR THREE DAYS.
-// **R157 §17 (2026-08-25) settled the scaling question** — "the card checks how
+// **The owner settled the scaling question on 2026-08-25** — "the card checks how
 // many units you recalled and forces each player to sacrifice that many units
 // and you lose that much life", marked *Already correct*. CT-91 then filed it
 // as a major open bug, `182-correctness-sample` recorded the engine as WRONG on
 // it, and `docs/questions-round28.md` Q1 RE-ASKED IT WHILE RECOMMENDING THE
 // OPPOSITE ANSWER. Had the owner picked that recommendation he would have
 // silently reversed his own ruling of four days earlier, and nothing in the
-// repository would have said a word. R221 agrees with R157 §17; the agreement
+// repository would have said a word. The later X = 0 answer (CR 107.2b) agrees with the 2026-08-25 one; the agreement
 // is luck, not a check.
 //
-// ⚠ THE ONE PLACE R157 §17 AND R221 GENUINELY PULL APART, recorded rather than
+// ⚠ THE ONE PLACE THE TWO TORRENTIAL RECLAMATION ANSWERS GENUINELY PULL APART, recorded rather than
 // smoothed over. Read literally, "sacrifice THAT MANY units" gives ZERO at
-// X = 0, which is the early return this change just deleted. But §17 was
+// X = 0, which is the early return this change just deleted. But the earlier answer was
 // answering "does the for-each distribute?", and was never asked about X = 0;
-// R221 was asked exactly that, was shown the "X = 0 therefore does nothing"
+// the owner, on 2026-08-28 (now CR 107.2b), was asked exactly that, was shown the "X = 0 therefore does nothing"
 // option, and declined it. The later and more specific answer governs, so the
 // floor stands — but if the owner ever revisits this, THIS is the seam.
 card('Torrential Reclamation', {
@@ -396,9 +396,9 @@ card('Torrential Reclamation', {
       restrict: unitRestrict((_g, u) => !u.token),
     },
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
+      const x = ctx.x ?? 0;   // chosen and paid at cast (CR 107.2a)
       const recalled = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
-      // R221: neither of these is a reason to skip the sacrifice clause any
+      // CR 107.2b: neither of these is a reason to skip the sacrifice clause any
       // more — it is not gated on the recall. Both still ANNOUNCE, because a
       // player who paid for X = 0, or whose targets all left play, is owed the
       // reason his recall did nothing.
@@ -407,7 +407,7 @@ card('Torrential Reclamation', {
         g.ev('info', 'Torrential Reclamation: every targeted ally has left play — nothing is recalled.');
       }
       // plan the sacrifices: one round per recalled ally, each player picks —
-      // and R221 floors it at one round, so the printed "each player
+      // and CR 107.2b floors it at one round, so the printed "each player
       // sacrifices a unit" happens even when nothing was recalled.
       const rounds = Math.max(1, recalled.length);
       const sacs: EntityId[] = [];
@@ -421,7 +421,7 @@ card('Torrential Reclamation', {
         }
       }
       // commit
-      // R209/CT-74: the recall and the life loss below announce themselves, so
+      // CR D7.3/CT-74: the recall and the life loss below announce themselves, so
       // 65-effect-conformance can never see this branch (it convicts only a
       // WHOLLY silent run — CT-81). The sacrifice clause still promised
       // something and still has to say when it delivers nothing.
@@ -442,10 +442,10 @@ card('Torrential Reclamation', {
 
 // "I deal 2 damage to each of X target allies. For each ally damaged this
 // way, distribute 2 damage among target opponent's units." — eer/X 0/6
-// {Battle} Elemental Spell. X is chosen and paid AT CAST (R35) and read from
+// {Battle} Elemental Spell. X is chosen and paid AT CAST (CR 107.2a) and read from
 // item.x here.
 //
-// R83 — BENA, 2026-08-22, settling what R67 had to leave open: "On cast, you
+// CR 110.2b — BENA, 2026-08-22, settling what the target-at-cast rule had to leave open: "On cast, you
 // target X of YOUR units AND an opponent. Then, when it resolves, you just
 // 'distribute' the damage without targeting or going onto the stack or
 // anything." So there are TWO kinds of choice here and the card makes both:
@@ -461,7 +461,7 @@ card('Torrential Reclamation', {
 //    a mid-resolution ctx.choose, which is exactly what it already was.
 //
 // The 2 distributed damage is planned in 1-point increments but COMMITTED as
-// one batch (R80), so two points on one unit are one hit of 2.
+// one batch (CR 112.8), so two points on one unit are one hit of 2.
 card('Channel Through', {
   spellEffect: {
     targets: {
@@ -472,7 +472,7 @@ card('Channel Through', {
       slotPrompts: ['Channel Through: target opponent (their units take the distributed damage)'],
     },
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
+      const x = ctx.x ?? 0;   // chosen and paid at cast (CR 107.2a)
       if (x <= 0) { g.ev('info', 'Channel Through: X = 0 — no effect.'); return; }
       // slot 0 is the opponent; every entity target after it is an ally
       const foe = ctx.targets.find(t => 'player' in (t as object)) as { player: Seat } | undefined;
@@ -494,7 +494,7 @@ card('Channel Through', {
         }
         return out;
       });
-      // commit: 2 to each ally, plus its 2 distributed points — R80, ONE
+      // commit: 2 to each ally, plus its 2 distributed points — CR 112.8, ONE
       // batch, so a unit named by two points is dealt 2 (one trigger, not
       // two) and "how much did this spell deal" is the whole 12
       const hits: { target: Entity; n: number }[] = [];
@@ -513,17 +513,17 @@ card('Channel Through', {
 
 // "[Augment] Whenever I survive damage, each opponent sacrifices that many
 // units." — err/7 7/6 Infernal Rock Elemental Unit. Text-box [Augment].
-// "Survive" is checked at event time (R1). R166: it reads the `lethal` fact
+// "Survive" is checked at event time (CR 109.3a). It reads the `lethal` fact
 // the engine now puts on every 'damage' event aimed at a unit, and NOT
 // `u.damage < defense`, which was the whole bug — marked damage is not the
 // whole of what kills. A {Deadly} hit BELOW my defense left my marked damage
 // under the bar, so the old test said "survived", the payout resolved, and the
-// R21 sweep killed me one line later: the card was paid for surviving the one
+// CR 802.3a sweep killed me one line later: the card was paid for surviving the one
 // kind of hit nothing survives. `lethal` is computed at the damage site, from
 // the same expression that decides the kill, so the two cannot disagree; the
 // `undefined` arm is the old reading, kept for any future 'damage' event that
 // reaches a unit without the fact. "That many" = the event's damage amount
-// (snapshot); "each opponent" is region-scoped (R25), each picks their own
+// (snapshot); "each opponent" is region-scoped (CR 601.4d), each picks their own
 // units, plan-then-commit; fewer units than N sacrifices them all (if able).
 card('Molten Tormentor', {
   augmentText: [{
@@ -564,11 +564,11 @@ card('Molten Tormentor', {
 // target." — er/2 2/2 Slag Beast {Virus} Unit. An ACTIVATED ability in the
 // [Augment] text box: live when played normally (via: 'augment') and donated
 // to hosts (via: { mod }) — the Infernal Cultivator precedent. [once] =
-// bounded per card (R9). {Virus} play mode is engine-level.
+// bounded per card (CR 803.4). {Virus} play mode is engine-level.
 //
-// R196 — THE MOD ERASURE IS A REAL COST NOW. The [one] always was; the erasure
+// CR 111.7 — THE MOD ERASURE IS A REAL COST NOW. The [one] always was; the erasure
 // happened at RESOLUTION, so the item reached the stack without saying which
-// mod was going and the opponent answered blind. R157 §21: everything before
+// mod was going and the opponent answered blind. CR 705.1: everything before
 // the colon is a COST, fixed when the item goes on the stack.
 // `castCost: { kind: 'eraseMod' }` is that — "my mods" is `item.sourceId`'s
 // mods, which reads correctly for the donated case too (the host is the
@@ -576,10 +576,10 @@ card('Molten Tormentor', {
 // Only the MOMENT moved.
 //
 // ⚠ IT CHANGES WHEN THE [once] IS SPENT, and deliberately — the same call
-// Auric Ascendant records. The "no mod to erase — no effect" branch R113 put
+// Auric Ascendant records. The "no mod to erase — no effect" branch that sat
 // in the SPENDS family is gone: a cost cannot whiff, so a Slag Spewer with no
 // mod is not OFFERED, the [one] is never paid and the use is never spent
-// (R49). R57 is unchanged and visible in the collector order: the damage
+// (CR 705.4). Targets before costs (CR 111.7) is unchanged and visible in the collector order: the damage
 // target is chosen BEFORE the mod is erased, because a FIXED castCost is
 // collected after `collectPartTargets`.
 card('Slag Spewer', {
@@ -591,9 +591,9 @@ card('Slag Spewer', {
       targets: { what: 'any', prompt: 'Slag Spewer: deal 2 damage to any target' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // R113: an ACTIVATED [once] with no "you may" in it. The cost is paid;
+        // CR 109.9a: an ACTIVATED [once] with no "you may" in it. The cost is paid;
         // a carrier removed in response does not hand the use back.
-        // R325: the cost is paid and the damage is the effect's — a Spewer
+        // CR 704.7, 714.3: the cost is paid and the damage is the effect's — a Spewer
         // removed in response still deals it, from its last-known state
         if (!self && !g.lastKnownOf(ctx.sourceId)) { g.ev('info', 'Slag Spewer: the carrier is gone — no damage.'); return; }
         const t = ctx.targets[0];
@@ -606,17 +606,17 @@ card('Slag Spewer', {
 // "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices units until their
 // total defense is at least equal to the defense of your sacrificed unit."
 // — eer/3 1/6 {Battle} Elemental Structure Spell. The bracketed sacrifice is
-// a CAST COST (R35): chosen and paid before the spell reaches the stack (a
+// a CAST COST (CR 702.4): chosen and paid before the spell reaches the stack (a
 // grafted rider pays — or declines — at composite cast time). The bar is the
 // sacrificed unit's defense SNAPSHOTTED at payment (it is gone by
-// resolution). Opponents' defenses are live effStats at resolution (R1).
-// "Each opponent" region-scoped (R25); each keeps picking until their picked
+// resolution). Opponents' defenses are live effStats at resolution (CR 107.8).
+// "Each opponent" region-scoped (CR 601.4d); each keeps picking until their picked
 // total defense reaches the bar or they run out. Plan-then-commit; bounded
-// graft ([Switch1], R9).
+// graft ([Switch1], CR 722.5).
 const collapseSacrifice: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    // R113 splits what used to be one branch. Declining (or being unable to
+    // CR 109.9a and 109.9b split what used to be one branch. Declining (or being unable to
     // pay) the rider's cast [cost] is declining the ability, so the use is
     // kept; actually sacrificing a 0-defense unit is USING it and getting
     // nothing, so the use is gone. `costPaid.sacrificed` is the difference:
@@ -624,12 +624,12 @@ const collapseSacrifice: EffectDef = {
     const sacrificed = ctx.costPaid?.sacrificed;
     const bar = sacrificed?.defense ?? 0;
     if (!sacrificed) {
-      ctx.refundBudget?.();   // R113: declining a [cost] never spends the use
+      ctx.refundBudget?.();   // CR 109.9b: declining a [cost] never spends the use
       g.ev('info', 'Structural Collapse: no unit was sacrificed — nobody sacrifices.');
       return;
     }
     if (bar <= 0) {
-      // R113: the cost WAS paid — the use is spent even though the bar is 0.
+      // CR 109.9a: the cost WAS paid — the use is spent even though the bar is 0.
       g.ev('info', 'Structural Collapse: the sacrificed unit had 0 defense — nobody sacrifices.');
       return;
     }
@@ -667,7 +667,7 @@ card('Structural Collapse', {
 // the controller sacrifices one of their OTHER units in the region (the
 // carrier stays); auto-picked only when there is exactly one, nothing with no
 // other unit. "After combat" often lands in the end-of-turn window; the pick
-// is still a real question there (R85).
+// is still a real question there (CR D1.2).
 card('Unstable Form', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],

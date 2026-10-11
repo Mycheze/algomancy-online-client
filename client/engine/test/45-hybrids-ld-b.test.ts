@@ -1,17 +1,17 @@
 /* Per-card tests for the Light & Dark hybrid batch B (batch-hybrids-ld-b):
- * a prophecy-bannered lord (Air Plant, R42/R43), doubled life change (Arbiter
- * of Vitality), X-many Wraith augments (Blight's End, R71), board-wide
- * {Balanced} (Brough, R19), a discard-fuelled graft cause (Cadaverous
+ * a prophecy-bannered lord (Air Plant, CR 803.7), doubled life change (Arbiter
+ * of Vitality), X-many Wraith augments (Blight's End, CR 721.6), board-wide
+ * {Balanced} (Brough, CR 802.7), a discard-fuelled graft cause (Cadaverous
  * Cultivator), a resolution-paid recursion engine (Combustible Bogwalker),
- * a discard-costed burn spell (Darkblast, R35/R40), life averaging
+ * a discard-costed burn spell (Darkblast, CR 702.4, 801.3), life averaging
  * (Equilibriate), the {Poisonous} half of Inexorable Miasma, life-parity
  * statics (Life Power Dude), trash-triggered drain and burn (Murkstalker,
- * Splort, R40), counter/rot proliferation (Proliferating Slime), bin-fed
+ * Splort, CR 801.3), counter/rot proliferation (Proliferating Slime), bin-fed
  * attribute theft (The Omniphage) and the two vanillas (Hammer of Justice,
- * Rime Wraith). Deferral Drone is LIVE (R59 CostMod + an Entity.budgets
- * charge, un-parked 2026-08-22). Vengeance is LIVE (R122: the CostMod
+ * Rime Wraith). Deferral Drone is LIVE (CR 111.10 CostMod + an Entity.budgets
+ * charge, un-parked 2026-08-22). Vengeance is LIVE (CR 111.10: the CostMod
  * `sacrifice` channel — an imposed additional cast cost paid in the cast
- * window, un-parked 2026-08-24). Inexorable Miasma's bin half is live (R51).
+ * window, un-parked 2026-08-24). Inexorable Miasma's bin half is live (CR 400.5).
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 4500-4599.
  */
@@ -59,11 +59,11 @@ test('Air Plant: [Augment] your OTHER units gain +2/+2 and Flying', () => {
   assert.ok(ownAttrs(h, plant).has('Flying'), 'its own Flying is printed, not granted');
 });
 
-test('Air Plant: prophesied for [2], released free once four unique unit costs are out (R42)', () => {
+test('Air Plant: prophesied for [2], released free once four unique unit costs are out (CR 803.7)', () => {
   const h = new Harness(4502);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  giveResources(h, p, 'light', 1);   // R301: the banner is [2lg], so two mana
+  giveResources(h, p, 'light', 1);   // CR 803.7d: the banner is [2lg], so two mana
   giveResources(h, p, 'wood', 1);    // and one pip of each of its own elements
   const idx = give(h, p, 'Air Plant');
   h.do({ type: 'prophesy', seat: p, from: 'hand', index: idx });
@@ -85,7 +85,7 @@ test('Air Plant: prophesied for [2], released free once four unique unit costs a
 
 // ── Arbiter of Vitality ──────────────────────────────────────────────────
 
-// R162: no longer a trigger approximation — it is one `AmountMultiplier` now,
+// Arbiter of Vitality (CR 112.3): no longer a trigger approximation — it is one `AmountMultiplier` now,
 // applied before the total moves. The NUMBERS here are unchanged, which is the
 // point of keeping the two tests: one Arbiter still doubles. What moved is in
 // 137-multiplier-and-mode.test.ts (two Arbiters, lethal ordering, composition).
@@ -113,7 +113,7 @@ test('Arbiter of Vitality: doubles life LOSS, and never doubles its own doubling
 
 // ── Blight's End ─────────────────────────────────────────────────────────
 
-test("Blight's End: augments a Wraith (R71) onto X target units, enemies included", () => {
+test("Blight's End: augments a Wraith (CR 721.6) onto X target units, enemies included", () => {
   const h = new Harness(4505);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -125,8 +125,8 @@ test("Blight's End: augments a Wraith (R71) onto X target units, enemies include
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });   // both units now in region 1
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, "Blight's End") });
-  pick(h, 2);                                                  // X = 2, paid at cast (R35)
-  // R67: the X hosts are DECLARED targets, chosen at CAST — X is settled
+  pick(h, 2);                                                  // X = 2, paid at cast (CR 107.2a)
+  // CR 702.3: the X hosts are DECLARED targets, chosen at CAST — X is settled
   // first, so the collector knows to ask for exactly two of them
   pick(h, { unit: mine });
   pick(h, { unit: theirs });
@@ -139,14 +139,14 @@ test("Blight's End: augments a Wraith (R71) onto X target units, enemies include
     // current canonical name, so the alias never leaks out of getCard().
     assert.equal(mods[0]!.card, 'Wraith', 'it is the Wraith token');
     assert.equal(mods[0]!.appliedAs, 'augment', 'applied as an augment, not spawned');
-    assert.ok(mods[0]!.token, 'the mod is a token — a mod has no card of its own to bin (R69)');
+    assert.ok(mods[0]!.token, 'the mod is a token — a mod has no card of its own to bin (CR 410.4c)');
   }
   finishBattle(h);
 });
 
 // ── Brough ───────────────────────────────────────────────────────────────
 
-test('Brough: everything is {Balanced} — both players’ units, itself included (R19)', () => {
+test('Brough: everything is {Balanced} — both players’ units, itself included (CR 802.7)', () => {
   const h = new Harness(4506);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -164,7 +164,7 @@ test('Cadaverous Cultivator: [Battle] discard a card to fire its grafts', () => 
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   // the Cultivator defends, so the battle happens in ITS region and both
-  // players are present there (R25, for the grafted "each opponent" rider)
+  // players are present there (CR 601.4d, for the grafted "each opponent" rider)
   const cult = spawn(h, D, 'Cadaverous Cultivator');
   const atk = spawn(h, A, 'Hammer of Justice');
   whiteBox(h, e => e.attachMod(ent(h, cult)!, 'Murkstalker', D, 'graft', 0));
@@ -176,7 +176,7 @@ test('Cadaverous Cultivator: [Battle] discard a card to fire its grafts', () => 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                                     // priority → D
   h.do({ type: 'activateAbility', seat: D, entityId: cult, abilityIndex: 0 });
-  // R49: the discard is an ACTIVATION cost — chosen and paid in the cast
+  // CR 705.3: the discard is an ACTIVATION cost — chosen and paid in the cast
   // window, before the item ever reaches the stack
   assert.equal(h.state.decision!.seat, D, 'the cost choice is asked at activation');
   h.do({ type: 'decide', seat: D, choice: 0 });
@@ -188,7 +188,7 @@ test('Cadaverous Cultivator: [Battle] discard a card to fire its grafts', () => 
   finishBattle(h);
 });
 
-test('Cadaverous Cultivator: R49 — [Battle] is enforced at ACTIVATION, not at resolution', () => {
+test('Cadaverous Cultivator: CR 705.2 — [Battle] is enforced at ACTIVATION, not at resolution', () => {
   const h = new Harness(4508);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -204,7 +204,7 @@ test('Cadaverous Cultivator: R49 — [Battle] is enforced at ACTIVATION, not at 
     'and it is not even offered during deployment');
 });
 
-test('Cadaverous Cultivator: R49 — an empty hand makes the activation cost unpayable', () => {
+test('Cadaverous Cultivator: CR 111.6 — an empty hand makes the activation cost unpayable', () => {
   const h = new Harness(4530);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -232,23 +232,23 @@ test('Combustible Bogwalker: discard a card to recall a unit from your bin ([onc
   emptyHand(h, p);
   give(h, p, 'Darkblast');                                     // a SPELL, so the bin
   h.do({ type: 'activateAbility', seat: p, entityId: bog, abilityIndex: 0, via: 'augment' });
-  // R64/R57: the TARGET is chosen first — against the bin as it is now, which
+  // CR 111.7: the TARGET is chosen first — against the bin as it is now, which
   // is before the cost pushes a card into it
   pickCard(h, 'Brough');
-  // R49: the either/or cost is asked at ACTIVATION, before the item exists
+  // CR 705.3: the either/or cost is asked at ACTIVATION, before the item exists
   pickCard(h, 'Darkblast');
   assert.ok(h.state.players[p]!.bin.includes('Darkblast'),
     'paid immediately — nobody could respond in between');
   assert.ok(h.state.players[p]!.hand.includes('Brough'), 'the bin unit is back in hand');
   assert.ok(!h.state.players[p]!.bin.includes('Brough'), 'and left the bin');
-  assert.ok(h.state.players[p]!.bin.includes('Darkblast'), 'the discard trashed the paid card (R40)');
+  assert.ok(h.state.players[p]!.bin.includes('Darkblast'), 'the discard trashed the paid card (CR 801.3)');
   assert.ok(ent(h, bog), 'the OTHER cost mode was not taken — the Bogwalker lives');
-  // [once] per turn (R9)
+  // [once] per turn (CR 109.9)
   assert.ok(!h.legal(p).some(a => a.type === 'activateAbility' && a.entityId === bog),
     'the [once] budget is spent for the turn');
 });
 
-test('Combustible Bogwalker: R49 — with an empty bin the cost is paid for nothing', () => {
+test('Combustible Bogwalker: CR 111.7 — with an empty bin the cost is paid for nothing', () => {
   const h = new Harness(4510);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -257,7 +257,7 @@ test('Combustible Bogwalker: R49 — with an empty bin the cost is paid for noth
   give(h, p, 'Darkblast');                                     // a SPELL: not recallable
   h.do({ type: 'activateAbility', seat: p, entityId: bog, abilityIndex: 0, via: 'augment' });
   pickCard(h, 'Darkblast');
-  // ⚠ the printed line is a COST, and R35 pays costs before effects — so an
+  // ⚠ the printed line is a COST, and CR 111.7 pays costs before effects — so an
   // activation with nothing to recall wastes the payment. The old
   // resolution-time version checked the bin first and paid nothing; that was
   // the more forgiving reading, not the more correct one.
@@ -266,7 +266,7 @@ test('Combustible Bogwalker: R49 — with an empty bin the cost is paid for noth
   assert.ok(h.log.some(m => m.includes('no unit in your bin')), 'and it says why');
 });
 
-test('Combustible Bogwalker: R49 — with no payment available the activation is refused', () => {
+test('Combustible Bogwalker: CR 111.6 — with no payment available the activation is refused', () => {
   const h = new Harness(4534);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -283,7 +283,7 @@ test('Combustible Bogwalker: R49 — with no payment available the activation is
 
 // ── Darkblast ────────────────────────────────────────────────────────────
 
-test('Darkblast: discard a card, deal 5 damage to any target (R35 cost, R40 trash)', () => {
+test('Darkblast: discard a card, deal 5 damage to any target (CR 702.4 cost, CR 801.3 trash)', () => {
   const h = new Harness(4511);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -296,20 +296,20 @@ test('Darkblast: discard a card, deal 5 damage to any target (R35 cost, R40 tras
   give(h, A, 'Brough');                                        // the only card to discard
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Darkblast') });
-  // R57: the TARGET is declared first, then the bracketed cost is chosen and
-  // paid — both still at cast, before the spell reaches the stack (R35).
+  // CR 702.3f: the TARGET is declared first, then the bracketed cost is chosen and
+  // paid — both still at cast, before the spell reaches the stack (CR 702.3).
   assert.equal(h.state.decision!.seat, A, 'the caster aims it');
   pick(h, { unit: victim });
   assert.ok(!h.state.players[A]!.bin.includes('Brough'), 'nothing discarded yet');
   h.do({ type: 'decide', seat: A, choice: 0 });                // discard Brough
   assert.ok(h.state.players[A]!.bin.includes('Brough'),
-    'the discard cost was paid at cast and trashed (R40)');
+    'the discard cost was paid at cast and trashed (CR 801.3)');
   pass(h); pass(h);                                            // resolve
   assert.ok(!ent(h, victim), 'the target took 5 and died');
   finishBattle(h);
 });
 
-test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the CAST is illegal', () => {
+test('Darkblast: CR 702.4a — with nothing else in hand the cost is unpayable and the CAST is illegal', () => {
   const h = new Harness(4512);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -324,19 +324,19 @@ test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the
   assert.throws(
     () => h.do({ type: 'playCard', seat: A, handIndex: only }),
     /unpayable \[cost\]/,
-    'R35: a spell cannot discard ITSELF to pay its own [Discard a card] cost');
+    'CR 205.3: a spell cannot discard ITSELF to pay its own [Discard a card] cost');
   assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === only),
     'and legalActions does not offer it');
   assert.ok(ent(h, victim), 'nothing happened at all');
   finishBattle(h);
 });
 
-// ── Deferral Drone (R119: a PLAYER-side charge) ──────────────────────────
+// ── Deferral Drone (CR 111.10k: a PLAYER-side charge) ──────────────────────────
 //
 // "[Augment][once] Gain 4 debt: The next card you play this PHASE costs [3]
 // less." Built 2026-08-22 as an `Entity.budgets` key plus a `CostMod`; moved
 // wholesale onto `GameState.nextPlayDiscount` on 2026-08-23 when the owner
-// ruled the residue (R119: the charge SURVIVES the Drone — "you paid for it").
+// ruled the residue (now CR 111.10k: the charge SURVIVES the Drone — "you paid for it").
 // Set by E.grantNextPlayDiscount, read by manaToPlay before its clamp, spent
 // at the spellPlayed / spawned emit sites a play already fires (both land
 // AFTER payment), expired by E.expireNextPlayDiscount.
@@ -346,9 +346,9 @@ test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the
 // transitions (planning, battle, regroup, deploy — the resource and haste
 // steps are both inside planning). TWO WINDOWS OF DIFFERENT LENGTHS NOW SIT ON
 // ONE CARD and the tests below pin them apart on purpose: the `[once]` is
-// still per TURN (R9), the discount it buys is per PHASE.
+// still per TURN (CR 109.9), the discount it buys is per PHASE.
 
-/** what it costs `seat` to PLAY `name` right now, straight off the R59 layer */
+/** what it costs `seat` to PLAY `name` right now, straight off the CR 111.10 layer */
 function costToPlay(h: Harness, seat: Seat, name: string): number {
   return new E(h.state).manaToPlay(seat, name);
 }
@@ -387,7 +387,7 @@ test('Deferral Drone: only the NEXT card is discounted — the one after it pays
   assert.equal(mid - open(), 4, 'and the second one pays the full 4');
 });
 
-test('Deferral Drone: [once] — one activation per turn (R9)', () => {
+test('Deferral Drone: [once] — one activation per turn (CR 109.9)', () => {
   const h = new Harness(4537);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -398,7 +398,7 @@ test('Deferral Drone: [once] — one activation per turn (R9)', () => {
   assert.equal(debtOf(h, p), 4, 'and no second helping of debt');
 });
 
-test('Deferral Drone: applying a mod is not playing, so it keeps the charge (R37/R59)', () => {
+test('Deferral Drone: applying a mod is not playing, so it keeps the charge (CR 701.2b)', () => {
   const h = new Harness(4538);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -429,13 +429,13 @@ test('Deferral Drone: donated by an augment, "you" is the HOST\'s controller', (
   assert.equal(costToPlay(h, p, 'Hammer of Justice'), 3, 'the host radiates the discount: [6] → [3]');
 });
 
-// ── R119: the charge outlives its source ─────────────────────────────────
+// ── CR 111.10k: the charge outlives its source ─────────────────────────────────
 //
 // PROMOTED from `{ todo: true }` on 2026-08-23. The todo asked "does a
 // paid-for one-shot discount outlive its source?"; the owner answered YES —
 // "you paid for it". These five are the ruling.
 
-test('Deferral Drone: R119 — the charge SURVIVES the Drone leaving play ("you paid for it")', () => {
+test('Deferral Drone: CR 111.10k — the charge SURVIVES the Drone leaving play (the owner: "you paid for it")', () => {
   const h = new Harness(4540);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -446,11 +446,11 @@ test('Deferral Drone: R119 — the charge SURVIVES the Drone leaving play ("you 
   whiteBox(h, e => e.destroy(ent(h, drone)!, 'is sacrificed'));
   assert.equal(ent(h, drone), undefined, 'the Drone is off the board');
   assert.equal(costToPlay(h, p, 'Brough'), 1,
-    'R119: the ability RESOLVED and the debt is paid, so the source leaving play cannot claw the charge back');
+    'CR 111.10k: the ability RESOLVED and the debt is paid, so the source leaving play cannot claw the charge back');
   assert.equal(costToPlay(h, p, 'Murkstalker'), 0, 'and it still clamps at zero rather than going negative');
 });
 
-test('Deferral Drone: R119 — the charge is spent by the next play even with the Drone gone', () => {
+test('Deferral Drone: CR 111.10k — the charge is spent by the next play even with the Drone gone', () => {
   const h = new Harness(4541);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -471,7 +471,7 @@ test('Deferral Drone: R119 — the charge is spent by the next play even with th
   assert.equal(mid - open(), 4, 'the one after it pays in full');
 });
 
-test('Deferral Drone: R119 — an unspent charge does not carry into the next turn', () => {
+test('Deferral Drone: CR 111.10k — an unspent charge does not carry into the next turn', () => {
   const h = new Harness(4542);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -498,7 +498,7 @@ test('Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary
   // outside it no priority window opens for a Drone sitting in play — and
   // deployment is the LAST phase of the turn, so the action path can never
   // reach a mid-turn boundary with a charge standing. The engine is still what
-  // has to be right, and R119's charge is a plain seat-indexed tally with one
+  // has to be right, and CR 111.10k's charge is a plain seat-indexed tally with one
   // grant site, so arming it directly is the same charge by the same route.
   const h = new Harness(4545);
   const p = 0 as Seat;
@@ -519,7 +519,7 @@ test('Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary
     '"the next card you play THIS PHASE" — the phase ended, so the charge did');
 });
 
-test('Deferral Drone: R119 — with the Drone gone, applying a mod still does not spend the charge (R37)', () => {
+test('Deferral Drone: CR 111.10k — with the Drone gone, applying a mod still does not spend the charge (CR 701.2b)', () => {
   const h = new Harness(4543);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -528,7 +528,7 @@ test('Deferral Drone: R119 — with the Drone gone, applying a mod still does no
   h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
   whiteBox(h, e => e.destroy(ent(h, drone)!, 'is sacrificed'));
   assert.equal(new E(h.state).manaToPlay(p, 'Deferral Drone', { purpose: 'mod' }), 2,
-    'the `purpose` guard is R37/R59 doing its usual work: a mod payment pays printed [2]');
+    'the `purpose` guard is CR 701.2b doing its usual work: a mod payment pays printed [2]');
   giveResources(h, p, 'light', 1);
   giveResources(h, p, 'metal', 1);                             // lm / 2
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Deferral Drone'), hostId: host });
@@ -536,7 +536,7 @@ test('Deferral Drone: R119 — with the Drone gone, applying a mod still does no
   assert.equal(costToPlay(h, p, 'Brough'), 1, 'and the charge is still standing for a real PLAY');
 });
 
-test('Deferral Drone: R119 — the charge survives a JSON round-trip, and pre-R119 states read as 0', () => {
+test('Deferral Drone: CR 111.10k — the charge survives a JSON round-trip, and older states read as 0', () => {
   const h = new Harness(4544);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -545,10 +545,10 @@ test('Deferral Drone: R119 — the charge survives a JSON round-trip, and pre-R1
   const round = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
   assert.deepEqual(round.nextPlayDiscount, h.state.nextPlayDiscount, 'the new field round-trips');
   assert.equal(new E(round).manaToPlay(p, 'Brough'), 1, 'and the charge still prices a play off the reloaded state');
-  // additive/optional: a game serialized before R119 has no such key at all
+  // additive/optional: a game serialized before the discount field has no such key at all
   const old = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
   delete old.nextPlayDiscount;
-  assert.equal(new E(old).manaToPlay(p, 'Brough'), 4, 'a pre-R119 save loads and reads as no charge');
+  assert.equal(new E(old).manaToPlay(p, 'Brough'), 4, 'a pre-discount save loads and reads as no charge');
   h.state = old;
   assert.doesNotThrow(() => h.legal(p), 'and still drives');
 });
@@ -582,7 +582,7 @@ test('Hammer of Justice and Rime Wraith: printed bodies and printed attributes o
   const p = h.state.deployPlayer!;
   const hammer = spawn(h, p, 'Hammer of Justice');
   assert.deepEqual(effStats(h, hammer), [10, 3], 'a 10/3 structure');
-  assert.ok(ownAttrs(h, hammer).has('Blessed'), '{Blessed} comes off the type line (R48)');
+  assert.ok(ownAttrs(h, hammer).has('Blessed'), '{Blessed} comes off the type line (CR 802.22)');
   assert.ok(ownAttrs(h, hammer).has('Piercing'), 'as does {Piercing}');
   // Rime Wraith is a {Virus} [Augment] {Swift}{Sluggish} body with no behaviour:
   // augmenting it donates both type-line attributes and nothing else
@@ -615,12 +615,12 @@ test('Inexorable Miasma: target unit gains {Poisonous} until regroup', () => {
   finishBattle(h);
 });
 
-test('Inexorable Miasma: R51 — after combat, from your BIN, remove a -1/-1 counter to recall it', () => {
+test('Inexorable Miasma: CR 400.5 — after combat, from your BIN, remove a -1/-1 counter to recall it', () => {
   const h = new Harness(4531);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  // the counter-carrying unit has to be IN the battle region (R12/R25), i.e.
+  // the counter-carrying unit has to be IN the battle region (CR 601.1b), i.e.
   // the defender's home — so it is D's, which is fine: the text says "a unit"
   const shrunk = spawn(h, D, 'Hammer of Justice');
   whiteBox(h, e => e.addCounters(ent(h, shrunk)!, -2));         // net -2: it has -1/-1 counters
@@ -680,7 +680,7 @@ test('Inexorable Miasma: a -1/-1 counter OUTSIDE the battle region does not wake
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   assert.ok(!h.events.some(ev => ev.type === 'triggered' && ev.msg.includes('Inexorable Miasma')),
-    'the gate reads the same region the resolution would (R12/R25)');
+    'the gate reads the same region the resolution would (CR 601.1b)');
   assert.equal(ent(h, elsewhere)!.counters, -2, 'and nothing was removed');
   finishBattle(h);
 });
@@ -730,7 +730,7 @@ test('Inexorable Miasma: a card that is NOT in the bin never hears the after-com
 
 // ── Life Power Dude ──────────────────────────────────────────────────────
 
-test('Life Power Dude: odd life → all units -2/-0, even life → +2/+0 (live, R27)', () => {
+test('Life Power Dude: odd life → all units -2/-0, even life → +2/+0 (live, CR 707.4)', () => {
   const h = new Harness(4517);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -746,11 +746,11 @@ test('Life Power Dude: odd life → all units -2/-0, even life → +2/+0 (live, 
 
 // ── Murkstalker ──────────────────────────────────────────────────────────
 
-test('Murkstalker: when YOU trash a card, drain 3 — bounded once per turn (R9/R40)', () => {
+test('Murkstalker: when YOU trash a card, drain 3 — bounded once per turn (CR 109.9, 801.2e)', () => {
   const h = new Harness(4518);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  // "each opponent" is region-scoped (R25), so the drain needs both players in
+  // "each opponent" is region-scoped (CR 601.4d), so the drain needs both players in
   // one region: the Murkstalker DEFENDS and the battle comes to it
   const murk = spawn(h, D, 'Murkstalker');
   const atk = spawn(h, A, 'Unit Token');
@@ -814,7 +814,7 @@ test('Proliferating Slime: rot given to an enemy PLAYER arrives plus one (⚠ in
 
 // ── Splort ───────────────────────────────────────────────────────────────
 
-test('Splort: when ANOTHER card is trashed, deal 2 to any target (R40)', () => {
+test('Splort: when ANOTHER card is trashed, deal 2 to any target (CR 801.2)', () => {
   const h = new Harness(4522);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -848,7 +848,7 @@ test('The Omniphage: gains every attribute printed on units in your bin (live)',
   assert.ok(!ownAttrs(h, omni).has('Sluggish'), '"YOUR bin" — not the opponent’s');
 });
 
-// ── Vengeance (R122) ─────────────────────────────────────────────────────
+// ── Vengeance (CR 111.10) ─────────────────────────────────────────────────────
 // The un-park of the old { todo: true } test: CostMod carries a `sacrifice`
 // channel now, counted by E.unitsToPlay, gated in canPayCard, and paid as a
 // StackItem.pendingCosts 'playSacrifice' atom in the cast window.
@@ -864,7 +864,7 @@ test("Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer
   h.do({ type: 'declareAttack', seat: D, columns: [[atk], [spare]] });
   giveResources(h, D, 'fire', 4);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
-  pick(h, { player: A });                   // the spell's own target first (R57)
+  pick(h, { player: A });                   // the spell's own target first (CR 702.3f)
   // then the imposed cost: a real decision, and the PAYER owns it
   const dec = h.state.decision!;
   assert.equal(dec.seat, D, 'the paying player chooses — never the engine, never the Vengeance side');
@@ -938,7 +938,7 @@ test('Vengeance: deployment plays are untaxed — "during battle" is a real gate
   const v = spawn(h, A, 'Vengeance');
   const chump = spawn(h, D, 'Unit Token');
   // park A's Vengeance IN D's home region, so only the PHASE separates this
-  // from the battle case — R12 region scope is not what exempts it here
+  // from the battle case — CR 111.10 region scope is not what exempts it here
   whiteBox(h, e => { e.entity(v)!.region = e.homeRegion(D); });
   h.do({ type: 'doneDeploying', seat: A });
   giveResources(h, D, 'fire', 1);
@@ -948,7 +948,7 @@ test('Vengeance: deployment plays are untaxed — "during battle" is a real gate
   assert.ok(unitsOf(h, D).some(u => u.card === 'Ignis Sprite'), 'the unit simply enters');
 });
 
-test('Vengeance: applying a mod during battle is not playing (R37) — no tax on an augment', () => {
+test('Vengeance: applying a mod during battle is not playing (CR 701.2b) — no tax on an augment', () => {
   const h = new Harness(4549);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -959,7 +959,7 @@ test('Vengeance: applying a mod during battle is not playing (R37) — no tax on
   giveResources(h, D, 'fire', 6);
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Smouldering Inferno'), hostId: atk });
   assert.equal(h.state.decision, null, 'no sacrifice asked for a mod — purpose "mod" is exempt');
-  let guard = 20;   // a battle augment rides the stack (R79) — let it attach
+  let guard = 20;   // a battle augment rides the stack (CR 723.3) — let it attach
   while (h.state.stack.length && guard-- > 0) pass(h);
   assert.ok(ent(h, atk), 'the host lives');
   assert.equal(ent(h, atk)!.mods.length, 1, 'the augment is applied, and no sacrifice was ever asked');
@@ -983,7 +983,7 @@ test('Vengeance: donated as an augment, the HOST\'s controller is "you" — thei
   giveResources(h, D, 'fire', 4);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
   pick(h, { player: A });
-  assert.ok(h.state.decision, "the host's opponent is taxed — the mod anchors on the host (R59 anchoring)");
+  assert.ok(h.state.decision, "the host's opponent is taxed — the mod anchors on the host (CR 720.6b anchoring)");
   pick(h, { unit: chump });
   assert.ok(!ent(h, chump) && ent(h, spare), 'one sacrifice, the payer chose which');
   pass(h); pass(h);
@@ -1049,7 +1049,7 @@ test('Vengeance: two of them impose TWO sacrifices — additive, and the gate co
     'one unit is not enough under two Vengeances');
   const t1 = spawn(h, D, 'Unit Token');
   const t2 = spawn(h, D, 'Unit Token');
-  // spawned at home; walk them to the battle region so they can pay (R12)
+  // spawned at home; walk them to the battle region so they can pay (CR 601.1b)
   whiteBox(h, e => { for (const id of [t1, t2]) e.entity(id)!.region = e.s.battle!.region; });
   assert.ok(h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
     'three units clear the two-sacrifice gate');
@@ -1110,7 +1110,7 @@ test('CT-177 Vengeance, the scenario board: an ATTACKING Vengeance taxes the def
   giveResources(h, opp, 'wood', 4);
   toNextBattle(h, you);
   // "Your Vengeance is attacking, so its text is standing in the battle it is
-  // taxing" — R12, and the whole reason the tax reaches at all
+  // taxing" — CR 111.10, and the whole reason the tax reaches at all
   h.do({ type: 'declareAttack', seat: you, columns: [[veng]] });
   assert.equal(ent(h, veng)!.region, h.state.battle!.region,
     'the carrier stands in the region it is taxing');
@@ -1127,7 +1127,7 @@ test('CT-177 Vengeance, the scenario board: an ATTACKING Vengeance taxes the def
     + 'first failure the scenario names ("the imposed cost is not being granted")');
   assert.equal(dec!.seat, opp, 'and demanded of the player who PLAYED it — the second failure '
     + 'the scenario names is being asked yourself, which would read "your opponents" from the '
-    + 'wrong side. R284: a printed bracket is paid by the owner of the effect, and this '
+    + 'wrong side. CR 205.3a: a printed bracket is paid by the owner of the effect, and this '
     + 'bracket is granted to their card');
   assert.ok(dec!.prompt.includes('Sudden Bloom') && dec!.prompt.includes('sacrifice a unit')
     && dec!.prompt.includes('additional cost'),
@@ -1181,7 +1181,7 @@ test('CT-177 census: the two cards that impose a bracketed cost on somebody ELSE
   spawn(h, A, 'Vengeance');
   spawn(h, A, 'Arbiter of Armistice');
   // D attacks INTO A's home, so the battle is fought where both carriers
-  // stand — R12, the same reason the scenario has to make its Vengeance ATTACK
+  // stand — CR 111.10, the same reason the scenario has to make its Vengeance ATTACK
   toNextBattle(h, D);
   const region = h.state.battle!.region;
   assert.equal(region, h.q.homeRegion(A), 'the battle is in the region the two carriers are in');

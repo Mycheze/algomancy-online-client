@@ -23,7 +23,7 @@ const createFireball1: EffectDef = {
 };
 
 /**
- * R227: the "I deal N damage to any target" family — ELEVEN of the fourteen
+ * CR D7.3a: the "I deal N damage to any target" family — ELEVEN of the fourteen
  * effect slots the empty-targets sweep convicted came through this one factory
  * (Flame of History, All-Consuming Blaze, Arc Lightning, and Rune Channeler
  * TWICE — its ability and its graft rider are the same EffectDef object). One
@@ -97,7 +97,7 @@ card('Ephemeral Skywalker', {});
 card('Smouldering Inferno', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
-    // R269: the clause "…do not sacrifice themselves after combat" (Infernal
+    // CR 712.4: the clause "…do not sacrifice themselves after combat" (Infernal
     // Wispweaver) names THIS, and a Wisp can be wearing this one as easily as
     // its own — so the marker goes on the clause, not on the Wisp.
     selfSacrifice: true,
@@ -116,7 +116,7 @@ card('Luminous Arc', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Luminous Arc deals 6 damage to target unit' },
     run: (g, ctx) => {
-      const t = firstTarget(g, ctx);   // R227 — CT-89 named this card first
+      const t = firstTarget(g, ctx);   // CR D7.3a — CT-89 named this card first
       if (!t) return;
       g.dealEffectDamage(ctx, t, 6);
     },
@@ -167,7 +167,7 @@ card('Jelly', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Jelly: target unit gains -2/-2 until regroup' },
     run: (g, ctx) => {
-      const t = firstTarget(g, ctx);   // R227
+      const t = firstTarget(g, ctx);   // CR D7.3a
       if (!t) return;
       if (isEnt(t)) g.addTemp(t, -2, -2);
       g.checkDeaths();
@@ -182,7 +182,7 @@ card('Curio Drifter', {});
 const deleteUnit: EffectDef = {
   targets: { what: 'unit', prompt: 'Delete target unit' },
   run: (g, ctx) => {
-    const t = firstTarget(g, ctx);   // R227 — one def, two routes (spell + graft)
+    const t = firstTarget(g, ctx);   // CR D7.3a — one def, two routes (spell + graft)
     if (!t) return;
     if (isEnt(t)) g.destroy(t, 'is deleted');
   },
@@ -197,7 +197,7 @@ card('Dreadwave Devourer', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Dreadwave Devourer: negate target spell effect' },
     run: (g, ctx) => {
-      const t = firstTarget(g, ctx);   // R227 — CT-89's second named card
+      const t = firstTarget(g, ctx);   // CR D7.3a — CT-89's second named card
       if (!t) return;
       if ('stack' in (t as object)) g.negate((t as { stack: number }).stack);
     },
@@ -210,7 +210,7 @@ card('Dreadwave Devourer', {
 card('Good Whale', {});
 
 // "When I attack or block, [Switch1] I deal damage to each player equal to
-// the number of cards in their hand." — R1: the amounts are computed at
+// the number of cards in their hand." — CR 109.3b, 109.3a: the amounts are computed at
 // RESOLUTION (hand counts read live), the condition fired at event time.
 const tidewraithEffect: EffectDef = {
   run: (g, ctx) => {
@@ -218,7 +218,7 @@ const tidewraithEffect: EffectDef = {
       .map(seat => ({ target: { player: seat as Seat }, n: g.player(seat).hand.length }))
       .filter(h => h.n > 0);
     if (!hits.length) { g.ev('info', 'Astral Tidewraith: every player here is empty-handed — no damage.'); return; }
-    g.dealEffectDamageAll(ctx, hits);   // R80: "each player" is one batch
+    g.dealEffectDamageAll(ctx, hits);   // CR 112.8: "each player" is one batch
   },
 };
 card('Astral Tidewraith', {
@@ -237,7 +237,7 @@ const boulderEffect: EffectDef = {
   run: (g, ctx) => {
     const units = g.unitsIn(ctx.region);
     if (!units.length) { g.ev('info', `${ctx.sourceName}: there is no unit here to damage.`); return; }
-    g.dealEffectDamageAll(ctx, units.map(u => ({ target: u, n: 1 })));   // R80: one batch
+    g.dealEffectDamageAll(ctx, units.map(u => ({ target: u, n: 1 })));   // CR 112.8: one batch
   },
 };
 card('Bellowing Boulder', {
@@ -252,7 +252,7 @@ card('Bellowing Boulder', {
 // type "[Augment] {Swift} Lizard Beast {Virus} Unit" — Swift virus augment
 card('Dune Drifter', {});
 
-// "{Electric} … I deal 6 damage to any target." (R4: excess passes along a
+// "{Electric} … I deal 6 damage to any target." (CR 802.17: excess passes along a
 // controller-chosen adjacent path)
 card('Arc Lightning', {
   spellEffect: dealToAnyTarget(() => 6, 'Arc Lightning deals 6 damage to any target'),
@@ -284,18 +284,18 @@ card('Rampart Guardian', {});
 // defense become the max of the two, stat layer 4): spawns as a 2/2
 card('Child of Aether', {});
 
-// "[Augment] {Deadly} Fish {Virus} Unit" — 1/2 Deadly (any damage kills, R21)
+// "[Augment] {Deadly} Fish {Virus} Unit" — 1/2 Deadly (any damage kills, CR 802.3a)
 card('Tidepool Terror', {});
 
 // "{Deadly} Spider Crab Unit — [Battle] Ambush [3bb]" — the Ambush mode is
-// engine-level (printed.ambush, R22); Deadly is the type-line attr
+// engine-level (printed.ambush, CR 803.6); Deadly is the type-line attr
 card('Orblish Horroth', {});
 
 // "[Augment] {Sneaky} Insect Sprite Unit" — 3/2 Sneaky (unblockable when it
-// is the only attacking unit, R20)
+// is the only attacking unit, CR 802.14)
 card('Whispering Mantid', {});
 
-// "{Haste} Elemental Spell — [Switch1] Create a Fireball 3." (haste step, R18)
+// "{Haste} Elemental Spell — [Switch1] Create a Fireball 3." (haste step, CR 803.2)
 const fireball3: EffectDef = {
   creates: ['Fireball'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Fireball', 3, ctx.region); },
@@ -307,7 +307,7 @@ card('Molten Upheaval', {
 
 // "{Haste} Rock Structure Unit — [Augment][once] When I am dealt damage,
 // create an X/X unit, where X is the damage I am dealt." X comes from the
-// triggering event (R1: the condition and its snapshot are event-time)
+// triggering event (the condition and its snapshot are event-time)
 card('Awoken Tomb', {
   augmentText: [{
     type: 'triggered', events: ['damage'], self: true, bounded: true,   // [once]
@@ -370,7 +370,7 @@ card('Recyclable Sentinel', {
 
 // "{Feeble} Spirit Token Unit — After combat, sacrifice me." (0/1, can't block)
 //
-// R269: this self-sacrifice used to be described here as "the ONE ability the
+// CR 712.4: this self-sacrifice used to be described here as "the ONE ability the
 // Wisp has", which is what let Infernal Wispweaver switch off the Wisp's whole
 // ability LAYER and call it exact. It was never a fact about the Wisp — a Wisp
 // wears augments and stands next to Ancient Ones like anything else — and the
@@ -403,7 +403,7 @@ card('Fireball', {
   spellEffect: {
     targets: { what: 'any', prompt: 'Fireball deals X damage to any target' },
     run: (g, ctx) => {
-      const t = firstTarget(g, ctx);   // R227
+      const t = firstTarget(g, ctx);   // CR D7.3a
       if (!t) return;
       g.dealEffectDamage(ctx, t, ctx.x ?? 0);
     },
@@ -418,7 +418,7 @@ registerSynthetic({
   image: 'Generic-Unit.jpg',   // the box's generic-unit token card
 }, {});
 
-// R101 — "Beyond, Codex Incarnate", the TRANSFORM BACK FACE of Scholar of the
+// CR 108.3 — "Beyond, Codex Incarnate", the TRANSFORM BACK FACE of Scholar of the
 // Void. Playtest ledger #24 (ZQPC, 2026-08-20) sat blocked for two days on the
 // plain fact that this card existed in NO data we hold: not the 534-card
 // oracle file (which names it only inside Scholar's own text), not the corpus,
@@ -470,12 +470,12 @@ registerSynthetic({
 }, {
   // ── "Your units are {g}inverted." ───────────────────────────────────
   //
-  // Implementable as of R93, which shipped {Inverted} as stat layer 5
+  // Implementable now that {Inverted} works as stat layer 5 (CR 802.8a)
   // ("p = 2·baseP − p" — negate the accumulated delta from base). Before that
   // this clause had nowhere to land; now it is a plain attribute grant and
   // needs no new machinery at all.
   //
-  // Region scoping (R12) is FREE and is not written here on purpose:
+  // Region scoping (CR 101.6) is FREE and is not written here on purpose:
   // `E.staticsFor` already filters the anchored() walk to
   // `anchor.region === target.region`, so "your units" can never reach a unit
   // in another region. Ownership is the half that lives on the card, which is
@@ -496,7 +496,7 @@ registerSynthetic({
   // ── "If you would take damage from rot, put that many -1/-1 counters on
   //    TARGET unit instead." ───────────────────────────────────────────
   //
-  // LIVE as of R102. It was PARKED in R101 behind a park note that concluded a
+  // LIVE (CR 112.13d). It was parked in the transform round behind a park note that concluded a
   // brand-new `Suspension` variant was needed, because `replaceRotDamage` is
   // `(g, self, seat, amount) => boolean` — no `EffectCtx`, no `ctx.choose` —
   // and `E.rotDamage()` is called straight out of `startDeployment()` with
@@ -512,14 +512,14 @@ registerSynthetic({
   //
   // "It would TRIGGER" is the whole design. The replacement does not have to
   // finish inside the hook: it puts a TRIGGERED EFFECT on the stack, and the
-  // R67 machinery that already exists does the asking — fireEvent →
+  // CR 110.1a machinery that already exists does the asking — fireEvent →
   // queueTrigger → processTriggerQueue → collectTargets → commitItem. The one
-  // piece that was missing is the event to hang the trigger on, so R102 adds
+  // piece that was missing is the event to hang the trigger on, so the rot-replacement ruling (CR 112.13d) adds
   // it: `E.replaceRotDamage` fires 'rotReplaced' the moment a hook returns
   // true, inside rotDamage()'s own settle() window. No new Suspension variant,
   // no new decision seam, no engine special-casing of this card.
   //
-  // The three rejected shortcuts in R101's note (hardcode "me", auto-pick the
+  // The three rejected shortcuts in the original transform note (hardcode "me", auto-pick the
   // forced candidate, pick a deterministic enemy) stay rejected — the printed
   // word is "target", which is the game's word for "you choose", and now it
   // really does.
@@ -530,8 +530,8 @@ registerSynthetic({
   //    — that is what "instead" means — and it is replaced BEFORE anything is
   //    queued, let alone resolved. So a queued effect that later fizzles for
   //    want of a target does not resurrect the damage: nobody takes it either
-  //    way. That is the same direction R98 settled for combat ("a REPLACED hit
-  //    still counts as dealt") and R86 for a fizzle, and it is the only
+  //    way. That is the same direction CR 112.12 settled for combat ("a REPLACED hit
+  //    still counts as dealt") and CR 704.6 for a fizzle, and it is the only
   //    ordering the hook's boolean signature can express.
   //
   //  · THE CHOOSER is Beyond's controller, for free: `queueTrigger` sets the
@@ -541,24 +541,24 @@ registerSynthetic({
   //    `a.controller === seat` — so the two readings coincide, exactly as the
   //    owner said.
   //
-  //  · THE TARGET is `what: 'unit'` with an R64 `restrict` narrowing it to the
+  //  · THE TARGET is `what: 'unit'` with a CR 110.3a `restrict` narrowing it to the
   //    controller's own units, and NOT `what: 'allyUnit'`. Both express the
   //    ruling; the restrict is the one that can be printed. The card says
   //    "target unit", and test/68-target-conformance's "every target kind a
   //    card declares is named by its printed text" reads the phrase the way a
   //    player does: 'allyUnit' is the kind for text that prints "target ally",
   //    and this text does not. So the KIND stays the kind the card names and
-  //    the owner's ruling lands where R64 put restrictions — in the predicate
+  //    the owner's ruling lands where CR 110.3a put restrictions — in the predicate
   //    that decides which candidates are legal. It is a real rule and not an
-  //    accident of the board: the region-scoped candidate list (R12) would
+  //    accident of the board: the region-scoped candidate list (CR 101.6) would
   //    happen to hold only your units during deployment, and relying on that
   //    would be relying on a coincidence.
   //
-  //  · NO LEGAL TARGET cannot actually happen, and is handled anyway. R67
+  //  · NO LEGAL TARGET cannot actually happen, and is handled anyway. CR 110.7
   //    says a mandatory target with no candidate makes a CAST illegal, but
   //    this is not a cast — the trigger is already firing, so `collectTargets`
   //    takes the other branch it has always had: it logs "there is no legal
-  //    target for that — it does nothing" and the part is skipped (R86). It is
+  //    target for that — it does nothing" and the part is skipped (CR 704.6g). It is
   //    unreachable because the hook radiates from a UNIT IN PLAY that the
   //    damaged seat controls, so Beyond itself is always a legal candidate for
   //    its own replacement.
@@ -568,17 +568,17 @@ registerSynthetic({
   //    their own anchor and queue their own trigger under their own
   //    controller. Ordering is `processTriggerQueue`'s existing determinism,
   //    and within one seat `E.replaceRotDamage` already sorts holders by
-  //    entity id (R62 precedent).
+  //    entity id.
   //
   // And the owner's closing observation is a real consequence, not a joke:
-  // Beyond grants {Inverted} to your units (the clause above), and R93's layer
-  // 5 negates the accumulated delta from base — so a -1/-1 counter on one of
+  // Beyond grants {Inverted} to your units (the clause above), and stat layer
+  // 5 (CR 802.8a) negates the accumulated delta from base — so a -1/-1 counter on one of
   // YOUR units reads as +1/+1. Your own rot makes your board BIGGER.
   abilities: [{
     type: 'triggered', events: ['rotReplaced'], self: true,
     label: 'put that many -1/-1 counters on target unit',
     effect: {
-      // R64: the printed kind, with the owner's ruling as the restriction.
+      // CR 110.3a: the printed kind, with the owner's ruling as the restriction.
       // `ctx.ally` is the effect's controller — Beyond's controller.
       targets: {
         what: 'unit',
@@ -586,7 +586,7 @@ registerSynthetic({
         restrict: unitRestrict((_g, u, ctx) => u.controller === ctx.ally),
       },
       run: (g, ctx) => {
-        // R1: the AMOUNT is the rot that was actually replaced, read off the
+        // the AMOUNT is the rot that was actually replaced, read off the
         // event snapshot rather than recomputed — `E.rot(seat)` at resolution
         // would be the same number today and a lie the first time anything
         // changes rot in between.
@@ -613,10 +613,10 @@ registerSynthetic({
 });
 
 /**
- * R101 — the transform table: printed card → the face on its back.
+ * CR 108.3b — the transform table: printed card → the face on its back.
  *
  * DECLARATIVE, and in the registry rather than in either consumer, for the
- * same reason `EffectDef.creates` is declarative (R69): the inspector used to
+ * same reason `EffectDef.creates` is declarative: the inspector used to
  * scrape printed text for a card NAME and that was wrong three ways at once.
  * Scholar's text does name "Beyond, Codex Incarnate" in a scannable sentence,
  * so the scrape would even work today — and it would break the first time a
@@ -647,7 +647,7 @@ export function transformingCardNames(): string[] {
   return [...TRANSFORM_BACK_FACES.keys()];
 }
 
-// R71 — the Wraith token (retired name: "Wight"), REDESIGNED 2026-08-21. The
+// CR 110.2c, 721.6 — the Wraith token (retired name: "Wight"), REDESIGNED 2026-08-21. The
 // printed card is in the oracle pool like every other token card (Wisp,
 // Fireball, Poison), so stats/type/text/art are extracted, never hand-copied,
 // and only behaviour lives here:
@@ -658,14 +658,14 @@ export function transformingCardNames(): string[] {
 //
 // Both lines sit under ONE text-box [Augment], so both TRANSFER to the host
 // when a Wraith is applied as an augment mod, and both are live on a Wraith
-// BODY standing in play (R55: a card's own [Augment] text is live when it is
+// BODY standing in play (CR 721.1d: a card's own [Augment] text is live when it is
 // played normally). A Wraith body carrying a Wraith mod therefore has the text
 // twice and does it twice — two copies, two firings.
 //
-// Neither line prints the word "target", so neither picks a target (R71): the
+// Neither line prints the word "target", so neither picks a target (CR 110.2): the
 // ally is chosen ON RESOLUTION with a plain ctx.choose. It cannot be redirected,
 // "when I become targeted" never fires for it, and it cannot fizzle for want of
-// a legal ally — it just does nothing. This is a deliberate exception to R67
+// a legal ally — it just does nothing. This is a deliberate exception to CR 110.1a
 // ("targets are chosen at cast") and is an exception PRECISELY because the word
 // "target" is absent; do not "fix" it by adding a TargetSpec.
 //
@@ -688,7 +688,7 @@ export function transformingCardNames(): string[] {
 // to "on an ally", not a prohibition on picking yourself.
 
 /** the allies "an ally" may be chosen from: units the carrier's controller
- * controls, in the carrier's own region (R12 — other regions do not exist).
+ * controls, in the carrier's own region (CR 101.6 — other regions do not exist).
  * The carrier itself is INCLUDED — a unit is its own ally (see the note
  * above; Bena's ruling, 2026-08-21). */
 const wraithAllies = (g: E, ctx: EffectCtx): Entity[] => {
@@ -696,7 +696,7 @@ const wraithAllies = (g: E, ctx: EffectCtx): Entity[] => {
   return g.unitsOf(ctx.controller, self?.region ?? ctx.region);
 };
 
-/** R144: the same list, asked of a STACK ITEM instead of an EffectCtx — the
+/** CR 706.12: the same list, asked of a STACK ITEM instead of an EffectCtx — the
  * deployment line is aimed in the stack window now, where there is no ctx yet.
  * One rule, two callers; `item` carries the same three facts `ctx` does. */
 const wraithAlliesOf = (g: E, item: StackItem): Entity[] => {
@@ -722,7 +722,7 @@ card('Wraith', {
   augmentText: [
     // "At the start of deployment, put a -1/-1 counter on an ally."
     //
-    // R144(b), OWNER RULING (report #101, room SMVJ, 2026-08-24): *"All Wraith
+    // CR 706.12, OWNER RULING (report #101, room SMVJ, 2026-08-24): *"All Wraith
     // triggers should go onto the stack simultaneously and be allowed to
     // target the same unit, even exceeding its defense (the final triggers
     // would just fizzle)."* The ally is therefore chosen when the trigger goes
@@ -732,11 +732,11 @@ card('Wraith', {
     // a later world, was offered a menu the 3/3 was no longer on, and had to
     // shrink one of your other units instead of doing nothing.
     //
-    // ⚠ STILL NOT A TARGET — R71 is narrowed, not reversed. The word "target"
+    // ⚠ STILL NOT A TARGET — the Wraith ruling (CR 110.2c) is narrowed, not reversed. The word "target"
     // is still not printed, so this fires no `'targeted'` event (Mohruung does
     // not hand you a Crystal every deployment), cannot be redirected, and is
     // invisible to every targeting restriction. See `EffectDef.subject` for
-    // what R144 grants and what it deliberately withholds.
+    // what CR 706.12a grants and what it deliberately withholds.
     //
     // The DEATH line below is untouched and still picks at resolution: the
     // owner's ruling is about the start-of-deployment pile, and "Augment a
@@ -755,14 +755,14 @@ card('Wraith', {
           const ally = ctx.subject;
           // `null` only — a subject that has LEFT PLAY never reaches a run:
           // that part fizzled, and said so. This is the "there was no ally at
-          // all" case, which R71 rules is a no-op and not a fizzle.
+          // all" case, which the engine treats as a no-op and not a fizzle.
           if (!ally) { g.ev('info', 'Wraith: there is no ally to put a -1/-1 counter on.'); return; }
           g.addCounters(ally, -1);
         },
       },
     },
     // "When I die, Augment a Wraith onto an ally." — the dying Wraith is NOT
-    // re-homed (it is erased like any other token, R69); this mints a FRESH
+    // re-homed (it is erased like any other token, CR 410.5a); this mints a FRESH
     // Wraith mod. `self: true`, so a Wraith body fires for its own death and a
     // donated copy fires for its host's death, never for a bystander's.
     {
@@ -781,7 +781,7 @@ card('Wraith', {
   ],
 });
 
-// R47/R71: the token was renamed Wight -> Wraith. Six cards already say
+// the token was renamed Wight -> Wraith. Six cards already say
 // "Wraith"; `Blight's End` still carries the retired name. One card, two
 // printed names.
 registerAlias('Wight', 'Wraith');
@@ -808,7 +808,7 @@ export const DECK_LIST: string[] = allCardNames().filter(n => {
   // completeness but are NOT deck cards — without this they leak in as
   // phantom units (found when the fire-a batch registered Fire Resource).
   if (/\bResource\b/.test(c.type)) return false;
-  if (c.lessonOnly) return false;   // R297: Learn to Play's own cards
+  if (c.lessonOnly) return false;   // CR D8.1: Learn to Play's own cards
   return !/Token/.test(c.type) && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
 });
 
@@ -838,7 +838,7 @@ export function effectsOf(name: string): EffectDef[] {
   return out;
 }
 
-/** R69: the tokens a card can put onto the board, unioned over every effect it
+/** the tokens a card can put onto the board, unioned over every effect it
  * owns and DECLARED (EffectDef.creates) rather than scraped out of the printed
  * text. `npm test`'s conformance pass records what the effects actually spawn
  * and fails if a card creates a token it never declared, so this stays true
@@ -851,7 +851,7 @@ export function createsOf(name: string): string[] {
   return out;
 }
 
-// R297 — the Tutorial Bot's only card (Learn to Play). "Create an X/X unit."
+// CR D8.1 — the Tutorial Bot's only card (Learn to Play). "Create an X/X unit."
 // Registered LAST, so the pinned registration order of every real card is
 // untouched; `lessonOnly` keeps it out of DECK_LIST, so no constructed, draft
 // or shared deal can ever hold it — only a lesson deal (lessondeal.ts). It

@@ -3,7 +3,7 @@
     "id": "F-U24-1",
     "rule": "annexd.display.text-box",
     "title": "The in-game inspector states a type-line attribute's reminder twice on cards with an empty text box",
-    "summary": "R282 put a card's type-line attribute reminders into its text box when the printed box is empty (21 cards). The card browser was changed to stop repeating them, but R282 says the in-game inspector still prints its own Attributes (printed) section under the box, so on those cards it states the reminder twice. R282 says the one-condition fix in inspectorHtml should be made before the ruling counts as closed. Suspected still open; not checked against the client.",
+    "summary": "The owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) put a card's type-line attribute reminders into its text box when the printed box is empty (21 cards). The card browser was changed to stop repeating them, but the owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) says the in-game inspector still prints its own Attributes (printed) section under the box, so on those cards it states the reminder twice. The owner ruling of 2026-08-30 (“A type-line attribute is rules text…”) says the one-condition fix in inspectorHtml should be made before the ruling counts as closed. Suspected still open; not checked against the client.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -21,7 +21,7 @@
     "id": "F-U24-2",
     "rule": "annexd.display.declarations",
     "title": "The client's in-progress block assignment may not be re-seeded when attack columns close ranks",
-    "summary": "R72's note says the defender's half-built block assignment in the client is keyed by attack-column index, and that a spell killing an attacker during the blocks step shifts those indices under it. The engine refuses a stale key, so the worst case is a rejected declaration, but R72 says the client should re-seed its preview when the number of columns changes and does not yet. Suspected; the note may be stale (the board has been rebuilt since) and was not checked against the client.",
+    "summary": "The owner ruling of 2026-08-22 (“Formation gravity: the back row always…”)’s note says the defender's half-built block assignment in the client is keyed by attack-column index, and that a spell killing an attacker during the blocks step shifts those indices under it. The engine refuses a stale key, so the worst case is a rejected declaration, but the owner ruling of 2026-08-22 (“Formation gravity: the back row always…”) says the client should re-seed its preview when the number of columns changes and does not yet. Suspected; the note may be stale (the board has been rebuilt since) and was not checked against the client.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -34,7 +34,7 @@
     "id": "F-U24-3",
     "rule": "annexd.reveal.hidden-steps",
     "title": "A modified client can still see when its opponent acts inside a hidden simultaneous step",
-    "summary": "R236 hid the opponent's haste readiness but names a residual it did not close: the state's action count is served live to both seats and rises on every action, so a modified client can tell that, and when, the opponent did something inside any hidden step (resource, haste, deployment). The shipped client draws nothing from it. Recorded so the hidden-step rule is not read as airtight; not checked against the server.",
+    "summary": "The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) hid the opponent's haste readiness but names a residual it did not close: the state's action count is served live to both seats and rises on every action, so a modified client can tell that, and when, the opponent did something inside any hidden step (resource, haste, deployment). The shipped client draws nothing from it. Recorded so the hidden-step rule is not read as airtight; not checked against the server.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -51,7 +51,7 @@
     "id": "F-U24-4",
     "rule": "annexd.confirm.not-only-log",
     "title": "Announcements of a loss the player paid for are still shown only in the game log",
-    "summary": "R266 requires an announcement the player acts on or has lost something by to reach a surface other than the log. The verifier measured the client's own derived inventory in 244-log-is-not-the-only-surface: 39 announcements are log-only, 21 of them tier 1 (spells fizzling, costs that cannot be paid, declined costs, life not gained or not lost, nothing lured). R266 records nineteen and the test asserts 21, so the ruling's count is also stale.",
+    "summary": "The owner ruling of 2026-08-30 (“nothing may exist only in the…”) requires an announcement the player acts on or has lost something by to reach a surface other than the log. The verifier measured the client's own derived inventory in 244-log-is-not-the-only-surface: 39 announcements are log-only, 21 of them tier 1 (spells fizzling, costs that cannot be paid, declined costs, life not gained or not lost, nothing lured). The owner ruling of 2026-08-30 (“nothing may exist only in the…”) records nineteen and the test asserts 21, so the ruling's count is also stale.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",

@@ -50,8 +50,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "188-deck-stats.test.ts",
@@ -59,6 +58,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "No printed source enumerates the types in one sentence; the Manual (p.13) and the Rulebook (p.3) each describe units, spells and spell units in turn, and both describe unit tokens and spell tokens (Manual p.15, Rulebook p.4). Resources are cards too (Manual p.5 \"RESOURCE CARDS\"; Rulebook p.6 \"non-token, non-resource cards\"), so the three types are scoped to non-resource cards; resources are 106. Sources silent on a single type list: D-U06-12. The engine has four card kinds (unit, spell, spellUnit, spellToken); a unit token is kind unit.",
     "sourceHashes": {}
@@ -102,14 +102,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Read off the printed type lines of the pool (printed.json); no rules text states the convention. The rest of the type line (subtypes, braced attributes and timing) is 204.",
     "sourceHashes": {}
@@ -147,24 +147,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R129",
-          "quote": "A Poison is not a body; it has no stats"
+          "quote": "A Poison is not a body; it has no stats",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Printed text gives stats to units and spell units; unit tokens function as units (Manual p.15). That a spell token has no stats is R129's owner reasoning about Poison; the printed spell tokens print no stats. The Rulebook calls the second stat \"health\" (D-U06-3).",
-    "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
-    }
+    "notes": "Printed text gives stats to units and spell units; unit tokens function as units (Manual p.15). That a spell token has no stats is the owner ruling of 2026-08-24 (“a spell token is a token…”)’s owner reasoning about Poison; the printed spell tokens print no stats. The Rulebook calls the second stat \"health\" (D-U06-3).",
+    "sourceHashes": {}
   },
   {
     "key": "types.general.cards",
@@ -184,24 +183,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R129",
-          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "119-play-and-token-events.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Owner rulings R129 and R133. The printed text calls tokens \"temporary cards\" (Manual p.15, Rulebook p.4), which disagrees: D-U06-1.",
-    "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
-    }
+    "notes": "Owner rulings the owner ruling of 2026-08-24 (“a spell token is a token…”) and the owner ruling of 2026-08-24 (“tokens are NOT cards, and trashing…”). The printed text calls tokens \"temporary cards\" (Manual p.15, Rulebook p.4), which disagrees: D-U06-1.",
+    "sourceHashes": {}
   },
   {
     "key": "types.general.nouns",
@@ -219,24 +217,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "So the printed noun"
+          "quote": "So the printed noun",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Parent rule; each sub-rule carries its own sources. R305 states the principle (\"So the printed noun decides every case\").",
-    "sourceHashes": {
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
-    }
+    "notes": "Parent rule; each sub-rule carries its own sources. The owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”) states the principle (\"So the printed noun decides every case\").",
+    "sourceHashes": {}
   },
   {
     "key": "types.general.nouns.spell",
@@ -262,28 +259,28 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "**\"spell(s)\"**: a token counts."
+          "quote": "**\"spell(s)\"**: a token counts.",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §13",
-          "quote": "Yes. Tokens are spells."
+          "quote": "Yes. Tokens are spells.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Spell units: the Hooba-Pon RAQ (a spell unit played counts as playing a spell). Spell tokens: R157 §13 and R305.",
+    "notes": "Spell units: the Hooba-Pon RAQ (a spell unit played counts as playing a spell). Spell tokens: The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) and the owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”).",
     "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
       "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190"
     }
   },
@@ -320,13 +317,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R129",
-          "quote": "A Poison is not a body; it has no stats"
+          "quote": "A Poison is not a body; it has no stats",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "119-play-and-token-events.test.ts",
@@ -334,10 +331,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Unit tokens are units (Manual p.15). A spell unit answers \"play a unit\" (Hooba-Pon RAQ; the thread title is \"Spell Units played when you can play a unit from hand\"). A spell token is not a unit: R129 (The World Shepherd). The designer quote is the Hooba-Pon write-up's answer to the thread \"Spell Units played when you can 'play a unit from hand'\"; it bears on spell units being units only.",
+    "notes": "Unit tokens are units (Manual p.15). A spell unit answers \"play a unit\" (Hooba-Pon RAQ; the thread title is \"Spell Units played when you can play a unit from hand\"). A spell token is not a unit: The owner ruling of 2026-08-24 (“a spell token is a token…”) (The World Shepherd). The designer quote is the Hooba-Pon write-up's answer to the thread \"Spell Units played when you can 'play a unit from hand'\"; it bears on spell units being units only.",
     "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
       "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
     }
   },
@@ -359,28 +356,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R129",
-          "quote": "\"A token\" carries no qualifier, and the set proves the reading itself"
+          "quote": "\"A token\" carries no qualifier, and the set proves the reading itself",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R129",
-          "quote": "Spell tokens are still tokens."
+          "quote": "Spell tokens are still tokens.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "119-play-and-token-events.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R129 (Mycelial Mentor's \"When you create a token\").",
-    "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
-    }
+    "notes": "The owner ruling of 2026-08-24 (“a spell token is a token…”) (Mycelial Mentor's \"When you create a token\").",
+    "sourceHashes": {}
   },
   {
     "key": "types.general.nouns.card",
@@ -390,7 +387,7 @@
     "examples": [
       {
         "text": "Arbiter of Armistice makes cards played during battle cost 2 life more; casting a spell token costs no life.",
-        "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards"
+        "test": "337-spell-tokens-are-played.test.ts::CR 701.1c: Arbiter of Armistice prints Cards"
       },
       {
         "text": null,
@@ -405,17 +402,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "**\"card(s)\"**: a token does not."
+          "quote": "**\"card(s)\"**: a token does not.",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R129",
-          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "337-spell-tokens-are-played.test.ts",
@@ -423,12 +421,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R305 noun table (Arbiter of Armistice, Vengeance, Deferral Drone) and R129. Contested by the printed \"temporary cards\": D-U06-1.",
-    "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
-    }
+    "notes": "The owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”) noun table (Arbiter of Armistice, Vengeance, Deferral Drone) and the owner ruling of 2026-08-24 (“a spell token is a token…”). Contested by the printed \"temporary cards\": D-U06-1.",
+    "sourceHashes": {}
   },
   {
     "key": "types.general.nouns.nontoken",
@@ -446,24 +442,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "**\"nontoken spell\"**: a token does not, because the card says so."
+          "quote": "**\"nontoken spell\"**: a token does not, because the card says so.",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "40-light-c.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R305; the same reading is behind every \"nontoken\" card R305 lists.",
-    "sourceHashes": {
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
-    }
+    "notes": "The owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”); the same reading is behind every \"nontoken\" card the owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”) lists.",
+    "sourceHashes": {}
   },
   {
     "key": "types.units.permanent",
@@ -496,14 +491,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -527,12 +522,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -567,14 +562,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -607,14 +602,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Rulebook 2023 calls this stat \"health\": D-U06-3.",
     "sourceHashes": {}
@@ -647,14 +642,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Stated here as part of what defense means. When the death happens (state checks) is 713; damage is 112.",
     "sourceHashes": {}
@@ -684,14 +679,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The exceptions live elsewhere: whose bin (405), a token (304.10), an {Unstable} or modded card (803, 720).",
     "sourceHashes": {}
@@ -725,14 +720,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The Q&A asks \"Can units that spawn during battle attack?\"; Manual p.15 puts a unit that spawns during battle outside of formation, so it is not attacking or blocking in that battle. Recorded as D-U06-4. No test found that asserts a newly arrived unit may attack.",
     "sourceHashes": {}
@@ -778,8 +773,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "98-spawn-region.test.ts",
@@ -787,6 +781,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The \"unless they specifically say so\" clause is the Manual's answer for spell units (p.43); the p.15 note states the general case. Hooba-Pon's text places the unit it plays into its formation.",
     "sourceHashes": {}
@@ -813,28 +808,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "\"I spawn with N counters\" is a DECLARATION about the body"
+          "quote": "\"I spawn with N counters\" is a DECLARATION about the body",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R165",
-          "quote": "card **is** on arrival, not an effect aimed at it. There is nothing there to"
+          "quote": "card **is** on arrival, not an effect aimed at it. There is nothing there to",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "139-spawn-and-play.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R165 (Robot, Powerforge Synergist, Aethercap Siphoner). The printed cards say \"I spawn with ...\"; the ruling decides it is not a trigger.",
-    "sourceHashes": {
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) (Robot, Powerforge Synergist, Aethercap Siphoner). The printed cards say \"I spawn with ...\"; the ruling decides it is not a trigger.",
+    "sourceHashes": {}
   },
   {
     "key": "types.units.spawns-with-counters.not-put",
@@ -859,28 +854,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "nobody *puts* a spawn's own counters on"
+          "quote": "nobody *puts* a spawn's own counters on",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R165",
-          "quote": "scaled by the amount layer, and nothing for an opponent to negate."
+          "quote": "scaled by the amount layer, and nothing for an opponent to negate.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "139-spawn-and-play.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R165's \"SILENT\" and \"amount layer\" details; the replacement effect in question is Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\").",
-    "sourceHashes": {
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”)’s \"SILENT\" and \"amount layer\" details; the replacement effect in question is Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\").",
+    "sourceHashes": {}
   },
   {
     "key": "types.units.put-vs-play",
@@ -904,13 +899,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "The ruling: the printed verb decides."
+          "quote": "The ruling: the printed verb decides.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "11-fire-wood.test.ts",
@@ -919,11 +914,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R165 (b): Exhume, Resurrect, Rousing Spirit and Lurking Dread put into play; Wake the Dead and The Bonesculptor play. The rest of playing is 701.",
-    "sourceHashes": {
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) (b): Exhume, Resurrect, Rousing Spirit and Lurking Dread put into play; Wake the Dead and The Bonesculptor play. The rest of playing is 701.",
+    "sourceHashes": {}
   },
   {
     "key": "types.spells.what",
@@ -952,14 +946,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -972,7 +966,7 @@
     "examples": [
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed"
+        "test": "35-rot-debt-trash.test.ts::CR 801.2b: a spell going to the bin after RESOLVING is not trashed"
       }
     ],
     "see": [
@@ -998,16 +992,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Whose bin is 405 (R250, zones follow control). A spell unit (303.3) and a spell token (304.10) do not go to the bin. Resolution and fizzling are 704.",
+    "notes": "Whose bin is 405 (the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), zones follow control). A spell unit (303.3) and a spell token (304.10) do not go to the bin. Resolution and fizzling are 704.",
     "sourceHashes": {}
   },
   {
@@ -1033,24 +1027,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §13",
-          "quote": "Yes. Tokens are spells."
+          "quote": "Yes. Tokens are spells.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.spell-units.what",
@@ -1087,8 +1080,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "210-cardsearch.test.ts",
@@ -1096,6 +1088,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1127,8 +1120,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -1136,6 +1128,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "RAQ 1353862592661164152#0's \"He\" is Mycelial Mentor, a plain unit; the same thread's point about a negated spell unit (#1) puts a spell unit on the stack too.",
     "sourceHashes": {
@@ -1176,8 +1169,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "15-water-b.test.ts",
@@ -1185,6 +1177,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1236,8 +1229,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -1245,8 +1237,9 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Whether losing only SOME targets stops it is 704 (a spell resolves as best it can). The Manual sends a prevented spell unit to the bin; R250 makes it the controller's bin (405).",
+    "notes": "Whether losing only SOME targets stops it is 704 (a spell resolves as best it can). The Manual sends a prevented spell unit to the bin; the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) makes it the controller's bin (405).",
     "sourceHashes": {
       "RAQ 1461450216874967235#1": "1afad7ef4c9e3ea98f6bf01bcd70ecf19a028cb13e5ef3149dfe04aa2e07d0f1"
     }
@@ -1291,14 +1284,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The designer answers are about a spell unit played through Hooba-Pon; no source limits them to that route. engine differs: F-U06-1 (measured: a spell unit Wake the Dead plays from a bin fires no spell-played event and never goes on the stack).",
     "sourceHashes": {
@@ -1342,14 +1335,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "110-literal-water.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "States the designer ruling for every \"play a unit\" effect; the RAQ thread names Hooba-Pon and Insidious Invitation. engine differs: F-U06-1 (measured: Wake the Dead lets a player play a spell unit from a bin but spawns its body without playing it as a spell).",
     "sourceHashes": {
@@ -1396,8 +1389,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -1405,8 +1397,9 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"the region where it resolved\" is the battle region; R115 and R147 say the same of a spell unit's body.",
+    "notes": "\"the region where it resolved\" is the battle region; the owner ruling of 2026-08-23 (“a created unit arrives where its…”) and the owner ruling of 2026-08-25 (“a spell unit that becomes a…”) say the same of a spell unit's body.",
     "sourceHashes": {
       "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
     }
@@ -1439,14 +1432,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1484,21 +1477,21 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R165",
-          "quote": "The ruling: the printed verb decides."
+          "quote": "The ruling: the printed verb decides.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Combines 301.9 (the printed verb decides whether it is a play) with the Hooba-Pon RAQ (what playing a spell unit means; its thread is about playing from hand, and no source limits it to the hand). R165 itself records that Wake the Dead, which prints \"play\", spawns a spell unit's body and skips its spell. engine differs: F-U06-1 (measured by the verifier: Jelly from a bin, body arrives, no target asked, no spell-played event, the victim stays 7/5).",
+    "notes": "Combines 301.9 (the printed verb decides whether it is a play) with the Hooba-Pon RAQ (what playing a spell unit means; its thread is about playing from hand, and no source limits it to the hand). The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) itself records that Wake the Dead, which prints \"play\", spawns a spell unit's body and skips its spell. engine differs: F-U06-1 (measured by the verifier: Jelly from a bin, body arrives, no target asked, no spell-played event, the victim stays 7/5).",
     "sourceHashes": {
-      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d",
       "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751",
       "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190"
     },
@@ -1515,11 +1508,11 @@
     "examples": [
       {
         "text": "Hush Mush negates an opponent's effect and enters play already under that opponent's control; its caster never controls it.",
-        "test": "23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated effect's controller"
+        "test": "23-wood-a.test.ts::CR 303.10 #95: Hush Mush ENTERS under the negated effect's controller"
       },
       {
         "text": "The caster's Flourishing Flora, which watches allies spawn, does not see Hush Mush arrive.",
-        "test": "23-wood-a.test.ts::R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush"
+        "test": "23-wood-a.test.ts::CR 303.10 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush"
       }
     ],
     "see": [
@@ -1530,24 +1523,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R143 (its enters-as-that-player's-unit half)",
-          "quote": "A spell unit whose text says another player gains control of it ENTERS as"
+          "quote": "A spell unit whose text says another player gains control of it ENTERS as",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R143 (its enters-as-that-player's-unit half)",
-          "quote": "that player's unit.** There is no moment at which the caster controls the body,"
+          "quote": "that player's unit.** There is no moment at which the caster controls the body,",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R143 (its enters-as-that-player's-unit half)",
-          "quote": "**OWNERSHIP DOES NOT FOLLOW.**"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R143",
-          "relation": "partly superseded: its \"still your bin it dies to\" clause was replaced by R250 (zones follow control)"
+          "quote": "**OWNERSHIP DOES NOT FOLLOW.**",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1556,11 +1546,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Hush Mush (\"Its controller gains control of me.\"). Owner call (R143); no designer source: D-U06-8.",
-    "sourceHashes": {
-      "R143": "fe3e0152f54c131e73fc9659c92bd35bebe1328b2ed54a4c79fceff86679caf9"
-    }
+    "notes": "Hush Mush (\"Its controller gains control of me.\"). Owner call (owner ruling of 2026-08-24, “\"…gains control of me\" on a…”); no designer source: D-U06-8.",
+    "sourceHashes": {}
   },
   {
     "key": "types.spell-units.copy",
@@ -1570,11 +1559,11 @@
     "examples": [
       {
         "text": "Borrower of Forms has the copied unit's name, stats and attributes from the instant it enters play.",
-        "test": "26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant it enters play"
+        "test": "26-metal-a.test.ts::CR 303.11: the body wears the borrowed IDENTITY from the instant it enters play"
       },
       {
         "text": null,
-        "test": "26-metal-a.test.ts::R147: becoming the copy is NOT a trigger"
+        "test": "26-metal-a.test.ts::CR 303.11: becoming the copy is NOT a trigger"
       }
     ],
     "see": [
@@ -1584,28 +1573,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R147",
-          "quote": "A spell unit whose own text says it becomes a copy ENTERS PLAY as that copy."
+          "quote": "A spell unit whose own text says it becomes a copy ENTERS PLAY as that copy.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R147",
-          "quote": "There is no moment at which it is standing there as itself, so there is nothing"
+          "quote": "There is no moment at which it is standing there as itself, so there is nothing",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Borrower of Forms (\"I become an exact copy of that unit.\"). Copies in general are 710.",
-    "sourceHashes": {
-      "R147": "0e980b5d69ea6ba81371890fb4f0e4e7201412442f1830d53a1293b0c46958f6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.spell-units.copy.not-spell-unit",
@@ -1630,14 +1619,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1671,14 +1660,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Both printed sources call tokens \"temporary cards\"; this document follows the owner's ruling that a token is not a card (304.2, D-U06-1).",
     "sourceHashes": {}
@@ -1702,28 +1691,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R133 (its tokens-are-not-cards half)",
-          "quote": "Tokens are NOT cards, however."
+          "quote": "Tokens are NOT cards, however.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R306",
-          "quote": "Tokens are specifically not considered cards in terms of specific semantics"
+          "quote": "Tokens are specifically not considered cards in terms of specific semantics",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R129",
-          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R346",
-          "quote": "For the rules, a token is never a card."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R133",
-          "relation": "partly superseded: its second half (\"Tokens are trashed, yes\") was withdrawn by R306"
+          "quote": "For the rules, a token is never a card.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1732,14 +1719,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Owner call. The printed text calls tokens \"temporary cards\", and Void Mandible prints \"nontoken card\": D-U06-1. What the noun \"card\" reaches is 300.5d.",
-    "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
-      "R133": "6b4f0b8f575f96f005fba919ee325511f5278cb5409a6219c2ba7d9b21e21ce3",
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
-      "R346": "2907d7b7e36f93ffff92ef7b7b08f19c0c55ee8a47b138a884a50d8ed57f2353"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.kinds",
@@ -1768,14 +1751,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The printed pool has three named spell tokens (Fireball, Crystal, Poison) and three named unit tokens (Robot, Wisp, Wraith); most unit tokens are unnamed X/X units (304.4).",
     "sourceHashes": {}
@@ -1806,14 +1789,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1848,14 +1831,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1893,14 +1876,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1936,8 +1919,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -1945,6 +1927,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The bound test's Download half sits inside if (plays.length) and never runs (the verifier measured no Download play): F-U06-2. The verifier's probe with a real token shows the Download half.",
     "sourceHashes": {
@@ -1959,7 +1942,7 @@
     "examples": [
       {
         "text": "A transformed Scholar of the Void that dies goes to the bin as Scholar of the Void.",
-        "test": "135-exchange-and-zones.test.ts::R157 §10: a transformed Scholar killed in play BINS as"
+        "test": "135-exchange-and-zones.test.ts::CR 201.4: a transformed Scholar killed in play BINS as"
       }
     ],
     "see": [
@@ -1969,20 +1952,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §10",
-          "quote": "And the back is NOT a token."
+          "quote": "And the back is NOT a token.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 §10",
-          "quote": "Turns back over. In all zones, other than play, it exists as the front"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R101",
-          "relation": "partly reversed by R157 §10: R101 made the transformed card a token, and rejected flipping it back on leaving play"
+          "quote": "Turns back over. In all zones, other than play, it exists as the front",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1991,11 +1970,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Scholar of the Void / Beyond, Codex Incarnate. The back face prints \"Book Token Unit\" per R101's transcription: D-U06-5. Transforming itself is 710.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "Scholar of the Void / Beyond, Codex Incarnate. The back face prints \"Book Token Unit\" per the owner ruling of 2026-08-23 (“TRANSFORM: turning a card over is…”)’s transcription: D-U06-5. Transforming itself is 710.",
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.region",
@@ -2025,20 +2003,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R115",
-          "quote": "**Anything made by anything needs to spawn in that region**"
+          "quote": "**Anything made by anything needs to spawn in that region**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R115",
-          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R28",
-          "relation": "withdrawn by R115 (R28 put a created unit in its controller's home region)"
+          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2047,11 +2021,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R115 quotes the designer (\"Anything made by anything needs to spawn in that region\"). The printed \"the region they were created\" does not say which region that is; R115 does.",
-    "sourceHashes": {
-      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“a created unit arrives where its…”) quotes the designer (\"Anything made by anything needs to spawn in that region\"). The printed \"the region they were created\" does not say which region that is; the owner ruling of 2026-08-23 (“a created unit arrives where its…”) does.",
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.region.mid-attack",
@@ -2082,32 +2055,33 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R115",
-          "quote": "A token minted **mid-attack** is created in the **enemy region**. It is in that region and"
+          "quote": "A token minted **mid-attack** is created in the **enemy region**. It is in that region and",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R115",
-          "quote": "it **cannot block the counterattack**"
+          "quote": "it **cannot block the counterattack**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R115",
-          "quote": "it **walks home at regroup**, like every other unit out of position"
+          "quote": "it **walks home at regroup**, like every other unit out of position",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "98-spawn-region.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.unit-tokens",
@@ -2133,14 +2107,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The printed exception (what happens when it leaves play) is replaced by the designer's answer in 304.10.",
     "sourceHashes": {}
@@ -2169,14 +2143,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2189,11 +2163,11 @@
     "examples": [
       {
         "text": "A unit token that dies enters the bin, is not trashed, and is then erased.",
-        "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
+        "test": "35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased"
       },
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R69: the erase lands before anything the visit queued can RESOLVE"
+        "test": "35-rot-debt-trash.test.ts::CR 304.10: the erase lands before anything the visit queued can RESOLVE"
       },
       {
         "text": "Rider of the Tides, which watches cards entering a hand during battle, sees a recalled unit token.",
@@ -2223,20 +2197,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R69 (its zone-visit half)",
-          "quote": "**Timing.** The erase is a **state-based action** and it resolves *before* the"
+          "quote": "**Timing.** The erase is a **state-based action** and it resolves *before* the",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R335",
-          "quote": "A recalled spell token passes through the hand"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R69",
-          "relation": "partly superseded: its token-trash subsection reversed by R306; its Unstable order amended by R137"
+          "quote": "A recalled spell token passes through the hand",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2247,11 +2217,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The printed Manual says a token leaving play is erased and returned to the token pile \"instead of the hand or bin\"; the designer says otherwise and wins: D-U06-2. A token put into a cache does the same (an engine call, R69; U07 states it as zones.changes.tokens.cached).",
+    "notes": "The printed Manual says a token leaving play is erased and returned to the token pile \"instead of the hand or bin\"; the designer says otherwise and wins: D-U06-2. A token put into a cache does the same (an engine call, the owner ruling of 2026-08-22 (“A token entering a ZONE is…”); U07 states it as zones.changes.tokens.cached).",
     "sourceHashes": {
-      "R335": "a64cd8c064631a89300a212d31e5dd2ecf07fd7e02e8d15f31d3a7365d11b52b",
-      "R69": "4765548d7e5280fe64527ba6b02f2f307ddb47cce7eb72a9ff53142ae02ff9b4",
       "RAQ 1355689559609839787#3": "49651c3a7eb2f5dad8538f4f0d972498ac3efde032eed37a7fa95a305916a10a",
       "RAQ 1355689559609839787#4": "95729ce10f69a4d6d99b4e697bef8ca60d3e911670df6a82a939387b72bdbdf3"
     }
@@ -2264,7 +2233,7 @@
     "examples": [
       {
         "text": "A unit token dying in battle does not add to the count of cards trashed in that battle.",
-        "test": "338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger"
+        "test": "338-tokens-are-not-trashed.test.ts::CR 801.2i: a token unit dying in battle does not bump the trashed ledger"
       }
     ],
     "see": [
@@ -2275,24 +2244,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R306",
-          "quote": "A token is not a card (R133's first half, which stands), so a token"
+          "quote": "A token is not a card (R133's first half, which stands), so a token",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "338-tokens-are-not-trashed.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R306. Trashing itself is 801.",
-    "sourceHashes": {
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
-    }
+    "notes": "The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”). Trashing itself is 801.",
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.leaving-play.still-dies",
@@ -2312,24 +2280,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R306",
-          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
+          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\"",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.spell-tokens",
@@ -2363,14 +2330,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "03-stack.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Casting is 702.",
     "sourceHashes": {}
@@ -2402,14 +2369,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2426,7 +2393,7 @@
       },
       {
         "text": "Tranquility (\"Spells cost [one] more to play during battle\") makes a spell token cost [1].",
-        "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
+        "test": "337-spell-tokens-are-played.test.ts::CR 702.7a: Tranquility taxes a spell token [1] in battle"
       }
     ],
     "see": [
@@ -2443,17 +2410,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "Casting a spell token **is** playing a spell."
+          "quote": "Casting a spell token **is** playing a spell.",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R342",
-          "quote": "playing a spell (R305) from where it stands in play, so \"when you play a unit"
+          "quote": "playing a spell (R305) from where it stands in play, so \"when you play a unit",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "408-raq-new-threads.test.ts",
@@ -2461,11 +2429,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R305 (owner) for \"is played\"; the RAQ (Stalwart Sentinel: \"when you play a unit or spell from anywhere other than your hand\") and R342 for \"from somewhere other than the hand\". Not a card being played: 300.5d.",
+    "notes": "The owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”) (owner) for \"is played\"; the RAQ (Stalwart Sentinel: \"when you play a unit or spell from anywhere other than your hand\") and the owner ruling of 2026-10-10 (“A spell token is cast from…”) for \"from somewhere other than the hand\". Not a card being played: 300.5d.",
     "sourceHashes": {
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
-      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598",
       "RAQ 1355689559609839787#2": "9c76b60c85d3c9f2a35adeb8e2e628e36abc6d98658ab643da695d1b4dec6d2b"
     }
   },
@@ -2493,23 +2460,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R342",
-          "quote": "A spell token is never in a hand. Anything that counts the cards in a hand"
+          "quote": "A spell token is never in a hand. Anything that counts the cards in a hand",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "408-raq-new-threads.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "A recalled spell token does enter a hand, briefly (304.10).",
     "sourceHashes": {
-      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598",
       "RAQ 1355689559609839787#0": "1ff907ab13f4bd3d73eae1c6ecb4e0b3c8f0f3e170cfabc913aa6b2c1c77b117"
     }
   },
@@ -2536,23 +2503,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R333",
-          "quote": "A spell token already cast is still a token"
+          "quote": "A spell token already cast is still a token",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R333": "0b3c670d84fac9eb0a52eafdd3ae5e6af61958470b5461a9236399566d2ef758",
       "RAQ 1353864175910387742#1": "10774ef8ff034c6b985c2dbe4f791fd4196ce73820247adcf3f440aa3f3afcf8"
     }
   },
@@ -2564,7 +2531,7 @@
     "examples": [
       {
         "text": "Tranquility makes a spell token cost [1] in battle.",
-        "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
+        "test": "337-spell-tokens-are-played.test.ts::CR 702.7a: Tranquility taxes a spell token [1] in battle"
       }
     ],
     "see": [
@@ -2580,24 +2547,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "Casting a spell token **is** playing a spell."
+          "quote": "Casting a spell token **is** playing a spell.",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "337-spell-tokens-are-played.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R305 prices a token cast through the ordinary cost modifiers. Paying costs is 702 and 111.",
-    "sourceHashes": {
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
-    }
+    "notes": "The owner ruling of 2026-09-28 (“Spell tokens ARE played: a token…”) prices a token cast through the ordinary cost modifiers. Paying costs is 702 and 111.",
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.spell-tokens.x",
@@ -2621,22 +2587,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R305",
-          "quote": "**The X on a token is its SIZE, not a cost.**"
+          "quote": "**The X on a token is its SIZE, not a cost.**",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Applies to unit tokens too (Robot X). X in general is 107.",
-    "sourceHashes": {
-      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.spell-tokens.burst",
@@ -2646,7 +2611,7 @@
     "examples": [
       {
         "text": null,
-        "test": "69-damage-batch.test.ts::R81: Burst casts all your tokens OF THAT NAME"
+        "test": "69-damage-batch.test.ts::CR 803.5a: Burst casts all your tokens OF THAT NAME"
       }
     ],
     "see": [
@@ -2666,13 +2631,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R81 (its group-by-name half)",
-          "quote": "Burst groups by NAME"
+          "quote": "Burst groups by NAME",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "69-damage-batch.test.ts",
@@ -2680,11 +2645,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Pointer to Burst (803) and casting (702). \"In that region\" follows from 304.11a.",
-    "sourceHashes": {
-      "R81": "11be923f9b9cb025471dd6b9ccf67720706f58d6e1d114080eb916572bb3293f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.spell-tokens.not-units",
@@ -2704,24 +2668,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R129",
-          "quote": "A Poison is not a body; it has no stats"
+          "quote": "A Poison is not a body; it has no stats",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "119-play-and-token-events.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.spell-tokens.moving",
@@ -2731,7 +2694,7 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in"
+        "test": "78-round17-core.test.ts::CR 604.2c: spell tokens still travel only with units, and only from the region they stand in"
       },
       {
         "text": "A Fireball rides into the enemy region with an attacking The Foretold and stays there after the Foretold dies; with no attacking unit it stays home.",
@@ -2758,8 +2721,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
@@ -2767,6 +2729,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Attacking is 604.",
     "sourceHashes": {}
@@ -2779,7 +2742,7 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens"
+        "test": "78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens"
       }
     ],
     "see": [
@@ -2789,24 +2752,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R87",
-          "quote": "Spell tokens travel with a formation, in either direction, and they need a unit"
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a unit",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R87 quotes players (lofavreel, tecera, _passer) for the counterattack and Caleb only for the attack: D-U06-6.",
-    "sourceHashes": {
-      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes players (lofavreel, tecera, _passer) for the counterattack and Caleb only for the attack: D-U06-6.",
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.spell-tokens.moving.created-there",
@@ -2835,14 +2797,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2887,14 +2849,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The order of regroup is 506. A card can change this: Harbinger of Immolation (\"Your spell tokens stay through regroup\").",
     "sourceHashes": {}
@@ -2907,11 +2869,11 @@
     "examples": [
       {
         "text": "With Automaton of Abundance in play, Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens, so one extra of each is made.",
-        "test": "136-triggers-and-modes.test.ts::R157 §24: end to end"
+        "test": "136-triggers-and-modes.test.ts::CR 708.9: end to end"
       },
       {
         "text": "Three Robot 2s are one unique token.",
-        "test": "136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s"
+        "test": "136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s"
       }
     ],
     "see": [],
@@ -2919,20 +2881,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 §24",
-          "quote": "'Unique' means unique (name, X) pair — you get two extras."
+          "quote": "'Unique' means unique (name, X) pair — you get two extras.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R161",
-          "quote": "this is one card's word, not a redefinition."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R104",
-          "relation": "partly reversed by R157 §24: R104 counted unique tokens by name alone"
+          "quote": "this is one card's word, not a redefinition.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2941,12 +2899,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R161 says the answer is about Automaton of Abundance's wording and redefines nothing else.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R161": "65276815ee877bd9e2976a66608a7c4105a3b44fd4aded63f8cad52dc6c88006"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“six of […] answers, and the one…”) says the answer is about Automaton of Abundance's wording and redefines nothing else.",
+    "sourceHashes": {}
   },
   {
     "key": "types.tokens.creating-not-playing",
@@ -2967,29 +2923,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R26 (its token-creation half)",
-          "quote": "\"Play\" excludes token creation"
+          "quote": "\"Play\" excludes token creation",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R342",
-          "quote": "an effect-created unit token was not played at"
+          "quote": "an effect-created unit token was not played at",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Playing is 701; casting a spell token later IS playing it (304.11b).",
-    "sourceHashes": {
-      "R26": "c585e34093f645364fef28ec578e449c666c73c8dfc1fd86fa020475c10c5cd9",
-      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "types.mods.what",
@@ -2999,7 +2954,7 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing"
+        "test": "78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing"
       },
       {
         "text": "Curio Drifter augmented onto a Good Whale is not played and gives the Whale Evasive; Biotoxicity is grafted; a Fireball augmented with Bloomcaster does not create 1/1s.",
@@ -3039,13 +2994,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "you can only do this with attributes."
+          "quote": "you can only do this with attributes.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
@@ -3053,10 +3008,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Overview only: modifications are 720, augment 721, graft 722, virus 723, modular 724. The spell exception is Caleb's 2025-03-06 answer quoted in R89 (\"you can only do this with attributes\"), which narrows the printed \"treated as a single card\": D-U06-11. RAQ 1537748882501668934 is not in this unit's pack (it is assigned to 701/720); added here.",
+    "notes": "Overview only: modifications are 720, augment 721, graft 722, virus 723, modular 724. The spell exception is Caleb's 2025-03-06 answer quoted in the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) (\"you can only do this with attributes\"), which narrows the printed \"treated as a single card\": D-U06-11. RAQ 1537748882501668934 is not in this unit's pack (it is assigned to 701/720); added here.",
     "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90",
       "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
     }
   },
@@ -3068,7 +3023,7 @@
     "examples": [
       {
         "text": "A Virus applied from hand during battle is not a card being played, so Void Mandible (\"When a nontoken card is played during battle…\") does not trigger.",
-        "test": "119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event"
+        "test": "119-play-and-token-events.test.ts::CR 701.2a holds: applying a VIRUS fires neither event"
       }
     ],
     "see": [
@@ -3084,14 +3039,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "119-play-and-token-events.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Added source: RAQ 1537748882501668934 (not in the U06 pack).",
     "sourceHashes": {
@@ -3130,14 +3085,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "417-cr-card-types.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Details and exceptions (Slurpr, Rook) are 720 and 723.",
     "sourceHashes": {}
@@ -3170,14 +3125,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "248-augment-box-scope.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -3209,8 +3164,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -3218,6 +3172,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3232,15 +3187,15 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
+        "test": "78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment"
       },
       {
         "text": "A Fireball augmented with a mod granting {Powerful} deals double damage when cast.",
-        "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
+        "test": "78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer"
       },
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing"
+        "test": "78-round17-core.test.ts::CR 721.4a: a text-only augment on a token grants nothing"
       },
       {
         "text": "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment.",
@@ -3254,21 +3209,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "R79's missing half: a SPELL TOKEN may be augmented during DEPLOYMENT"
+          "quote": "R79's missing half: a SPELL TOKEN may be augmented during DEPLOYMENT",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R89",
-          "quote": "you can only do this with attributes."
+          "quote": "you can only do this with attributes.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R89",
-          "quote": "It is NOT restricted to Virus cards"
+          "quote": "It is NOT restricted to Virus cards",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
@@ -3276,10 +3233,9 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R89 quotes Caleb (rules-questions 2025-03-06, not a RAQ thread) for \"possible with spell tokens\" and \"only with attributes\"; the \"any augment\" reading is sourced to a player: D-U06-7. Whether a Virus may be applied to a spell token in play during battle is unruled: D-U06-9. The bound test uses a Virus (Chitin Shredder); the verifier's probe showed a non-Virus augment (Carapace Devourer) is accepted, which is the illustrative example.",
-    "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) quotes Caleb (rules-questions 2025-03-06, not a RAQ thread) for \"possible with spell tokens\" and \"only with attributes\"; the \"any augment\" reading is sourced to a player: D-U06-7. Whether a Virus may be applied to a spell token in play during battle is unruled: D-U06-9. The bound test uses a Virus (Chitin Shredder); the verifier's probe showed a non-Virus augment (Carapace Devourer) is accepted, which is the illustrative example.",
+    "sourceHashes": {}
   }
 ]

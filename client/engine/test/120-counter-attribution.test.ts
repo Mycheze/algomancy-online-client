@@ -1,4 +1,4 @@
-/* R130 — EVERY COUNTER IS A COUNTER, AND A PLACEMENT CARRIES ITS ACTOR.
+/* CR 206.6b, 708.8b — EVERY COUNTER IS A COUNTER, AND A PLACEMENT CARRIES ITS ACTOR.
  *
  * The owner, 2026-08-24: "All counters count as counters." No sign filter,
  * ever — and the three cards that had one were not narrow, they were WRONG:
@@ -45,7 +45,7 @@ const handOf = (h: Harness, seat: Seat): number => h.state.players[seat]!.hand.l
 /**
  * A board where the two seats SHARE a region, which is what every one of
  * these cards needs (fireEvent scopes listeners to the counted unit's region,
- * R12) and what deployment does not give you for free. The enemy body is
+ * CR 601.1d) and what deployment does not give you for free. The enemy body is
  * spawned straight into the listener's home region — the same white-box setup
  * 27-metal-b uses to isolate allegiance from geography.
  *
@@ -121,7 +121,7 @@ test('Blightshell: [Switch1] — one draw per turn however many counters you put
   assert.equal(handOf(h, A), hand0 + 1, 'the first placement drew');
   whiteBox(h, e => e.addCounters(ent(h, enemy)!, 1, A));
   assert.equal(ent(h, enemy)!.counters, 2, 'the second counter landed all the same');
-  assert.equal(handOf(h, A), hand0 + 1, 'R9: the bounded budget is spent for the turn');
+  assert.equal(handOf(h, A), hand0 + 1, 'CR 109.9: the bounded budget is spent for the turn');
 });
 
 test('Blightshell: an UNATTRIBUTED placement draws nothing — no answer is not a yes', () => {

@@ -54,14 +54,14 @@
     "kind": "c-owner-call-only",
     "rule": "annexd.auto-pass.full-control.deployment",
     "tier": 3,
-    "summary": "R287 gives the owner's full-control sentence, including deployment, and records that the deployment clause is not built. It was filed as CT-185 and left as the owner's call.",
+    "summary": "The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) gives the owner's full-control sentence, including deployment, and records that the deployment clause is not built. It was filed as CT-185 and left as the owner's call.",
     "sides": [
       {
-        "source": "R287",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "> the haste step or anything. Even during deployment, nothing will"
       },
       {
-        "source": "R287",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
       }
     ],
@@ -72,40 +72,40 @@
     "kind": "c-owner-call-only",
     "rule": "annexd.auto-pass.haste-ready.residual",
     "tier": 4,
-    "summary": "R18 defines a hidden segment as one where nobody sees the other side's plays until everyone is done. R236 measures a residual channel, the live action counter, that tells a modified client when its opponent acts in every hidden segment. R236 leaves closing it to the owner.",
+    "summary": "The owner ruling of 2026-08-18 (“Haste step engine model […]”) defines a hidden segment as one where nobody sees the other side's plays until everyone is done. The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) measures a residual channel, the live action counter, that tells a modified client when its opponent acts in every hidden segment. The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) leaves closing it to the owner.",
     "sides": [
       {
-        "source": "R18 (its hidden-segment half)",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
       },
       {
-        "source": "R236",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "`GameState.actionCount` is served live to both seats and increments on **every**"
       },
       {
-        "source": "R236",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "`server/rooms.ts`** — both off limits this round, and a call for the owner. The"
       }
     ],
-    "resolution": "Decided by the owner: the residual channel is F-U23-3, which maps to CT-106, closed as wontfix (2026-08-29: \"I am not worried about this\"). The rule states the residual as R236 measured it. Nothing to ask."
+    "resolution": "Decided by the owner: the residual channel is F-U23-3, which maps to CT-106, closed as wontfix (2026-08-29: \"I am not worried about this\"). The rule states the residual as the owner ruling of 2026-08-28 (“the haste step readies itself, and…”) measured it. Nothing to ask."
   },
   {
     "id": "D-U23-6",
     "kind": "a-sources-disagree",
     "rule": "annexd.auto-pass.automatic-answers",
     "tier": 2,
-    "summary": "R245(b) rules that an automatic answer, naming both the haste-step ready and the automatic pass, is latched by being unanswered and never by a state counter. R258, describing the code later, says the automatic pass is latched once per actionCount, and test 70 [59] asserts that a new state number releases the latch.",
+    "summary": "The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) rules that an automatic answer, naming both the haste-step ready and the automatic pass, is latched by being unanswered and never by a state counter. The owner ruling of 2026-08-29 (“the affordances that must stay live…”), describing the code later, says the automatic pass is latched once per actionCount, and test 70 [59] asserts that a new state number releases the latch.",
     "sides": [
       {
-        "source": "R245",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "### (b) An automatic answer is latched by the FACT of being unanswered, never"
       },
       {
-        "source": "R245",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "The client sends intents the player did not: the haste-step ready (R236) and"
       },
       {
-        "source": "R258",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "[59]/R245 latch it to one send per `actionCount` (`takeAutoPass` in"
       },
       {
@@ -113,17 +113,17 @@
         "quote": "assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');"
       }
     ],
-    "resolution": "The rule states R245(b), the ruling, with 'engine differs, see F-U23-2 (CT-262)'. Question for the owner only if R245(b) was meant for the haste-step ready alone: its words name both automatics, so the rule reads it as covering both."
+    "resolution": "The rule states the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b), the ruling, with 'engine differs, see F-U23-2 (CT-262)'. Question for the owner only if the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) was meant for the haste-step ready alone: its words name both automatics, so the rule reads it as covering both."
   },
   {
     "id": "D-U23-7",
     "kind": "c-owner-call-only",
     "rule": "annexd.undo.hidden-step",
     "tier": 3,
-    "summary": "The basic undo convention (undo your own actions back toward the start of a hidden step, whatever the opponent does, but not past what the step itself did as it began) has no ruling of its own. R312 states it only in the past tense, as what it narrows. The owner's words survive only in an e2e test's header.",
+    "summary": "The basic undo convention (undo your own actions back toward the start of a hidden step, whatever the opponent does, but not past what the step itself did as it began) has no ruling of its own. The owner ruling of 2026-10-04 (“Seeing hidden cards ends your undo”) states it only in the past tense, as what it narrows. The owner's words survive only in an e2e test's header.",
     "sides": [
       {
-        "source": "R312",
+        "source": "owner ruling, adopted 2026-10-04",
         "quote": "Undo inside a hidden step (planning, haste, deployment) used to walk back any"
       },
       {
@@ -131,17 +131,17 @@
         "quote": " *    to undo everything, up to the beginning of that phase (unless there is"
       }
     ],
-    "resolution": "D4.1 cites R312 for the baseline. Its opponent and floor sub-rules are engine-only. Register the owner's 2026-08-23 answer (ledger #37/#76) as a ruling if they are to count as owner basis."
+    "resolution": "D4.1 cites the owner ruling of 2026-10-04 (“Seeing hidden cards ends your undo”) for the baseline. Its opponent and floor sub-rules are engine-only. Register the owner's 2026-08-23 answer (ledger #37/#76) as a ruling if they are to count as owner basis."
   },
   {
     "id": "D-U23-8",
     "kind": "b-engine-only",
     "rule": "annexd.recap.stops",
     "tier": 3,
-    "summary": "Sources silent on the recap's structure: no ruling defines the recap, its frames, where it pauses, or its end pause. R310 describes it only in passing. Tests 360, 372 and 383 carry it.",
+    "summary": "Sources silent on the recap's structure: no ruling defines the recap, its frames, where it pauses, or its end pause. The owner ruling of 2026-10-04 (“A glimpse inside a hidden step…”) describes it only in passing. Tests 360, 372 and 383 carry it.",
     "sides": [
       {
-        "source": "R310",
+        "source": "owner ruling, adopted 2026-10-04",
         "quote": "(playback), at the moment it happened, with its card popup. The glimpser still"
       }
     ],
@@ -152,10 +152,10 @@
     "kind": "b-engine-only",
     "rule": "annexd.auto-pass.preference",
     "tier": 3,
-    "summary": "Sources silent on when the auto-pass preference passes. R150 says only what turning it on means to the player; the condition (pass only when passing is the only legal action, never through a decision) is in test 70 alone.",
+    "summary": "Sources silent on when the auto-pass preference passes. The owner ruling of 2026-08-25 (“a readable ceiling on the client…”) says only what turning it on means to the player; the condition (pass only when passing is the only legal action, never through a decision) is in test 70 alone.",
     "sides": [
       {
-        "source": "R150 (its CT-28 pacing half)",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "armed. Auto-pass is the player having said out loud that these windows are"
       }
     ],
@@ -169,15 +169,15 @@
     "summary": "The owner's first message names Organic Exchange among the cards that should warn; his later derivation ('target ally AND target unit on the same card') excludes it, since it prints two target units with no ally slot.",
     "sides": [
       {
-        "source": "R288",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "> of your own units (Fight, Organic Exchange). We shouldn't stop that from"
       },
       {
-        "source": "R288",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one"
       }
     ],
-    "resolution": "R288 follows the later message, and so does the rule. Organic Exchange's case is a known no-op warning (R74), not this confirmation."
+    "resolution": "The owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) follows the later message, and so does the rule. Organic Exchange's case is a known no-op warning (owner ruling of 2026-08-22, “A variable cost may WARN that…”), not this confirmation."
   },
   {
     "id": "D-U23-11",
@@ -198,68 +198,68 @@
     "kind": "g-other",
     "rule": "annexd.auto-pass.haste-ready",
     "tier": 4,
-    "summary": "R228 parks R224's requirement that passing through the always-open haste step be cheap, as not yet met. R236 met it the same day. R228 still reads as owing it; the register already flags the warning as stale.",
+    "summary": "The owner ruling of 2026-08-28 (“the haste step opens unconditionally, and…”) parks the owner ruling of 2026-08-28 (“the haste step is ALWAYS offered…”)’s requirement that passing through the always-open haste step be cheap, as not yet met. The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) met it the same day. The owner ruling of 2026-08-28 (“the haste step opens unconditionally, and…”) still reads as owing it; the register already flags the warning as stale.",
     "sides": [
       {
-        "source": "R228",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "⚠ **R224's own requirement is NOT yet met**: *\"an always-open window is a tax on"
       },
       {
-        "source": "R236",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "This makes it cheap. Nothing in `engine/src/**` was touched: the step's"
       }
     ],
-    "resolution": "No rule change. Register note only: R228's 'Parked, and owed' section was discharged by R236."
+    "resolution": "No rule change. Register note only: The owner ruling of 2026-08-28 (“the haste step opens unconditionally, and…”)’s 'Parked, and owed' section was discharged by the owner ruling of 2026-08-28 (“the haste step readies itself, and…”)."
   },
   {
     "id": "D-U23-13",
     "kind": "f-register-chain-wrong",
     "rule": "annexd.auto-pass.automatic-answers",
     "tier": 2,
-    "summary": "R236 §5 describes the haste auto-ready's latch (its own hasteAutoAt). R245(b) reports that this client re-sent doneHaste once per arriving state, and replaced the latch with one keyed on the answer being outstanding. supersession.json has no R245 → R236 edge.",
+    "summary": "The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) describes the haste auto-ready's latch (its own hasteAutoAt). The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) reports that this client re-sent doneHaste once per arriving state, and replaced the latch with one keyed on the answer being outstanding. supersession.json has no the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”) → the owner ruling of 2026-08-28 (“the haste step readies itself, and…”) edge.",
     "sides": [
       {
-        "source": "R236",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "The one guard that is *not* borrowed: the send is latched on its own"
       },
       {
-        "source": "R245",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "client re-sent `doneHaste` once per arriving state, and the extras came back"
       }
     ],
-    "resolution": "The rule states R245(b). Proposed register edge: R245 amends R236 (scope: §5's latch)."
+    "resolution": "The rule states the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b). Proposed register edge: The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”) amends the owner ruling of 2026-08-28 (“the haste step readies itself, and…”) (scope: §5's latch)."
   },
   {
     "id": "D-U23-14",
     "kind": "g-other",
     "rule": "annexd.auto-pass.pass-buttons",
     "tier": 4,
-    "summary": "R245 leaves 'what should stop Pass All' to the owner. R251 is the owner's answer (three buttons). R245's open section still reads as open; the register already flags it as stale.",
+    "summary": "The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”) leaves 'what should stop Pass All' to the owner. The owner ruling of 2026-08-29 (“A STANDING PASS IS A PROMISE…”) is the owner's answer (three buttons). The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)’s open section still reads as open; the register already flags it as stale.",
     "sides": [
       {
-        "source": "R245",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "**#123 \"Pass All still isn't working right\" is a DESIGN question, and the"
       },
       {
-        "source": "R251",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "by the owner on the round-31 sheet (Q6) after R245 established that the code was"
       }
     ],
-    "resolution": "No rule change. The rules state R251. Register note only."
+    "resolution": "No rule change. The rules state the owner ruling of 2026-08-29 (“A STANDING PASS IS A PROMISE…”). Register note only."
   },
   {
     "id": "D-U23-15",
     "kind": "g-other",
     "rule": "annexd.auto-pass.haste-ready",
     "tier": 4,
-    "summary": "R236 §6 limits the auto-ready to the online client and justifies that by hotseat. Hotseat has since been removed (R170's amendment), and Learn to Play and the replay viewer now run a server inside the page over the ordinary network path. Sources silent on whether the haste auto-ready applies in Learn to Play.",
+    "summary": "The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) limits the auto-ready to the online client and justifies that by hotseat. Hotseat has since been removed (the owner ruling of 2026-08-25 (“the hotseat screen learns whose question…”)’s amendment), and Learn to Play and the replay viewer now run a server inside the page over the ordinary network path. Sources silent on whether the haste auto-ready applies in Learn to Play.",
     "sides": [
       {
-        "source": "R236",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "`planAutoPass` is `NET`-gated, so this changes nothing in hotseat. Deliberate:"
       },
       {
-        "source": "R170",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "### ⚠ AMENDED 2026-09-23 — HOTSEAT IS GONE; THE RULING IS NOT"
       }
     ],
@@ -284,14 +284,14 @@
     "kind": "f-register-chain-wrong",
     "rule": "annexd.recap.skip",
     "tier": 2,
-    "summary": "R150 and R258 still describe a 'catching up (n) — skip' chip as the visible way out of the pacing. The owner removed the chip on 2026-09-28; only the S key skips now, and test 237 asserts the chip is absent. Neither ruling is marked.",
+    "summary": "The owner ruling of 2026-08-25 (“a readable ceiling on the client…”) and the owner ruling of 2026-08-29 (“the affordances that must stay live…”) still describe a 'catching up (n) — skip' chip as the visible way out of the pacing. The owner removed the chip on 2026-09-28; only the S key skips now, and test 237 asserts the chip is absent. Neither ruling is marked.",
     "sides": [
       {
-        "source": "R150",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "- **Skip**: a `catching up (n) — ⏭ skip` chip beside the standing-pass chip"
       },
       {
-        "source": "R258",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "- **the ⏭ `catching up (n) — skip` chip.** It is the only *visible* way out of"
       },
       {
@@ -303,7 +303,7 @@
         "quote": "assert.equal(ui.has({ btn: 'paceskip' }), false, 'the owner cut the chip: no skip button');"
       }
     ],
-    "resolution": "The rules follow the owner's later call: no chip, S skips. Mark the chip halves of R150 and R258 as superseded (2026-09-28) in the register."
+    "resolution": "The rules follow the owner's later call: no chip, S skips. Mark the chip halves of the owner ruling of 2026-08-25 (“a readable ceiling on the client…”) and the owner ruling of 2026-08-29 (“the affordances that must stay live…”) as superseded (2026-09-28) in the register. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U23-19",
@@ -328,10 +328,10 @@
     "kind": "g-other",
     "rule": "annexd.general.not-rules",
     "tier": 4,
-    "summary": "Sources silent on whether the annex's presentation and confirmation conventions are rules. R150 says only of its own pacing/concurrency reports that they are not a rules change; nothing extends that to the rest of the annex.",
+    "summary": "Sources silent on whether the annex's presentation and confirmation conventions are rules. The owner ruling of 2026-08-25 (“a readable ceiling on the client…”) says only of its own pacing/concurrency reports that they are not a rules change; nothing extends that to the rest of the annex.",
     "sides": [
       {
-        "source": "R150",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "**CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and"
       }
     ],
@@ -342,10 +342,10 @@
     "kind": "b-engine-only",
     "rule": "annexd.general.player-decides.forced",
     "tier": 3,
-    "summary": "Sources silent on which actions the game takes for a player. The only ruling naming a forced action is R36 (the lone round-2 counterattacker), whose branch the engine removed. The two cases the engine forces, the empty attack and the empty block, rest on forcedAction and tests 21 and 273 alone.",
+    "summary": "Sources silent on which actions the game takes for a player. The only ruling naming a forced action is the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (the lone round-2 counterattacker), whose branch the engine removed. The two cases the engine forces, the empty attack and the empty block, rest on forcedAction and tests 21 and 273 alone.",
     "sides": [
       {
-        "source": "R36",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "that could ride along, the only-unit formation is auto-declared (a forced"
       },
       {
@@ -357,17 +357,17 @@
         "quote": "return { type: 'declareBlocks', seat: b.defender, blocks: {} };"
       }
     ],
-    "resolution": "The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; R36's case stays a sub-rule stating the ruling (F-U23-4 (CT-251), D-U13-3)."
+    "resolution": "The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s case stays a sub-rule stating the ruling (F-U23-4 (CT-251), D-U13-3)."
   },
   {
     "id": "D-U23-22",
     "kind": "b-engine-only",
     "rule": "annexd.recap.skip.in-playback",
     "tier": 3,
-    "summary": "R150 describes S as spending the whole held queue to the live state in one step. In a recap playback the engine's Skip goes only to the next stop (and continues from a stop), and a Skip button is drawn on the play bar. No ruling covers skipping inside a playback; only owner report #198 and test 383 do.",
+    "summary": "The owner ruling of 2026-08-25 (“a readable ceiling on the client…”) describes S as spending the whole held queue to the live state in one step. In a recap playback the engine's Skip goes only to the next stop (and continues from a stop), and a Skip button is drawn on the play bar. No ruling covers skipping inside a playback; only owner report #198 and test 383 do.",
     "sides": [
       {
-        "source": "R150",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "the `S` key. `paceFlush` spends the whole queue in one step. Deliberately not"
       },
       {
@@ -379,6 +379,6 @@
         "quote": "test('report #198: Skip jumps to the next stop, never past it', () => {"
       }
     ],
-    "resolution": "annexd.recap.skip is scoped to outside a playback; the playback behaviour ships as an engine-derived sub-rule (Annex P). Register note: R150's S-key flush is now the out-of-playback case only."
+    "resolution": "annexd.recap.skip is scoped to outside a playback; the playback behaviour ships as an engine-derived sub-rule (Annex P). Register note: The owner ruling of 2026-08-25 (“a readable ceiling on the client…”)’s S-key flush is now the out-of-playback case only."
   }
 ]

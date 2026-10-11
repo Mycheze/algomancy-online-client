@@ -2,13 +2,13 @@
  * counter-matters, damage-reflection). Every card in this band already has a
  * REAL behavior test (the census counts exact quoted-name occurrences, which
  * is why a card with a single spawn() call lands in the "named once" band even
- * when its printed promise is pinned). What was NOT pinned is the R37 line —
- * local errata, docs/digital-rules.md: applying a MOD (augment/graft/virus) is
+ * when its printed promise is pinned). What was NOT pinned is the mods-are-not-played line (CR 701.2a) —
+ * local errata, the retired ruling register: applying a MOD (augment/graft/virus) is
  * NOT "playing a card", so "when you play a unit/spell" triggers must not fire
  * on mod application — plus a few printed clauses the existing tests skirt:
  * the nontoken gate against actual TOKEN SPELLS, [once] budgets not being
- * spent by non-firing events (R108/R113), Stalwart Sentinel's bin cases
- * (R96/R123 spell-from-bin counts, Rook's mod-from-bin does not), Pestilent
+ * spent by non-firing events (CR 109.9b), Stalwart Sentinel's bin cases
+ * (CR 405.9 spell-from-bin counts, Rook's mod-from-bin does not), Pestilent
  * Mycelion's "one or more" batch reading, and Lithoghul's "that much" scaling.
  *
  * States are built explicitly; seeds are 10501-10599. Positive controls sit
@@ -35,7 +35,7 @@ function passTo(h: Harness, seat: Seat): void {
 
 // ── Ravenous Fireslinger ─────────────────────────────────────────────────
 
-test('Ravenous Fireslinger: R37 — applying an augment is not playing a spell (no +1/-1); a real spell still is', () => {
+test('Ravenous Fireslinger: CR 701.2a — applying an augment is not playing a spell (no +1/-1); a real spell still is', () => {
   const h = new Harness(10501);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -45,7 +45,7 @@ test('Ravenous Fireslinger: R37 — applying an augment is not playing a spell (
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'the mod really landed');
   assert.deepEqual(effStats(h, slinger), [4, 3],
-    'R37: applying a mod is NOT playing a spell — no +1/-1');
+    'CR 701.2a: applying a mod is NOT playing a spell — no +1/-1');
   giveResources(h, p, 'water', 3);                         // Lonely Forager b/3 (spellUnit)
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Lonely Forager') });
   assert.deepEqual(effStats(h, slinger), [5, 2],
@@ -54,7 +54,7 @@ test('Ravenous Fireslinger: R37 — applying an augment is not playing a spell (
 
 // ── Stormsowing Nimbus ───────────────────────────────────────────────────
 
-test('Stormsowing Nimbus: R37/nontoken — neither a mod application nor a token spell makes a 1/1; a real battle spell does', () => {
+test('Stormsowing Nimbus: CR 701.2a/nontoken — neither a mod application nor a token spell makes a 1/1; a real battle spell does', () => {
   const h = new Harness(10502);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -66,11 +66,11 @@ test('Stormsowing Nimbus: R37/nontoken — neither a mod application nor a token
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const made = () => unitsOf(h, D).filter(u => u.card === 'Unit Token' && u.token);
-  // 1. a virus augment applied during battle is a MOD, not a play (R37)
+  // 1. a virus augment applied during battle is a MOD, not a play (CR 701.2a)
   passTo(h, D);
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Reality Bender'), hostId: host });
   pass(h); pass(h);                                        // the virus-shaped item resolves
-  assert.equal(made().length, 0, 'R37: a mod application makes no 1/1');
+  assert.equal(made().length, 0, 'CR 701.2a: a mod application makes no 1/1');
   // 2. a TOKEN spell is filtered by "nontoken"
   const region = h.state.battle!.region;
   const poison = new E(h.state).createSpellToken(D, 'Poison', 1, region);
@@ -93,7 +93,7 @@ test('Stormsowing Nimbus: R37/nontoken — neither a mod application nor a token
 
 // ── Aethercap Siphoner ───────────────────────────────────────────────────
 
-test('Aethercap Siphoner: R37 — a mod application offers no counter move; a real nontoken spell does', () => {
+test('Aethercap Siphoner: CR 701.2a — a mod application offers no counter move; a real nontoken spell does', () => {
   const h = new Harness(10503);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -103,7 +103,7 @@ test('Aethercap Siphoner: R37 — a mod application offers no counter move; a re
   const decision = () => h.state.decision;                 // unnarrowed read
   giveResources(h, p, 'earth', 2);
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: host });
-  assert.ok(!decision(), 'R37: no "move a counter" menu for a mod application');
+  assert.ok(!decision(), 'CR 701.2a: no "move a counter" menu for a mod application');
   assert.equal(ent(h, siph)!.counters, -3, 'nothing moved');
   giveResources(h, p, 'water', 3);
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Lonely Forager') });
@@ -137,7 +137,7 @@ test('Channeled Amalgam: a token spell neither feeds it nor spends the [once] �
   pick(h, { doneTargets: true });
   pass(h); pass(h);                                        // the Amalgam trigger resolves
   assert.equal(ent(h, amalgam)!.counters, 3,
-    'X = the real spell\'s cost (3) — the token spell had NOT spent the [once] (R108/R113)');
+    'X = the real spell\'s cost (3) — the token spell had NOT spent the [once] (CR 109.9b)');
   assert.deepEqual(effStats(h, amalgam), [4, 4]);
   pass(h); pass(h);                                        // Twin Flame resolves
   finishBattle(h);
@@ -145,7 +145,7 @@ test('Channeled Amalgam: a token spell neither feeds it nor spends the [once] �
 
 // ── Arcane Concentrator ──────────────────────────────────────────────────
 
-test('Arcane Concentrator: R37 — a mod application makes no X/X and leaves the [once] unspent', () => {
+test('Arcane Concentrator: CR 701.2a — a mod application makes no X/X and leaves the [once] unspent', () => {
   const h = new Harness(10505);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -154,7 +154,7 @@ test('Arcane Concentrator: R37 — a mod application makes no X/X and leaves the
   const made = () => unitsOf(h, p).filter(u => u.card === 'Unit Token' && u.token);
   giveResources(h, p, 'earth', 2);
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: host });
-  assert.equal(made().length, 0, 'R37: applying a mod ([2]) is not playing a spell — no X/X');
+  assert.equal(made().length, 0, 'CR 701.2a: applying a mod ([2]) is not playing a spell — no X/X');
   giveResources(h, p, 'water', 3);
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Lonely Forager') });
   assert.equal(made().length, 1, 'the [once] was still unspent — the real spell fired it');
@@ -163,7 +163,7 @@ test('Arcane Concentrator: R37 — a mod application makes no X/X and leaves the
 
 // ── Stalwart Sentinel ────────────────────────────────────────────────────
 
-test('Stalwart Sentinel: R96/R123 — a spell played from the BIN counts (+2), a mod applied from the BIN does not (R37, Rook)', () => {
+test('Stalwart Sentinel: CR 405.9 — a spell played from the BIN counts (+2), a mod applied from the BIN does not (CR 701.2a, Rook)', () => {
   const h = new Harness(10506);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -180,7 +180,7 @@ test('Stalwart Sentinel: R96/R123 — a spell played from the BIN counts (+2), a
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abyssal Evocation') });
   pass(h); pass(h);                                        // grant resolves
   assert.equal(ent(h, sent)!.counters, 0, 'a hand play never counts');
-  // R96: the bin spell is offered and played — spellPlayed carries from:"bin"
+  // CR 405.9: the bin spell is offered and played — spellPlayed carries from:"bin"
   passTo(h, D);
   assert.ok(h.legal(D).some(a => a.type === 'playFromBin' && a.binIndex === 0),
     'the Twin Flame in the bin is offered under the grant');
@@ -192,7 +192,7 @@ test('Stalwart Sentinel: R96/R123 — a spell played from the BIN counts (+2), a
     'played from anywhere other than your hand → two +1/+1 counters');
   assert.deepEqual(effStats(h, sent), [3, 3]);
   pass(h); pass(h);                                        // Twin Flame resolves
-  // R37: Rook opens the bin as a MOD zone — and a mod from the bin is NOT a play
+  // CR 701.2a: Rook opens the bin as a MOD zone — and a mod from the bin is NOT a play
   whiteBox(h, e => { e.spawnUnit(D, 'Rook', h.state.battle!.region); });
   passTo(h, D);
   const rubbishIdx = h.state.players[D]!.bin.indexOf('A Pile of Rubbish');
@@ -201,7 +201,7 @@ test('Stalwart Sentinel: R96/R123 — a spell played from the BIN counts (+2), a
   pass(h); pass(h);                                        // the virus-shaped item resolves
   assert.ok(ent(h, host)!.mods.length === 1, 'the bin mod really attached');
   assert.equal(ent(h, sent)!.counters, 2,
-    'R37: a mod applied FROM THE BIN is still not "playing a card" — no third counter');
+    'CR 701.2a: a mod applied FROM THE BIN is still not "playing a card" — no third counter');
   finishBattle(h);
 });
 
@@ -256,7 +256,7 @@ test('Origon: a virus applied during battle is not a spell — not negated, and 
   giveResources(h, A, 'fire', 3);                          // Twin Flame rr/3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  // R37: a virus augment during battle rides the stack, but it is a MOD
+  // CR 723.3b: a virus augment during battle rides the stack, but it is a MOD
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: atk });
   pass(h); pass(h);                                        // the virus resolves
   assert.ok(ent(h, atk)!.mods.length === 1, 'the mod landed');
@@ -271,7 +271,7 @@ test('Origon: a virus applied during battle is not a spell — not negated, and 
     'the first SPELL this battle was negated — the mod never consumed the countdown');
   assert.ok(h.state.players[A]!.bin.includes('Twin Flame'), 'negated → bin');
   assert.equal(ent(h, orig)!.damage, 0, 'and it never dealt its damage');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated spell left the stack');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated spell left the stack');
   finishBattle(h);
 });
 
@@ -290,7 +290,7 @@ test('Lithoghul: the reflection is "that much" — a 3-power hit costs its contr
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lith] } });
   pass(h); pass(h);                                        // combat damage
-  resolveAfterCombat(h);   // R261: the reflection is stacked after combat, not drained in the sub-step
+  resolveAfterCombat(h);   // CR 608.9b: the reflection is stacked after combat, not drained in the sub-step
   assert.ok(!ent(h, atk), 'the 3/3 died to the 4-power block');
   assert.equal(ent(h, lith)!.damage, 3, 'Lithoghul took 3');
   assert.equal(h.state.players[D]!.life, lifeD - 3,

@@ -22,7 +22,7 @@
  * which is the honest failure: nobody is left believing a render happened when
  * it did not.
  *
- * WHAT IT DOES HAVE, SINCE R205/CT-75: ANCESTORS. This comment used to say the
+ * WHAT IT DOES HAVE, SINCE the container-sight fix/CT-75: ANCESTORS. This comment used to say the
  * clicked element never needs any, "which is true of every affordance in the
  * board markup: they carry their own data-btn / data-act". That was FALSE, and
  * the falsehood is what let the bug survive. `.regioncache` (main.ts:2109) and
@@ -79,7 +79,7 @@ function mkEl(props: Record<string, unknown> = {}, onSet?: (k: string) => void):
       if (k === 'getBoundingClientRect') return () => RECT;
       // the default for an element NOBODY placed in the markup — one main.ts
       // built with createElement (the hover tip, a ghost). A clicked element
-      // gets a real ancestor-walking `closest` from `elementAt` (R205/CT-75),
+      // gets a real ancestor-walking `closest` from `elementAt` (CT-75),
       // which overwrites this.
       if (k === 'closest') return () => null;
       if (k === 'querySelector') return () => null;
@@ -113,15 +113,15 @@ const byId = (id: string): Record<string, unknown> => {
 /**
  * The app root.
  *
- * R258 — REPLACING innerHTML DESTROYS THE CHILDREN, and the driver has to say
+ * REPLACING innerHTML DESTROYS THE CHILDREN, and the driver has to say
  * so. ui/main.ts now emits LIVE SLOTS — nodes render() paints empty and a
  * patcher fills afterwards, so the ⏭ chip and the presence dot can change
- * while R150's throttle is holding and no render is allowed to run. In a
+ * while the CR D5.4 throttle is holding and no render is allowed to run. In a
  * browser `$app.innerHTML = …` throws every one of those nodes away and the
  * patcher puts fresh content into fresh nodes. Here the elements are
  * long-lived fakes, so without this hook a slot would keep content the browser
  * had already dropped — a driver that shows a chip nothing repainted. That is
- * the same lie R230 took out of `clearTimeout`.
+ * the same lie the cancelled-timer fix below took out of `clearTimeout`.
  */
 let RENDERS = 0;
 const APP = mkEl({ id: 'app' }, k => {
@@ -235,7 +235,7 @@ const WIRE: Record<string, unknown>[] = [];
 /**
  * Timers the client books; never fired unless a test asks (see `tick`).
  *
- * R230 — A CANCELLED TIMER IS CANCELLED. `clearTimeout` used to be
+ * A CANCELLED TIMER IS CANCELLED. `clearTimeout` used to be
  * `() => {}`, which meant the driver ran callbacks the client had explicitly
  * called off. Every debounce, every dwell and every "unless something happens
  * first" in ui/main.ts therefore fired here and only here, and a test could go
@@ -298,7 +298,7 @@ g.addEventListener = (t: string, fn: Listener) => listen(t, fn);
 // because that is the one where the server is authoritative and the client has
 // to hold a plan across a round trip.
 //
-// R170/CT-46: …but ONLINE is not the only caller, and it is the one that can
+// CR D2.1/CT-46: …but ONLINE is not the only caller, and it is the one that can
 // never see this bug. `server/view.ts` nulls a decision that is not yours, so
 // an online client's `s.decision` is always its own; HOTSEAT is the only
 // caller that sees both seats at once. A test asks for that client by setting
@@ -435,7 +435,7 @@ function attrsOf(tag: string): { attrs: Record<string, string>; dataset: Record<
   return { attrs, dataset };
 }
 
-/* R205/CT-75: element tags that never open a scope, so they must never push
+/* CT-75: element tags that never open a scope, so they must never push
  * onto the ancestor stack. Only the ones the board can actually emit are
  * listed plus the rest of the HTML void set, because a missing entry here
  * silently shifts every ancestor computed after it. */
@@ -446,7 +446,7 @@ const VOID_TAGS = new Set([
 
 interface ScanTag { tag: string; name: string; close: boolean; at: number }
 
-/* R205/CT-75: one QUOTE-AWARE scan of the markup, opening tags and closing
+/* CT-75: one QUOTE-AWARE scan of the markup, opening tags and closing
  * tags alike. The old `tags()` was `/<[a-zA-Z][^>]*>/g`, which ends a tag at
  * the first `>` even when it sits inside a quoted attribute value — and the
  * board writes prose into `title="…"` (main.ts:2111 is one). That is harmless
@@ -481,11 +481,11 @@ function tags(html: string): { tag: string; at: number }[] {
 }
 
 /**
- * R258 — THE PAGE AS A BROWSER WOULD HAVE IT: the markup render() wrote, with
+ * CR D5.5a — THE PAGE AS A BROWSER WOULD HAVE IT: the markup render() wrote, with
  * every LIVE SLOT's patched-in content put back inside it.
  *
  * ui/main.ts patches a handful of nodes in place, outside any render, so that
- * the ⏭ chip and the opponent's presence stay true while R150's throttle is
+ * the ⏭ chip and the opponent's presence stay true while the CR D5.4 throttle is
  * holding and a render would be unsafe (it ends in runAutoPass — it SENDS).
  * A test reads a string, so the two halves have to be reassembled here or the
  * fix would be invisible and every guard on it would be a guard on nothing.
@@ -516,7 +516,7 @@ function spliceLive(html: string): string {
 /** the enclosing opening tags of the tag that starts at `at`, NEAREST FIRST —
  * the chain a browser's `closest()` walks after the element itself.
  *
- * R205/CT-75. A close tag pops back to its own name rather than popping the
+ * CT-75. A close tag pops back to its own name rather than popping the
  * top blindly: if the board ever emits something unbalanced, the chain above
  * the damage stays right instead of the whole rest of the document sliding by
  * one. An unmatched close is ignored for the same reason. */
@@ -560,7 +560,7 @@ export const zone = (html: string, key: string): string =>
 export const idsIn = (chunk: string): number[] =>
   [...chunk.matchAll(/data-id="(\d+)"/g)].map(m => Number(m[1]));
 
-/* ── R205/CT-75: the affordance census ────────────────────────────────
+/* ── CT-75: the affordance census ────────────────────────────────
  *
  * docs/13-assessment.md §7.2: "a new guard's card list is COMPUTED from
  * printed data, not typed from the cards in the report." The same applies to
@@ -629,8 +629,8 @@ export interface Client {
   /** the markup currently on screen */
   html(): string;
   /**
-   * R258: the markup the last `render()` WROTE, with the live slots left
-   * empty — i.e. everything R150's throttle is entitled to freeze.
+   * CR D5.5a: the markup the last `render()` WROTE, with the live slots left
+   * empty — i.e. everything the CR D5.4 throttle is entitled to freeze.
    *
    * The point of the pair: a held update must change `html()` (the ⏭ chip,
    * the presence dot) and must leave `raw()` byte-identical. If `raw()` moves,
@@ -639,7 +639,7 @@ export interface Client {
    */
   raw(): string;
   /**
-   * R258: how many times ui/main.ts has replaced the whole page — every
+   * how many times ui/main.ts has replaced the whole page — every
    * `$app.innerHTML =`, whatever wrote it.
    *
    * `raw()` says the markup did not CHANGE; this says the render did not RUN.
@@ -648,7 +648,7 @@ export interface Client {
    * and the invariant reads clean — while the policy pass around it
    * (hideHoverTip, gcStaleUi, planAutoPass, maybeCancelChain, publishBuilding,
    * a whole-board rebuild) has run once per held arrival at machine speed,
-   * which is the cost R150 exists to stop.
+   * which is the cost CR D5.4 exists to stop.
    */
   renders(): number;
   /** the server's `joined`: an authoritative state, from scratch */
@@ -706,7 +706,7 @@ function selMatches(sel: string, attrs: Record<string, string>): boolean {
 
 /** the clicked element, WITH the ancestor chain it really has in the markup.
  *
- * R205/CT-75. `closest()` here is the browser's algorithm: the element itself
+ * CT-75. `closest()` here is the browser's algorithm: the element itself
  * first, then each enclosing tag outward, and the NEAREST match wins. That is
  * the whole point — main.ts's delegator asks for `[data-btn]` and `[data-act]`
  * in two separate calls, so a container's `data-btn` beats a nested
@@ -851,7 +851,7 @@ function dispatch(type: string, want: Pick, paint: () => string, init: Record<st
 }
 
 /**
- * THE BOTH-SEATS CLIENT (R170/CT-46): one screen, both hands, no redaction, and
+ * THE BOTH-SEATS CLIENT (CR D2.1/CT-46): one screen, both hands, no redaction, and
  * either seat may act.
  *
  * It used to BE the hotseat game mode — `?hotseat=1`, a `Harness` straight into
@@ -860,7 +860,7 @@ function dispatch(type: string, want: Pick, paint: () => string, init: Record<st
  * first line of main.ts) and is gone. The capability it provided is not
  * optional, though: `server/view.ts` nulls a decision that is not yours, so an
  * online client's `s.decision` is always its own, and this is the only caller
- * that ever sees both seats at once — which is the whole of what R170 is about.
+ * that ever sees both seats at once — which is the whole of what CT-46 was about.
  *
  * So it is a SERVER now, in this file, serving both halves of one game over the
  * ordinary net path. Same real markup, same real handlers, and main.ts has one
@@ -891,7 +891,7 @@ export interface LocalClient {
 export function local(): LocalClient {
   assert.ok(SOCKET, 'ui/main.ts opened no socket — local() drives the ordinary net client now, '
     + 'so leave __UI_DRIVER_SEARCH alone (the default ?room= is what it wants)');
-  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // CR D5.5a
 
   // the authoritative game. Tests read it back through `state()` and some of
   // them WRITE to it (155 sets a life total directly), so it is handed out
@@ -899,7 +899,7 @@ export function local(): LocalClient {
   const back = new Harness(1234);
 
   /** Both seats' legal actions. Every Action carries its own `seat`, and
-   *  main.ts's `legalFor` filters this list by it — see R170 there. */
+   *  main.ts's `legalFor` filters this list by it — see CR D2.1 there. */
   const bothLegal = (): Action[] =>
     [...legalActions(back.state, 0), ...legalActions(back.state, 1)];
 
@@ -959,7 +959,7 @@ export function local(): LocalClient {
         // `{t:'error', msg}` and the client turns that into the red bar and
         // clears its [59] latch; a local server that just dropped the action
         // would leave the screen silent about something the engine refused
-        // BY NAME, which is the whole of R170 §4.
+        // BY NAME.
         deliver({ t: 'error', msg: err instanceof Error ? err.message : String(err) });
       }
     }
@@ -1018,7 +1018,7 @@ export function replay(): ReplayClient {
   assert.ok(SEARCH.includes('replay='),
     'replay() is the replay client — set globalThis.__UI_DRIVER_SEARCH = \'?replay=CODE\' '
     + 'before importing test/ui-driver.ts');
-  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // CR D5.5a
   return {
     html: paint,
     has: want => !!findTag(paint(), want),
@@ -1047,7 +1047,7 @@ export function home(): ReplayClient {
 
 export async function client(): Promise<Client> {
   assert.ok(SOCKET, 'ui/main.ts opened no socket — the fixture is not driving the client');
-  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // CR D5.5a
   const deliver = (msg: Record<string, unknown>): string => {
     SOCKET!.onmessage!({ data: JSON.stringify(msg) });
     return paint();

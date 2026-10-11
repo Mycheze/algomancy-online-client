@@ -1,32 +1,32 @@
 /* Light & Dark engine wave C: the new attributes, the Wight, Modular, and the
  * last cast-time/extractor primitives.
  *
- *  - R48 {Blessed}: lifelink, and SIMULTANEOUS — the gain lands on the same
+ *  - CR 802.22b, 802.22c {Blessed}: lifelink, and SIMULTANEOUS — the gain lands on the same
  *    game-state check as the damage, so it applies BEFORE the lethal check and
  *    a blessed source can never kill its own controller. All damage, combat
  *    and effect alike.
- *  - R48 {Afflicting}: when an afflicting source kills one or more units their
+ *  - CR 802.23c {Afflicting}: when an afflicting source kills one or more units their
  *    controllers gain a rot — including kills by -1/-1 COUNTERS (the only way
  *    Umbral Decay, the sole afflicting card, kills anything). One rot per
  *    affected controller per kill event.
- *  - R48 {Lethal}: any combat damage from a lethal unit kills a player — and
+ *  - CR 802.24c {Lethal}: any combat damage from a lethal unit kills a player — and
  *    still does when the column's damage is replaced by rot, because a
  *    replaced hit still counts as having been dealt (Caleb 2024-10-24).
- *  - R38 Blightsea Polyp: a per-COLUMN replacement of combat damage to
+ *  - CR 608.8a Blightsea Polyp: a per-COLUMN replacement of combat damage to
  *    players — 1 rot whatever the column's power, life untouched.
- *  - R71 The Wraith (retired name: Wight): a 0-mana 3/3 token that shrinks an
+ *  - CR 706.12, 721.6 The Wraith (retired name: Wight): a 0-mana 3/3 token that shrinks an
  *    ally at the start of deployment and mints a FRESH Wraith augment when it
  *    dies. Two entry points (create / augment), one card, two printed names.
- *    Redesigned 2026-08-21; this retires R47, under which the DYING Wraith
+ *    Redesigned 2026-08-21; this retires the old Wraith ruling, under which the DYING Wraith
  *    re-attached itself instead of being erased.
- *  - R69 A dying token enters the bin and is then erased by a state-based
- *    sweep — and R306: it is NOT trashed there (a token is not a card; this
- *    used to say it was, per R133's withdrawn half); an Unstable (modded) unit is tested first
+ *  - CR 410.5a A dying token enters the bin and is then erased by a state-based
+ *    sweep — and CR 801.2d: it is NOT trashed there (a token is not a card; this
+ *    used to say it was, per the token ruling's withdrawn half); an Unstable (modded) unit is tested first
  *    and is erased with its mods, token or not.
  *  - {Modular}: mods applied to a card AS IT IS PLAYED — an additional cast
- *    cost (R35), riding on the stack with the spell.
- *  - TargetSpec 'cachedCard': a card in EITHER player's cache (R41, public).
- *  - R40 the "Discard me" play mode: pay the printed cost line, discard from
+ *    cost (CR 724.3), riding on the stack with the spell.
+ *  - TargetSpec 'cachedCard': a card in EITHER player's cache (CR 403.6, public).
+ *  - CR 111.12 the "Discard me" play mode: pay the printed cost line, discard from
  *    hand, and the resulting trash fires the card's own trashed trigger.
  *
  * No Light & Dark card is scripted yet — every primitive here is proven with
@@ -218,7 +218,7 @@ function throughCombat(h: Harness, defender: Seat): void {
   pass(h); pass(h);                                        // → combat damage
 }
 
-// ── R48: {Blessed} ────────────────────────────────────────────────────
+// ── CR 802.22: {Blessed} ────────────────────────────────────────────────────
 
 
 /** the inert deck filler behind sterile() below: unaffordable (mana 20, no
@@ -252,7 +252,7 @@ function sterile(seed: number): Harness {
   return h;
 }
 
-test('R48 {Blessed}: effect damage gains its controller exactly that much life', () => {
+test('CR 802.22a {Blessed}: effect damage gains its controller exactly that much life', () => {
   const h = sterile(3700);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -265,7 +265,7 @@ test('R48 {Blessed}: effect damage gains its controller exactly that much life',
   assert.equal(ent(h, wall)!.damage, 5, 'and the damage was still dealt in full');
 });
 
-test('R48 {Blessed}: an identical unblessed source gains nothing', () => {
+test('CR 802.22a {Blessed}: an identical unblessed source gains nothing', () => {
   const h = sterile(3701);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -278,7 +278,7 @@ test('R48 {Blessed}: an identical unblessed source gains nothing', () => {
   assert.equal(h.events.filter(ev => ev.type === 'lifeGained').length, 0);
 });
 
-test('R48 {Blessed}: the gain lands BEFORE the lethal check — you heal before you die', () => {
+test('CR 802.22b {Blessed}: the gain lands BEFORE the lethal check — you heal before you die', () => {
   const h = sterile(3702);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -294,7 +294,7 @@ test('R48 {Blessed}: the gain lands BEFORE the lethal check — you heal before 
   assert.ok(iGain !== -1 && iLoss > iGain, 'and the gain is committed first');
 });
 
-test('R48 {Blessed}: without the attribute the same shot is lethal (the control)', () => {
+test('CR 802.22b {Blessed}: without the attribute the same shot is lethal (the control)', () => {
   const h = sterile(3703);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -307,7 +307,7 @@ test('R48 {Blessed}: without the attribute the same shot is lethal (the control)
   assert.equal(h.state.winner, O, 'an unblessed source kills its own controller happily');
 });
 
-test('R48 {Blessed}: combat damage to a player gains too', () => {
+test('CR 802.22a {Blessed}: combat damage to a player gains too', () => {
   const h = sterile(3704);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -319,7 +319,7 @@ test('R48 {Blessed}: combat damage to a player gains too', () => {
   assert.equal(h.state.players[A]!.life, lifeA + 3, 'and the blessed column gained 3');
 });
 
-test('R48 {Blessed}: combat damage to a UNIT gains as well', () => {
+test('CR 802.22a {Blessed}: combat damage to a UNIT gains as well', () => {
   const h = sterile(3705);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -335,9 +335,9 @@ test('R48 {Blessed}: combat damage to a UNIT gains as well', () => {
   assert.equal(h.state.players[D]!.life, lifeD, 'and no life changed hands otherwise');
 });
 
-// ── R48: {Afflicting} ─────────────────────────────────────────────────
+// ── CR 802.23: {Afflicting} ─────────────────────────────────────────────────
 
-test('R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit\'s controller a rot', () => {
+test('CR 802.23c {Afflicting}: a -1/-1 COUNTER kill gives the dead unit\'s controller a rot', () => {
   const h = sterile(3710);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -353,7 +353,7 @@ test('R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit\'s controller a
   assert.equal(rotOf(h, A), 0, 'the afflicting source\'s controller does not');
 });
 
-test('R48 {Afflicting}: the same kill without the attribute gives nobody a rot', () => {
+test('CR 802.23a {Afflicting}: the same kill without the attribute gives nobody a rot', () => {
   const h = sterile(3711);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -369,7 +369,7 @@ test('R48 {Afflicting}: the same kill without the attribute gives nobody a rot',
   assert.equal(rotOf(h, A), 0);
 });
 
-test('R48 {Afflicting}: ONE rot per controller per kill event, however many died', () => {
+test('CR 802.23b {Afflicting}: ONE rot per controller per kill event, however many died', () => {
   const h = sterile(3712);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -387,7 +387,7 @@ test('R48 {Afflicting}: ONE rot per controller per kill event, however many died
   assert.equal(gains.length, 2, 'one rotGained per affected controller, no more');
 });
 
-test('R48 {Afflicting}: killing nothing gives no rot at all', () => {
+test('CR 802.23a {Afflicting}: killing nothing gives no rot at all', () => {
   const h = sterile(3713);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -403,7 +403,7 @@ test('R48 {Afflicting}: killing nothing gives no rot at all', () => {
   assert.equal(rotOf(h, A), 0);
 });
 
-test('R48 {Afflicting}: a plain COMBAT kill counts too', () => {
+test('CR 802.23d {Afflicting}: a plain COMBAT kill counts too', () => {
   const h = sterile(3714);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -418,9 +418,9 @@ test('R48 {Afflicting}: a plain COMBAT kill counts too', () => {
   assert.equal(rotOf(h, A), 0);
 });
 
-// ── R48: {Lethal} + the Blightsea rot replacement ─────────────────────
+// ── CR 802.24c: {Lethal} + the Blightsea rot replacement ─────────────────────
 
-test('R48 {Lethal}: any combat damage from a lethal unit kills the player', () => {
+test('CR 802.24a {Lethal}: any combat damage from a lethal unit kills the player', () => {
   const h = sterile(3720);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -432,7 +432,7 @@ test('R48 {Lethal}: any combat damage from a lethal unit kills the player', () =
   assert.equal(h.state.winner, A, 'one point of combat damage from a Lethal unit is enough');
 });
 
-test('R38 Blightsea: a column\'s combat damage to a player becomes 1 rot, whatever its power', () => {
+test('CR 608.8a Blightsea: a column\'s combat damage to a player becomes 1 rot, whatever its power', () => {
   const h = sterile(3721);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -448,7 +448,7 @@ test('R38 Blightsea: a column\'s combat damage to a player becomes 1 rot, whatev
     'no combat life loss happened at all');
 });
 
-test('R38 Blightsea: the replacement is PER COLUMN', () => {
+test('CR 608.8a Blightsea: the replacement is PER COLUMN', () => {
   const h = sterile(3722);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -462,7 +462,7 @@ test('R38 Blightsea: the replacement is PER COLUMN', () => {
   assert.equal(rotOf(h, D), 2, 'two columns, two rot');
 });
 
-test('R48 {Lethal} still kills THROUGH the Blightsea replacement (the damage was still dealt)', () => {
+test('CR 802.24c {Lethal} still kills THROUGH the Blightsea replacement (the damage was still dealt)', () => {
   const h = sterile(3723);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -478,13 +478,13 @@ test('R48 {Lethal} still kills THROUGH the Blightsea replacement (the damage was
   assert.equal(h.state.winner, A, 'and Lethal killed anyway — Caleb 2024-10-24');
 });
 
-// ── R71: the Wraith (redesigned 2026-08-21; retires R47) ──────────────
+// ── CR 110.2c: the Wraith (redesigned 2026-08-21; retires the old Wraith ruling) ──────────────
 
 // The token was renamed Wight -> Wraith. Six cards print the current name;
 // `Blight's End` still carries the retired one. Both must resolve to the SAME
 // registered card, with the CURRENT name canonical — state stores 'Wraith',
 // and 'Wight' exists only so an old printing still looks up.
-test('R71: Wraith and Wight are one card, and neither name is a second entry', () => {
+test('Wraith and Wight are one card, and neither name is a second entry', () => {
   assert.equal(getCard('Wight'), getCard('Wraith'),
     'the retired name resolves to the same definition as the current one');
   assert.equal(getCard('Wight').name, 'Wraith',
@@ -500,7 +500,7 @@ test('R71: Wraith and Wight are one card, and neither name is a second entry', (
 // Project rule: printed data is never hand-copied. The Wraith has a printed
 // card and an oracle entry, so it goes through scripts/extract-printed.mjs
 // like Wisp, Fireball and Poison — registry.ts carries behaviour only.
-test('R71: the Wraith is EXTRACTED printed data, not a hand-written synthetic', () => {
+test('the Wraith is EXTRACTED printed data, not a hand-written synthetic', () => {
   assert.ok(PRINTED['Wraith'], 'it is in printed.json (i.e. in the extractor POOL)');
   assert.equal(PRINTED['Wraith']!.power, 3);
   assert.equal(PRINTED['Wraith']!.image, 'Wraith.jpg', 'and it has its own printed art');
@@ -509,7 +509,7 @@ test('R71: the Wraith is EXTRACTED printed data, not a hand-written synthetic', 
   assert.match(PRINTED['Wraith']!.text, /When I die, Augment a Wraith onto an ally\./);
 });
 
-test('R71: "create a Wraith" spawns a real 3/3 token body', () => {
+test('CR 304.4: "create a Wraith" spawns a real 3/3 token body', () => {
   const h = sterile(3730);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -523,8 +523,8 @@ test('R71: "create a Wraith" spawns a real 3/3 token body', () => {
 });
 
 // The redesigned first line. It is [Augment] text, and a card's own [Augment]
-// text is live while it is a unit in play (R55), so a Wraith BODY does this.
-test('R71: at the start of deployment a Wraith body shrinks a chosen ally', () => {
+// text is live while it is a unit in play (CR 721.1d), so a Wraith BODY does this.
+test('at the start of deployment a Wraith body shrinks a chosen ally', () => {
   const h = sterile(3731);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -539,7 +539,7 @@ test('R71: at the start of deployment a Wraith body shrinks a chosen ally', () =
 
 // ⚠ UNCONFIRMED (Bena to rule): may "an ally" be the carrier itself? The engine
 // says yes, which is also what keeps the line from ever having no candidate.
-test('R71 ⚠: a lone Wraith may pick ITSELF as "an ally" (unconfirmed reading)', () => {
+test('CR 110.4a ⚠: a lone Wraith may pick ITSELF as "an ally" (unconfirmed reading)', () => {
   const h = sterile(3732);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -551,9 +551,9 @@ test('R71 ⚠: a lone Wraith may pick ITSELF as "an ally" (unconfirmed reading)'
   assert.deepEqual(effStats(h, id), [2, 2], 'and it shrank itself');
 });
 
-// The redesigned second line. The dying Wraith is NOT re-homed (that was R47,
+// The redesigned second line. The dying Wraith is NOT re-homed (that was the old Wraith ruling,
 // retired): it is erased like any other token and a FRESH Wraith is minted.
-test('R71: a dying Wraith mints a NEW Wraith onto a chosen ally', () => {
+test('CR 721.6: a dying Wraith mints a NEW Wraith onto a chosen ally', () => {
   const h = sterile(3733);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -571,10 +571,10 @@ test('R71: a dying Wraith mints a NEW Wraith onto a chosen ally', () => {
   assert.notEqual(mods[0]!.id, id, 'a NEW token — the dead one did not re-home itself');
 });
 
-// "an ally" is not a TARGET (the word "target" is not printed), so this is an
-// R67 exception ON PURPOSE: the ally is chosen on resolution, and with no
+// "an ally" is not a TARGET (the word "target" is not printed), so it is
+// exempt ON PURPOSE from choosing at the stack (CR 110.2): the ally is chosen on resolution, and with no
 // candidate the trigger simply does nothing rather than fizzling.
-test('R71: with no ally left the death trigger does nothing — it cannot fizzle', () => {
+test('with no ally left the death trigger does nothing — it cannot fizzle', () => {
   const h = sterile(3734);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -588,25 +588,25 @@ test('R71: with no ally left the death trigger does nothing — it cannot fizzle
     'and nothing fizzled — "an ally" was never a target to lose');
 });
 
-// R69, reversing R47/R40's old carve-out — and R306 (owner, 2026-09-28)
+// The token-zone ruling (CR 410.5), reversing the trashing rule's old carve-out — and the 2026-09-28 ruling (CR 801.2d)
 // reversing the TRASH half of that again: this test used to be named "a dying
 // Wraith IS trashed" and pinned one trash. The zone fact (bin, then erase)
 // stands; a token is not a card, so it is not trashed.
-test('R69 + R306: a dying Wraith enters the bin untrashed, then is erased out of it', () => {
+test('CR 410.5a: a dying Wraith enters the bin untrashed, then is erased out of it', () => {
   const h = sterile(3735);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   let id = 0;
   whiteBox(h, e => { id = e.createWraith(P).id; });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  assert.equal(trashes(h).length, 0, 'a token is NOT a card (R133), so entering a bin does not trash it (R306)');
+  assert.equal(trashes(h).length, 0, 'a token is NOT a card (CR 304.2), so entering a bin does not trash it (CR 801.2d)');
   assert.ok(h.events.some(ev => ev.type === 'erased' && ev.data!['card'] === 'Wraith' && ev.data!['from'] === 'bin'),
-    'it did enter the bin — the sweep takes it out of one (R69)');
+    'it did enter the bin — the sweep takes it out of one (CR 410.5a)');
   assert.deepEqual(h.state.players[P]!.bin, [], 'the state-based sweep erased it again');
   assert.deepEqual(h.q.erased(P), ['Wraith'], 'and it shows in the erased pile');
 });
 
-test('R71: "augment a Wraith onto a unit" makes the same token, directly as a mod', () => {
+test('CR 721.6: "augment a Wraith onto a unit" makes the same token, directly as a mod', () => {
   const h = sterile(3736);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -624,7 +624,7 @@ test('R71: "augment a Wraith onto a unit" makes the same token, directly as a mo
 });
 
 // One text-box [Augment] over both lines, so BOTH travel to the host.
-test('R71: an augmented Wraith donates BOTH lines to its host', () => {
+test('CR 721.1a: an augmented Wraith donates BOTH lines to its host', () => {
   const h = sterile(3737);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -637,23 +637,23 @@ test('R71: an augmented Wraith donates BOTH lines to its host', () => {
   assert.deepEqual(effStats(h, host), [3, 3], 'line 1 travelled: it shrank an ally');
 });
 
-// R69/B — the branch order in destroy(). This is game UZRG's bug: the token
+// CR 803.8e — the branch order in destroy(). This is game UZRG's bug: the token
 // test used to come FIRST, so a modded token never reached the Unstable branch.
 //
-// R137 (2026-08-24) INVERTS the trash half in place. This test used to be
+// The owner's 2026-08-24 Unstable-trash call (engine only, CT-246; CR 801.2h differs) inverted the trash half in place. This test used to be
 // named "…no bin, no trash" and assert `trashes(h).length === 0`; the owner
 // ruled that an Unstable death takes the token's route through the bin, so a
 // Wraith body carrying a Wraith mod now trashes exactly ONCE — for the body,
-// which is a token and so trashes on the R69 ruling, and NOT for the mod,
+// which is a token and so was trashed under the earlier reading (since reversed: tokens are not trashed), and NOT for the mod,
 // which is a token MOD and has no card of its own to bin at all. Both flips
 // are carried here rather than deleted: the branch order is still what the
 // test is about, and one trash instead of two is the proof it is still right.
 //
-// R306 (owner, 2026-09-28) flips the BODY half back: the body is a TOKEN, and
-// a token is never trashed, Unstable or not. R137 still trashes an Unstable
-// CARD (224-mod-trash); here both objects are tokens, so ZERO trashes. The
+// The owner's 2026-09-28 ruling (now CR 801.2d) flips the BODY half back: the body is a TOKEN, and
+// a token is never trashed, Unstable or not. The engine still trashes an Unstable
+// CARD (224-mod-trash; CR 801.2h says it should not, CT-246); here both objects are tokens, so ZERO trashes. The
 // branch order is proved by the Unstable log line and the two death triggers.
-test('R69: a MODDED token is Unstable — erased with its mods; R306: neither the token body nor the token mod trashes', () => {
+test('CR 803.8e: a MODDED token is Unstable — erased with its mods; CR 801.2d: neither the token body nor the token mod trashes', () => {
   const h = sterile(3738);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -665,7 +665,7 @@ test('R69: a MODDED token is Unstable — erased with its mods; R306: neither th
   });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
   assert.equal(trashes(h).length, 0,
-    'NO trash: the body entered a bin but is a token (R306); the token MOD never entered one (R69)');
+    'NO trash: the body entered a bin but is a token (CR 801.2d); the token MOD never entered one (CR 410.4c)');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep emptied the bin again');
   assert.ok(h.log.some(l => l.includes('Unstable')), 'and it took the Unstable branch');
   // it still DIED, so both copies of the donated death text fired and each
@@ -674,7 +674,7 @@ test('R69: a MODDED token is Unstable — erased with its mods; R306: neither th
     'Unstable replaces the BIN, not the death — both death triggers still fired');
 });
 
-test('R69/R70: a token mod is erased with its host, never binned or trashed', () => {
+test('CR 720.7c: a token mod is erased with its host, never binned or trashed', () => {
   const h = sterile(3739);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -716,17 +716,17 @@ test('{Modular}: mods are applied at cast time, paid for, and ride on the stack 
   drainStack(h);
   assert.equal(rotOf(h, A), 1, 'the base effect resolved');
   assert.equal(h.state.players[A]!.life, life + 4, 'and so did the mod, as one composite ability');
-  // R105 (owner, 2026-08-23): a modded card is {Unstable} — Manual p.35, "as
+  // The owner's 2026-08-23 ruling (now CR 724.5): a modded card is {Unstable} — Manual p.35, "as
   // long as a card is modded, it has the unstable attribute … even though mods
   // can be applied from the bin, they are generally only able to be applied
   // once". So the mod follows the card OUT OF THE GAME, not to a bin; this line
   // read `.bin.includes(...)` until that ruling landed.
   assert.ok(!h.state.players[A]!.bin.includes('T37 Graft Mod'), 'the mod does not reach a bin');
   assert.ok((h.state.players[A]!.erased ?? []).includes('T37 Graft Mod'),
-    'it is erased with its carrier (R65, R69)');
+    'it is erased with its carrier (CR 724.5)');
   assert.ok((h.state.players[A]!.erased ?? []).includes('T37 Modular Spell'),
     'and the carrier with it — Unstable is a BIN replacement, so neither reaches one');
-  assert.equal(trashes(h).length, 0, 'from the stack, and never into a bin, so nothing was trashed (R40)');
+  assert.equal(trashes(h).length, 0, 'from the stack, and never into a bin, so nothing was trashed (CR 801.2b)');
 });
 
 test('{Modular}: the caster may decline, and a non-modular spell is never asked', () => {
@@ -753,9 +753,9 @@ test('{Modular}: the caster may decline, and a non-modular spell is never asked'
   assert.ok(h.state.players[A]!.hand.includes('T37 Graft Mod'), 'the mod stayed in hand');
 });
 
-// ── TargetSpec 'cachedCard' (R41) ─────────────────────────────────────
+// ── TargetSpec 'cachedCard' (CR 403.6) ─────────────────────────────────────
 
-test("R41: a 'cachedCard' target finds cards in BOTH players' caches", () => {
+test("CR 403.6: a 'cachedCard' target finds cards in BOTH players' caches", () => {
   const h = sterile(3750);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -778,7 +778,7 @@ test("R41: a 'cachedCard' target finds cards in BOTH players' caches", () => {
   assert.deepEqual(h.q.cache(A).map(c => c.card), ['T37 Grunt'], 'the untargeted entry is untouched');
 });
 
-test('R41: a cached target that vanishes before resolution fizzles cleanly', () => {
+test('CR 403.6: a cached target that vanishes before resolution fizzles cleanly', () => {
   const h = sterile(3751);
   toDeployment(h);
   const A = h.state.initiative;
@@ -795,7 +795,7 @@ test('R41: a cached target that vanishes before resolution fizzles cleanly', () 
   assert.equal(h.state.phase, 'battle', 'and the game carried on');
 });
 
-test('R41: cache uids are stable handles, and a pre-uid entry is simply untargetable', () => {
+test('cache uids are stable handles, and a pre-uid entry is simply untargetable', () => {
   const h = sterile(3752);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -815,7 +815,7 @@ test('R41: cache uids are stable handles, and a pre-uid entry is simply untarget
     'no uid, no target — never a crash');
 });
 
-test('R5: "recall UP TO ONE target cached card" still gains the life when nothing is aimed at', () => {
+test('CR 110.1c: "recall UP TO ONE target cached card" still gains the life when nothing is aimed at', () => {
   // Prismatic Observer's shape. A min-0 spec means declaring no target is a
   // legal CHOICE, not a fizzle — so everything printed alongside it happens.
   const h = sterile(3753);
@@ -841,9 +841,9 @@ test('R5: "recall UP TO ONE target cached card" still gains the life when nothin
   assert.deepEqual(h.q.cache(A).map(c => c.card), ['T37 Wall'], 'and the cache is untouched');
 });
 
-// ── R40: the "Discard me" play mode ───────────────────────────────────
+// ── CR 111.12: the "Discard me" play mode ───────────────────────────────────
 
-test('R40: "Discard me" pays its own cost, trashes the card, and fires its own trigger', () => {
+test('CR 111.12: "Discard me" pays its own cost, trashes the card, and fires its own trigger', () => {
   const h = sterile(3760);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -859,12 +859,12 @@ test('R40: "Discard me" pays its own cost, trashes the card, and fires its own t
   assert.ok(!h.state.players[P]!.hand.includes('T37 Dropslime'), 'it left the hand');
   assert.ok(h.state.players[P]!.bin.includes('T37 Dropslime'), 'into the bin');
   const t = trashes(h);
-  assert.equal(t.length, 1, 'discarding from hand is trashing (R40)');
+  assert.equal(t.length, 1, 'discarding from hand is trashing (CR 801.3)');
   assert.equal(t[0]!.data!['from'], 'hand');
   assert.equal(h.state.players[P]!.life, life + 7, "and the card's own trashed trigger resolved");
 });
 
-test('R40: "Discard me" is refused without the mana', () => {
+test('CR 111.12: "Discard me" is refused without the mana', () => {
   const h = sterile(3761);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -874,7 +874,7 @@ test('R40: "Discard me" is refused without the mana', () => {
   assert.ok(h.state.players[P]!.hand.includes('T37 Dropslime'), 'nothing happened');
 });
 
-test("R40: Nothyr's battle-timing discard-me line is refused outside battle", () => {
+test("CR 207.8: Nothyr's battle-timing discard-me line is refused outside battle", () => {
   const h = sterile(3762);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -887,7 +887,7 @@ test("R40: Nothyr's battle-timing discard-me line is refused outside battle", ()
     '…while the card itself is still a perfectly normal deployment unit');
 });
 
-test("R40: Nothyr's discard-me mode works during battle, and its trigger uses the stack", () => {
+test("CR 207.8: Nothyr's discard-me mode works during battle, and its trigger uses the stack", () => {
   const h = sterile(3763);
   toDeployment(h);
   const A = h.state.initiative;
@@ -907,13 +907,13 @@ test("R40: Nothyr's discard-me mode works during battle, and its trigger uses th
   assert.equal(h.state.players[A]!.life, life + 5, 'and then it does');
 });
 
-test('R40: the trashed trigger fires from the BIN, wherever the trash came from', () => {
+test('CR 801.2a: the trashed trigger fires from the BIN, wherever the trash came from', () => {
   const h = sterile(3764);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const life = h.state.players[P]!.life;
   h.q.deckOf(P).unshift('T37 Dropslime');
-  whiteBox(h, e => { e.mill(P, 1); });                     // milling trashes too (R40)
+  whiteBox(h, e => { e.mill(P, 1); });                     // milling trashes too (CR 801.2a)
   assert.equal(h.state.players[P]!.life, life + 7, 'the card in the bin still heard its own trash');
 });
 
@@ -1002,7 +1002,7 @@ test('the new actions replay deterministically from the same setup', () => {
   assert.equal(a.state.rngState, b.state.rngState, 'and the RNG never diverged');
 });
 
-/* ── R144: DEPLOYMENT USES THE STACK, AND TRIGGERS MAY OVER-AIM ────────
+/* ── CR 507.5, 706.12: DEPLOYMENT USES THE STACK, AND TRIGGERS MAY OVER-AIM ────────
  *
  * OWNER RULING, playtest report #101 (room SMVJ, action 318, 2026-08-24),
  * verbatim:
@@ -1023,9 +1023,9 @@ test('the new actions replay deterministically from the same setup', () => {
  * refusing it — the unit was simply gone. Both halves of the hypothesis
  * confirmed.
  *
- * R102 is NOT retested here: 43-dark-c.test.ts's "the start-of-deployment event
+ * CR 112.13d is NOT retested here: 43-dark-c.test.ts's "the start-of-deployment event
  * still fires after the rot replacement stopped to ask" already drives exactly
- * this path, and drives it harder now — under R144 that replacement trigger
+ * this path, and drives it harder now — under CR 706.3c that replacement trigger
  * goes through the deployment stack, suspends mid-way, and `finishDeployStart`
  * must still close the window afterwards.
  */
@@ -1051,7 +1051,7 @@ registerSynthetic(unit('T144 Watcher', 1, 1), {
 // behind it. That is what "simultaneously" means mechanically, and it is the
 // precondition for half (b): a trigger cannot be aimed at a unit an earlier one
 // is about to kill unless it was aimed BEFORE that one resolved.
-test('R144(a): every start-of-deployment trigger is on the stack before any of them resolves', () => {
+test('CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves', () => {
   const h = sterile(3790);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1069,7 +1069,7 @@ test('R144(a): every start-of-deployment trigger is on the stack before any of t
 
 // The stack is a real stack, not a bookkeeping detail: each item announces its
 // arrival, and every arrival precedes every resolution.
-test('R144(a): deployment triggers announce themselves onto the stack, all of them before the first resolves', () => {
+test('CR 706.3c: deployment triggers announce themselves onto the stack, all of them before the first resolves', () => {
   const h = sterile(3791);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1086,10 +1086,10 @@ test('R144(a): deployment triggers announce themselves onto the stack, all of th
     'both pushes happen before either resolution');
 });
 
-// R12: the batch is shared but the AIM is not. Both seats' Wraiths fire into
+// CR 101.6: the batch is shared but the AIM is not. Both seats' Wraiths fire into
 // one queue and one stack, and each seat may still only shrink its own units in
 // its own region — deployment puts each player alone in their home region.
-test('R144(a): R12 — a shared deployment stack does not let a Wraith reach across regions', () => {
+test('CR 706.3c, 601.1b: a shared deployment stack does not let a Wraith reach across regions', () => {
   const h = sterile(3792);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1115,10 +1115,10 @@ test('R144(a): R12 — a shared deployment stack does not let a Wraith reach acr
   assert.deepEqual(effStats(h, allyD), [3, 3], 'each counter landed at home');
 });
 
-// R121's tax is Crevice Lurker's "during battle" clause. Routing deployment
+// Crevice Lurker's tax is its "during battle" clause (CR 505.1b). Routing deployment
 // through the stack must not invent a tax the card does not print, so the pay
 // gate stays keyed on the BATTLE phase and a deployment trigger walks past it.
-test('R144(a): the deployment stack is not taxed — R121 is a battle-phase gate', () => {
+test('CR 507.5: the deployment stack is not taxed — CR 505.1b is a battle-phase gate', () => {
   const h = sterile(3793);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1131,20 +1131,20 @@ test('R144(a): the deployment stack is not taxed — R121 is a battle-phase gate
   assert.ok(!h.log.some(l => l.includes('is taxed')), 'no tax line at all');
 });
 
-/* ── R144(b): several triggers may aim at ONE unit; the surplus fizzles ──
+/* ── (b) CR 706.12: several triggers may aim at ONE unit; the surplus fizzles ──
  *
  * The load-bearing half. The Wraith's deployment line is aimed in the STACK
  * window now (`EffectDef.subject`), not inside its own resolution, so the whole
  * pile is aimed while the board still looks the way it did when they fired.
  *
- * ⚠ Still NOT a target. R71 is narrowed, not reversed: no `'targeted'` event,
+ * ⚠ Still NOT a target. The Wraith ruling (CR 110.2c) is narrowed, not reversed: no `'targeted'` event,
  * no redirect, no compulsion, invisible to every targeting restriction. See
  * `EffectDef.subject` for why those three were withheld — chiefly Mohruung,
  * which creates a Crystal "when I become targeted" and would have paid its
  * controller once per Wraith per deployment.
  */
 
-/** a BOUNDED start-of-deployment shrinker, for the R113 interaction below */
+/** a BOUNDED start-of-deployment shrinker, for the CR 109.9a interaction below */
 registerSynthetic(unit('T144 Bounded Shrinker', 1, 1), {
   abilities: [{
     type: 'triggered', events: ['startOfDeployment'], bounded: true,   // [once]
@@ -1179,10 +1179,10 @@ function aimAllAt(h: Harness, id: EntityId): number {
 
 // The owner's sentence, executed. Three Wraiths, one 1/1: all three are
 // offered it, all three take it, the first kills it and the other two fizzle.
-// Before R144(b) the second and third were asked AFTER the first had resolved,
+// Before half (b), the second and third were asked AFTER the first had resolved,
 // so the 1/1 was not on their menus at all and their counters were forced onto
 // the Wraiths instead — the leftovers ate the player's own board.
-test('R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles', () => {
+test('CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles', () => {
   const h = sterile(3794);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1196,7 +1196,7 @@ test('R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fiz
   const fizzles = h.log.filter(l => l.includes('fizzles'));
   assert.equal(fizzles.length, 2, 'the two that outlived it fizzled — one line each');
   assert.ok(fizzles.every(l => l.includes('what it was aimed at has left play')),
-    'and the log SAYS why (R109: a no-op announces; it does not vanish)');
+    'and the log SAYS why (CR D7.3d: a no-op announces; it does not vanish)');
   // the point of the whole ruling: nothing was re-aimed at a bystander
   for (const w of [w1, w2, w3]) {
     assert.deepEqual(effStats(h, w), [3, 3], 'no Wraith was shrunk as a consolation prize');
@@ -1208,7 +1208,7 @@ test('R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fiz
 // is "even exceeding its defense", so this is the arithmetic version — a 4/4
 // absorbs exactly four -1/-1 counters (4/4 → 3/3 → 2/2 → 1/1 → 0/0, dead), and
 // the fifth is the surplus.
-test('R144(b): the aim does not pre-validate against a limit an earlier trigger will consume', () => {
+test('CR 706.12: the aim does not pre-validate against a limit an earlier trigger will consume', () => {
   const h = sterile(3795);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1222,10 +1222,10 @@ test('R144(b): the aim does not pre-validate against a limit an earlier trigger 
     'exactly one surplus, exactly one fizzle');
 });
 
-// R71's other half, unmoved. "There is no ally at all" declares NOTHING, so
+// The other half, unmoved. "There is no ally at all" declares NOTHING, so
 // there is nothing to lose and the trigger does nothing rather than fizzling.
 // That distinction is the whole reason `EffectPart.subject` has three states.
-test('R144(b): "no ally at all" still does nothing — it is not a fizzle (R71 unmoved)', () => {
+test('CR 706.12: "no ally at all" still does nothing — it is not a fizzle', () => {
   const h = sterile(3796);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1238,12 +1238,12 @@ test('R144(b): "no ally at all" still does nothing — it is not a fizzle (R71 u
   assert.ok(!h.log.some(l => l.includes('fizzles')), 'nothing fizzled');
 });
 
-// The three properties of a TARGET that R144 deliberately does NOT grant. The
+// The three properties of a TARGET that CR 706.12a deliberately does NOT grant. The
 // first is the expensive one: Mohruung prints "when I become targeted, create a
 // Crystal", a Wraith counter is aimed at an ALLY, and a pool where this fired
 // would hand its controller a free Crystal per Wraith per deployment — a power
 // gain the owner never asked for and could not have been reading in.
-test('R144(b): a subject is not a target — no "targeted" event is ever fired for it', () => {
+test('CR 706.12a: a subject is not a target — no "targeted" event is ever fired for it', () => {
   const h = sterile(3797);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1258,14 +1258,14 @@ test('R144(b): a subject is not a target — no "targeted" event is ever fired f
   assert.deepEqual(effStats(h, ally), [2, 2], 'both counters landed all the same');
 });
 
-// ⚠ R113 vs R108, and R113 wins. R108's first reading ("a [once] is spent only
+// ⚠ The designer's ruling (now CR 109.9a) beats the owner's first reading. That reading ("a [once] is spent only
 // when the ability does something") would refund a fizzle; the DESIGNER
 // narrowed it on 2026-08-23 — a bounded ability "can only be activated or
 // triggered once per turn. REGARDLESS OF IF THAT ABILITY RESOLVES OR DOESN'T"
 // — so the use is spent by reaching the stack and a fizzle cannot hand it back.
-// R144's fizzle is an ordinary fizzle and obeys the ordinary rule. The decline
+// CR 706.12's fizzle is an ordinary fizzle and obeys the ordinary rule. The decline
 // side of the same line is 94-bounded-uses.test.ts's job.
-test('R144(b) x R113: a bounded ability that FIZZLES still spends its use', () => {
+test('CR 706.12 x CR 109.9a: a bounded ability that FIZZLES still spends its use', () => {
   const h = sterile(3798);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1280,7 +1280,7 @@ test('R144(b) x R113: a bounded ability that FIZZLES still spends its use', () =
   const key = 'ability:T144 Bounded Shrinker#0';
   assert.equal(ent(h, s1)!.budgets[key], 1, 'the one that resolved spent its use');
   assert.equal(ent(h, s2)!.budgets[key], 1,
-    'and so did the one that FIZZLED — R113: "regardless of if that ability resolves or doesn\'t"');
+    'and so did the one that FIZZLED — the designer (CR 109.9a): "regardless of if that ability resolves or doesn\'t"');
   assert.ok(!h.log.some(l => l.includes('its use is not spent')),
     'no refund was announced, because none was made');
 });
@@ -1288,7 +1288,7 @@ test('R144(b) x R113: a bounded ability that FIZZLES still spends its use', () =
 // The aim is a decision like any other, so the replay depends on it being
 // raised in a stable order and answered the same way. Same setup, same picks,
 // same world.
-test('R144(b): the aim is deterministic — same picks, same state', () => {
+test('CR 706.12: the aim is deterministic — same picks, same state', () => {
   const build = (): { h: Harness; ally: EntityId } => {
     const h = sterile(3799);
     toDeployment(h);

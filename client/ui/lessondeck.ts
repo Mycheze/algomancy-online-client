@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: THE LEARNER'S DECK.
+/* CR D8.1 — LEARN TO PLAY: THE LEARNER'S DECK.
  *
  * The owner: *"Their 'deck' is just all the cards from a color, with the 'gold'
  * complex cards removed"* — and, from the planning interview, one of the five

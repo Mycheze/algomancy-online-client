@@ -1,4 +1,4 @@
-/* R129 — two events that the engine already knew about and never dispatched.
+/* CR 108.1a, 300.5c — two events that the engine already knew about and never dispatched.
  * Both halves have the same shape: a card's trigger could not hear something
  * the engine had already written into the log.
  *
@@ -16,7 +16,7 @@
  *      play event at all — half the noun Void Mandible prints ("when a
  *      nontoken CARD is played during battle"). 'cardPlayed' fires now, and
  *      it fires ALONGSIDE 'spellPlayed' rather than replacing it, so no
- *      existing "when you play a spell" listener changed meaning. R37 still
+ *      existing "when you play a spell" listener changed meaning. CR 701.2a still
  *      holds in both events: applying a mod is not playing a card.
  *
  * Seeds are 11900-11999.
@@ -146,11 +146,11 @@ test('Void Mandible: a {Battle} UNIT is a card played — sacrifice, then negate
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Monke') });
   assert.equal(h.state.stack.length, 2, 'Monke + the Mandible trigger above it');
   pass(h); pass(h);                                           // the trigger resolves first
-  assert.ok(!ent(h, vm), 'the Mandible sacrificed itself — the cast cost (R73)');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Monke left the stack at once');
+  assert.ok(!ent(h, vm), 'the Mandible sacrificed itself — the cast cost (the owner ruling the engine follows; CR 111.8 differs, F-U04-5)');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Monke left the stack at once');
   assert.ok(!h.state.players[D]!.hand.includes('Monke'), 'it was played, not returned');
   assert.deepEqual(h.state.players[D]!.bin.filter(c => c === 'Monke'), ['Monke'],
-    'a negated card is binned (R68) — and never spawned');
+    'a negated card is binned (CR 704.4a, 704.4b) — and never spawned');
   assert.equal(h.state.entities[raider]!.card, 'Unit Token');
   assert.ok(!Object.values(h.state.entities).some(e => e.card === 'Monke'),
     'no Monke body ever arrived');
@@ -167,7 +167,7 @@ test('Void Mandible: an AMBUSH is a card played too', () => {
   toNextBattle(h, D);
   h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Lurking Slimebeast'), mode: 'ambush' });
-  pick(h, { unit: raider });                                  // recall target ally (R67: at cast)
+  pick(h, { unit: raider });                                  // recall target ally (CR 110.1a: at cast)
   assert.equal(h.state.stack.length, 2, 'the ambush + the Mandible trigger above it');
   pass(h); pass(h);
   assert.ok(!ent(h, vm), 'the Mandible sacrificed itself');
@@ -227,8 +227,8 @@ test("'cardPlayed' rides BESIDE 'spellPlayed', and only for the kinds that are c
 
 test('a spell TOKEN is a played spell but not a card: "spellPlayed" yes, "cardPlayed" no', () => {
   // "Tokens are NOT cards, however." — owner, 2026-08-24. Casting one IS
-  // playing a spell (R305, owner 2026-09-28: "Yes, taxed + counted" — which
-  // overturned R59's "cast from play, not played"), so the narrow event fires;
+  // playing a spell (CR 702.7a, owner 2026-09-28: "Yes, taxed + counted" — which
+  // overturned the earlier "cast from play, not played"), so the narrow event fires;
   // it is still not a card, so the wide one does not.
   const h = new Harness(11910);
   toDeployment(h);
@@ -241,15 +241,15 @@ test('a spell TOKEN is a played spell but not a card: "spellPlayed" yes, "cardPl
   pass(h);                                                    // initiative passes → A acts
   const mark = { spell: seen(h, 'spellPlayed'), card: seen(h, 'cardPlayed') };
   h.do({ type: 'castSpellToken', seat: A, entityId: tok });
-  pick(h, { player: D });                                     // R67: the token names its victim at cast
+  pick(h, { player: D });                                     // CR 110.1a: the token names its victim at cast
   assert.equal(seen(h, 'spellPlayed') - mark.spell, 1, 'the narrow event is unchanged (token: true)');
   assert.equal(seen(h, 'cardPlayed') - mark.card, 0, 'a token is not a card');
   finishBattle(h);
 });
 
-// ── R37: applying a mod is not playing a card ────────────────────────────
+// ── CR 701.2: applying a mod is not playing a card ────────────────────────────
 
-test('R37 holds: applying a VIRUS fires neither event, and Void Mandible sleeps', () => {
+test('CR 701.2a holds: applying a VIRUS fires neither event, and Void Mandible sleeps', () => {
   const h = new Harness(11911);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -263,7 +263,7 @@ test('R37 holds: applying a VIRUS fires neither event, and Void Mandible sleeps'
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Gzxyclop'), hostId: host });
   assert.equal(h.state.stack[0]!.kind, 'virus', 'the premise: a virus item is on the stack');
   assert.equal(seen(h, 'cardPlayed') - mark.card, 0,
-    'R37: applying a mod is NOT playing a card, in the new event as well as the old');
+    'CR 701.2a: applying a mod is NOT playing a card, in the new event as well as the old');
   assert.equal(seen(h, 'spellPlayed') - mark.spell, 0, 'and it never was in the old one');
   assert.equal(seen(h, 'tokenCreated') - mark.tok, 0, 'and no token was created');
   assert.equal(h.state.stack.length, 1, 'no Mandible trigger sits above it');
@@ -279,5 +279,5 @@ test('CARD_PLAY_KINDS is exactly the played-card half of the StackItem kinds', (
   assert.deepEqual(all.filter(k => CARD_PLAY_KINDS.has(k)),
     ['unit', 'spell', 'spellUnit', 'ambush'],
     '"Everything is a card, including units. Tokens are NOT cards, however." — and a '
-    + 'virus is a mod being applied (R37), while triggers and activations are not plays');
+    + 'virus is a mod being applied (CR 701.2a), while triggers and activations are not plays');
 });

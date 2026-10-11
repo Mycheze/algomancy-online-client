@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: the lesson deal and the Training Construct.
+/* CR D8.1 — LEARN TO PLAY: the lesson deal and the Training Construct.
  *
  * A lesson game is constructed mode with a LessonDeal (src/lessondeal.ts): per
  * seat opening hands and draws with no bottom step, decks that can be stacked,

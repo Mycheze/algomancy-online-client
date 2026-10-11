@@ -27,14 +27,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.7 phase list. The example test asserts the attacker and the attacking player entered the defending region.",
     "sourceHashes": {}
@@ -47,7 +47,7 @@
     "examples": [
       {
         "text": "In deployment, an effect that targets a cached card can reach only its controller's own cache; once an attack brings both players into a region in battle, it can reach the opponent's cache too.",
-        "test": "293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat"
+        "test": "293-cached-targets-are-regional.test.ts::CR 110.5b in deployment a home region reaches only its own seat"
       }
     ],
     "see": [
@@ -67,14 +67,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "293-cached-targets-are-regional.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -87,7 +87,7 @@
     "examples": [
       {
         "text": "Crevice Lurker makes abilities cost [one] more \"during battle\". Outside battle the same activation costs its printed [1].",
-        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — outside battle the same activation costs its printed [1]"
+        "test": "16-earth-a.test.ts::Crevice Lurker: CR 505.1b — outside battle the same activation costs its printed [1]"
       },
       {
         "text": "Counter Thief takes counters placed \"during battle\"; outside battle it does nothing.",
@@ -112,8 +112,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "16-earth-a.test.ts",
@@ -122,6 +121,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The designer quote is about Crevice Lurker; the general reading is supported by the same gate on Vengeance and Counter Thief (tests). Basis designer is the strongest source that states it.",
     "sourceHashes": {
@@ -158,8 +158,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -167,6 +166,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -194,24 +194,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R194",
-          "quote": "A declined attack fights no combat, so there is no"
+          "quote": "A declined attack fights no combat, so there is no",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "165-token-loss-warning.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.battle.steps.declined-no-window",
@@ -232,13 +231,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R194",
-          "quote": "the entire battle phase **zero** priority windows."
+          "quote": "the entire battle phase **zero** priority windows.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "165-token-loss-warning.test.ts",
@@ -246,11 +245,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Printed text is silent on whether the step-2 priority window opens after an empty declaration (Manual p.20 lists it unconditionally). R194 rules that opening one would be a rules change. D-U09-3.",
-    "sourceHashes": {
-      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
-    }
+    "notes": "Printed text is silent on whether the step-2 priority window opens after an empty declaration (Manual p.20 lists it unconditionally). The owner ruling of 2026-08-26 (“a warning is not worth a…”) rules that opening one would be a rules change. D-U09-3.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.battle.rounds",
@@ -284,14 +282,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual calls them \"Phase 1\" and \"Phase 2\"; the client calls them battle rounds 1 and 2 (state battle.round, asserted in the example).",
     "sourceHashes": {}
@@ -341,8 +339,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -350,6 +347,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -381,16 +379,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Detail (what an absent counterattacker can and cannot do) is 610 (U13, R32/R270).",
+    "notes": "Detail (what an absent counterattacker can and cannot do) is 610 (U13, the owner rulings of 2026-08-18 (“Sent counterattackers don't exist anywhere […]”) and 2026-08-30 (“A sent counterattacker is not death-checked”)).",
     "sourceHashes": {}
   },
   {
@@ -424,14 +422,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -463,14 +461,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "No test title names this; the client offers counterattacking only in the round-1 block step (ui tests 77 [67] and 381 §4 are UI-level).",
     "sourceHashes": {}
@@ -502,13 +500,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -516,11 +514,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The \"any of its units\" half is R15 (current; the engine call). R15's heading says it is resolved by the RAQ thread \"Temporal Rift vs NIT sending counter-attack\", which is still open (D-U09-5); the printed NOTE carries the first sentence on its own. RAQ 1353986897902567424#2 (from the extract, not the pack) states the same but sits in an open thread, so it is not cited as authority.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "notes": "The \"any of its units\" half is the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) (current; the engine call). The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”)’s heading says it is resolved by the RAQ thread \"Temporal Rift vs NIT sending counter-attack\", which is still open (D-U09-5); the printed NOTE carries the first sentence on its own. RAQ 1353986897902567424#2 (from the extract, not the pack) states the same but sits in an open thread, so it is not cited as authority.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.battle.rounds.no-round-2",
@@ -549,13 +546,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R15",
-          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "21-fixes.test.ts",
@@ -563,11 +560,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.21 conditions the move to round 2 on \"if there was a counter-attack\". R15 states the rule. Temporal Rift ending round 1 before blocks is the open case: D-U09-4.",
-    "sourceHashes": {
-      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
-    }
+    "notes": "Manual p.21 conditions the move to round 2 on \"if there was a counter-attack\". The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) states the rule. Temporal Rift ending round 1 before blocks is the open case: D-U09-4.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.battle.region-order",
@@ -592,14 +588,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -635,14 +631,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Multiplayer only; the client plays 1v1, so nothing executes this. Team-game ordering (Manual p.38) is 904.",
     "sourceHashes": {}
@@ -675,13 +671,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R194",
-          "quote": "puts the battle in the defender's region"
+          "quote": "puts the battle in the defender's region",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
@@ -689,11 +685,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.battle.region-order.others-absent",
@@ -703,7 +698,7 @@
     "examples": [
       {
         "text": "Player A attacks with a Rune Channeler and leaves a Good Whale at home. Player B casts Luminous Arc: it can target the attacking Channeler, but not the Whale that stayed home.",
-        "test": "05-rulings.test.ts::R12: regions are exclusive"
+        "test": "05-rulings.test.ts::CR 601.1a: regions are exclusive"
       }
     ],
     "see": [
@@ -723,16 +718,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "General region isolation is 601 (U10, R12).",
+    "notes": "General region isolation is 601 (U10, the owner ruling of 2026-08-18 (“Regions are exclusive”)).",
     "sourceHashes": {}
   },
   {
@@ -758,12 +753,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The client has no free-for-all mode; nothing executes this. Detail is 903/905 (U22).",
     "sourceHashes": {},
@@ -778,11 +773,11 @@
     "examples": [
       {
         "text": "During a battle a player discards a card, then their attacking unit dies in combat: two cards have been trashed in this battle. At the next battle phase the count starts again from zero.",
-        "test": "35-rot-debt-trash.test.ts::R40: battleCounters count trashes per battle and reset between battles"
+        "test": "35-rot-debt-trash.test.ts::CR 505.6: battleCounters count trashes per battle and reset between battles"
       },
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: a trash outside battle counts for nothing"
+        "test": "35-rot-debt-trash.test.ts::CR 505.6: a trash outside battle counts for nothing"
       }
     ],
     "see": [
@@ -797,17 +792,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R14",
-          "quote": "region** and reset at battle-phase start; since a region hosts at most one battle"
+          "quote": "region** and reset at battle-phase start; since a region hosts at most one battle",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R14",
-          "quote": "per phase, \"this battle\" = this region's battle. Deaths outside the battle phase"
+          "quote": "per phase, \"this battle\" = this region's battle. Deaths outside the battle phase",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts",
@@ -816,11 +812,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The card only shows the phrase; the per-region scope and the reset are R14, an engine call (⚠) with no designer source: D-U09-6.",
-    "sourceHashes": {
-      "R14": "a7f5b815ddb8bf5a4de9bae6da415d8343d168a6db6395ed95204d37044cfa73"
-    }
+    "notes": "The card only shows the phrase; the per-region scope and the reset are the owner ruling of 2026-08-18 (“\"In this battle\" counters are per…”), an engine call (⚠) with no designer source: D-U09-6.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.battle.this-battle.life-lost",
@@ -845,14 +840,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -867,7 +862,7 @@
     "examples": [
       {
         "text": null,
-        "test": "183-end-battle-round-paths.test.ts::R213 §2: every path funnels through startRegroup"
+        "test": "183-end-battle-round-paths.test.ts::CR D2.6b: every path funnels through startRegroup"
       }
     ],
     "see": [
@@ -886,14 +881,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "183-end-battle-round-paths.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -919,16 +914,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "No test title states it. R38 says rot damage \"lands in the same window as regroup triggers\", which suggests something can trigger around regroup; no card in the pack does. Left to the verifier.",
+    "notes": "No test title states it. The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”) says rot damage \"lands in the same window as regroup triggers\", which suggests something can trigger around regroup; no card in the pack does. Left to the verifier.",
     "sourceHashes": {}
   },
   {
@@ -958,8 +953,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts",
@@ -967,6 +961,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -979,7 +974,7 @@
     "examples": [
       {
         "text": "After a battle the attacker is back home, both players are back in their own regions, its marked damage and its -2/-2 are gone, there is no formation, and the spell token is erased.",
-        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+        "test": "05-rulings.test.ts::CR 506.2: regroup runs its exact sequence"
       }
     ],
     "see": [
@@ -1010,24 +1005,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R11",
-          "quote": "There is a set order; per the Manual's own listing (p.7): **(1) players and units return to"
+          "quote": "There is a set order; per the Manual's own listing (p.7): **(1) players and units return to",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The ORDER is R11, taken from Manual p.7. Manual p.26 lists the same five things with \"All Spell Tokens are erased\" fourth and does not say the list is an order. The example test checks only the end state, not the order (F-U09-2). D-U09-7.",
-    "sourceHashes": {
-      "R11": "fe721d7ac8e53908c77f8b16bf5da41dd53fa292e40977125cd0e0b25b979f09"
-    }
+    "notes": "The ORDER is the owner ruling of 2026-08-18 (“Regroup order”), taken from Manual p.7. Manual p.26 lists the same five things with \"All Spell Tokens are erased\" fourth and does not say the list is an order. The example test checks only the end state, not the order (F-U09-2). D-U09-7.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.regroup.sequence.return",
@@ -1037,7 +1031,7 @@
     "examples": [
       {
         "text": "Life Plant's 1/1s, created in the enemy region during an attack, walk home at regroup.",
-        "test": "98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup"
+        "test": "98-spawn-region.test.ts::the stranded 1/1s walk home at regroup"
       },
       {
         "text": "The attacker and the counterattacker are both back in their home regions after regroup.",
@@ -1057,13 +1051,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R115",
-          "quote": "- **Regroup** already returns every out-of-position unit to its controller's home region"
+          "quote": "- **Regroup** already returns every out-of-position unit to its controller's home region",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "98-spawn-region.test.ts",
@@ -1072,11 +1066,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.regroup.sequence.players",
@@ -1086,7 +1079,7 @@
     "examples": [
       {
         "text": null,
-        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+        "test": "05-rulings.test.ts::CR 506.2: regroup runs its exact sequence"
       }
     ],
     "see": [
@@ -1105,14 +1098,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1125,7 +1118,7 @@
     "examples": [
       {
         "text": "A Good Whale carrying 1 marked damage has none after regroup.",
-        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+        "test": "05-rulings.test.ts::CR 506.2: regroup runs its exact sequence"
       }
     ],
     "see": [
@@ -1144,14 +1137,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1168,7 +1161,7 @@
       },
       {
         "text": "Jelly's -2/-2 on an attacker is gone after regroup.",
-        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+        "test": "05-rulings.test.ts::CR 506.2: regroup runs its exact sequence"
       }
     ],
     "see": [
@@ -1187,8 +1180,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts",
@@ -1197,6 +1189,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1209,7 +1202,7 @@
     "examples": [
       {
         "text": null,
-        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+        "test": "05-rulings.test.ts::CR 506.2: regroup runs its exact sequence"
       }
     ],
     "see": [
@@ -1228,14 +1221,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "05-rulings.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1272,14 +1265,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1316,24 +1309,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "is spared the ERASE and nothing else"
+          "quote": "is spared the ERASE and nothing else",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.regroup.sequence.spell-tokens.mods",
@@ -1343,7 +1335,7 @@
     "examples": [
       {
         "text": "A Fireball token augmented during deployment and not cast is erased at regroup, and its augment is erased with it.",
-        "test": "78-round17-core.test.ts::R89: an augmented token erased at regroup takes its mod with it"
+        "test": "78-round17-core.test.ts::CR 506.2h: an augmented token erased at regroup takes its mod with it"
       }
     ],
     "see": [
@@ -1359,24 +1351,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "its mods **with** it (Manual p.35, *\"when it dies or is erased, it and all of"
+          "quote": "its mods **with** it (Manual p.35, *\"when it dies or is erased, it and all of",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.35 is not in the U09 pack; read from the extract's printed pages.",
-    "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.regroup.unit-tokens-stay",
@@ -1386,7 +1377,7 @@
     "examples": [
       {
         "text": "The 1/1 unit tokens Life Plant made in the enemy region are still in play after regroup, back in their home region.",
-        "test": "98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup"
+        "test": "98-spawn-region.test.ts::the stranded 1/1s walk home at regroup"
       }
     ],
     "see": [
@@ -1401,14 +1392,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "98-spawn-region.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1444,14 +1435,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "01-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1484,14 +1475,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "01-planning.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1504,7 +1495,7 @@
     "examples": [
       {
         "text": "Beyond's rot replacement says \"target unit\", and in deployment only its controller's own units are offered.",
-        "test": "43-dark-c.test.ts::R102 — the target list is your own units, even with an enemy standing in the region"
+        "test": "43-dark-c.test.ts::CR 507.1b — the target list is your own units, even with an enemy standing in the region"
       }
     ],
     "see": [
@@ -1524,13 +1515,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R102",
-          "quote": "In Deployment, you're in your own region, alone."
+          "quote": "In Deployment, you're in your own region, alone.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "43-dark-c.test.ts",
@@ -1538,11 +1529,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.deploy.what-it-is.no-opponents",
@@ -1552,7 +1542,7 @@
     "examples": [
       {
         "text": "Thoughtripper trashed outside battle makes no opponent discard, because no opponent is present.",
-        "test": "43-dark-c.test.ts::Thoughtripper: R25 — trashed outside battle, no opponent is present to discard"
+        "test": "43-dark-c.test.ts::Thoughtripper: CR 601.4d — trashed outside battle, no opponent is present to discard"
       }
     ],
     "see": [
@@ -1571,14 +1561,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "43-dark-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1612,14 +1602,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "RAQ 1537748882501668934#4 is from the extract, not the pack. Virus timing (mods in battle) is 723.",
     "sourceHashes": {
@@ -1663,13 +1653,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R95 (its haste sibling, Slurpr)",
-          "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
+          "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "apply.ts:doGraft",
         "apply.ts:hasteModAllowed"
@@ -1681,10 +1671,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The designer rule (RAQ 1355115946032889914#0) is the default; Slurpr is a printed card exception, and R95 reads its \"other mods\" as grafts too (R37). Slurpr is from the U17 pack and R95 from digital-rules.md, neither in the U09 pack. The engine entries are the verifier r2 measurement (doGraft gate: deploying || hasteModAllowed); not read by the drafter. D-U09-11.",
+    "notes": "The designer rule (RAQ 1355115946032889914#0) is the default; Slurpr is a printed card exception, and the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”) reads its \"other mods\" as grafts too (owner ruling of 2026-08-19, “\"Playing\" a card means units and…”). Slurpr is from the U17 pack and the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”) from digital-rules.md, neither in the U09 pack. The engine entries are the verifier r2 measurement (doGraft gate: deploying || hasteModAllowed); not read by the drafter. D-U09-11.",
     "sourceHashes": {
-      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb",
       "RAQ 1355115946032889914#0": "570bdde45f267e2fa36e032e03d4220f54649c976e64bfc3afdf08fb321d1661"
     }
   },
@@ -1696,11 +1686,11 @@
     "examples": [
       {
         "text": null,
-        "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
+        "test": "78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment"
       },
       {
         "text": "A Fireball 3 token augmented in deployment with Chitin Shredder gains {Powerful}, and when cast in battle it deals 6.",
-        "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
+        "test": "78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer"
       }
     ],
     "see": [
@@ -1711,17 +1701,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R89",
-          "quote": "> deployment but currently that would only be possible with spell tokens. Also"
+          "quote": "> deployment but currently that would only be possible with spell tokens. Also",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R89",
-          "quote": "> you can only do this with attributes.**\""
+          "quote": "> you can only do this with attributes.**\"",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "apply.ts:doAugment",
         "engine.ts:stackAugmentAttrs"
@@ -1731,11 +1722,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Both operative sentences are calebgannon's (2025-03-06), quoted inside R89, a designer-backed ruling; there is no RAQ thread to cite directly, so basis is mixed (designer words via R89). That any augment (not only a Virus) may do it is R89's reading from _passer, recorded as D-U06-7. Fuller rule: 721 (U06 types.mods.spell-token-host). The engine entries are the verifier r1 measurement (deploy branch of doAugment accepts a spell-token host; only augment attributes are read onto the cast item); not read by the drafter.",
-    "sourceHashes": {
-      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
-    }
+    "notes": "Both operative sentences are calebgannon's (2025-03-06), quoted inside the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”), a designer-backed ruling; there is no RAQ thread to cite directly, so basis is mixed (designer words via the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)). That any augment (not only a Virus) may do it is the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”)’s reading from _passer, recorded as D-U06-7. Fuller rule: 721 (U06 types.mods.spell-token-host). The engine entries are the verifier r1 measurement (deploy branch of doAugment accepts a spell-token host; only augment attributes are read onto the cast item); not read by the drafter.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.deploy.order",
@@ -1769,12 +1759,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "This client does not follow this order: see turn.deploy.order.simultaneous and D-U09-1. Rulebook 2023 says the NIT may \"wait and see\" what the IT does; Manual p.19 and p.42 say there is no information between regions, and in deployment each player is in a separate region. The Rulebook 2023 p.5 quote speaks of \"the mana and main phases\"; Rulebook 2023 calls deployment the main phase (\"After the main phase, the turn is over\"). engine differs: F-U09-3 (measured: the non-initiative player is offered and may make a play before the initiative player is done).",
     "sourceHashes": {},
@@ -1799,7 +1789,7 @@
       },
       {
         "text": "During deployment Player A plays Ignis Sprite; nothing of it appears in Player B's game log while deployment is under way.",
-        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing either (the negative control)"
+        "test": "203-reveal-waits-for-the-barrier.test.ts::CR D6.1a: a hidden step with no reveal in it leaks nothing either (the negative control)"
       }
     ],
     "see": [
@@ -1809,17 +1799,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R144 (its \"hidden simultaneous segment\" words; its no-priority clause amended by R286)",
-          "quote": "> Deployment is a hidden simultaneous segment with no priority windows at all"
+          "quote": "> Deployment is a hidden simultaneous segment with no priority windows at all",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R286",
-          "quote": "playing different games during deployment"
+          "quote": "playing different games during deployment",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "21-fixes.test.ts",
@@ -1827,12 +1818,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "A house rule (21-fixes header: \"simultaneous deployment (house rule)\"; client/docs/06-roadmap.md \"simultaneous hidden deployment (house rule\"). R144 names deployment a hidden simultaneous segment (its \"no priority windows\" half is amended by R286, which is not what this rule cites). The hiding is done by the server view (server/view.ts), so the hiding example is a server test; the 21-fixes examples assert only the simultaneity. Digital detail is Annex D (U23). D-U09-1.",
-    "sourceHashes": {
-      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061",
-      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
-    }
+    "notes": "A house rule (21-fixes header: \"simultaneous deployment (house rule)\"; client/docs/06-roadmap.md \"simultaneous hidden deployment (house rule\"). The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”) names deployment a hidden simultaneous segment (its \"no priority windows\" half is amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”), which is not what this rule cites). The hiding is done by the server view (server/view.ts), so the hiding example is a server test; the 21-fixes examples assert only the simultaneity. Digital detail is Annex D (U23). D-U09-1.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.deploy.start",
@@ -1842,11 +1831,11 @@
     "examples": [
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order"
+        "test": "35-rot-debt-trash.test.ts::CR 112.13: rot deals damage equal to itself at the start of deployment, in initiative order"
       },
       {
         "text": "A player controls Beyond, Codex Incarnate and has 2 rot. At the start of deployment the rot comes first: Beyond asks them to pick a unit (they pick their Good Whale), and only after that do 'at the start of deployment' abilities trigger.",
-        "test": "43-dark-c.test.ts::R102 — the start-of-deployment event still fires after the rot replacement stopped to ask"
+        "test": "43-dark-c.test.ts::CR 507.4 — the start-of-deployment event still fires after the rot replacement stopped to ask"
       }
     ],
     "see": [
@@ -1856,17 +1845,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R38",
-          "quote": "damage equal to their own rot total, in initiative order. Rot never"
+          "quote": "damage equal to their own rot total, in initiative order. Rot never",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R50",
-          "quote": "**`startOfDeployment`** fires in `startDeployment()` **after** R38's rot damage"
+          "quote": "**`startOfDeployment`** fires in `startDeployment()` **after** R38's rot damage",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts",
@@ -1874,12 +1864,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R50: nothing printed orders rot before start-of-deployment triggers; an owner call (D-U04-5 covers rot-as-trigger). Rot itself is 112 (U04).",
-    "sourceHashes": {
-      "R38": "cb8fd0dabbc8ed3f5aa30a2dd5d4e7f6fc823da7b896a98e6574c3b04e79ffb5",
-      "R50": "fd11d0aa87980d21d5d6ceec5fd6a6799f46773021b756073facbec0a6a3346f"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“The haste step ends, and deployment…”): nothing printed orders rot before start-of-deployment triggers; an owner call (D-U04-5 covers rot-as-trigger). Rot itself is 112 (U04).",
+    "sourceHashes": {}
   },
   {
     "key": "turn.deploy.start.triggers",
@@ -1889,7 +1877,7 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves"
+        "test": "37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves"
       }
     ],
     "see": [
@@ -1900,16 +1888,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R144 (its half (a), as amended by R286)",
-          "quote": "- **(a)** deployment-phase triggers go through the **stack**, like everything"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R144",
-          "relation": "its half (a), one shared deployment stack, amended by R286 to one isolated stack per player"
+          "quote": "- **(a)** deployment-phase triggers go through the **stack**, like everything",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1918,11 +1901,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "turn.deploy.stack",
@@ -1932,7 +1914,7 @@
     "examples": [
       {
         "text": null,
-        "test": "276-deployment-stack.test.ts::R286 §1: the play really went ON a stack"
+        "test": "276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack"
       }
     ],
     "see": [
@@ -1942,20 +1924,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R286",
-          "quote": "1. **A deployment play goes on a stack**, like any other play — not committed"
+          "quote": "1. **A deployment play goes on a stack**, like any other play — not committed",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R286",
-          "quote": "4. **The default is still auto-resolve, and that is why nobody noticed.** Battle"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R144",
-          "relation": "its half (a) put only deployment triggers on one shared stack; amended by R286"
+          "quote": "4. **The default is still auto-resolve, and that is why nobody noticed.** Battle",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1964,11 +1942,11 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
+    "digitalClause": "and that stack normally resolves without anyone having to act.",
     "confidence": "high",
-    "notes": "The full stack rule is 703 (U14 effects.priority.deployment). The client never gives a deployment priority stop (R287 deployment clause, CT-185): D-U09-2.",
-    "sourceHashes": {
-      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
-    }
+    "notes": "The full stack rule is 703 (U14 effects.priority.deployment). The client never gives a deployment priority stop (the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) deployment clause, CT-185): D-U09-2.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.deploy.stack.no-waiting",
@@ -1978,11 +1956,11 @@
     "examples": [
       {
         "text": "Player B is answering a choice; meanwhile Player A plays a card in deployment and it resolves.",
-        "test": "276-deployment-stack.test.ts::R286 §1: seat 1 is mid-question and seat 0"
+        "test": "276-deployment-stack.test.ts::CR 507.5a: seat 1 is mid-question and seat 0"
       },
       {
         "text": "Player B has three Wraiths, and their start-of-deployment triggers are asking B to choose. Meanwhile Player A can still act, and can even finish deploying; B's triggers then resolve normally.",
-        "test": "130-seat-aware-gate.test.ts::R154 §1: a Wraith pile suspends its own seat, not the other one"
+        "test": "130-seat-aware-gate.test.ts::CR 507.5a: a Wraith pile suspends its own seat, not the other one"
       }
     ],
     "see": [
@@ -1992,17 +1970,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R286",
-          "quote": "3. **The R154 hold becomes seat-aware in deployment.** An open decision belonging"
+          "quote": "3. **The R154 hold becomes seat-aware in deployment.** An open decision belonging",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R154 (its seat-aware decision gate)",
-          "quote": "> **A decision belonging to another seat stops you only where the engine cannot"
+          "quote": "> **A decision belonging to another seat stops you only where the engine cannot",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "276-deployment-stack.test.ts",
@@ -2010,12 +1989,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R154 case 3 (a mid-resolution suspension still blocks the other seat, to protect a rewind) is a digital implementation guard: Annex D (U23).",
-    "sourceHashes": {
-      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1",
-      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“the decision gate learns whose question…”) case 3 (a mid-resolution suspension still blocks the other seat, to protect a rewind) is a digital implementation guard: Annex D (U23).",
+    "sourceHashes": {}
   },
   {
     "key": "turn.initiative.end-of-turn",
@@ -2052,8 +2029,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts",
@@ -2061,6 +2037,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2090,14 +2067,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "No test title states it directly. A decision a trigger raises is still asked (99-endofturn).",
     "sourceHashes": {}
@@ -2129,8 +2106,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "99-endofturn.test.ts",
@@ -2138,6 +2114,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2174,14 +2151,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "420-cr-battle-regroup-deploy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "No test title asserts the initiative changing hands between turns; the test helper toNextBattle comments \"initiative flips here\" on the second doneDeploying but pins the value. Needs a CR example test.",
     "sourceHashes": {}
@@ -2226,8 +2203,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [
         "apply.ts:doDraftCommit",
         "engine.ts:passPacks"
@@ -2238,6 +2214,7 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The printed sources disagree on WHEN the pack passes: Manual p.16 and Rulebook 2023 p.6 (pages not in the U09 pack; added from the U08 pack/extract) put it in the draft step; Manual p.26 and Rulebook 2023 p.5 list \"any draft packs\" with the initiative at turn end. The rule follows the detailed draft section, reading the turn-end listing as the same pass (the p.16 N+1 refresh cycle only works with one pass per turn): that reconciliation is ours, hence basis mixed. D-U09-10. The engine passes when every seat has committed its draft (verifier probes r1/r2; engine entries are the verifier's measurement, not read by the drafter). Draft detail is 503 (U08).",
     "sourceHashes": {}
@@ -2265,12 +2242,12 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The RAQ note marks this untestable: the initiative is not an object an effect could be offered.",
     "sourceHashes": {

@@ -1,5 +1,5 @@
 /**
- * R239 — REGION SCOPING IS ABSOLUTE. THERE IS NO "THE OTHER SEAT".
+ * CR 601.4d — REGION SCOPING IS ABSOLUTE. THERE IS NO "THE OTHER SEAT".
  *
  * ── THE RULING (owner, 2026-08-28), verbatim
  *
@@ -22,9 +22,9 @@
  *   Rebalance         `const to = (1 - seat) as Seat`   ← never asked at all
  *
  * The `??` arm handed a bin unit to, and demanded a seven-card split from, a
- * player R25 says is not there. Rebalance's was worse: it never consulted the
+ * player CR 601.4d says is not there. Rebalance's was worse: it never consulted the
  * region on any board. Every other region-scoped card in the pool already did
- * the right thing (R187/CT-70 walked them into announcing it), so the repair
+ * the right thing (CT-70 walked them into announcing it), so the repair
  * is to bring these three INTO LINE with the pool — not to spread the fallback.
  *
  * ⚠ THE QUESTION SHEET GUESSED THIS BACKWARDS. Round-29's sheet suspected "these
@@ -50,13 +50,13 @@
  * quiet. These three REACHED. The three are added to 158's family so the
  * whole-pool silence nets watch them too.
  *
- * ── STILL OPEN, DELIBERATELY NOT BUILT HERE (reported, R239 report)
+ * ── STILL OPEN, DELIBERATELY NOT BUILT HERE (reported at the time)
  *
  * The ruling says "can even SEE that it exists". The event/log layer has no
  * region dimension at all: `server/view.ts::visibleToSeat` gates only on
  * `data.privateTo`, and `E.ev` does not stamp a region. So a player outside the
  * region still reads every log line the effect emits. That is the seat-redaction
- * layer (two shipped information leaks live in its history, R202) and it is not
+ * layer (two shipped information leaks live in its history, CR D6.5) and it is not
  * a change to make on a card agent's reading of one sentence.
  */
 import { test } from 'node:test';
@@ -77,7 +77,7 @@ interface Board { g: E; h: Harness; A: Seat; D: Seat; region: number }
 
 /**
  * A real game walked to deployment. `region` is A's HOME region, which out of
- * battle lists only its owner — precisely the R25 situation the ruling is
+ * battle lists only its owner — precisely the CR 601.4d situation the ruling is
  * about. D is alive elsewhere with a hand, a bin and his life total intact, so
  * a no-op here can never be blamed on an empty board.
  */
@@ -103,7 +103,7 @@ function present(g: E, region: number, seat: Seat): void {
  */
 function assertAlone(b: Board, card: string): void {
   assert.deepEqual(b.g.s.regions[b.region]!.presentSeats.filter(s => s !== b.A), [],
-    `${card}: this test needs a region holding NOBODY but its controller (R25). With an `
+    `${card}: this test needs a region holding NOBODY but its controller (CR 601.4d). With an `
     + 'opponent present the payload runs and the test proves nothing.');
 }
 
@@ -136,7 +136,7 @@ function resolveAlone(
     event: null,
     choose: (key, dec) => {
       throw new Error(`asked "${key}" (${dec.prompt}) of ${b.g.pname(dec.seat)} — an effect `
-        + 'that R239 says does not exist for anybody here must not prompt anybody here');
+        + 'that CR 601.4d says does not exist for anybody here must not prompt anybody here');
     },
     ...ctx,
   } as EffectCtx);
@@ -146,7 +146,7 @@ function resolveAlone(
 /** the point of the whole family: the player was TOLD. (Never the prose.) */
 function assertSpoke(evs: EngineEvent[], card: string, clause: string): void {
   assert.ok(evs.length > 0,
-    `${card}: "${clause}" resolved in a region holding no opponent (R25/R239) and emitted `
+    `${card}: "${clause}" resolved in a region holding no opponent (CR 601.4d) and emitted `
     + 'NOTHING. "Nothing happened" is a legitimate outcome; not SAYING so never is.');
   assert.ok(evs.some(e => e.msg.length > 0),
     `${card}: "${clause}" emitted ${evs.length} event(s) and not one carries a message, so `
@@ -167,7 +167,7 @@ test('Uglk — no opponent in the region: nobody is asked, no bin moves, and it 
   b.g.player(b.A).bin.push('Tidal Menace');
   b.g.player(b.D).bin.push('The Foretold');
   assert.ok(b.g.player(b.A).bin.length > 0 && b.g.player(b.D).bin.length > 0,
-    'Uglk: both bins HOLD a unit, so a no-op here is R239 and not an empty bin — the '
+    'Uglk: both bins HOLD a unit, so a no-op here is CR 601.4d and not an empty bin — the '
     + 'empty-bin branch already announced itself and is not what this test is about');
   const before = snapshot(b.g);
   const evs = resolveAlone(augmentOf('Uglk'), b, {
@@ -177,7 +177,7 @@ test('Uglk — no opponent in the region: nobody is asked, no bin moves, and it 
     "each player puts a unit from their bin into play under an opponent's control");
   assert.equal(snapshot(b.g), before,
     'Uglk: "under an opponent\'s control" used to read `… ?? (1 - seat)` and revived a bin '
-    + 'unit under a seat that is not in the region. R239: an effect in a region you are not '
+    + 'unit under a seat that is not in the region. CR 601.4d: an effect in a region you are not '
     + 'in does not exist for you — nothing may leave a bin and nothing may enter play.');
 });
 
@@ -186,7 +186,7 @@ test('Big Glimpse Card — no opponent in the region: the seven are not even rev
   assertAlone(b, 'Big Glimpse Card');
   const deck = b.g.deckOf(b.A);
   assert.ok(deck.length >= 7,
-    'Big Glimpse Card: there ARE seven cards to reveal, so a no-op here is R239 and not an '
+    'Big Glimpse Card: there ARE seven cards to reveal, so a no-op here is CR 601.4d and not an '
     + 'empty deck — the empty-deck branch already announced itself');
   const top7 = deck.slice(0, 7);
   const before = snapshot(b.g);
@@ -194,7 +194,7 @@ test('Big Glimpse Card — no opponent in the region: the seven are not even rev
   assertSpoke(evs, 'Big Glimpse Card', 'Target opponent splits them into two piles');
   assert.equal(snapshot(b.g), before,
     'Big Glimpse Card: it used to fall back to `1 - ctx.controller` and demand a seven-card '
-    + 'split from a player who is not in the region (R239). Nothing may be cached or recycled.');
+    + 'split from a player who is not in the region (CR 601.4d). Nothing may be cached or recycled.');
   assert.deepEqual(b.g.deckOf(b.A).slice(0, 7), top7,
     'Big Glimpse Card: the top of the deck is where it was — the reveal is part of the effect '
     + 'and the effect did not exist here');
@@ -210,14 +210,14 @@ test('Rebalance — no opponent in the region: nobody is asked, no unit changes 
   b.g.spawnUnit(b.A, 'Tidal Menace' as CardName, b.region);
   b.g.settle();
   assert.ok(b.g.unitsOf(b.A, b.region).length > 0,
-    'Rebalance: the controller HAS a unit here to give, so a no-op is R239 and not an empty '
+    'Rebalance: the controller HAS a unit here to give, so a no-op is CR 601.4d and not an empty '
     + 'board — the empty-board branch already announced itself');
   const before = snapshot(b.g);
   const evs = resolveAlone(spellOf('Rebalance'), b, { sourceName: 'Rebalance' });
   assertSpoke(evs, 'Rebalance', 'Each player gives an opponent control of one of their units');
   assert.equal(snapshot(b.g), before,
     'Rebalance: the recipient used to be `(1 - seat) as Seat`, which never asked the region '
-    + 'at all — it handed a unit to a player who was not there. R239: with no opponent in '
+    + 'at all — it handed a unit to a player who was not there. CR 601.4d: with no opponent in '
     + 'the region there is no recipient and no control changes.');
 });
 
@@ -262,10 +262,10 @@ test('Uglk — with the opponent in the region, both bins still feed play under 
   });
   const mine = b.g.unitsIn(b.region).find(u => u.card === 'Tidal Menace');
   const theirs = b.g.unitsIn(b.region).find(u => u.card === 'The Foretold');
-  assert.ok(mine && theirs, 'Uglk: both bin units entered play — the R239 guard must not eat '
+  assert.ok(mine && theirs, 'Uglk: both bin units entered play — the CR 601.4d guard must not eat '
     + 'the ordinary case, which is the whole card');
   assert.equal(mine.controller, b.D, "Uglk: A's card is controlled by the opponent PRESENT here");
-  assert.equal(mine.owner, b.A, '…and is still A\'s card (R65/CT-17)');
+  assert.equal(mine.owner, b.A, '…and is still A\'s card (CR 102.4/CT-17)');
   assert.equal(theirs.controller, b.A, "Uglk: D's card is controlled by A");
   assert.equal(theirs.owner, b.D, '…and is still D\'s card');
   assert.deepEqual([b.g.player(b.A).bin, b.g.player(b.D).bin], [[], []],
@@ -282,18 +282,18 @@ test('Big Glimpse Card — with the opponent in the region, the OPPONENT splits 
     { 'split:0': 0, 'split:1': 1, 'split:2': false, pile: 'a' },
     { sourceName: 'Big Glimpse Card' });
   assert.deepEqual(asks, ['split:0', 'split:1', 'split:2', 'pile'],
-    'Big Glimpse Card: three split prompts and the pile prompt — the R239 guard must not '
+    'Big Glimpse Card: three split prompts and the pile prompt — the CR 601.4d guard must not '
     + 'short-circuit the ordinary case');
   assert.deepEqual((b.g.player(b.A).cache ?? []).map(c => c.card), ['Gublin', 'Shib'],
     'Big Glimpse Card: the chosen pile is cached');
   assert.equal(b.g.deckOf(b.A).length, deckBefore - 7,
     'Big Glimpse Card: all seven left the top…');
   assert.equal(b.g.recycleOf(b.A).length, 5,
-    '…and the other five were recycled past the mark (R296)');
+    '…and the other five were recycled past the mark (CR 408.2)');
 });
 
 test('Big Glimpse Card — a DECLARED target still splits: the engine only ever offers a present seat', () => {
-  // R67: "target opponent" is declared at cast. R239 needs no second guard on
+  // CR 110.1a: "target opponent" is declared at cast. CR 601.4d needs no second guard on
   // that arm — `E.pushPlayerTargets` builds the 'opponent' candidate list out
   // of `regions[region].presentSeats`, so a target the cast window offered is
   // by construction a seat that was in the region. This pins the DECLARED path
@@ -319,7 +319,7 @@ test('Rebalance — with the opponent in the region, control still changes both 
   b.g.settle();
   resolveTogether(spellOf('Rebalance'), b, {}, { sourceName: 'Rebalance' });
   assert.equal(b.g.entity(mine.id)!.controller, b.D,
-    "Rebalance: A's only unit went to the opponent PRESENT in the region — the R239 guard "
+    "Rebalance: A's only unit went to the opponent PRESENT in the region — the CR 601.4d guard "
     + 'must not eat the ordinary case');
   assert.equal(b.g.entity(theirs.id)!.controller, b.A,
     "Rebalance: and D's only unit came the other way");
@@ -412,7 +412,7 @@ function convict(file: string, src: string): Hit[] {
   return hits;
 }
 
-test('R239 §3 — no card effect derives an opponent from arithmetic instead of the region', () => {
+test('CR 601.4d — no card effect derives an opponent from arithmetic instead of the region', () => {
   const files = tsFiles(CARDS_DIR);
   assert.ok(files.length >= 25,
     `the sweep found only ${files.length} source file(s) under ${CARDS_DIR}. A sweep over an `
@@ -423,13 +423,13 @@ test('R239 §3 — no card effect derives an opponent from arithmetic instead of
     + 'to the batch files, which is where every card in the pool lives');
   for (const repaired of ['batch-hybrids-ld-a.ts', 'batch-wood-c.ts']) {
     assert.ok(behaviour.some(f => f.endsWith(repaired)),
-      `${repaired} — a file R239 actually repaired — is not in the swept set, so a regression `
+      `${repaired} — a file the region-scoping fix actually repaired — is not in the swept set, so a regression `
       + 'in the very code this test exists for would go unseen');
   }
 
   const hits = files.flatMap(f => convict(path.relative(CARDS_DIR, f), fs.readFileSync(f, 'utf8')));
   assert.deepEqual(hits.map(h => `${h.file}:${h.line}  ${h.why}\n      ${h.code}`), [],
-    'R239 (owner, 2026-08-28): "Only players that are in the region as an effect can even see '
+    'The owner, 2026-08-28 (CR 601.4d): "Only players that are in the region as an effect can even see '
     + 'that it exists. So anything that happens in a region where a player or unit currently '
     + "isn't is 100% ignored, as if that effect didn't exist.\"\n\n"
     + 'A card effect may name its opponent ONLY by asking the region who is present. There is '
@@ -438,7 +438,7 @@ test('R239 §3 — no card effect derives an opponent from arithmetic instead of
     + 'the line(s) above are a fourth.');
 });
 
-test('R239 §3 — the sweep convicts a deliberately reintroduced fallback (positive control)', () => {
+test('CR 601.4d — the sweep convicts a deliberately reintroduced fallback (positive control)', () => {
   // docs/13 §7.4: a checker with no subjects is indistinguishable from a
   // working one. These are the THREE REAL PRE-FIX LINES, verbatim, plus the
   // two other ways the same seat could be conjured.
@@ -465,7 +465,7 @@ test('R239 §3 — the sweep convicts a deliberately reintroduced fallback (posi
   }
 });
 
-test('R239 §3 — the sweep acquits the repaired shape and the region-less UI helper (negative control)', () => {
+test('CR 601.4d — the sweep acquits the repaired shape and the region-less UI helper (negative control)', () => {
   // The other half of §7.4: a checker that convicts everything is switched off
   // within a round. These must all come back CLEAN.
   const clean: [string, string, string][] = [
@@ -484,22 +484,22 @@ test('R239 §3 — the sweep acquits the repaired shape and the region-less UI h
       "card('X', {});\n"
       + "const t = { what: 'opponent', prompt: 'X: target opponent takes your -1/-1-countered units' };"],
     ['a comment quoting the defect it repaired', 'batch.ts',
-      "card('X', {});\n// this used to read `?? (1 - seat)` before R239\n/* and `other(seat)` too */"],
+      "card('X', {});\n// this used to read `?? (1 - seat)` before the region-scoping fix\n/* and `other(seat)` too */"],
   ];
   for (const [label, file, src] of clean) {
     assert.deepEqual(convict(file, src).map(h => `${h.why}: ${h.code}`), [],
       `the sweep FALSE-POSITIVED on ${label}. A guard that fires on legitimate work gets `
-      + 'switched off within a round, and then the real case walks through (R202\'s lesson).');
+      + 'switched off within a round, and then the real case walks through (the event-channel leak\'s lesson).');
   }
 });
 
 // ════════════════════════════════════════════════════════════════════════
-// §4 — THE THREE ARE PART OF THE R25 FAMILY, NOT A SIDECAR
+// §4 — THE THREE ARE PART OF THE CR 601.4d FAMILY, NOT A SIDECAR
 // ════════════════════════════════════════════════════════════════════════
 
-test('R239 — the three repaired cards announce the same way 158\'s thirteen do', () => {
+test('CR 601.4d — the three repaired cards announce the same way 158\'s thirteen do', () => {
   // 158-silent-region-branches owns "each opponent over an empty region". The
-  // R239 three are the same ruling with a different failure — they REACHED
+  // CR 601.4d three are the same ruling with a different failure — they REACHED
   // rather than going quiet — and their repair leaves them in exactly 158's
   // shape. Asserted here so the two files cannot drift into two different
   // answers to one ruling.
@@ -516,7 +516,7 @@ test('R239 — the three repaired cards announce the same way 158\'s thirteen do
     b.g.settle();
     const before = snapshot(b.g);
     const evs = resolveAlone(def, b, { sourceName: card, ...extra });
-    assertSpoke(evs, card, 'the R239 clause');
+    assertSpoke(evs, card, 'the CR 601.4d clause');
     assert.equal(snapshot(b.g), before, `${card}: and the board did not move`);
   }
 });

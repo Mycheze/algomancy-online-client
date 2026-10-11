@@ -1,4 +1,4 @@
-/* R104 — THE REPLACEMENT-EFFECT LAYER, tested as a layer.
+/* CR 708 — THE REPLACEMENT-EFFECT LAYER, tested as a layer.
  *
  * The per-card behaviour lives with each card (12-fire-a for Conduit of Pain,
  * 26-metal-a for Automaton of Abundance and Cosmic Conspirator, 27-metal-b for
@@ -58,12 +58,12 @@ test('two different AmountMods both apply to one counter placement', () => {
   const mine = spawn(h, A, 'Flux Resonator');       // allied to A
   const slime = spawn(h, D, 'Proliferating Slime'); // A is its enemy
   toNextBattle(h, A);
-  // R12: a mod only sees its own region, so the Resonator has to come to where
+  // CR 601.1d: a mod only sees its own region, so the Resonator has to come to where
   // the Slime is — it attacks into the defender's region, which is exactly how
   // the two cards would ever meet in a real game.
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   assert.equal(ent(h, slime)!.region, ent(h, mine)!.region, 'both are in the battle region');
-  // R130: a white-box placement NAMES ITS ACTOR. In a real game `by` comes
+  // CR 708.8b: a white-box placement NAMES ITS ACTOR. In a real game `by` comes
   // free from the resolving effect's controller; called straight off an E
   // there is no effect to read it from, and the Resonator's printed "by an
   // ALLIED source" now asks the question for real — an unattributed placement
@@ -354,7 +354,7 @@ test('one resolving part is one creation batch, so unique is counted across the 
   // yield N copies instead of one per unique." Manufacture creates three Robots
   // in one resolution.
   //
-  // R157 §24 moved the COUNT, not the batch: uniqueness is the (name, X) pair,
+  // The owner's unique-token answer (now CR 304.14) moved the COUNT, not the batch: uniqueness is the (name, X) pair,
   // so Manufacture's Robot 3/2/1 is three unique tokens and pays out three
   // extras. What this test is about is untouched — a per-spawn trigger would
   // still fire three times and could not see a creation at all. The three
@@ -372,7 +372,7 @@ test('one resolving part is one creation batch, so unique is counted across the 
 
 test('a batch replacement adds its extras inside the same resolution, with no window between', () => {
   // "Not as a trigger, just as part of resolution of the damage" is the owner's
-  // wording for R103's piercing, and it is the same standard here: the extra
+  // wording for CR 802.16i's piercing, and it is the same standard here: the extra
   // tokens are created in the same resolving part, so nothing is queued and no
   // priority window opens between the printed tokens and the copy.
   const h = new Harness(8731);
@@ -386,7 +386,7 @@ test('a batch replacement adds its extras inside the same resolution, with no wi
   assert.equal(typesIn(evs, 'triggered').length, 0, 'nothing was queued as a trigger');
   assert.equal(h.state.stack.length, 0, 'and the stack is empty when it is over');
   assert.equal(typesIn(evs, 'spawned').length, 6,
-    'six spawns (R157 §24: three printed, three extras), all inside one resolution');
+    'six spawns (CR 708.9: three printed, three extras), all inside one resolution');
 });
 
 test('a lone creation outside a resolving part is still a batch of one', () => {

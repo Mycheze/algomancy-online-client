@@ -3,14 +3,14 @@
  * registration cannot shift assertions; seeds are 4200-4299.
  *
  * Covers the expansion mechanics this batch touches: rot as a player counter
- * and its start-of-deployment replacement hook (R38 — Skittering Blight,
+ * and its start-of-deployment replacement hook (CR 112.13, 112.13d — Skittering Blight,
  * Blightmound, Fester, Legion of the Depths, Plague Ritual, Thought
- * Extraction), trashing and the per-battle trash ledger (R40 — Cerebrox,
+ * Extraction), trashing and the per-battle trash ledger (CR 801.2, 505.6 — Cerebrox,
  * Cthyrian Culler, Dropslime's discard-me mode, Muck Rummager, Palewing), the
- * Wight/Wraith token (R47 — Legion of the Depths, Plague Ritual), {Afflicting}
- * on -1/-1 counter kills (R48 — Umbral Decay) and the mod/board manipulation
+ * Wight/Wraith token (CR 110.2c — Legion of the Depths, Plague Ritual), {Afflicting}
+ * on -1/-1 counter kills (CR 802.23c — Umbral Decay) and the mod/board manipulation
  * cards (Grim Bargain, Hooba-Mon, Necromantic Rebuke, Rotbeast, Sarcophage).
- * Writhing Host is LIVE as of R123: a bin-anchored haste grant, paid for by
+ * Writhing Host is LIVE: a bin-anchored haste grant (CR 504.7), paid for by
  * erasing the grantor out of the bin.
  */
 import { test } from 'node:test';
@@ -95,7 +95,7 @@ function endBattle(h: Harness): void {
   }
 }
 
-/** roll the current deployment into the next one, so R38 rot damage lands */
+/** roll the current deployment into the next one, so CR 112.13 rot damage lands */
 function intoNextDeployment(h: Harness, attacker: Seat): void {
   toNextBattle(h, attacker);
   endBattle(h);
@@ -130,7 +130,7 @@ test('Blightmound: its POISONOUS unit damage counts as dealing combat damage too
   resolveAll(h);
   assert.equal(ent(h, blocker), undefined, 'Poisonous killed the blocker with -1/-1 counters');
   assert.equal(h.state.players[D]!.life, lifeD, 'no life was lost — the column was blocked');
-  assert.equal(rotOf(h, D), 1, 'but damage was still dealt, so the rot lands (R38)');
+  assert.equal(rotOf(h, D), 1, 'but damage was still dealt, so the rot lands (CR 112.13)');
 });
 
 test('Blightmound: dying also gives each opponent a rot — and [Switch1] bounds it', () => {
@@ -147,7 +147,7 @@ test('Blightmound: dying also gives each opponent a rot — and [Switch1] bounds
   resolveAll(h);
   assert.equal(ent(h, bm), undefined, 'Blightmound died in combat');
   assert.equal(rotOf(h, D), 1,
-    'exactly one rot — it both dealt damage and died, but [Switch1] fires once per turn (R9)');
+    'exactly one rot — it both dealt damage and died, but [Switch1] fires once per turn (CR 722.5)');
 });
 
 // ── Cerebrox ──────────────────────────────────────────────────────────
@@ -159,7 +159,7 @@ test('Cerebrox: whenever another card is trashed, each OTHER unit shrinks until 
   const brox = spawn(h, P, 'Cerebrox');                    // 3/3
   const ally = spawn(h, P, 'Good Whale');                  // 7/5
   const idx = give(h, P, 'Unit Token');
-  withE(h, e => { e.discardFromHand(P, idx); });           // R40: discarding trashes
+  withE(h, e => { e.discardFromHand(P, idx); });           // CR 801.3: discarding trashes
   assert.deepEqual(effStats(h, ally), [6, 4], 'the ally shrank');
   assert.deepEqual(effStats(h, brox), [3, 3], 'but not Cerebrox itself ("each OTHER unit")');
 });
@@ -208,7 +208,7 @@ test('Cthyrian Culler: its [Augment] half makes each player discard after combat
   throughCombat(h, D);
   assert.equal(handSize(h, A), handA - 1, 'the attacker discarded');
   assert.equal(handSize(h, D), handD - 1, 'and so did the defender');
-  assert.ok(trashes(h).length >= 2, 'both discards are trashes (R40)');
+  assert.ok(trashes(h).length >= 2, 'both discards are trashes (CR 801.3)');
 });
 
 // ── Dropslime ─────────────────────────────────────────────────────────
@@ -220,7 +220,7 @@ test('Dropslime: the printed "1 Discard me" line is a deployment play mode that 
   giveResources(h, P, 'dark', 1);
   const idx = give(h, P, 'Dropslime');
   assert.ok(h.legal(P).some(a => a.type === 'playCard' && a.handIndex === idx && a.mode === 'discardMe'),
-    'the cost line gives it a second play mode (engine-side, R40)');
+    'the cost line gives it a second play mode (engine-side, CR 111.12)');
   h.do({ type: 'playCard', seat: P, handIndex: idx, mode: 'discardMe' });
   resolveAll(h);
   assert.equal(h.q.openMana(P), 0, 'the [1] was paid');
@@ -252,7 +252,7 @@ test('Dropslime: trashed DURING battle, it zaps for everything trashed in that b
   assert.equal(h.state.players[D]!.life, lifeD - 2, "1 already trashed + Dropslime's own = 2 damage");
 });
 
-/* ── R137 / PLAYTEST REPORT #93, room ANBB, 2026-08-24 ───────────────────
+/* ── PLAYTEST REPORT #93, room ANBB, 2026-08-24 (engine Unstable-trash route; CR 801.2h differs, CT-246) ───────────────────
  *
  * The owner: "I'm pretty sure we're doing death and trashing wrong for
  * Unstable units. Dropslime wouldn't make sense otherwise. But here, it died
@@ -267,9 +267,9 @@ test('Dropslime: trashed DURING battle, it zaps for everything trashed in that b
  *     ERASED." → no trash, no trigger, no ledger bump.
  * On that same combat-damage step an unmodded Thoughtripper died, binned,
  * trashed and fired correctly. Two disposals that look identical to a player,
- * behaving differently — which is what R137 removes.
+ * behaving differently — which is what the engine's Unstable-trash route removes (CT-246; under CR 801.2h the two do differ).
  */
-test('R137 / playtest #93: Dropslime fires from HAND *and* dying while Unstable — the same card, both halves', () => {
+test('playtest #93 (engine, CT-246; CR 801.2h differs): Dropslime fires from HAND *and* dying while Unstable — the same card, both halves', () => {
   const h = new Harness(4290);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -277,7 +277,7 @@ test('R137 / playtest #93: Dropslime fires from HAND *and* dying while Unstable 
   const wall = spawn(h, D, 'Muck Rummager');               // 2/3 blocker, kills it
   // ANBB's Plague Ritual line: "Augments a Wraith on one of their units"
   withE(h, e => { e.augmentWraith(e.entity(drop)!, A); });
-  assert.ok(new E(h.state).isUnstable(ent(h, drop)!), 'a modded unit is {Unstable} (R69)');
+  assert.ok(new E(h.state).isUnstable(ent(h, drop)!), 'a modded unit is {Unstable} (CR 803.8e)');
   give(h, A, 'Dropslime');                                 // the hand copy, for half one
   attackWith(h, A, [[drop]]);
 
@@ -300,19 +300,19 @@ test('R137 / playtest #93: Dropslime fires from HAND *and* dying while Unstable 
   const trashed = trashes(h).filter(ev => ev.data?.['card'] === 'Dropslime');
   assert.equal(trashed.length, 2, 'both halves trashed — hand and Unstable death');
   assert.equal(trashed[1]!.data!['from'], 'play', 'the second came from PLAY');
-  assert.equal(trashed[1]!.data!['seat'], A, 'and A trashed it: it entered A\'s bin (R40)');
+  assert.equal(trashed[1]!.data!['seat'], A, 'and A trashed it: it entered A\'s bin (CR 801.2e)');
   assert.equal(h.state.players[D]!.life, lifeD0 - 1 - 2,
     'two cards trashed this battle by now, so the Unstable death zaps for 2 — '
-    + 'before R137 it dealt nothing at all, because it never fired');
+    + 'before the engine\'s Unstable-trash route (CT-246) it dealt nothing at all, because it never fired — as CR 801.2h prescribes');
   // and the destination a player SEES is exactly what it always was
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Dropslime').length, 1,
     'only the DISCARDED copy rests in the bin — the Unstable one was swept out again');
-  assert.ok(h.q.erased(A).includes('Dropslime'), 'the Unstable copy is in the erased pile (R65)');
+  assert.ok(h.q.erased(A).includes('Dropslime'), 'the Unstable copy is in the erased pile (CR 407.1)');
   assert.ok(h.log.some(l => /Dropslime is erased from the bin — Unstable/.test(l)),
     'and the log tells it in order: dies → bin, trashes, erased');
 });
 
-test('R137 / ANBB: an Unstable death and an unmodded death on the SAME damage step both trash and both fire', () => {
+test('ANBB (engine, CT-246; CR 801.2h differs): an Unstable death and an unmodded death on the SAME damage step both trash and both fire', () => {
   const h = new Harness(4291);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -331,9 +331,9 @@ test('R137 / ANBB: an Unstable death and an unmodded death on the SAME damage st
   // read the ledger at the END of the damage step, before any queued trigger
   // resolves and starts trashing things of its own
   const names = trashes(h).map(ev => ev.data!['card']);
-  assert.ok(names.includes('Dropslime'), 'the Unstable blocker trashed (R137 — it used to not)');
+  assert.ok(names.includes('Dropslime'), 'the Unstable blocker trashed (engine, CT-246; CR 801.2h says it does not — it used to not)');
   assert.ok(names.includes('Thoughtripper'), 'and the unmodded one, as it always did');
-  assert.ok(!names.includes('Wraith'), 'the token MOD has no card to bin, so no third trash (R69)');
+  assert.ok(!names.includes('Wraith'), 'the token MOD has no card to bin, so no third trash (CR 410.4c)');
   assert.equal(h.q.battleCounter(region, 'trashed'), 2,
     'the per-battle ledger counts BOTH deaths now — this is the number Dropslime reads');
   // aim Dropslime's zap at a player so it does not kill an attacker and skew
@@ -345,10 +345,10 @@ test('R137 / ANBB: an Unstable death and an unmodded death on the SAME damage st
   assert.ok(h.state.players[D]!.bin.includes('Thoughtripper'), 'the plain card rests in the bin');
   assert.ok(!h.state.players[D]!.bin.includes('Dropslime'),
     'the Unstable one is swept back out — the visible destination never changed');
-  assert.ok(h.q.erased(D).includes('Dropslime'), 'into the public erased pile (R65)');
+  assert.ok(h.q.erased(D).includes('Dropslime'), 'into the public erased pile (CR 407.1)');
 });
 
-test('R137: Muck Rummager sees an Unstable death — "when you trash a card during battle, draw"', () => {
+test('engine (CT-246; CR 801.2h differs): Muck Rummager sees an Unstable death — "when you trash a card during battle, draw"', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -365,7 +365,7 @@ test('R137: Muck Rummager sees an Unstable death — "when you trash a card duri
   assert.ok(trashes(h).some(ev => ev.data?.['card'] === 'Dropslime' && ev.data?.['seat'] === D),
     'D trashed it — the bin it entered is D\'s');
   assert.equal(handSize(h, D), handD + 1,
-    'Muck Rummager drew off it. Before R137 this watcher silently under-triggered '
+    'Muck Rummager drew off it. Before the engine\'s Unstable-trash route (CT-246; CR 801.2h says it should not fire) this watcher silently under-triggered '
     + 'on EVERY modded-unit death, which nobody could report: you cannot see a trigger that does not happen.');
 });
 
@@ -385,10 +385,10 @@ test('Fester: target player gains a rot', () => {
   assert.equal(rotOf(h, D), 1, 'the targeted player gained a rot');
   assert.equal(rotOf(h, A), 0);
   assert.ok(h.state.players[A]!.bin.includes('Fester'), 'the spell resolved to the bin');
-  assert.equal(trashes(h).length, 0, 'from the stack, so not a trash (R40)');
+  assert.equal(trashes(h).length, 0, 'from the stack, so not a trash (CR 801.2b)');
 });
 
-test("Fester's rot really bites at the start of the next deployment (R38)", () => {
+test("Fester's rot really bites at the start of the next deployment (CR 112.13)", () => {
   const h = new Harness(4210);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -417,7 +417,7 @@ test('Grim Bargain: one sacrifice round per [3] spent, and you draw for your non
   withE(h, e => { tok = e.spawnUnit(A, 'Unit Token', h.state.battle!.region, { token: true }).id; });
   const hand = handSize(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Grim Bargain') });
-  pickRef(h, 6);                                           // X chosen and paid at cast (R35)
+  pickRef(h, 6);                                           // X chosen and paid at cast (CR 107.2a)
   resolveAll(h);
   assert.equal(ent(h, atk), undefined, "A's nontoken unit was sacrificed");
   assert.equal(ent(h, tok), undefined, 'and so was its token, in the second round');
@@ -456,7 +456,7 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
   h.state.players[A]!.bin.push('Unit Token');              // a [0] unit — cost ≤ 3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
-  // R67: the bin unit is a DECLARED target, so it is chosen while the trigger
+  // CR 110.1a: the bin unit is a DECLARED target, so it is chosen while the trigger
   // is still being cast — before it reaches the stack, not once it resolves
   assert.equal(h.state.decision!.kind, 'targets');
   assert.equal(h.state.stack.length, 0, 'targets come first: nothing on the stack yet');
@@ -466,7 +466,7 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
   assert.equal(entsNamed(h, 'Hooba-Mon').length, 0, 'Hooba-Mon left play…');
   assert.ok(h.state.players[A]!.bin.includes('Hooba-Mon'), "…into its owner's bin");
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
-    'a bin entered from play is a trash (R40)');
+    'a bin entered from play is a trash (CR 801.2)');
   const fresh = entsNamed(h, 'Unit Token').find(e => e.kind === 'unit');
   assert.ok(fresh, 'and the bin unit came into play');
   assert.ok(h.state.battle!.columns.some(c => c.includes(fresh!.id)),
@@ -474,15 +474,15 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'it left the bin');
 });
 
-// ── R146: Hooba-Mon's exchange obeys the {Unstable} bin replacement ────
+// ── CR 405.5: Hooba-Mon's exchange obeys the {Unstable} bin replacement ────
 //
 // The three tests below are ONE rule seen from three sides. `exchangeInPlace`
-// sends the outgoing body to a bin FROM PLAY, and R137/R145 say an {Unstable}
+// sends the outgoing body to a bin FROM PLAY, and in the engine an {Unstable}
 // card making that trip is binned, TRASHED there, and only then swept into the
-// erased pile — the exact route E.destroy takes. Before R146 the card was
+// erased pile — the exact route E.destroy takes (CR 410.4d erases it instead; CT-246). Before the fix the card was
 // binned and simply left there, recurrable.
 
-test('R146: Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin)', () => {
+test('engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin)', () => {
   const h = new Harness(4290);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -490,7 +490,7 @@ test('R146: Hooba-Mon exchanges a MODDED host → the host is trashed, then ERAS
   giveResources(h, A, 'dark', 3);
   // Hooba-Mon goes on as an AUGMENT, which is the line the ⚠ is about: `self`
   // is now the HOST, and a host wearing a mod is {Unstable} by derivation
-  // (R69/R79) — this is the ORDINARY case for this card, not a corner one.
+  // (CR 803.8e, 720.7) — this is the ORDINARY case for this card, not a corner one.
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'the host really is modded…');
   assert.ok(new E(h.state).isUnstable(ent(h, host)!), '…and therefore Unstable');
@@ -500,10 +500,10 @@ test('R146: Hooba-Mon exchanges a MODDED host → the host is trashed, then ERAS
   pickRef(h, { bin: { seat: A, card: 'Unit Token' } });
   resolveAll(h);
   assert.equal(entsNamed(h, 'Rune Channeler').length, 0, 'the host left play');
-  // R137: it passed THROUGH the bin and was trashed there…
+  // engine (CT-246; CR 410.4d differs): it passed THROUGH the bin and was trashed there…
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
-    'a bin entered from play is a trash, Unstable or not (R40/R137)');
-  // …and the sweep then took it out again, onto the public pile (R65)
+    'a bin entered from play is a trash (CR 801.2) — for an Unstable card that is the engine, not CR 801.2h (CT-246)');
+  // …and the sweep then took it out again, onto the public pile (CR 410.4b)
   assert.ok(!h.state.players[A]!.bin.includes('Rune Channeler'),
     'the Unstable card does NOT stay in the bin');
   assert.ok(new E(h.state).erased(A).includes('Rune Channeler'),
@@ -514,10 +514,10 @@ test('R146: Hooba-Mon exchanges a MODDED host → the host is trashed, then ERAS
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased')
       && ev.data!['card'] === 'Rune Channeler')
     .map(ev => ev.type);
-  assert.deepEqual(order, ['trashed', 'erased'], 'R137 ordering: bin → trashed → swept');
+  assert.deepEqual(order, ['trashed', 'erased'], 'engine ordering (CT-246; CR 410.4d erases unbinned): bin → trashed → swept');
 });
 
-test('R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there', () => {
+test('CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there', () => {
   const h = new Harness(4291);
   toDeployment(h);
   const A = h.state.initiative;
@@ -533,17 +533,17 @@ test('R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and s
   assert.equal(entsNamed(h, 'Hooba-Mon').length, 0, 'Hooba-Mon left play…');
   assert.ok(h.state.players[A]!.bin.includes('Hooba-Mon'), '…and STAYS in the bin');
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
-    'trashed on the way in (R40)');
+    'trashed on the way in (CR 801.13a)');
   assert.ok(!new E(h.state).erased(A).includes('Hooba-Mon'),
     'and nothing erased it — the sweep is for Unstable cards only');
 });
 
 // ⚠ SUPERSEDED BY A RULING, AND REWRITTEN RATHER THAN DELETED.
 //
-// R146 shipped this test asserting that a TOKEN host exchanged out of play was
-// never binned and never trashed, and R146's own write-up flagged that as an
+// The first version of this test shipped asserting that a TOKEN host exchanged out of play was
+// never binned and never trashed, and its own write-up flagged that as an
 // OPEN QUESTION for the owner rather than a decision: `E.destroy` bins and
-// trashes a dying token before sweeping it (R40's 2026-08-21 amendment), so
+// trashes a dying token before sweeping it (the trashing rule's 2026-08-21 amendment, since reversed), so
 // the two departures disagreed.
 //
 // Bena ruled on 2026-08-25:
@@ -552,15 +552,15 @@ test('R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and s
 //    to exist in all zones other than in play/stack whenever SBAs are checked."
 //
 // So it DOES enter the bin and it IS trashed there — the sweep is what removes
-// it, afterwards. The assertions below are inverted deliberately: what R146
+// it, afterwards. The assertions below are inverted deliberately: what the first version
 // pinned was the behaviour of the day, not the rule. The test keeps its shape
 // and its seed so the change is legible in the diff.
 //
-// R306 (owner, 2026-09-28) inverts the TRASH half again: "Tokens are trashed,
-// yes" (R133) is withdrawn — a token is not a card, so it is never trashed.
+// The owner's 2026-09-28 ruling (CR 801.2d) inverts the TRASH half again: "Tokens are trashed,
+// yes" (the token ruling) is withdrawn — a token is not a card, so it is never trashed.
 // It still enters the bin and is swept out of it; that zone fact is what the
 // 2026-08-25 ruling was about, and it stands.
-test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned, NOT trashed (R306), THEN swept', () => {
+test('CR 410.5: Hooba-Mon exchanges a TOKEN host → binned, NOT trashed (CR 801.2d), THEN swept', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -578,7 +578,7 @@ test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned, NOT trashed 
   resolveAll(h);
   assert.equal(ent(h, host), undefined, 'the token host left play');
   assert.equal(trashes(h).slice(before).filter(t => t.data!['card'] === 'Unit Token').length, 0,
-    'R306: it was in the bin, but a token is not a card, so it was not trashed (1 under R133)');
+    'CR 801.2d: it was in the bin, but a token is not a card, so it was not trashed (1 under the withdrawn token ruling)');
   assert.ok(h.events.some(ev => ev.type === 'erased' && ev.data!['card'] === 'Unit Token' && ev.data!['from'] === 'bin'),
     'it WAS binned — the sweep takes it out of the bin (2026-08-25)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'),
@@ -587,9 +587,9 @@ test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned, NOT trashed 
     'the exchange itself still happened');
 });
 
-// ── R152: an exchange is a leave-play, and behaves like one ────────────
+// ── CR 410.2a: an exchange is a leave-play, and behaves like one ────────────
 //
-// R146 aligned the BODY's disposal with E.destroy and left the rest of the
+// The first fix aligned the body's disposal with E.destroy and left the rest of the
 // departure disagreeing with it. Two halves here:
 //
 //  (1) the 'despawned' event was LOGGED and never FIRED, so no listener in the
@@ -599,12 +599,12 @@ test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned, NOT trashed 
 //      was already there and already proved nothing.
 //
 //  (2) the host's MODS were `delete g.s.entities[modId]` and nothing else: no
-//      bin, no trash, no 'erased'. R137's argument applies verbatim — a
+//      bin, no trash, no 'erased'. The argument applies verbatim — a
 //      nontoken mod is binned and trashed when its carrier is recalled or
 //      cached, so an exchange skipping that is the same mod card behaving
 //      differently by how its host left play.
 
-test('R152: the exchanged host\'s own [Augment] despawn text FIRES (not just logged)', () => {
+test('CR 410.2: the exchanged host\'s own [Augment] despawn text FIRES (not just logged)', () => {
   const h = new Harness(4293);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -616,7 +616,7 @@ test('R152: the exchanged host\'s own [Augment] despawn text FIRES (not just log
   // sentence a recall or a cache already honours through afterDespawn().
   withE(h, e => { e.attachMod(e.entity(host)!, 'Gzxyclop', A, 'augment'); });
   give(h, A, 'Good Whale'); give(h, A, 'Good Whale');      // something to discard
-  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
   const before = handSize(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
@@ -627,19 +627,19 @@ test('R152: the exchanged host\'s own [Augment] despawn text FIRES (not just log
     'the despawn was FIRED: the donated "when I despawn" text discarded two');
 });
 
-test('R152: a THIRD-PARTY watcher of "one of your units despawns" sees the exchange', () => {
+test('CR 410.2a: a THIRD-PARTY watcher of "one of your units despawns" sees the exchange', () => {
   const h = new Harness(4294);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const host = spawn(h, A, 'Rune Channeler');
   // Demon of the Depths: "[Augment] Whenever one of your units despawns, I
   // deal 1 damage to any target." Its carrier must stand in the battle region
-  // for R12 to let it hear the event, so it attacks in its own column.
+  // for CR 601.1d to let it hear the event, so it attacks in its own column.
   const carrier = spawn(h, A, 'Good Whale');
   withE(h, e => { e.attachMod(e.entity(carrier)!, 'Demon of the Depths', A, 'augment'); });
   giveResources(h, A, 'dark', 3);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
-  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'declareAttack', seat: A, columns: [[host], [carrier]] });
@@ -652,7 +652,7 @@ test('R152: a THIRD-PARTY watcher of "one of your units despawns" sees the excha
     'a unit despawned and the watcher fired — the exchange is not invisible');
 });
 
-// ⚠ R244 (owner, 2026-08-29, report #129) INVERTED THIS TEST, and the
+// ⚠ The owner's 2026-08-29 ruling on report #129 (now CR 720.8a) INVERTED THIS TEST, and the
 // inversion is the most visible thing the ruling does at a table. It used to
 // assert that a grafted Afflicting Anima fired its own "when I am trashed"
 // trigger when its host was exchanged away — the Wraith on the board being the
@@ -664,7 +664,7 @@ test('R152: a THIRD-PARTY watcher of "one of your units despawns" sees the excha
 // of Despair, Thoughtripper), and they lose the trigger only on the route where
 // their host is ERASED; grafted onto a host that is RECALLED or CACHED they are
 // left behind in a bin, stay there, and still fire.
-test('R244: a NONTOKEN mod erased with an exchanged host is not trashed and does not fire', () => {
+test('CR 720.8a: a NONTOKEN mod erased with an exchanged host is not trashed and does not fire', () => {
   const h = new Harness(4295);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -676,7 +676,7 @@ test('R244: a NONTOKEN mod erased with an exchanged host is not trashed and does
   // held for a moment — a Wraith on the board is the only readout of that, in
   // either direction.
   withE(h, e => { e.attachMod(e.entity(host)!, 'Afflicting Anima', A, 'augment'); });
-  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
   giveResources(h, A, 'dark', 2);                          // the [1] the trigger asks for
   assert.equal(entsNamed(h, 'Wraith').length, 0, 'no Wraith yet');
@@ -684,18 +684,18 @@ test('R244: a NONTOKEN mod erased with an exchanged host is not trashed and does
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Afflicting Anima').length, 0,
-    'R244: it was erased WITH its host, and that is not a trashing');
+    'CR 720.8a: it was erased WITH its host, and that is not a trashing');
   assert.equal(entsNamed(h, 'Wraith').filter(e => e.kind === 'unit').length, 0,
     'so its own "when I am trashed" trigger did not run — the change a player can see');
   // the same is true of Hooba-Mon, which is a mod on this line as well
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
     'Hooba-Mon is a mod here too, and takes the same route');
-  // and the BODY is untouched by all of this — R137 still governs it
+  // and the BODY is untouched by all of this — the engine's Unstable-trash route still governs it (CT-246; CR 801.2h differs)
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
-    'R137 boundary: the {Unstable} body is still binned and still trashed');
+    'engine boundary (CT-246; CR 801.2h differs): the {Unstable} body is still binned and still trashed');
 });
 
-test('R152: the mods reach the public ERASED pile with the Unstable body (R65)', () => {
+test('CR 410.4d: the mods reach the public ERASED pile with the Unstable body (CR 410.4b)', () => {
   const h = new Harness(4296);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -703,13 +703,13 @@ test('R152: the mods reach the public ERASED pile with the Unstable body (R65)',
   giveResources(h, A, 'dark', 6);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
   withE(h, e => { e.attachMod(e.entity(host)!, 'Nothyr', A, 'augment'); });
-  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
   const erased = new E(h.state).erased(A);
-  // a host wearing mods is {Unstable} by derivation (R69/R79), so the sweep
+  // a host wearing mods is {Unstable} by derivation (CR 803.8e, 720.7), so the sweep
   // takes the body AND the mods — exactly what a death does
   assert.ok(erased.includes('Rune Channeler'), 'the body reaches the erased pile');
   assert.ok(erased.includes('Hooba-Mon'), 'and so does the mod that did the exchanging');
@@ -723,16 +723,16 @@ test('R152: the mods reach the public ERASED pile with the Unstable body (R65)',
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Nothyr')
     .map(ev => ev.type);
   assert.deepEqual(order, ['erased'],
-    'R244: swept out, and not trashed on the way — a mod erased with its host never had a '
+    'CR 720.8a: swept out, and not trashed on the way — a mod erased with its host never had a '
     + 'presence of its own. The BODY still reads bin → trashed → swept, asserted below.');
   const bodyOrder = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased')
       && ev.data!['card'] === 'Rune Channeler')
     .map(ev => ev.type);
-  assert.deepEqual(bodyOrder, ['trashed', 'erased'], 'R137 ordering for the body, unchanged');
+  assert.deepEqual(bodyOrder, ['trashed', 'erased'], 'engine ordering for the body, unchanged (CT-246)');
 });
 
-test('R152: a TOKEN mod on an exchanged host is ERASED and never binned (R69)', () => {
+test('CR 410.4c: a TOKEN mod on an exchanged host is ERASED and never binned (CR 720.7c)', () => {
   const h = new Harness(4297);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -740,20 +740,20 @@ test('R152: a TOKEN mod on an exchanged host is ERASED and never binned (R69)', 
   giveResources(h, A, 'dark', 3);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
   withE(h, e => { e.augmentWraith(e.entity(host)!, A); });  // a TOKEN mod
-  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (CR 713.5)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
   assert.ok(!h.state.players[A]!.bin.includes('Wraith'),
-    'a token mod has no card of its own, so no bin entry (R69)');
+    'a token mod has no card of its own, so no bin entry (CR 410.4c)');
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Wraith').length, 0,
     'and therefore nothing to trash');
   assert.ok(new E(h.state).erased(A).includes('Wraith'),
-    'it still has to be VISIBLE somewhere — the erased pile (R65)');
+    'it still has to be VISIBLE somewhere — the erased pile (CR 407.3a)');
 });
 
-// R152, RULED by Bena on 2026-08-25 — the question R146 left open:
+// The token ruling (now CR 410.5, 713.5), RULED by Bena on 2026-08-25 — the question the first fix left open:
 //
 //   "For all intents and purposes a token is a normal thing that just ceases
 //    to exist in all zones other than in play/stack whenever SBAs are checked."
@@ -766,9 +766,9 @@ test('R152: a TOKEN mod on an exchanged host is ERASED and never binned (R69)', 
 // ordering assertion below is the one that matters; "not in the bin at the end"
 // was already true under the pre-ruling code and proves nothing on its own.
 //
-// R306 (owner, 2026-09-28): the middle step is gone — a token is not a card
+// The owner's 2026-09-28 ruling (now CR 801.2d): the middle step is gone — a token is not a card
 // and is never trashed. The order is now bin → swept.
-test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is swept, never trashed (R306)', () => {
+test('CR 410.5 (ruled): a TOKEN BODY exchanged out of play bins → is swept, never trashed (CR 801.2d)', () => {
   const h = new Harness(4298);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -785,38 +785,38 @@ test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is swept, never 
   resolveAll(h);
   assert.equal(ent(h, host), undefined, 'the token host left play');
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Unit Token').length, 0,
-    'it really was in the bin, but a token is not a card, so it is not trashed (R306)');
+    'it really was in the bin, but a token is not a card, so it is not trashed (CR 801.2d)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'and then ceased to exist there');
   assert.ok(new E(h.state).erased(A).includes('Unit Token'),
-    'the sweep files it on the public erased pile (R65), as a death does');
+    'the sweep files it on the public erased pile (CR 407.3), as a death does');
   // THE ORDER IS THE RULING. "A normal thing that ceases to exist" is a bin
   // entry first and a removal second, not an absence from the start.
   const order = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Unit Token')
     .map(ev => `${ev.type}:${String(ev.data!['from'])}`);
-  assert.deepEqual(order, ['erased:bin'], 'bin → swept, with no trash between, exactly as destroy() (R306)');
-  // and its NONTOKEN mod rides along (R152(2)), on a token host — R244: erased
+  assert.deepEqual(order, ['erased:bin'], 'bin → swept, with no trash between, exactly as destroy() (CR 801.2d)');
+  // and its NONTOKEN mod rides along (the second half above, CR 410.4d), on a token host — CR 720.8a: erased
   // with the body it was part of, and so not separately trashed
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
-    'the mod on it is erased with the host, not trashed (R244)');
+    'the mod on it is erased with the host, not trashed (CR 720.8a)');
   assert.ok(new E(h.state).erased(A).includes('Hooba-Mon'),
     'and swept — a token host wearing a mod is Unstable by derivation');
 });
 
-// ⚠ THE ONE PLACE THE RULING AND R69 DO NOT MEET — read before "fixing" either.
+// ⚠ THE ONE PLACE THE RULING AND THE TOKEN-MOD RULE (CR 410.4c) DO NOT MEET — read before "fixing" either.
 //
 // Bena's sentence is about TOKENS ("a token ... ceases to exist in all zones
 // other than in play/stack"). Read literally it would send a token MOD through
-// a bin as well. R69 says the opposite for mods — "a token mod has no card of
-// its own" — and `E.leavePlay` and `E.destroy` both implement R69: nontoken
+// a bin as well. CR 410.4c says the opposite for mods — "a token mod has no card of
+// its own" — and `E.leavePlay` and `E.destroy` both implement CR 410.4c: nontoken
 // mods bin, token mods never do and are announced straight onto the erased
 // pile. That split is OLDER than this ruling and lives in engine.ts, which
-// R152 did not touch.
+// the exchange fix did not touch.
 //
-// R152 therefore follows `destroy` on both halves, which keeps the exchange and
+// The exchange fix therefore follows `destroy` on both halves, which keeps the exchange and
 // the death giving the same answer — the whole point of the exercise — and
 // leaves the token-body/token-mod difference exactly where it already was.
-// It is REPORTED, not resolved here. The token-MOD test asserts R69; the
+// It is REPORTED, not resolved here. The token-MOD test asserts CR 410.4c; the
 // token-BODY test asserts the ruling; both are above.
 // They do not contradict each other about any single object; they differ about
 // whether a token in a MOD slot is "a thing with a card". If that is ever
@@ -844,13 +844,13 @@ test('Legion of the Depths: spawning creates two Wraiths and 2 rot', () => {
   const P = h.state.deployPlayer!;
   spawn(h, P, 'Legion of the Depths');                     // 0/8
   const wights = entsNamed(h, 'Wraith').filter(e => e.kind === 'unit');
-  assert.equal(wights.length, 2, 'two Wraiths — one card, the Wight token (R47)');
+  assert.equal(wights.length, 2, 'two Wraiths — one card, the Wight token');
   assert.ok(wights.every(w => w.token && w.controller === P));
-  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'a real 3/3 body each (R71)');
+  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'a real 3/3 body each');
   assert.equal(rotOf(h, P), 2, 'and its controller pays 2 rot for them');
 });
 
-test("Legion of the Depths: attacking makes two more, in the BATTLE region it is attacking into (R115)", () => {
+test("Legion of the Depths: attacking makes two more, in the BATTLE region it is attacking into (CR 601.5)", () => {
   const h = new Harness(4216);
   toDeployment(h);
   const A = h.state.initiative;
@@ -863,7 +863,7 @@ test("Legion of the Depths: attacking makes two more, in the BATTLE region it is
   const battle = h.state.battle!.region;
   assert.notEqual(battle, home, 'the Legion is fighting away from home');
   assert.ok(made.slice(-2).every(w => w.region === battle),
-    'R115: created units arrive where the SOURCE is — the battle region, not home');
+    'CR 601.5: created units arrive where the SOURCE is — the battle region, not home');
   assert.equal(rotOf(h, A), 4, '2 rot on spawn + 2 more on the attack');
 });
 
@@ -916,7 +916,7 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
   pass(h);                                                 // hand D the window
   h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
   pickRef(h, { unit: victim });
-  // R64: the bracketed cost is paid AT CAST — two cards out of MY bin, X = 2,
+  // CR 702.4, 702.6b: the bracketed cost is paid AT CAST — two cards out of MY bin, X = 2,
   // fixed before the spell is on the stack.
   h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
   pickRef(h, { erase: 'Unit Token' });
@@ -926,7 +926,7 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
   const dec = h.state.decision!;
   h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.label.includes('Flame')) });
   resolveAll(h);
-  assert.equal(trashes(h).length, 0, 'erasing never touches a bin (R40)');
+  assert.equal(trashes(h).length, 0, 'erasing never touches a bin (CR 801.2c)');
   assert.equal(ent(h, victim)!.damage, 0, 'D had nothing to erase, so the Flame was negated');
   assert.ok(h.log.some(l => l.includes('is negated')));
 });
@@ -937,7 +937,7 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
  * shows up in the selector… It looks like there's just 1 card in my bin,
  * despite there being two (identical) cards."*
  *
- * The collapse itself is correct and must stay: R124/R131 make copies in a bin
+ * The collapse itself is correct and must stay: CR 405.6 makes copies in a bin
  * indistinguishable and `{erase: name}` names the CARD, so a second row would
  * be the same option offered twice. What was missing is that the row never
  * said it stood for two — so the pick read as not having registered, he made
@@ -947,7 +947,7 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
  * ⚠ The count rides in `DecisionOption.count`, NOT in `label`. `referenceKey`
  * (server/rooms.ts) keys a recorded `decide` on its chosen options' labels, so
  * putting "×2" in the label would re-key every saved game holding one of these
- * decisions and report the cosmetic change as R200 divergence.
+ * decisions and report the cosmetic change as replay divergence.
  */
 test('Necromantic Rebuke: the bin menu says how many copies one row stands for', () => {
   const h = new Harness(4221);
@@ -969,7 +969,7 @@ test('Necromantic Rebuke: the bin menu says how many copies one row stands for',
   const rows = (): DecisionOption[] =>
     h.state.decision!.options.filter(o => o.card === 'Unit Token');
   assert.equal(rows().length, 1,
-    'the two copies stay ONE row — picking either is the same pick (R124/R131)');
+    'the two copies stay ONE row — picking either is the same pick (CR 405.6)');
   assert.equal(rows()[0]!.count, 2, 'and the row says it stands for two');
   assert.equal(rows()[0]!.label, 'Unit Token',
     'the count is NOT in the label — referenceKey reads labels, so moving it there '
@@ -1005,7 +1005,7 @@ test('Necromantic Rebuke: the ransom saves the effect', () => {
   assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived to resolve');
 });
 
-// R74 (Bena, 2026-08-22, having checked the physical card). The printed line
+// Bena ruled on 2026-08-22 (now CR D7.1a), having checked the physical card. The printed line
 // is exactly what is encoded — "[Erase X cards from your bin]: Negate up to one
 // target effect unless its controller erases X cards from their bin" — so the
 // MECHANICS are correct and untouched. What was missing is that X = 0 is a
@@ -1013,7 +1013,7 @@ test('Necromantic Rebuke: the ransom saves the effect', () => {
 // negate can never happen. It stays LEGAL (explicitly not made illegal, unlike
 // No Hand Killer's xMin: 1, which prevents burning a [once] budget) — the
 // player is simply told, at the one moment they can still change their mind.
-test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (R74)', () => {
+test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (CR D7.1a)', () => {
   const h = new Harness(4221.5);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1046,7 +1046,7 @@ test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays
   assert.ok(ent(h, victim)!.damage > 0, 'and, as warned, the Flame was not negated');
 });
 
-test('R74: the warning is only on X = 0 — a nonzero stop is an ordinary option', () => {
+test('CR D7.1a: the warning is only on X = 0 — a nonzero stop is an ordinary option', () => {
   const h = new Harness(4221.6);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1103,7 +1103,7 @@ test('Necromantic Rebuke: the payer PICKS which cards the ransom erases — the 
   h.do({ type: 'decide', seat: D, choice: pickDec.options.findIndex(o => o.label === 'Rotling') });
   assert.deepEqual(h.state.players[D]!.bin, ['Good Whale'],
     'the UNPICKED card survives — the old code would have eaten the most recent (Rotling was, but by CHOICE now)');
-  assert.ok(h.state.players[D]!.erased?.includes('Rotling'), 'the picked card reaches the erased pile (R65)');
+  assert.ok(h.state.players[D]!.erased?.includes('Rotling'), 'the picked card reaches the erased pile (CR 407.1)');
   resolveAll(h);
   assert.ok(ent(h, victim)!.damage > 0, 'the ransom was paid → the Flame survived to resolve');
 });
@@ -1135,7 +1135,7 @@ test('Necromantic Rebuke: a bin of exactly X is a FORCED set — everything goes
   // a zero-choice erase asks nothing: no WHICH prompt for a forced total set
   assert.ok(!h.state.decision, 'no pick prompt when the whole bin must go');
   assert.deepEqual(h.state.players[D]!.bin, [], 'everything went');
-  assert.deepEqual(h.state.players[D]!.erased, ['Good Whale', 'Rotling'], 'both to the erased pile (R65)');
+  assert.deepEqual(h.state.players[D]!.erased, ['Good Whale', 'Rotling'], 'both to the erased pile (CR 407.1)');
   resolveAll(h);
   assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived');
 });
@@ -1161,7 +1161,7 @@ test('Necromantic Rebuke: DECLINING the ransom is unchanged — negated, bin unt
   const tgt = h.state.decision!;
   h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
   resolveAll(h, o => o.label === 'let it be negated');
-  // the negated Flame's own card is binned by R68's disposal — the ransom
+  // the negated Flame's own card is binned by CR 704.4a's disposal — the ransom
   // itself touched nothing
   assert.deepEqual(h.state.players[D]!.bin, ['Good Whale', 'Rotling', 'Flame of History'],
     'declining erases nothing — only the negated spell itself arrives');
@@ -1170,7 +1170,7 @@ test('Necromantic Rebuke: DECLINING the ransom is unchanged — negated, bin unt
   assert.ok(h.log.some(l => l.includes('is negated')));
 });
 
-test('Necromantic Rebuke: the ransom pick survives a JSON round-trip mid-decision (R85)', () => {
+test('Necromantic Rebuke: the ransom pick survives a JSON round-trip mid-decision', () => {
   const h = new Harness(4238);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1220,7 +1220,7 @@ test('Palewing: attacking discards a card (feeding the trash deck)', () => {
   resolveAll(h, o => o.label === 'Good Whale');
   assert.equal(handSize(h, A), hand - 1);
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'), 'the chosen card was pitched');
-  assert.equal(trashes(h).length, 1, 'and it is a trash (R40)');
+  assert.equal(trashes(h).length, 1, 'and it is a trash (CR 801.3)');
 });
 
 test('Palewing: blocking discards too, and [Switch1] bounds it to once a turn', () => {
@@ -1235,7 +1235,7 @@ test('Palewing: blocking discards too, and [Switch1] bounds it to once a turn', 
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pw] } });
   resolveAll(h);
   assert.equal(handSize(h, D), hand - 1, 'blocking discarded one');
-  assert.equal(trashes(h).length, 1, 'exactly one — [Switch1] is once per turn (R9)');
+  assert.equal(trashes(h).length, 1, 'exactly one — [Switch1] is once per turn (CR 722.5)');
 });
 
 // ── Plague Ritual ─────────────────────────────────────────────────────
@@ -1259,7 +1259,7 @@ test('Plague Ritual: each player discards, gains a rot and gets a Wraith augment
   assert.equal(modsOn(h, atk).filter(m => m.card === 'Wraith').length, 1,
     "A's unit carries a Wraith augment");
   assert.equal(modsOn(h, host).filter(m => m.card === 'Wraith').length, 1, "and so does D's");
-  assert.equal(modsOn(h, atk)[0]!.token, true, 'the augment is the same token (R47)');
+  assert.equal(modsOn(h, atk)[0]!.token, true, 'the augment is the same token (CR 721.6)');
 });
 
 // ── Rotbeast ──────────────────────────────────────────────────────────
@@ -1350,7 +1350,7 @@ test('Skittering Blight: it hands you a rot on arrival…', () => {
   assert.equal(rotOf(h, P), 1, '"when I spawn, gain a rot"');
 });
 
-test('…and then eats the rot damage as +1/+1 counters (R38 replacement)', () => {
+test('…and then eats the rot damage as +1/+1 counters (CR 112.13d replacement)', () => {
   const h = new Harness(4229);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1397,11 +1397,11 @@ test('Thought Extraction: strip a card from a hand you can see, at the cost of a
   resolveAll(h, o => o.label === 'Good Whale');
   assert.equal(handSize(h, D), handD - 1, 'a card was taken out of their hand');
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'), 'into their bin');
-  assert.equal(trashes(h).filter(t => t.data!['seat'] === D).length, 1, 'which trashes it (R40)');
+  assert.equal(trashes(h).filter(t => t.data!['seat'] === D).length, 1, 'which trashes it (CR 801.2e)');
   assert.equal(rotOf(h, A), 1, 'and you take the rot');
-  // R203 / CT-84: this line used to read `h.log`, and `h.log` is the seatless
+  // CT-84: this line used to read `h.log`, and `h.log` is the seatless
   // hotseat firehose — so it said nothing about WHO was shown the hand and
-  // passed identically before and after R197b stopped the card publishing the
+  // passed identically before and after the fix stopped the card publishing the
   // whole hand to the table. `logFor(h, seat)` is the log server/view.ts
   // actually serves that seat, so the claim is now falsifiable in both
   // directions: drop the `{ privateTo: ctx.controller }` in batch-dark-b and
@@ -1409,7 +1409,7 @@ test('Thought Extraction: strip a card from a hand you can see, at the cost of a
   assert.ok(logFor(h, A).some(l => l.includes('Thought Extraction reveals')),
     'the LOOKER was shown the hand — a look still tells the looker');
   assert.deepEqual(logFor(h, D).filter(l => l.includes('Thought Extraction reveals')), [],
-    'and nobody else was: "look at" is a private look, not a reveal to the table (R197b)');
+    'and nobody else was: "look at" is a private look, not a reveal to the table (CR 402.2a)');
 });
 
 // ── Umbral Decay ──────────────────────────────────────────────────────
@@ -1427,7 +1427,7 @@ test('Umbral Decay: two -1/-1 counters, and {Afflicting} rots the owner of what 
   pickRef(h, { unit: victim });
   resolveAll(h);
   assert.equal(ent(h, victim), undefined, 'killed purely by counters');
-  assert.equal(rotOf(h, D), 1, 'R48: Afflicting fires on -1/-1 counter kills');
+  assert.equal(rotOf(h, D), 1, 'CR 802.23c: Afflicting fires on -1/-1 counter kills');
   assert.equal(rotOf(h, A), 0);
   assert.ok(getCard('Umbral Decay').attrs.includes('Afflicting'),
     'the attribute is printed data — nothing is hand-coded for it');
@@ -1449,7 +1449,7 @@ test('Umbral Decay: a survivor just shrinks, and nobody gains a rot', () => {
   assert.equal(rotOf(h, D), 0, 'nothing died, so nothing is afflicted');
 });
 
-// ── Writhing Host (R123: a bin-anchored haste grant, erase-funded) ────
+// ── Writhing Host (CR 504.7: a bin-anchored haste grant, erase-funded) ────
 
 test('Writhing Host: registers as a plain 3/1 body and plays crash-free', () => {
   const h = new Harness(4234);
@@ -1478,11 +1478,11 @@ function hostSetup(seed: number, bins: Seat[]): { h: Harness; P: Seat; idx: numb
   return { h, P, idx };
 }
 
-/** the R123 offer: a haste-step play of the hand unit, funded by the erase */
+/** the CR 504.7 offer: a haste-step play of the hand unit, funded by the erase */
 const eraseOffer = (h: Harness, P: Seat, idx: number): Action | undefined =>
   h.legal(P).find(a => a.type === 'playCard' && a.handIndex === idx && a.eraseGrant === true);
 
-test('Writhing Host (R123): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin', () => {
+test('Writhing Host (CR 504.7): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin', () => {
   const { h, P, idx } = hostSetup(4235, [0]);
   assert.ok(h.state.hasteDone, 'the haste step engages off the bin grant alone');
   const offer = eraseOffer(h, P, idx);
@@ -1498,7 +1498,7 @@ test('Writhing Host (R123): a deploy unit in hand is offered at haste timing, an
     '"as if it had [Haste]" is timing only — the unit never carries the attribute');
 });
 
-test('Writhing Host (R123): with no copy in the bin the offer is absent', () => {
+test('Writhing Host (CR 504.7): with no copy in the bin the offer is absent', () => {
   const { h, P, idx } = hostSetup(4236, []);
   if (h.state.hasteDone) {   // a random hand may open the step on its own
     assert.ok(!eraseOffer(h, P, idx), 'no erase-funded play is offered');
@@ -1507,7 +1507,7 @@ test('Writhing Host (R123): with no copy in the bin the offer is absent', () => 
   assert.equal(h.state.players[P]!.hand[idx], 'Writhing Host', 'the unit stayed in hand');
 });
 
-test('Writhing Host (R123): declining the offered play leaves bin and hand untouched', () => {
+test('Writhing Host (CR 504.7): declining the offered play leaves bin and hand untouched', () => {
   const { h, P, idx } = hostSetup(4237, [0]);
   assert.ok(eraseOffer(h, P, idx), 'the offer is up');
   h.do({ type: 'doneHaste', seat: P });   // declined: the offer is simply not taken
@@ -1516,7 +1516,7 @@ test('Writhing Host (R123): declining the offered play leaves bin and hand untou
   assert.equal((h.state.players[P]!.erased ?? []).length, 0, 'nothing was erased');
 });
 
-test("Writhing Host (R123): an opponent's bin copy grants you nothing — the printed \"your bin\" is per-seat", () => {
+test("Writhing Host (CR 504.7): an opponent's bin copy grants you nothing — the printed \"your bin\" is per-seat", () => {
   const { h, P, idx } = hostSetup(4238, [1]);
   if (h.state.hasteDone) {
     assert.ok(!eraseOffer(h, P, idx), "the opponent's grantor funds no play of yours");
@@ -1526,7 +1526,7 @@ test("Writhing Host (R123): an opponent's bin copy grants you nothing — the pr
     "the opponent's copy sits untouched");
 });
 
-test('Writhing Host (R123): a JSON round trip mid-offer still drives, and two bin copies are fungible — one pays, one stays', () => {
+test('Writhing Host (CR 504.7): a JSON round trip mid-offer still drives, and two bin copies are fungible — one pays, one stays', () => {
   const { h, P, idx } = hostSetup(4239, [0, 0]);
   const offer = eraseOffer(h, P, idx);
   assert.ok(offer, 'offered');
@@ -1544,10 +1544,10 @@ test('Writhing Host (R123): a JSON round trip mid-offer still drives, and two bi
   assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host']);
 });
 
-test("Writhing Host (R123/R124): the grantor leaves through the R124 choke point — 'leftBin' reason 'erased', erased pile exactly once", () => {
+test("Writhing Host (CR 504.7, 405.7): the grantor leaves through the CR 405.7 choke point — 'leftBin' reason 'erased', erased pile exactly once", () => {
   // the grantor used to be spliced out of the bin DIRECTLY (CARD-TODO #26),
   // so its exit fired no 'leftBin'. It goes through E.removeFromBin now; the
-  // site's own 'erased' announce is still the only thing feeding the R65
+  // site's own 'erased' announce is still the only thing feeding the CR 407.1
   // public pile, so the card must land there EXACTLY once, not twice.
   const { h, P, idx } = hostSetup(4240, [0]);
   const offer = eraseOffer(h, P, idx);
@@ -1558,7 +1558,7 @@ test("Writhing Host (R123/R124): the grantor leaves through the R124 choke point
   assert.deepEqual(left[0]!.data, { seat: P, card: 'Writhing Host', reason: 'erased' },
     'through E.removeFromBin, with the erase reason verb');
   assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host'],
-    "in the R65 pile exactly once — 'leftBin' itself must not double the announce's push");
+    "in the CR 407.1 pile exactly once — 'leftBin' itself must not double the announce's push");
 });
 
 // ── registration sweep ────────────────────────────────────────────────

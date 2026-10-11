@@ -1,7 +1,7 @@
-/* R213 / CARD-TODO #82(a) — FOUR PATHS REACH `endBattleRound`, NOT ONE, AND
- * R194 IS CLASS-COMPLETE BY LUCK RATHER THAN BY DESIGN.
+/* CR D2.6b / CARD-TODO #82(a) — FOUR PATHS REACH `endBattleRound`, NOT ONE, AND
+ * THE TOKEN-LOSS ANNOUNCEMENT (D2.6a) IS CLASS-COMPLETE BY LUCK RATHER THAN BY DESIGN.
  *
- * R194 put the token-loss announcement on the way into Regroup. It reaches
+ * The token-loss announcement (D2.6a) sits on the way into Regroup. It reaches
  * every path — but nothing in the repository SAYS every path, and the count
  * everyone was working from was one. CT-82(a) found four:
  *
@@ -12,7 +12,7 @@
  *   batch-hybrids-wm-b.ts       Temporal Rift — a CARD ending the battle
  *                               mid-resolution
  *
- * The reason R194 is nonetheless correct is that all four funnel through
+ * The reason the token-loss announcement (D2.6a) is nonetheless correct is that all four funnel through
  * `startRegroup`, which is where the announcement lives. That is a real
  * invariant and it was nobody's stated intention — so this file states it, and
  * fails if a fifth caller appears that does not hold it.
@@ -65,7 +65,7 @@ function callSites(rel: string): number {
 
 /* ══ §1 · THE SCAN CAN SEE ═════════════════════════════════════════════ */
 
-test('R213 §1: the call-site scan is not reading an empty population', () => {
+test('CR D2.6b: the call-site scan is not reading an empty population', () => {
   // The positive control docs/13 §7.4 asks for. A scan that matches nothing
   // reports "one caller" just as cheerfully as a correct one does.
   const decl = stripCode(read('src/engine.ts'));
@@ -75,15 +75,15 @@ test('R213 §1: the call-site scan is not reading an empty population', () => {
     'engine.ts must show at least the declaration and one call; the matcher is broken otherwise');
 });
 
-test('R213 §1: stripCode really is blanking the prose mentions', () => {
+test('CR D2.6b: stripCode really is blanking the prose mentions', () => {
   // batch-hybrids-wm-b.ts names endBattleRound five times in its header
   // comment and calls it ONCE. If stripCode ever goes blind again (it has,
-  // three times — R201), this file would report six callers in one card.
+  // three times), this file would report six callers in one card (see 164-sweep-sight).
   const raw = read('src/cards/sets/batch-hybrids-wm-b.ts');
   const rawMentions = (raw.match(/\bendBattleRound\b/g) ?? []).length;
   assert.ok(rawMentions > 1, 'the header comment mentions it more than once — that is the point');
   assert.equal(callSites('src/cards/sets/batch-hybrids-wm-b.ts'), 1,
-    `stripCode must reduce ${rawMentions} raw mentions to the ONE real call — see R201`);
+    `stripCode must reduce ${rawMentions} raw mentions to the ONE real call — see 164-sweep-sight`);
 });
 
 /* ══ §2 · FOUR PATHS, DERIVED, EACH WITH ITS REASON ═══════════════════ */
@@ -102,7 +102,7 @@ const KNOWN_CALLERS: Record<string, string> = {
     + 'that is not the engine deciding, and the one passEndsBattlePhase cannot see',
 };
 
-test('R213 §2: exactly four call sites reach endBattleRound, in exactly three files', () => {
+test('CR D2.6b: exactly four call sites reach endBattleRound, in exactly three files', () => {
   const found = new Map<string, number>();
   for (const rel of ['src/apply.ts', 'src/engine.ts', ...setFiles()]) {
     const n = callSites(rel);
@@ -122,9 +122,9 @@ test('R213 §2: exactly four call sites reach endBattleRound, in exactly three f
     + `(${[...found].map(([f, n]) => `${f}×${n}`).join(', ')})`);
 });
 
-test('R213 §2: every path funnels through startRegroup — which is WHY R194 is class-complete', () => {
-  // This is the invariant nobody had written down. R194's token-loss
-  // announcement lives in startRegroup; it reaches all four callers only
+test('CR D2.6b: every path funnels through startRegroup — which is WHY the token-loss announcement (D2.6a) is class-complete', () => {
+  // This is the invariant nobody had written down. The token-loss
+  // announcement (CR D2.6a) lives in startRegroup; it reaches all four callers only
   // because endBattleRound's every exit leads there. Assert the structure,
   // not the line: round 1 recurses (and the recursion lands in the else), and
   // the else branch calls startRegroup unconditionally.
@@ -133,7 +133,7 @@ test('R213 §2: every path funnels through startRegroup — which is WHY R194 is
   assert.ok(body, 'could not isolate endBattleRound — the scan, not the engine, is what failed');
   const b = body[1]!;
   assert.match(b, /\bthis\.startRegroup\s*\(\)/,
-    'endBattleRound must reach startRegroup, or R194 announces nothing on this path');
+    'endBattleRound must reach startRegroup, or the token-loss announcement (CR D2.6a) says nothing on this path');
   assert.match(b, /\bthis\.endBattleRound\s*\(\)/,
     'the round-1 recursion is one of the four paths — CT-82(a) named it and it must stay named');
   // there is no other exit: no return before the branch
@@ -144,7 +144,7 @@ test('R213 §2: every path funnels through startRegroup — which is WHY R194 is
 
 /* ══ §3 · THE DEFECT: passEndsBattlePhase COVERS THREE OF FOUR ═════════ */
 
-test('R213 §3: passEndsBattlePhase names Temporal Rift as the path it cannot predict', () => {
+test('CR D2.6b: passEndsBattlePhase names Temporal Rift as the path it cannot predict', () => {
   // CT-82(a): "passEndsBattlePhase covers 10234 but NOT Temporal Rift, and its
   // documented invariant is false for it." The function is CORRECT — a card
   // ending the battle mid-resolution genuinely cannot be predicted from the

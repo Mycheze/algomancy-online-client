@@ -134,7 +134,7 @@ const POOL = allCardNames().filter(drillable);
  */
 const UNREACHABLE: Record<string, string> = {
   'Calming Force':
-    'R100 — the card prints "I can\'t be played from your hand", and '
+    'CR 702.2b — the card prints "I can\'t be played from your hand", and '
     + '80-round17-permissions asserts it is refused at every window. Never being '
     + 'a legal play IS the implemented behaviour.',
 };
@@ -174,7 +174,7 @@ test('every card can actually be played in a real game', () => {
 
 test('CT-92: no run silently DROPPED an activation window by overwriting it', () => {
   // THE MIRROR OF CT-87. `pendingAct` in drill.ts is a single SLOT, and before
-  // R232 the branch that takes an activation did not require an empty stack —
+  // the CT-92 fix the branch that takes an activation did not require an empty stack —
   // so a second activation offered while the first was unresolved OVERWROTE the
   // open evidence window and everything the first delivered was dropped with no
   // trace. CT-87 CREDITED evidence that was not the card's; this DISCARDED

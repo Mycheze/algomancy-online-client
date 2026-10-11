@@ -1,5 +1,5 @@
 /**
- * R113 — HOW MANY TIMES A BOUNDED ABILITY HAPPENS PER TURN.
+ * CR 109.9 — HOW MANY TIMES A BOUNDED ABILITY HAPPENS PER TURN.
  *
  * Four questions were put to the designer on 2026-08-23 and answered in one
  * sitting. This file is one test per answer, plus the card-level split the
@@ -18,8 +18,9 @@
  *
  * WHY THIS FILE EXISTS SEPARATELY from 93-engine-defects, which already guards
  * the decline routes: answers 1 and 2 pull in OPPOSITE directions, and the
- * repo has already shipped each of them alone. R108 read "spent only when it
- * does something" and refunded a fizzle; R113 reads "regardless of if that
+ * repo has already shipped each of them alone. The decline ruling read "spent only
+ * when it does something" and refunded a fizzle; the designer's ruling (now CR 109.9a)
+ * reads "regardless of if that
  * ability resolves" and does not. The pair is only safe if both halves are
  * pinned in the same place, so that moving one fails a test about the other.
  *
@@ -52,7 +53,7 @@ function keys(parts: unknown): string[] | null {
 /**
  * Run one card's `run` and report whether it asked for its bounded use back.
  *
- * This is the measurement R113's card-level half needs, and it is deliberately
+ * This is the measurement the card-level half of CR 109.9a and 109.9b needs, and it is deliberately
  * a BEHAVIOURAL one: `ctx.refundBudget` is a spy, so the assertion is "the card
  * called it" and not "the file contains the string". Two of this round's own
  * CARD-TODO proofs were source-text proxies that stayed true after the fix, and
@@ -89,7 +90,7 @@ function refunds(
 
 const HEX = 'augment:Hexbane Shiitake#0';
 
-test('Hexbane Shiitake declined on one spell is still offered on the NEXT spell that turn (R113)', () => {
+test('Hexbane Shiitake declined on one spell is still offered on the NEXT spell that turn (CR 109.9b)', () => {
   const { g, h, A, D } = board(9400);
   const carrier = g.entity(spawn(h, A, 'Hexbane Shiitake'))!;
   const turn = g.s.turn;
@@ -135,11 +136,11 @@ test('Hexbane Shiitake declined on one spell is still offered on the NEXT spell 
 // ANSWER 2 — spent "regardless of if that ability resolves or doesn't"
 // ════════════════════════════════════════════════════════════════════════
 //
-// The fizzle is guarded in 93-engine-defects (that test was INVERTED when R113
-// landed, and its header says so). The other way an item on the stack fails to
+// The fizzle is guarded in 93-engine-defects (that test was INVERTED when the
+// spent-on-use ruling landed, and its header says so). The other way an item on the stack fails to
 // resolve is NEGATION, and nothing guarded that at all.
 
-test('a bounded trigger that is NEGATED on the stack has still spent its use (R113)', () => {
+test('a bounded trigger that is NEGATED on the stack has still spent its use (CR 109.9a)', () => {
   const KEY = 'ability:Minor Kraken#0';
   const { g, h, A, D } = board(9401);
   const kraken = g.entity(spawn(h, A, 'Minor Kraken'))!;
@@ -164,7 +165,7 @@ test('a bounded trigger that is NEGATED on the stack has still spent its use (R1
 
   assert.equal(g.entity(kraken.id)!.budgets[KEY], 1,
     'it was triggered and put on the stack, so the use is gone even though it never '
-    + 'resolved (R113: "regardless of if that ability resolves or doesn\'t")');
+    + 'resolved (the designer, now CR 109.9a: "regardless of if that ability resolves or doesn\'t")');
   assert.equal(g.composeParts(g.entity(kraken.id)!, 0, 'ability'), null,
     'and it cannot be triggered again this turn — negating it is a real answer, '
     + 'not a free one');
@@ -179,7 +180,7 @@ test('a bounded trigger that is NEGATED on the stack has still spent its use (R1
 // branches are three lines apart and read almost identically (`return null`
 // versus `continue`), and swapping them passes the whole suite.
 
-test('ANSWER 3: a BOUNDED cause bounds the WHOLE block — graft riders included (R113)', () => {
+test('ANSWER 3: a BOUNDED cause bounds the WHOLE block — graft riders included (CR 109.9h)', () => {
   const { g, h, A } = board(9402);
   const host = g.entity(spawn(h, A, 'Minor Kraken'))!;   // bounded graftCause
   assert.ok(getCard('Minor Kraken').abilities![0]!.bounded, 'the cause is bounded');
@@ -196,7 +197,7 @@ test('ANSWER 3: a BOUNDED cause bounds the WHOLE block — graft riders included
     + 'parts is only put on the stack once per turn."');
 });
 
-test('ANSWER 4: an UNBOUNDED cause fires every time; the bounded riders go missing (R113)', () => {
+test('ANSWER 4: an UNBOUNDED cause fires every time; the bounded riders go missing (CR 109.9i)', () => {
   const { g, h, A } = board(9403);
   const host = g.entity(spawn(h, A, 'Spewing Mushroom'))!;   // unbounded graftCause
   assert.ok(!getCard('Spewing Mushroom').abilities![0]!.bounded, 'the cause is UNBOUNDED');
@@ -214,8 +215,9 @@ test('ANSWER 4: an UNBOUNDED cause fires every time; the bounded riders go missi
   }
 });
 
-test('the bounded budget of a graft rider is per MOD, so two copies get a use each (R9/R113)', () => {
-  // R9 says "per card", and for a rider the card in play is the mod entity.
+test('the bounded budget of a graft rider is per MOD, so two copies get a use each (CR 109.9k)', () => {
+  // The budget ruling says "per card", and for a rider the card in play is the mod
+  // entity (CR 109.9k).
   // Without this the second copy of a bounded graft would be dead on arrival,
   // and the two `composeParts` budget keys ('graft' on the mod, the effectKey
   // on the source) would be indistinguishable in the only case that tells them
@@ -237,12 +239,12 @@ test('the bounded budget of a graft rider is per MOD, so two copies get a use ea
 // THE CARD-LEVEL SPLIT — declined versus merely whiffed
 // ════════════════════════════════════════════════════════════════════════
 //
-// R113 forces every bounded run's bail-out branch into one of two families,
-// and the six calls that were in the wrong one were deleted when it landed.
+// CR 109.9a and 109.9b force every bounded run's bail-out branch into one of two families,
+// and the six calls that were in the wrong one were deleted when the spent-on-use ruling landed.
 // These tests are what stops them coming back: each names the branch, and each
 // asserts on the spy rather than on the source.
 
-test('R113 KEEPS the use where the player declined, or could not be offered it', () => {
+test('CR 109.9b KEEPS the use where the player declined, or could not be offered it', () => {
   const { g, h, A } = board(9410);
   const anima = getCard('Afflicting Anima').abilities![0]!.effect;
 
@@ -258,18 +260,18 @@ test('R113 KEEPS the use where the player declined, or could not be offered it',
     + 'this is the shape CARD-TODO #18 was raised about');
 });
 
-test('R113 SPENDS the use where an activated ability was used and simply whiffed', () => {
+test('CR 109.9a SPENDS the use where an activated ability was used and simply whiffed', () => {
   // Both of these are `type: 'activated'`. The player chose to activate and
   // paid the [one]; there is no "you may" inside either of them to decline,
   // so finding nothing to work on cannot hand the use back.
   //
-  // ⚠ R196 MOVED THE GROUND UNDER BOTH SUBJECTS, and the rule survives it.
+  // ⚠ MAKING THESE REAL COSTS (CR 705.4) MOVED THE GROUND UNDER BOTH SUBJECTS, and the rule survives it.
   // "Recall another ally" and "Erase one of my mods" are real cast COSTS now,
   // so the boards below cannot be reached through the reducer at all: an
   // unpayable cost means the ability is not OFFERED, the [one] is never paid
-  // and the [once] is never spent (R49, ruled in R196 —
+  // and the [once] is never spent (CR 705.4 —
   // test/167-variable-ability-costs.test.ts pins that direction). What these
-  // two direct-run assertions still guard is the R113 half that did not
+  // two direct-run assertions still guard is the CR 109.9a half that did not
   // change: neither RUN asks for its budget back. A `refundBudget()` appearing
   // in either of them would be the wrong family however the board got here.
   const { g, h, A } = board(9412);
@@ -291,7 +293,7 @@ test('R113 SPENDS the use where an activated ability was used and simply whiffed
     'Slag Spewer resolving with no mod in its receipt does not ask for its [once] back');
 });
 
-test('R113 SPENDS the use where a TARGETED bounded ability missed (Graxxlid)', () => {
+test('CR 109.9a SPENDS the use where a TARGETED bounded ability missed (Graxxlid)', () => {
   // The same shape as a fizzle by another route: the target was legal when it
   // was declared and had left the stack by resolution. Refunding here would
   // make "respond by moving the target" a free answer to Graxxlid every turn.
@@ -301,12 +303,12 @@ test('R113 SPENDS the use where a TARGETED bounded ability missed (Graxxlid)', (
   const self = g.entity(spawn(h, A, 'Graxxlid'))!;
   assert.ok(!refunds(grax.effect, g, {
     controller: A, sourceId: self.id, targets: [{ stack: 999999 } as never],
-  }), 'the targeted effect has already left the stack, and the use is gone (R113)');
+  }), 'the targeted effect has already left the stack, and the use is gone (CR 109.9a)');
 });
 
-test('R113 splits Structural Collapse\'s one branch in two by whether the cost was PAID', () => {
+test('CR 109.9a and 109.9b split Structural Collapse\'s one branch in two by whether the cost was PAID', () => {
   // The branch used to read `bar <= 0`, which covered a declined cost and a
-  // sacrificed 0-defense unit together. R113 puts them in different families,
+  // sacrificed 0-defense unit together. CR 109.9a and 109.9b put them in different families,
   // and `costPaid.sacrificed` is the only thing that tells them apart.
   const { g, A } = board(9414);
   const eff = getCard('Structural Collapse').graftEffect!;
@@ -323,8 +325,8 @@ test('R113 splits Structural Collapse\'s one branch in two by whether the cost w
 
 // ── the census ──────────────────────────────────────────────────────────
 
-test('every bounded run that asks for its use back is an offer the player can refuse (R113)', () => {
-  // The rule as a SHAPE, not as a list. R113's keeper family is "there was a
+test('every bounded run that asks for its use back is an offer the player can refuse (CR 109.9b)', () => {
+  // The rule as a SHAPE, not as a list. CR 109.9b's keeper family is "there was a
   // yes/no about the ability itself" — which in this pool means the run raises
   // a `payOrDecline`, or the ability carries a cast `[cost]` that can be
   // declined. Anything else that calls `ctx.refundBudget()` is in the wrong
@@ -349,6 +351,6 @@ test('every bounded run that asks for its use back is an offer the player can re
   }
   assert.deepEqual(suspects, [],
     'these bounded abilities hand their use back without ever offering the player a '
-    + 'choice about the ability. Under R113 that is the "used it and whiffed" family, '
+    + 'choice about the ability. Under CR 109.9a that is the "used it and whiffed" family, '
     + 'which SPENDS the use — delete the refundBudget call and say why in a comment.');
 });

@@ -1,4 +1,4 @@
-/* R182 / CARD-TODO #56 — WHAT A LEDGER GUARD ACTUALLY DRIVES, MEASURED.
+/* CARD-TODO #56 (see 65-effect-conformance) — WHAT A LEDGER GUARD ACTUALLY DRIVES, MEASURED.
  *
  * ── THE TICKET, AND THE ANSWER
  *
@@ -26,7 +26,7 @@
  * SO.** The classifier is here, it works, and its verdicts are pinned below.
  * They are unambiguous:
  *
- *   the four the audit caught, in their PRE-R173 state
+ *   the four the audit caught, in their PRE-AUDIT state
  *     #43 pure     #45 pure     #53 pure     #18 harness
  *
  *   the six the ticket names as CORRECTLY pure
@@ -61,7 +61,7 @@
  *  1. THE INSTRUMENT, and proof it is not blind (§1-§3). The classifier is
  *     worth having whether or not a rule rests on it, and the next person to
  *     audit the ledger should not have to write it again.
- *  2. THE NEGATIVE RESULT, PINNED (§4). The pre-R173 guard lists are inlined
+ *  2. THE NEGATIVE RESULT, PINNED (§4). The pre-audit guard lists are inlined
  *     from `git show ae439ac~1` and asserted to be shape-indistinguishable from
  *     the known-correct six. If that ever stops being true — if somebody finds
  *     a property the four have and the six do not — this test FAILS and says to
@@ -330,7 +330,7 @@ test('the real case that exposed it: 55-ui-formation\'s publishCols test is smal
 
 test('a driven guard reads as driven, and a pure one reads as pure', () => {
   // The control case, so "everything is pure" cannot be how this file passes.
-  // 146-report-guards was written (R173) precisely to drive the real producer,
+  // 146-report-guards was written precisely to drive the real producer,
   // and its fixtures build a Harness and read viewFor — through a helper, which
   // is what the helper expansion exists for.
   const driven = whatItDrives('146-report-guards.test.ts', '#45 Awoken Tomb');
@@ -373,7 +373,7 @@ test('every guard reference in the ledger resolves to something this classifier 
 // ── §4. THE FINDING: shape does not separate the two populations ──────
 
 /**
- * The guard lists the four audited entries carried BEFORE R173 repaired them,
+ * The guard lists the four audited entries carried BEFORE the guard-shape audit repaired them,
  * verbatim from `git show ae439ac~1:digital-client/engine/test/playtest-ledger.ts`.
  * (That is the path AT THAT COMMIT — the directory was renamed to client/ and
  * the ledgers moved out of engine/test/ on 2026-08-30. History keeps the old
@@ -401,7 +401,7 @@ test('CARD-TODO #56: the four blind entries are not distinguishable by SHAPE fro
 
   const blind = Object.entries(PRE_R173).map(([id, guards]) => {
     const { kinds, resolved } = drivesOf(guards);
-    assert.ok(resolved > 0, `#${id}: its pre-R173 guards no longer resolve — the reconstruction has rotted`);
+    assert.ok(resolved > 0, `#${id}: its pre-audit guards no longer resolve — the reconstruction has rotted`);
     return { id: Number(id), kinds, pureOnly: pureOnly(kinds) };
   });
   const correct = CORRECTLY_PURE.map(id => {
@@ -411,7 +411,7 @@ test('CARD-TODO #56: the four blind entries are not distinguishable by SHAPE fro
     return { id, kinds, pureOnly: pureOnly(kinds) };
   });
 
-  console.log('    PRE-R173 (the four the audit caught):');
+  console.log('    PRE-AUDIT (the four the audit caught):');
   for (const b of blind) console.log(`      #${b.id}  ${[...b.kinds].sort().join(', ')}`);
   console.log('    the six CARD-TODO #56 calls correctly pure:');
   for (const c of correct) console.log(`      #${c.id}  ${[...c.kinds].sort().join(', ')}`);
@@ -434,7 +434,7 @@ test('CARD-TODO #56: the four blind entries are not distinguishable by SHAPE fro
   //    failed on the report".
   const eighteen = blind.find(b => b.id === 18)!;
   assert.ok(eighteen.kinds.has('harness'),
-    "#18's pre-R173 guards include a real-Harness test, so a 'must drive the real thing' rule "
+    "#18's pre-audit guards include a real-Harness test, so a 'must drive the real thing' rule "
     + 'lets the entry through — it misses one of the four cases that motivated it outright.');
   assert.ok(!eighteen.kinds.has('uidriver') && !eighteen.kinds.has('view'),
     '(the fix was a branch in ui/main.ts::promptHtml, and nothing cited ever painted a bar)');
@@ -460,7 +460,7 @@ const NOTELESS_PURE: Record<number, string> = {
     + "65-effect-conformance::every token an effect creates is declared (a whole-pool sweep whose "
     + 'DRIVE lives at module scope and in a different test, so a body-level classifier reads it as '
     + 'pure — a real limit of this instrument, named rather than tuned away). The second guard is '
-    + 'in fact the strong one: R182 made that pass deterministic over all 431 EffectDefs, so it '
+    + 'in fact the strong one: the conformance rework made that pass deterministic over all 431 EffectDefs, so it '
     + 'now observes Primordial Coalescence creating its token on every run.',
   38: 'Closed 2026-08-21 against two 63-card-art sweeps over the art manifest. The reported bug WAS '
     + 'the name mapping those sweeps read, so a pure test of it is the right test — but no note '

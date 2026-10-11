@@ -8,7 +8,7 @@
  *   GameEnded    — a player hit 0 life; state is final.
  *   IllegalAction— the action was rejected; caller keeps the old state.
  *
- * Mid-resolution choices (R4 electric paths, R6 payments) use replay
+ * Mid-resolution choices (CR 802.17 electric paths, CR 704.1a payments) use replay
  * suspension: the effect part runs until it needs an unanswered choice, the
  * engine rolls the draft back to the part boundary, records the decision, and
  * on `decide` re-runs the part with the answer filled in (deterministic:
@@ -30,18 +30,18 @@ import {
 } from './cards/dsl.ts';
 import { rngShuffle } from './rng.ts';
 
-/** R118: a whole-identity copy — "become a copy of target unit" contributes
+/** CR 710.1: a whole-identity copy — "become a copy of target unit" contributes
  * every facet, which is what makes it a face REPLACEMENT rather than a grant. */
 const FULL_FACETS: readonly CopyFacet[] =
   ['name', 'stats', 'attrs', 'statics', 'activated', 'triggered', 'behavior'];
-/** R118: the ADDITIVE default — "I have all ABILITIES of adjacent allies"
- * (Ancient One). Never `name`, never `stats`. R127 added `behavior`. */
+/** CR 710.7: the ADDITIVE default — "I have all ABILITIES of adjacent allies"
+ * (Ancient One). Never `name`, never `stats`. `behavior` was added later. */
 const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered', 'behavior'];
-/** R341: `copiedAugments`' answer for the (almost universal) uncopied unit */
+/** `copiedAugments`' answer for the (almost universal) uncopied unit */
 const NO_CARDS: readonly CardName[] = Object.freeze([]);
 
 /**
- * R127: every channel the `behavior` facet carries — the whole of what a card
+ * CR 710.7: every channel the `behavior` facet carries — the whole of what a card
  * radiates from play that is not a static, an activated ability, a triggered
  * ability or an ATTRIBUTE.
  *
@@ -59,7 +59,7 @@ const NO_CARDS: readonly CardName[] = Object.freeze([]);
 const BEHAVIOR_CHANNELS = [
   'costMods', 'effectAttrs', 'amountMods', 'amountMultipliers',
   'modPermissions', 'playPermissions',
-  // R178: the as-you-play option is text-box text radiating from a unit in
+  // CR 710.7: the as-you-play option is text-box text radiating from a unit in
   // play, so an Ancient One next to a Maelstrom Charger offers it too — RAQ,
   // verbatim: *"This works with Ancient One adjacent to Maelstrom Charger."*
   'asYouPlay',
@@ -67,24 +67,24 @@ const BEHAVIOR_CHANNELS = [
   'replaceLifeGain', 'replaceCounters', 'replaceTokenCreation',
   'replaceTokenBatch', 'replaceCardStep',
 ] as const;
-/** R127: one member of `BEHAVIOR_CHANNELS` */
+/** CR 710.7: one member of `BEHAVIOR_CHANNELS` */
 type BehaviorChannel = (typeof BEHAVIOR_CHANNELS)[number];
 
-/** R59: where and why a card's cost is being computed (see manaToPlay).
+/** CR 111.10: where and why a card's cost is being computed (see manaToPlay).
  * `region` defaults to the seat's action region; `purpose` defaults to
  * 'play' — pass 'mod' when the card is being applied as an augment or graft,
- * which is not playing (R37). */
+ * which is not playing (CR 701.2b). */
 export interface CostOpts {
   region?: number;
   purpose?: 'play' | 'mod';
-  /** R157 §1: the X the caster has chosen for an X-cost card. Omitted while
+  /** CR 202.5: the X the caster has chosen for an X-cost card. Omitted while
    * the X is still open (the castability gate, a price quote), where the
    * printed floor `xMin` stands in for it. See CostCtx.x in dsl.ts. */
   x?: number;
 }
 
 /**
- * R98: what `E.preventUnitDamage` is being asked about — one recipient, one
+ * what `E.preventUnitDamage` is being asked about — one recipient, one
  * commit, one source.
  *
  * `attrs` and `pure` are here from the start rather than "when something needs
@@ -92,12 +92,12 @@ export interface CostOpts {
  * Oorblak's Piercing-excess half cannot tell a Piercing hit from a plain
  * overkill out of `{ attacker, region }`, which is precisely why its ledger
  * entry says the hook is the wrong shape. `attrs` is the SOURCE's live
- * attribute set (the same set the commit loop is reading), and `pure` is R61's
+ * attribute set (the same set the commit loop is reading), and `pure` is CR 802.25b's
  * attribute-blind exchange, which switches those attributes off for both
  * sides.
  */
 export interface UnitDamageInfo {
-  /** the region the damage is dealt in (R12) */
+  /** the region the damage is dealt in (CR 101.6) */
   region: number;
   /** what is dealing it, for the log ("Fireball", a column label) */
   source: string;
@@ -105,7 +105,7 @@ export interface UnitDamageInfo {
   combat: boolean;
   /** the SOURCE's live attributes — {Piercing}, {Deadly}, {Powerful}, … */
   attrs: Set<string>;
-  /** R61 {Pure}: this came out of an attribute-blind exchange */
+  /** CR 802.25b {Pure}: this came out of an attribute-blind exchange */
   pure: boolean;
 }
 
@@ -115,18 +115,18 @@ export class GameEnded { }
  * with — threaded commitItem → resolveItem → resolveParts so that a
  * mid-resolution suspension can carry it (see Suspension 'resolve'). */
 export interface ChainRest { then: 'push' | 'resolve'; moreItems: StackItem[] }
-/** R338: how a mid-resolution play asks for one cost payment — the resolving
+/** CR 702.4e: how a mid-resolution play asks for one cost payment — the resolving
  * effect's `ctx.choose`, keyed by part and by the step within the payment */
 export type InlineCostAsk = (partIndex: number, step: number, dec: Omit<Decision, 'id'>) => unknown;
 export class IllegalAction extends Error {
-  /** R154: this refusal is not "you may not do that" but "not YET" — the
+  /** CR D2.1d: this refusal is not "you may not do that" but "not YET" — the
    * action was applied to the draft, turned out to disturb the OTHER seat's
    * open question, and the whole draft was thrown away. The server reads this
    * flag and parks the action instead of relaying a refusal (rooms.ts
    * `deferrableRefusal`); a hotseat caller may simply retry after the answer. */
   disturbs?: boolean;
-  /** R169: "no answer of this shape can EVER be accepted for the question now
-   * pending", as opposed to "wrong right now". Only a caller that cannot ask
+  /** "no answer of this shape can EVER be accepted for the question now
+   * pending", as opposed to "wrong right now" (see 143-replay-divergence). Only a caller that cannot ask
    * again cares — see the orderTriggers arm of `doDecide` (apply.ts), which is
    * the only thing that sets it, and `server/replay-room.ts`, which reads it. */
   unanswerable?: boolean;
@@ -135,15 +135,15 @@ export class IllegalAction extends Error {
 class PartChoice {
   key: string;
   dec: {
-    /** `'targets'`: a mid-resolution play's [cost] question (R338) */
+    /** `'targets'`: a mid-resolution play's [cost] question (CR 702.4e) */
     kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'
-      | 'assignDamage';   // R340: noncombat {Piercing}'s elective split
+      | 'assignDamage';   // CR 802.16j: noncombat {Piercing}'s elective split
     seat: Seat; prompt: string;
     options: DecisionOption[];
-    /** BL-25/R139: a card effect asking HOW MANY counters — the ceiling its
+    /** BL-25/CR D7.2: a card effect asking HOW MANY counters — the ceiling its
      * stepper maxes at. Passed straight through onto the Decision. */
     counterMax?: number;
-    /** R197: a card effect asking for a NUMBER rather than a pick. Passed
+    /** CR D7.2a: a card effect asking for a NUMBER rather than a pick. Passed
      * straight through onto the Decision, and `options` is empty. */
     numeric?: NumericEntry;
     /** one pick of a set ("choose up to two…"): display only, passed through */
@@ -163,23 +163,23 @@ export function other(seat: Seat): Seat { return 1 - seat; }
  * error text (doActivateResource). */
 export const ACTIVATIONS_PER_TURN = 2;
 
-/** R315: the {Resonant} rider's effect — ability #1 of the rules-owned
+/** CR 802.19a: the {Resonant} rider's effect — ability #1 of the rules-owned
  * synthetic card apply.ts registers for Alluring (#0). Hung on the EXISTING
  * card rather than a new one, so the pool, its hashes and the deal list do not
  * move (150); the stack item carries the source's own card name either way. */
 const RESONANT_KEY = 'ability:Alluring Attribute#1';
 
 /**
- * R68: the stack-item kinds whose CARD goes to the bin when the item is
+ * CR 704.4a: the stack-item kinds whose CARD goes to the bin when the item is
  * negated. A 'unit' belongs here — a {Battle} unit caught mid-cast is a real
  * card and has to land somewhere (it used to be erased into nowhere while the
- * log claimed "→ bin"). 'spellToken' does not: a token is erased (R40).
+ * log claimed "→ bin"). 'spellToken' does not: a token is erased (CR 704.2b).
  * 'triggered'/'activated' do not: their `card` names the SOURCE, which is
  * still in play — the ability is simply gone.
  */
 const NEGATE_BINS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'unit', 'virus', 'ambush']);
 
-// ── prophecy conditions (R43) ─────────────────────────────────────────
+// ── prophecy conditions (CR 803.7) ─────────────────────────────────────────
 //
 // The condition set is DATA, not a switch: six Light & Dark cards mint a
 // prophecy from rules text rather than a printed banner ("It gains 'Prophecy
@@ -199,12 +199,13 @@ const NUMBER_WORDS: Record<string, number> = {
  * Split a raw condition string into what the log shows, what the table
  * matches, and the timing marker.
  *
- * R42/R277: a TRAILING "[Haste]" (Divine Intervention's `Your life is 5 or
+ * CR 803.7b, 203.5b: a TRAILING "[Haste]" (Divine Intervention's `Your life is 5 or
  * less [Haste]`) is a marker on the PROPHESY window — the printed exception to
- * R42's "prophesying is legal only during the deployment phase". It is not
+ * the old ruling's "prophesying is legal only during the deployment phase" (now
+ * CR 803.7b). It is not
  * part of the condition, so it is split off here. It says nothing about the
- * RELEASE: R42 plays a fulfilled card "as if it were in your hand", so the
- * printed timing governs that (R277). Tithe Enforcer's `End [Haste] with used
+ * RELEASE: a fulfilled card is played "as if it were in your hand", so the
+ * printed timing governs that (CR 803.7i). Tithe Enforcer's `End [Haste] with used
  * mana` keeps its bracket because it is not trailing: there the word names the
  * STEP the condition is about.
  */
@@ -248,37 +249,36 @@ interface ProphecyRule {
 
 /** How far a counting prophecy has come: `done` of `need` `unit`s. */
 /** `unit` is the NOUN the meter counts in, and it is a closed set so the UI
- * can pluralise it without a table: "4/13 units", "1/2 turns". R302 added
- * 'unit' for Vengeance's "13 Units Die". */
+ * can pluralise it without a table: "4/13 units", "1/2 turns". The 'unit' noun was added for Vengeance's "13 Units Die". */
 export interface ProphecyProgress { done: number; need: number; unit: 'turn' | 'battle' | 'unit' }
 
 /** One unit's share of a combat sub-step's damage, tagged with the striking
  * column's damage-replacement attrs (Poisonous → counters, Resonant → rider)
- * and, for R48 {Blessed}, the seat the life gain is owed to. */
+ * and, for CR 802.22a {Blessed}, the seat the life gain is owed to. */
 interface CombatUnitHit {
   pool: number; poisonous: boolean; resonant: boolean;
-  /** R61 {Pure}: this damage came out of an attribute-blind exchange, so
+  /** CR 802.11e {Pure}: this damage came out of an attribute-blind exchange, so
    * the VICTIM's Vulnerable is switched off for it too */
   pure?: boolean;
   blessedTo?: Seat; blessedFrom?: string;
-  /** R98: the striking column's live attributes and label, carried so the
+  /** the striking column's live attributes and label, carried so the
    * prevention/replacement choke point can be told a {Piercing} hit from a
    * plain overkill. Last assignment wins, as `poisonous`/`resonant` already
    * do — a unit takes damage from at most one column per sub-step. */
   attrs?: Set<string>; label?: string;
-  /** R315 {Resonant}: the unit that is the rider's SOURCE (the column's
+  /** CR 802.19a {Resonant}: the unit that is the rider's SOURCE (the column's
    * carrier of the attribute) and the seat dealing, so the rider can be
    * queued as that unit's trigger. */
   resonantSrc?: EntityId; resonantBy?: Seat;
 }
 
 /**
- * R195 — ONE column's share of a combat `lifeLost`, carried on the event as
+ * CR 608.9a — ONE column's share of a combat `lifeLost`, carried on the event as
  * `data.hits`. This is what makes "a unit deals combat damage to a player"
  * answerable: the loss stays aggregated per seat (it is one simultaneous
  * strike), and the breakdown says who made it up.
  *
- * `amount` is post-replacement (R38) and pre-`lifeAmount` (R162), so the
+ * `amount` is post-replacement and pre-`lifeAmount` (CR 112.3), so the
  * shares sum to the raw loss the sub-step dealt — the event's own `n` is that
  * total after the multiplicative amount layer has had it.
  */
@@ -286,8 +286,8 @@ export interface FaceDamageHit {
   /** the seat whose column dealt it */
   by: Seat;
   /**
-   * R238 — how much combat damage this column DEALT to the player, before the
-   * R38 replacement hooks had it. This is the number "my column deals combat
+   * CR 608.8a — how much combat damage this column DEALT to the player, before the
+   * replacement hooks had it. This is the number "my column deals combat
    * damage" is about and the number `faceDamageDealtBy` returns.
    *
    * Owner, 2026-08-28, on a hit Blightsea Polyp turned into rot: *"blightsea
@@ -305,7 +305,7 @@ export interface FaceDamageHit {
   /** the whole live column — the subject of "MY COLUMN deals combat damage" */
   col: EntityId[];
   /** its positive-power members — the subject of "A UNIT deals combat damage
-   * to a player" (R157 §4: a 0-power passenger deals nothing) */
+   * to a player" (CR 608.5a: a 0-power passenger deals nothing) */
   units: EntityId[];
 }
 
@@ -315,39 +315,39 @@ export interface FaceDamageHit {
 interface CombatLedger {
   /** pool assigned to each unit this sub-step */
   perUnit: Map<EntityId, CombatUnitHit>;
-  /** R21: any damage from a Deadly column kills */
+  /** CR 802.3a: any damage from a Deadly column kills */
   deadlyHit: Set<EntityId>;
-  /** draws owed to each seat (R24 Thieving) */
+  /** draws owed to each seat (CR 802.20 Thieving) */
   thievingDraw: number[];
-  /** R48: combat damage a column deals to a PLAYER, one entry per column —
+  /** CR 802.24c: combat damage a column deals to a PLAYER, one entry per column —
    * per-column granularity is required by the Blightsea Polyp replacement
    * ("as 1 rot", whatever the column's power) and by {Lethal}. */
   playerHits: {
     seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string; pure: boolean;
-    /** R195: the LIVE column that dealt this hit — the subject of every
+    /** CR 608.9a: the LIVE column that dealt this hit — the subject of every
      * "my column deals combat damage to a player" clause. */
     col: EntityId[];
-    /** R195: the members of `col` that actually DEAL its damage (R157 §4:
-     * "0 power units do no damage") — the subject of Sarcophage's
+    /** CR 608.9a: the members of `col` that actually DEAL its damage (CR 608.5a;
+     * the owner: "0 power units do no damage") — the subject of Sarcophage's
      * UNIT-scoped "whenever a unit deals combat damage to a player". */
     dealers: EntityId[];
   }[];
-  /** R48 {Afflicting}: units each afflicting column damaged this sub-step,
+  /** CR 802.23d {Afflicting}: units each afflicting column damaged this sub-step,
    * keyed by column, so its kills can be diffed out afterwards */
   afflicted: Map<string, { dealer: Seat; label: string; ids: Set<EntityId> }>;
   /** who controlled what before the sub-step, for the afflicting diff */
   beforeUnits: Map<EntityId, Seat>;
-  /** R106 {Unaware}: every unit that fought in an exchange collapsed to
+  /** CR 802.9e {Unaware}: every unit that fought in an exchange collapsed to
    * printed stats, so the sub-step can run the death check the collapsed
    * reading implies — `checkDeaths` reads effStats and cannot see it. */
   collapsed: Set<EntityId>;
 }
 
-/** R43: every condition counts FORWARD from the moment of prophesying — never
+/** CR 803.7e: every condition counts FORWARD from the moment of prophesying — never
  * backwards (Caleb 2024-09-22: "Same way that 'Four turns pass' can't just be
  * played on turn 5"). The counting rows read a delta against the stamps taken
  * when the card was cached; the state rows are live checks that only start
- * being asked once the prophecy exists, and R44 latches them afterwards. */
+ * being asked once the prophecy exists, and CR 803.7g latches them afterwards. */
 const PROPHECY_RULES: ProphecyRule[] = [
   {
     id: 'turnsPass',
@@ -374,13 +374,13 @@ const PROPHECY_RULES: ProphecyRule[] = [
     re: /^your units have (\d+) unique costs?$/,
     met: (g, seat, _p, m) => {
       // distinct PRINTED mana costs among your units in play ('X' counts once)
-      const costs = new Set(g.unitsOf(seat).map(u => String(g.faceDef(u).mana)));   // R336: the face
+      const costs = new Set(g.unitsOf(seat).map(u => String(g.faceDef(u).mana)));   // CR 710.1a: the face
       return costs.size >= Number(m[1]);
     },
   },
   {
     id: 'unitsDie',
-    // R302, Vengeance: "13 Units Die". It counts the deaths this seat
+    // CR 803.7m, Vengeance: "13 Units Die". It counts the deaths this seat
     // WITNESSED — the card says "Units" rather than "your units", so it is
     // not limited to your own dead, but it is limited to what you were there
     // to see. Owner, 2026-09-20: "YOU (the player) need to be in a region for
@@ -393,13 +393,13 @@ const PROPHECY_RULES: ProphecyRule[] = [
     // asymmetry — the two seats' counts differ, and are meant to.
     //
     // Counts forward from the moment of prophesying like every other counting
-    // condition (R43), from THIS seat's witnessed total.
+    // condition (CR 803.7e), from THIS seat's witnessed total.
     //
     // It carries a `progress` function, which is not decoration: a 13-death
     // condition is the longest in the pool by a distance, and a WITNESSED
     // count is one a player cannot reconstruct by looking at the board at
     // all — the deaths it counts have already left it. The cache meter is the
-    // only way anyone can see how close it is (R41 — the cache is public, so
+    // only way anyone can see how close it is (CR D6.6a — the cache is public, so
     // the meter is too).
     re: /^(\d+) units? (?:die|dies)$/,
     met: (g, seat, p, m) => (g.s.deathsSeen?.[seat] ?? 0) - (p.deaths ?? 0) >= Number(m[1]),
@@ -455,7 +455,7 @@ export class E {
   }
 
   /**
-   * R286 — WHOSE CRANK TURN THIS IS, and deliberately NOT on `GameState`.
+   * CR 703.7 — WHOSE CRANK TURN THIS IS, and deliberately NOT on `GameState`.
    *
    * Deployment is a hidden SIMULTANEOUS segment: the owner's ruling is that
    * "the two players are, essentially, playing different games", each with its
@@ -466,7 +466,7 @@ export class E {
    * never replayed and never read by a view.
    *
    * Null is the safe default: every call site that is not an action (game
-   * creation, a test poking `settle()` directly) gets exactly the pre-R286
+   * creation, a test poking `settle()` directly) gets exactly the older
    * behaviour, which is to hold for any open decision at all.
    */
   acting: Seat | null = null;
@@ -477,7 +477,7 @@ export class E {
   ev(type: EventType, msg: string, data?: Record<string, unknown>): EngineEvent {
     const e: EngineEvent = { type, msg, ...(data ? { data } : {}) };
     this.events.push(e);
-    // R65: the erased pile is kept here rather than at each of the dozen
+    // CR 407.1: the erased pile is kept here rather than at each of the dozen
     // erase sites — every one of them already announces itself the same way,
     // with the owning seat and the card name(s), so this is the one place
     // that has to know. `cards` is the bulk form (Finality, Grox).
@@ -491,7 +491,7 @@ export class E {
     return e;
   }
 
-  /** R65: the cards erased out of `seat`'s zones — public, and never a zone
+  /** CR 407.1a, 407.1b: the cards erased out of `seat`'s zones — public, and never a zone
    * anything is played from. */
   erased(seat: Seat): CardName[] { return this.player(seat).erased ?? []; }
   illegal(why: string): never { throw new IllegalAction(why); }
@@ -535,7 +535,7 @@ export class E {
   }
 
   /**
-   * R96: may `seat` play SPELLS out of their own bin in `region` right now?
+   * CR 405.9: may `seat` play SPELLS out of their own bin in `region` right now?
    *
    * "In this battle, you may play spells from your bin" (Abyssal Evocation).
    * It is a BATTLE-SCOPED permission and it is deliberately not an
@@ -544,7 +544,7 @@ export class E {
    * there is nothing left in play to radiate from. What the card grants is a
    * fact about this battle, which is exactly what battleCounters are.
    *
-   * Region-KEYED, which is R14's "'this battle' = this region's battle" for
+   * Region-KEYED, which is CR 505.6's "'this battle' = this region's battle" for
    * free, and stops round 1's permission leaking into round 2. Reset by
    * `startBattlePhase`'s existing wipe, so "in this battle" needs no cleanup
    * of its own, and it is not a new GameState field — zero serialization or
@@ -558,23 +558,23 @@ export class E {
   mayPlaySpellsFromBin(seat: Seat, region: number): boolean {
     return this.battleCounter(region, `binPlaySpells:${seat}`) > 0;
   }
-  /** R96: grant the above for the rest of this region's battle. */
+  /** CR 405.9: grant the above for the rest of this region's battle. */
   grantBinSpellPlay(seat: Seat, region: number): void {
     this.bumpBattleCounter(region, `binPlaySpells:${seat}`);
   }
 
   /**
-   * R197: may `seat` play ONE named card out of their own bin right now?
+   * CR 405.9: may `seat` play ONE named card out of their own bin right now?
    *
    * "You may play target spell from your bin **until regroup**." (Spell
-   * Excavation.) R96's sibling above is the BLANKET version — every spell,
+   * Excavation.) The sibling above is the BLANKET version — every spell,
    * this region's battle. This one is the single-card version with the longer
    * window, and the two differences are both printed on the card:
    *
    *  · ONE CARD. The key names it, and `useBinCardPlay` spends the grant when
    *    the play commits, because "target spell" is singular — a second copy of
    *    the same name in the bin is not what was targeted.
-   *  · UNTIL REGROUP, not "in this battle". R14 scopes "this battle" to one
+   *  · UNTIL REGROUP, not "in this battle". CR 505.6 scopes "this battle" to one
    *    region, which is why `mayPlaySpellsFromBin` is region-keyed and round
    *    1's permission cannot leak into round 2. "Until regroup" is the WHOLE
    *    battle phase, both rounds and both regions — so the grant is bumped in
@@ -586,22 +586,22 @@ export class E {
    * survive into another turn. Nothing outside a battle can consume it either
    * — `doPlayFromBin` reads `s.battle.region` and there is none.
    *
-   * ⚠ R157 §12: this is a permission to PLAY, and it waives nothing else. The
+   * ⚠ CR 702.2a: this is a permission to PLAY, and it waives nothing else. The
    * card still goes through `playAtTiming`, so its PRINTED timing applies —
-   * the same restrictive answer R42/R45 gave for the cache and R96 gave for
-   * the blanket grant. A bin-play grant does not make a deploy spell castable
+   * the same restrictive answer as for the cache (CR 403.3d) and for
+   * the blanket grant (CR 702.2a). A bin-play grant does not make a deploy spell castable
    * in battle.
    */
   mayPlayCardFromBin(seat: Seat, region: number, card: CardName): boolean {
     return this.battleCounter(region, `binPlayCard:${seat}:${card}`) > 0;
   }
-  /** R197: grant the above until regroup (see the note — every region). */
+  /** CR 405.9, 506.2d: grant the above until regroup (see the note — every region). */
   grantBinCardPlay(seat: Seat, card: CardName): void {
     for (let r = 0; r < this.s.regions.length; r++) {
       this.bumpBattleCounter(r, `binPlayCard:${seat}:${card}`, 1);
     }
   }
-  /** R197: spend one such grant — "target spell", singular, is now played. */
+  /** spend one such grant — "target spell", singular, is now played. */
   useBinCardPlay(seat: Seat, card: CardName): void {
     for (let r = 0; r < this.s.regions.length; r++) {
       this.bumpBattleCounter(r, `binPlayCard:${seat}:${card}`, -1);
@@ -615,7 +615,7 @@ export class E {
       if (r.state === 'dormant') continue;   // dormant gives no affinity
       if (r.kind === element) n++;           // expended still counts
       // Prismites give NO affinity — their value is the planning-phase
-      // exchange into a real element (R17, Manual p.18)
+      // exchange into a real element (CR 105.5, Manual p.18)
     }
     return n;
   }
@@ -623,7 +623,7 @@ export class E {
    * "Create a Shard." (Manual p.18) A Shard is its own ResourceKind, NOT a
    * prismite: it arrives dormant, gives one generic mana once activated, gives
    * NO affinity, and — the difference that matters — can never be exchanged
-   * for an element during planning the way a prismite can (R17). Cards that
+   * for an element during planning the way a prismite can (CR 106.8a, 106.9). Cards that
    * make Shards used to push prismites, which quietly handed the player the
    * strongest resource in the game.
    */
@@ -642,20 +642,20 @@ export class E {
   private inEffectAttrs = false;
   /** reentrancy guard for mod-permission evaluation (mirrors inCostMods) */
   private inModPermissions = false;
-  /** reentrancy guard for play-permission evaluation (R97; mirrors the above) */
+  /** reentrancy guard for play-permission evaluation (mirrors the above) */
   private inPlayPermissions = false;
-  /** R104: reentrancy guard for amount-modifier evaluation (mirrors inCostMods) */
+  /** reentrancy guard for amount-modifier evaluation (mirrors inCostMods) */
   private inAmountMods = false;
-  /** R162: reentrancy guard for amount-MULTIPLIER evaluation. Its own latch and
+  /** reentrancy guard for amount-MULTIPLIER evaluation. Its own latch and
    * not `inAmountMods`: the two families are consulted one after the other for
    * the same quantity, so sharing a latch would silently blank the second. */
   private inAmountMultipliers = false;
-  /** R118: reentrancy guard for the CONTINUOUS half of the copy layer
+  /** CR 710.7: reentrancy guard for the CONTINUOUS half of the copy layer
    * (mirrors inStatics). See `facesOf` — it sits UNDER effStats, so a nested
    * query gets the identity face and nothing projected. */
   private inFaces = false;
   /**
-   * R104: reentrancy guard for the counter REDIRECT. Unlike the amount
+   * CR 708.4a: reentrancy guard for the counter REDIRECT. Unlike the amount
    * modifiers above, a redirect really does re-enter — Counter Thief's
    * replacement puts the counters on ITSELF, and putting counters on a unit is
    * the very thing that asks the hook. Skipping the anchor is not enough:
@@ -666,17 +666,17 @@ export class E {
    */
   private inReplaceCounters = false;
   /**
-   * R104: how deep inside a REPLACEMENT the engine currently is.
+   * how deep inside a REPLACEMENT the engine currently is.
    *
    * A replacement is not an effect. It never reaches the stack, it has no
    * `EffectDef`, and so nothing it creates can be attributed to an effect's
-   * R69 `creates` declaration. Exposed (see `inReplacement`) so the
+   * `creates` declaration. Exposed (see `inReplacement`) so the
    * conformance recorder in test/65 can tell "an effect made a token it never
    * declared" — a real defect — from "the replacement layer substituted or
    * added a token", which is by construction undeclarable.
    */
   private replacementDepth = 0;
-  /** R104: is a replacement running right now? See `replacementDepth`. */
+  /** is a replacement running right now? See `replacementDepth`. */
   get inReplacement(): boolean { return this.replacementDepth > 0; }
 
   /**
@@ -691,7 +691,7 @@ export class E {
    *
    * A sent counterattacker "doesn't exist until phase 1 finishes" (Manual
    * p.20) — an absent anchor radiates nothing — and that filter lives here.
-   * Everything else (region/controller scoping, and CRUCIALLY the R62
+   * Everything else (region/controller scoping, and CRUCIALLY the CR 712.1a
    * suppression check) stays with the caller: the sites disagree on whether
    * suppression is the shallow `anchor.suppressed?.abilities` flag or the
    * full abilitiesSuppressed() projection, and each keeps its own answer.
@@ -714,7 +714,7 @@ export class E {
   }
 
   /**
-   * R127: the faces one `anchored()` radiator's BEHAVIOUR channels come off.
+   * CR 710.7: the faces one `anchored()` radiator's BEHAVIOUR channels come off.
    *
    * `staticsFor`'s rule, lifted out so the other thirteen channels cannot drift
    * from it: a unit reads its own identity face (which is the COPIED card when
@@ -728,7 +728,7 @@ export class E {
   }
 
   /**
-   * R268: the behaviour BLOCKS a radiator's continuous channels come off — a
+   * CR 721.1: the behaviour BLOCKS a radiator's continuous channels come off — a
    * face, paired with the half of that face's text box which is live in this
    * mode. Every `anchored()` walk reads this instead of `getCard(face)`.
    *
@@ -760,7 +760,7 @@ export class E {
       out.push({ face, def });
       if (def.augmentBox) out.push({ face, def: def.augmentBox });
     }
-    // R341: a copy's copied augment mods — each one's [Augment] box, read off
+    // CR 710.2a: a copy's copied augment mods — each one's [Augment] box, read off
     // the copy itself (no mod entity was cloned, so no second holder exists)
     for (const card of this.copiedAugments(holder, facet)) {
       const box = this.card(card).augmentBox;
@@ -770,7 +770,7 @@ export class E {
   }
 
   /**
-   * R268: `behaviorBlocks` WITHOUT the face walk — the halves of the holder's
+   * CR 721.1: `behaviorBlocks` WITHOUT the face walk — the halves of the holder's
    * own card that radiate right now.
    *
    * For `projects` (Ancient One) and nothing else: a projection is
@@ -785,9 +785,9 @@ export class E {
   }
 
   /**
-   * R127: does this radiator carry channel `key` right now — off its own card,
+   * CR 710.7: does this radiator carry channel `key` right now — off its own card,
    * off its own `[Augment]` box, off an identity copy, or off a face projected
-   * onto it? R268 added the box arm and the mod-mode narrowing.
+   * onto it? The augment-box ruling (now CR 721.1c) added the box arm and the mod-mode narrowing.
    *
    * The `anchored()` presence predicates are the hottest reads in the engine
    * (`amountDelta` runs on every counter and every point of effect damage), and
@@ -799,18 +799,18 @@ export class E {
    */
   private donates(holder: Entity, anchor: Entity, key: BehaviorChannel): boolean {
     const own = this.card(holder.card);
-    // R268: a mod radiates its [Augment] box and nothing else
+    // CR 721.1: a mod radiates its [Augment] box and nothing else
     if (holder.id !== anchor.id) return !!own.augmentBox?.[key];
     if (own[key] || own.augmentBox?.[key]) return true;
     return this.behaviorFaces(holder, anchor)
       .some(f => f !== holder.card
         && (!!this.card(f)[key] || !!this.card(f).augmentBox?.[key]))
-      // R341: the [Augment] boxes of the mods a copy copied
+      // CR 710.2a: the [Augment] boxes of the mods a copy copied
       || this.copiedAugments(holder, 'behavior').some(c => !!this.card(c).augmentBox?.[key]);
   }
 
   /**
-   * R127: flatten an `anchored()` result into ONE ENTRY PER FACE that actually
+   * CR 710.7: flatten an `anchored()` result into ONE ENTRY PER FACE that actually
    * declares `key`, keeping the holders' order (which the replacement hooks
    * have already sorted by entity id) and, within a holder, layer order —
    * identity face first, then whatever is projected onto it.
@@ -826,7 +826,7 @@ export class E {
   ): { face: CardName; def: CardBehavior; anchor: Entity }[] {
     const out: { face: CardName; def: CardBehavior; anchor: Entity }[] = [];
     for (const { holder, anchor } of holders) {
-      // R268: `def` is the half of the box this holder radiates, so the hook
+      // CR 721.1: `def` is the half of the box this holder radiates, so the hook
       // below is invoked off the BLOCK, never off `getCard(face)` again
       for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
         if (def[key]) out.push({ face, def, anchor });
@@ -836,9 +836,9 @@ export class E {
   }
 
   /**
-   * R59: every active CostMod that applies to `ctx`. Radiates from units in
+   * CR 111.10: every active CostMod that applies to `ctx`. Radiates from units in
    * play and from augment mods anchored on their host, scoped to the region
-   * the card is being played into (R12) — the same rules as staticsFor.
+   * the card is being played into (CR 111.10) — the same rules as staticsFor.
    * NOTE the returned `holder` is the ANCHOR (the entity the mod reads from),
    * while the mod list comes off the carrying entity's card.
    */
@@ -849,9 +849,9 @@ export class E {
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
         a.region === region
-        && !this.textStrippedShallow(h, a))) {                         // R62, as staticsFor (shallow)
-        // `via` is the card the mod is PRINTED on — the FACE (R127), which for
-        // a donated augment is the holder rather than the anchor (R121's logs
+        && !this.textStrippedShallow(h, a))) {                         // CR 712.1a, as staticsFor (shallow)
+        // `via` is the card the mod is PRINTED on — the FACE (CR 710.7), which for
+        // a donated augment is the holder rather than the anchor (the logs
         // name it) and for a projected/copied face is the borrowed card
         for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.costMods ?? []) out.push({ holder: anchor, mod, via: face });
@@ -862,12 +862,12 @@ export class E {
   }
 
   /**
-   * R94: every attribute a continuous `EffectAttrMod` grants to ONE PART of a
+   * every attribute a continuous `EffectAttrMod` grants to ONE PART of a
    * resolving stack item. `costModsFor`'s sibling, line for line — the same
    * `anchored()` walk (units in play plus augment mods reading from their
-   * host), the same region scope (R12: the mod reads from the ANCHOR's
+   * host), the same region scope (CR 101.6: the mod reads from the ANCHOR's
    * region, which is why an Enlightener augmented onto an enemy unit boosts
-   * THAT player's spells), the same shallow R62 guard every radiating-static
+   * THAT player's spells), the same shallow CR 712.1a guard every radiating-static
    * query uses (`anchor.suppressed?.abilities`, not the full
    * abilitiesSuppressed() projection), and the same reentrancy latch.
    *
@@ -890,9 +890,9 @@ export class E {
     this.inEffectAttrs = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'effectAttrs')                     // R127: off the FACES
+        this.donates(h, a, 'effectAttrs')                     // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.effectAttrs ?? []) {
             if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
@@ -904,12 +904,12 @@ export class E {
   }
 
   /**
-   * R104: every active `AmountMod`'s contribution to one quantity, SUMMED.
+   * CR 708.5: every active `AmountMod`'s contribution to one quantity, SUMMED.
    *
    * `costModsFor` + `manaToPlay` folded into one, because unlike a cost there
    * is nothing else to do with the list: the same `anchored()` walk (units in
-   * play plus augment mods reading from their HOST), the same R12 region
-   * scope, the same shallow R62 guard every radiating query uses, the same
+   * play plus augment mods reading from their HOST), the same CR 101.6 region
+   * scope, the same shallow CR 712.1a guard every radiating query uses, the same
    * reentrancy latch.
    *
    * SUMMED and not first-true-consumes — Caleb: "a replacement only happens
@@ -930,9 +930,9 @@ export class E {
     this.inAmountMods = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'amountMods')                       // R127: off the FACES
+        this.donates(h, a, 'amountMods')                       // CR 710.7: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
-        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMods ?? []) {
             total += mod.delta(this, anchor, ctx);
@@ -944,15 +944,15 @@ export class E {
   }
 
   /**
-   * R162: every active `AmountMultiplier`'s claim on one quantity, folded into
+   * CR 708.6: every active `AmountMultiplier`'s claim on one quantity, folded into
    * ONE multiplier. `amountDelta`'s walk line for line — the same `anchored()`
-   * radiators, the same R12 region scope, the same shallow R62 guard, its own
+   * radiators, the same CR 101.6 region scope, the same shallow CR 712.1a guard, its own
    * latch — and only the fold differs.
    *
-   * R264 (round-32 Q4), the owner in one sentence: *"Make it exponential."*
+   * CR 708.6, 112.3 (round-32 Q4), the owner in one sentence: *"Make it exponential."*
    *
    * So the claiming factors MULTIPLY: n mods each declaring ×2 give 2^n. The
-   * question was re-asked precisely because R157 §23's wording — *"quadruple
+   * question was re-asked precisely because the first answer's wording — *"quadruple
    * it!! So always n*2*v (n is num of arbiters, v is original damage/life gain
    * value)"* — is LINEAR read literally, and the owner had only ever been asked
    * about TWO. At n = 2 the two readings are indistinguishable (2 + 2 = 2 × 2 =
@@ -960,14 +960,14 @@ export class E {
    * separates them had never been on a board.
    *
    * ⚠ THE OLD ANSWER IS STILL RIGHT WHERE IT WAS GIVEN. Two Arbiters quadruple,
-   * before and after — R157 §23's worked example is untouched and the bug it
+   * before and after — the two-Arbiter worked example is untouched and the bug it
    * fixed (the trigger pair giving 3×) stays fixed. Only n ≥ 3 moves: three
    * Arbiters give ×8 where they used to give ×6.
    *
-   * ⚠ AND THE ADDITIVE COMPOSITION IS STILL UNRULED. R264 answers how
-   * multipliers compose with EACH OTHER and says nothing about how one composes
-   * with an additive `AmountMod`; `lifeAmount` below keeps its interim
-   * `(v + Σdelta) × factor` and keeps saying so.
+   * ⚠ THE ADDITIVE COMPOSITION IS ITS OWN RULE. The multiplier rule (CR 708.6)
+   * answers how multipliers compose with EACH OTHER; how one composes with an
+   * additive `AmountMod` is CR 708.6a — the additions first, then the doubling —
+   * which is the `(v + Σdelta) × factor` that `lifeAmount` below computes.
    *
    * A factor of exactly 1 is "no opinion" and is skipped rather than folded.
    * Under the old SUM that mattered arithmetically — a declining mod would have
@@ -982,9 +982,9 @@ export class E {
     this.inAmountMultipliers = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'amountMultipliers')                // R127: off the FACES
+        this.donates(h, a, 'amountMultipliers')                // CR 710.7: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
-        && !this.textStrippedShallow(h, a))) {                        // R62, as amountDelta (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as amountDelta (shallow)
         for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMultipliers ?? []) {
             const f = mod.factor(this, anchor, ctx);
@@ -1000,7 +1000,7 @@ export class E {
   }
 
   /**
-   * R162: `n` life is about to move — what number actually lands?
+   * CR 708.6a, 112.1a: `n` life is about to move — what number actually lands?
    *
    * The ONE place both amount families meet, and therefore the one place the
    * composition order is written down. `gainLife` and `loseLife` are the only
@@ -1008,13 +1008,12 @@ export class E {
    * player, rot damage, {Lethal}, printed costs and {Blessed} all route through
    * them), so pricing life here prices all of it exactly once.
    *
-   * ⚠ THE ORDER IS AN INTERIM DECISION, NOT A RULING. R157 §23 answers how
-   * multipliers compose with EACH OTHER and explicitly does not answer how one
-   * composes with an additive `AmountMod`. Until it is ruled the multiplier is
-   * applied AFTER the additive layer — `(v + Σdelta) × factor` — which is the
-   * reading that leaves a printed "plus 1" worth one card rather than two, the
-   * same argument `dealEffectDamageAll` makes for sitting the Conduit of Pain
-   * after {Powerful}. A future ruling changes these two lines and nothing else.
+   * ⚠ THE ORDER IS A RULE NOW. The multiplier rule (CR 708.6) answers how
+   * multipliers compose with EACH OTHER, and CR 708.6a how one composes with an
+   * additive `AmountMod`: the multiplier is applied AFTER the additive layer —
+   * `(v + Σdelta) × factor` — which is also the reading that leaves a printed
+   * "plus 1" worth one card rather than two, the same argument
+   * `dealEffectDamageAll` makes for sitting the Conduit of Pain after {Powerful}.
    *
    * Region scope is `replaceLifeGain`'s, for its reason: `gainLife`/`loseLife`
    * write a region onto their events only inside a battle, and `fireEvent`
@@ -1050,24 +1049,24 @@ export class E {
   }
 
   /**
-   * R59: what it actually costs `seat` to play (or apply) `name` right now —
+   * CR 111.10, 111.10b: what it actually costs `seat` to play (or apply) `name` right now —
    * printed mana plus every active cost modifier, never below zero. `purpose`
    * separates playing from applying a mod: applying a mod is not playing
-   * (R37), so "spells cost [one] more to play" does not tax an augment.
+   * (CR 701.2b), so "spells cost [one] more to play" does not tax an augment.
    *
-   * R119 adds the one PLAYER-side discount, folded in after the radiating
+   * Deferral Drone's charge (CR 111.10k) adds the one PLAYER-side discount, folded in after the radiating
    * layer and before the clamp so a [1] card still goes free rather than
-   * negative. The `purpose` guard is R37/R59 doing its usual work: a mod
+   * negative. The `purpose` guard is CR 701.2b doing its usual work: a mod
    * payment passes `purpose: 'mod'` and pays full price, no charge burnt.
    *
-   * R305: a spell TOKEN is priced here too — casting one is playing a spell,
+   * CR 702.7a: a spell TOKEN is priced here too — casting one is playing a spell,
    * so `doCastSpellToken` asks this for every token of the cast. Its printed
    * mana is 0 and it is not an X card: the X on "Crystal 4" is the token's
    * SIZE, not a cost, and is never passed as `opts.x`. Whatever a token costs
    * is therefore exactly what the modifier layer adds.
    */
   /**
-   * R326: the smallest X `name` may be played with in `region` — its printed
+   * CR 111.10i: the smallest X `name` may be played with in `region` — its printed
    * floor (`xMin`, e.g. "X can't be zero"), raised by any cost modifier that
    * says so (Stasis Sentry in battle). Only a PLAY has an X to choose.
    */
@@ -1083,13 +1082,13 @@ export class E {
 
   manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
     const c = this.card(name);
-    // R157 §1: an X card's base cost IS the chosen X — "paying X replaces the
+    // CR 202.5: an X card's base cost IS the chosen X — "paying X replaces the
     // letter X on the printed card temporarily". Until it is chosen the
     // printed floor stands in, so the castability gate prices the cheapest
     // legal cast. The chosen X rides into the CostMod layer too (ctx.x), which
     // is how Stasis Sentry can raise a small X to three without taxing a big
-    // one (R157 §20).
-    // R326: …and the floor is the RAISED one (Stasis Sentry), not just the printed
+    // one (CR 107.5, 111.10i).
+    // CR 111.10i: …and the floor is the RAISED one (Stasis Sentry), not just the printed
     const base = c.mana === 'X' ? (opts.x ?? this.xFloor(seat, name, opts)) : c.mana;
     const region = opts.region ?? this.actionRegion(seat);
     const ctx = {
@@ -1098,11 +1097,11 @@ export class E {
     };
     let total = base;
     for (const { holder, mod } of this.costModsFor(region)) total += mod.delta?.(this, holder, ctx) ?? 0;
-    // R119: Deferral Drone's resolved charge. Player-side, so it is NOT
-    // region-scoped the way the CostMod layer above is (R12) — see types.ts.
-    // R305: a spell token is PRICED here now (casting one is playing a
+    // CR 111.10k: Deferral Drone's resolved charge. Player-side, so it is NOT
+    // region-scoped the way the CostMod layer above is (CR 111.10) — see types.ts.
+    // CR 702.7a, 701.1c: a spell token is PRICED here now (casting one is playing a
     // spell), but the Drone prints "the next CARD you play" and a token is
-    // not a card (R133) — so a token neither takes the discount nor, in
+    // not a card (CR 304.2) — so a token neither takes the discount nor, in
     // commitItem, spends it.
     if (ctx.purpose === 'play' && CARD_PLAY_KINDS.has(c.kind)) {
       total -= this.s.nextPlayDiscount?.[seat] ?? 0;
@@ -1111,7 +1110,7 @@ export class E {
   }
 
   /**
-   * R119: arm "the next card you play this turn costs [`n`] less" for `seat`.
+   * CR 111.10k: arm "the next card you play this turn costs [`n`] less" for `seat`.
    *
    * The charge lives on `GameState`, not on the entity that granted it: the
    * ability has resolved and its cost is paid, so the granting card leaving
@@ -1124,7 +1123,7 @@ export class E {
     tally[seat] = (tally[seat] ?? 0) + n;
   }
 
-  /** R119: `seat` has played a card — the charge is consumed. A no-op when
+  /** CR 111.10k: `seat` has played a card — the charge is consumed. A no-op when
    * there is nothing armed, so the two event sites that call it can do so
    * unconditionally. Bookkeeping, not an effect: it has already happened by
    * the time anyone hears about it, so nothing is queued and nothing can be
@@ -1137,7 +1136,7 @@ export class E {
   }
 
   /**
-   * R119 / ERRATA 2026-09-21 — an unspent charge expires at the END OF THE
+   * CR 111.10k / ERRATA 2026-09-21 — an unspent charge expires at the END OF THE
    * PHASE THAT BOUGHT IT, not the end of the turn.
    *
    * Deferral Drone printed *"the next card you play this TURN"* until Caleb
@@ -1151,7 +1150,7 @@ export class E {
    * the old wipe is this one arriving; leaving both would be two reasons for
    * one effect, and the next person to change the window would have to find
    * them both. The `hasteManaSpent` tally beside it stays in `startTurn`,
-   * because R43's window really is the turn.
+   * because CR 803.7's window really is the turn.
    *
    * Zeroed rather than deleted, like every other per-window tally on
    * GameState: a state serialized before this existed reads as 0, and no saved
@@ -1164,8 +1163,8 @@ export class E {
       const n = tally[seat] ?? 0;
       if (n === 0) continue;
       tally[seat] = 0;
-      // ⚠ "unused" IS THE LOAD-BEARING WORD, not a stylistic choice. R266's
-      // ABSENCE and R276's COSTLY both know it, so this sentence classifies as
+      // ⚠ "unused" IS THE LOAD-BEARING WORD, not a stylistic choice. The
+      // ABSENCE and COSTLY classifiers (CR D7.4, D7.4b) both know it, so this sentence classifies as
       // a tier-1 costly absence and earns a toast — which is right: the player
       // paid 4 debt for this charge and nothing on the board shows it going. An
       // earlier draft said "expires unspent", which is the same fact in words
@@ -1177,7 +1176,7 @@ export class E {
   }
 
   /**
-   * R60: the LIFE half of the same layer — what playing `name` costs in life
+   * CR 111.10d: the LIFE half of the same layer — what playing `name` costs in life
    * on top of its mana ("Cards played during battle gain [Pay 2 life]").
    * Zero unless some CostMod in the region asks for it.
    */
@@ -1190,15 +1189,15 @@ export class E {
   }
 
   /**
-   * R121: what the cost-modifier layer adds to an ability ACTIVATION or to a
+   * CR 111.10f: what the cost-modifier layer adds to an ability ACTIVATION or to a
    * TRIGGER going to the stack — "[Augment] Abilities cost [one] more to
    * activate or trigger during battle" (Crevice Lurker). Designer: the card
    * "taxes the cost to activate or trigger abilities", and can stop e.g.
    * Ruinbringer's "After combat, delete all units" the way a negate can.
    *
-   * The SAME radiating CostMod layer as R59 — same anchored() walk, same R12
+   * The SAME radiating CostMod layer as CR 111.10 — same anchored() walk, same CR 101.6
    * region scope (the Lurker's own region, or its HOST's when donated), same
-   * shallow R62 guard, same reentrancy latch — consulted with the two R121
+   * shallow CR 712.1a guard, same reentrancy latch — consulted with the two CR 111.10f
    * purposes. Deltas SUM exactly as card-play CostMods do (two Lurkers =
    * +2), clamped at zero. `byCard` names the cards whose deltas actually bit
    * (deduped) for the gate's prompts and log lines — the card the mod is
@@ -1225,7 +1224,7 @@ export class E {
   }
 
   /**
-   * R122: the SACRIFICE third of the same layer — how many units playing
+   * CR 111.10: the SACRIFICE third of the same layer — how many units playing
    * `name` additionally costs ("Cards your opponents play during battle gain
    * '[Sacrifice a unit]'", Vengeance). Zero unless some CostMod in the region
    * imposes it; contributions ADD (two Vengeances, two units — each bracketed
@@ -1247,13 +1246,13 @@ export class E {
 
   canPayCard(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
     const c = this.card(name);
-    // X spells: X is chosen and paid at cast (R35); castability needs only the
+    // X spells: X is chosen and paid at cast (CR 107.2a); castability needs only the
     // smallest legal X to be affordable (xMin, e.g. "X can't be zero" → 1)
     if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
-    // R60: an unpayable LIFE tax makes the card uncastable exactly as
-    // unpayable mana does — R49's rule, so 2 life is unpayable at 2 life.
+    // CR 111.10d: an unpayable LIFE tax makes the card uncastable exactly as
+    // unpayable mana does — CR 111.6b's rule, so 2 life is unpayable at 2 life.
     if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
-    // R122: an imposed "[Sacrifice a unit]" gates castability the same way —
+    // CR 111.10: an imposed "[Sacrifice a unit]" gates castability the same way —
     // no unit to sacrifice, no play. The cost itself is chosen and paid in
     // the cast window (playAtTiming → collectItemCosts); this is only the gate,
     // which is what keeps the refusal atomic: nothing is ever half-paid.
@@ -1274,9 +1273,9 @@ export class E {
       if (need > 0 && r.state === 'open') { r.state = 'expended'; need--; }
     }
     if (need > 0) throw new Error('paid mana that was not there — canPay check missing');
-    // R43 (Tithe Enforcer, "End [Haste] with used mana"): tally what is spent
+    // CR 803.7 (Tithe Enforcer, "End [Haste] with used mana"): tally what is spent
     // DURING the haste step, so the prophecy can tell "you hasted something
-    // else" from "you did nothing". Debt (R39) is paid in the resource step,
+    // else" from "you did nothing". Debt (CR 502.4) is paid in the resource step,
     // with hasteDone still null, so it deliberately does not count.
     if (mana > 0 && this.s.phase === 'planning' && this.s.hasteDone !== null) {
       const tally = (this.s.hasteManaSpent ??= this.s.players.map(() => 0));
@@ -1285,14 +1284,14 @@ export class E {
   }
   payCard(seat: Seat, name: CardName, opts: CostOpts = {}): void {
     const c = this.card(name);
-    // R157 §1: an X spell's WHOLE mana bill — printed base and every cost
+    // CR 107.2a: an X spell's WHOLE mana bill — printed base and every cost
     // modifier alike — is settled at `collectX`, the moment X is known, and
     // nothing is owed before that. (It used to pay `manaToPlay - xMin` here,
     // charging the modifier layer against a base of `xMin` and then charging X
-    // on top; that made Stasis Sentry a flat +3 on an X spell, which R157 §20
+    // on top; that made Stasis Sentry a flat +3 on an X spell, which CR 107.5
     // rejects, and it capped `collectX`'s menu by mana it had already taken.)
     //
-    // APPLYING an X card as a mod is not playing it (R37/R59) and never
+    // APPLYING an X card as a mod is not playing it (CR 701.2, 701.2b) and never
     // chooses an X, so that path still pays its modifier bill here, against
     // the printed floor, exactly as before.
     const isPlay = (opts.purpose ?? 'play') === 'play';
@@ -1300,7 +1299,7 @@ export class E {
       ? (isPlay ? 0 : Math.max(0, this.manaToPlay(seat, name, opts) - (c.xMin ?? 0)))
       : this.manaToPlay(seat, name, opts);
     this.payMana(seat, mana);
-    // R60: the life half of the bill, charged in the same breath as the mana
+    // CR 111.10d: the life half of the bill, charged in the same breath as the mana
     // — before the card reaches the stack, so it cannot be responded to and
     // negating the card does not refund it.
     const life = this.lifeToPlay(seat, name, opts);
@@ -1310,9 +1309,9 @@ export class E {
     }
   }
 
-  // ── LAYER 0: the COPY layer (R118) ──────────────────────────────────
+  // ── LAYER 0: the COPY layer (CR 709.4a) ──────────────────────────────────
   /**
-   * R118 — one FACE an entity is wearing: a card name plus which halves of
+   * CR 709.4a — one FACE an entity is wearing: a card name plus which halves of
    * that card it contributes. `ref` is the stored copy it came from (absent on
    * the base face and on a continuous projection).
    */
@@ -1335,7 +1334,7 @@ export class E {
    * and from the trigger scan without any latch at all.
    *
    * ⚠ It does NOT read `Entity.card` for anything but the fallback. `card`
-   * stays the PHYSICAL card forever (R118 ruling 1) — the thing that bins, is
+   * stays the PHYSICAL card forever (CR 201.5) — the thing that bins, is
    * erased, and belongs to a deck.
    */
   private identityCopy(e: Entity): CopyRef | undefined {
@@ -1359,16 +1358,16 @@ export class E {
     return getCard(this.faceName(e));
   }
   /**
-   * R341 — the AUGMENT mods a copy copied, by card name, in the source's
+   * CR 710.2a — the AUGMENT mods a copy copied, by card name, in the source's
    * order (duplicates kept: two copied Graxxlids are two boxes, as two real
    * ones would be). Borrower of Forms: "I copy all stat changes, counters,
    * card text and mods"; RAQ: "it inherits all of the combined text".
    *
-   * The copy carries each one's `[Augment]` box and nothing else (R268: an
+   * The copy carries each one's `[Augment]` box and nothing else (CR 721.1: an
    * augment radiates only its box), as text of the COPY — no mod entity is
-   * cloned (R336), so the box reads from the copy, keys its R9 `[once]`
+   * cloned (CR 710.2a), so the box reads from the copy, keys its `[once]`
    * budgets on the copy (`augment:<card>#<n>`, the same key a real mod on
-   * this host uses), and is stamped PRINTED for R328: it is part of the card
+   * this host uses), and is stamped PRINTED (CR 712.7, 113.2): it is part of the card
    * text the copy became, so any stripper strips it.
    *
    * THE one enumerator. Every channel that walks a real augment mod's box —
@@ -1386,7 +1385,7 @@ export class E {
     return out;
   }
   /**
-   * R336 / CT-219 — the COST of a unit in play: its FACE's printed mana (an X
+   * CR 710.1a / CT-219 — the COST of a unit in play: its FACE's printed mana (an X
    * card counts 0, as `manaOf` rules for a card not being cast). The RAQ
    * ("Borrower of Forms"): a Borrower that copied Robot 3 is not a token, "but
    * his cost would be 0. (For things like Deformant, Lumengrove Lurker, Death
@@ -1432,8 +1431,8 @@ export class E {
    *
    * This is the one call every "what does this thing DO" read routes through.
    * The handful of reads that mean "which PHYSICAL card is this" — the bin
-   * push in `destroy`, `noteTrashed`, the R65 erased pile, DECK_LIST — keep
-   * reading `e.card` raw, and must (R118 ruling 1).
+   * push in `destroy`, `noteTrashed`, the CR 407.1 erased pile, DECK_LIST — keep
+   * reading `e.card` raw, and must (CR 201.5).
    */
   facesWith(e: Entity, facet: CopyFacet): CardName[] {
     const out: CardName[] = [];
@@ -1451,10 +1450,10 @@ export class E {
    *
    * Re-evaluated on every read, never stamped, because that is the whole
    * reason Ancient One could not be built on `Entity.copies`: adjacency
-   * changes inside one combat (R72 column collapse, a neighbour dying,
+   * changes inside one combat (CR 602.5 column collapse, a neighbour dying,
    * blockers declared) and the answer has to change with it.
    *
-   * The walk is `anchored()`'s, with the same shallow R62 guard every
+   * The walk is `anchored()`'s, with the same shallow CR 712.1a guard every
    * radiating query uses — a SILENCED projector radiates nothing, so all of
    * its faces go off at once. A projected face may never carry `name` or
    * `stats`: `facesOf()[0]` is always the identity face, so the Ancient One
@@ -1473,9 +1472,9 @@ export class E {
     try {
       const mine = this.faceName(e);
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.ownBlocks(h, a).some(d => !!d.projects)          // R268: body or box
+        this.ownBlocks(h, a).some(d => !!d.projects)          // CR 721.1: body or box
         && a.region === e.region
-        && !this.textStrippedShallow(h, a))) {                       // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                       // CR 712.1a, as staticsFor (shallow)
         for (const pr of this.ownBlocks(holder, anchor).flatMap(d => d.projects ?? [])) {
           if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
           const facets = pr.facets ?? PROJECTED_FACETS;
@@ -1491,7 +1490,7 @@ export class E {
   }
 
   /**
-   * R118: stamp a copied FACE onto `target`.
+   * CR 710.1: stamp a copied FACE onto `target`.
    *
    * `Entity.card` is deliberately untouched — see `Entity.copies`. A face that
    * carries `name` REPLACES any earlier one (last-wins by seq), so attacking
@@ -1508,7 +1507,7 @@ export class E {
   }
 
   /**
-   * R118: build the FACE `src` would be copied as, WITHOUT putting it on
+   * CR 710.4: build the FACE `src` would be copied as, WITHOUT putting it on
    * anything. Plain serializable data, which is what lets a card park one for
    * a resolution that has not happened yet — Borrower of Forms erases its
    * target in one resolution and only spawns the body that wears the face in
@@ -1521,9 +1520,9 @@ export class E {
     printedStats?: [number, number];
   }): CopyRef {
     const name = this.faceName(src);                        // copy of a copy chains via the FACE
-    // R336: the copy carries its source's mods — their names and how each
+    // CR 710.2a: the copy carries its source's mods — their names and how each
     // was applied (CopyRef.mods) — and no mod ENTITIES are cloned. It is NOT
-    // itself modded, so not Unstable (CT-225 reverses R118 ruling 2's half).
+    // itself modded, so not Unstable (CT-225 reverses the earlier reading that such a copy is Unstable).
     // A copy of a copy chains: the source's own copied mods come first.
     const mods: { card: CardName; appliedAs: 'augment' | 'graft' }[] = [...(this.identityCopy(src)?.mods ?? [])];
     for (const id of src.mods) {
@@ -1544,7 +1543,7 @@ export class E {
     return ref;
   }
 
-  /** R118: put a prepared face on an entity (see `prepareCopy`). */
+  /** CR 710.1: put a prepared face on an entity (see `prepareCopy`). */
   wearCopy(target: Entity, ref: CopyRef): CopyRef {
     const name = ref.card;
     const list = (target.copies ??= []);
@@ -1564,7 +1563,7 @@ export class E {
     return ref;
   }
 
-  /* R147 DELETED `parkCopySource` / `takeCopySource`. They existed for one
+  /* The enters-as-a-copy ruling (CR 303.11) DELETED `parkCopySource` / `takeCopySource`. They existed for one
    * card — Borrower of Forms, whose face was prepared in its spell resolution
    * and worn in the next one — and the gap they bridged is gone: the face
    * rides the spell's own `StackItem.spawnWearing` and `spawnUnit` puts it on
@@ -1572,25 +1571,25 @@ export class E {
    * simply nowhere to park it now, which is the point (the slot was keyed by
    * REGION, so two Borrowers in one region shared it). */
 
-  /** R118: is this entity already wearing `name` as its identity face? The
+  /** CR 710.1: is this entity already wearing `name` as its identity face? The
    * idempotence check a repeating copy trigger needs. */
   isCopyOf(e: Entity, name: CardName): boolean {
     return this.identityCopy(e)?.card === name;
   }
 
   /**
-   * R69: is this entity ERASED instead of binned when it dies?
+   * CR 803.8e: is this entity ERASED instead of binned when it dies?
    *
    * Three ways in, unioned here so `destroy` does not have to know there are
    * three: it carries mods (the derivation — a modded card is Unstable), it
-   * carries R96's until-regroup {Unstable} stamp, or its FACE prints
+   * carries CR 803.8d's until-regroup {Unstable} stamp, or its FACE prints
    * {Unstable} on the type line (Aberrant Statweaver, Oorblak — report #89:
    * nothing used to carry the printed marker, so both binned like anything
    * else). The printed flag reads the FACE, like ownAttrs' layer 0: a copy
    * wearing a printed-Unstable face is Unstable.
    *
-   * There used to be a fourth: a COPY of something modded (R118 ruling 2).
-   * R336 / CT-225 removed it — the RAQ ("Borrower of Forms"): a freshly
+   * There used to be a fourth: a COPY of something modded (an earlier reading, since reversed).
+   * CT-225 removed it (CR 710.2a) — the RAQ ("Borrower of Forms"): a freshly
    * resolved copy of a modded unit is not Unstable.
    */
   isUnstable(e: Entity): boolean {
@@ -1599,7 +1598,7 @@ export class E {
   }
 
   /**
-   * R145 — the STACK twin of `isUnstable`. Is this stack item's card ERASED
+   * CR 803.8k — the STACK twin of `isUnstable`. Is this stack item's card ERASED
    * instead of binned when it leaves the stack without arriving anywhere?
    *
    * ⚠ THE ACTIVE ZONE. Caleb's glossary (rules-bot dump, 2025-03-12) defines
@@ -1607,15 +1606,15 @@ export class E {
    * erase it instead" — and never says which zones are active. Bena supplied
    * the list, 2026-08-25: **in play and the stack are the active zones.** So
    * Unstable needs TWO readers, not one: `isUnstable` for the play half
-   * (R137's bin → trash → sweep) and this one for the stack half. Hand, deck,
+   * (the engine's bin → trash → sweep; CR 405.5 erases instead, CT-246) and this one for the stack half. Hand, deck,
    * bin, cache and the erased pile are INACTIVE — a card leaving one of those
    * for a bin is binned and trashed normally, printed {Unstable} or not (that
    * is the open question in playtest-ledger #89, closed by "from an active
    * zone" in the direction of "no, it bins").
    *
-   * THREE ways in, and the third is the one that was missing (report R145):
-   *  · `augments` — a virus rode it, so the card is MODDED (R79, derived);
-   *  · `unstable` — the R96 bin-play stamp / the R105 {Modular} cast stamp;
+   * THREE ways in, and the third is the one that was missing (CR 803.8k):
+   *  · `augments` — a virus rode it, so the card is MODDED (CR 803.8f, derived);
+   *  · `unstable` — the CR 803.8c bin-play stamp / the CR 724.5 {Modular} cast stamp;
    *  · the PRINTED FACE — Aberrant Statweaver and Oorblak print {Unstable} on
    *    the type line, and nothing on the stack path ever looked. Caleb rules
    *    this case directly (rules-questions 2025-09-13, on Spell Excavation):
@@ -1639,7 +1638,7 @@ export class E {
    */
   itemIsUnstable(item: StackItem): boolean {
     if ((item.augments?.length ?? 0) > 0 || item.unstable === true) return true;
-    // R164: a COPY of a spell has no card, so the printed {Unstable} face
+    // CR 704.2d: a COPY of a spell has no card, so the printed {Unstable} face
     // below cannot apply to it — there is nothing to erase instead of binning,
     // and reading the copied card's type line here would log an erase about a
     // card that is still on the stack underneath as the ORIGINAL.
@@ -1648,7 +1647,7 @@ export class E {
   }
 
   // ── stats & attributes (the six-layer projection, all six built: see
-  //    docs/03 §4, and R93 / R106 for layers 5 and 6) ──────────────────
+  //    docs/03 §4, and CR 802.8a, 802.9a for layers 5 and 6) ──────────────────
   /** reentrancy guard for static-modifier evaluation (see StaticMod docs) */
   private inStatics = false;
 
@@ -1664,7 +1663,7 @@ export class E {
       // the anchored() walk: statics radiate from units in play AND from
       // augment mods (text-box [Augment] statics transfer with the card —
       // Animated Spark, Sandstone Defender), each read from its anchor.
-      // R62: a silenced unit radiates nothing — a static IS an ability.
+      // CR 712.1a: a silenced unit radiates nothing — a static IS an ability.
       // Shallow by construction (the reentrancy guard is already held, so a
       // nested suppression query sees no statics): a unit silenced by a
       // SPELL stops radiating immediately, while two units whose statics
@@ -1673,11 +1672,11 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         a.region === target.region
         && !this.textStrippedShallow(h, a))) {
-        // R118 layer 0: the statics come off the FACES the holder is wearing,
+        // CR 710.1 layer 0: the statics come off the FACES the holder is wearing,
         // not off `holder.card`. The identity face is the copied card (Apex
         // Prime, Borrower of Forms); the projected ones are the neighbours'
         // (Ancient One), and those land on the ANCHOR, so they are only
-        // gathered when the holder IS its anchor. R268: and off the right HALF
+        // gathered when the holder IS its anchor. CR 721.1: and off the right HALF
         // of each face — a unit reads its body text and its own [Augment] box,
         // an augment MOD reads only the box (report #139).
         for (const { face, def } of this.behaviorBlocks(holder, anchor, 'statics')) {
@@ -1726,7 +1725,7 @@ export class E {
   /** baseStatsOf against an ALREADY-COLLECTED static list, so effStats scans
    * the board once for layers 2 and 3 instead of twice. */
   private baseWith(e: Entity, statics: ReturnType<E['staticsFor']>): [number, number] {
-    // layers 0-1: what the card this entity currently IS prints (R118)
+    // layers 0-1: what the card this entity currently IS prints (CR 709.4a)
     let [p, t] = this.printedStats(e);
     // layer 2: collect the rewrites, then apply them in timestamp order
     let rewrites: { seq: number; p?: number; t?: number }[] | undefined;
@@ -1758,14 +1757,14 @@ export class E {
       p += typeof mod.dp === 'function' ? mod.dp(this, holder, e) : (mod.dp ?? 0);
       t += typeof mod.dt === 'function' ? mod.dt(this, holder, e) : (mod.dt ?? 0);
     }
-    // layer 4: Tough / Balanced in application order (R19); duplicates don't stack
+    // layer 4: Tough / Balanced in application order (CR 709.4b); duplicates don't stack
     const statAttrs = this.statLayerAttrs(e);
     for (const a of statAttrs) {
       if (a === 'Tough') t *= 2;
       else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }
     }
     /**
-     * LAYER 5 — {Inverted} (R93). "Invert the stat changes of inverted units."
+     * LAYER 5 — {Inverted} (CR 802.8a). "Invert the stat changes of inverted units."
      *
      * The operation is on the NET CHANGE FROM BASE, not on the final number
      * and not on each contribution one at a time. Caleb worked it through
@@ -1794,7 +1793,7 @@ export class E {
      *
      * Applied ONCE, however many sources granted it — `statLayerAttrs` dedupes
      * on the way in, the same "an attribute is either present or not" rule
-     * layer 4 runs on (R19). Two Reality Benders on one host do not cancel.
+     * layer 4 runs on (CR 709.4c). Two Reality Benders on one host do not cancel.
      *
      * No death check happens inside here, and that is deliberate: `effStats`
      * is atomic and the caller checks deaths after. Caleb, asked whether a
@@ -1802,19 +1801,19 @@ export class E {
      * calculation" / "Doesn't instantly die", and lofavreel's gloss he agreed
      * with — "imagine it as one big equation… It is not a time thing".
      *
-     * ⚠ OPEN (R93): Caleb also said "Tough inverted balanced would be
+     * ⚠ ONCE OPEN (now CR 709.4d): Caleb also said "Tough inverted balanced would be
      * different" from "tough balanced inverted", which would make {Inverted}
      * an interleaved member of the layer-4 order rather than a clean layer 5.
      * He immediately called that case "basically impossible to make happen.
      * Because tough inverted would die before you could add more", and his own
-     * worked example is the clean layer. Shipped clean; see R93.
+     * worked example is the clean layer. Shipped clean; see CR 709.4d.
      */
     if (statAttrs.includes('Inverted')) {
       p = 2 * base[0]! - p;
       t = 2 * base[1]! - t;
     }
     /**
-     * LAYER 6 — {Unaware} (R106). PRINTED, not base: layer 1 and nothing else.
+     * LAYER 6 — {Unaware} (CR 802.9a, 802.9b). PRINTED, not base: layer 1 and nothing else.
      *
      * The owner, 2026-08-23, stating it operationally:
      *
@@ -1831,7 +1830,8 @@ export class E {
      * state-based death check alike, which is what makes "survive 100 -1/-1
      * counters just fine" true without a special case anywhere.
      *
-     * Note it drops layer 2 as well, unlike {Inverted} one layer up. R93's
+     * Note it drops layer 2 as well, unlike {Inverted} one layer up. The Inverted
+     * ruling's (CR 802.8c)
      * argument for keeping base rewrites there is about what {Inverted}
      * inverts FROM; this rule is about what a card READS, and "your units are
      * base 3/3" (Aberrant Statweaver) is not literal printed text on Bubb's
@@ -1845,7 +1845,7 @@ export class E {
      * is Unaware for as long as the formation holds, and therefore fights at
      * ITS printed stats too.
      *
-     * The OTHER half of R106 — every card in an interaction with an Unaware
+     * The OTHER half of the Unaware rule (CR 802.9c) — every card in an interaction with an Unaware
      * card also reads at printed — cannot live here, because `effStats(e)`
      * knows only `e`. It lives in `interactionStats`, at the damage and combat
      * sites; see that method.
@@ -1855,7 +1855,7 @@ export class E {
   }
 
   /**
-   * LAYER 1 ALONE — "the literal printed text on the card" (R106).
+   * LAYER 1 ALONE — "the literal printed text on the card" (CR 802.9a).
    *
    * For a token this is what it was CREATED as, which is the same thing its
    * card face says: a `Robot` prints 0/0 and carries its size in +1/+1
@@ -1866,9 +1866,9 @@ export class E {
    * Deliberately NOT `baseStatsOf`, which is layers 1-2. See the layer-6 note.
    */
   printedStats(e: Entity): [number, number] {
-    // LAYER 0 (R118) sits UNDER layer 1 and redefines what "printed" means: a
+    // LAYER 0 (CR 709.4a) sits UNDER layer 1 and redefines what "printed" means: a
     // Unit Token that became a copy of a Good Whale reads 7/5 here, because
-    // the card it now is prints 7/5. This is the R106 {Unaware} decision, and
+    // the card it now is prints 7/5. This is the CR 802.9a {Unaware} decision, and
     // it is also why Borrower of Forms no longer writes `tokenStats` on a
     // non-token body — that write claimed the BORROWED numbers were what the
     // Borrower "was created as", and {Unaware} believed it.
@@ -1883,15 +1883,15 @@ export class E {
     return [c.power, c.toughness];
   }
 
-  /** R106: does this entity carry {Unaware} for stat purposes? Column-shared,
+  /** CR 802.9: does this entity carry {Unaware} for stat purposes? Column-shared,
    * because it rides `statLayerAttrs` with the other three stat-layer attrs
-   * (R19) — so a unit standing beside Bubb in a formation is Unaware too. */
+   * (CR 802.1c) — so a unit standing beside Bubb in a formation is Unaware too. */
   unaware(e: Entity): boolean {
     return this.statLayerAttrs(e).includes('Unaware');
   }
 
   /**
-   * R106, the PAIRWISE half: the stats a card reads DURING AN INTERACTION.
+   * CR 802.9c, the PAIRWISE half: the stats a card reads DURING AN INTERACTION.
    *
    * "it looks ONLY at what is the literal printed text on all cards
    * 'involved'" — so if ANY participant is {Unaware}, EVERY participant reads
@@ -1908,9 +1908,9 @@ export class E {
    *     with the source and the recipient as the participants;
    *   · the `fight` helper in batch-earth-a.ts, which snapshots both powers.
    *
-   * ⚠ TARGETING IS OUT OF SCOPE. R10's older wording lists targeting as an
+   * ⚠ TARGETING IS OUT OF SCOPE. The superseded Unaware ruling's older wording lists targeting as an
    * interaction; the owner's operational statement does not, and legality
-   * checks read stats at ~33 card-side sites. Recorded as R106's one open
+   * checks read stats at ~33 card-side sites. Left as the Unaware ruling's one open
    * edge rather than guessed at.
    */
   interactionStats(u: Entity, involved: readonly (Entity | undefined)[]): [number, number] {
@@ -1924,7 +1924,7 @@ export class E {
     return false;
   }
   /**
-   * R106: kill whatever the collapsed reading has already killed.
+   * CR 802.9e: kill whatever the collapsed reading has already killed.
    *
    * `checkDeaths` is the state-based sweep and it reads `effStats`, so it
    * cannot see that a Robot 7 read 0 defense in the exchange it just lost, or
@@ -1944,7 +1944,7 @@ export class E {
       this.destroy(u, 'dies');
     }
   }
-  /** R19/R93/R106: the stat-layer attrs, in layer-4 application order — own
+  /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs, in layer-4 application order — own
    * printed (type-line order), then augment mods (stack order), then
    * column-shared (column order); first occurrence wins, an attribute is
    * either present or not. {Inverted} rides the same walk because it is
@@ -1992,7 +1992,7 @@ export class E {
     return out;
   }
   /**
-   * R62 — the SUPPRESSION layer: which halves of a card are switched off right
+   * CR 712.1 — the SUPPRESSION layer: which halves of a card are switched off right
    * now, and by what. Two sources, unioned here so nothing else has to know
    * there are two: the until-regroup flag a spell stamped on the entity
    * (`Entity.suppressed`) and every continuous `suppressAttrs`/
@@ -2006,7 +2006,7 @@ export class E {
    *
    * `by` is for the text box: the cards to blame, deduped, entity flag first.
    */
-  // ── R328: STRIPPING IS A LAYER APPLIED IN TIMESTAMP ORDER ────────────
+  // ── CR 712.2, 113.3: STRIPPING IS A LAYER APPLIED IN TIMESTAMP ORDER ────────────
   //
   // The RAQ ("[Solved] Monke & Transmogrifant vs Suppression Field &
   // Formless", "[Solved] Timestamps vs Static Abilities"; Caleb: "anything
@@ -2015,11 +2015,11 @@ export class E {
   // unit has when it applies; an attribute, ability or mod that arrives AFTER
   // it still applies. Printed text is the oldest thing on any unit, so every
   // stripper takes it — a unit entering play under Monke still loses its own.
-  // This replaces R62's veto.
+  // This replaces the old suppression ruling's veto.
 
   /** the timestamp of what a card PRINTS: older than anything that can strip it */
   static readonly PRINTED: Stamp = [-Infinity, 0];
-  /** a stamp with no time on it (a pre-R328 state): later than everything */
+  /** a stamp with no time on it (a state saved before strips carried a time): later than everything */
   static readonly LATEST: Stamp = [Infinity, Infinity];
   /** is `a` strictly older than `b`? */
   static older(a: Stamp, b: Stamp): boolean {
@@ -2055,13 +2055,13 @@ export class E {
   static textStamp(holder: Entity, anchor: Entity): Stamp {
     return holder.id === anchor.id ? E.PRINTED : E.entityStamp(holder.id);
   }
-  /** R328, the FULL question for a radiator: is the text `holder` carries on
+  /** CR 712.2, the FULL question for a radiator: is the text `holder` carries on
    * `anchor` stripped right now? */
   textStripped(holder: Entity, anchor: Entity): boolean {
     const strips = this.strippersOf(anchor, 'abilities');
     return strips.length > 0 && E.strippedBy(E.textStamp(holder, anchor), strips);
   }
-  /** R328, the SHALLOW form the static walks use (the entity stamp only —
+  /** The SHALLOW form the static walks use (the entity stamp only —
    * the reentrancy reason `staticsFor` documents) */
   textStrippedShallow(holder: Entity, anchor: Entity): boolean {
     const sup = anchor.suppressed;
@@ -2081,13 +2081,13 @@ export class E {
     }
     return { attrs, abilities, by };
   }
-  /** R62: are this entity's triggered / activated / static / cost abilities
+  /** CR 712.1a: are this entity's triggered / activated / static / cost abilities
    * switched off? The gate on every path that would otherwise fire one.
    *
    * The WHOLE-LAYER question, and it stays that: it answers "loses all
    * abilities" (Monke, Transmogrifant, The Everywhere) and is what the
    * radiator predicates read, because a unit with no ability layer radiates
-   * nothing. A suppressor that names ONE clause is R269's
+   * nothing. A suppressor that names ONE clause is CR 712.4's
    * `abilityIsSuppressed` below and is invisible here — a Wisp that may not
    * sacrifice itself still HAS an ability layer, and everything else in it
    * still works. */
@@ -2097,7 +2097,7 @@ export class E {
   }
 
   /**
-   * R269: is THIS ability of `e` switched off right now?
+   * CR 712.4: is THIS ability of `e` switched off right now?
    *
    * The per-clause question, asked wherever an ability would actually fire or
    * be offered. Two sources, unioned so no caller has to know there are two:
@@ -2111,7 +2111,7 @@ export class E {
    */
   abilityIsSuppressed(e: Entity, ability: Ability, at: Stamp = E.PRINTED): boolean {
     const statics = this.staticsFor(e);
-    // R328: the whole-layer half is a timestamp question — `at` is when this
+    // CR 113.2: the whole-layer half is a timestamp question — `at` is when this
     // ability's text arrived on `e` (its own text is PRINTED, the oldest; an
     // augment mod's is the mod's arrival), and a stripper takes only older text
     if (E.strippedBy(at, this.strippersOf(e, 'abilities', statics))) return true;
@@ -2119,7 +2119,7 @@ export class E {
   }
 
   /**
-   * R11: is this spell token protected from the regroup erase by a live
+   * CR 506.2: is this spell token protected from the regroup erase by a live
    * static ("Your spell tokens stay through regroup" — Harbinger of
    * Immolation)? Same veto shape as abilitiesSuppressed(): one protector is
    * enough, and nothing votes the other way.
@@ -2170,12 +2170,12 @@ export class E {
   ownAttrs(e: Entity): Set<string> {
     const set = new Set<string>();
     const statics = this.staticsFor(e);
-    // R328: a stripper takes what arrived BEFORE it and nothing after. Each
+    // CR 712.2: a stripper takes what arrived BEFORE it and nothing after. Each
     // source below carries its arrival time; with no stripper on the unit
     // (almost always) every check is skipped.
     const strips = this.strippersOf(e, 'attrs', statics);
     const keep = (at: Stamp): boolean => !strips.length || !E.strippedBy(at, strips);
-    // LAYER 0 (R118): the attrs of the card this entity currently IS. Only the
+    // LAYER 0 (CR 710.1): the attrs of the card this entity currently IS. Only the
     // identity face carries `attrs`, so this is one name, not a union.
     if (keep(E.PRINTED)) for (const a of this.faceDef(e).attrs) set.add(a);
     (e.tempAttrs ?? []).forEach((a, i) => { if (keep(e.tempAttrsAt?.[i] ?? E.PRINTED)) set.add(a); });
@@ -2188,8 +2188,8 @@ export class E {
         for (const a of this.card(m.card).augmentAttrs) set.add(a);
       }
     }
-    // R341: the type-line attrs of the augment mods a copy copied — part of
-    // the copied card text, so as old as the printed attrs (R328)
+    // CR 712.7: the type-line attrs of the augment mods a copy copied — part of
+    // the copied card text, so as old as the printed attrs (CR 113.2)
     if (keep(E.PRINTED)) {
       for (const card of this.copiedAugments(e, 'attrs')) for (const a of this.card(card).augmentAttrs) set.add(a);
     }
@@ -2200,7 +2200,7 @@ export class E {
    * (The Everywhere) matches against, and the one place that comparison is
    * made.
    *
-   * R118 landed the copy layer this hook was reserved for, so it is now
+   * The copy layer this hook was reserved for has landed (CR 710.1), so it is now
    * `faceName(e)` — the GAME name, which is the copied card when the entity is
    * wearing a face. `Entity.card` keeps the other job it was doing: the
    * PHYSICAL card, the one that bins, is erased and belongs to a deck (ruling
@@ -2226,7 +2226,7 @@ export class E {
     return set;
   }
   /**
-   * R61 {Pure}: "Pure cards and cards they are interacting with ignore all
+   * CR 802.25 {Pure}: "Pure cards and cards they are interacting with ignore all
    * other attributes." Pure is not a one-sided evasion-breaker — it switches
    * the attribute layer off for BOTH sides of the interaction it is in, its
    * own other attributes included (Light & Dark provisional glossary).
@@ -2260,11 +2260,11 @@ export class E {
     return this.s.sharedDeck;
   }
   /**
-   * R296: the RECYCLE PILE `seat` recycles into — their own in constructed,
+   * CR 408.2e: the RECYCLE PILE `seat` recycles into — their own in constructed,
    * the communal one otherwise. `deckOf`'s twin, and the only way to reach
    * the zone.
    *
-   * Both backing fields are optional (a pre-R296 state has neither), so this
+   * Both backing fields are optional (an older saved state has neither), so this
    * creates the array on first use rather than reading `!`. That is the whole
    * of the migration: an old game restores with no pile, recycles its first
    * card into a fresh one, and behaves like a new game from there.
@@ -2277,7 +2277,7 @@ export class E {
     return (this.s.sharedRecycled ??= []);
   }
   /**
-   * R296 — THE MARK: when the deck runs out, the recycled cards are shuffled
+   * CR 408.2b — THE MARK: when the deck runs out, the recycled cards are shuffled
    * and become the new deck.
    *
    * Called at the top of every read of the deck, and it is the ONLY thing
@@ -2290,7 +2290,7 @@ export class E {
    * pile — which is what a player does at the table. The pile-empty guard is
    * what makes a truly empty zone terminate instead of shuffling nothing
    * forever; a player with an empty deck AND an empty pile simply draws
-   * fewer, which is the pre-R296 behaviour and still the rule (there is no
+   * fewer, which was the behaviour before the mark and is still the rule (CR 401.4: there is no
    * deck-out loss).
    *
    * `need` is how many cards the caller is about to read, and it exists for
@@ -2306,7 +2306,7 @@ export class E {
    *
    * The shuffle goes through `E.shuffle`, so it advances `s.rngState` and
    * replays identically. ⚠ It also means a game that decks out consumes RNG
-   * that the same seed did not consume before R296 — every saved game that
+   * that the same seed did not consume before the recycle mark existed — every saved game that
    * reached the bottom of its deck replays as engine drift from here, which
    * `replay-room.ts` reports as exactly that.
    */
@@ -2321,7 +2321,7 @@ export class E {
       `${this.pname(seat)}'s deck is out — the ${n} recycled card(s) are shuffled into a new deck.`,
       { seat, n, reshuffled: true });
   }
-  /** R296: take the top card of `seat`'s deck, reshuffling the recycle pile
+  /** CR 408.2b: take the top card of `seat`'s deck, reshuffling the recycle pile
    *  into it first if the deck has run out. `undefined` = both are empty. */
   private takeFromDeck(seat: Seat): CardName | undefined {
     this.refillFromRecycled(seat);
@@ -2335,7 +2335,7 @@ export class E {
       drawn.push(c);
     }
     const got = drawn.length;
-    // R179: a draw is a card entering a hand, and it is announced as one — a
+    // CR 402.4, 706.6a: a draw is a card entering a hand, and it is announced as one — a
     // multi-card draw is ONE 'handEntered' exactly as it is ONE 'draw'. The
     // 'draw' event is NOT replaced: it keeps its own narrow meaning ("when you
     // DRAW", which a bin recursion is not), and Ancient One's AO_EVENTS scan
@@ -2351,7 +2351,7 @@ export class E {
   }
 
   /**
-   * R179: **the one place a card enters a hand.** Pushes `cards` onto `seat`'s
+   * CR 402.4: **the one place a card enters a hand.** Pushes `cards` onto `seat`'s
    * hand and announces it as `'handEntered'`.
    *
    * Three cards print *"whenever (one or more other) cards enter a player's
@@ -2405,18 +2405,18 @@ export class E {
    * window, and the guard goes red on a file that is perfectly correct.
    */
   /**
-   * R335 / CT-218 — a spell token RECALLED off the stack enters its
+   * CR 410.5b / CT-218 — a spell token RECALLED off the stack enters its
    * controller's hand and is erased from it at once. The RAQ ("Recall Spell
    * Token / Token unit"): "Token Spell technically enter your hand if you
    * Recall them and are instantly erased (this matter for the purpose of
    * triggers like Xenopod Progenitator or Rider of the Tides)." The same two
-   * steps a recalled unit TOKEN already takes (R69, `recall` above): through
+   * steps a recalled unit TOKEN already takes (CR 410.5b, `recall` above): through
    * `toHand` — the one door every hand-entry watcher listens at — then the
-   * hand sweep. Not a trash and not a death (R306: tokens are not trashed).
-   * The caller has already taken the item off the stack (R68).
+   * hand sweep. Not a trash and not a death (CR 801.2d: tokens are not trashed).
+   * The caller has already taken the item off the stack (CR 801.7d).
    */
   /**
-   * R333 — a spell token ON THE STACK changes hands (Download: "Gain control
+   * CR 304.11d — a spell token ON THE STACK changes hands (Download: "Gain control
    * of target token"). A `StackItem` is not an Entity, so this is not
    * `giveControl` (which unslots formations and fires `controlChanged` for a
    * unit in play): the item simply records a new caster, and every read of
@@ -2450,7 +2450,7 @@ export class E {
   }
 
   /**
-   * R296: recycle one card. It goes PAST THE MARK — into the recycle pile,
+   * CR 408.2: recycle one card. It goes PAST THE MARK — into the recycle pile,
    * not onto the bottom of the live deck — and comes back only when the deck
    * runs out and `refillFromRecycled` shuffles the pile in.
    *
@@ -2465,11 +2465,11 @@ export class E {
     this.recycleOf(seat).push(name);
   }
 
-  // ── the bin & trashing (R40) ────────────────────────────────────────
+  // ── the bin & trashing (CR 801.2) ────────────────────────────────────────
   /**
-   * Everything that enters a bin goes through here. R40: **any CARD entering a
-   * bin from anywhere other than the stack is trashed.** R306: a TOKEN is not
-   * — it is not a card (R133's first half), and the owner withdrew R133's
+   * Everything that enters a bin goes through here. CR 801.2: **any CARD entering a
+   * bin from anywhere other than the stack is trashed.** CR 801.2d: a TOKEN is not
+   * — it is not a card (the token ruling's first half), and the owner withdrew the token ruling's
    * second half ("Tokens are trashed, yes") on 2026-09-28: *"It is just
    * false … A token dying should never count."* The token case is decided in
    * `noteTrashed`, the one choke point every trash reaches. It is
@@ -2480,12 +2480,12 @@ export class E {
    * `from` is the zone the card came from. 'stack' never trashes (a spell or
    * ability going to the bin after it resolves, or after being negated, comes
    * from the stack — so countering is not trashing); everything else does,
-   * 'cache' (R41) included — a cached card binned without being played is
+   * 'cache' (CR 801.2) included — a cached card binned without being played is
    * trashed like any other. A TOKEN never arrives here by name: every token
    * that reaches a bin does so by leaving play, through `disposeToBin`, which
-   * hands `noteTrashed` the entity (R306).
+   * hands `noteTrashed` the entity (CR 801.2d).
    *
-   * R137: and so is an {Unstable} card. It was the last object whose
+   * In the engine, so is an {Unstable} card (CR 801.2h: it is not trashed; CT-246). It was the last object whose
    * DISPOSITION was allowed to decide whether trashing happened — the erase
    * that follows it out of the bin used to be modelled as "it never went to a
    * bin at all". It goes; it is trashed there; then it is erased. Nothing in
@@ -2513,34 +2513,34 @@ export class E {
    * and recall() bin the card first but have to emit (and fire) their own
    * 'died'/'despawned' event before the trash, or the game log reads backwards.
    *
-   * **R306 (owner, 2026-09-28) — A TOKEN IS NOT TRASHED.** A dying token
-   * does still reach here (it really enters the bin before R69's sweep erases
+   * **CR 801.2d (owner, 2026-09-28) — A TOKEN IS NOT TRASHED.** A dying token
+   * does still reach here (it really enters the bin before CR 410.5a's sweep erases
    * it, which is a ZONE fact and stands), and this method returns before doing
    * anything for it: no `trashed` event, no `trashed` / `trashed:<seat>`
    * battle-counter bump, and no "when I am trashed" — its OWN included (a
    * token copy of Dropslime). Its `died` event is untouched: a token is still
    * a unit, and "whenever a unit dies" still sees it.
    *
-   * This reverses R133's second half. R133 (2026-08-24) recorded *"Tokens are
+   * This reverses the token ruling's second half. The token ruling (2026-08-24) recorded *"Tokens are
    * trashed, yes"* and rebuilt the argument on the destination alone ("trashing
    * is defined by WHERE something goes, not by what it is"). The owner:
    * *"that ruling was my fault. It is just false."* — *"Tokens are
    * specifically not considered cards in terms of specific semantics of the
    * game. A card is an actual physical card that has an algomancy card back
    * only … A token dying should never count."* So the definition is now
-   * R40's destination rule applied to CARDS: something that is a card, entering
+   * CR 801.2's destination rule applied to CARDS: something that is a card, entering
    * a bin, not from the stack.
    *
    * The check is `anchor?.token` and it is the only one needed. Every route
-   * here was walked for R306: `toBin` (discard, mill, a sandbox or stack
+   * here was walked when tokens stopped being trashed: `toBin` (discard, mill, a sandbox or stack
    * push — names only, and no token is ever in a hand, deck or cache long
-   * enough to be discarded or milled: R69's sweep takes it straight back out),
+   * enough to be discarded or milled: CR 713.5's sweep takes it straight back out),
    * the body in `disposeToBin` (death and Hooba-Mon's exchange — anchored on
    * the dying entity, so `token` is read off it), and the two MOD loops
    * (`afterDespawn`, `disposeToBin`), which already skip a token mod before
-   * calling: a token mod has no card to bin (R69).
+   * calling: a token mod has no card to bin (CR 410.4c).
    *
-   * R137 (owner, 2026-08-24) is UNCHANGED for a CARD: an {Unstable} card that
+   * The engine's Unstable-death trash (owner, 2026-08-24; CR 801.2h says otherwise, CT-246) is UNCHANGED for a CARD: an {Unstable} card that
    * dies reaches here from destroy(), because it enters a bin and does not
    * come from the stack, and the erase that takes it back out a statement
    * later is a state-based sweep, not a reason the trash never happened. ⚠ So
@@ -2553,18 +2553,18 @@ export class E {
    * reach back into the bin and correctly find nothing. What they no longer
    * see is a token's.
    *
-   * R70: `anchor` is the DETACHED entity the card was, when the trash came from
+   * CR 714.9: `anchor` is the DETACHED entity the card was, when the trash came from
    * one leaving play. It supplies the region (the one it died in, not the
-   * trasher's action region — R12) and stands in for the ghost below.
+   * trasher's action region — CR 714.9) and stands in for the ghost below.
    *
-   * R244: `opts.binSeat` SPLITS the two questions this method used to answer
+   * `opts.binSeat` SPLITS the two questions this method used to answer
    * with one number. `seat` is WHO TRASHED — the seat every "when YOU trash"
    * reads (`ev.data.seat`) and the seat `trashed:${seat}` counts. `binSeat` is
-   * WHOSE BIN the card actually landed in. R244 made them differ for one
+   * WHOSE BIN the card actually landed in. The mod-trash ruling once made them differ for one
    * object: a mod Rashi cast onto Ben's unit was trashed by BEN and went to
    * RASHI's bin.
    *
-   * ⚠ **R250 §4 CLOSED THAT GAP AGAIN, DELIBERATELY.** *"Zones always follow
+   * ⚠ **THE ZONES-FOLLOW-CONTROL RULING (now CR 410.4a, 801.2e) CLOSED THAT GAP AGAIN, DELIBERATELY.** *"Zones always follow
    * control. One rule, no split."* A mod's controller is its host's, so the
    * destination is now the same seat as the attribution, and **no caller in
    * the engine can make these two arguments differ**: the four call sites are
@@ -2575,8 +2575,8 @@ export class E {
    * `229-cosmic-and-control.test.ts`.
    *
    * **The parameter is kept on purpose, as a guarded impossibility**, and this
-   * is a decision rather than an oversight. Deleting it would delete R244's
-   * argument along with it, and that argument is about R140 rather than about
+   * is a decision rather than an oversight. Deleting it would delete the mod-trash ruling's
+   * argument along with it, and that argument is about bin identity (CR 405.6) rather than about
    * mods: when a trash is attributed to a seat whose bin does NOT hold the
    * card, counting the nth over that seat's bin is strictly worse than
    * useless, because an unrelated older copy of the same name resting there
@@ -2591,28 +2591,28 @@ export class E {
    */
   noteTrashed(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'cache', anchor?: Entity,
     opts: { binSeat?: Seat } = {}): void {
-    // R306: a token is not a card, so it is never trashed — see above.
+    // CR 801.2d: a token is not a card, so it is never trashed — see above.
     if (anchor?.token) return;
     const where = from === 'play' ? 'from play' : from === 'hand' ? 'from hand'
       : from === 'cache' ? 'from the cache' : 'from the deck';
     const region = anchor?.region ?? this.actionRegion(seat);
-    // per-battle trash ledger (R40: Dropslime counts every card trashed this
+    // per-battle trash ledger (CR 505.6: Dropslime counts every card trashed this
     // battle, Muck Rummager only your own) — battleCounters reset each battle
     // phase, so a trash outside battle deliberately counts for nothing
     if (this.s.phase === 'battle') {
       this.bumpBattleCounter(region, 'trashed');
       this.bumpBattleCounter(region, `trashed:${seat}`);
     }
-    // R131: WHICH copy of `name` in this bin is the one that was just trashed.
-    // A bin holds bare card names, so BinRef (R124/R64) fixes identity there
+    // CR 405.6: WHICH copy of `name` in this bin is the one that was just trashed.
+    // A bin holds bare card names, so BinRef fixes identity there
     // as (name, nth occurrence) — "copies of one card there are genuinely
     // indistinguishable". Every caller pushes the card into the bin BEFORE
     // calling here (toBin, destroy, leavePlay+afterDespawn, Hooba-Mon), so the
     // LAST occurrence is this instance. -1 when the card is not in the bin at
-    // all — a discard that never reached one. R244's second -1 case (a mod
-    // trashed into a bin that was not the trasher's) is GONE under R250 §4,
+    // all — a discard that never reached one. The second -1 case (a mod
+    // trashed into a bin that was not the trasher's) is GONE under CR 410.4a,
     // because zones follow control and the two seats no longer differ; the
-    // branch is kept as the guard R244 argued for. See the ⚠ on `binSeat`.
+    // branch is kept as a guard. See the ⚠ on `binSeat`.
     const binNth = (opts.binSeat ?? seat) !== seat
       ? -1
       : this.player(seat).bin.filter(c => c === name).length - 1;
@@ -2623,7 +2623,7 @@ export class E {
   }
 
   /**
-   * R40: the trashed card's OWN "when I am trashed" trigger — Dropslime,
+   * CR 801.2: the trashed card's OWN "when I am trashed" trigger — Dropslime,
    * Nothyr, Sacrifice Dude, Murkstalker and the rest of the trash family.
    *
    * fireEvent() scans entities IN PLAY, and a card being trashed is by
@@ -2633,12 +2633,12 @@ export class E {
    * The ability is anchored on a DETACHED stand-in entity that is never put
    * into s.entities — it cannot be targeted, radiates no statics and turns up
    * in no other scan. It exists only to give `when` and the bounded-budget
-   * bookkeeping (R9) something to read, and it is thrown away with this call,
+   * bookkeeping (CR 109.9n) something to read, and it is thrown away with this call,
    * which is right: each trashed card is its own instance. Its id is not in
    * s.entities, so `g.entity(ctx.sourceId)` correctly answers "there is no
    * such unit".
    *
-   * R70: when the card is being trashed BECAUSE it left play, `anchor` is the
+   * CR 714.9: when the card is being trashed BECAUSE it left play, `anchor` is the
    * entity it was — already detached by destroy()/recall(), with exactly the
    * properties a stand-in needs and the real region, counters and owner as
    * well. The fabricated id -1 ghost is the fallback for a trash with no unit
@@ -2647,12 +2647,12 @@ export class E {
    *
    * Only `self: true` abilities fire here. "When ANOTHER card is trashed"
    * (Muck Rummager) belongs to a unit in play and the normal scan dispatches
-   * it — which also gives R40's "excludes the trigger source itself" for free.
+   * it — which also gives the "excludes the trigger source itself" for free.
    */
   private fireOwnTrashTrigger(seat: Seat, name: CardName, region: number, ev: EngineEvent, anchor?: Entity): void {
     const abilities = this.card(name).abilities ?? [];
     if (!abilities.length) return;
-    // `controller` is the TRASHER (R40: the owner of the bin it entered), which
+    // `controller` is the TRASHER (CR 801.2e: the owner of the bin it entered), which
     // is what the queued trigger resolves under, so the stand-in reports the
     // same seat whether it was fabricated or lifted off the dead unit. The
     // copy also keeps composeParts' bounded-budget write off the real entity.
@@ -2669,7 +2669,7 @@ export class E {
     if (queued) this.s.triggerOrderedSeats = [];
   }
 
-  /** Discard a card from `seat`'s hand — it is trashed (R40). Returns the
+  /** Discard a card from `seat`'s hand — it is trashed (CR 801.3). Returns the
    * card, or undefined when the index is out of range. */
   discardFromHand(seat: Seat, handIndex: number): CardName | undefined {
     const hand = this.player(seat).hand;
@@ -2681,11 +2681,11 @@ export class E {
   }
 
   /** Mill `n` cards off the top of `seat`'s deck into their bin — each one is
-   * trashed (R40). Returns what actually moved (an empty deck mills fewer). */
+   * trashed (CR 801.2a). Returns what actually moved (an empty deck mills fewer). */
   mill(seat: Seat, n: number): CardName[] {
     const out: CardName[] = [];
     for (let i = 0; i < n; i++) {
-      const name = this.takeFromDeck(seat);   // R296: reshuffles at the mark
+      const name = this.takeFromDeck(seat);   // CR 408.2b: reshuffles at the mark
       if (name === undefined) break;
       out.push(name);
       this.ev('info', `${this.pname(seat)} mills ${name}.`);
@@ -2694,17 +2694,17 @@ export class E {
     return out;
   }
 
-  // ── player counters: rot & debt (R38 / R39) ─────────────────────────
-  /** `seat`'s rot counters (R38). Optional field, always read through here. */
+  // ── player counters: rot & debt (CR 112.15) ─────────────────────────
+  /** `seat`'s rot counters (CR 112.13). Optional field, always read through here. */
   rot(seat: Seat): number { return this.player(seat).rot ?? 0; }
-  /** `seat`'s debt counters (R39). Optional field, always read through here. */
+  /** `seat`'s debt counters (CR 112.14). Optional field, always read through here. */
   debt(seat: Seat): number { return this.player(seat).debt ?? 0; }
 
-  /** R38: "gain a rot" / "each opponent gains a rot". Gaining rot is not
+  /** CR 112.13e: "gain a rot" / "each opponent gains a rot". Gaining rot is not
    * damage and has no consequence of its own beyond the event. */
   gainRot(seat: Seat, n = 1): void {
     if (n <= 0) return;
-    // R104: rot is a COUNTER a player accumulates (docs/08), which is what
+    // CR 112.13, 112.15: rot is a COUNTER a player accumulates (docs/08), which is what
     // makes Proliferating Slime's "an enemy unit OR PLAYER" mean anything at
     // all — no other counter can be put on a player, so the clause would
     // otherwise be dead text. An AmountMod, summed, exactly as for a unit's.
@@ -2720,11 +2720,11 @@ export class E {
     this.fireEvent('rotGained', ev);
   }
 
-  /** R39: "gain 2 debt". Paid off automatically at the end of the resource
+  /** CR 112.14: "gain 2 debt". Paid off automatically at the end of the resource
    * step; gaining it costs nothing right now. */
   gainDebt(seat: Seat, n = 1): void {
     if (n <= 0) return;
-    // R104: debt is the second player counter (docs/08), read by Proliferating
+    // CR 112.14, 112.15: debt is the second player counter (docs/08), read by Proliferating
     // Slime's "enemy unit or player" the same way rot is.
     n += this.amountDelta({
       kind: 'debt', ...(this.s.battle ? { region: this.s.battle.region } : {}),
@@ -2739,14 +2739,14 @@ export class E {
   }
 
   /**
-   * R179: **removing** rot / debt from a player. `gainRot(-n)` is a no-op by
-   * design (R38: rot "never decreases on its own"), so Burn the Blight —
+   * CR 112.15: **removing** rot / debt from a player. `gainRot(-n)` is a no-op by
+   * design (CR 112.13a: rot "never decreases on its own"), so Burn the Blight —
    * *"Remove all counters from units and players"* — used to zero `p.rot` and
    * `p.debt` by hand. Those were the only writes to either field outside
    * `gainRot`/`gainDebt`, and being raw writes they announced nothing: a card
    * watching a player's counters could see them arrive and never see them go.
    *
-   * ⚠ **A REMOVAL IS NOT SCALED BY R104's AMOUNT LAYER, and that is an owner
+   * ⚠ **A REMOVAL IS NOT SCALED BY THE AMOUNT LAYER (CR 112.15), and that is an owner
    * ruling and not a policy call** (2026-08-25, asked directly whether an
    * `AmountMod` should scale a removal): *"Resonater says 'put on' so this
    * question is irrelevant. Removing counters isn't 'putting on'."* So there is
@@ -2774,7 +2774,7 @@ export class E {
     return lost;
   }
 
-  /** R179: debt's half of `loseRot` — same ruling, same shape. */
+  /** CR 112.15: debt's half of `loseRot` — same ruling, same shape. */
   loseDebt(seat: Seat, n: number): number {
     const have = this.debt(seat);
     const lost = Math.min(Math.max(0, Math.trunc(n)), have);
@@ -2788,7 +2788,7 @@ export class E {
   }
 
   /**
-   * R39: pay 1 mana per debt, each mana removing one debt. Mandatory and
+   * CR 502.4, 112.14b: pay 1 mana per debt, each mana removing one debt. Mandatory and
    * automatic — not a player action and not declinable. Partial payment is
    * fine; the remainder carries to the next turn and there is NO other
    * penalty for being unable to pay. Called as the LAST thing in the resource
@@ -2811,7 +2811,7 @@ export class E {
   }
 
   /**
-   * R38: at the start of deployment each player takes damage equal to their
+   * CR 112.13: at the start of deployment each player takes damage equal to their
    * own rot, in initiative order (determinism). The source is the damaged
    * player themselves — "Your rot is a source you control" (Caleb 2024-08-20)
    * — so the damage event carries controller = the victim. Rot never decays.
@@ -2836,7 +2836,7 @@ export class E {
   }
 
   /**
-   * The one replacement effect in the engine (R38). Skittering Blight reads
+   * The one replacement effect in the engine (CR 112.13d). Skittering Blight reads
    * "If rot would deal damage to you, instead put that many +1/+1 counters on
    * me", so rot damage cannot be applied inline — it has to be offered to the
    * cards in play first. Deliberately NARROW rather than a general replacement
@@ -2854,13 +2854,13 @@ export class E {
    */
   private replaceRotDamage(seat: Seat, n: number): boolean {
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceRotDamage')                    // R127: off the FACES
+      this.donates(h, a, 'replaceRotDamage')                    // CR 710.7: off the FACES
       && a.controller === seat
-      && !this.textStripped(h, a));                         // R62 (full projection)
+      && !this.textStripped(h, a));                         // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { face, def, anchor } of this.donorFaces(holders, 'replaceRotDamage')) {
       if (def.replaceRotDamage!(this, anchor, seat, n)) {
-        // R102 — the replacement's log line is now a DISPATCHED event.
+        // CR 112.13d — the replacement's log line is now a DISPATCHED event.
         //
         // It used to be a plain `ev('info', …)`. Same words, same log line —
         // only the type changed, and with it the fact that cards can hear it.
@@ -2874,20 +2874,20 @@ export class E {
         // signature is `(g, self, seat, amount) => boolean` cannot ask
         // anything — no EffectCtx, no ctx.choose — so the replacement fires
         // THIS, a card declares an ordinary `self: true` triggered ability
-        // against it, and the whole R67 machinery (queue → collectTargets →
+        // against it, and the whole CR 110.1a machinery (queue → collectTargets →
         // commitItem) does the asking. No new Suspension variant, no new
         // decision seam: the existing trigger path already runs during
         // deployment (processTriggerQueue's `then = 'resolve'`).
         //
         // Fired AFTER the hook returned true, so the replacement is already a
         // fact by the time anything hears about it: the damage is gone whether
-        // or not the queued effect later finds a target (R86, and R98's
-        // "a REPLACED hit still counts as dealt").
+        // or not the queued effect later finds a target (CR 704.6, and the prevention ruling's
+        // "a REPLACED hit still counts as dealt", CR 112.12).
         //
         // `unit: anchor.id` and not `holder.id`: [Augment]-donated text reads
         // from its HOST, which is what `anchored()` means by the anchor, and a
         // `self: true` listener matches on the entity the ability is running
-        // for. `region` rides too so the region-scoped dispatch (R12) finds it.
+        // for. `region` rides too so the region-scoped dispatch (CR 101.6) finds it.
         const ev = this.ev('rotReplaced',
           `${face} replaces the ${n} damage ${this.pname(seat)}'s rot would deal.`,
           { seat, n, card: face, unit: anchor.id, region: anchor.region });
@@ -2898,20 +2898,20 @@ export class E {
     return false;
   }
 
-  // ── the cache, prophecy & glimpse (R41-R46) ─────────────────────────
+  // ── the cache, prophecy & glimpse (CR 403, 801.9, 803.7) ─────────────────────────
   //
   // The cache is a fourth zone beside hand, bin and deck — Caleb: "basically
   // exile with the intent to be referenced later", "a neutral zone like the
-  // hand and bin". It is PUBLIC (R41): both players see every cached card and
+  // hand and bin". It is PUBLIC (CR D6.6): both players see every cached card and
   // the prophecy on it, so nothing here is ever redacted server-side.
   //
   // Being in the cache is NOT permission to play the card (Caleb 2024-12-03:
   // "You can only play cached cards that allow you to play them"). Permission
-  // is either a fulfilled prophecy (free, ignoring affinity — R42) or a
+  // is either a fulfilled prophecy (free, ignoring affinity — CR 803.7h) or a
   // glimpse-style until-end-of-turn stamp (pay the mana, ignore affinity —
-  // R45). A card with neither stays cached, inert, forever.
+  // CR 403.3c). A card with neither stays cached, inert, forever.
 
-  /** R41: `seat`'s cache. Optional field (additive, like rot/debt) — always
+  /** CR 403.1: `seat`'s cache. Optional field (additive, like rot/debt) — always
    * read through here so a pre-expansion state reads as an empty zone. */
   cache(seat: Seat): CachedCard[] { return this.player(seat).cache ?? []; }
 
@@ -2921,11 +2921,11 @@ export class E {
     return (p.cache ??= []);
   }
 
-  /** R43: stamp a prophecy with its forward-counting anchors. `raw` is the
+  /** CR 803.7e: stamp a prophecy with its forward-counting anchors. `raw` is the
    * condition exactly as printed or granted; normalizeProphecy splits off a
    * trailing [Haste] marker and produces the matchable form.
    *
-   * R277: the marker is NOT carried onto the cached entry. It is a permission
+   * CR 203.5b: the marker is NOT carried onto the cached entry. It is a permission
    * to prophesy in the haste step (E.mayProphesy), and by the time there is a
    * CachedProphecy to put it on that question has already been answered — a
    * copy here could only ever be read by something asking the wrong question,
@@ -2936,7 +2936,7 @@ export class E {
       condition, norm,
       turn: this.s.turn,
       battles: this.s.battlesCompleted ?? 0,
-      // R302: THIS seat's witnessed count, because the tally is per-seat —
+      // CR 803.7m: THIS seat's witnessed count, because the tally is per-seat —
       // stamping a global one here would start the meter at somebody else's
       // number and the card would count deaths its controller never saw.
       deaths: this.s.deathsSeen?.[seat] ?? 0,
@@ -2944,9 +2944,9 @@ export class E {
   }
 
   /**
-   * R42/R277: may `seat` PROPHESY `c` right now?
+   * CR 803.7b: may `seat` PROPHESY `c` right now?
    *
-   * R42: "prophesying is legal ONLY during the deployment phase" (Caleb
+   * The ruling: "prophesying is legal ONLY during the deployment phase" (Caleb
    * 2025-05-09). A banner whose condition prints a trailing [Haste] marker is
    * the printed exception — Divine Intervention "can be prophesied during the
    * haste step, that's why it has that symbol" (Bena 2026-08-30) — so the
@@ -2969,7 +2969,7 @@ export class E {
   private warnedProphecies = new Set<string>();
 
   /**
-   * Is `p` fulfilled for `seat` right now? R44: fulfilment LATCHES, so a
+   * Is `p` fulfilled for `seat` right now? CR 803.7g: fulfilment LATCHES, so a
    * prophecy already marked fulfilled answers true forever, whatever the
    * state does afterwards.
    *
@@ -2980,7 +2980,7 @@ export class E {
    */
   /** How far along a COUNTING prophecy is — "2 of 4 turns" — or null for a
    * condition that is a state rather than a count (nothing to meter), an
-   * unrecognised one, or one already fulfilled (R44 latches; the meter would
+   * unrecognised one, or one already fulfilled (CR 803.7g latches; the meter would
    * lie if the count could run backwards, which it cannot, but a fulfilled
    * card wears its ✓ and needs no meter). UI-only: nothing in the rules
    * reads this. */
@@ -3010,7 +3010,7 @@ export class E {
   }
 
   /**
-   * R44: latch every prophecy whose condition is now met. Called at the points
+   * CR 803.7g: latch every prophecy whose condition is now met. Called at the points
    * where fulfilment can change — settle() (life totals, units in play), the
    * turn flip, the end of each battle round, and the end of the haste step.
    *
@@ -3039,8 +3039,8 @@ export class E {
    * the log only; the caller is responsible for having removed it from there.
    *
    * opts.prophecy attaches a prophecy (a printed banner's condition, or one
-   * granted by rules text). opts.playable grants R45's glimpse-style
-   * permission: playable until the end of THIS turn, then inert.
+   * granted by rules text). opts.playable grants the glimpse-style
+   * permission (CR 801.9e, 801.9i): playable until the end of THIS turn, then inert.
    */
   cacheCard(seat: Seat, name: CardName, from: 'hand' | 'bin' | 'deck' | 'play' | 'effect',
     opts: { prophecy?: string; playable?: boolean } = {}): CachedCard {
@@ -3069,12 +3069,12 @@ export class E {
   }
 
   /**
-   * R124: THE bin-removal choke point. Every removal of a card from a
+   * CR 405.7: THE bin-removal choke point. Every removal of a card from a
    * player's bin — recall, revive-to-play, erase, cache, prophesy,
    * play-from-bin, exchange, recycle — goes through here, and nowhere else
    * splices a bin. That single-path rule is what makes "When I leave your
    * bin, ..." (Rotling) implementable at all: the 'leftBin' event fires here,
-   * once per card, with `{ seat, card, reason }`, and R51's zone dispatch
+   * once per card, with `{ seat, card, reason }`, and the zone dispatch
    * delivers it to the card that just left. `msg` is '' — signal-only, the
    * stackFlash precedent — because every caller already announces the removal
    * in its own words, and the log should not say everything twice.
@@ -3094,7 +3094,7 @@ export class E {
   /** cache a card out of `seat`'s bin (Delver of the Ephemeral, Murkdrop
    * Distiller). The card LEAVES the bin — it is not copied. */
   cacheFromBin(seat: Seat, binIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {
-    const name = this.removeFromBin(seat, binIndex, 'cached');   // R124
+    const name = this.removeFromBin(seat, binIndex, 'cached');   // CR 405.7
     if (name === undefined) return undefined;
     return this.cacheCard(seat, name, 'bin', opts);
   }
@@ -3104,7 +3104,7 @@ export class E {
   cacheTopOfDeck(seat: Seat, n: number, opts: { prophecy?: string; playable?: boolean } = {}): CardName[] {
     const out: CardName[] = [];
     for (let i = 0; i < n; i++) {
-      const name = this.takeFromDeck(seat);   // R296: reshuffles at the mark
+      const name = this.takeFromDeck(seat);   // CR 408.2b: reshuffles at the mark
       if (name === undefined) break;
       out.push(name);
       this.cacheCard(seat, name, 'deck', opts);
@@ -3113,14 +3113,14 @@ export class E {
   }
 
   /**
-   * R45: Glimpse N — reveal the top N cards of the deck, cache exactly **ONE**
+   * CR 801.9: Glimpse N — reveal the top N cards of the deck, cache exactly **ONE**
    * of the glimpser's choice, and recycle the other N−1 to the BOTTOM of the
    * deck, top-first. Until end of turn the cached card may be played as if it
    * were in hand, ignoring affinity but still paying the mana cost (Caleb
    * 2023-08-13) and still obeying timing (Caleb 2025-12-28). The reveal is
-   * genuinely public — the cache is public information (R41).
+   * genuinely public — the cache is public information (CR 403.2).
    *
-   * ⚠ This USED to cache all N; R45 was corrected on 2026-08-19. Every printed
+   * ⚠ This USED to cache all N; the glimpse ruling was corrected on 2026-08-19. Every printed
    * reminder for N>1 reads "Reveal the top X cards of the deck and **cache
    * one** … **Recycle the rest**" (Premonition, Oracle of Foretelling,
    * Celestial Purge, Dematerialize); the N=1 cards read "reveal the top card
@@ -3128,7 +3128,7 @@ export class E {
    * "Glimpse 1, X times" is X separate one-card glimpses. `Big Glimpse Card`
    * is a deliberate PILE variant and does not route through here.
    *
-   * ✔ RE-VERIFIED 2026-08-26 (R190, report #106) against
+   * ✔ RE-VERIFIED 2026-08-26 (report #106) against
    * AlgomancyCards-OracleText.json and the generated printed.json: those four
    * reminders really do end "Recycle the rest.", so the quote above is exact
    * and the printed data is RIGHT. Report #106 ("the reminder text for
@@ -3146,7 +3146,7 @@ export class E {
    */
   glimpse(seat: Seat, n: number): CardName[] {
     if (n <= 0) return [];
-    // R296: a glimpse that reaches the mark reshuffles and keeps reading. Done
+    // CR 408.2b: a glimpse that reaches the mark reshuffles and keeps reading. Done
     // HERE, before the reveal, because everything below must stay
     // mutation-free until the "cache one" decision has been answered — see
     // refillFromRecycled's `need`.
@@ -3192,7 +3192,7 @@ export class E {
   }
 
   /**
-   * R70: the fact bundle every leave-play event carries — 'died'/'despawned'
+   * CR 714.9: the fact bundle every leave-play event carries — 'died'/'despawned'
    * fire once the entity is already out of s.entities, so anything a listener
    * wants (Entropic Entity's "a unit WITH COUNTERS on it despawns", every
    * "whenever a NONTOKEN unit dies") has no other way to read it. The caller
@@ -3213,60 +3213,60 @@ export class E {
    * destroy, whose mods are erased by Unstable rather than binned and whose
    * formation cleanup lands after the death event): pull the unit out of
    * s.entities, resolve its mods, push each nontoken mod into its owner's bin
-   * (R69: a token mod has no card of its own — erased), and close the
+   * (CR 410.4c: a token mod has no card of its own — erased), and close the
    * formation gap. Returns the detached mods, or null when the unit was
-   * already gone. The despawn event, the R40 mod trashes (afterDespawn) and
+   * already gone. The despawn event, the CR 801.2f mod trashes (afterDespawn) and
    * where the CARD goes stay with the caller — that is where the verbs differ.
    *
    * ⚠ **The mod ENTITIES are deliberately left in `s.entities` here, and are
-   * deleted at the bottom of `afterDespawn` (R167).** This half of the pair is
+   * deleted at the bottom of `afterDespawn` (CR 721.1f).** This half of the pair is
    * not optional: `leavePlay` must always be followed by `afterDespawn`, or
    * the mod entities leak into a state whose host is gone. Both callers
    * (`recall`, `cacheUnit`) do exactly that; a third one must too.
    *
-   * R167 — why. `fireEvent` finds a mod's donated `[Augment]` text by walking
+   * CR 721.1f — why. `fireEvent` finds a mod's donated `[Augment]` text by walking
    * `u.mods` through the entity table, so a mod that has already been deleted
    * donates nothing. This method used to delete them BEFORE the caller fired
    * `'despawned'`, which meant a printed `[Augment] When I despawn, …` worked
    * on a DEATH (`disposeToBin` deletes its mods at the very bottom, and says
    * so) and was silently dead on a RECALL or a CACHE — half a printed word,
    * and the same object behaving differently depending on how its host left
-   * play, which is the shape R137 exists to remove. Measured before the fix,
+   * play, which is exactly the inconsistency to remove. Measured before the fix,
    * a Growing Plague grafted onto one host: destroy 1 trigger, recall 0,
    * cache 0. The bin pushes stay HERE, before the announce, exactly as
    * `disposeToBin` does them — a despawn listener and a death listener see
    * the same board.
    *
-   * R157 §10: the face is turned back over HERE, before anything reads
+   * CR 410.3: the face is turned back over HERE, before anything reads
    * `u.card` — so `leftPlayFacts`, the log line, the hand/cache push and the
-   * R69 token sweep all name the FRONT face, which is the card that is really
+   * CR 410.5 token sweep all name the FRONT face, which is the card that is really
    * moving zones.
    */
   private leavePlay(u: Entity): Entity[] | null {
     if (!this.entity(u.id)) return null;
-    this.stampLastKnown(u);                     // R325: before the face turns back
+    this.stampLastKnown(u);                     // CR 714.1: before the face turns back
     this.revertFace(u);
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     for (const m of mods) {
-      // R250 §4: a card goes to the bin of whoever CONTROLLED it as it left
+      // CR 400.4, 410.4a: a card goes to the bin of whoever CONTROLLED it as it left
       // play, and a mod's controller is its host's (attachMod mints it that
-      // way, moveMod re-points it, R8's control change walks `u.mods`). This
+      // way, moveMod re-points it, CR 711.1's control change walks `u.mods`). This
       // was `m.owner`; see `disposeToBin`'s `modBin` for the whole argument.
-      if (!m.token) this.player(m.controller).bin.push(m.card);   // R69: a token MOD has no card of its own — erased
+      if (!m.token) this.player(m.controller).bin.push(m.card);   // CR 410.4c: a token MOD has no card of its own — erased
     }
     this.removeFromFormation(u.id);
     return mods;
   }
 
   /**
-   * R101/R157 §10 — TURN `u` OVER onto its back face `back`.
+   * CR 710.9 — TURN `u` OVER onto its back face `back`.
    *
    * The same entity, the same id, the same slot, counters, damage, mods and
    * `budgets`: a transform is not a new unit, it is one card with a different
-   * side up (R101's argument, unchanged — `Entity.card` IS the identity, so
+   * side up (the transform ruling's argument, CR 108.3, unchanged — `Entity.card` IS the identity, so
    * assigning it moves stats, name, text, targeting and the client render
-   * together). What R157 §10 adds is that the flip is REVERSIBLE, so the front
+   * together). What CR 410.3 adds is that the flip is REVERSIBLE, so the front
    * face has to be remembered rather than discarded, and `Entity.frontFace` is
    * where. That pairing is the whole reason this is a primitive and not two
    * assignments in card code: `frontFace` set without `card` moved, or the
@@ -3294,19 +3294,19 @@ export class E {
   }
 
   /**
-   * R157 §10 — turn a transformed card BACK over as it leaves play: *"In all
+   * CR 410.3 — turn a transformed card BACK over as it leaves play: *"In all
    * zones, other than play, it exists as the front side."*
    *
    * Run at the TOP of every route out of play (`leavePlay` for recall and
    * cache, `disposeToBin` for a death and an exchange, `eraseFromPlay`), so
    * every consumer downstream — the bin/hand/cache push, `leftPlayFacts`, the
-   * trash record, the R69 sweep, the erased pile and the log — sees the front
+   * trash record, the CR 410.5 sweep, the erased pile and the log — sees the front
    * face without any of them knowing transforms exist. A no-op for the
    * overwhelming majority of entities, which were never turned over.
    *
    * The 'died'/'despawned' event therefore names the FRONT face too. That is
    * deliberate: the event's job is to tell a listener which CARD moved and
-   * where it now is (R70/R140 — a listener reaches into the bin for it), and
+   * where it now is (CR 714.9, 405.6 — a listener reaches into the bin for it), and
    * the card in the bin is the front one. Nothing in the pool triggers off a
    * back face's name.
    */
@@ -3315,7 +3315,7 @@ export class E {
     const back = u.card;
     u.card = u.frontFace;
     delete u.frontFace;
-    // R157 §10: the flip is a real, visible change of what the card IS —
+    // CR 201.4: the flip is a real, visible change of what the card IS —
     // "it went to the bin as a 0/2 Scholar" is a fact a player plans around
     // (it is recurrable now), so it is announced rather than done silently.
     this.ev('info',
@@ -3324,11 +3324,11 @@ export class E {
   }
 
   /** The tail cacheUnit() and recall() share, once their despawn event is the
-   * last event logged: fire it, then (R40, after the despawn so the log reads
+   * last event logged: fire it, then (CR 801.2f, after the despawn so the log reads
    * in order) trash every nontoken mod — they entered a bin from play — and
    * only THEN delete the mod entities.
    *
-   * R167: the delete is the second half of `leavePlay`, moved here so that the
+   * CR 721.1f: the delete is the second half of `leavePlay`, moved here so that the
    * despawn window can still walk `u.mods` for donated `[Augment] When I
    * despawn` text — the same reason `disposeToBin` deletes its mods at the
    * very bottom, and the same place in the sequence. Nothing between the two
@@ -3337,27 +3337,27 @@ export class E {
    * only read one, which is exactly the point. Every caller of `leavePlay`
    * must reach here — see the ⚠ on `leavePlay`.
    *
-   * R191: the despawn event is a PARAMETER. It used to be recovered as
+   * The despawn event is a PARAMETER. It used to be recovered as
    * `this.events[this.events.length - 1]` — a positional read of a global
    * array that was correct by ORDERING ALONE, and only for as long as the
    * caller's `ev('despawned', …)` stayed the very last thing appended before
    * the call. Nothing enforced that and nothing would have failed loudly if it
    * stopped being true: `fireEvent` would have dispatched the wrong event to
    * every `[Augment] When I despawn` listener, which reads its `data` for the
-   * seat, the region and R70's leave-play facts. Both callers already hold the
+   * seat, the region and CR 714.9's leave-play facts. Both callers already hold the
    * event `ev()` handed back, so they hand it over. */
   private afterDespawn(u: Entity, mods: Entity[], ev: EngineEvent): void {
     this.fireEvent('despawned', ev, u);
-    // R70 + R244 + R250 §4: the TRASH is the HOST's controller's — "when a mod
+    // CR 720.8, 410.4a, 801.2e: the TRASH is the HOST's controller's — "when a mod
     // goes onto a unit it becomes PART of that unit" (owner, 2026-08-29,
     // report #129) — and **so is the BIN**. `u.controller` is the same value
     // the mod entity itself carries: `attachMod` mints a mod with the host's
-    // controller, `moveMod` re-points it to the new host's (R178), and a
-    // control change (R8) walks `u.mods` and moves them with it — three places,
+    // controller, `moveMod` re-points it to the new host's (CR 720.10a), and a
+    // control change (CR 711.1) walks `u.mods` and moves them with it — three places,
     // one invariant, so this is derived rather than a fourth opinion.
     //
-    // ⚠ This line used to read `{ binSeat: m.owner }`, under R244's "the
-    // DESTINATION does not move". R250 §4 SUPERSEDES that half of R244 (its
+    // ⚠ This line used to read `{ binSeat: m.owner }`, under an earlier mod ruling's "the
+    // DESTINATION does not move". A later ruling (now CR 400.4) supersedes that half (its
     // attribution half stands): *"Zones always follow control."* The two
     // numbers are therefore equal at every live call, which is why `binSeat`
     // is still passed rather than dropped — see `noteTrashed`.
@@ -3365,52 +3365,52 @@ export class E {
       if (m.token) continue;
       this.noteTrashed(u.controller, m.card, 'play', m, { binSeat: m.controller });
     }
-    // R65 (2026-08-25): and the TOKEN mods reach the public erased pile, which
+    // CR 407.3a (2026-08-25): and the TOKEN mods reach the public erased pile, which
     // is the one branch of that rule that never had a sweep OR an announcement.
     // leavePlay()/this method erase a token mod outright — leavePlay's own
     // comment already calls that an erase ("a token MOD has no card of its own
     // — erased") — but nothing said so out loud, so a Wraith grafted onto a
     // unit was filed on
     // the pile when its host DIED or was EXCHANGED (disposeToBin emits exactly
-    // this line, R153) and vanished in silence when the host was RECALLED or
+    // this line, CR 410.7) and vanished in silence when the host was RECALLED or
     // CACHED. Measured before the fix, one Wraith on one host:
     //     destroy  erased-pile +2, 2 'erased' events
     //     recall   erased-pile +0, 0 events
     //     cache    erased-pile +0, 0 events
-    // That is R137's defect one object over — the same mod behaving differently
-    // depending on how its host left play — and R65 turns on the ERASE, not on
+    // That is the defect one object over — the same mod behaving differently
+    // depending on how its host left play — and CR 407.3a turns on the ERASE, not on
     // the verb that caused it. No zone, entity or timing changes here; this
     // only announces something that was already happening.
     const tokenMods = mods.filter(m => m.token);
     if (tokenMods.length) {
       this.ev('erased',
         `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
-        // R250 §4: the same seat `disposeToBin`'s equivalent line uses (it
+        // CR 400.4: the same seat `disposeToBin`'s equivalent line uses (it
         // passes `binSeat`, which is the controller now). These two announced
         // one event about one object at two different seats before, which is
-        // R65's own complaint — a mod behaving differently depending on how
+        // exactly what CR 407.3a rules out — a mod behaving differently depending on how
         // its host left play — one field over.
         { seat: u.controller, cards: tokenMods.map(m => m.card) });
     }
-    // R167: last, exactly as disposeToBin does it — see the comment above.
+    // CR 721.1f: last, exactly as disposeToBin does it — see the comment above.
     for (const m of mods) delete this.s.entities[m.id];
   }
 
   /**
-   * R46: a unit in play is CACHED (Grob, Waxen Witness). The card goes to its
+   * CR 403.7: a unit in play is CACHED (Grob, Waxen Witness). The card goes to its
    * OWNER's cache; its mods do NOT travel with it — they go to their own
-   * owners' bins, FROM PLAY, and stay there, so wave A's R40 classification
-   * trashes every nontoken one (Caleb 2024-09-15) — R244: in the name of the
+   * owners' bins, FROM PLAY, and stay there, so wave A's trashing classification (CR 801.2)
+   * trashes every nontoken one (Caleb 2024-09-15) — CR 801.2f: in the name of the
    * host's controller, the mod being part of the unit it sat on.
    *
-   * R69, extended to the CACHE on 2026-08-22: a cached TOKEN visits the cache
+   * CR 410.5c (settled for the cache 2026-08-22): a cached TOKEN visits the cache
    * and is erased out of it by the same state-based sweep, so the 'cached'
    * event fires with the token really sitting there. ⚠ ENGINE'S CALL, not a
    * designer ruling — Caleb's 2025-06-15 answer is about a HAND and there is
    * no statement about the cache at all. It is here because the alternative is
    * one zone behaving differently from the other two for no stated reason.
    *
-   * R157 §27 — `opts.to` is WHOSE CACHE, and it exists because the owner
+   * CR 801.8 — `opts.to` is WHOSE CACHE, and it exists because the owner
    * default is only a default: *"Controller's cache — the printed text wins.
    * Printed text always wins."* Grob prints "target unit's CONTROLLER caches
    * it", and after a control change (Abduct, Download, Mindwarp Sporefrog,
@@ -3428,12 +3428,12 @@ export class E {
   cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean; to?: Seat } = {}): void {
     const mods = this.leavePlay(u);
     if (!mods) return;
-    // R262: `u.controller`, was `u.owner` — see recall() for the ruling. The
+    // CR 801.8: `u.controller`, was `u.owner` — see recall() for the ruling. The
     // doc comment above already described the CONTROLLER's cache as the right
     // destination ("a Grob'd stolen card sits in the thief's cache"); it was
     // only true when a caller passed `to` explicitly, and is now the default.
     const seat = opts.to ?? u.controller;
-    // R70: the facts ride the event. `cache` mirrors recall()'s `hand` — WHERE
+    // CR 714.9: the facts ride the event. `cache` mirrors recall()'s `hand` — WHERE
     // the card went, which a listener cannot recover from `owner` once the two
     // can differ.
     const evData = { ...this.leftPlayFacts(u), to: 'cache', cache: seat };
@@ -3444,7 +3444,7 @@ export class E {
       evData);
     this.afterDespawn(u, mods, ev);
     const cc = this.cacheCard(seat, u.card, 'play', opts);
-    // R69's sweep, on the cache this time — `cc.uid` names the entry we just
+    // CR 410.5c's sweep, on the cache this time — `cc.uid` names the entry we just
     // made, so a second copy of the same card already sitting there is safe
     if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });
   }
@@ -3469,10 +3469,10 @@ export class E {
   /**
    * How — if at all — `seat` may play cache entry `index` right now.
    *   'prophecy' the prophecy is fulfilled: FREE, and "for free" also ignores
-   *              affinity (Caleb 2024-10-28). R42.
+   *              affinity (Caleb 2024-10-28). CR 803.7h.
    *   'glimpse'  a live until-end-of-turn permission: pay the mana, ignore
-   *              affinity. R45.
-   *   null       no permission — being cached is not enough (R41).
+   *              affinity. CR 403.3c.
+   *   null       no permission — being cached is not enough (CR 403.3).
    * Timing is NOT considered here; the card is played "as if it were in your
    * hand", so the normal phase gate applies on top (see apply.ts).
    */
@@ -3487,12 +3487,13 @@ export class E {
   /**
    * The timing a cached card is played at: its PRINTED timing, always.
    *
-   * R42 is explicit — a fulfilled prophecy makes the card free, and it is then
+   * The prophecy ruling (now CR 803.7h, 803.7i) is explicit — a fulfilled prophecy makes the card free, and it is then
    * played "as if it were in your hand", so "normal TIMING still applies".
-   * R45 says the same for a glimpse release (Caleb 2025-12-28). There is no
+   * CR 801.9f says the same for a glimpse release (Caleb 2025-12-28). There is no
    * route by which the cache changes when a card may be played.
    *
-   * R277: this used to read a trailing [Haste] on the banner as an override
+   * Until it was fixed (CR 803.7i states the rule), this read a trailing [Haste] on
+   * the banner as an override
    * "for the prophecy release only (R42, Divine Intervention)" — a comment
    * citing, as its authority, the ruling that says the opposite. Divine
    * Intervention is a {Battle} spell, so the override made its fulfilled free
@@ -3505,20 +3506,20 @@ export class E {
   }
 
   /** Affordability ignoring AFFINITY but nothing else — what glimpse's
-   * "ignoring affinity" (R45) needs. The bill must match what payCard will
-   * actually charge: printed mana PLUS active cost modifiers (R59) and any
-   * life tax (R60) — checking printed mana alone would offer a play whose
+   * "ignoring affinity" (CR 403.3c) needs. The bill must match what payCard will
+   * actually charge: printed mana PLUS active cost modifiers (CR 111.10) and any
+   * life tax (CR 111.10d) — checking printed mana alone would offer a play whose
    * payment then throws (mana) or kills the payer (life).
    *
-   * R303: `opts` exists because the glimpse waiver reaches the MOD path too,
-   * and a mod is priced at `purpose: 'mod'` (R37/R59 — applying a mod is not
+   * CR 801.9g: `opts` exists because the glimpse waiver reaches the MOD path too,
+   * and a mod is priced at `purpose: 'mod'` (CR 701.2b — applying a mod is not
    * playing, so a "spells cost more to play" modifier must not tax it). The
    * opts thread all the way down for the same reason the bill above matches
    * payCard: the check and the charge have to be the same sum. */
   canPayManaOnly(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
     if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
     if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
-    // R122: the imposed-sacrifice gate is part of the bill too — a glimpse
+    // CR 111.10: the imposed-sacrifice gate is part of the bill too — a glimpse
     // release with no unit to sacrifice must not be offered either.
     const sacs = this.unitsToPlay(seat, name, opts);
     const region = opts.region ?? this.actionRegion(seat);
@@ -3615,14 +3616,14 @@ export class E {
    * to the CASTER's bin, it counted toward the caster's "cards in your bin"
    * effects, and the original owner could never recur it.
    *
-   * The engine tracks owner and controller separately everywhere else and says
-   * so at R65 ("each card reaches ITS OWN owner's erased pile — a virus on an
+   * The engine tracks owner and controller separately everywhere else (CR 102.4, 102.5), and the erased-pile
+   * ruling said so ("each card reaches ITS OWN owner's erased pile — a virus on an
    * enemy spell is the enemy's card"), so this was a missing parameter rather
    * than a reading. It defaults to `seat`, which is right for the overwhelming
    * majority of callers: a TOKEN is created by whoever creates it, and a card
    * played out of your own hand, bin or cache is yours already.
    *
-   * NOT a control change. R8 moves a unit between controllers and leaves the
+   * NOT a control change. CR 711.1 moves a unit between controllers and leaves the
    * card where it belongs; this is the other half of the same distinction, and
    * a caller that wants both (Uglk: "each player puts a unit from THEIR bin
    * into play under an OPPONENT's control") passes the opponent as `seat` and
@@ -3630,7 +3631,7 @@ export class E {
    */
   spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
     /**
-     * R104: a UNIT TOKEN is a creation, and a creation is replaceable — before
+     * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
      * `spawnUnit` is a real card being put into play (Exhume, Resurrect,
      * Rousing Spirit, Lurking Dread — all four print "put into play"), which
@@ -3645,7 +3646,7 @@ export class E {
      * `tokenStats`/`spot` options are meaningless for a spell token and are
      * dropped with it, which is correct: they describe a body.
      *
-     * ⚠ NOT replaceable, on purpose: `opts.spot` (R29's play-into-formation).
+     * ⚠ NOT replaceable, on purpose: `opts.spot` (CR 602.7's play-into-formation).
      * That path is a CARD being played into a line, not a token being created,
      * and it never carries `token: true`.
      */
@@ -3680,7 +3681,7 @@ export class E {
     // through replaceCounters: whether a redirect (Counter Thief) can steal a
     // token's own spawn counters is an unsourced rules question.
     //
-    // R130: the actor of a spawn's OWN counters is the seat creating it. There
+    // CR 707.5a: the actor of a spawn's OWN counters is the seat creating it. There
     // is no "putter" in the usual sense — nobody puts a Robot's X on it, it
     // arrives holding them — so the answer had to be chosen rather than found,
     // and `seat` is the only party involved: the source of the counters is the
@@ -3689,7 +3690,7 @@ export class E {
     // behaviour this line has to preserve); no `countersChanged` fires here, so
     // no "when YOU put a counter" trigger sees a spawn, exactly as before.
     //
-    // R165: …and the same field carries what the CARD ITSELF prints —
+    // CR 301.8: …and the same field carries what the CARD ITSELF prints —
     // `CardBehavior.spawnsWithCounters` ("I spawn with two +1/+1 counters",
     // Powerforge Synergist; "three -1/-1 counters on me", Aethercap Siphoner).
     // ONE field, ONE layer, ONE moment, for the printed sentence and for a
@@ -3697,13 +3698,13 @@ export class E {
     // disagree about whether a replacement effect scales them, and a spawn
     // watcher must read the body the card prints. Both cards used to do this
     // themselves after the fact — Aethercap through a queued `spawned` trigger,
-    // which cannot run before the event that raised it (R147) and which made
+    // which cannot run before the event that raised it (CR 707.5) and which made
     // Iyngstra gain 4 for a 1/1; Powerforge through a `when()` that wrote
     // `self.counters` RAW and so walked straight past this layer.
     let spawnCounters = (opts.counters ?? 0) + (getCard(name).spawnsWithCounters ?? 0);
-    // R165: the gate is `!== 0`, not `>= 1`. "If ONE OR MORE counters would be
+    // CR 301.8a: the gate is `!== 0`, not `>= 1`. "If ONE OR MORE counters would be
     // put" is about a placement EXISTING, not about its sign — the engine keeps
-    // one SIGNED total (R130: "all counters count as counters"), and Flux
+    // one SIGNED total (CR 708.8a; the owner: "all counters count as counters"), and Flux
     // Resonator's own delta answers both directions already
     // (`ctx.amount > 0 ? 1 : -1`), which is what `addCounters` has always fed
     // it. No caller passes a negative `opts.counters`, so nothing that was
@@ -3716,18 +3717,18 @@ export class E {
       });
     }
     if (spawnCounters) u.counters = spawnCounters;
-    // R29: a card PLAYED into an open spot in the formation is put there
+    // CR 602.7: a card PLAYED into an open spot in the formation is put there
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
     const placed = opts.spot ? this.takeSpot(u, seat, opts.spot) : null;
     /**
-     * R165 — PLAY vs PUT INTO PLAY. Four cards in the pool print "put into
+     * CR 701.3 — PLAY vs PUT INTO PLAY. Four cards in the pool print "put into
      * play" (Exhume, Resurrect, Rousing Spirit, Lurking Dread) and two print
      * "**play**": Wake the Dead ("Play up to two units in any bin … now, for
      * free") and The Bonesculptor ("You may play one unit with no abilities
      * from your bin each deployment"). All six called this method and were
-     * therefore indistinguishable — no play event of any kind, so R129's
-     * `'cardPlayed'` never fired and every "whenever you play a card / a unit"
+     * therefore indistinguishable — no play event of any kind, so the
+     * `'cardPlayed'` event (CR 108.1a) never fired and every "whenever you play a card / a unit"
      * watcher in the pool was deaf to the two that really were plays.
      *
      * `asPlay` is that one printed word, and it is deliberately a flag on the
@@ -3736,8 +3737,8 @@ export class E {
      * approximation `playInline` (batch-water-a) already carries — the played
      * card arrives inside the playing effect's resolution and nobody may
      * respond to it or negate it. It rides WITH `opts.from`, never instead of
-     * it: a play always comes out of a zone, and R49's `from` on the 'spawned'
-     * event below is the other half of the same fact — the half Stalwart
+     * it: a play always comes out of a zone, and the `from` on the 'spawned'
+     * event below (CR 410.6) is the other half of the same fact — the half Stalwart
      * Sentinel and Proph read for "a card played from anywhere other than your
      * hand". Each watcher therefore hears the play exactly once, on whichever
      * of the two events it listens to.
@@ -3745,16 +3746,16 @@ export class E {
      * The event is BUILT here, above the spawn line, and DISPATCHED below it,
      * immediately before the spawn dispatch: the play precedes the arrival —
      * the order `commitItem` puts them in for every ordinary play — but no
-     * listener may run against a body that is still being dressed (R147's
-     * `wearing`, R29's placement). Signal-only (`msg: ''`), the R129
+     * listener may run against a body that is still being dressed (CR 303.11's
+     * `wearing`, CR 602.7's placement). Signal-only (`msg: ''`), the
      * convention; the spawn line already announces it.
      *
      * ⚠ NEVER on a token: `token: false` is a fact here, not a default. A
-     * created token is not a card (R129) and no caller passes both.
+     * created token is not a card (CR 304.2, 304.15) and no caller passes both.
      *
-     * ⚠ R207 / CT-79 — NO `item` FIELD, AND THAT IS THE FACT IT REPORTS.
+     * ⚠ CR 706.13 / CT-79 — NO `item` FIELD, AND THAT IS THE FACT IT REPORTS.
      * `commitItem` puts the played item's id on its `cardPlayed`; here there
-     * is no `StackItem` to name, because this play IS the spawn (R165's
+     * is no `StackItem` to name, because this play IS the spawn (CR 301.9's
      * printed "play", not a cast). A listener that wants "the effect that was
      * just played" must therefore read `data.item === undefined` as "this play
      * put no effect on the stack" and do nothing to the stack — NOT fall back
@@ -3763,8 +3764,8 @@ export class E {
      * name with an unrelated item standing on the stack, and Void Mandible
      * used to negate that one.
      *
-     * ⚠ THE DIVERGENCE THIS LEAVES STANDING (R207, reported not fixed): under
-     * R198's ruling a card played mid-resolution goes on the stack and is
+     * ⚠ THE DIVERGENCE THIS LEAVES STANDING (F-U14-3, reported not fixed): under
+     * CR 701.4 a card played mid-resolution goes on the stack and is
      * respondable and negatable. This path predates that and still spawns in
      * place, so a unit played out of a bin during battle cannot be answered at
      * all. Making it an item is a much larger change than CT-79 (a spawn is
@@ -3777,7 +3778,7 @@ export class E {
         ...(opts.from ? { from: opts.from } : {}),
       })
       : null;
-    // R49: `from` is set only when this spawn IS a card being PLAYED out of a
+    // CR 410.6, 301.9: `from` is set only when this spawn IS a card being PLAYED out of a
     // zone (resolveItem for a unit / spell unit card). A unit created by an
     // effect carries no zone, which is what keeps "when you play a card from
     // anywhere other than your hand" (Proph) off effect-created units.
@@ -3787,7 +3788,7 @@ export class E {
     // `owner` key is emitted only when it differs, so every existing reader of
     // a 'spawned' event keeps the payload it already had.
     const ev = this.ev('spawned',
-      // R165: the counter note is SIGN-AWARE now that a card can print a
+      // CR 301.8: the counter note is SIGN-AWARE now that a card can print a
       // negative spawn ("three -1/-1 counters on me"). It used to read
       // "(-3 +1/+1)" the moment one did.
       `${this.pname(seat)} spawns ${name}`
@@ -3802,12 +3803,12 @@ export class E {
     // is part of the play, not a consequence of it
     if (placed) this.ev('info', placed, { unit: u.id, region, seat });
     /**
-     * R147 — and the same for a body that ENTERS as something else (Borrower
-     * of Forms). Exactly R29's placement rule one field over: applied before
+     * CR 303.11 — and the same for a body that ENTERS as something else (Borrower
+     * of Forms). Exactly CR 602.7's placement rule one field over: applied before
      * `fireEvent`, which is the single door every listener goes through, so no
      * watcher and no player ever sees the body standing here as itself.
      * Logged UNDER the spawn line for the same reason the placement is —
-     * R118 ruling 1 keeps `Entity.card` as the physical card, so the spawn
+     * CR 201.5 keeps `Entity.card` as the physical card, so the spawn
      * line still names Borrower of Forms and the line beneath says what it is.
      *
      * COUNTERS AND TEMP CHANGES FIRST, face last. The final numbers are the
@@ -3822,18 +3823,18 @@ export class E {
       if (w.tempPower || w.tempToughness) this.addTemp(u, w.tempPower ?? 0, w.tempToughness ?? 0);
       this.wearCopy(u, w.copy);
     }
-    // R119: a unit that came from a ZONE was PLAYED, so it burns the Deferral
+    // CR 111.10k: a unit that came from a ZONE was PLAYED, so it burns the Deferral
     // Drone charge; one that came from nowhere was CREATED and does not. Same
-    // `opts.from` test R49 uses just above, and the same place the card's own
+    // `opts.from` test as just above (CR 410.6), and the same place the card's own
     // bookkeeping trigger used to read it — the spend is engine-side now so a
     // dead Drone cannot leave a paid-for charge unspendable.
     if (opts.from !== undefined) this.spendNextPlayDiscount(seat);
-    // R165: the play, then the arrival — see the `playEv` block above.
-    // R347: the body is already standing here, but this is ITS OWN play, and a
+    // CR 301.9: the play, then the arrival — see the `playEv` block above.
+    // CR 701.1e: the body is already standing here, but this is ITS OWN play, and a
     // card being played never hears its own play — so it is not a listener.
     if (playEv) this.fireEvent('cardPlayed', playEv, undefined, u.id);
     this.fireEvent('spawned', ev);
-    // R104: record the creation in the open batch, so "each unique token you
+    // CR 708.9: record the creation in the open batch, so "each unique token you
     // created" has a creation to be unique across. After the spawn event, so a
     // batch replacement can never observe a half-created board. The REQUEST
     // (opts.counters), not the amount-modified outcome: a batch copy replays
@@ -3844,12 +3845,12 @@ export class E {
     return u;
   }
 
-  // ── the Wraith token (R71) ───────────────────────────────────────────
+  // ── the Wraith token ───────────────────────────────────────────
   //
   // "Wraith — cost 0 [d], 3/3, Blight Zombie Token Unit. [Augment] At the start
   // of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith
   // onto an ally." (Redesigned 2026-08-21; the retired 4/4 printing shrank
-  // itself on attack/block and RE-HOMED itself on death — that was R47, now
+  // itself on attack/block and RE-HOMED itself on death — that was the old Wraith ruling, now
   // withdrawn.) The token was renamed FROM "Wight"; the printed data is
   // mid-transition (Blight's End still says the retired name, six other cards
   // say the current one), so `Wight` is registered as an ALIAS of `Wraith`.
@@ -3877,7 +3878,7 @@ export class E {
 
   createSpellToken(seat: Seat, name: CardName, x: number, region?: number): Entity {
     const reg = region ?? this.actionRegion(seat);
-    // R104: the half of Cosmic Conspirator that was completely dead. The old
+    // CR 708.3: the half of Cosmic Conspirator that was completely dead. The old
     // implementation was a `spawned` trigger, and `createSpellToken` fires no
     // dispatchable event at all — so "if you would create a POISON, CRYSTAL or
     // FIREBALL" could never be heard, and Biotoxicity's three Poisons (report
@@ -3895,7 +3896,7 @@ export class E {
       }
     }
     const t = this.newEntity({ card: name, owner: seat, controller: seat, kind: 'spellToken', region: reg, x });
-    // R129: this event was LOGGED and never DISPATCHED, so "when you create a
+    // CR 300.5c: this event was LOGGED and never DISPATCHED, so "when you create a
     // token" (Mycelial Mentor) was half-dead — unit tokens fired it through
     // 'spawned', a Poison/Crystal/Fireball fired nothing. Spell tokens are
     // still tokens (owner, 2026-08-24), and the set says so itself: Cosmic
@@ -3921,7 +3922,7 @@ export class E {
   /** +1/+1 (n>0) or -1/-1 (n<0) counters; net counters cancel pairwise (Manual)
    * — a single signed int models that. Fires 'countersChanged' for triggers.
    *
-   * R104: TWO replacement seams sit above the commit, in printed order.
+   * CR 708.7: TWO replacement seams sit above the commit, in printed order.
    * "Put that many counters PLUS ONE instead" (Flux Resonator, Proliferating
    * Slime) changes the number, so it is an `AmountMod` and it is summed — two
    * Resonators put two more. "Those counters are placed on ME instead"
@@ -3932,7 +3933,7 @@ export class E {
    * Both are consulted, not re-entered, which is why the module-level `let
    * proliferating` flag that used to guard this path is gone (report #60).
    *
-   * R130: a placement KNOWS WHO MADE IT. `by` is the seat putting the counters
+   * CR 708.8b: a placement KNOWS WHO MADE IT. `by` is the seat putting the counters
    * on — optional, because counters also arrive from engine sweeps and from
    * white-box test calls where there is no actor to name. When it is omitted
    * the actor defaults to `partActor`: the controller of the effect currently
@@ -3948,7 +3949,7 @@ export class E {
    * placed on another (Counter Thief), you are still the one who put them. */
   addCounters(target: Entity, n: number, by?: Seat): void {
     if (!n || !this.entity(target.id)) return;
-    // R130: explicit actor first, then the resolving effect's controller. Both
+    // CR 708.8b: explicit actor first, then the resolving effect's controller. Both
     // may be absent (an engine sweep, a white-box call) and `undefined` is a
     // legitimate answer — "nobody in particular put this" is not the same
     // statement as "you did", and a card that asks WHO must get no for an
@@ -3998,15 +3999,15 @@ export class E {
     this.checkDeaths();   // a base 0 defense is lethal, exactly as counters are
   }
 
-  /** grant an attribute until regroup (cleared with temp stats, R11 step 3) */
+  /** grant an attribute until regroup (cleared with temp stats, CR 506.2 step 3) */
   addTempAttr(target: Entity, attr: import('./types.ts').Attr): void {
     (target.tempAttrs ??= []).push(attr);
-    (target.tempAttrsAt ??= []).push(this.stampNow());   // R328: index for index
+    (target.tempAttrsAt ??= []).push(this.stampNow());   // CR 712.2: index for index
     this.ev('statChanged', `${target.card} gains {${attr}} until regroup.`, { unit: target.id, attr });
   }
 
   /**
-   * R62: switch a unit's attribute and/or ability layer off UNTIL REGROUP —
+   * CR 712.1: switch a unit's attribute and/or ability layer off UNTIL REGROUP —
    * "Target unit loses all attributes and abilities until regroup"
    * (Suppression Field), "…and loses all attributes until regroup" (Formless).
    * `by` is the card to blame, kept so the text box can say who did it.
@@ -4016,7 +4017,7 @@ export class E {
    */
   suppress(target: Entity, by: CardName, what: { attrs?: boolean; abilities?: boolean }): void {
     const sup = (target.suppressed ??= {});
-    // R328: a strip is a timestamp. It takes what is there NOW; a later strip
+    // CR 113.3: a strip is a timestamp. It takes what is there NOW; a later strip
     // only moves the time forward, and takes everything an earlier one did.
     const at = this.stampNow();
     if (what.attrs) { sup.attrs = by; sup.attrsAt = at; }
@@ -4031,7 +4032,7 @@ export class E {
   }
 
   /**
-   * R63: grant a unit an authored ability until regroup — "Your units gain
+   * CR 109.8: grant a unit an authored ability until regroup — "Your units gain
    * 'When I die, create a Robot 3.' until regroup" (Reforge the Dead).
    *
    * A REFERENCE, not a copy: `card`/`via`/`index` address the ability in the
@@ -4041,7 +4042,7 @@ export class E {
    * in play, so fireEvent's scan never reaches it except through this grant.
    */
   grantText(target: Entity, g: import('./types.ts').GrantedText): void {
-    (target.granted ??= []).push({ ...g, at: this.stampNow() });   // R328
+    (target.granted ??= []).push({ ...g, at: this.stampNow() });   // CR 712.2
     this.ev('statChanged', `${target.card} gains "${g.text}" until regroup (${g.from}).`,
       { unit: target.id, granted: g.text });
   }
@@ -4051,7 +4052,7 @@ export class E {
    * it has no state check to run. */
   gainLife(seat: Seat, n: number, why: string): void {
     if (n <= 0) return;
-    // R104, in printed order. The LOCK is absolute ("can't change" — Suspend),
+    // CR 708.10, in printed order. The LOCK is absolute ("can't change" — Suspend),
     // so it is asked before any card is offered the replacement: there is
     // nothing left to replace once the gain cannot happen at all.
     if (this.lifeLocked(seat)) {
@@ -4062,7 +4063,7 @@ export class E {
       return;
     }
     if (this.replaceLifeGain(seat, n, why)) return;
-    // R162: the two AMOUNT families, after the first-true-consumes substitution
+    // CR 112.3: the two AMOUNT families, after the first-true-consumes substitution
     // above and before anything is committed. Deliberately AFTER
     // `replaceLifeGain`: Nullbringer turns a gain into a LOSS, and that loss is
     // a fresh life change that `loseLife` prices on its own — pricing here too
@@ -4083,7 +4084,7 @@ export class E {
   }
 
   /**
-   * R48 {Blessed}: "Damage dealt by a blessed source causes its controller to
+   * CR 802.22a {Blessed}: "Damage dealt by a blessed source causes its controller to
    * gain that much life." It is lifelink, and it is SIMULTANEOUS — Caleb
    * 2025-03-18: "blessed gain and damage happen on the same game state check",
    * "(similar to lifelink in mtg)", and yes to "if it would deal lethal damage
@@ -4099,11 +4100,11 @@ export class E {
     this.gainLife(controller, n, `${sourceName} is Blessed`);
   }
 
-  /** `extra` (R195) is stamped onto the emitted 'lifeLost' — combat damage
+  /** `extra` (CR 608.9a) is stamped onto the emitted 'lifeLost' — combat damage
    * uses it to carry `hits`, the per-column breakdown of an aggregated loss.
    * It is never read here; it is data for whoever hears the event. */
   loseLife(seat: Seat, n: number, why: string, extra?: Record<string, unknown>): void {
-    // R104: "Target player's life total CAN'T CHANGE during this battle"
+    // CR 708.10: "Target player's life total CAN'T CHANGE during this battle"
     // (Suspend) is not "can't be gained" — it locks both directions, so a
     // locked player cannot be burned out, cannot take rot damage to the face
     // and cannot be killed by {Lethal} (killPlayer routes through here).
@@ -4115,7 +4116,7 @@ export class E {
         { seat, n, why, locked: true });
       return;
     }
-    // R162: the two AMOUNT families, before the total moves and therefore
+    // CR 708.6b: the two AMOUNT families, before the total moves and therefore
     // before the lethal check below. THAT ORDERING IS THE FIX: the doubling
     // used to be a trigger that dealt a second helping AFTER the first landed,
     // so a loss that was already lethal ended the game before the doubling
@@ -4123,35 +4124,35 @@ export class E {
     n = this.lifeAmount('lifeLoss', seat, n, why);
     const p = this.player(seat);
     p.life -= n;
-    // per-battle life-loss ledger (R14 battle counters; read by e.g. Soul Siphon)
+    // per-battle life-loss ledger (CR 505.6 battle counters; read by e.g. Soul Siphon)
     if (this.s.battle) this.bumpBattleCounter(this.s.battle.region, `lifeLost:${seat}`, n);
     const ev = this.ev('lifeLost', `${p.name} loses ${n} life (${why}) → ${p.life}.`,
       { seat, n, why, ...(this.s.battle ? { region: this.s.battle.region } : {}), ...(extra ?? {}) });
-    this.fireEvent('lifeLost', ev);   // "when a player loses life" triggers (region-scoped in battle, R12)
+    this.fireEvent('lifeLost', ev);   // "when a player loses life" triggers (region-scoped in battle, CR 101.6)
     if (p.life <= 0 && this.s.winner === null) {
       this.s.winner = other(seat);
       this.s.phase = 'gameover';
-      this.s.resolving = null;   // R78: nothing is resolving any more — the game is over
+      this.s.resolving = null;   // nothing is resolving any more — the game is over
       this.ev('gameOver', `*** ${this.pname(other(seat))} wins! ***`, { winner: other(seat) });
       throw new GameEnded();
     }
   }
 
-  /** R65: end the game with `seat` as the loser — the concede path. Shares
+  /** CR 104.4: end the game with `seat` as the loser — the concede path. Shares
    * loseLife's ending exactly (winner, phase, event, GameEnded) so nothing
    * downstream has to tell the two apart. */
   concede(seat: Seat): void {
     if (this.s.winner !== null) return;
     this.s.winner = other(seat);
     this.s.phase = 'gameover';
-    this.s.resolving = null;   // R78
+    this.s.resolving = null;   // nothing is resolving any more
     this.ev('gameOver', `*** ${this.pname(other(seat))} wins — ${this.pname(seat)} conceded. ***`,
       { winner: other(seat), conceded: seat });
     throw new GameEnded();
   }
 
   /**
-   * R48 {Lethal}: "Any combat damage from a lethal unit will kill a player."
+   * CR 802.24a {Lethal}: "Any combat damage from a lethal unit will kill a player."
    * A kill, not damage — no amount is involved, so it is expressed as losing
    * exactly the life that is left (loseLife then runs the normal lethal check
    * and ends the game). Idempotent once the game is over.
@@ -4164,7 +4165,7 @@ export class E {
   }
 
   /**
-   * The engine's second (and last) replacement hook (R38, Blightsea Polyp):
+   * The engine's second (and last) replacement hook (CR 608.8a, Blightsea Polyp):
    * a column is about to deal `amount` combat damage to `seat`. Same shape and
    * same anchoring as replaceRotDamage — units in play and augment mods (whose
    * hook reads from their HOST) — but region-scoped instead of seat-scoped:
@@ -4175,15 +4176,15 @@ export class E {
   private replaceCombatDamage(seat: Seat, amount: number,
     info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceCombatDamageToPlayer')          // R127: off the FACES
+      this.donates(h, a, 'replaceCombatDamageToPlayer')          // CR 710.7: off the FACES
       && a.region === info.region
-      && !this.textStripped(h, a));                         // R62 (full projection)
+      && !this.textStripped(h, a));                         // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     let left = amount;
     for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {
       if (left <= 0) break;
       const r = def.replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
-      // R98: the return widened from all-or-nothing to a NUMBER — the damage
+      // the return widened from all-or-nothing to a NUMBER — the damage
       // LET THROUGH — so a card can absorb part of a hit and pass the rest on.
       // `true`/`false` keep their old meaning (all / none), which is what makes
       // this a widening rather than a break: Blightsea Polyp still returns true.
@@ -4199,7 +4200,7 @@ export class E {
   }
 
 
-  // ── R104: THE REPLACEMENT-EFFECT LAYER ──────────────────────────────
+  // ── CR 708: THE REPLACEMENT-EFFECT LAYER ──────────────────────────────
   //
   // Owner, playtest report #75, verbatim:
   //
@@ -4211,7 +4212,7 @@ export class E {
   // Refined by him on 2026-08-23, and the refinement is the load-bearing half:
   // "cards that say instead, as or if AND DON'T MENTION TARGETS" never go on
   // the stack. A replacement that names a TARGET still uses the stack, because
-  // choosing a target is public and respondable — which is why R102 (Beyond,
+  // choosing a target is public and respondable — which is why CR 109.5a (Beyond,
   // Codex Incarnate) is the correct shape and not an exception.
   //
   // Everything below is the "no target" side of that switch. None of it
@@ -4232,13 +4233,13 @@ export class E {
   // greppable and nothing becomes replaceable by accident.
 
   /**
-   * R104: is `seat`'s life total LOCKED right now? ("Target player's life
+   * CR 708.10: is `seat`'s life total LOCKED right now? ("Target player's life
    * total can't change during this battle." — Suspend.)
    *
-   * A battleCounter and not an `anchored()` radiator, for R96's reason: Suspend
+   * A battleCounter and not an `anchored()` radiator, for the bin-spell grant's reason: Suspend
    * is a SPELL. It resolves and goes to the bin, so there is nothing left in
    * play to radiate from, and what it grants is a fact about this battle —
-   * which is exactly what battleCounters are. Region-KEYED gives R14's "this
+   * which is exactly what battleCounters are. Region-KEYED gives CR 505.6's "this
    * battle = this region's battle" for free and stops round 1's lock leaking
    * into round 2; `startBattlePhase`'s existing wipe is the whole cleanup.
    *
@@ -4252,13 +4253,13 @@ export class E {
     if (!b) return false;
     return this.battleCounter(b.region, `lifeLock:${seat}`) > 0;
   }
-  /** R104: lock `seat`'s life total for the rest of this region's battle. */
+  /** CR 708.10: lock `seat`'s life total for the rest of this region's battle. */
   lockLife(seat: Seat, region: number): void {
     this.bumpBattleCounter(region, `lifeLock:${seat}`);
   }
 
   /**
-   * R104: `seat` is about to gain `n` life — may a card replace it?
+   * CR 708.4a: `seat` is about to gain `n` life — may a card replace it?
    *
    * Nullbringer: "[Augment] If a player would gain life, they lose that much
    * life instead." Shaped on `replaceRotDamage` (first true consumes, ties by
@@ -4275,14 +4276,14 @@ export class E {
    */
   private replaceLifeGain(seat: Seat, n: number, why: string): boolean {
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceLifeGain')                     // R127: off the FACES
-      // R12, by E.fireEvent's own rule: `gainLife` writes a region onto its
+      this.donates(h, a, 'replaceLifeGain')                     // CR 710.7: off the FACES
+      // CR 101.6, by E.fireEvent's own rule: `gainLife` writes a region onto its
       // event only inside a battle, and fireEvent dispatches an event with no
       // region to EVERY listener. A life gain outside a battle is therefore
       // not a regional thing, and narrowing it here would quietly shrink a
       // card that used to be a `lifeGained` trigger.
       && (!this.s.battle || a.region === this.s.battle.region)
-      && !this.textStripped(h, a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { face, def, anchor } of this.donorFaces(holders, 'replaceLifeGain')) {
       if (def.replaceLifeGain!(this, anchor, seat, n, why)) {
@@ -4296,7 +4297,7 @@ export class E {
   }
 
   /**
-   * R104: `n` counters are about to be put on `target` — may a card redirect
+   * CR 708.4a: `n` counters are about to be put on `target` — may a card redirect
    * them?
    *
    * Counter Thief: "[Augment] If one or more counters would be placed on one
@@ -4313,9 +4314,9 @@ export class E {
   private replaceCounters(target: Entity, n: number): Entity {
     if (this.inReplaceCounters) return target;
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceCounters')                   // R127: off the FACES
+      this.donates(h, a, 'replaceCounters')                   // CR 710.7: off the FACES
       && a.region === target.region
-      && !this.textStripped(h, a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     const donors = this.donorFaces(holders, 'replaceCounters');
     this.inReplaceCounters = true;
@@ -4334,7 +4335,7 @@ export class E {
     return target;
   }
 
-  // ── R104: token creation, and the BATCH ─────────────────────────────
+  // ── CR 708.9: token creation, and the BATCH ─────────────────────────────
   //
   // Report #64 (GETD, 2026-08-22): "Biotoxicity didn't give me the choice of
   // what kinds of tokens I wanted even though I had Cosmic Conspirator." Two
@@ -4355,23 +4356,23 @@ export class E {
   // one per unique." "Each unique token you created" is a property of the
   // whole creation, so there has to be a whole creation to look at.
   //
-  // THE BATCH IS ONE RESOLVING PART, which is the unit R80 already gave effect
-  // damage ("One resolution of one effect, one batch"). `resolveParts` opens
+  // THE BATCH IS ONE RESOLVING PART, which is the unit effect damage already
+  // has (CR 112.8: "One resolution of one effect, one batch"). `resolveParts` opens
   // one around `def.run` and settles it when the part finishes; a creation
   // with no part open (engine-internal, a test's direct call) is its own batch
   // of one, so nothing is ever left unsettled. A part that SUSPENDS on a
   // decision discards its batch unsettled, because the engine rolls the world
-  // back to the part boundary and replays it (R85) — settling would pay the
+  // back to the part boundary and replays it — settling would pay the
   // batch out twice.
 
-  /** R104: the open token-creation batch, or null outside a resolving part. */
+  /** CR 708.9: the open token-creation batch, or null outside a resolving part. */
   private tokenBatch: TokenRequest[] | null = null;
   /**
-   * R184: the OPEN kill diff — the units alive when the part currently
+   * CR 802.21b: the OPEN kill diff — the units alive when the part currently
    * resolving began, or null when no kill-scoped source is resolving.
    *
    * Same lifetime and same rollback story as `tokenBatch` directly above: it
-   * is opened at the part boundary and discarded on a suspension, because R85
+   * is opened at the part boundary and discarded on a suspension, because a suspension
    * rolls the world back to that boundary and replays the part, which retakes
    * the snapshot.
    *
@@ -4381,16 +4382,16 @@ export class E {
    * will NOT pay a {Reaping} draw, so the damage site must still do it.
    */
   private killWatch: { before: Map<EntityId, Seat>; reaps: boolean } | null = null;
-  /** R104: a per-token replacement is already performing its substitute, so
+  /** CR 708.4: a per-token replacement is already performing its substitute, so
    *  the substitute must not be offered for replacement again. */
   private substitutingToken = false;
-  /** R104: a BATCH replacement is creating its extras. They are not part of
+  /** CR 708.4: a BATCH replacement is creating its extras. They are not part of
    *  the batch that produced them — "none applies to itself" — and without
    *  this latch a batch of one extra would ask the same holder again forever. */
   private inTokenBatchSettle = false;
 
   /**
-   * R104: raise a decision from inside engine code, the way `E.glimpse` does.
+   * raise a decision from inside engine code, the way `E.glimpse` does.
    *
    * `partChoose` is non-null only inside a resolving part, which is where
    * token creation almost always happens. Outside one there is nothing to hang
@@ -4405,7 +4406,7 @@ export class E {
   }
 
   /**
-   * R104: one token is about to be created — may a card substitute it?
+   * CR 708.3: one token is about to be created — may a card substitute it?
    *
    * Cosmic Conspirator: "If you would create a Robot, Poison, Crystal or
    * Fireball, you may instead create a token of any of these types." First
@@ -4417,9 +4418,9 @@ export class E {
    */
   private replaceTokenCreation(req: TokenRequest): TokenRequest {
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceTokenCreation')              // R127: off the FACES
+      this.donates(h, a, 'replaceTokenCreation')              // CR 710.7: off the FACES
       && a.region === req.region
-      && !this.textStripped(h, a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     const donors = this.donorFaces(holders, 'replaceTokenCreation');
     this.replacementDepth++;
@@ -4438,7 +4439,7 @@ export class E {
   }
 
   /**
-   * R104: record a token that was just created into the open batch — or, with
+   * CR 708.9: record a token that was just created into the open batch — or, with
    * no batch open, settle it as a batch of one.
    */
   private noteTokenCreated(req: TokenRequest): void {
@@ -4448,7 +4449,7 @@ export class E {
   }
 
   /**
-   * R104: one creation batch has finished — may a card add to it?
+   * CR 708.9: one creation batch has finished — may a card add to it?
    *
    * Automaton of Abundance: "[Augment] If you would create one or more unit
    * tokens, instead create those tokens plus an additional copy of each unique
@@ -4456,7 +4457,7 @@ export class E {
    * a creation is replaced once.
    *
    * The extras are created INLINE, in the same resolution, with nothing on the
-   * stack in between and no priority window — the R103 test for "part of
+   * stack in between and no priority window — the CR 802.16i test for "part of
    * resolution, not a trigger". They are NOT themselves batched
    * (`this.tokenBatch` is parked for the duration), which is what "none
    * applies to itself" means here and is why the module-level `aoaCopying`
@@ -4465,9 +4466,9 @@ export class E {
   private settleTokenBatch(batch: TokenRequest[]): void {
     if (!batch.length) return;
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceTokenBatch')                 // R127: off the FACES
+      this.donates(h, a, 'replaceTokenBatch')                 // CR 710.7: off the FACES
       && a.region === batch[0]!.region
-      && !this.textStripped(h, a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
     if (!holders.length || this.inTokenBatchSettle) return;
     holders.sort((a, z) => a.holder.id - z.holder.id);
     const donors = this.donorFaces(holders, 'replaceTokenBatch');
@@ -4488,7 +4489,7 @@ export class E {
   }
 
   /**
-   * R104: create one token from a `TokenRequest`. The single place the two
+   * create one token from a `TokenRequest`. The single place the two
    * creation primitives are chosen between, so a replacement that swaps a unit
    * token for a spell token (Robot → Fireball) needs no caller to know.
    */
@@ -4499,7 +4500,7 @@ export class E {
   }
 
   /**
-   * R98: THE choke point for damage about to be dealt to a UNIT. Returns the
+   * CR 112.11: THE choke point for damage about to be dealt to a UNIT. Returns the
    * damage LET THROUGH — 0 means nothing was dealt at all.
    *
    * Report #72 (GETD, 2026-08-22): "Phytochemical Protection is entirely non
@@ -4511,7 +4512,8 @@ export class E {
    *
    * ── PREVENTION IS NOT REPLACEMENT, and the difference is the card ──
    *
-   * R38's replacements do not unmake the damage: "Replacing the damage does
+   * The replacement hooks (CR 112.12) do not unmake the damage — the old rot
+   * ruling's words: "Replacing the damage does
    * NOT unmake it: Caleb ruled (2024-10-24) the damage still counts as having
    * been DEALT, so {Lethal} still kills through it". Prevention is the other
    * thing. RAQ "[Solved] Poisonous vs 'Whenever I am dealt damage' vs
@@ -4553,7 +4555,7 @@ export class E {
    * fits without a second seam — and so it matches the shape
    * `replaceCombatDamageToPlayer` was widened to in the same ruling, which is
    * what Oorblak's parked Piercing-excess half needs. `info` carries the
-   * source's live attributes and R61's {Pure} flag for the same reason: a hook
+   * source's live attributes and CR 802.25b's {Pure} flag for the same reason: a hook
    * that has to tell a Piercing hit from a plain overkill cannot do it from
    * `{ attacker, region }` alone.
    */
@@ -4569,12 +4571,12 @@ export class E {
   }
 
   /**
-   * R98: pay out "Put a +1/+1 counter on it for each damage prevented this
+   * pay out "Put a +1/+1 counter on it for each damage prevented this
    * way", once the commit loop that prevented the damage has finished.
    *
    * Deferred rather than paid inside `preventUnitDamage` because `addCounters`
    * runs `checkDeaths`: paying on the spot would resolve a death in the middle
-   * of a batch that R80 made simultaneous. Called at the end of BOTH commit
+   * of a batch that is simultaneous (CR 112.8). Called at the end of BOTH commit
    * loops; calling it with nothing pending is free.
    */
   settleDamagePrevention(): void {
@@ -4601,7 +4603,7 @@ export class E {
   }
 
   /**
-   * R80: ALL of one effect's damage, dealt at once.
+   * CR 112.8: ALL of one effect's damage, dealt at once.
    *
    * Playtest round 15 (VEAV): "Channel Through caused Restitution to make 2
    * triggers, but it should have done just one trigger", and "I only made 2
@@ -4628,12 +4630,12 @@ export class E {
    * Ember of Life triggers separately for each copy rather than combining them
    * into one bigger trigger." One resolution of one effect, one batch.
    *
-   * Handles Reaping (kill → draw), Electric (R4: excess beyond lethal passes
+   * Handles Reaping (kill → draw), Electric (CR 802.17: excess beyond lethal passes
    * along a controller-chosen, non-overlapping adjacent path, planned fully
    * before any damage commits, and no formation changes during distribution)
    * and {Piercing} (excess beyond lethal goes to the victim's controller —
-   * see `poolToKill` below — as far as the dealing player elects, R340's
-   * `pierceKeep`). Both are planned against what the victim will
+   * see `poolToKill` below — as far as the dealing player elects
+   * (`pierceKeep`, CR 802.16j). Both are planned against what the victim will
    * REALLY have taken once the batch commits — damage earlier hits in this
    * same batch already assigned included — rather than against a stale board.
    */
@@ -4643,7 +4645,7 @@ export class E {
      *
      * Every "I deal N damage to each opponent / each enemy unit" card in the
      * pool builds a hit list and hands it over. With no opponent PRESENT in the
-     * region (R25) or no enemy unit on the board that list is empty, and until
+     * region (CR 601.4d) or no enemy unit on the board that list is empty, and until
      * this line existed the batch returned at `if (!order.length) return`
      * having emitted nothing at all: the card resolved, the mana was spent and
      * the log was blank. Three carriers (Flzzz, Restitution, Vroot) were
@@ -4662,14 +4664,14 @@ export class E {
      *    guard: the planning loop's `if (n <= 0) continue` drops it silently,
      *    which is right, because the card decided the amount and can say so
      *    itself if it is worth saying.
-     *  · a fully PREVENTED batch (R98). Prevention runs AFTER `!order.length`,
+     *  · a fully PREVENTED batch (CR 112.11). Prevention runs AFTER `!order.length`,
      *    in the `received` loop, so a prevented batch always has a non-empty
      *    `order` and cannot arrive here at all. `preventUnitDamage` already
-     *    logs the prevention, and R98 says the damage was never dealt.
+     *    logs the prevention, and CR 112.11 says the damage was never dealt.
      *
      * Also deliberately NOT caught: a non-empty `hits` whose every target has
-     * left play between cast and resolution. That is R5's "your target is
-     * gone", the cards that can reach it announce it themselves (see
+     * left play between cast and resolution. That is the "your target is
+     * gone" case (CR 704.6); the cards that can reach it announce it themselves (see
      * `test/85-silent-branches.test.ts` §5), and folding it in here would put
      * two different sentences behind one guard.
      */
@@ -4680,7 +4682,7 @@ export class E {
       return;
     }
     /**
-     * R94: the source's LIVE attributes, not its printed ones.
+     * CR 802.1: the source's LIVE attributes, not its printed ones.
      *
      * This line used to read `this.card(ctx.sourceName)?.attrs`, i.e. the
      * printed card and nothing else, and that was a real bug with a long tail:
@@ -4708,10 +4710,10 @@ export class E {
      * ⚠ Side finding, deliberately NOT fixed here: the same RAQ doubles the
      * RESONANT RIDER a second time ("(4+1)x2 = 10 damage to enemy face"), while
      * the engine riders the undoubled amount. That is a separate ruling with
-     * its own arithmetic; flagged in R94, untouched.
+     * its own arithmetic; flagged, untouched.
      */
     /**
-     * R294 — `effAttrs`, NOT `ownAttrs`: A UNIT IN A COLUMN *HAS* THE COLUMN'S
+     * CR 712.8a — `effAttrs`, NOT `ownAttrs`: A UNIT IN A COLUMN *HAS* THE COLUMN'S
      * ATTRIBUTES, for everything it does and not only for combat damage.
      *
      * The owner, 2026-09-16, on playtest report #166 (room BTUX): *"The whole
@@ -4727,22 +4729,20 @@ export class E {
      * controller gained nothing.
      *
      * A column exists ONLY in combat (`columnOf` reads `s.battle` and answers
-     * null without one), so this is not a widening of R19 to the whole game —
+     * null without one), so this is not a widening of column sharing (CR 802.1c) to the whole game —
      * outside battle `effAttrs` IS `ownAttrs` and nothing changes. It is the
      * narrower correction: while the column exists, the unit has the
      * attributes, and every question asked of it gets the same answer.
      */
     const srcAttrs = this.effectSourceAttrs(ctx.sourceId, ctx.sourceName);
-    // R79: attributes a virus donated to this effect while it sat on the stack
+    // CR 721.4b: attributes a virus donated to this effect while it sat on the stack
     // ("mostly Deadly, Piercing, and Powerful are impacted by this" — Caleb
     // 2025-03-06). Read here rather than from the printed card alone, which is
     // the seam the SPELLS half of Emberflame Enlightener was parked on.
     for (const a of ctx.grantedAttrs ?? []) srcAttrs.add(a);
     /**
-     * R289 {Pure} OUTSIDE COMBAT. "Pure cards and cards they are interacting
-     * with ignore all other attributes." R61 built that at combat's choke
-     * points (the attack-column / block-column pair) and left "interactions
-     * outside combat" uncovered; the owner, 2026-09-05: "Make it work outside
+     * CR 802.25g {Pure} OUTSIDE COMBAT. "Pure cards and cards they are interacting
+     * with ignore all other attributes." The combat half was built first, at combat's choke points, leaving interactions outside combat uncovered. The owner, 2026-09-05: "Make it work outside
      * combat, of course." Outside combat the interaction is THIS EFFECT and
      * EACH RECIPIENT, one pairing at a time, and this method is where every
      * non-combat attribute is read — so it is where the layer switches off.
@@ -4755,15 +4755,15 @@ export class E {
      * non-Pure recipient beside a Pure one in the same batch is hit with the
      * attribute layer ON — Pure is a fact about the pairing, not the batch.
      *
-     * R294: `effAttrs` on the recipient too. This paragraph used to end
+     * CR 802.25k: `effAttrs` on the recipient too. This paragraph used to end
      * "`ownAttrs`, not `effAttrs`, on the recipient: column-sharing is a
-     * combat layer (R19), and an effect hits the card, not its column" — which
+     * combat layer, and an effect hits the card, not its column" — which
      * was never true of the code it was describing. The recipient's own
      * {Vulnerable} is read with `effAttrs` twice below, and {Unaware} through
-     * `this.unaware`, which is column-shared by R19; the Pure read on this line
+     * `this.unaware`, which is column-shared by CR 802.1c; the Pure read on this line
      * was the ONLY recipient-side question answered off the card alone, and it
      * was the odd one out rather than the rule. A Pure column-mate makes the
-     * whole exchange attribute-blind, in combat and out of it, exactly as R61
+     * whole exchange attribute-blind, in combat and out of it, exactly as CR 802.25b
      * already has it for the attack/block column pair.
      */
     const NO_ATTRS = new Set<string>();
@@ -4772,7 +4772,7 @@ export class E {
     /** the source's attributes AS SEEN BY `u` (or by a player, when undefined) */
     const attrsVs = (u: Entity | undefined): Set<string> => (pureWith(u) ? NO_ATTRS : srcAttrs);
     /**
-     * R106 {Unaware}: is THIS recipient's hit read at printed stats?
+     * CR 802.9c, 802.9g {Unaware}: is THIS recipient's hit read at printed stats?
      *
      * The owner's scope for the pairwise collapse is "self or others when
      * dealing damage" — so the participants of an effect hit are the SOURCE
@@ -4785,11 +4785,11 @@ export class E {
      * card level" — a spell has no stats of its own to collapse, and its
      * {Unaware} exists to collapse what it hits.
      *
-     * The recipient side is `unaware`, which is column-shared (R19), so a unit
+     * The recipient side is `unaware`, which is column-shared (CR 802.1c), so a unit
      * standing beside Bubb in a formation is read at printed here too.
      */
     const srcUnaware = srcAttrs.has('Unaware');
-    // R289: a Pure pairing reads nobody at printed — Unaware is an attribute
+    // CR 802.1n: a Pure pairing reads nobody at printed — Unaware is an attribute
     const collapsed = (u: Entity): boolean => !pureWith(u) && (srcUnaware || this.unaware(u));
     /** the units this batch read at printed, for the death sweep at the end */
     const collapsedHit = new Set<EntityId>();
@@ -4813,15 +4813,15 @@ export class E {
      * {Piercing}, and deliberately the same three clauses `combatSubStep`'s
      * `assign` uses so the combat and non-combat paths cannot drift:
      *
-     *  - {Vulnerable} (R23): the victim RECEIVES double, so only half the pool
+     *  - {Vulnerable} (CR 802.16a): the victim RECEIVES double, so only half the pool
      *    is needed to kill it and the pre-double remainder carries on sooner.
      *    That is what "excess is computed AFTER the receive-side doubling"
      *    means — the pool is counted in what the SOURCE deals, the toughness
      *    in what the victim RECEIVES, and `mult` is the exchange rate.
-     *  - damage this batch has already assigned to `u` counts, because R80
+     *  - damage this batch has already assigned to `u` counts, because CR 112.8
      *    coalesces a recipient named twice into one hit: the number that
      *    matters is what it will really have taken when the batch commits.
-     *  - {Deadly} (R21) caps the need at ONE point. RAQ "[Solved] Excessive
+     *  - {Deadly} (CR 802.16a) caps the need at ONE point. RAQ "[Solved] Excessive
      *    Combat Damage & interaction with Piercing, Deadly and Phytochemical
      *    Protection": "Atleast 1 dmg to Awoken (gets +1/+1, won't create 1/1
      *    unit), rest of the damage can go to Bubb." So a source that is both
@@ -4832,7 +4832,7 @@ export class E {
      * 5/6 Bubb: "Atleast 5 damage to Awoken (gets atleast +5/+5, won't create
      * 5/5), atleast 6 damage to Bubb, rest can go to Opponent HP" — assignment
      * is planned as if the shield were not there, and prevention runs at
-     * COMMIT below (R98). A shield therefore changes how much damage is DEALT
+     * COMMIT below (CR 608.6g). A shield therefore changes how much damage is DEALT
      * and nothing at all about how much pierces.
      *
      * {Poisonous} is not special-cased on purpose: the damage arrives as
@@ -4843,7 +4843,7 @@ export class E {
      */
     const poolToKill = (u: Entity): number => {
       const mult = (!pureWith(u) && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
-      // R106: a collapsed hit is priced against PRINTED defense, so Piercing
+      // CR 802.9e: a collapsed hit is priced against PRINTED defense, so Piercing
       // and Electric spend the small number and carry the rest on.
       const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
       const recvCap = Math.max(0, t - u.damage - (dealt.get(`u${u.id}`) ?? 0) * mult);
@@ -4852,13 +4852,13 @@ export class E {
       return Math.ceil(recvCap / mult);
     };
     /**
-     * R340 — {PIERCING} IS ELECTIVE OUTSIDE COMBAT TOO. RAQ "[Solved]
+     * CR 802.16j — {PIERCING} IS ELECTIVE OUTSIDE COMBAT TOO. RAQ "[Solved]
      * Squish/Fight/Battle vs Source of damage & Interactions": Bubb beside Good
      * Whale, Squish on Bubb — "Since Bubb will be the source of damage and he
      * has Piercing, then any excess damage CAN be dealt to enemy player." The
      * owner, 2026-10-10, asked whether "can be" is automatic or a choice:
-     * "Elective, like combat." R319 had already made the combat strike
-     * elective and left this path automatic (R103's 2026-08-23 ruling).
+     * "Elective, like combat." An earlier fix had already made the combat strike
+     * elective (CR 802.16c) and left this path automatic (the 2026-08-23 ruling).
      *
      * So: `floor` (the lethal share) must stay on `u`, and the dealing player
      * says how much of the rest of `pool` stays on it too; whatever it is not
@@ -4866,13 +4866,13 @@ export class E {
      *
      * Asked ONLY when there is a real choice (`pool > floor`) — a hit that is
      * exactly lethal or less never raises it, so a batch without Piercing
-     * excess replays byte-identically to before R340.
+     * excess replays byte-identically to before noncombat Piercing became elective.
      *
-     * The decision is R120/R319's own `assignDamage`, with the same option
+     * The decision is the combat strike's own `assignDamage` (CR 608.6a, 802.16c), with the same option
      * values (a plain number = the amount the unit is given; 'default' = the
      * one-click lethal-to-the-unit, rest-to-the-player), so the client's
      * split dial draws it unchanged. It belongs to the DEALING player — the
-     * controller of the source unit when it is still in play (R318: the unit
+     * controller of the source unit when it is still in play (CR 802.16k: the unit
      * is the source of a Squish / Fight / Battle hit, not the spell), as in
      * combat, where each side elects over its own strike; otherwise the
      * effect's controller.
@@ -4909,15 +4909,14 @@ export class E {
       if (n <= 0) continue;
       const hitUnit = 'player' in (hit.target as object) ? undefined : (hit.target as Entity);
       /**
-       * R104 / R316: "[Augment] If an allied source would deal noncombat
+       * CR 708.5, 112.9: "[Augment] If an allied source would deal noncombat
        * damage, it deals that much damage PLUS 1 instead." (Conduit of Pain.)
        *
        * ORDER: the additive modifiers come FIRST, then {Powerful} doubles the
        * result. RAQ "[Solved] Resonant, Combat Damage, Conduit and Powerful":
        * a Powerful Bellowing Boulder with Conduit deals "(1+1)x2 damage to
-       * each unit = 4", and a Powerful Resonant rider "(4+1)x2 = 10". R104
-       * had it the other way round (1x2+1 = 3) as an interim decision with no
-       * ruling behind it; R316 replaces it with the thread's arithmetic.
+       * each unit = 4", and a Powerful Resonant rider "(4+1)x2 = 10". The first implementation had it the other way round (1x2+1 = 3) as an interim decision with no
+       * ruling behind it; the thread's arithmetic replaced it (CR 112.9).
        *
        * Being here rather than at commit is also what makes it compose with
        * {Piercing} and {Electric}: `poolToKill` is read a few lines down and
@@ -4925,7 +4924,7 @@ export class E {
        * chain like any other.
        *
        * PER HIT: a source that deals damage to three units deals damage three
-       * times, and the Conduit prices each of them. (R80 coalesces a
+       * times, and the Conduit prices each of them. (CR 112.8 coalesces a
        * recipient NAMED twice into one commit, but the two hits are still two
        * dealings, and {Powerful} has always doubled both.)
        */
@@ -4937,9 +4936,9 @@ export class E {
         sourceSeat: ctx.controller, sourceName: ctx.sourceName, combat: false,
       });
       // Powerful source: double the damage dealt (to units and players alike),
-      // once, AFTER the additive modifiers (R316) and before Electric
+      // once, AFTER the additive modifiers (CR 802.10b) and before Electric
       // distribution or Vulnerable's receive-side doubling.
-      // R289: read against THIS recipient — off when either side is Pure.
+      // CR 802.25g, 802.25i: read against THIS recipient — off when either side is Pure.
       if (n > 0 && attrsVs(hitUnit).has('Powerful')) n *= 2;
       if (n <= 0) continue;
       const target = hit.target;
@@ -4977,7 +4976,7 @@ export class E {
          * terms — so the excess is what is left after BOTH doublings, which is
          * the ordering the ruling specifies.
          */
-        // R340: the excess is the dealing player's to place — keep it on the
+        // CR 802.16: the excess is the dealing player's to place — keep it on the
         // unit or let it through (`pierceKeep` asks only when there is any)
         if (attrsVs(first).has('Piercing')) {
           const lethal = poolToKill(first);
@@ -4991,7 +4990,7 @@ export class E {
         add({ u: first }, n);
         continue;
       }
-      // R4: only the lethal share sticks to each victim; the rest passes along
+      // CR 802.17: only the lethal share sticks to each victim; the rest passes along
       // a controller-chosen, non-overlapping adjacent path, all planned before
       // any damage commits (atomic — no formation changes mid-distribution)
       let victim = first;
@@ -5010,11 +5009,11 @@ export class E {
           // attributes compose rather than one silently eating the other —
           // Electric says where excess goes NEXT, Piercing says where excess
           // goes when there is no next: to the controller of the unit it could
-          // not be spent on. WITHOUT it the excess stays on this unit (R317):
-          // it used to be dropped (R4), but damage is dealt, not lost — R114,
+          // not be spent on. WITHOUT it the excess stays on this unit (CR 802.17):
+          // it used to be dropped (the original Electric ruling), but damage is dealt, not lost — CR 608.6d,
           // and RAQ "[Solved] Vulnerable + Piercing / Electric": "All 12 damage
           // sink into Crumbling - this has its use if you had Ember of Life".
-          // R340: and the Piercing half is elective, as on a plain hit — the
+          // CR 802.16q: and the Piercing half is elective, as on a plain hit — the
           // victim's lethal share is already placed above, so the question is
           // asked over lethal + the remainder and the extra kept is added on.
           if (attrsVs(victim).has('Piercing')) {
@@ -5025,7 +5024,7 @@ export class E {
           break;
         }
         /**
-         * R317: the jump is OPTIONAL. Electric's reminder says excess "can be"
+         * CR 802.17: the jump is OPTIONAL. Electric's reminder says excess "can be"
          * dealt to an adjacent unit, and the RAQ reads that literally: "you can
          * ignore it and just assign all 6 damage to Crumbling Ancient". So the
          * controller is always asked, even with one neighbour (it used to be
@@ -5054,14 +5053,14 @@ export class E {
     }
     if (!order.length) return;
 
-    // What each recipient RECEIVES — a Vulnerable victim doubles it, and R48
+    // What each recipient RECEIVES — a Vulnerable victim doubles it, and CR 802.22a
     // {Blessed} says what the victim receives is what the source dealt, so the
     // doubling is inside the total the batch reports.
     const received = new Map<string, number>();
     for (const r of order) {
       const n = dealt.get(key(r)) ?? 0;
       let got = r.u && !pureWith(r.u) && this.effAttrs(r.u).has('Vulnerable') ? n * 2 : n;
-      // R98: prevention runs HERE, before `total`, because `total` is "the
+      // CR 112.11: prevention runs HERE, before `total`, because `total` is "the
       // damage this effect dealt" (Ember of Life's "that many") and prevented
       // damage was never dealt. It is also after Vulnerable's doubling: the
       // shield stops "all damage that WOULD BE DEALT", and what would be dealt
@@ -5084,14 +5083,14 @@ export class E {
       if (r.seat !== undefined) {
         const seat = r.seat;
         // spell-effect damage to a PLAYER is still damage: emit a 'damage' event
-        // (with the effect's controller, R33) so triggers hear face hits too.
+        // (with the effect's controller, CR 112.5, 102.6) so triggers hear face hits too.
         // Fired before loseLife — a lethal hit ends the game mid-throw and the
         // queued trigger is moot. Combat face damage does NOT come through here
         // (pumpCombatDamage → loseLife directly) and stays trigger-silent.
         const ev = this.ev('damage', `${ctx.sourceName} deals ${n} to ${this.pname(seat)}.`,
           { player: seat, n, total, source: ctx.sourceName, controller: ctx.controller, region: ctx.region });
         this.fireEvent('damage', ev);
-        // R48 {Blessed}: the gain lands on the SAME game-state check as the
+        // CR 802.22b {Blessed}: the gain lands on the SAME game-state check as the
         // damage, so it is committed here — before loseLife runs the lethal
         // check. A blessed source therefore cannot kill its own controller.
         if (attrsVs(undefined).has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
@@ -5100,29 +5099,29 @@ export class E {
       }
       const u = r.u!;
       if (!this.entity(u.id)) continue;
-      // R98: `n` is already post-prevention (see above), and a fully prevented
+      // CR 112.11: `n` is already post-prevention (see above), and a fully prevented
       // recipient never reaches here — the `n <= 0` guard at the top of the
       // loop drops it. So no {Blessed} gain, no Poisonous counters, no 'damage'
       // event, no {Deadly} kill, no {Resonant} rider: "if there is not damage
       // being dealt, then no counters are placed" (RAQ, Poisonous vs
       // Phytochemical Protection).
       const through = n;
-      // R106: this hit was read at printed stats, so its lethality is settled
+      // CR 802.9e: this hit was read at printed stats, so its lethality is settled
       // by `sweepCollapsedDeaths` below rather than by the state-based sweep.
       if (collapsed(u)) collapsedHit.add(u.id);
-      // R289: every rider below is read against THIS recipient
+      // CR 802.25g: every rider below is read against THIS recipient
       const vs = attrsVs(u);
       const poisonous = vs.has('Poisonous');
       const resonant = vs.has('Resonant');
       if (vs.has('Blessed')) this.blessedGain(ctx.controller, through, ctx.sourceName);
       /**
-       * R237 — {POISONOUS} IS A FORM, NOT A REPLACEMENT, and this branch is
+       * CR 802.18a, 802.18b — {POISONOUS} IS A FORM, NOT A REPLACEMENT, and this branch is
        * therefore one dealing of damage with two ways of marking it.
        *
        * This used to be an if/else in which the {Poisonous} half fired no
-       * 'damage' event, took no {Deadly} kill and carried no R166 `lethal`
+       * 'damage' event, took no {Deadly} kill and carried no `lethal`
        * fact, on the reading that "Poisonous replaces the damage". Caleb
-       * settled that in the other direction twice, and the engine's own R98
+       * settled that in the other direction twice, and the engine's own prevention
        * comment quotes the summary of it without noticing:
        *
        *   Caleb, 2025-02-03 (#rules-questions): *"Poisonous damage does count
@@ -5150,7 +5149,7 @@ export class E {
        *    *"Awoken Tomb receives 2 damage in form of -2/-2 counters and is
        *    triggered to make 2/2 token unit."* Measured before this change:
        *    it was not. Only PREVENTION silences the trigger, and prevention
-       *    is handled far above here (R98) — a fully prevented recipient
+       *    is handled far above here (CR 112.11) — a fully prevented recipient
        *    never reaches this loop at all.
        *  · **the {Deadly} kill.** Caleb, 2023-08-23, asked directly about a
        *    unit with both: *"yeah it'll get instakilled by deadly but also
@@ -5158,7 +5157,7 @@ export class E {
        *    unit dies anyway. Combat has always done this (`L.deadlyHit` is
        *    marked in `assignColumnDamage` regardless of {Poisonous}, and
        *    `sweepDeadly` kills through it) — this path was the one that
-       *    disagreed with it, which is R237's whole subject: the owner,
+       *    disagreed with it, which is the whole subject of CR 802.3e and 802.3g: the owner,
        *    2026-08-28, *"deadly works on spell effects and everything. Just
        *    like powerful."*
        *
@@ -5167,24 +5166,24 @@ export class E {
        * otherwise destroy the victim before it could hear the hit that killed
        * it — while a lethal MARKED hit keeps its trigger (deaths wait for the
        * sweep at the foot of this method). Firing first is what makes the two
-       * forms equally audible; R166's `lethal` fact is what makes the
+       * forms equally audible; the `lethal` fact is what makes the
        * pre-counter reading safe, since a listener asking "did I survive
        * this?" reads the fact and not the stats.
        */
-      // R106: lethality on a collapsed hit is measured on PRINTED defense —
+      // CR 802.9: lethality on a collapsed hit is measured on PRINTED defense —
       // "Haboob kills anything that has 1 defense printed at the card level",
       // however many +1/+1 counters are on it. The kill itself is
       // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
       // let the pumped victim walk.
       const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
       /**
-       * R166 — `lethal` IS A FACT ABOUT THE HIT, and it rides the event.
+       * CR 802.3a — `lethal` IS A FACT ABOUT THE HIT, and it rides the event.
        *
        * "Whenever I survive damage" (Molten Tormentor) is a condition at
-       * event time (R1), and the only thing a listener could read at event
+       * event time (CR 109.3a), and the only thing a listener could read at event
        * time was `u.damage < defense` — which a {Deadly} hit BELOW defense
        * passes, so the card paid out for surviving a hit that killed it one
-       * line later. Marked damage is not the whole of what kills: R21's
+       * line later. Marked damage is not the whole of what kills: CR 802.3a's
        * {Deadly} is the second half, and it is known HERE and nowhere else.
        *
        * Computed before the dispatch (the read is pure — `fireEvent` only
@@ -5196,7 +5195,7 @@ export class E {
        * a UNIT: {Piercing} carries excess to the PLAYER, {Lethal} kills a
        * player outright, {Resonant} drains life, and {Vulnerable}'s doubling
        * is already inside `through`. {Poisonous} used to be listed here as
-       * "replaces the damage and never reaches this branch at all"; R237
+       * "replaces the damage and never reaches this branch at all"; the Poisonous-is-damage ruling
        * struck that — its damage reaches every line of this one, and only the
        * MARK below differs.
        */
@@ -5228,22 +5227,22 @@ export class E {
       this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
       // the MARK: the one line the two forms do not share.
       if (poisonous) this.addCounters(u, -through);   // permanent; runs checkDeaths
-      // R21: Deadly — any nonzero damage kills, regardless of toughness. A
+      // CR 802.3a: Deadly — any nonzero damage kills, regardless of toughness. A
       // poison hit the counters already killed is in here too, exactly as a
       // marked hit that reached its defense is: `killed` is a list of units
       // this batch killed, and the destroy loops below skip whatever is
       // already gone.
       if (lethal || (poisonous && !this.entity(u.id))) killed.push(u);
-      // R315: the rider is the source's own trigger, not inline life loss
+      // CR 802.19a: the rider is the source's own trigger, not inline life loss
       if (resonant) {
         this.queueResonant(ctx.sourceId ?? -1, ctx.controller, u.controller, through, ctx.region, ctx.sourceName);
       }
     }
-    // R98: "Put a +1/+1 counter on it for each damage prevented this way" —
+    // "Put a +1/+1 counter on it for each damage prevented this way" —
     // paid out after the whole batch is marked, so a shield cannot resolve a
-    // death in the middle of damage R80 made simultaneous.
+    // death in the middle of damage CR 112.8 makes simultaneous.
     this.settleDamagePrevention();
-    // R184: {Reaping} is a KILL rider, not a damage rider — "when it kills a
+    // CR 802.21b: {Reaping} is a KILL rider, not a damage rider — "when it kills a
     // unit, its controller draws a card" — so its real home is the kill diff
     // at the resolving-part boundary (`killRiders`), which sees a kill however
     // it happened. This line survives for the ONE case that boundary cannot
@@ -5252,12 +5251,12 @@ export class E {
     // the open diff is somebody ELSE's — an {Afflicting}-only source, which
     // pays no draw. `killWatch.reaps` says the diff has this covered, so
     // exactly one of the two ever pays.
-    // R283: ONE draw for the whole batch, not one per body. The printed
+    // CR 802.21: ONE draw for the whole batch, not one per body. The printed
     // reminder is "(When a reaping source kills one or more units, draw a
     // card. It loses reaping until regroup.)" — "one or more units" takes "a
     // card", singular. It is absent from the oracle transcription because
     // {Reaping} is a TYPE-LINE ATTRIBUTE and that field carries ability text
-    // (owner, 2026-08-30), which is why R184 built this attribute without it.
+    // (owner, 2026-08-30), which is why the attribute was first built without it.
     if (srcAttrs.has('Reaping') && !this.killWatch?.reaps && killed.length) {
       this.reapingDraw(ctx.controller);
     }
@@ -5269,13 +5268,13 @@ export class E {
         }
       }
     }
-    // R106: settle the deaths the collapsed reading implies before the ordinary
+    // CR 802.9e: settle the deaths the collapsed reading implies before the ordinary
     // state-based sweep, which reads effStats and cannot see them.
     this.sweepCollapsedDeaths(collapsedHit);
     this.checkDeaths();
   }
 
-  /** R75 orthogonal formation adjacency, read for UNITS: front/back within a
+  /** CR 603.2a orthogonal formation adjacency, read for UNITS: front/back within a
    * column + same row in a horizontally adjacent column, nothing diagonal
    * (attackers and blockers are separate grids). `adjacentSlots` is the same
    * definition read for the EMPTY positions, and both take their grid from
@@ -5302,7 +5301,7 @@ export class E {
     return [];
   }
 
-  // ── R48 / R184: THE KILL-SCOPED ATTRIBUTES ──────────────────────────
+  // ── CR 802.23a, 802.21b, 802.23c: THE KILL-SCOPED ATTRIBUTES ──────────────────────────
   //
   // Two attributes in the pool are triggered by a KILL rather than by damage,
   // and the set is read off the pool's own reminder wording, exactly as
@@ -5315,38 +5314,38 @@ export class E {
   //                 (⚠ THIS COMMENT USED TO SAY IT WAS **NOT** PRINTED — "none
   //                  of the four {Reaping} cards carries a reminder at all.
   //                  `ui/glossary.ts` is the repo's own statement of it, and it
-  //                  is what R184 read." That was false, and R184 built the
+  //                  is what R184 read." That was false, and the Reaping ruling built the
   //                  attribute from the repository's paraphrase of itself
   //                  because of it. Every printer carries the sentence above;
   //                  it is missing from the oracle transcription because
   //                  {Reaping} is a TYPE-LINE ATTRIBUTE and that file's `text`
-  //                  field holds ability text (owner, 2026-08-30). R281/R283.
+  //                  field holds ability text (owner, 2026-08-30); see CR 802.21.
   //                  "one or more units" takes "a card" — one draw, not one
-  //                  per body, which is what this site paid until R283.)
+  //                  per body, which is what this site paid until the reminder was read.)
   //
   // Contrast the DAMAGE-scoped riders one word away — {Blessed} "DAMAGE dealt
   // by a blessed source…", {Resonant} "when it DAMAGES a unit…", {Deadly}
   // "any DAMAGE from a deadly source WILL KILL a unit" (a damage modifier, not
   // a kill trigger). Those belong at the damage site and must stay there.
   //
-  // R48 already had the right machinery for {Afflicting} and it is Caleb's own
+  // The {Afflicting} kill diff (CR 802.23c) already had the right machinery, and it is Caleb's own
   // formulation (2024-09-10: "we check damage and stats of units that were
   // interacted with during spell resolutions"): attribution is not done at the
   // damage site but by DIFFING — snapshot who is alive, let the source act,
   // then see who is gone. That covers damage, counters, stat swaps, delete
   // effects and anything else a future card does.
   //
-  // R184's whole change is that {Reaping} now rides the SAME diff. It used to
+  // The Reaping change (CR 802.21b) is that {Reaping} now rides the SAME diff. It used to
   // live in `dealEffectDamageAll`, so a kill by a -1/-1 counter (Noxious
   // Demise) or by a power/defense swap (Invasive Reassignment) never saw it,
   // and both cards hand-rolled the rider in card code to compensate. Neither
   // does any more.
 
-  /** R184: the attributes whose rider fires on a KILL, so one diff serves them
+  /** CR 802.21b, 802.23c: the attributes whose rider fires on a KILL, so one diff serves them
    * all. Adding an attribute here is the whole cost of giving it kill scope. */
   static readonly KILL_RIDERS: readonly Attr[] = ['Afflicting', 'Reaping'];
 
-  /** R184: does this source want a kill diff opened around it? */
+  /** CR 802.21b: does this source want a kill diff opened around it? */
   wantsKillDiff(attrs: Set<string>): boolean {
     return E.KILL_RIDERS.some(a => attrs.has(a));
   }
@@ -5362,7 +5361,7 @@ export class E {
     return m;
   }
 
-  /** R184: the "after" side — every unit in `before` that is no longer in
+  /** CR 802.21b: the "after" side — every unit in `before` that is no longer in
    * play, with the controller it had while it lived. `only` narrows the diff
    * to ids the source is known to have interacted with (combat, where other
    * units may be dying in the same sub-step from unrelated columns). */
@@ -5377,7 +5376,7 @@ export class E {
   }
 
   /**
-   * R184: close a kill diff and pay out every kill-scoped rider the source
+   * CR 802.21b: close a kill diff and pay out every kill-scoped rider the source
    * carries. ONE call site per seam, so a new kill-scoped attribute never has
    * to find the seams for itself.
    *
@@ -5389,7 +5388,7 @@ export class E {
     const dead = this.killDiff(before, only);
     if (!dead.length) return;
     if (attrs.has('Afflicting')) this.afflictingRot(dead, sourceName);
-    // R283: "When a reaping source kills one or more units, draw A CARD" —
+    // CR 802.21: "When a reaping source kills one or more units, draw A CARD" —
     // one draw for the whole kill, however many bodies it took. This read
     // `for (const _ of dead)` until the printed reminder was finally read off
     // the card scans; the damage-site rider above pays the same way now.
@@ -5406,7 +5405,7 @@ export class E {
   /**
    * Close an afflicting diff: every unit in `before` that is no longer in play
    * was killed by the afflicting source, and its CONTROLLER gains a rot —
-   * ⚠ R48 (Bena's reading): ONE rot per affected controller per kill event,
+   * ⚠ CR 802.23b (Bena's reading): ONE rot per affected controller per kill event,
    * however many of their units died. `only` narrows the diff as `killDiff`
    * describes. Kept as its own entry point because the COMBAT seam
    * (`afflictingAftermath`) still calls it per damage-source bucket.
@@ -5428,19 +5427,19 @@ export class E {
     }
   }
 
-  /** R278: the units of the death batch `checkDeaths` is disposing right now.
+  /** CR 706.8c: the units of the death batch `checkDeaths` is disposing right now.
    * Transient, per synchronous call — never serialised, never on GameState.
    * Read by `fireEvent`, which otherwise loses each body the instant
    * `destroy` deletes it from `s.entities`. */
   private deathBatch: Entity[] = [];
-  /** R278: which member of `deathBatch` is being disposed at this instant, so
-   * it is not handed its own 'died'/'trashed' event twice (R40). */
+  /** CR 713.6a: which member of `deathBatch` is being disposed at this instant, so
+   * it is not handed its own 'died'/'trashed' event twice. */
   private disposingSelf: EntityId | null = null;
 
   /** `u` is a unit the state-based check would kill right now. */
   isLethal(u: Entity): boolean {
     if (u.kind !== 'unit') return false;
-    // R270: a SENT COUNTERATTACKER "doesn't exist until phase 1 finishes"
+    // CR 610.2e: a SENT COUNTERATTACKER "doesn't exist until phase 1 finishes"
     // (Manual p.20), and `E.anchored` already enforces exactly that on the
     // emitting side — an absent anchor radiates nothing, its own text
     // included. Sweeping it here anyway asked a body that does not exist to
@@ -5451,7 +5450,7 @@ export class E {
     // board; it cannot die on it. The sweep at the foot of endBattleRound
     // catches it the moment it lands.
     if (u.absent) return false;
-    // R313: constructed's draw phase — draw 4, put 2 back — is ONE step for
+    // CR 503.5b: constructed's draw phase — draw 4, put 2 back — is ONE step for
     // the seat taking it, though it is two actions. Owner, 2026-10-06: a
     // card-count unit (Dreadspawn Horror) is judged on the NET hand, so its
     // controller's units are not checked until they have put their 2 back.
@@ -5461,19 +5460,19 @@ export class E {
   }
 
   /** The state-based check. Two actions, run together at every safe point:
-   * lethal damage kills, and an empty attacking column stops existing (R72).
+   * lethal damage kills, and an empty attacking column stops existing (CR 602.5c).
    * The second is here as well as in removeFromFormation() because card code
    * splices `b.columns` directly (Hooba-Nan, Shard Sprite, Tiderunner), and a
    * state-based action nobody can forget to run is the whole point. */
   checkDeaths(): Entity[] {
     const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));
-    // R278 — THE BATCH IS SIMULTANEOUS TO ITS LISTENERS TOO. The loop below
+    // CR 706.8c — THE BATCH IS SIMULTANEOUS TO ITS LISTENERS TOO. The loop below
     // disposes one body at a time and `destroy`'s second line deletes each one
     // from `s.entities`, which `fireEvent` scans; without `deathBatch` the
     // first corpse out of a batch cannot hear the rest of it, and Muck
     // Rummager missed three cards its controller trashed in one combat-damage
-    // step (report #155, room ZSPG action 218). `disposingSelf` keeps R40's
-    // "excludes the trigger source itself": a body never hears its OWN
+    // step (report #155, room ZSPG action 218). `disposingSelf` keeps the
+    // "excludes the trigger source itself" reading (CR 713.6a): a body never hears its OWN
     // departure through this seam, only its batch-mates'.
     const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
     this.deathBatch = dead;
@@ -5491,26 +5490,25 @@ export class E {
   }
 
   /**
-   * R153 — THE DISPOSAL TAIL. One body and its mods leave PLAY for a bin;
+   * CR 410.7 — THE DISPOSAL TAIL. One body and its mods leave PLAY for a bin;
    * this is the whole of what happens to them, and it is the only copy.
    *
    * ⚠ WHY THIS EXISTS. The sequence below — push the mods, push the body,
-   * announce, trash each one ANCHORED (R70), then sweep by SLOT INDEX
-   * highest-first if the body is {Unstable} (R137/R140/R145), else sweep just
-   * the body if it is a token (R69), then file the TOKEN mods on the public
-   * erased pile (R65), then delete the mod entities last — has eight ordering
+   * announce, trash each one ANCHORED (CR 714.9), then sweep by SLOT INDEX
+   * highest-first if the body is {Unstable} (the engine's route; CR 405.5 erases instead, CT-246), else sweep just
+   * the body if it is a token (CR 410.5), then file the TOKEN mods on the public
+   * erased pile (CR 407.3a), then delete the mod entities last — has eight ordering
    * constraints and not one of them is visible from a call site. Every time it
    * was hand-copied it drifted: the copy in `exchangeInPlace` (Hooba-Mon,
    * batch-dark-b.ts) logged a despawn it never fired, deleted its mods with no
    * bin and no trash, and skipped a token body's bin entirely — three separate
-   * repairs (R146, then R152) to make one copy say what the original said.
+   * repairs, in two rounds, to make one copy say what the original said.
    * CT-43 is the conclusion: there is now ONE implementation and both leave-
    * play-for-a-bin routes call it. Do not re-inline it. `test/129-disposal-
    * tail.test.ts` fails if you do — behaviourally, not by reading the source.
    *
-   * `E.toBin` cannot express this and is not meant to: it takes neither R70's
-   * `anchor` (so a mod's own "when I am trashed" text would lose the region it
-   * left play in) nor reports the slot it pushed to (so R140's sweep would be
+   * `E.toBin` cannot express this and is not meant to: it takes neither the leave-play `anchor` of CR 714.9 (so a mod's own "when I am trashed" text would lose the region it
+   * left play in) nor reports the slot it pushed to (so CR 405.6's sweep would be
    * back to `bin.lastIndexOf(name)`, which eats an innocent older copy of the
    * same card). `toBin` is for a card entering a bin from a zone that is not
    * play; this is for one leaving play.
@@ -5518,8 +5516,8 @@ export class E {
    * `announce` is the callers' ONE difference, and it is held to the middle of
    * the sequence on purpose: a death logs 'died' and a leave-play logs
    * 'despawned', both AFTER every push and BEFORE every trash, because that is
-   * the board a listener must see (R137). It receives the body's bin slot —
-   * `binSeat` + `binIndex`, R131's bin identity, which only this method knows
+   * the board a listener must see (CR 410.7). It receives the body's bin slot —
+   * `binSeat` + `binIndex`, CR 405.6's bin identity, which only this method knows
    * — and `unstable`, which decides the wording of the caller's own log line.
    * Anything the caller must do inside that window (a formation collapse, an
    * unslot) goes in the callback too; nothing else belongs there, because
@@ -5534,7 +5532,7 @@ export class E {
    * and all of its mods into YOUR bin"); `opts.keepBinned` is that same card's
    * override of the Unstable sweep — the card's own stated destination wins.
    * A TOKEN body is still swept under `keepBinned`: Pull Under moves cards and
-   * a token has none (R69).
+   * a token has none (CR 410.5).
    *
    * NOT folded in: `leavePlay` / `afterDespawn` (recall and cache). They run
    * the mods HALF of this and nothing else — their body goes to a hand or a
@@ -5549,13 +5547,13 @@ export class E {
     announce: (at: { binSeat: Seat; binIndex: number; unstable: boolean }) => void,
     opts: { binTo?: Seat; keepBinned?: boolean } = {},
   ): void {
-    // R157 §10: turn a transformed card back over FIRST — before the bin
+    // CR 410.3: turn a transformed card back over FIRST — before the bin
     // seat, the Unstable question, any push, the announce or the trash. The
     // card that reaches the bin is the FRONT face, and everything below reads
     // `u.card`.
     this.revertFace(u);
     /**
-     * R250 §3 (owner, 2026-08-29, round-31 sheet Q5) — **A STOLEN UNIT THAT
+     * CR 405.3, 801.2e (owner, 2026-08-29, round-31 sheet Q5) — **A STOLEN UNIT THAT
      * DIES IS TRASHED BY ITS CONTROLLER, INTO THE CONTROLLER'S BIN.**
      *
      * > "The controller trashes it and it goes to their graveyard. In
@@ -5565,54 +5563,52 @@ export class E {
      *
      * This was `u.owner`. For the 99% of deaths where nobody has stolen
      * anything the two are the same seat and nothing moves; the whole ruling
-     * lives in the gap R112's `giveControl` opens.
+     * lives in the gap `giveControl` opens (CR 711.1).
      *
-     * ⚠ THIS PARTLY REVERSES [R244]'s "⚠ The DESTINATION does not move" — but
-     * only for THE BODY, and R244 wrote that paragraph knowing this question
+     * ⚠ THIS PARTLY REVERSES the mods ruling's "⚠ The DESTINATION does not move" — but
+     * only for THE BODY, and that paragraph was written knowing this question
      * was open ("it could get away with that only because no caller had ever
-     * made them differ"). R244's own split — `noteTrashed`'s `seat` vs
+     * made them differ"). That ruling's own split — `noteTrashed`'s `seat` vs
      * `binSeat` — is what makes the reversal a one-word change here instead of
-     * a rewrite. **The MODS are untouched**: `modBin` below still sends a mod
-     * to its own owner's bin, because R244 ruled that separately and Q5 was
-     * asked about a unit. See R250 §4 for why the two cases can be told apart
-     * at all, and what would have to be true for them to be joined.
+     * a rewrite. **The MODS follow control too**: `modBin` below sends a mod to its host controller's bin (CR 410.4a), a separate ruling: Q5 was
+     * asked about a unit.
      *
-     * The R131 bin ref is UNAFFECTED by this in mechanism and made MORE exact
+     * The CR 405.6 bin ref is UNAFFECTED by this in mechanism and made MORE exact
      * in value. The body's trash passes no `binSeat` option, so trasher and
      * bin-owner are one number here whichever seat it is, and the stamp is
      * always computed rather than dropped — the `-1` "absent" case is still
      * reachable only through the mod path. What changed is which bin the nth
      * is counted in, and it is now the bin the card is actually sitting in,
-     * which is exactly what R140 (Cthyrian Rector recalling an innocent older
+     * which is exactly what CR 405.6 (Cthyrian Rector recalling an innocent older
      * copy) requires of it.
      */
     const binSeat = opts.binTo ?? u.controller;
-    // R96/R118/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
-    // derived one (a modded card is Unstable — R69); `u.unstable` is the
-    // until-regroup STAMP a bin play leaves on the body it spawned; and R118
-    // ruling 2 adds the COPY of a modded unit ("the copy is still considered
-    // modded"). Read off the detached entity, so it is the same answer whether
+    // CR 803.8/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
+    // derived one (a modded card is Unstable — CR 803.8e); `u.unstable` is the
+    // until-regroup STAMP a bin play leaves on the body it spawned; and an earlier
+    // reading added the COPY of a modded unit, since reversed: a fresh copy is
+    // not Unstable (CR 803.8g). Read off the detached entity, so it is the same answer whether
     // the caller asked before or after the body left the table.
     const unstable = this.isUnstable(u);
-    // R244: does the sweep below take the body and its mods back OUT of the
+    // CR 720.8a: does the sweep below take the body and its mods back OUT of the
     // bin? Hoisted here because it is now two decisions, not one — the erase
     // AND whether a mod's momentary bin visit is a trashing at all. The
     // announce's log line asks the same question (see `willSweep` in
     // destroy()); this is the same predicate, one scope up.
     const willSweep = unstable && !opts.keepBinned;
-    // R137: the nontoken mods enter their own owners' bins too — `binTo`
+    // The nontoken mods enter the host controller's bin too (CR 410.4a) — `binTo`
     // redirects them with the body. Pushed BEFORE the announce, exactly as
     // leavePlay() does for a recall, so a death listener sees the same board a
     // despawn listener would.
-    // R250 §4 — **ZONES ALWAYS FOLLOW CONTROL, and that includes a mod's.**
-    // This was `m.owner`, under R244's *"⚠ The DESTINATION does not move. A
+    // CR 410.4a — **ZONES ALWAYS FOLLOW CONTROL, and that includes a mod's.**
+    // This was `m.owner`, under the earlier owner's-bin reading's *"⚠ The DESTINATION does not move. A
     // card still goes to its own OWNER's bin — Rashi's Virus lands in Rashi's
     // bin — because ownership is not control."* The owner has now ruled the
     // opposite: *"there's no issue with taking opponent's cards and putting
     // them into your zones … The primary format (live draft) is a fully shared
-    // card pool."* R244's ATTRIBUTION half stands untouched (a mod is trashed
+    // card pool."* The earlier reading's ATTRIBUTION half stands untouched (a mod is trashed
     // by the host's controller); only its destination half is superseded, and
-    // R244 wrote that paragraph knowing the question was open — it recorded
+    // the earlier reading was written knowing the question was open — it recorded
     // that the engine "could get away with" conflating attribution and
     // destination "only because no caller had ever made them differ". This is
     // that seam being decided rather than discovered.
@@ -5621,7 +5617,7 @@ export class E {
     // trash attribution below are now the same seat by construction.
     const modBin = (m: Entity): Seat => opts.binTo ?? m.controller;
     const binnedMods = mods.filter(m => !m.token);
-    // R140: remember WHERE each push landed. The whole window between here and
+    // CR 405.6: remember WHERE each push landed. The whole window between here and
     // the state-based sweep below only QUEUES (fireEvent composes triggers, it
     // never resolves one), so nothing can leave a bin in between and these
     // indices are still exact when the sweep uses them.
@@ -5631,34 +5627,35 @@ export class E {
       b.push(m.card);
       binnedAt.set(m.id, b.length - 1);
     }
-    // R40/R137: EVERYTHING leaving play for a bin enters one — token, Unstable
-    // carrier and plain card alike — and R40 trashes every CARD among them.
-    // R306: not a token; `noteTrashed` drops that case itself. The trash fires AFTER
+    // In the engine EVERYTHING leaving play for a bin enters one — token, Unstable
+    // carrier and plain card alike — and every CARD among them is trashed (CR 801.2);
+    // CR 405.5 and 801.2h instead erase an Unstable carrier unbinned (CT-246).
+    // CR 801.2d: not a token; `noteTrashed` drops that case itself. The trash fires AFTER
     // the caller's event below so the log reads "X dies → bin" then "…trashes
     // X", and the erase comes after that again.
     this.player(binSeat).bin.push(u.card);
     const bodyBinIndex = this.player(binSeat).bin.length - 1;
     announce({ binSeat, binIndex: bodyBinIndex, unstable });
-    // R40/R70: the trash fires anchored on the departing entity itself, so its
+    // CR 714.9: the trash fires anchored on the departing entity itself, so its
     // own "when I am trashed" trigger keeps the region it left play in — body
     // first, then each mod anchored on the MOD entity, which is the order
     // afterDespawn() uses for a recall.
     this.noteTrashed(binSeat, u.card, 'play', u);
-    // R244 (owner, 2026-08-29, report #129), the half that OVERRULES R137's
+    // CR 720.8a (owner, 2026-08-29, report #129), the half that OVERRULES an earlier reading,
     // "The mods ride with it": **a mod erased with its host is not trashed at
     // all.** *"When a mod goes onto a unit, it becomes PART of that unit … The
     // Monstrosity was a mod, not its own card, on Ben's unit."* It never had a
     // presence of its own to trash; it goes where the host goes, and the
     // host's single trash above is the whole unit's.
     //
-    // ⚠ R137 IS NOT WEAKENED FOR THE BODY. The line above still fires for an
+    // ⚠ THE ENGINE'S UNSTABLE-BODY TRASH IS NOT WEAKENED (CR 801.2h differs, CT-246). The line above still fires for an
     // {Unstable} carrier that dies and is erased a statement later — that is
-    // the exact defect R137 exists to fix (report #93: Dropslime trashing from
+    // the exact defect the owner's 2026-08-24 call exists to fix (report #93: Dropslime trashing from
     // hand and not from play), and it is asserted by name in
     // test/224-mod-trash.test.ts. Only the MODS changed.
     //
     // `willSweep` is the whole condition and not a proxy for it: a nontoken
-    // mod makes its host Unstable by derivation (R69 — `isUnstable` reads
+    // mod makes its host Unstable by derivation (CR 803.8e — `isUnstable` reads
     // `mods.length > 0`), so `binnedMods.length > 0` implies `unstable`, and
     // the only way this loop runs today is Pull Under's `keepBinned` — where
     // the pair really does STAY in the bin and really is trashed. Written as
@@ -5666,13 +5663,13 @@ export class E {
     // which one day binds mods to a non-Unstable host inherits the right
     // answer instead of the card that happened to exist in 2026.
     //
-    // The bin PUSH above stays. It is the route to `eraseFromZone` (R124: the
+    // The bin PUSH above stays. It is the route to `eraseFromZone` (CR 405.7: the
     // sanctioned way out of a bin, and the only thing that files the mod on
-    // R65's public erased pile), and R244 settles the trashing question
+    // CR 407.2's public erased pile), and CR 720.8a settles the trashing question
     // directly rather than by whether a card touched a bin on its way out.
     if (!willSweep) {
       for (const m of binnedMods) {
-        // R244 attribution, R250 §4 destination — and under R250 those are the
+        // CR 720.8 attribution, CR 410.4a destination — and under the latter those are the
         // same seat: `modBin` is the mod's controller, a mod's controller is
         // its host's, and `binTo` overrides both together. `binSeat` is still
         // passed so this site keeps SAYING which question it is answering; see
@@ -5681,14 +5678,14 @@ export class E {
         this.noteTrashed(opts.binTo ?? u.controller, m.card, 'play', m, { binSeat: modBin(m) });
       }
     }
-    // R69/R137 state-based sweep: the card has been in the bin for the whole
+    // The engine's state-based sweep (CR 410.5; CR 405.5 would erase an {Unstable} card without binning it, CT-246): the card has been in the bin for the whole
     // event window above (both `when` passes and the ledger saw it there) and
-    // now leaves it, before anything queued has resolved. R124: eraseFromZone
+    // now leaves it, before anything queued has resolved. CR 405.7: eraseFromZone
     // is the sanctioned route out of a bin, and the reason it records is
     // 'erased' — the same verb the token sweep uses, because it is the same
     // state-based action and not a new kind of departure.
     //
-    // R140: each sweep names the SLOT it pushed (`binnedAt` / `bodyBinIndex`),
+    // CR 405.6: each sweep names the SLOT it pushed (`binnedAt` / `bodyBinIndex`),
     // not the card's name. Without the index this reads `bin.lastIndexOf(name)`,
     // which is the copy just pushed only by luck of ordering — and an older
     // copy of the same name resting in that bin is one reordering away from
@@ -5697,7 +5694,7 @@ export class E {
     if (unstable && !opts.keepBinned) {
       this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — Unstable.`,
         { index: bodyBinIndex });
-      // R140: HIGHEST index first. Two mods of the same card on one carrier land
+      // CR 405.6: HIGHEST index first. Two mods of the same card on one carrier land
       // in one bin at consecutive slots, and erasing the lower one first slides
       // the higher one down under the index we recorded for it — after which a
       // named slot that no longer holds that card is "gone" (eraseFromZone
@@ -5714,10 +5711,10 @@ export class E {
       this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`,
         { index: bodyBinIndex });
     }
-    // R65: an erase must reach the public erased pile like every other erase
+    // CR 407.1: an erase must reach the public erased pile like every other erase
     // (ev() keeps the pile off 'erased' events). The body and the nontoken mods
     // put themselves there via eraseFromZone above; this covers the TOKEN mods,
-    // which never reach a bin at all (R69: a token has no card of its own) and
+    // which never reach a bin at all (CR 410.4c: a token has no card of its own) and
     // so have no sweep to announce them.
     const tokenMods = mods.filter(m => m.token);
     if (tokenMods.length) {
@@ -5728,7 +5725,7 @@ export class E {
   }
 
   /**
-   * `opts.binTo` (R40) redirects the bin the dying card enters — Pull Under
+   * `opts.binTo` (CR 405.3, 801.2e) redirects the bin the dying card enters — Pull Under
    * ("delete target unit; it and its mods go to YOUR bin"). It has to be an
    * argument rather than a fix-up afterwards: the bin push and the trash
    * attribution are one and the same decision ("a card is trashed by the owner
@@ -5736,22 +5733,22 @@ export class E {
    * here, queueing its triggers and bumping the per-battle ledger, long before
    * card code regains control. A compensating second trashed(caster) would
    * double-count the ledger and double-fire "when I am trashed" (Dropslime,
-   * Nothyr, Murkstalker). R137 made `binTo` matter for an Unstable unit too:
+   * Nothyr, Murkstalker). The engine's Unstable route (CR 405.5 differs, CT-246) made `binTo` matter for an Unstable unit too:
    * that one now reaches a bin like everything else, so Pull Under's "it and
    * its mods go to YOUR bin" is the bin the trash is attributed to even when
    * the pair is erased out of it a statement later.
    *
-   * R69 — the branch ORDER is load-bearing, and it used to be wrong. Unstable
+   * CR 803.8e — the branch ORDER is load-bearing, and it used to be wrong. Unstable
    * (`mods.length`) is tested FIRST: an Unstable ANYTHING, token or not, is
    * erased with its mods. The old order tested token-ness first, so a modded
    * token took the token carve-out and never reached the Unstable branch (game
    * UZRG: a Wraith body carrying a Wraith mod died, came back, AND fired its
    * mod's donated death trigger). ⚠ The order still matters for the LOG and
-   * for the mods, but it no longer decides whether a bin is touched: R137
-   * merged the two destinations into one path.
+   * for the mods, but it no longer decides whether a bin is touched: the
+   * engine merged the two destinations into one path (CR 405.5 keeps them apart, CT-246).
    *
-   * R69 again — a dying TOKEN really does enter its owner's bin, and is then
-   * erased by a state-based sweep. R306: it is NOT trashed there — a token is
+   * CR 410.5a — a dying TOKEN really does enter its owner's bin, and is then
+   * erased by a state-based sweep. CR 801.2d: it is NOT trashed there — a token is
    * not a card, and `noteTrashed` returns before any trash for it. Its entry is
    * still real for anything that reads the bin inside the event window
    * (Caleb 2025-03-12 / 2025-06-15: "yes, for the purposes of triggers";
@@ -5764,15 +5761,15 @@ export class E {
    * 2025-04-08: "unstable units still die, they just get erased instead of
    * ending up in the bin"), so every branch below fires 'died'.
    *
-   * **R137 (owner, 2026-08-24) — an Unstable unit that dies IS TRASHED.** It
+   * **Engine (the owner's call, 2026-08-24; CR 801.2h differs, CT-246) — an Unstable unit that dies IS TRASHED.** It
    * takes the token's route (into the bin, `died`, then the sweep) PLUS the
-   * trash a card gets and a token no longer does (R306): `trashed` (ledger and
+   * trash a card gets and a token no longer does (CR 801.2d): `trashed` (ledger and
    * "when I am trashed" and every watcher), then the state-based sweep erases
    * it. The destination a player SEES is unchanged — the erased pile — and the
    * bin is empty again before anything queued resolves.
    *
    * ⚠ This DIVERGES from two sources and the divergence is recorded, not
-   * smoothed over (see R137 in docs/digital-rules.md). Abyssal Evocation and
+   * smoothed over (see CR 801.2h, which follows the print, and CT-246). Abyssal Evocation and
    * Spell Excavation print *"(If they would enter a bin, erase them
    * instead.)"*, and Caleb 2025-04-08 says *"Unstable units still die, they
    * just get erased instead of ending up in the bin"* — both describe the
@@ -5784,68 +5781,68 @@ export class E {
    * that end in the same erased pile behaved differently, and playtest #93
    * (room ANBB) is what that looks like at the table: Dropslime trashed from
    * hand zapped for 2, and the SAME Dropslime dying under a grafted Wraith
-   * fired nothing. R306 (2026-09-28) removed the token half of that symmetry —
-   * a token enters the bin but is not trashed — and R137's CONCLUSION stands
+   * fired nothing. Tokens no longer being trashed (CR 801.2d) removed the token half of that symmetry —
+   * a token enters the bin but is not trashed — and the owner's 2026-08-24 CONCLUSION stands
    * without it: the Dropslime in #93 was a card, and a card entering a bin
-   * from play is trashed whatever happens to it next.
+   * from play is trashed whatever happens to it next — in the engine; CR 801.2h disagrees for an Unstable card (CT-246).
    *
-   * ⚠ The MODS used to ride the same rule and NO LONGER DO — **R244 (owner,
-   * 2026-08-29, report #129) overruled R137's "The mods ride with it"
+   * ⚠ The MODS used to ride the same rule and NO LONGER DO — **the mods ruling (owner,
+   * 2026-08-29, report #129) overruled the Unstable-trash ruling's "The mods ride with it"
    * section**, which was reasoning rather than a log (the ANBB mod was a
    * Wraith, which has no card to trash either way). *"When a mod goes onto a
    * unit, it becomes PART of that unit."* So a nontoken mod erased with its
    * {Unstable} host is NOT trashed — it never had a presence of its own — and
-   * R137's counter-argument (that the same mod would behave differently
+   * the earlier counter-argument (that the same mod would behave differently
    * depending on how its host left play) is answered by the difference being
    * real: recalled or cached, the mod is left behind in a bin and STAYS there,
-   * so it is trashed (R70, Caleb 2024-09-15); erased with its host, it goes
-   * where the host goes. What R244 did NOT touch is the BODY, three paragraphs
-   * up: an {Unstable} carrier that dies is still binned and still trashed.
-   * A TOKEN mod still has no card of its own (R69) and only reaches the
+   * so it is trashed (CR 801.2f, Caleb 2024-09-15); erased with its host, it goes
+   * where the host goes. What the mods ruling did NOT touch is the BODY, three paragraphs
+   * up: in the engine an {Unstable} carrier that dies is still binned and still trashed (CR 801.2h: erased instead, not trashed; CT-246).
+   * A TOKEN mod still has no card of its own (CR 407.3a) and only reaches the
    * erased pile.
    *
    * `opts.keepBinned` is the one card that OVERRIDES the Unstable sweep: Pull
    * Under prints "put it and all of its mods into your bin", and the engine's
-   * long-standing reading is that the card's own destination wins. Before R137
+   * long-standing reading is that the card's own destination wins. Before the trash-through-the-bin change
    * that override was card code doing its own `toBin` after destroy() erased
    * everything; now destroy() already bins and trashes, so the override is
    * simply "do not run the sweep". A TOKEN body is still swept — Pull Under
-   * moves cards, and a token has none (R69).
+   * moves cards, and a token has none (CR 410.5).
    */
   destroy(u: Entity, verb: 'dies' | 'is deleted' | 'is sacrificed',
     opts: { binTo?: Seat; keepBinned?: boolean } = {}): void {
     if (!this.entity(u.id)) return;
-    this.stampLastKnown(u);                     // R325
+    this.stampLastKnown(u);                     // CR 714.1
     delete this.s.entities[u.id];
-    // R152/R153: resolved BEFORE the disposal runs — a mod id whose entity is
+    // resolved BEFORE the disposal runs — a mod id whose entity is
     // already gone is not a mod any more, and disposeToBin deletes them last.
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
-    // R153: push, announce, trash, sweep, erased-pile, delete — the whole tail
+    // CR 410.7: push, announce, trash, sweep, erased-pile, delete — the whole tail
     // is `disposeToBin`, shared verbatim with Hooba-Mon's exchange. Everything
     // left here is what makes this disposal a DEATH rather than some other way
     // of leaving play: the verb, the 'died' event, and the formation collapse.
     this.disposeToBin(u, mods, ({ binSeat, binIndex, unstable }) => {
-      // R70: every fact a death listener could want RIDES THE EVENT (see
+      // CR 714.9: every fact a death listener could want RIDES THE EVENT (see
       // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
       // string-match the log message) is the death-only extra.
       //
-      // R137: `to` is 'bin' for EVERY death now, Unstable included — the same
-      // answer a dying token already gave (R70/R69). It reports where the card
+      // Engine: `to` is 'bin' for EVERY death now, Unstable included (CR 801.2h erases an Unstable card instead; CT-246) — the same
+      // answer a dying token already gave (CR 410.5a). It reports where the card
       // is DURING the event window, which is what a listener can act on; where
       // it ends up is announced by the 'erased' event a few statements later.
       //
-      // R140: a 'died' listener that reaches into the bin for the card it just
+      // CR 405.6: a 'died' listener that reaches into the bin for the card it just
       // saw die (Biomass Devourer erases it OUTRIGHT) needs to name the exact
       // copy, and only the disposal knows which one it is. `seat` on a death
       // event is the CONTROLLER while the card bins to its OWNER, so the bin's
-      // seat is stamped too — the pair (binSeat, binNth) is R131's bin
+      // seat is stamped too — the pair (binSeat, binNth) is CR 405.6's bin
       // identity, the same one `noteTrashed` stamps on 'trashed', read back by
       // `eventBinSlot`.
       const evData: Record<string, unknown> = {
         ...this.leftPlayFacts(u), verb, to: 'bin',
         binSeat, binNth: binNthAt(this, binSeat, binIndex),
       };
-      // R72: hold the death event ITSELF, not "whatever the last event was".
+      // CR 602.5c: hold the death event ITSELF, not "whatever the last event was".
       // removeFromFormation() below can now log a formation collapse, and a
       // trailing `this.events[length-1]` would hand every "when I die" trigger
       // that log line instead of the death it is listening for.
@@ -5872,7 +5869,7 @@ export class E {
               : ", and STAYS — the card's own destination overrides the Unstable sweep.")
             : u.token ? ', then erased (token).' : '.'),
         evData);
-      // formation cleanup + back-row promotion + R72 column collapse
+      // formation cleanup + back-row promotion + CR 602.5c column collapse
       // (state-based, no response window)
       this.removeFromFormation(u.id);
       if (this.s.phase === 'battle') {
@@ -5882,7 +5879,7 @@ export class E {
       // still count as sources of donated "[Augment] when I die" text (the
       // fireEvent mod scan resolves u.mods through the entity table, which is
       // why disposeToBin deletes them only at the very bottom)
-      // R302: the tally Vengeance's banner counts, and it is WITNESSED, not
+      // CR 803.7m: the tally Vengeance's banner counts, and it is WITNESSED, not
       // global — a death counts for you only if you were standing in the
       // region it happened in (owner, 2026-09-20: "YOU need to be in a region
       // for it to see the death... during combat, it will see all deaths").
@@ -5903,7 +5900,7 @@ export class E {
   }
 
   /**
-   * R157 §3 — AN EXCHANGE. `u` leaves play and `name` arrives in its place,
+   * CR 410.2a — AN EXCHANGE. `u` leaves play and `name` arrives in its place,
    * taking its region and, in battle, its exact formation slot.
    *
    * > *"It's not a death, but it is a despawn and trashing. Weird corner
@@ -5918,22 +5915,21 @@ export class E {
    *    `allyDeaths` bump. The card was not killed; it was swapped out.
    *  · IS A DESPAWN. A 'despawned' event, fired (not merely logged) anchored
    *    on the departing entity, so "whenever a unit despawns" hears it and the
-   *    unit's OWN donated [Augment] text is scanned — R152 was the round that
-   *    repaired exactly this, when the announce logged a despawn it never
+   *    unit's OWN donated [Augment] text is scanned — an earlier round repaired exactly this when the announce logged a despawn it never
    *    fired and every despawn watcher in the game was blind to an exchange.
    *  · IS A TRASHING. Which is `E.disposeToBin`, unchanged and shared verbatim
    *    with `destroy()`: push the nontoken mods, push the body, announce,
-   *    trash the body anchored (R70) — and the mods too unless the sweep is
-   *    about to erase them (R244) — sweep by slot index highest-first if the
-   *    body is {Unstable} (R137/R140), else sweep a token body (R69), file the
-   *    token mods on the erased pile (R65), delete the mod entities last.
+   *    trash the body anchored (CR 714.9) — and the mods too unless the sweep is
+   *    about to erase them (CR 720.8a) — sweep by slot index highest-first if the
+   *    body is {Unstable} (the engine's route; CR 405.5 erases instead, CT-246), else sweep a token body (CR 410.5), file the
+   *    token mods on the erased pile (CR 407.3a), delete the mod entities last.
    *
    * ⚠ WHY IT IS HERE and not in card code. It was a module-private function in
    * batch-dark-b.ts serving Hooba-Mon, while Necromorph — the other exchange
    * in the pool, and the one whose own printed text says "Exchange" — called
    * `destroy(victim, 'is deleted')` and fired every death trigger in the
-   * region. R157 §3 makes them one behaviour, and the codebase's own lesson
-   * (R146, R152, R153/CT-43: three rounds of repairing a hand-copy of the
+   * region. CR 410.2a makes them one behaviour, and the codebase's own lesson
+   * (three rounds of repairing a hand-copy of the
    * disposal tail) says the fix for two routes that must agree is ONE method,
    * not a second copy. `test/135-exchange-and-zones.test.ts` spies on this to
    * prove both cards call it.
@@ -5945,7 +5941,7 @@ export class E {
    */
   exchangeInPlace(u: Entity, name: CardName, controller: Seat): Entity | null {
     if (!this.entity(u.id)) return null;
-    // R152: resolved BEFORE `u` leaves the table, exactly as destroy() does —
+    // resolved BEFORE `u` leaves the table, exactly as destroy() does —
     // a mod id whose entity is already gone is not a mod any more
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     const b = this.s.battle;
@@ -5957,7 +5953,7 @@ export class E {
       }
     }
     const outgoing = u.card;
-    this.stampLastKnown(u);                     // R325
+    this.stampLastKnown(u);                     // CR 714.1
     const fresh = this.spawnUnit(controller, name, u.region);
     if (slot) {
       slot.col[slot.idx] = fresh.id;   // take the exact position in play
@@ -5967,7 +5963,7 @@ export class E {
     this.disposeToBin(u, mods, () => {
       // The unslot rides in the announce window because it belongs there:
       // after the pushes, before the trashes. `removeFromFormation` is the
-      // wrong call — its R72 gap-closing would be looking at a column that has
+      // wrong call — its CR 602.5 gap-closing would be looking at a column that has
       // no gap, because `fresh` is standing in it — so this is the plain
       // detach, for the other columns and the sent-attacker list.
       if (b) {
@@ -5978,8 +5974,8 @@ export class E {
         const si = b.sentAttackers.indexOf(u.id);
         if (si !== -1) b.sentAttackers.splice(si, 1);
       }
-      // R152(1): logged AND fired. Anchored on `u`, so its own donated
-      // [Augment] text is scanned. `u.card` is read live — R157 §10's
+      // CR 410.2: logged AND fired. Anchored on `u`, so its own donated
+      // [Augment] text is scanned. `u.card` is read live — CR 410.3's
       // revertFace ran at the top of disposeToBin, so a transformed body
       // announces its despawn under the front face it is really leaving as.
       const ev = this.ev('despawned', `${u.card} is exchanged for ${name}`
@@ -5991,9 +5987,9 @@ export class E {
   }
 
   /**
-   * R69 — THE state-based sweep that erases a token the instant after it
+   * CR 713.5 — THE state-based sweep that erases a token the instant after it
    * enters a zone. Pull ONE copy of `name` back out of `seat`'s bin, hand or
-   * cache and record it in the public erased pile (R65). No-op if it is not
+   * cache and record it in the public erased pile (CR 407.2). No-op if it is not
    * there (a trigger's `when` cannot move it, but a resolved sweep run twice
    * must not eat a second copy).
    *
@@ -6009,13 +6005,13 @@ export class E {
    *  · `at.uid` — a cache entry (`CachedCard.uid`). The cache is the one zone
    *    whose entries are not bare names, and the caller minting the entry
    *    always knows which one it just made.
-   *  · `at.index` — a BIN slot (R140). A bin holds bare card NAMES, so a name
+   *  · `at.index` — a BIN slot (CR 405.6). A bin holds bare card NAMES, so a name
    *    search there answers "the last copy of that name in this bin NOW", which
    *    is the copy the caller pushed only by luck of ordering. `destroy` knows
    *    exactly where it pushed and says so. A named slot that no longer holds
    *    `name` means GONE — the erase is a no-op and deliberately does NOT fall
    *    back to a name search, because falling back is how an innocent older
-   *    copy of the same card gets erased out of the game (R140).
+   *    copy of the same card gets erased out of the game (CR 405.6).
    *
    * Without `at`, both zones still search by name, for the callers that
    * genuinely have no handle (a white-box erase, a card naming a card).
@@ -6030,10 +6026,10 @@ export class E {
     } else if (zone === 'bin') {
       const bin = this.player(seat).bin;
       const i = at?.index !== undefined
-        ? (bin[at.index] === name ? at.index : -1)   // R140: a mismatch is "gone", never a search
+        ? (bin[at.index] === name ? at.index : -1)   // CR 405.6: a mismatch is "gone", never a search
         : bin.lastIndexOf(name);
       if (i === -1) return;
-      this.removeFromBin(seat, i, 'erased');   // R124: the one bin-removal path
+      this.removeFromBin(seat, i, 'erased');   // CR 405.7: the one bin-removal path
     } else {
       const hand = this.player(seat).hand;
       const i = hand.lastIndexOf(name);
@@ -6052,7 +6048,7 @@ export class E {
     }
     const si = b.sentAttackers.indexOf(id);
     if (si !== -1) b.sentAttackers.splice(si, 1);
-    // R72: closing the gap is part of leaving the formation, not a follow-up
+    // CR 602.5c: closing the gap is part of leaving the formation, not a follow-up
     // somebody has to remember. removeFromFormation() is the ONLY way a unit
     // leaves a column (destroy / recall / cacheUnit all funnel through it), so
     // the empty column never survives past the statement that made it empty.
@@ -6060,7 +6056,7 @@ export class E {
   }
 
   /**
-   * R112: `to` gains control of unit `u`. The one control-change primitive —
+   * CR 711.1: `to` gains control of unit `u`. The one control-change primitive —
    * four card batches used to carry their own copy, and they disagreed.
    *
    * - Its MODS change controller with it (Bena 2026-08-23: "a stolen unit's
@@ -6068,7 +6064,7 @@ export class E {
    *   controller — that's the whole point of some of the viruses which force
    *   units to flip flop controllers"). Owner never changes.
    * - It leaves any formation it was in, through removeFromFormation, so the
-   *   R72 column collapse happens here too (the local copies skipped it).
+   *   CR 602.5b column collapse happens here too (the local copies skipped it).
    * - Regions are exclusive: if the new controller is not present where the
    *   unit stands (a deployment-time steal out of the owner's home), the unit
    *   and its mods go to the new controller's home now rather than sitting
@@ -6076,7 +6072,7 @@ export class E {
    *   Mid-battle both seats are present and it stays on the board.
    * Returns false when nothing changed hands (unit gone, or already theirs).
    *
-   * R148 — the two things that changed here, both driven by CT-38/CT-39:
+   * The two things that changed here, both driven by CT-38/CT-39:
    *
    * `opts.keepFormation` is the ONE deviation any printed card has needed, and
    * it exists for exactly one shape: a symmetric EXCHANGE. The unslot is here
@@ -6088,15 +6084,15 @@ export class E {
    * passes `keepFormation` so the choke point does not undo the swap. Any
    * caller that is not re-slotting must leave it alone.
    *
-   * It emits a real dispatched `controlChanged` (R148/CT-39) instead of the
+   * It emits a real dispatched `controlChanged` (CT-39) instead of the
    * `info` line it used to, so "whenever you gain control of a unit" is a
    * listenable seam. Same message, so the game log is unchanged. Region-scoped
-   * per R12 the ordinary way — `data.region` is the unit's region AFTER any
+   * per CR 101.6 the ordinary way — `data.region` is the unit's region AFTER any
    * relocation above, so both seats present there hear it and nobody else
    * does — and `data.unit` makes the moved unit the event's source, so a
    * `self:` listener on the unit that just changed hands matches.
    *
-   * ⚠ **R172 — A UNIT STOLEN MID-BATTLE SITS OUT UNTIL REGROUP. THIS IS A
+   * ⚠ **CR 711.3 — A UNIT STOLEN MID-BATTLE SITS OUT UNTIL REGROUP. THIS IS A
    * RULING, NOT A LIMITATION.** Owner, 2026-08-25, asked about Download
    * ("Gain control of target token", a `{Battle}` spell, so the theft can land
    * with the formations already declared): *it sits out until regroup* — the
@@ -6109,8 +6105,8 @@ export class E {
    * battle down, so the very next battle builds the thief's formation with the
    * stolen unit on it. **Do not "fix" this into a mid-battle re-slot.** There
    * is no re-slot primitive because none is wanted: a unit that appeared in a
-   * declared line after blocks were answered would break R72's "after blocks,
-   * columns will not move" as surely as a collapsing column would. Pinned by
+   * declared line after blocks were answered would break the printed "after blocks,
+   * columns will not move" (CR 602.5a) as surely as a collapsing column would. Pinned by
    * `145-erase-routes.test.ts`, the two Download cases.
    *
    * The batch-metal-a header used to file this under "ENGINE APPROXIMATIONS …
@@ -6135,7 +6131,7 @@ export class E {
   }
 
   /**
-   * R72 — the key for a battle counter that belongs to ONE attacking column
+   * CR 603.5a — the key for a battle counter that belongs to ONE attacking column
    * ("this column has already connected twice this battle"). Column indices
    * MOVE when the formation collapses, so a counter keyed by a bare index
    * silently changes which column it describes. Build the key through here and
@@ -6150,7 +6146,7 @@ export class E {
    * only happens before blocks are declared. After blocks, columns will not
    * move to fill gaps.**"*
    *
-   * The engine had no such window: the first R72 build ran the collapse as an
+   * The engine had no such window: the first build ran the collapse as an
    * unconditional state-based action, including between damage sub-steps.
    */
   private beforeBlocksDeclared(): boolean {
@@ -6160,7 +6156,7 @@ export class E {
   }
 
   /**
-   * R72 — the two halves of formation GRAVITY, which have DIFFERENT timing
+   * CR 602.4, 602.5 — the two halves of formation GRAVITY, which have DIFFERENT timing
    * rules. That asymmetry is printed, and it is the whole of this rule.
    *
    * *"When a column becomes empty during combat, the columns to the right
@@ -6172,7 +6168,7 @@ export class E {
    *     qualifier, so this holds at every moment, mid-combat included. Splicing
    *     the dead id out of the dense column array IS the promotion, and it is
    *     also why *"the front row of a column must be filled first"* can be
-   *     relied on as an invariant rather than checked (R75).
+   *     relied on as an invariant rather than checked (CR 602.3).
    *  2. **Horizontal, only before blocks are declared.** *"If the last unit in
    *     a column is removed … the columns on its sides will close in to fill
    *     the gap. This only happens before blocks are declared. After blocks,
@@ -6213,7 +6209,7 @@ export class E {
     // declared. After that a gap is permanent, and so is every column index.
     if (!this.beforeBlocksDeclared()) return;
     const keep: number[] = [];
-    // R321: a column with a block entry is part of the line even when it is
+    // CR 606.4: a column with a block entry is part of the line even when it is
     // empty — a side-block's column is opened empty, inside the declaration
     for (let ci = 0; ci < b.columns.length; ci++) {
       if (b.columns[ci]!.length || b.blocks[ci] !== undefined) keep.push(ci);
@@ -6239,7 +6235,7 @@ export class E {
   }
 
   /**
-   * R72/R75 — THE re-key, and the only one. Every index-keyed thing hanging off
+   * CR 603.5a — THE re-key, and the only one. Every index-keyed thing hanging off
    * an attacking column moves through here in a single commit: `blocks`, whose
    * key IS the column's identity, and the column-scoped battle counters
    * (colCounterKey). `to(oldCi)` answers the column's new index, or null when
@@ -6268,7 +6264,7 @@ export class E {
       }
       this.s.battleCounters[b.region] = next;
     }
-    // R84 {Alluring}: a must-block duty names an attack COLUMN, so the column's
+    // CR 802.15f {Alluring}: a must-block duty names an attack COLUMN, so the column's
     // identity is the duty's identity and it moves in the same commit as
     // `blocks`. A duty whose column ceases to exist ceases with it — that is
     // the mechanism behind "kill the allurer and the block is freed"; the
@@ -6279,7 +6275,7 @@ export class E {
       a.columns = a.columns.map(to).filter((ci): ci is number => ci !== null);
     }
     if (b.sideCols) b.sideCols = b.sideCols.map(to).filter((ci): ci is number => ci !== null);
-    // R320: a column's struck-marks are the column's, so they move with it
+    // CR 608.2e: a column's struck-marks are the column's, so they move with it
     if (b.struck) {
       const struck: NonNullable<BattleState['struck']> = {};
       for (const [k, v] of Object.entries(b.struck)) {
@@ -6292,7 +6288,7 @@ export class E {
     b.blocks = blocks;
   }
 
-  // ── R75: joining a formation ────────────────────────────────────────
+  // ── CR 602.6: joining a formation ────────────────────────────────────────
   //
   // "When something spawns something 'in my formation' or 'in formation', it's
   // up to the controller of the effect to choose where the unit goes. They can
@@ -6306,27 +6302,27 @@ export class E {
   // Tiderunner Initiate actually asked. One rule, one primitive.
 
   /**
-   * R75 — every legal place a unit could join `seat`'s formation, left to
+   * CR 602.6a — every legal place a unit could join `seat`'s formation, left to
    * right. Not a target (nothing prints "target"): the caller offers these at
-   * RESOLUTION, the way R71's "an ally" is chosen.
+   * RESOLUTION, the way an untargeted "an ally" is chosen.
    *
    * Three kinds, and the first two are the ruling as printed:
    *  · a NEW column at either END. "Either side of the existing units" is read
    *    as the two ENDS, not as an insertion between two existing columns — see
    *    the rules entry, this is a reading.
    *  · the BACK slot of a column that holds exactly one unit.
-   *  · the front slot of a HOLE (R72) — a column emptied of attackers that its
+   *  · the front slot of a HOLE (CR 602.5a) — a column emptied of attackers that its
    *    blockers are holding open. This is the one kind the ruling does not
    *    enumerate, and it is kept because the engine already offered it
    *    (Tiderunner Initiate) and because it is the only way a formation ever
-   *    heals a hole. It cannot CREATE a hole, so it cannot break R72.
+   *    heals a hole. It cannot CREATE a hole, so it cannot break CR 602.5a.
    *
    * A formation you are not standing in cannot be widened: with no living unit
    * in the grid there is no formation to join, and the answer is no slots at
    * all rather than "open a column out of nowhere".
    */
   /**
-   * R75 — the formation grid `seat` fights in, `[column][row]`, front row
+   * the formation grid `seat` fights in, `[column][row]`, front row
    * first: the attacking columns as the attacker, the blocking columns as the
    * defender (ordered by the attacking column each answers). One derivation,
    * so `formationSlots`, `adjacentSlots` and `adjacentInFormation` cannot
@@ -6344,9 +6340,9 @@ export class E {
 
   /**
    * `spot` is the same placement expressed as something that SURVIVES the
-   * board moving under it — R29's play-time placement is chosen at cast and
+   * board moving under it — the play-time placement of CR 602.7 is chosen at cast and
    * taken at resolution, and by then a column may have collapsed, widened or
-   * lost its occupant (R5/R56). A raw index into this list would silently
+   * lost its occupant (CR 602.7a). A raw index into this list would silently
    * become a different slot; the descriptor is re-matched against a freshly
    * computed list instead, and simply fails to match when the spot is gone.
    */
@@ -6359,14 +6355,14 @@ export class E {
     if (!grid.some(col => col.some(id => this.entity(id)))) return flash;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an
-    // attacking column (R72), so a new one has no index to exist at.
+    // attacking column (CR 602.6c), so a new one has no index to exist at.
     if (attacker) {
       out.push({ col: null, end: 'left', label: 'a new column on the left', spot: { kind: 'end', end: 'left' } });
     }
     // The LABEL numbers columns the way the board does: by the attacking
     // column each one stands opposite. The defender's grid is only its
     // blocking columns, so its index i is not that number once a block skips
-    // a column or a side-block opens one (R321) — the bar said "column 3" for
+    // a column or a side-block opens one (CR 606.4) — the bar said "column 3" for
     // what the board drew as column 5. `spot` keeps the grid index.
     const keys = attacker ? null : Object.keys(b.blocks).map(Number).sort((a, z) => a - z);
     grid.forEach((col, i) => {
@@ -6391,7 +6387,7 @@ export class E {
   }
 
   /**
-   * R322 — a unit put into the DEFENDING formation after blocks may stand in
+   * CR 607.2 — a unit put into the DEFENDING formation after blocks may stand in
    * front of an UNBLOCKED attacking column, and it blocks it. The RAQ ("What
    * is blocked?"), _passer: *"If there is unblocked column and during 'after
    * block' window as defender I put Tiderunner Initiate as blocker, the column
@@ -6415,23 +6411,23 @@ export class E {
   }
 
   /**
-   * R225 — WHICH FORMATION a unit is standing in: the seat whose grid holds
+   * CR 602.6e — WHICH FORMATION a unit is standing in: the seat whose grid holds
    * it, or null when it is standing in none at all (it died, or it is in the
    * region beside the line and was never slotted). Derived from
    * `formationGrid`, so it cannot disagree with `formationSlots` or
    * `adjacentSlots` about what a grid is.
    *
    * This exists because "in MY formation" on a printed card is a REFERENT
-   * computed at resolution off the SOURCE (R27), never off the source's SEAT.
+   * computed at resolution off the SOURCE (CR 602.6e), never off the source's SEAT.
    * The two differ whenever the source is not in the line — and the counting
    * half of the family already read it that way (`columnOf` on Hooba-Nan and
-   * Rousing Spirit, R27's X = 0) while the PLACING half read the seat's grid.
+   * Rousing Spirit, CR 714.8's X = 0) while the PLACING half read the seat's grid.
    * That asymmetry was the bug in report FTUW/45.
    */
   formationSeatOf(id: EntityId): Seat | null {
     const b = this.s.battle;
     if (!b) return null;
-    // R325 (reverses R225's dead-source half): a source that left play
+    // CR 714.4 (the earlier dead-source reading is reversed): a source that left play
     // "remembers it was in formation" — its last-known formation, while the
     // battle it stood in is still on
     const lk = this.lastKnownOf(id);
@@ -6443,7 +6439,7 @@ export class E {
   }
 
   /**
-   * R225 — the open slots of the formation `id` is standing in, and none at
+   * CR 602.6e — the open slots of the formation `id` is standing in, and none at
    * all when it is standing in no formation: a source that is not in the line
    * names no formation, so "in my formation" has nowhere to point.
    */
@@ -6459,7 +6455,7 @@ export class E {
   }
 
   /** the live slot `spot` names right now, or null if the board moved and it
-   * no longer names one (R5/R56 — re-derived, never remembered as an index) */
+   * no longer names one (CR 602.7a — re-derived, never remembered as an index) */
   private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string } | null {
     if (spot.kind === 'out') return null;
     const same = (s: FormationSpot): boolean => {
@@ -6474,12 +6470,12 @@ export class E {
   }
 
   /**
-   * R321 — open `left` empty attacking columns on the left and `right` on the
+   * CR 606.4a — open `left` empty attacking columns on the left and `right` on the
    * right, for side-blocks to stand opposite. The Manual: *"Units may even be
    * placed blocking in slots where attackers aren't"*; Caleb, on the RAQ: eight
    * units may side-block "as a separate column" each. A blocking column is
-   * keyed to an attacking one (R72), so a side-block gets an EMPTY attacking
-   * column — the same permanent hole R72 leaves when an attack column dies —
+   * keyed to an attacking one (CR 602.5a), so a side-block gets an EMPTY attacking
+   * column — the same permanent hole CR 602.5a leaves when an attack column dies —
    * and the two grids stay one index space. Through the one re-key, so blocks,
    * counters, Alluring duties and struck-marks all move together.
    */
@@ -6497,16 +6493,16 @@ export class E {
   }
 
   /** put `u` into `slot`. The one place a unit is written into the grid.
-   * Public for R304's Hooba-Nan, which fills `adjacentSlots`' answers — an
+   * Public for Hooba-Nan (CR 603.3), which fills `adjacentSlots`' answers — an
    * existing column is held by its array (a left-insert keeps the object), and
    * an end is re-read when it is filled, so several fills can go in any order. */
   putInSlot(u: Entity, slot: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number }): void {
     const b = this.s.battle!;
     if (slot.col) { slot.col.push(u.id); return; }
-    // R322: a new blocking column in front of an unblocked attacker — its key
+    // CR 607.2: a new blocking column in front of an unblocked attacker — its key
     // is the column it blocks, and from now on that column is blocked
     if (slot.block !== undefined) { b.blocks[slot.block] = [u.id]; return; }
-    // R72/R75: opening a column on the LEFT shifts every existing column
+    // CR 603.5a: opening a column on the LEFT shifts every existing column
     // right, so every block key and every column-scoped counter shifts with
     // it. One atomic re-key, same owner as the collapse.
     const at = slot.end === 'left' ? 0 : b.columns.length;
@@ -6517,12 +6513,12 @@ export class E {
   }
 
   /**
-   * R29 — take the spot this card was PLAYED into, before it is anywhere else.
+   * CR 602.7 — take the spot this card was PLAYED into, before it is anywhere else.
    *
    * Called from inside spawnUnit, between minting the entity and firing
    * 'spawned', so the unit is already standing in the formation the first time
    * any listener or any player sees it. That is the whole difference between
-   * this and R75's `placeInFormation`: R75 is an EFFECT resolving ("create a
+   * this and `placeInFormation` (CR 602.6): that is an EFFECT resolving ("create a
    * unit in my formation"), and its unit really does exist for a moment before
    * it is placed. A card whose printed text is "you may PLAY me into an open
    * spot" is never played anywhere else, so it must never be seen anywhere
@@ -6541,7 +6537,7 @@ export class E {
     if (spot.kind === 'out') return `${u.card} is played outside the formation, by choice.`;
     const slot = this.slotForSpot(seat, spot);
     if (!slot) {
-      // R5/R56: chosen at cast, taken at resolution — and the line moved.
+      // CR 602.7a: chosen at cast, taken at resolution — and the line moved.
       return `${u.card}: the open spot it was played into is gone — it enters the region, outside the formation.`;
     }
     this.putInSlot(u, slot);
@@ -6549,7 +6545,7 @@ export class E {
   }
 
   /**
-   * R75 — ADJACENCY, written down once. *"If a unit references its own adjacent
+   * CR 603.2a — ADJACENCY, written down once. *"If a unit references its own adjacent
    * slots (which only exist if it's in a formation) it's referring to its sides
    * and above/below. Nothing diagonal."* (Bena, 2026-08-21.)
    *
@@ -6564,7 +6560,7 @@ export class E {
    * This returns the EMPTY ones — the fillable positions — and two readings are
    * baked in:
    *
-   *  1. **R304: past the edge of the line IS a slot — on the attacking side.**
+   *  1. **CR 603.3: past the edge of the line IS a slot — on the attacking side.**
    *     *"The columns to the left and right, even when empty, DO technically
    *     exist, which is why you can create things into them."* (Bena,
    *     2026-09-25, report YUZY.) So a front-row unit at either end of the
@@ -6573,8 +6569,7 @@ export class E {
    *     front row — the back row of a column that does not exist yet is
    *     unreachable (point 2), so a back-row unit gets nothing past the edge.
    *     A BLOCKING line cannot widen at all (a blocking column is keyed to an
-   *     attacking one, R72), so its edges stay closed. R75 read the edge the
-   *     other way from 2026-08-21 to 2026-09-25.
+   *     attacking one, CR 603.3b), so its edges stay closed. The earlier reading closed the edges from 2026-08-21 to 2026-09-25.
    *  2. **The front row fills first**, always: `removeFromFormation` promotes
    *     the back row, `repairFormation` splices dead ids out, and every
    *     placement appends. A column is therefore `[]`, `[front]` or
@@ -6599,12 +6594,12 @@ export class E {
       if (r !== -1) { ci = i; ri = r; break; }
     }
     if (ci === -1) return [];
-    // R304: only the attacking line can open a column past its end
+    // CR 603.3: only the attacking line can open a column past its end
     const widens = u.controller === b.attacker && ri === 0;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; row: number; label: string }[] = [];
     const take = (c: number, r: number, label: string): void => {
       const col = grid[c];
-      if (!col) {                          // past the edge of the line (R304)
+      if (!col) {                          // past the edge of the line (CR 603.3)
         if (!widens) return;
         const end = c < 0 ? 'left' : 'right';
         out.push({ col: null, end, row: 0, label: `a new column on the ${end}` });
@@ -6620,7 +6615,7 @@ export class E {
   }
 
   /**
-   * R75 — put `u` into `ctx.controller`'s formation, letting them choose where.
+   * CR 602.6, 602.6d — put `u` into `ctx.controller`'s formation, letting them choose where.
    * Auto-picked when exactly one placement is legal; a logged no-op when none
    * is. `optional` adds a "stay out of formation" answer (Tiderunner Initiate,
    * whose printed text is "you MAY play me into an open spot").
@@ -6631,7 +6626,7 @@ export class E {
    *
    * Returns true when the unit actually joined.
    *
-   * ⚠ R225 — `opts.sourceId` IS THE FORMATION, and every card call site must
+   * ⚠ CR 602.6e — `opts.sourceId` IS THE FORMATION, and every card call site must
    * pass it (`108-formation-class` scans them and reddens on one that does
    * not). "In my formation" is a referent read off the SOURCE ENTITY at
    * resolution, so the slots come from the grid THAT UNIT is standing in, and
@@ -6641,10 +6636,10 @@ export class E {
    * formation place a token (report FTUW/45). The seat fallback survives only
    * for an effect with genuinely no unit behind it.
    *
-   * R325 (2026-10-09) reverses FTUW's DEAD-source half: a source that left
+   * Since 2026-10-09 (CR 714.4) FTUW's DEAD-source half is reversed: a source that left
    * play "remembers it was in formation" (RAQ, Dead Unit Effect on Stack), so
    * `formationSeatOf` answers from its last-known state. A source alive and
-   * out of the line (R172) still names none.
+   * out of the line (CR 711.3) still names none.
    */
   placeInFormation(u: Entity, ctx: Pick<EffectCtx, 'controller' | 'choose'>,
     opts: { key?: string; source?: string; sourceId?: EntityId; optional?: boolean } = {}): boolean {
@@ -6654,7 +6649,7 @@ export class E {
       this.ev('info', `${src}: there is no formation here for ${u.card} to join.`);
       return false;
     }
-    // R225: whose grid — the SOURCE's, when there is a source entity.
+    // CR 602.6e: whose grid — the SOURCE's, when there is a source entity.
     const seat = opts.sourceId !== undefined ? this.formationSeatOf(opts.sourceId) : ctx.controller;
     if (seat === null) {
       this.ev('info',
@@ -6673,7 +6668,7 @@ export class E {
     const options: DecisionOption[] = slots.map((s, i) => ({ label: s.label, value: i, spot: s.spot }));
     if (opts.optional) options.push({ label: 'stay out of formation', value: -1, spot: { kind: 'out' } });
     // BL-24: NOT kind 'electricPath' — that kind's numeric option values are
-    // raw entity ids by contract (R4), and these are slot INDEXES. The client
+    // raw entity ids by contract (CR 802.17), and these are slot INDEXES. The client
     // pings/previews a numeric electricPath value as a unit on the board, so
     // the slot buttons lit up whichever units happened to own ids 0..N.
     const pick = options.length === 1 ? 0 : ctx.choose(opts.key ?? 'placeInFormation', {
@@ -6702,9 +6697,9 @@ export class E {
    * wording for the same ("put into"). Both exist so there is exactly one
    * leave-play-to-a-hand routine; the card sets used to carry a line-for-line
    * copy of this method (`putIntoHand`), and it drifted — it never stamped
-   * R70's `to`, so Capture triggered no "a card entered a hand" watcher at all.
+   * the leave-play `to` (CR 714.9), so Capture triggered no "a card entered a hand" watcher at all.
    *
-   * R69, extended to the HAND on 2026-08-22: a recalled TOKEN really does
+   * CR 410.5b (settled for the hand 2026-08-22): a recalled TOKEN really does
    * enter the hand — *"Technically it does enter your hand and then gets erased
    * immediately. So it would trigger any 'enters hand' stuff."* (Caleb
    * 2025-06-15; and 2025-04-24, asked whether recalling a spell token triggers
@@ -6713,17 +6708,16 @@ export class E {
    * `destroy()` uses takes it back out — after the event window, before
    * anything queued in it resolves.
    *
-   * R40: the recalled card is never trashed — a hand is not a bin. Its mods do
+   * CR 801.2: the recalled card is never trashed — a hand is not a bin. Its mods do
    * enter a bin, from play, and STAY there, so a nontoken mod IS trashed — in
-   * afterDespawn(), after the despawn event, for log order. R244: by the
-   * HOST's controller, into its own owner's bin; the two can differ and the
-   * engine now says which is which.
+   * afterDespawn(), after the despawn event, for log order — by the HOST's
+   * controller, into that controller's bin (CR 801.2f, 410.4a).
    */
   recall(u: Entity, opts: { to?: Seat; verb?: string } = {}): void {
     const mods = this.leavePlay(u);
     if (!mods) return;
-    // R262 (round-32 Q2): `u.controller`, was `u.owner`. The owner extended
-    // R250's *"there's no issue with taking opponent's cards and putting them
+    // CR 801.7a (round-32 Q2): `u.controller`, was `u.owner`. The owner extended
+    // his earlier *"there's no issue with taking opponent's cards and putting them
     // into your zones"* to all four per-seat destinations — *"(a) All four
     // follow control — one rule, no seam."* A stolen unit recalled therefore
     // bounces into the THIEF's hand.
@@ -6732,21 +6726,21 @@ export class E {
     // says a recall goes to its owner's hand, and "I use your unit until end
     // of turn" becoming "I keep your card" is strictly stronger. It was put to
     // the owner with that argument spelled out and he took the sweep anyway,
-    // for the reason R250 gives: the primary format is a shared pool.
+    // because the primary format is a shared pool.
     //
     // ⚠ OWNERSHIP DOES NOT MOVE, only the destination. `u.owner` still says
-    // whose card it is and `leftPlayFacts` still reports it — R262 §3, and in
+    // whose card it is and `leftPlayFacts` still reports it — CR 400.4a, 400.4c, and in
     // CONSTRUCTED the owner is always the player who brought the card, which
     // is the one place the distinction can still matter.
     const seat = opts.to ?? u.controller;
     const verb = opts.verb ?? 'recalled to';
-    // R70: facts ride the event (see leftPlayFacts). `to` is where the card
+    // CR 714.9: facts ride the event (see leftPlayFacts). `to` is where the card
     // went, which is what "when a unit is recalled to a HAND" wants to read —
     // it used to be recovered by matching the word "hand" in the log message.
     const evData = { ...this.leftPlayFacts(u), to: 'hand', hand: seat };
-    // R179: the card really enters the hand, so it goes through the ONE hand
+    // CR 402.4: the card really enters the hand, so it goes through the ONE hand
     // entry point and announces itself as 'handEntered' — BEFORE the
-    // 'despawned' line. (R191: which afterDespawn() is now HANDED, rather than
+    // 'despawned' line. (afterDespawn() is now HANDED that event, rather than
     // recovering it as `events[length-1]`; this call appends events of its own
     // and the ordering that made the index right was never enforced.)
     // Both events fire for one recall and they are different facts; the three
@@ -6759,7 +6753,7 @@ export class E {
       + (u.token ? ', then erased (token).' : '.'),
       evData);
     this.afterDespawn(u, mods, ev);
-    // R69's sweep, on the hand this time
+    // CR 410.5b's sweep, on the hand this time
     if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`);
   }
 
@@ -6788,16 +6782,16 @@ export class E {
    * of truth for what may be aimed at: the chooser's option list, `castable`'s
    * "can this even be played" gate, and `canFillSlot`'s redirect check all
    * come through here, so a restriction added to a card is enforced in all
-   * three at once (R64).
+   * three at once (CR 110.3a, 110.9).
    *
    * `ally` is the EFFECT's controller — the seat "ally"/"enemy"/"opponent" is
-   * measured from, never the chooser's (R58). `sourceId`, when given, is the
+   * measured from, never the chooser's (CR 110.4c). `sourceId`, when given, is the
    * entity the effect comes from, for restrictions that read it.
    */
   targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat, sourceId?: EntityId, x?: number, chosen?: ResolvedTarget[], event?: EngineEvent | null): TargetRef[] {
     const out = this.targetFamilyCandidates(spec, region, excludeStackId, ally);
     const cands = this.compelledTargets(out, region, chosen);
-    // R64: the printed RESTRICTION, judged against the resolved target. It
+    // CR 110.3a: the printed RESTRICTION, judged against the resolved target. It
     // runs last so it never has to re-derive what `what` already settled.
     const restrict = spec.restrict;
     if (!restrict) return cands;
@@ -6805,13 +6799,13 @@ export class E {
       ...(ally !== undefined ? { ally } : {}), region,
       ...(sourceId !== undefined ? { sourceId } : {}), ...(x !== undefined ? { x } : {}),
       ...(chosen ? { chosen } : {}),
-      ...(event !== undefined ? { event } : {}),   // R67: "that player's bin"
+      ...(event !== undefined ? { event } : {}),   // CR 110.1a: "that player's bin"
     };
     return this.restrictTargets(out, cands, restrict, ctx);
   }
 
   /**
-   * R323 (CT-207) — CAN EVERY REQUIRED SLOT BE FILLED, WITH DISTINCT TARGETS?
+   * CR 110.7 (CT-207) — CAN EVERY REQUIRED SLOT BE FILLED, WITH DISTINCT TARGETS?
    *
    * The RAQ ("[Solved] Target requirements to put effect on stack."): _passer,
    * "You cannot play Fight if there isn't 2 units in the region (one of which
@@ -6855,7 +6849,7 @@ export class E {
   }
 
   /**
-   * R184: "target formation" — one candidate per SIDE of the battle running in
+   * CR 110.3d: "target formation" — one candidate per SIDE of the battle running in
    * this region, in attacker-then-defender order (deterministic on replay).
    *
    * Owner, 2026-08-25: a formation is THE WHOLE SIDE, "a player's entire
@@ -6875,9 +6869,9 @@ export class E {
     out.push({ formation: b.attacker }, { formation: b.defender });
   }
 
-  /** R184: every unit currently arrayed in `seat`'s formation — the attacking
+  /** CR 602.1c: every unit currently arrayed in `seat`'s formation — the attacking
    * columns if they are the battle's attacker, the blocking columns if they
-   * are its defender. Read LIVE (R27/R72: the grid moves), and the one place
+   * are its defender. Read LIVE (CR 602.6h, 602.5: the grid moves), and the one place
    * "which units are in that formation" is answered. */
   formationUnits(seat: Seat): Entity[] {
     const out: Entity[] = [];
@@ -6900,13 +6894,13 @@ export class E {
         out.push({ unit: u.id });
       }
     }
-    // R64: a spell TOKEN is a token too — Arcane Echo copies one and Download
+    // CR 300.5c: a spell TOKEN is a token too — Arcane Echo copies one and Download
     // steals one, and both are printed "target token" with no unit clause.
     if (spec.what === 'token') {
       for (const t of this.s.regions[region]!.presentSeats.flatMap(seat => this.tokensOf(seat, region))) {
         out.push({ unit: t.id });
       }
-      // R333 / CT-215: …and a spell token already CAST is still a token. The
+      // CR 304.11d / CT-215: …and a spell token already CAST is still a token. The
       // RAQ ("Download. What is a token"): "Fireball effect 'on the stack' ✅".
       // Its spell COPIES are not (Earthbound Replicator, Maelstrom Charger:
       // ❌) — a copy keeps the original's kind and is marked `copy`, so the
@@ -6918,7 +6912,7 @@ export class E {
   }
 
   /**
-   * R243 — THE SEATS A CARD MAY SEE: the ones present in `region`, in a stable
+   * CR 601.4c — THE SEATS A CARD MAY SEE: the ones present in `region`, in a stable
    * order (initiative first).
    *
    * **Owner ruling, 2026-08-29: regions do NOT scope information, but they DO
@@ -6933,10 +6927,10 @@ export class E {
    * `src/cards/` reaches for `g.s.players` at all, so the rule cannot be
    * quietly opted out of one card at a time.
    *
-   * ⚠ THIS IS NOT THE INFORMATION RULE. R239 scopes what an effect may REACH
+   * ⚠ THIS IS NOT THE INFORMATION RULE. CR 601.4d scopes what an effect may REACH
    * and this scopes what it may COUNT; neither hides anything. The log stays
    * fully public to both seats — `server/view.ts::visibleToSeat` gates on
-   * `data.privateTo` and on nothing else, deliberately, and R243's companion
+   * `data.privateTo` and on nothing else, deliberately, and CR 601.8's companion
    * guard pins that it stays that way.
    *
    * The order is initiative-first because two cards had already grown their
@@ -6956,7 +6950,7 @@ export class E {
    *
    * ⚠ PRESENTATION ONLY. Nothing in the rules may call this. It is the one
    * place allowed to look past the unit's current region, and it exists so
-   * that a CARD never has to: R243 forbids a card reading `g.s.players`, and a
+   * that a CARD never has to: CR 101.6 forbids a card reading `g.s.players`, and a
    * preview that reached around that to peek at the table would be exactly the
    * hole the guard exists to keep shut. Asking here, once, keeps the rule
    * absolute and the answer consistent.
@@ -6974,7 +6968,7 @@ export class E {
   }
 
   private pushPlayerTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
-    // R67: 'player' is "target player" with no ownership clause — you are a
+    // CR 110.3c: 'player' is "target player" with no ownership clause — you are a
     // legal target for your own (Soul Siphon's X is the life SOME player lost,
     // and aiming it at yourself is a real, if usually bad, choice).
     if (spec.what === 'any' || spec.what === 'opponent' || spec.what === 'player') {
@@ -6988,15 +6982,14 @@ export class E {
   private pushStackTargets(out: TargetRef[], spec: TargetSpec, excludeStackId: number | undefined): void {
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
       for (const it of this.s.stack) {
-        if (it.id === excludeStackId) continue;   // R68: a negated item is not here to skip
-        // an ambush is a played card's effect on the stack — negatable (R22)
+        if (it.id === excludeStackId) continue;   // CR 704.4: a negated item is not here to skip
+        // an ambush is a played card's effect on the stack — negatable (CR 803.6h)
         const spellish = it.kind === 'spell' || it.kind === 'spellUnit'
           || it.kind === 'spellToken' || it.kind === 'ambush';
-        // R128 (owner, 2026-08-24): "ANYTHING on the stack is an effect,
+        // CR 700.1, 700.1a (owner, 2026-08-24): "ANYTHING on the stack is an effect,
         // including units and spell units. Units aren't spells, so if they say
         // 'spell effect' a unit would be unaffected." So 'stackEffect' is
-        // EVERY item on the stack with no kind test at all — the R60 carve-out
-        // for a 'unit' on its way into play is REVERSED. 'stackSpell' is
+        // EVERY item on the stack with no kind test at all — the earlier carve-out for a 'unit' on its way into play is REVERSED. 'stackSpell' is
         // unchanged and still excludes a plain unit: a unit is not a spell.
         if (spec.what === 'stackSpell' ? spellish : true) out.push({ stack: it.id });
       }
@@ -7004,13 +6997,13 @@ export class E {
   }
 
   private pushCachedCardTargets(out: TargetRef[], spec: TargetSpec, region: number): void {
-    // R41: the cache is PUBLIC, so an opponent's cache IS a legal target
+    // CR 403.2: the cache is PUBLIC, so an opponent's cache IS a legal target
     // (Prismatic Observer exists precisely to answer an opponent's
-    // nearly-fulfilled prophecy) — but only where the opponent IS. R291: a
+    // nearly-fulfilled prophecy) — but only where the opponent IS. CR 403.6: a
     // player's cache is reachable exactly when that player is PRESENT in the
     // region the effect resolves in, the same `presentSeats` test
     // pushPlayerTargets makes for "target player". During deployment each
-    // seat is alone in its own region (R12: other regions do not exist), so
+    // seat is alone in its own region (CR 101.6: other regions do not exist), so
     // only the caster's own cache is offered; in battle both seats are
     // present and both caches are. Owner, live report 2026-09-05 (VNNW): the
     // Observer "allowed me to target an opponent's card while I was in
@@ -7029,7 +7022,7 @@ export class E {
   }
 
   private pushBinCardTargets(out: TargetRef[], spec: TargetSpec, ally: Seat | undefined): void {
-    // R64: a card in YOUR OWN bin ("recall target unit in your bin",
+    // CR 110.3a: a card in YOUR OWN bin ("recall target unit in your bin",
     // "put target unit with cost 2 or less from your bin into play"). Every
     // printed one reaches only the caster's bin, so this does too; a card the
     // restriction wants to reach in an opponent's bin would need `restrict`
@@ -7042,13 +7035,13 @@ export class E {
     }
   }
 
-  /** R64: "I must be targeted if able" (Gatekeeper of Souls) — a restriction
+  /** CR 110.12: "I must be targeted if able" (Gatekeeper of Souls) — a restriction
    * that narrows OTHER effects' lists. It is applied BEFORE the spec's own
    * restriction, because "if able" means "if it is a legal target for this
    * effect", and the spec's restriction is part of what decides that: a
    * Gatekeeper with base power 8 cannot compel an Unmake to aim at it.
    *
-   * R314 (report #199): the compulsion is on the EFFECT's targets, not on
+   * CR 110.12 (report #199): the compulsion is on the EFFECT's targets, not on
    * each slot. A Gatekeeper already among `chosen` (the effect's other
    * slots) has been targeted, so it compels nothing more and the next slot
    * of a Twin Flame is free. Before this, every slot was narrowed to the
@@ -7093,7 +7086,7 @@ export class E {
   }
 
   /**
-   * R64: the card a target ref names, when it names one OFF THE BOARD — a bin
+   * the card a target ref names, when it names one OFF THE BOARD — a bin
    * or cache entry — so the decision option can carry a scan to render.
    *
    * Deliberately empty for a unit/player/stack ref: those are clicked ON THE
@@ -7109,7 +7102,7 @@ export class E {
     return {};
   }
 
-  /** R64: one ref per CARD IN the bin — copies of one card are separate
+  /** CR 405.6: one ref per CARD IN the bin — copies of one card are separate
    * targets (a two-target spell may reach both), distinguished by `nth`. */
   binRefs(seat: Seat): TargetRef[] {
     const seen = new Map<CardName, number>();
@@ -7120,7 +7113,7 @@ export class E {
     });
   }
 
-  /** R64: where a BinRef points RIGHT NOW — the nth surviving copy of that
+  /** CR 405.6: where a BinRef points RIGHT NOW — the nth surviving copy of that
    * card, or the last one left if the pile has shrunk past it. -1 if gone. */
   binIndexOf(ref: BinRef): number {
     const bin = this.player(ref.seat).bin;
@@ -7131,14 +7124,14 @@ export class E {
   }
 
   /**
-   * R95: may `ctx.seat` apply that card as an AUGMENT during battle?
+   * CR 723.5: may `ctx.seat` apply that card as an AUGMENT during battle?
    *
    * The default is NO — only a {Virus} from hand may augment during battle —
    * and this is the opt-in that overrides it. Shaped on `mustBeTargetedIn`,
    * the one other BOOLEAN permission query, and on `costModsFor` for
    * everything else: the same `anchored()` walk (units in play plus augment
-   * mods, each read from its HOST), the same R12 region scope, the same
-   * shallow R62 guard, the same reentrancy latch.
+   * mods, each read from its HOST), the same CR 101.6 region scope, the same
+   * shallow CR 712.1a guard, the same reentrancy latch.
    *
    * An OR-FOLD, not a sum, which is why it is not a CostMod: one grantor is
    * enough and a second changes nothing. Ownership and zone are decided by
@@ -7155,9 +7148,9 @@ export class E {
     this.inModPermissions = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'modPermissions')                   // R127: off the FACES
+        this.donates(h, a, 'modPermissions')                   // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.modPermissions ?? []) {
             if (p.augmentInBattle?.(this, anchor, ctx)) return true;
@@ -7169,15 +7162,15 @@ export class E {
   }
 
   /**
-   * R95, the HASTE-timing sibling: may `ctx.seat` apply that card as a MOD
-   * during the R18 haste step — "[Augment] You can apply other mods during
+   * CR 504.8a, the HASTE-timing sibling: may `ctx.seat` apply that card as a MOD
+   * during the haste step (CR 504) — "[Augment] You can apply other mods during
    * [Haste] as if it was deployment" (Slurpr)?
    *
    * The default is NO: modding is a deployment action (or a battle Virus), and
    * the haste step is neither. This is the opt-in that overrides it, and it is
    * `mayAugmentInBattle` byte for byte apart from the member it reads — same
    * `anchored()` walk (units in play plus augment mods, each read from its
-   * HOST), same R12 region scope, same shallow R62 guard, same reentrancy
+   * HOST), same CR 101.6 region scope, same shallow CR 712.1a guard, same reentrancy
    * latch, same OR-fold.
    *
    * TWO DELIBERATE DIFFERENCES from its twin:
@@ -7185,12 +7178,12 @@ export class E {
    *  1. NO BASE CASE. `battleAugmentAllowed` starts from the printed rule that
    *     a {Virus} from hand may augment during battle; nothing at all is
    *     printed as haste-timed modding, so the whole permission is the grant.
-   *  2. AUGMENTS *AND* GRAFTS. "Mod" is R37's word for both, so `ctx.kind`
+   *  2. AUGMENTS *AND* GRAFTS. "Mod" is CR 701.2's word for both, so `ctx.kind`
    *     tells the grantor which is being attempted and both call sites fill it
    *     in. A card that wants to grant only one half reads it; Slurpr grants
    *     both and reads neither.
    *
-   * R97's `hastePlayAllowance` is the PLAY-timing cousin and is deliberately
+   * CR 504.7a's `hastePlayAllowance` is the PLAY-timing cousin and is deliberately
    * NOT the shape used here: Dispatch Courier prints "Each turn", so plays are
    * summed into a per-turn budget; Slurpr prints no quantity at all, so one
    * grantor is enough, two Slurprs are not twice as permissive, and there is
@@ -7206,9 +7199,9 @@ export class E {
     this.inModPermissions = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'modPermissions')                   // R127: off the FACES
+        this.donates(h, a, 'modPermissions')                   // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.modPermissions ?? []) {
             if (p.applyAtHaste?.(this, anchor, ctx)) return true;
@@ -7220,14 +7213,14 @@ export class E {
   }
 
   /**
-   * R97: how many grant-funded plays may `ctx.seat` make in the HASTE step
+   * CR 504.7a: how many grant-funded plays may `ctx.seat` make in the HASTE step
    * this turn, for a card whose printed timing is not [Haste]?
    *
    * Report #74 (WEHH, 2026-08-22): "Dispatch Courier didn't give me the option
    * to play a card with haste". It did not, because nothing anywhere asked.
    *
    * The rules half is settled and cited on `PlayPermission` in dsl.ts. This is
-   * the arithmetic half, and it is R95's `mayAugmentInBattle` with one
+   * the arithmetic half, and it is `mayAugmentInBattle` with one
    * difference: it SUMS instead of OR-folding, because the printed text carries
    * a per-turn quantity and two Couriers are two plays. `Infinity` recovers the
    * OR-fold for a grant with no budget.
@@ -7245,7 +7238,7 @@ export class E {
    *     `timing === 'haste'` first, and this returns 0 for such a card anyway
    *     so a double-read cannot silently drain the allowance.
    *
-   * ⚠ R228 RETIRED THE THIRD GATE. There used to be three that had to agree,
+   * ⚠ THE UNCONDITIONAL HASTE STEP (CR 504.5) RETIRED THE THIRD GATE. There used to be three that had to agree,
    * and the fatal one was `startHasteStep`'s `canHaste`, which skipped the
    * step outright and so made the other two unreachable — report #74 itself.
    * The step is now unconditional, so TWO gates remain and both are about the
@@ -7261,9 +7254,9 @@ export class E {
     try {
       let total = 0;
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'playPermissions')                  // R127: off the FACES
+        this.donates(h, a, 'playPermissions')                  // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.playPermissions ?? []) {
             total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
@@ -7274,7 +7267,7 @@ export class E {
     } finally { this.inPlayPermissions = false; }
   }
 
-  /** R97: the boolean the three gates actually ask — is there allowance left
+  /** CR 504.7a: the boolean the three gates actually ask — is there allowance left
    * this turn? `usedThisTurn` is filled in here so no caller can forget it. */
   mayPlayAtHaste(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): boolean {
     const used = this.s.hastePlaysUsed?.[ctx.seat] ?? 0;
@@ -7282,16 +7275,16 @@ export class E {
   }
 
   /**
-   * R123: the index in `ctx.seat`'s OWN bin of a card granting this haste-step
+   * CR 504.7: the index in `ctx.seat`'s OWN bin of a card granting this haste-step
    * play at the price of its own erasure ("If I am in your bin, you may play a
    * unit as if it had [Haste] by erasing me as an additional cost to play that
    * unit" — Writhing Host), or -1.
    *
-   * NOT folded into `hastePlayAllowance`: an R97 allowance is free and this
+   * NOT folded into `hastePlayAllowance`: a CR 504.7a allowance is free and this
    * grant costs its grantor, so the two must stay distinguishable — the offer
    * (`legalHasteActions`) and the charge (`playAtTiming`'s erase) both need to
-   * know WHICH kind of permission funds the play. The two GENERAL refusals are
-   * R97's, restated above every grantor because they are rulings about what
+   * know WHICH kind of permission funds the play. The two GENERAL refusals
+   * (CR 207.4a, 803.2b) are restated above every grantor because they are rulings about what
    * gaining [Haste] can do: a {Battle} card stays a battle card (RAQ
    * "[Solved] Dispatch Courier vs Battle Timing"), and a printed [Haste] card
    * needs no grant — so it must never cost anyone their grantor.
@@ -7303,9 +7296,9 @@ export class E {
    * make the choice visible and need an index on the action; none exists.
    */
   binHasteGrantorIndex(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): number {
-    if (ctx.card.timing === 'haste') return -1;   // needs no grant (R97 refusal 2)
+    if (ctx.card.timing === 'haste') return -1;   // needs no grant (refusal 2 above)
     if (ctx.card.timing === 'battle') return -1;  // RAQ: a battle card stays one
-    if (this.inPlayPermissions) return -1;        // R62-style reentrancy latch
+    if (this.inPlayPermissions) return -1;        // reentrancy latch
     this.inPlayPermissions = true;
     try {
       return this.player(ctx.seat).bin.findIndex(name =>
@@ -7313,8 +7306,8 @@ export class E {
     } finally { this.inPlayPermissions = false; }
   }
 
-  /** R97: charge one grant-funded haste-step play to `seat`. The sibling of
-   * R43's `hasteManaSpent` — same array shape, same per-seat/per-haste-step
+  /** CR 504.7a: charge one grant-funded haste-step play to `seat`. The sibling of
+   * CR 803.7's `hasteManaSpent` — same array shape, same per-seat/per-haste-step
    * lifetime, zeroed by `startHasteStep` (which is once per turn, and so IS
    * the printed "Each turn"). A play is not an ability activation, so nothing
    * writes `Entity.budgets` for it and this is where the budget lives. */
@@ -7323,21 +7316,21 @@ export class E {
     tally[seat] = (tally[seat] ?? 0) + 1;
   }
 
-  /** R64: the units in `region` that must be targeted if able. Radiates like
+  /** CR 110.12: the units in `region` that must be targeted if able. Radiates like
    * a static — live as a unit in play, donated while an augment mod — and is
-   * silenced by R62 exactly as an ability is. */
+   * silenced by CR 712.1a exactly as an ability is. */
   mustBeTargetedIn(region: number): Set<EntityId> {
     const out = new Set<EntityId>();
     for (const { anchor } of this.anchored((h, a) =>
-      this.donates(h, a, 'mustBeTargeted')                      // R127: off the FACES
+      this.donates(h, a, 'mustBeTargeted')                      // CR 710.7: off the FACES
       && a.region === region
-      && !this.textStrippedShallow(h, a))) {                          // R62, as staticsFor (shallow)
+      && !this.textStrippedShallow(h, a))) {                          // CR 712.1a, as staticsFor (shallow)
       out.add(anchor.id);
     }
     return out;
   }
   /**
-   * R58: could `ref` legally occupy target slot `ti` of `item`'s part `pi`
+   * CR 110.9: could `ref` legally occupy target slot `ti` of `item`'s part `pi`
    * RIGHT NOW? Used by redirection effects (Enigmatic Warder's "change a
    * target of target effect to me"), which must not be able to drop an
    * illegal target into a slot — the playtest bug was the opponent's Warder
@@ -7349,7 +7342,7 @@ export class E {
     return this.slotCandidates(item, pi, ti).some(c => JSON.stringify(c) === key);
   }
   /**
-   * R58 / R307: every ref that could legally occupy target slot `ti` of
+   * CR 110.9: every ref that could legally occupy target slot `ti` of
    * `item`'s part `pi` RIGHT NOW — the one question a redirect (Enigmatic
    * Warder, through `canFillSlot`) and a re-choice of targets (Divine
    * Intervention, Gravitational Correction, Hexbane Shiitake, through
@@ -7361,7 +7354,7 @@ export class E {
    * event, and the part's OTHER targets as `chosen` (Tidal Reversion's "one
    * per player", Necromorph's "cheaper than it"). And no ref already in a
    * SIBLING slot of the same part is ever a candidate: one object cannot be
-   * two of one effect's targets (R56 "another target", R307 — CT-189, the
+   * two of one effect's targets (CR 110.6, 110.9, 704.5 — CT-189, the
    * owner's Twin Flame aimed at one Good Whale twice).
    *
    * `targets` is the part's targets as they stand for this question — a
@@ -7388,12 +7381,12 @@ export class E {
       specForSlot(def.targets, ti), item.region, item.id, controller, item.sourceId,
       part.costPaid?.x ?? item.x,
       others.map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null),
-      item.event,   // R67: a redirect must judge the slot the same way the collector did
+      item.event,   // CR 110.9: a redirect must judge the slot the same way the collector did
     ).filter(c => !taken.has(JSON.stringify(c)));
   }
 
   /**
-   * The name a target is offered and logged under. R64: a UNIT says whose it
+   * The name a target is offered and logged under. A UNIT says whose it
    * is. Rashi aimed Discharge at her own Unit Token because the list read
    * "Unit Token, Unit Token" with nothing to tell the two sides apart — the
    * board has generic tokens on both sides of it and identical art, so the
@@ -7405,7 +7398,7 @@ export class E {
       return u ? `${u.card} (${this.pname(u.controller)}'s)` : '(gone)';
     }
     if ('player' in t) return this.pname(t.player);
-    // R184: a formation says WHOSE and which side of the battle it is, because
+    // CR 110.3d: a formation says WHOSE and which side of the battle it is, because
     // "Rashi's formation" and "Bena's formation" are the whole choice.
     if ('formation' in t) {
       const b = this.s.battle;
@@ -7428,28 +7421,28 @@ export class E {
   targetStillLegal(t: TargetRef): boolean {
     if ('unit' in t) { const u = this.entity(t.unit); return !!u && !u.absent; }
     if ('player' in t) return true;
-    // R184: a formation exists exactly while the battle it is a side OF does.
+    // CR 110.3e: a formation exists exactly while the battle it is a side OF does.
     // Emptying it does NOT remove it (a formation with nobody in it is still
     // the place that player's units stand); the battle ending does — and then
-    // the target is gone in R5's ordinary sense.
+    // the target is lost in the ordinary way (CR 704.6).
     if ('formation' in t) {
       const b = this.s.battle;
       return !!b && (t.formation === b.attacker || t.formation === b.defender);
     }
     if ('bin' in t) return this.binIndexOf(t.bin) !== -1;
     // the entry may have been played, grafted or recalled out of the cache
-    // between cast and resolution — then it is simply gone (R5 fizzle)
+    // between cast and resolution — then it is simply gone (CR 704.6)
     if ('cached' in t) return this.cacheIndexOf(t.cached.seat, t.cached.uid) !== -1;
-    // R68: a stack target is legal exactly while the item is still ON the
+    // CR 704.4: a stack target is legal exactly while the item is still ON the
     // stack — negation removes it, so "is it there" is the whole question.
     return this.s.stack.some(i => i.id === t.stack);
   }
   /**
-   * R324 (CT-208) — A TARGET IS RE-CHECKED AGAINST ITS SLOT WHEN THE ITEM RESOLVES.
+   * CR 704.5 (CT-208) — A TARGET IS RE-CHECKED AGAINST ITS SLOT WHEN THE ITEM RESOLVES.
    *
    * The RAQ, "[Solved] Valid targets becomes invalid.": _passer, "Ambush won't
    * resolve as it's effect 'Recall target ALLY' and that unit is no longer ally
-   * of your opponent." R56 said re-validate at resolution, but
+   * of your opponent." An earlier ruling already said re-validate at resolution, but
    * `targetStillLegal` only ever asked whether the target still EXISTS, so the
    * restriction was re-checked only by the cards that did it by hand (Minor
    * Kraken, Throw off a Cliff). Now every slot is: its own kind, its own
@@ -7459,13 +7452,13 @@ export class E {
    *
    * Judged once, as resolution begins, and recorded on the part (`invalid`),
    * so an earlier part of the same item cannot make a later part's target
-   * illegal mid-resolution. A target that left play is R5's ordinary loss and
+   * illegal mid-resolution. A target that left play is an ordinary lost target (CR 704.6, 704.6b) and
    * is not marked here. Units are matched against the slot's family (control,
    * kind, region); bin, cache and stack references are positional and are
    * judged by the restriction alone.
    */
   markIllegalTargets(item: StackItem): void {
-    // R325: a restriction that reads the source ("cost ≤ units in MY
+    // CR 704.7a: a restriction that reads the source ("cost ≤ units in MY
     // formation") must see its last-known state, which rides this item
     const outerItem = this.partItem;
     this.partItem = item;
@@ -7483,7 +7476,7 @@ export class E {
         part.invalid = bad;
         for (const ti of bad) {
           // the unit it is about pulses on the board (the target, else the
-          // source), so the line is not log-only (244's R266 inventory)
+          // source), so the line is not log-only (244's CR D7.4 inventory)
           const ref = part.targets[ti]!;
           this.ev('info', `${item.label}: ${this.targetLabel(ref)} is not a legal target any more.`,
             { item: item.id, unit: 'unit' in ref ? ref.unit : item.sourceId });
@@ -7492,14 +7485,14 @@ export class E {
     });
   }
 
-  /** R324: may slot `ti` of part `pi` still name what it names? */
+  /** CR 704.5: may slot `ti` of part `pi` still name what it names? */
   private slotLegalNow(item: StackItem, pi: number, ti: number): boolean {
     const part = item.parts[pi]!;
     const spec = specForSlot(effectByKey(part.effectKey).targets!, ti);
     const ref = part.targets[ti]!;
     const key = JSON.stringify(ref);
     const earlier = part.targets.slice(0, ti);
-    if (earlier.some(r => JSON.stringify(r) === key)) return false;          // R56: "another"
+    if (earlier.some(r => JSON.stringify(r) === key)) return false;          // CR 704.5: "another"
     if ('unit' in ref
       && !this.targetFamilyCandidates(spec, item.region, item.id, item.controller).some(c => JSON.stringify(c) === key)) {
       return false;
@@ -7525,15 +7518,15 @@ export class E {
       const cc = this.cache(t.cached.seat)[this.cacheIndexOf(t.cached.seat, t.cached.uid)]!;
       return { cached: { seat: t.cached.seat, uid: t.cached.uid, card: cc.card } };
     }
-    // R64: the bin INDEX is read now, at resolution — cards leave a bin
+    // CR 405.6: the bin INDEX is read now, at resolution — cards leave a bin
     // between cast and resolution and the one that matters is wherever the
     // named card sits at this instant.
     if ('bin' in t) {
       return { binCard: { seat: t.bin.seat, index: this.binIndexOf(t.bin), card: t.bin.card } };
     }
-    // R184: a formation resolves to the SEAT that owns it, never to a grid
+    // CR 602.1c: a formation resolves to the SEAT that owns it, never to a grid
     // snapshot — the units in it are read live (E.formationUnits) at the
-    // instant the effect asks, which is what R27 already required of the
+    // instant the effect asks, which is what CR 602.6h requires, as it did of the
     // proxy this replaced.
     return t as ResolvedTarget;
   }
@@ -7542,7 +7535,7 @@ export class E {
   pushItem(item: StackItem): void {
     this.s.stack.push(item);
     /**
-     * R286 — A PUSH ONTO A STACK NOBODY MAY RESPOND TO IS A FLASH, NOT A LINE.
+     * CR 507.5 — A PUSH ONTO A STACK NOBODY MAY RESPOND TO IS A FLASH, NOT A LINE.
      *
      * Round 8, the owner: *"all effects that can't be responded to (like haste
      * or end of turn) happen and resolve instantly so it's very hard to
@@ -7550,8 +7543,7 @@ export class E {
      * snapshot of the item so the client can give it a beat on the strip —
      * and until now it was emitted only by `commitItem`'s no-stack branch.
      *
-     * R144(a) put deployment TRIGGERS on the real stack and, as a side effect,
-     * took their beat away; the reasoning recorded at the time was that a
+     * Putting deployment triggers on the real stack took their beat away; the reasoning recorded at the time was that a
      * flash would "draw it twice", once as a flash and once as the live stack
      * row. ⚠ THAT ROW ALMOST NEVER EXISTS. `settle()` drains the deployment
      * stack inside the same action, so a client's next frame sees an empty
@@ -7562,9 +7554,8 @@ export class E {
      *
      * And the LINE goes the other way, for the same reason: "X → stack."
      * announces a WINDOW — the item is up, respond or pass. Outside battle
-     * there is no window (R144(a): "Nobody may RESPOND to a deployment
-     * stack"), the item resolves at the next safe point, and R286 would have
-     * made it a double announcement anyway, since `spellPlayed` already reads
+     * there is no window (the deployment ruling: "Nobody may RESPOND to a deployment
+     * stack"; now CR 703.7), the item resolves at the next safe point, and the flash would have made it a double announcement anyway, since `spellPlayed` already reads
      * "Ben plays Overbloom → stack." one line above. The event still fires
      * with everything on it; only the message goes, exactly as `stackFlash`
      * has always been silent and for exactly the reason round 8 gave — "the
@@ -7575,7 +7566,7 @@ export class E {
      * ⚠ THE FLASH GOES FIRST. `flashBatches` reads `triggered` → (flash |
      * stackPushed) as "this trigger left the queue", and a flash arriving
      * after the push would find the marker already spent and start its own
-     * beat — which is R189's simultaneity bug, rebuilt.
+     * beat — which is the simultaneity bug CR D6.7 forbids, rebuilt.
      *
      * Same discriminator as `beginResolving`, and for the same reason.
      */
@@ -7591,7 +7582,7 @@ export class E {
   }
 
   /**
-   * R68: pull an item OFF the stack and hand it back — the caller decides
+   * pull an item OFF the stack and hand it back — the caller decides
    * where its card goes (bin, hand, nowhere).
    *
    * The stack used to have exactly one exit, `resolveTop()`, so `negate()`
@@ -7609,29 +7600,29 @@ export class E {
   }
 
   /**
-   * R68: negating REMOVES the item from the stack, the instant the negation
+   * CR 704.4, 704.4a: negating REMOVES the item from the stack, the instant the negation
    * resolves, and its card reaches the bin then — it does not sit there greyed
    * out waiting for a priority round it can no longer use.
    *
    * The kinds that carry a card of their own are binned; a triggered or
    * activated ability has no card (its `card` names the SOURCE, which is still
-   * in play) and is simply gone; a spell token is erased, never binned (R40).
-   * R40 again: this comes from the STACK, so it is not a trash.
+   * in play) and is simply gone; a spell token is erased, never binned (CR 704.2b).
+   * CR 801.2b: this comes from the STACK, so it is not a trash.
    */
   negate(stackId: number): void {
     const it = this.removeFromStack(stackId);
     if (!it) return;
-    // R164: a COPY of a spell is not a card — `it.card` names what it is a
+    // CR 704.2d: a COPY of a spell is not a card — `it.card` names what it is a
     // copy OF, and that card is still the original's, on the stack underneath
     // or already binned. Negating a copy removes an effect and moves nothing.
     const hasCard = it.card !== undefined && it.copy !== true && NEGATE_BINS.has(it.kind);
-    // R79: a carrier is Unstable, so even negation cannot put its card in a
+    // CR 723.4b: a carrier is Unstable, so even negation cannot put its card in a
     // bin — the card and its viruses are erased. (The Manual's "if a virus is
     // negated … it is placed into the bin" is about the VIRUS ITEM being
     // negated before it ever attached; that item has no augments of its own
     // and still takes the bin branch.)
-    // R105: a {Modular} carrier is stamped Unstable at CAST, so a negated one
-    // is erased too. R145: and so is a card that PRINTS {Unstable} — the stack
+    // CR 724.5: a {Modular} carrier is stamped Unstable at CAST, so a negated one
+    // is erased too. CR 803.8k: and so is a card that PRINTS {Unstable} — the stack
     // is an active zone. Read the same predicate `dischargeItem` reads, or the
     // log line says "→ bin" about a card that is about to be erased.
     const unstable = this.itemIsUnstable(it);
@@ -7655,11 +7646,11 @@ export class E {
     }
   }
 
-  /** Cast-time X selection (R35): a spell played from hand with mana 'X'
+  /** Cast-time X selection (CR 107.2a): a spell played from hand with mana 'X'
    * asks its caster to pick X NOW — it is paid on the answer, stored on the
    * item, and fixed before anyone can respond. Suspends via 'cast'/'x'.
    *
-   * R157 §1: what is paid on the answer is `manaToPlay(…, { x })` — the whole
+   * CR 202.5: what is paid on the answer is `manaToPlay(…, { x })` — the whole
    * bill, cost modifiers included, because the chosen X IS the base cost and
    * nothing was owed before it was chosen (see `payCard`). So each candidate X
    * is priced HERE, against the mana actually open, and one that cannot be
@@ -7675,7 +7666,7 @@ export class E {
     if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
     const c = this.card(item.card);
     if (c.mana !== 'X') return;
-    const min = this.xFloor(item.controller, item.card, { region: item.region });   // R326
+    const min = this.xFloor(item.controller, item.card, { region: item.region });   // CR 111.10i
     const open = this.openMana(item.controller);   // canPayCard guaranteed bill(min) <= open
     const options: DecisionOption[] = [];
     for (let x = min; x <= open; x++) {
@@ -7699,12 +7690,12 @@ export class E {
    *
    * The mods are an additional COST of casting (Caleb 2025-02-07: "spellbind
    * is an additional cost so it shows up on the stack with all it's mods"), so
-   * they belong here, in R35's cast-time collection, not in a bolt-on: they
+   * they belong here, in CR 724.3's cast-time collection, not in a bolt-on: they
    * are chosen and paid before the item reaches the stack, they then ride on
    * the stack with the spell where everyone can see them, and a copy of the
    * spell would copy them.
    *
-   * R105 — WHAT IS OFFERED IS EVERY CARD YOU CAN PAY FOR. Owner ruling,
+   * CR 724.2 — WHAT IS OFFERED IS EVERY CARD YOU CAN PAY FOR. Owner ruling,
    * 2026-08-23: "I think it's legal to apply ANYTHING to a Modular card. But
    * many cards wont do anything at all since it requires being in play (which
    * a spell never is). Same with viruses, they should also be allowed to be
@@ -7719,7 +7710,7 @@ export class E {
    *   · a GRAFT ([Switch] effect) joins the item as an extra part, exactly the
    *     way it joins a unit's graft cause (Manual p.33);
    *   · a type-line [Augment] attribute is DONATED to the resolving effect —
-   *     see `stackModAttrs`, the same channel R79 built for a virus;
+   *     see `stackModAttrs`, the same channel a virus uses (CR 721.4b);
    *   · text-box [Augment] abilities and statics donate NOTHING, because a
    *     spell has no body for them to live on (Caleb 2025-04-24: "spells
    *     cannot gain static abilities like that, so the only useful thing you
@@ -7743,9 +7734,9 @@ export class E {
     for (const from of ['hand', 'bin'] as const) {
       this.player(seat)[from].forEach((name, index) => {
         // purpose 'mod': attaching a {Modular} mod is applying, not playing
-        // (R37), so "spells cost more to PLAY" modifiers do not tax it — the
+        // (CR 701.2b), so "spells cost more to PLAY" modifiers do not tax it — the
         // same exemption every other mod path (augment/graft) already gets.
-        // R105: the cost is the WHOLE filter. Anything you can pay for is on
+        // CR 724.2: the cost is the WHOLE filter. Anything you can pay for is on
         // the menu, whether or not it will do a thing when it gets there.
         if (!this.canPayCard(seat, name, { purpose: 'mod' })) return;
         options.push({ label: `${name} (${from})`, value: { modFrom: from, index }, card: name });
@@ -7764,16 +7755,16 @@ export class E {
   }
 
   /**
-   * R29 — "You may play me into an open spot in your formation."
+   * CR 602.7 — "You may play me into an open spot in your formation."
    *
    * A PLAY, not an effect: the spot is part of how the card is played, so it
-   * is chosen at cast alongside X, mods, targets and costs (R35), rides on the
+   * is chosen at cast alongside X, mods, targets and costs (CR 702.3), rides on the
    * stack item where both players can see it, and is TAKEN at resolution
-   * atomically with the spawn (see takeSpot). Contrast R75's
+   * atomically with the spawn (see takeSpot). Contrast CR 602.6's
    * `E.placeInFormation`, which is a genuine effect resolving — "create a unit
    * in my formation" — and rightly places at resolution time.
    *
-   * The card was folded into R75's table when that rule was written, and the
+   * The card was folded into the effect-placement table when that rule was written, and the
    * cost was the UFAB report: it spawned into the region with no column (which
    * is exactly what the client draws as the invader's zone), stacked a
    * placement trigger, and handed the opponent a priority window in which to
@@ -7781,7 +7772,7 @@ export class E {
    * be answered.
    *
    * With no formation of your own there is nothing to join, so nothing is
-   * asked and the card is simply played (R29). Joining is optional, because
+   * asked and the card is simply played (CR 602.7c). Joining is optional, because
    * the text says *may* — "stay out of formation" is always on the menu when
    * the question is asked at all.
    */
@@ -7790,7 +7781,7 @@ export class E {
     if (item.kind !== 'unit') return;
     if (!this.card(item.card).playsIntoFormation) return;
     const slots = this.formationSlots(item.controller);
-    if (!slots.length) return;   // R29: no formation of yours — no prompt
+    if (!slots.length) return;   // CR 602.7c: no formation of yours — no prompt
     // #107: `spot` is set even though it duplicates `value` here — every
     // `kind: 'formationSlot'` ask carries the same display payload, so the
     // client reads one field and never has to know which rule raised it.
@@ -7802,7 +7793,7 @@ export class E {
     this.suspend(
       { type: 'cast', stage: 'formation', item, partIndex: 0, targetIndex: 0, then, moreItems },
       {
-        seat: item.controller, kind: 'formationSlot',   // BL-24: same class as R75's ask
+        seat: item.controller, kind: 'formationSlot',   // BL-24: same class as CR 602.6's ask
         prompt: `${item.card}: which open spot in your formation is it played into?`,
         options,
       },
@@ -7810,7 +7801,7 @@ export class E {
   }
 
   /** Attach one chosen {Modular} mod — or stop asking. A COST: paid on the
-   * spot, before the item hits the stack, and not respondable (R35). */
+   * spot, before the item hits the stack, and not respondable (CR 702.4). */
   payModularMod(item: StackItem, val: unknown): void {
     if (val !== null && typeof val === 'object' && 'doneMods' in val) {
       item.modsDone = true;
@@ -7825,50 +7816,50 @@ export class E {
     zone.splice(index, 1);
     this.payCard(seat, name, { purpose: 'mod' });
     (item.mods ??= []).push({ card: name, from: modFrom });
-    // R105: only a GRAFT brings an EFFECT with it — `graft:${name}` is the key
+    // CR 724.4: only a GRAFT brings an EFFECT with it — `graft:${name}` is the key
     // of its [Switch] half, and a card without one has no such effect to look
     // up (effectByKey throws). An augment's payload reaches the spell by the
     // OTHER channel instead (stackModAttrs), and a card with neither simply
     // rides along doing nothing, which the owner's ruling explicitly allows.
     if (isGraftable(name)) item.parts.push({ effectKey: `graft:${name}`, targets: [] });
-    // R105/R69 — Manual p.35: "As long as a card is modded, it has the unstable
+    // CR 724.5, 803.8e — Manual p.35: "As long as a card is modded, it has the unstable
     // attribute, meaning when it dies or is erased, it and all of its mods are
     // erased with it. This means that even though mods can be applied from the
     // bin, they are generally only able to be applied once." That last sentence
     // is about THIS window — it is the only one that applies a mod from a bin.
     // Owner, 2026-08-23: "A modded Spellbind should also have unstable. It
     // basically works as a 'flashback' for graft cards." The stamp is taken
-    // here, at cast, rather than derived at disposal, for the same reason R96's
-    // is: `dischargeItem` then has ONE flag to read on every exit — resolution,
-    // R5 fizzle and negation alike.
+    // here, at cast, rather than derived at disposal, for the same reason a bin play's
+    // stamp is (CR 704.2c): `dischargeItem` then has ONE flag to read on every exit — resolution,
+    // fizzle (CR 704.6) and negation alike.
     item.unstable = true;
     for (const part of item.parts) part.mods = item.mods.map(m => m.card);
     item.label = `${item.card} + ${item.mods.map(m => m.card).join(' + ')}`;
     // log-only: 'modApplied' means a mod attached to a UNIT (its listeners all
     // read ev.data.host), and there is no host here — the mod is riding a
-    // spell. R37 already says applying a mod is not playing a card.
+    // spell. CR 701.2 already says applying a mod is not playing a card.
     this.ev('info', `${name} is applied to ${item.card} from ${modFrom} as it is played ({Modular}).`,
       { item: item.id, card: name, from: modFrom });
   }
 
   /**
-   * R105 — a {Modular} spell's mods leave with the card they were applied to,
+   * CR 724.5 — a {Modular} spell's mods leave with the card they were applied to,
    * and they leave ERASED.
    *
    * Manual p.35: a modded card is {Unstable}, and "even though mods can be
    * applied from the bin, they are generally only able to be applied once".
    * `payModularMod` stamps `item.unstable` for exactly that reason, so
    * `dischargeItem`'s Unstable branch has already sent the CARD to the public
-   * erased pile (R65) by the time this runs; this is the mods' half of the same
+   * erased pile (CR 407.1) by the time this runs; this is the mods' half of the same
    * pile, kept separate only so the pair is logged as a pair. No-op for every
    * other item, and never a bin — which is why this is not `toBin`.
    *
    * The mods are their controller's own cards (they came out of that player's
-   * hand or bin), so unlike R79's viruses there is no second owner to split
+   * hand or bin), so unlike CR 723.4's viruses there is no second owner to split
    * the pile between.
    */
   disposeItemMods(item: StackItem): void {
-    // R164: a COPY carries the original's {Modular} mods so they still donate
+    // CR 710.8d: a COPY carries the original's {Modular} mods so they still donate
     // their [Augment] attributes to the copied effect (Caleb 2025-02-07: they
     // "ride on the stack with the spell and a copy would copy them"), but the
     // mod CARDS are the original's and are erased with the original exactly
@@ -7883,14 +7874,14 @@ export class E {
       { seat: item.controller, cards });
   }
 
-  // ── R35/R49: non-mana costs ─────────────────────────────────────────
+  // ── CR 111.2: non-mana costs ─────────────────────────────────────────
 
   /**
-   * R49 ⚠ (engine ruling): may a LIFE cost be paid if it would kill you?
+   * CR 111.6b ⚠ (engine ruling): may a LIFE cost be paid if it would kill you?
    * NO — a life cost is payable only while you have MORE life than it costs.
    *
    * Life reaching 0 ends the game inside loseLife(), so paying at cast would
-   * hand the opponent the win before the spell even resolved; R35 already says
+   * hand the opponent the win before the spell even resolved; CR 702.4a already says
    * an unpayable cost makes the cast illegal, and nothing in the pool reads
    * like a suicide button. Paying your LAST life is therefore refused too
    * (`life > n`, not `>=`).
@@ -7908,7 +7899,7 @@ export class E {
    * out, and a spell cannot discard itself to pay for itself. (0 for a cache
    * release, and for any check made after the card has already left.)
    *
-   * R64: a VARIABLE cost ('X') asks whether its FLOOR is payable. `xMin` is 0
+   * CR 111.6: a VARIABLE cost ('X') asks whether its FLOOR is payable. `xMin` is 0
    * for every printed one — "[Remove X +1/+1 counters from allies]" with no
    * counters anywhere is a legal cast that does nothing, exactly as X = 0 on a
    * mana-X spell is — so the gate is real only where a card sets a floor.
@@ -7917,9 +7908,9 @@ export class E {
     const want = costAmount(cost) ?? costXMin(cost);
     switch (cost.kind) {
       case 'sacrificeUnit': return this.unitsOf(seat, region).length > 0;
-      // R73: "[Sacrifice me]" asks about the SOURCE, deliberately NOT about
+      // CR 111.7a: "[Sacrifice me]" asks about the SOURCE, deliberately NOT about
       // `unitsOf(seat, region).length >= want`. A dead source has to make the
-      // cost unpayable — that is what makes R5 skip the part, which is the
+      // cost unpayable — that is what makes CR 101.5b skip the part, which is the
       // right answer for a trigger whose source died between firing and
       // settling. Any other live unit standing there must not stand in for it.
       // `includeSelf` ("sacrifice me AND another ally", Deformant) asks for
@@ -7927,7 +7918,7 @@ export class E {
       // source is charged choice-free before the menu for the rest is ever
       // raised, so a board that can field the source but not the remainder
       // would otherwise kill the source for a cost it cannot finish paying.
-      // All or nothing, exactly as R110 demands of a multiplied graft cost.
+      // All or nothing, exactly as CR 111.14 demands of a multiplied graft cost.
       case 'sacrificeUnits':
         if (cost.from === 'self') return this.selfSacrificeable(seat, sourceId);
         if (cost.includeSelf) {
@@ -7935,26 +7926,26 @@ export class E {
             && this.unitsOf(seat, region).filter(u => u.id !== sourceId).length >= want - 1;
         }
         return this.unitsOf(seat, region).length >= want;
-      // a variable life cost is paid a point at a time (R49 re-asked each
+      // a variable life cost is paid a point at a time (CR 111.6b re-asked each
       // time), so its floor is "can you survive paying the first one"
       case 'payLife': return this.canPayLife(seat, cost.n === 'X' ? Math.max(1, want) : want);
       case 'discardCard': return this.player(seat).hand.length - handReserve >= want;
-      case 'gainDebt': return true;   // debt is always takeable (R39)
+      case 'gainDebt': return true;   // debt is always takeable
       case 'removeCounters': return this.counterPool(seat, region, cost.from, sourceId) >= want;
       case 'eraseBin': return this.player(seat).bin.length >= want;
-      // R196: a printed "[x]". `manaReserve` is what the SAME activation still
-      // owes its fixed `AbilityCost.mana` plus R121's tax — this collector runs
+      // CR 705.3b: a printed "[x]". `manaReserve` is what the SAME activation still
+      // owes its fixed `AbilityCost.mana` plus CR 111.10f's tax — this collector runs
       // first, so the money for those must not be on the table.
       case 'payMana': return this.openMana(seat) - manaReserve >= want;
-      // R196: "[Recall another ally]" — ANOTHER, so the source never counts.
+      // CR 102.7a: "[Recall another ally]" — ANOTHER, so the source never counts.
       case 'recallUnit':
         return this.unitsOf(seat, region).filter(u => u.id !== sourceId).length >= want;
-      // R196: "[Erase one of my mods]" — MINE, so the pool is the source's own
+      // CR 111.2: "[Erase one of my mods]" — MINE, so the pool is the source's own
       case 'eraseMod': return this.modsOnSource(seat, sourceId).length >= want;
     }
   }
 
-  /** R196: the mod entities on a "[Erase one of my mods]" cost's source — the
+  /** CR 111.2: the mod entities on a "[Erase one of my mods]" cost's source — the
    * carrier the ability is anchored on, which is the HOST for donated text. */
   private modsOnSource(seat: Seat, sourceId?: EntityId): Entity[] {
     const u = sourceId !== undefined ? this.entity(sourceId) : undefined;
@@ -7963,8 +7954,8 @@ export class E {
   }
 
   /**
-   * R196 — the mana this item's ACTIVATION cost has not been charged yet:
-   * the printed fixed `AbilityCost.mana` plus R121's activation tax.
+   * CR 111.6a — the mana this item's ACTIVATION cost has not been charged yet:
+   * the printed fixed `AbilityCost.mana` plus CR 111.10f's activation tax.
    *
    * `E.collectCastCosts('variable')` runs BEFORE `E.payActivationCost`, so a
    * "[x]" paid there would otherwise be free to spend money the fixed half is
@@ -7981,7 +7972,7 @@ export class E {
     return (cost.mana ?? 0) + tax;
   }
 
-  /** R64: how many +1/+1 counters a "[Remove X +1/+1 counters …]" cost can
+  /** CR 111.3a: how many +1/+1 counters a "[Remove X +1/+1 counters …]" cost can
    * reach — every ally's in the region, or just the source unit's own. */
   counterPool(seat: Seat, region: number, from: 'allies' | 'self', sourceId?: EntityId): number {
     if (from === 'self') {
@@ -7992,7 +7983,7 @@ export class E {
   }
 
   /**
-   * BL-25/R139: the most counters ONE pick of a "[Remove X +1/+1 counters …]"
+   * BL-25/CR D7.2: the most counters ONE pick of a "[Remove X +1/+1 counters …]"
    * cost may take — what a client's quantity stepper maxes at, and what its
    * "All" button jumps to.
    *
@@ -8007,12 +7998,12 @@ export class E {
    * wants as much as you will give it): a "[Remove 2]" cost may not offer to
    * strip five counters off a unit that has five.
    *
-   * ⚠ R130 — "all counters count as counters". This deliberately makes no
+   * ⚠ CR 206.6b — "all counters count as counters". This deliberately makes no
    * eligibility judgement of its own: it reads `counterPool` and `unitsOf`,
    * exactly the two the payability check and the option list read. The
    * `Math.max(0, …)` is `counterPool`'s own, and it is there because counters
    * are ONE signed net int and this cost prints its sign ("+1/+1"), which is
-   * the same reason R130 left Pestilent Mycelion's sign filter standing.
+   * the same reason Pestilent Mycelion's sign filter stands (CR 206.6b).
    */
   counterPickMax(seat: Seat, region: number, from: 'allies' | 'self', sourceId?: EntityId, owed: number | null = null): number {
     const pool = this.counterPool(seat, region, from, sourceId);
@@ -8022,7 +8013,7 @@ export class E {
     return Math.max(0, Math.min(biggest, pool, owed ?? Infinity));
   }
 
-  /** R73: the source unit of a "[Sacrifice me]" cost, or undefined when it is
+  /** CR 111.7a: the source unit of a "[Sacrifice me]" cost, or undefined when it is
    * not there to be sacrificed (already dead, absent, or no longer this
    * seat's). The single reading `canPayCastCost` and `chargeCastCost` share. */
   private selfSacrifice(seat: Seat, sourceId?: EntityId): Entity | undefined {
@@ -8033,15 +8024,15 @@ export class E {
     return this.selfSacrifice(seat, sourceId) !== undefined;
   }
 
-  /** R64: a cost paid one unit at a time — the ones whose collector loops.
-   * R73: "[Sacrifice me]" is NOT one of them — it carries no choice, so it
+  /** CR 702.6b: a cost paid one unit at a time — the ones whose collector loops.
+   * CR 111.7a: "[Sacrifice me]" is NOT one of them — it carries no choice, so it
    * falls through to be charged outright, with no decision and no suspension.
    * That is the whole reason it is unrespondable. */
   private costIsIterated(cost: CastCost): boolean {
     return cost.kind === 'sacrificeUnit'
       || (cost.kind === 'sacrificeUnits' && cost.from !== 'self')
       || cost.kind === 'discardCard' || cost.kind === 'removeCounters'
-      // R196: 'payMana' iterates like 'payLife' (a point at a time, so the
+      // CR 705.3b: 'payMana' iterates like 'payLife' (a point at a time, so the
       // reserve is re-read before each one); 'recallUnit' and 'eraseMod' name
       // a thing, so they carry a choice and cannot be charged outright.
       || cost.kind === 'eraseBin' || cost.kind === 'payMana'
@@ -8049,7 +8040,7 @@ export class E {
       || costAmount(cost) === null;
   }
 
-  /** R64: how much of an iterated cost `part` has already paid. */
+  /** how much of an iterated cost `part` has already paid. */
   private costPaidSoFar(part: EffectPart, cost: CastCost): number {
     const paid = part.costPaid;
     if (!paid) return 0;
@@ -8061,15 +8052,15 @@ export class E {
       case 'eraseBin': return paid.erased?.length ?? 0;
       case 'payLife': return paid.life ?? 0;
       case 'gainDebt': return paid.debt ?? 0;
-      case 'payMana': return paid.mana ?? 0;                  // R196
-      case 'recallUnit': return paid.recalled?.length ?? 0;   // R196
-      case 'eraseMod': return paid.erasedMods?.length ?? 0;   // R196
+      case 'payMana': return paid.mana ?? 0;                  // CR 111.2
+      case 'recallUnit': return paid.recalled?.length ?? 0;   // CR 111.2
+      case 'eraseMod': return paid.erasedMods?.length ?? 0;   // CR 111.2
     }
   }
 
   /** the receipt key a CastCost kind lands in — its presence means "already
    * paid", which is what makes the collector idempotent across a replay.
-   * R64: a variable cost is settled by its own `xDone` flag, because a
+   * a variable cost is settled by its own `xDone` flag, because a
    * half-paid one and a finished one hold the same shape of receipt. */
   private costSettled(part: EffectPart, cost: CastCost): boolean {
     const paid = part.costPaid;
@@ -8080,7 +8071,7 @@ export class E {
   }
 
   /**
-   * Cast-time bracketed costs (R35): every part whose effect declares a
+   * Cast-time bracketed costs (CR 702.4): every part whose effect declares a
    * castCost gets it chosen and PAID here, before the item reaches the stack.
    * Spell parts must pay (castability already required a payable cost); graft
    * parts riding a composite may decline — the rider is then skipped. An
@@ -8091,7 +8082,7 @@ export class E {
    * still owed. Every branch is guarded by the receipt, so a resumed cast
    * never pays twice.
    *
-   * R64 — the point of the whole thing, and the playtest report that forced
+   * the point of the whole thing, and the playtest report that forced
    * it: "Shouldn't Discharge have you remove counters as an additional cost?
    * Not on resolution". A cost paid at resolution is not a cost. It is paid
    * after the opponent has already decided whether to respond, it can be
@@ -8111,7 +8102,7 @@ export class E {
       if (!cost) continue;
       if ((costAmount(cost) === null) !== (which === 'variable')) continue;
       const seat = item.controller;
-      // R334 / CT-216 — Graft 101 point 11: a grafted "[cost]: effect" adds a
+      // CR 111.15 / CT-216 — Graft 101 point 11: a grafted "[cost]: effect" adds a
       // cost that "is non-optional (you MUST pay it, you can't opt out) and if
       // you can't pay it … then the whole Graft Effect won't go on the stack."
       // Grafted riders were opt-in here, on no ruling. They are not: no part
@@ -8126,7 +8117,7 @@ export class E {
       // about what is still OWED, not about the printed total — else the
       // second discard of a "[Discard 2 cards]" looks unpayable and the whole
       // part is wrongly skipped after the first card is already gone
-      // R110: a graft multiplied by Lost Guardian / Witness / Amphivore is N
+      // CR 111.14: a graft multiplied by Lost Guardian / Witness / Amphivore is N
       // parts of this composite, and its [cost] "must be paid twice (Lost
       // Guardian) or thrice (Amphivore)". All or nothing: if the whole N-fold
       // cost is not payable up front, none of it is paid and the effect does
@@ -8173,7 +8164,7 @@ export class E {
           this.chargeCastCost(item, part, cost);
           continue;
         }
-        // BL-25/R139: a variable cost wants as much as you will give it, so
+        // BL-25/CR D7.2: a variable cost wants as much as you will give it, so
         // its pick is capped only by the unit; a fixed one may not be overpaid.
         const pickOwed = total === null ? null : owed;
         const options: DecisionOption[] = this.castCostOptions(item, part, cost, pickOwed);
@@ -8192,12 +8183,12 @@ export class E {
           }
           break;
         }
-        // R64: a variable cost is the caster's to size, so "that's enough" is
+        // CR 702.6b: a variable cost is the caster's to size, so "that's enough" is
         // always on the table once its floor is met. It goes LAST, where the
         // targets collector puts "No more targets" — the stop is never the
         // thing your hand lands on first.
         if (total === null && done >= costXMin(cost)) {
-          // R74: stopping at X = 0 is legal, and on some cards it is also a
+          // CR 107.2b: stopping at X = 0 is legal, and on some cards it is also a
           // guaranteed no-op. Say so HERE, on the option itself, which is the
           // only moment the payer can still change their mind — every one of
           // these cards already says it at resolution, by which point the
@@ -8225,7 +8216,7 @@ export class E {
               ? { counterMax: this.counterPickMax(seat, item.region, cost.from, item.sourceId, pickOwed) }
               : {}),
           };
-        // R338: a mid-resolution play has no cast window of its own, so its
+        // CR 702.4e: a mid-resolution play has no cast window of its own, so its
         // cost is asked through the RESOLVING effect's chooser and paid on
         // the spot by the same `payCastCost` doDecide calls. Without `ask`
         // this is the cast window's suspension, exactly as before.
@@ -8236,12 +8227,12 @@ export class E {
   }
 
   /**
-   * R338 — RAQ "[Solved] Tides of Cosmos - all you need to know.", point 5:
+   * CR 702.4e — RAQ "[Solved] Tides of Cosmos - all you need to know.", point 5:
    * *"Any additional [cost] of the card must be paid."* A card played in the
    * middle of another effect's resolution (Tides of the Cosmos, Hooba-Pon,
    * Insidious Invitation) pays its bracketed costs here, variable and fixed,
    * through the resolving effect's own `ask` (its `ctx.choose`), so every
-   * question rides the outer suspension (R198) and nothing nests a 'cast'
+   * question rides the outer suspension and nothing nests a 'cast'
    * window. The collector, the options and the payment are the cast window's
    * own; only the asking differs.
    */
@@ -8250,9 +8241,9 @@ export class E {
   }
 
   /**
-   * R334 / CT-216 — "the whole Graft Effect won't go on the stack" (Graft 101
+   * CR 722.6a / CT-216 — "the whole Graft Effect won't go on the stack" (Graft 101
    * point 11). Every part is spent and its reservation handed back (it did
-   * nothing — R113), and the item is marked so `commitItem` never pushes or
+   * nothing — CR 109.9b), and the item is marked so `commitItem` never pushes or
    * resolves it. Said once, here, where it is decided.
    */
   private gateGraftCosts(item: StackItem): void {
@@ -8263,7 +8254,7 @@ export class E {
       if (!cost || costAmount(cost) === null) continue;
       const copies = this.costCopySiblings(item, part);
       if (!this.canPayCastCost(item.controller, this.costTimes(cost, copies.length), item.region, 0, item.sourceId, this.activationManaReserve(item))) {
-        // R110's wording kept for a multiplied graft: it is the N-fold that fails
+        // the multiplied-graft wording kept (CR 111.14): it is the N-fold that fails
         this.withholdComposite(item, copies.length > 1
           ? `the grafted [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be`
           : `the grafted [${this.castCostLabel(cost)}] cost cannot be paid`);
@@ -8283,14 +8274,14 @@ export class E {
       { item: item.id, unit: item.sourceId });   // the host the composite would have come from
   }
 
-  /** R110: the unspent, unpaid copies of one multiplied graft part — the
+  /** CR 722.7d: the unspent, unpaid copies of one multiplied graft part — the
    * parts that share its mod (itself included, first). */
   private costCopySiblings(item: StackItem, part: EffectPart): EffectPart[] {
     if (part.fromMod === undefined) return [part];
     return item.parts.filter(p => p.fromMod === part.fromMod && p.effectKey === part.effectKey && !p.spent && !p.costPaid);
   }
 
-  /** R110: a fixed cost, k times over — what "pay it k times" must be asked
+  /** CR 111.14: a fixed cost, k times over — what "pay it k times" must be asked
    * about before the first payment. "[Sacrifice a unit]" k times is k units. */
   private costTimes(cost: CastCost, k: number): CastCost {
     const n = costAmount(cost);
@@ -8299,17 +8290,17 @@ export class E {
       case 'sacrificeUnit': return { kind: 'sacrificeUnits', n: k };
       case 'sacrificeUnits': return cost.from === 'self' ? cost : { ...cost, n: n * k };
       case 'gainDebt': return cost;
-      // R196: these two carry no `n` at all — one ally, one mod — so there is
+      // CR 111.2: these two carry no `n` at all — one ally, one mod — so there is
       // nothing to multiply and a spread would invent a field the union lacks.
       case 'recallUnit': case 'eraseMod': return cost;
       default: return { ...cost, n: n * k } as CastCost;
     }
   }
 
-  /** R64: the same cost, restated as the amount still owing — what payability
+  /** the same cost, restated as the amount still owing — what payability
    * must be asked about mid-payment. */
   private costOwing(cost: CastCost, owed: number, done = 0): CastCost {
-    // R196: 'recallUnit'/'eraseMod' join the no-`n` list for the same reason
+    // CR 111.2: 'recallUnit'/'eraseMod' join the no-`n` list for the same reason
     if (cost.kind === 'sacrificeUnit' || cost.kind === 'gainDebt'
       || cost.kind === 'recallUnit' || cost.kind === 'eraseMod') return cost;
     // `includeSelf`: the source half is paid first and choice-free, so once it
@@ -8323,7 +8314,7 @@ export class E {
     return { ...cost, n: owed, xMin: 0 } as CastCost;
   }
 
-  /** R64: close a variable cost — X is what was actually paid, and it is
+  /** CR 702.6b: close a variable cost — X is what was actually paid, and it is
    * written where the resolution reads it (ctx.x). */
   private finishVariableCost(item: StackItem, part: EffectPart, cost: CastCost): void {
     if (costAmount(cost) !== null) return;
@@ -8331,7 +8322,7 @@ export class E {
     paid.x = this.costPaidSoFar(part, cost);
     paid.xDone = true;
     this.ev('info', `${item.label}: X = ${paid.x} (${this.castCostLabel(cost)}).`);
-    // R74: the other way a variable cost lands on zero is that there was
+    // CR D7.1a: the other way a variable cost lands on zero is that there was
     // nothing left to pay with — no decision is raised at all, so the warning
     // has nowhere to hang but the log. It is still worth saying.
     const warn = paid.x === 0 ? effectByKey(part.effectKey).xZeroWarning : undefined;
@@ -8352,18 +8343,18 @@ export class E {
       case 'gainDebt': return `gain ${cost.n} debt`;
       case 'removeCounters': return `remove ${n === null ? 'X' : n} +1/+1 counter${n === 1 ? '' : 's'} from ${cost.from === 'self' ? 'me' : 'allies'}`;
       case 'eraseBin': return `erase ${n === null ? 'X' : n} card${n === 1 ? '' : 's'} from your bin`;
-      case 'payMana': return `pay [${n === null ? 'X' : n}]`;      // R196
-      case 'recallUnit': return 'recall another ally';             // R196
-      case 'eraseMod': return 'erase one of my mods';              // R196
+      case 'payMana': return `pay [${n === null ? 'X' : n}]`;      // CR 111.2
+      case 'recallUnit': return 'recall another ally';             // CR 111.2
+      case 'eraseMod': return 'erase one of my mods';              // CR 111.2
     }
   }
 
   /** the choices a bracketed cost offers (the choice-free kinds never get
-   * here: collectCastCosts charges them on the spot — R334 removed the
-   * opt-in grafted-rider path that used to ask about them) */
+   * here: collectCastCosts charges them on the spot — since grafted costs
+   * became mandatory (CR 111.15) there is no opt-in grafted-rider path to ask about them) */
   private castCostOptions(item: StackItem, part: EffectPart, cost: CastCost, owed: number | null = null): DecisionOption[] {
     const seat = item.controller;
-    // R73: "[Sacrifice me]" names no unit, so it offers no unit menu; the
+    // CR 111.7a: "[Sacrifice me]" names no unit, so it offers no unit menu; the
     // cost collector charges it without asking. Falls through to the "Pay: …"
     // default if it is ever asked about.
     if (cost.kind === 'sacrificeUnit'
@@ -8384,7 +8375,7 @@ export class E {
       return this.player(seat).hand.map((n, i) => ({ label: n, value: { discard: i }, card: n }));
     }
     if (cost.kind === 'eraseBin') {
-      // R124/R131: `{erase: name}` names the CARD, not a slot — copies in a bin
+      // CR 405.6: `{erase: name}` names the CARD, not a slot — copies in a bin
       // are genuinely indistinguishable, so two rows reading "The Foretold"
       // would be one option offered twice. The collapse is right; what was
       // missing is that the menu never said it had collapsed anything.
@@ -8400,7 +8391,7 @@ export class E {
       // so it stays exactly where it was.
       return [...tally].map(([n, k]) => ({ label: n, value: { erase: n }, card: n, count: k }));
     }
-    // R196: a printed "[x]" is paid a point at a time for the same reason a
+    // CR 705.3b: a printed "[x]" is paid a point at a time for the same reason a
     // variable life cost is — the reserve `payActivationCost` still needs is
     // re-read before each point, so X can never eat the fixed half or the tax.
     if (cost.kind === 'payMana') {
@@ -8410,19 +8401,19 @@ export class E {
         ? [{ label: `Pay [1] more — X = ${so + 1}`, value: { payMana1: true } }]
         : [];
     }
-    // R196: "[Recall another ally]" — the source is never on the menu
+    // CR 102.7a: "[Recall another ally]" — the source is never on the menu
     if (cost.kind === 'recallUnit') {
       return this.unitsOf(seat, item.region)
         .filter(u => u.id !== item.sourceId)
         .map(u => ({ label: this.targetLabel({ unit: u.id }), value: { recall: u.id }, card: u.card }));
     }
-    // R196: "[Erase one of my mods]" — the SOURCE's mods, nobody else's
+    // CR 111.2: "[Erase one of my mods]" — the SOURCE's mods, nobody else's
     if (cost.kind === 'eraseMod') {
       return this.modsOnSource(seat, item.sourceId)
         .map(m => ({ label: `Erase ${m.card}`, value: { eraseMod: m.id }, card: m.card }));
     }
-    // R64: a VARIABLE life cost is paid a point at a time, so that R49's
-    // "never your last life" is re-asked before each one.
+    // CR 702.6b: a VARIABLE life cost is paid a point at a time, so that
+    // "never your last life" (CR 111.6b) is re-asked before each one.
     if (cost.kind === 'payLife') {
       return this.canPayLife(seat, 1)
         ? [{ label: `Pay 1 more life (you have ${this.player(seat).life})`, value: { payLife1: true } }]
@@ -8434,7 +8425,7 @@ export class E {
       const pool = cost.from === 'self'
         ? (item.sourceId !== undefined ? [this.entity(item.sourceId)] : []).filter((u): u is Entity => !!u && !u.absent)
         : this.unitsOf(seat, item.region);
-      // BL-25/R139: a pick may take SEVERAL counters off the unit it names,
+      // BL-25/CR D7.2: a pick may take SEVERAL counters off the unit it names,
       // so each unit contributes one option per amount it can still give.
       //
       // The one-per-counter menu it replaces was not merely tedious — it was
@@ -8481,7 +8472,7 @@ export class E {
       this.ev('info', `${this.pname(seat)} gains ${cost.n} debt — the cost of ${item.label}.`);
       this.gainDebt(seat, cost.n);
     } else if (cost.kind === 'sacrificeUnits' && (cost.from === 'self' || cost.includeSelf)) {
-      // R73: "[Sacrifice me]". No choice, so no decision and no suspension —
+      // CR 111.7a: "[Sacrifice me]". No choice, so no decision and no suspension —
       // it is charged here, in the cast window, before anyone has priority.
       // canPayCastCost already refused an absent source, so this is live.
       // `includeSelf` ("me AND another ally", Deformant) shares this branch for
@@ -8502,7 +8493,7 @@ export class E {
     }
   }
 
-  /** Pay a chosen cast-time cost (R35): a COST, not an effect — paid before
+  /** Pay a chosen cast-time cost (CR 702.4): a COST, not an effect — paid before
    * the item hits the stack, not respondable. The receipt (with the victim's
    * stats snapshotted now) lands on the part for resolution to read. */
   payCastCost(item: StackItem, partIndex: number, val: unknown): void {
@@ -8510,7 +8501,7 @@ export class E {
     const cost = effectByKey(part.effectKey).castCost!;
     const obj = val !== null && typeof val === 'object' ? val as Record<string, unknown> : {};
     if ('declineCost' in obj) {
-      // R110: the rider is paid N times or not at all — declining the first
+      // CR 111.14: the rider is paid N times or not at all — declining the first
       // copy declines every copy
       const copies = this.costCopySiblings(item, part);
       for (const p of copies) p.spent = true;
@@ -8536,7 +8527,7 @@ export class E {
       this.loseLife(item.controller, 1, `${item.label} (cost)`);
       return;
     }
-    // R196: one point of a printed "[x]". The reserve is re-checked here and
+    // CR 705.3b: one point of a printed "[x]". The reserve is re-checked here and
     // not only in the option list, because `need` is what a hand-written or
     // replayed action has to get past.
     if ('payMana1' in obj) {
@@ -8546,7 +8537,7 @@ export class E {
       this.ev('info', `${this.pname(item.controller)} pays [1] — the cost of ${item.label} (X = ${paid.mana}).`);
       return;
     }
-    // R196: "[Recall another ally]". A real R70 recall through the one entry
+    // CR 111.7: "[Recall another ally]". A real CR 402.4 recall through the one entry
     // point, so 'handEntered' and 'despawned' both fire — the cost is paid in
     // the cast window, so those triggers queue and settle after the item is on
     // the stack, exactly as a "[Sacrifice a unit]" cost's death trigger does.
@@ -8559,7 +8550,7 @@ export class E {
       this.recall(u!);
       return;
     }
-    // R196: "[Erase one of my mods]". Not `destroy` and not `disposeToBin`:
+    // CR 111.2: "[Erase one of my mods]". Not `destroy` and not `disposeToBin`:
     // an erase removes the mod from the game outright, which is the reading
     // Slag Spewer has always had — only the MOMENT has moved into the window.
     if ('eraseMod' in obj) {
@@ -8568,7 +8559,7 @@ export class E {
       const mod = this.entity(modId);
       this.need(mod && host && host.mods.includes(modId), 'bad cost choice');
       (paid.erasedMods ??= []).push({ mod: modId, card: mod!.card });
-      // R208 / CT-86, ANSWERED 2026-08-26 (R219). An erased card goes to the
+      // CR 720.9 / CT-86, ANSWERED 2026-08-26 (CR 801.6). An erased card goes to the
       // erased pile. The card says "erase"; that names the destination, and
       // there was never a question here — the owner, asked it: "Obviously the
       // card says where it should end up. It's erased… It should just end up
@@ -8578,7 +8569,7 @@ export class E {
       // comment calling the destination "UNANSWERED", it was written up as
       // round-27 Q3 AND Q9, it kept CT-86 open across two rounds, and it put a
       // scenario in front of the owner asking him to rule on something his
-      // cards already say. R65 exists because of his complaint that "there's
+      // cards already say. The erased pile exists because of his complaint that "there's
       // currently no way to view erased cards" — a cost-erase that files
       // nowhere is that same bug, not an open design question.
       //
@@ -8605,9 +8596,9 @@ export class E {
       const bin = this.player(item.controller).bin;
       const idx = bin.indexOf(name);
       this.need(idx !== -1, 'bad cost choice');
-      this.removeFromBin(item.controller, idx, 'erased');   // R124
+      this.removeFromBin(item.controller, idx, 'erased');   // CR 405.7
       (paid.erased ??= []).push(name);
-      // 'erased', not 'info': this is a real erase, and R65's public pile is
+      // 'erased', not 'info': this is a real erase, and CR 407.2's public pile is
       // kept by ev() off exactly this event
       this.ev('erased', `${this.pname(item.controller)} erases ${name} from their bin — the cost of ${item.label}.`,
         { card: name, seat: item.controller });
@@ -8618,7 +8609,7 @@ export class E {
       this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
         && u.counters > 0 && (cost.kind !== 'removeCounters' || cost.from !== 'self' || u.id === item.sourceId),
         'bad cost choice');
-      // BL-25/R139: one pick, several counters. Absent `n` is 1 — the shape
+      // BL-25/CR D7.2: one pick, several counters. Absent `n` is 1 — the shape
       // every saved game and every existing test sends.
       //
       // CLAMPED, not refused, and deliberately: the client's stepper carries a
@@ -8664,7 +8655,7 @@ export class E {
     this.destroy(u!, 'is sacrificed');
   }
 
-  /** R49/R196: the units one choice-bearing activation-cost atom may name.
+  /** CR 111.2: the units one choice-bearing activation-cost atom may name.
    * The source is never one of them ("another"), and a `discardOrSacrifice`
    * or a `nontoken`-flagged atom may not name a token. The ONE reading the
    * option list, the payability gate and `payItemCost`'s validation share. */
@@ -8674,7 +8665,7 @@ export class E {
       .filter(u => u.id !== item.sourceId && (!nontokenOnly || !u.token));
   }
 
-  /** R196: can this ONE choice-bearing atom still be paid, right now? */
+  /** CR 111.6: can this ONE choice-bearing atom still be paid, right now? */
   private itemCostAtomPayable(item: StackItem, atom: NonNullable<StackItem['pendingCosts']>[number]): boolean {
     const hand = this.player(item.controller).hand.length;
     const sacs = this.itemCostSacrifices(item, atom).length;
@@ -8686,11 +8677,11 @@ export class E {
   }
 
   /**
-   * R196 — THE COMPOUND-COST GATE, and the fix for the half-pay hazard the
+   * CR 111.6a — THE COMPOUND-COST GATE, and the fix for the half-pay hazard the
    * 2026-08-23 audit left documented inside `collectItemCosts`.
    *
    * An activation cost is collected by up to three collectors in one window,
-   * in this order: a VARIABLE `castCost` (R64), then the choice-free half
+   * in this order: a VARIABLE `castCost` (CR 705.3b), then the choice-free half
    * (`payActivationCost` — mana, life, debt, sacrifice-me), then the
    * choice-bearing atoms (`collectItemCosts`), then a FIXED `castCost`. Each
    * charges as it goes. So a COMPOUND cost — one that uses more than one of
@@ -8698,7 +8689,7 @@ export class E {
    * unpayable, at which point "nothing is paid and the ability does nothing"
    * is a lie about the mana.
    *
-   * R110 already answers this shape for a multiplied graft cost: *all or
+   * CR 111.14 already answers this shape for a multiplied graft cost: *all or
    * nothing, asked ONCE, before the first copy pays*. This is that, for a
    * compound activation cost — asked at the TOP of the window, where nothing
    * has been charged yet, so abandoning really does pay nothing. `collectTargets`
@@ -8725,7 +8716,7 @@ export class E {
       if (p.spent || p.costPaid) return false;
       const cc = effectByKey(p.effectKey).castCost;
       // a VARIABLE cost is never "unpayable" — it simply closes at what was
-      // paid, and X = 0 is legal (R74). Only a FIXED one can fail.
+      // paid, and X = 0 is legal (CR 107.2b). Only a FIXED one can fail.
       if (!cc || costAmount(cc) === null) return false;
       return !this.canPayCastCost(item.controller, cc, item.region, 0, item.sourceId,
         this.activationManaReserve(item));
@@ -8740,7 +8731,7 @@ export class E {
   }
 
   /**
-   * R49: the ITEM-level activation costs that carry a choice — "Discard a
+   * CR 705.3: the ITEM-level activation costs that carry a choice — "Discard a
    * card:", "Sacrifice a unit:". Collected in the same window as the cast
    * costs above, so an activation's cost is paid before its item reaches the
    * stack and nobody may respond in between. Mandatory: the activation was
@@ -8754,7 +8745,7 @@ export class E {
       const seat = item.controller;
       // "sacrifice a NONTOKEN unit" is the printed wording of the either/or
       // shape; the plain sacrifice-another cost takes any unit you control —
-      // unless R196's `nontoken` flag is set (Instrument of Reassignment's
+      // unless the atom's `nontoken` flag is set (Instrument of Reassignment's
       // "Sacrifice another nontoken unit"), which narrows it the same way.
       const sacs = this.itemCostSacrifices(item, atom);
       const discards: DecisionOption[] = this.player(seat).hand
@@ -8768,20 +8759,20 @@ export class E {
       if (!options.length) {
         // the payment vanished between activation and collection (a response
         // took the last unit): the cost is unpayable, so nothing is paid and
-        // the whole activation is skipped — R35's unpayable-cost reading.
-        // ⚠ THE 2026-08-23 AUDIT'S LATENT HALF-PAY IS FIXED (R196), and this
+        // the whole activation is skipped — CR 111.6's unpayable-cost reading.
+        // ⚠ THE 2026-08-23 AUDIT'S LATENT HALF-PAY IS FIXED (CR 111.6a), and this
         // branch is now the belt to that braces. It used to read: "nothing is
         // paid" holds only because no pool ability combines a choice-free half
         // (charged by payActivationCost one call EARLIER) with a choice half
         // like this one — the first card that does will reach here with its
         // mana already spent. FOUR cards now do (Instrument of Reassignment,
         // Auric Ascendant, Slag Spewer, and any future compound), and the
-        // answer chosen was neither "refund" nor "reorder" but R110's: the
+        // answer chosen was neither "refund" nor "reorder" but CR 111.14's: the
         // ALL-OR-NOTHING gate `E.gateCompoundCost`, asked at the top of the
         // cast window BEFORE anything is charged. See its comment for why the
         // audit's own scenario ("a response took the last unit") is not in
         // fact reachable, and what is.
-        // R122: for a 'playSacrifice' atom this branch is unreachable by
+        // CR 111.10d: for a 'playSacrifice' atom this branch is unreachable by
         // construction today — canPayCard gated the play on the count, and
         // nothing may act between the gate and this collection — but it is
         // kept as the belt-and-braces answer should a payCard-side trigger
@@ -8827,7 +8818,7 @@ export class E {
     } else {
       const id = (val as { unit: EntityId }).unit;
       const u = this.entity(id);
-      // R196: the ONE reading of "which units may this atom name" — the same
+      // CR 111.2: the ONE reading of "which units may this atom name" — the same
       // helper the option list and the payability gate use.
       this.need(u && this.itemCostSacrifices(item, atom!).some(o => o.id === u.id), 'bad cost choice');
       (receipt.sacrificed ??= []).push(u!.card);
@@ -8839,31 +8830,31 @@ export class E {
     if (!item.pendingCosts!.length) delete item.pendingCosts;
   }
 
-  /** Ask for every cast-time decision, in order: X (R35), {Modular} mods,
+  /** Ask for every cast-time decision, in order: X (CR 702.3), {Modular} mods,
    * TARGETS for every part that needs them, then the costs — ALL at cast time
    * (multi-target specs included). Suspends via 'cast'.
    *
-   * R57: targets are chosen BEFORE any activation cost is paid. They used to
+   * CR 111.7: targets are chosen BEFORE any activation cost is paid. They used to
    * come last, so "Sacrifice me: …" destroyed the unit and only then showed
    * you what you could aim at — irreversible, and a disaster to fumble during
    * battle when you meant to block with it. Choosing first also means a
    * player who cannot aim the ability anywhere still has their unit.
    */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
-    // R196: FIRST, before any collector charges anything — a COMPOUND
-    // activation cost is all or nothing (R110's rule, one scope up).
+    // CR 111.6a: FIRST, before any collector charges anything — a COMPOUND
+    // activation cost is all or nothing (CR 111.14's rule, one scope up).
     this.gateCompoundCost(item);
-    // R334: a graft composite whose grafted [cost] cannot be paid is withheld
+    // CR 722.6a: a graft composite whose grafted [cost] cannot be paid is withheld
     // HERE, before anyone is asked to aim a part that will never resolve
     this.gateGraftCosts(item);
     if (item.withheld) return;
     this.collectX(item, then, moreItems);
-    // R64: a VARIABLE bracketed cost is where X comes from ("[Remove X +1/+1
+    // CR 702.3a: a VARIABLE bracketed cost is where X comes from ("[Remove X +1/+1
     // counters from allies]", "[Sacrifice X units]"), so it is paid up here
     // with the mana X rather than down with the fixed costs — the spell's size
     // has to be settled before it can be aimed, since what it may aim at is
-    // sized by X ("Negate up to X target effects"). R57's "targets before
-    // costs" is about not destroying a unit before showing what it could have
+    // sized by X ("Negate up to X target effects"). The "targets before
+    // costs" rule (CR 702.3f) is about not destroying a unit before showing what it could have
     // hit; a cost that decides how big the spell is has no such reading.
     this.collectCastCosts(item, then, moreItems, 'variable');
     // {Modular} before the costs and the targets: an applied mod adds a part,
@@ -8871,23 +8862,23 @@ export class E {
     // (Manual p.33 — the composite resolves as ONE ability)
     this.collectModular(item, then, moreItems);
     this.collectPartTargets(item, then, moreItems);
-    // R144: the AIM of an untargeted effect ("put a -1/-1 counter on an
-    // ally"). Beside the targets and for the same reason R67 puts targets
+    // CR 706.12: the AIM of an untargeted effect ("put a -1/-1 counter on an
+    // ally"). Beside the targets and for the same reason CR 110.1a puts targets
     // here: an effect is DECLARED before it is on the stack, so several
     // simultaneous triggers are all aimed while the board still looks the way
     // it did when they fired. Before the modes, so a mode may read the aim,
     // exactly as it may read the targets.
     this.collectSubjects(item, then, moreItems);
-    // R57: WHICH HALF of a modal effect. AFTER the targets, so a mode can name
+    // CR 702.3d: WHICH HALF of a modal effect. AFTER the targets, so a mode can name
     // what it is aimed at ("double Good Whale's power (5 → 10) or defense
-    // (3 → 6)?"); BEFORE the costs, so R57's "nothing irreversible is spent
-    // until the effect is fully declared" holds for a modal card too.
+    // (3 → 6)?"); BEFORE the costs, so the rule that "nothing irreversible is spent
+    // until the effect is fully declared" (CR 702.3) holds for a modal card too.
     this.collectModes(item, then, moreItems);
-    this.collectFormationSpot(item, then, moreItems);   // R29: "play me into a spot"
-    this.payActivationCost(item);                   // R57: choice-free half
-    this.collectItemCosts(item, then, moreItems);   // R49: the choice-bearing half
+    this.collectFormationSpot(item, then, moreItems);   // CR 602.7: "play me into a spot"
+    this.payActivationCost(item);                   // CR 705.3d: choice-free half
+    this.collectItemCosts(item, then, moreItems);   // CR 705.3: the choice-bearing half
     this.collectCastCosts(item, then, moreItems, 'fixed');
-    // R178: LAST — "As you play a nonunit spell, you may sacrifice me…"
+    // CR 702.3: LAST — "As you play a nonunit spell, you may sacrifice me…"
     // (Maelstrom Charger). Everything about the play is declared by now, which
     // is what makes the option answerable, and nothing about the option itself
     // ever reaches the stack.
@@ -8895,12 +8886,12 @@ export class E {
   }
 
   /**
-   * R178 — every AS-YOU-PLAY option this play offers right now, in a
+   * CR 702.3g — every AS-YOU-PLAY option this play offers right now, in a
    * deterministic order.
    *
    * The `anchored()` walk every `CardBehavior` channel uses: units in play and
-   * augment mods read from their HOST, R12-scoped to the region the card is
-   * being played into, with the shallow R62 guard (a silenced unit offers
+   * augment mods read from their HOST, CR 101.6-scoped to the region the card is
+   * being played into, with the shallow CR 712.1a guard (a silenced unit offers
    * nothing — the printed line is text-box text, and "loses all abilities"
    * takes text-box text with it). `behaviorFaces` is what makes the RAQ's last
    * line true: an Ancient One standing next to a Maelstrom Charger wears the
@@ -8927,7 +8918,7 @@ export class E {
   }
 
   /**
-   * R178 — the AS-YOU-PLAY stage of the cast window.
+   * CR 702.3g — the AS-YOU-PLAY stage of the cast window.
    *
    * Three questions, in this order, all of them through the ordinary 'cast'
    * suspension so a saved game replays them like any other cast-time answer:
@@ -8942,7 +8933,7 @@ export class E {
    * (`asked`, `aim`, `targets`, `done`) rather than a local.
    *
    * NOTHING HERE IS ON THE STACK. There is no item to negate, no trigger to
-   * order, nothing for R121's `gateTaxedTrigger` to tax (it only ever sees a
+   * order, nothing for CR 111.10g's `gateTaxedTrigger` to tax (it only ever sees a
    * `PendingTrigger`) and no window in which an opponent may act — the RAQ:
    * *"Meal copying is not an effect on the stack so enemy cannot interact with
    * it. Opponent can only interact with copy of a spell effect."* The copies
@@ -8951,7 +8942,7 @@ export class E {
    */
   private collectAsYouPlay(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     // plays only: a triggered/activated item on the stack is not a card being
-    // played, and a virus is a mod being applied (R37), which is not a play.
+    // played, and a virus is a mod being applied (CR 701.2a), which is not a play.
     if (!CARD_PLAY_KINDS.has(item.kind) && item.kind !== 'spellToken') return;
     const offers = this.asYouPlayOffers(item);
     if (!offers.length && !item.asYouPlay) return;
@@ -8973,7 +8964,7 @@ export class E {
         },
       );
     }
-    // "…and you may choose new targets for the copy" (R57: declared here, so
+    // "…and you may choose new targets for the copy" (CR 710.8a: declared here, so
     // the first response window sees a finished copy)
     for (let i = 0; i < st.copies.length; i++) {
       const c = st.copies[i]!;
@@ -9037,7 +9028,7 @@ export class E {
   }
 
   /**
-   * R178 — record one answer to the as-you-play stage (called from doDecide).
+   * CR 702.3g — record one answer to the as-you-play stage (called from doDecide).
    *
    * `take` is where the option's cost is PAID, and it is paid the instant the
    * controller accepts: cost-shaped means spent as you play, with no window
@@ -9073,14 +9064,14 @@ export class E {
   }
 
   /**
-   * R178 — materialise the copies an as-you-play option bought.
+   * CR 710.8 — materialise the copies an as-you-play option bought.
    *
    * Called from `commitItem` AFTER the original has been pushed, so each copy
    * lands above it and resolves first — RAQ: *"put copy of spell effect on
    * stack (above original spell effect)"*. Two of them make two copies, in the
    * order the options were accepted.
    *
-   * The copy is `E.pushSpellCopy`'s ordinary R164 copy: a real, respondable,
+   * The copy is `E.pushSpellCopy`'s ordinary CR 710.8 copy: a real, respondable,
    * negatable stack item, which is the ONLY thing the opponent may interact
    * with here (*"Opponent can only interact with copy of a spell effect."*).
    * It inherits the original's paid cost receipt and X — *"you DON'T pay
@@ -9100,7 +9091,7 @@ export class E {
   }
 
   /**
-   * R57: charge the choice-free half of an activation cost — mana, life, debt
+   * CR 705.3d: charge the choice-free half of an activation cost — mana, life, debt
    * and sacrifice-self — once the ability's targets are settled. Deleting the
    * field is the idempotence guard: collectTargets re-runs from the top after
    * every answered decision, and this must not charge twice.
@@ -9110,7 +9101,7 @@ export class E {
     if (!cost) return;
     delete item.activationCost;
     const seat = item.controller;
-    // R121: the ability-cost tax layer (Crevice Lurker) joins the printed
+    // CR 111.10f, 111.6: the ability-cost tax layer (Crevice Lurker) joins the printed
     // mana — same cast-window moment, and legality-gated by the same
     // canPayAbilityCost both the offer and the accept already share, so an
     // unaffordable taxed activation was never offered in the first place.
@@ -9140,31 +9131,29 @@ export class E {
       // Skybreaker's printed "Erase me:". Being a COST it is paid here, on the
       // way to the stack — the unit is gone before anybody may respond to the
       // ability, exactly as the sacrifice above is. Not `destroy`: an erase is
-      // not a death and no card reaches a bin, so no 'died' and (R40) no
-      // trash. R172: it IS a despawn, and fires one.
+      // not a death and no card reaches a bin, so no 'died' and (CR 801.2c) no
+      // trash. CR 801.6a: it IS a despawn, and fires one.
       const u = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
       if (u && u.kind === 'unit') this.eraseFromPlay(u, `— the cost of ${item.label}.`);
     }
   }
 
   /**
-   * Remove a unit from play ENTIRELY: no bin, **no death**, and (R40) no trash
+   * Remove a unit from play ENTIRELY: no bin, **no death**, and (CR 801.2c) no trash
    * either — Caleb: erasing never touches a bin, so it is never a trash. Its
-   * mods go with it, having nothing left to be attached to. R65: the card and
+   * mods go with it, having nothing left to be attached to. CR 410.4b: the card and
    * its mods reach the public erased pile, which ev() keeps off the 'erased'
    * event.
    *
-   * ⚠ **R172: an erase IS A DESPAWN.** This used to say "no despawn, so
+   * ⚠ **CR 801.6a: an erase IS A DESPAWN.** This used to say "no despawn, so
    * nothing triggers off it", and it fired only `'erased'` — a type no
    * `fireEvent` site anywhere dispatches, so an erase was invisible to the
-   * game in exactly the way R152 found a Hooba-Mon exchange to be. The repo
-   * had already ruled the general case twice: **R157 §3** — *"It's not a
-   * death, but it IS a despawn and a trashing"* — and **R152**, which repaired
-   * this same omission on `exchangeInPlace`. An erase is the third non-death
+   * game in exactly the way a Hooba-Mon exchange once was. The repo
+   * had already ruled the general case twice: **the exchange ruling (CR 410.2a)** — *"It's not a
+   * death, but it IS a despawn and a trashing"* — and **the earlier repair of the same omission on `exchangeInPlace`**. An erase is the third non-death
    * departure and was the last one still silent, so every "whenever a unit
    * despawns" watcher (Demon of the Depths) was blind to Banishment and every
-   * donated `[Augment] When I despawn` was dead on this route — R167's bug,
-   * one verb over. The one thing an erase still does NOT do is TRASH: R40 is
+   * donated `[Augment] When I despawn` was dead on this route — the same bug, one verb over. The one thing an erase still does NOT do is TRASH: CR 801.2c is
    * about a card entering a bin, and nothing here enters one.
    *
    * ORDER, and why it differs from the `'erased'` lines in `destroy` /
@@ -9181,7 +9170,7 @@ export class E {
    * it). The two events reach two disjoint consumers: the pile and the log
    * hear the erase, triggered abilities hear the despawn.
    *
-   * R167 anchoring, repeated here because this route needed it too:
+   * The same anchoring, repeated here because this route needed it too:
    * `fireEvent` finds a mod's donated `[Augment]` text by walking `u.mods`
    * THROUGH the entity table, so the mod entities are deleted in the LAST
    * statement rather than before the announce — otherwise the new event fires
@@ -9191,7 +9180,7 @@ export class E {
    * resolves it through `entity(modOf)`, and the host is already gone); and
    * kind `'mod'` keeps it out of the listener scan.
    *
-   * R172 also folded the card-side copies of this into it — helpers.ts's
+   * The card-side copies of this were folded into it too — helpers.ts's
    * `eraseFromPlay` and batch-hybrids-ld-a's `eraseUnit` are now one-line
    * shims, so all eight card call sites arrive here. (This ⚠ used to name a
    * third copy, "batch-water-a's Celestial Purge". That was wrong: Celestial
@@ -9199,15 +9188,15 @@ export class E {
    */
   eraseFromPlay(u: Entity, why = ''): void {
     if (!this.entity(u.id)) return;
-    this.stampLastKnown(u);                     // R325
-    // R157 §10: the erased pile is a zone other than play, so a transformed
+    this.stampLastKnown(u);                     // CR 714.1
+    // CR 407.4: the erased pile is a zone other than play, so a transformed
     // card is recorded there under its FRONT face — the piece of cardboard
     // that left the game is the printed card, not the side it was showing.
     this.revertFace(u);
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     delete this.s.entities[u.id];
     this.removeFromFormation(u.id);
-    // R65: the host AND its mods reach the public erased pile, under the
+    // CR 410.4b: the host AND its mods reach the public erased pile, under the
     // host's OWNER — the same seat and the same one-event shape `destroy`
     // uses for an Unstable death, so the two erase routes read alike.
     this.ev('erased',
@@ -9217,7 +9206,7 @@ export class E {
         unit: u.id, card: u.card, seat: u.owner, region: u.region,
         cards: [u.card, ...mods.map(m => m.card)],
       });
-    // R172: …and it despawns. R70's fact bundle rides the event, because the
+    // CR 801.6a: …and it despawns. CR 714.9's fact bundle rides the event, because the
     // entity is already out of s.entities and a listener has no other way to
     // read what left. `to: 'erased'` fills the destination slot `recall` puts
     // 'hand' in and `cacheUnit` puts 'cache' in; the two readers of that slot
@@ -9227,7 +9216,7 @@ export class E {
       `${u.card} despawns as it is erased — not a death, and not a trash.`,
       { ...this.leftPlayFacts(u), to: 'erased' });
     this.fireEvent('despawned', ev, u);
-    // R167: last, exactly as `disposeToBin` and `afterDespawn` do it — see the
+    // CR 721.1f: last, exactly as `disposeToBin` and `afterDespawn` do it — see the
     // anchoring paragraph above.
     for (const m of mods) delete this.s.entities[m.id];
   }
@@ -9238,9 +9227,9 @@ export class E {
       if (part.spent) continue;
       const def = effectByKey(part.effectKey);
       if (!def.targets) continue;
-      // R64: "X target allies" / "up to X target effects" — the spec's count is
+      // CR 702.3a: "X target allies" / "up to X target effects" — the spec's count is
       // the spell's X, already fixed by collectX or by a variable cast cost.
-      // R83: `extraSlots` are fixed slots ON TOP of that count, occupying the
+      // CR 110.2b: `extraSlots` are fixed slots ON TOP of that count, occupying the
       // low indices (Channel Through's "target opponent" beside its X allies).
       const counted = def.targets.count === 'X'
         ? (part.costPaid?.x ?? item.x ?? 0)
@@ -9250,7 +9239,7 @@ export class E {
       if (max <= 0) { part.targetsDone = true; continue; }
       while (!part.targetsDone && part.targets.length < max) {
         const n = part.targets.length;
-        // R58: each slot may carry its own restriction (Fight: ally, then any
+        // CR 110.3: each slot may carry its own restriction (Fight: ally, then any
         // other unit), so candidates are computed per slot rather than once.
         const slot = specForSlot(def.targets, n);
         const chosen = new Set(part.targets.map(t => JSON.stringify(t)));
@@ -9260,7 +9249,7 @@ export class E {
           item.sourceId, part.costPaid?.x ?? item.x, already, item.event)
           .filter(c => !chosen.has(JSON.stringify(c)));
         if (!cands.length) {
-          // R64: nothing legal to aim at. The part is skipped at resolution
+          // CR 704.6g: nothing legal to aim at. The part is skipped at resolution
           // either way, but silence here is the "why did nothing happen?"
           // that sends people to the bug button — so it says so, once.
           // (`targetsDone` is also the idempotence guard: collectTargets
@@ -9272,7 +9261,7 @@ export class E {
           break;
         }
         /**
-         * R288 / BL-30 — "DID YOU MEAN TO TARGET YOUR OWN UNITS?"
+         * CR D2.8 / BL-30 — "DID YOU MEAN TO TARGET YOUR OWN UNITS?"
          *
          * The owner, 2026-08-26: *"there are many cards in the game that you
          * can TECHNICALLY point at several of your own units (Fight, Organic
@@ -9292,7 +9281,7 @@ export class E {
          *     EVERY declared target an ally — the owner's "if they select two
          *     of their own units", exactly.
          *
-         * ⚠ NEVER A NARROWING. `cands` is untouched: R157's standing steer is
+         * ⚠ NEVER A NARROWING. `cands` is untouched: the standing steer (CR 101.1, 101.4) is
          * that printed text wins and the permissive reading is the right one,
          * and BL-30 says it twice ("we shouldn't stop that from happening",
          * "they're legal targets"). This adds a question to an option, not a
@@ -9334,13 +9323,13 @@ export class E {
   }
 
   /**
-   * R144 — ask WHAT an untargeted effect is aimed at, once per subject-bearing
+   * CR 706.12 — ask WHAT an untargeted effect is aimed at, once per subject-bearing
    * part, in the stack window.
    *
    * THE BUG THIS EXISTS FOR, and the owner's ruling on it (report #101, room
    * SMVJ): *"All Wraith triggers should go onto the stack simultaneously and
    * be allowed to target the same unit, even exceeding its defense (the final
-   * triggers would just fizzle)."* The Wraith's "an ally" is not a target (R71
+   * triggers would just fizzle)."* The Wraith's "an ally" is not a target (CR 110.2c, 706.12
    * — the word is not printed), so it was picked with a `ctx.choose` INSIDE
    * the resolution. Four Wraiths at the start of deployment therefore aimed
    * one at a time in four different worlds: the first killed the 3/3, and the
@@ -9352,7 +9341,7 @@ export class E {
    * a trigger cannot be aimed at a unit an earlier one is about to kill unless
    * it is aimed BEFORE that one resolves. `E.resolveItem` then does the other
    * half — a part whose subject has left play is lost, and an item that has
-   * lost every subject and target it declared fizzles (R86's rule, unchanged,
+   * lost every subject and target it declared fizzles (CR 704.6's rule, unchanged,
    * with subjects counted alongside targets).
    *
    * A SUBJECT IS NOT A TARGET and `EffectDef.subject` says at length what that
@@ -9390,7 +9379,7 @@ export class E {
   }
 
   /**
-   * R57 — ask which HALF of a modal effect ("[… or …]") the caster is casting,
+   * CR 702.5 — ask which HALF of a modal effect ("[… or …]") the caster is casting,
    * once per modal part, in the cast window.
    *
    * THE BUG THIS EXISTS FOR (playtest, Burgeon): every caster-facing mode in
@@ -9399,7 +9388,7 @@ export class E {
    * Burgeon whose half had not been declared; the response resolved; and only
    * then was the caster asked — with the option labels recomputed off the
    * post-response stats. That is free information the opponent paid for, and
-   * it is the same defect R67 fixed for targets: a response window is only
+   * it is the defect that declaring targets at cast (CR 702.3c) fixed for targets: a response window is only
    * meaningful if what you are responding to is fully declared.
    *
    * A mode is not a target and not a cost, so it gets its own stage rather
@@ -9408,13 +9397,13 @@ export class E {
    * — which is why a part with nothing to choose between records `null`
    * instead of staying undefined and asking again forever.
    *
-   * EVERY PRINTED BRACKET IS THE CASTER'S (R284). What stays at resolution is
-   * the two things that are not printed brackets: R6's unbracketed "unless its
+   * EVERY PRINTED BRACKET IS THE CASTER'S (CR 205.3a). What stays at resolution is
+   * the two things that are not printed brackets: CR 702.5a's unbracketed "unless its
    * controller pays" (Abduct), which really is the opponent's decision, and a
    * replacement-effect mode (Cosmic Conspirator), which is raised before the
    * token it is about exists. Void Memory used to be listed here as a third —
-   * "each opponent discards a [unit or spell]", filed under R67's
-   * not-a-target carve-out — and it was the defect R284 fixed: the half was
+   * "each opponent discards a [unit or spell]", filed under CR 704.1a's
+   * not-a-target carve-out — and it was the defect CR 205.3a rules out: the half was
    * being picked by the players it is aimed AT, each of them looking at their
    * own hand, which is the opposite of the guess the card is.
    */
@@ -9452,14 +9441,14 @@ export class E {
    * the target's agree for every legal target, and `self: true` listeners
    * match on `unit` anyway).
    *
-   * R164: split out of `commitItem` so `pushSpellCopy` can dispatch it too. A
+   * CR 710.8b: split out of `commitItem` so `pushSpellCopy` can dispatch it too. A
    * COPY is not played and fires no play event, but it does have targets of
    * its own, and a copy pointing at your unit is targeting it.
    */
   private dispatchTargeted(item: StackItem): void {
     for (const part of item.parts) {
       for (const t of part.targets) {
-        // R184: a FORMATION target is a real target and says so — the log line
+        // CR 110.3d: a FORMATION target is a real target and says so — the log line
         // and the event both name it, so an "it was targeted" listener can see
         // it at all. It carries `formation` (whose side) rather than `unit`,
         // and DELIBERATELY does not fire "when I become targeted" for each
@@ -9477,7 +9466,7 @@ export class E {
         }
         if (!('unit' in t)) continue;
         const u = this.s.entities[t.unit];
-        // R161/R157 §16: `seat` and `kind` ride the event so a listener can
+        // CR 109.3d: `seat` and `kind` ride the event so a listener can
         // recognise "an ENEMY SPELL targeted my ally" from the event ALONE.
         // Without them the only way to answer that was to scrape the event log
         // for the run of 'targeted' lines commitItem had just written — which
@@ -9495,7 +9484,7 @@ export class E {
   }
 
   /**
-   * R164 — put a COPY of a spell already on the stack onto the stack.
+   * CR 710.8 — put a COPY of a spell already on the stack onto the stack.
    *
    * The primitive Earthbound Replicator and Maelstrom Charger were waiting
    * for. Both used to re-run the copied card's `spellEffect` IN PLACE, which
@@ -9520,8 +9509,8 @@ export class E {
    *    play-discount spend. That is also what makes the loop finite — the
    *    Replicator triggers on a PLAY, so it cannot see its own copy.
    *  · *"you DON'T pay additional cost again and the X value is the one from
-   *    original"* — R35's receipt (`part.costPaid`) and `item.x` are cloned,
-   *    never re-collected. R57's declared mode (`part.mode`) likewise: the
+   *    original"* — CR 111.5's receipt (`part.costPaid`) and `item.x` are cloned,
+   *    never re-collected. CR 710.8a's declared mode (`part.mode`) likewise: the
    *    original said which half it was in its own cast window, in public.
    *
    * `targets`, when given, replaces the FIRST live part's targets — that is
@@ -9539,8 +9528,8 @@ export class E {
     copy.negated = false;
     copy.controller = opts.controller ?? orig.controller;
     copy.label = `${orig.label} (copy)`;
-    // A copy was played out of no zone (R49), it is nobody's card so it takes
-    // no R96/R105 Unstable stamp of its own, it has not been asked to erase
+    // A copy comes out of no zone and was not played (CR 108.4), it is nobody's card so it takes
+    // no Unstable stamp of its own, it has not been asked to erase
     // itself, and any cost still OWED on the original is the original's to pay
     // — cloning `pendingCosts`/`activationCost` would charge it twice.
     delete copy.from;
@@ -9550,11 +9539,11 @@ export class E {
     delete copy.activationCost;
     delete copy.paidCosts;
     delete copy.formationSpot;
-    // R178: the as-you-play answers are facts about a PLAY, and a copy is not
+    // CR 701.5: the as-you-play answers are facts about a PLAY, and a copy is not
     // played. Cloning them would also re-materialise the same copies a second
     // time the moment `makeAsYouPlayCopies` saw them.
     delete copy.asYouPlay;
-    // R79 viruses were applied to the ORIGINAL ITEM as a response — they are
+    // CR 723.4 viruses were applied to the ORIGINAL ITEM as a response — they are
     // mod cards sitting on that item, not part of the spell's declaration, and
     // copying the list would erase them a second time when the copy discharges.
     // (`mods`, the {Modular} CAST cost, IS copied: Caleb 2025-02-07 — they
@@ -9570,7 +9559,7 @@ export class E {
     this.dispatchTargeted(copy);
     this.pushItem(copy);
     // ⚠ CT-176 — THE ORIGINAL MAY NOT BE ON THE STACK AT ALL, and this still
-    // just pushes. R286 removed the case this was written for: a DEPLOY-timing
+    // just pushes. Deployment moving onto the stack (CR 507.5) removed the case this was written for: a DEPLOY-timing
     // play is committed with `'push'` now, so the original really is on a
     // stack and the copy really does sit above it. What is left is the haste
     // step, a spell token cast from play and an activation outside battle —
@@ -9580,26 +9569,26 @@ export class E {
     // what the census below is the tripwire for.
     //
     // A no-stack tail here — pop it back off and resolve it inline, the shape
-    // R178 uses in `commitItem`'s own no-stack branch — was WRITTEN AND THEN
+    // used in `commitItem`'s own no-stack branch — was WRITTEN AND THEN
     // DELETED: removing it reddened nothing, because the only phase that
     // reaches this line without a stack is deployment and deployment drains.
     // The haste step would not drain, and that is why the census in test/138
     // is the tripwire rather than a branch here: the family that can reach
     // this is derived from printed.json (a nonunit spell, playable outside
     // battle, whose target spec can name a unit) and is exactly ['Overbloom'],
-    // deploy timing — which R286 has since moved onto a real stack, so the
+    // deploy timing — which has since moved onto a real stack (CR 507.5), so the
     // family that can strand is now EMPTY. Both haste-timing nonunit spells
     // target nothing, and the two haste-step play GRANTS (Dispatch Courier
-    // R97, Writhing Host R123) both print "play a UNIT", which is not a
+    // CR 803.2b, Writhing Host CR 504.7) both print "play a UNIT", which is not a
     // nonunit spell. Add a card that breaks any of those and the census fails
     // before anything strands.
     return copy;
   }
 
   /**
-   * R178 / CT-176 — THE STACK ITEM A PLAY EVENT NAMES.
+   * CR 706.13 / CT-176 — THE STACK ITEM A PLAY EVENT NAMES.
    *
-   * `'spellPlayed'` carries `item`, the id of the play (R178), so a listener
+   * `'spellPlayed'` carries `item`, the id of the play (CR 706.13), so a listener
    * resolving later finds the RIGHT item when two same-card same-seat spells
    * are up at once. That id is the whole answer while there is a stack to look
    * it up on — and `commitItem(…, 'resolve')` never puts one there: a play
@@ -9607,7 +9596,7 @@ export class E {
    * returns undefined, and every card reading it announced that the spell had
    * "already left the stack" for a spell that was never on it.
    *
-   * ⚠ R286 EMPTIED THE CASE THIS WAS BUILT FOR. CT-176 found the bug on a
+   * ⚠ DEPLOYMENT MOVING ONTO THE STACK (CR 507.5) EMPTIED THE CASE THIS WAS BUILT FOR. CT-176 found the bug on a
    * DEPLOY-timing play (report #158, Overbloom at an Earthbound Replicator),
    * and deployment now commits with `'push'` — the id names a real item on a
    * real stack, and `offStack` is not taken at all. The fallback stays for
@@ -9626,7 +9615,7 @@ export class E {
    *  · **negating** it is not: an effect that has already resolved cannot be
    *    negated, and there is nothing standing there to remove. `'cardPlayed'`
    *    therefore does NOT carry `offStack` at all — Void Mandible's "negate
-   *    that effect" is correct to find nothing (R207) — and any caller that
+   *    that effect" is correct to find nothing (CR 706.13) — and any caller that
    *    means to negate must keep using the stack lookup directly.
    *
    * Never mutate what this returns when it came off the event: it is the
@@ -9648,7 +9637,7 @@ export class E {
    * when `then` is 'resolve' it rides on any mid-resolution suspension the
    * item raises, so the chain is not lost if the player has to be asked. */
   commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
-    // R334: a graft composite withheld at cost time never reaches the stack
+    // CR 722.6a: a graft composite withheld at cost time never reaches the stack
     if (item.withheld) return;
     this.dispatchTargeted(item);
     if (isPlayedSpellKind(item.kind)) {
@@ -9658,12 +9647,12 @@ export class E {
       if (this.s.phase === 'battle' && item.kind !== 'spellToken') {
         this.bumpBattleCounter(item.region, `spellsPlayed:${item.controller}`);
       }
-      // R166: the same ledger for a card that prints plain, unqualified
-      // "spell". R157 §13 — *"Tokens are spells"* — and R305 — casting a
+      // CR 701.1c: the same ledger for a card that prints plain, unqualified
+      // "spell". CR 302.3 — *"Tokens are spells"* — and CR 702.7a — casting a
       // spell token IS playing a spell — so a token cast counts here. Readers:
       // Origon ("their first spell") and The Silent ("each spell their team
-      // has previously played", which R59 used to keep off a token and R305
-      // put back). Two printed nouns, two counters. Bumped BEFORE fireEvent
+      // has previously played", which an earlier reading used to keep off a token and a later ruling
+      // put back, now CR 702.7a). Two printed nouns, two counters. Bumped BEFORE fireEvent
       // exactly like its sibling, so a 'spellPlayed' listener asking "is this
       // that seat's Nth spell this battle?" reads the answer straight off the
       // counter (Origon).
@@ -9675,7 +9664,7 @@ export class E {
         {
           seat: item.controller, card: item.card, token: item.kind === 'spellToken',
           region: item.region,
-          // R157 §1: THE X THAT WAS PAID — "paying X replaces the letter X on
+          // CR 111.11: THE X THAT WAS PAID — "paying X replaces the letter X on
           // the printed card temporarily", so this is the played spell's cost
           // and every "where X is that spell's cost" reads it (Channeled
           // Amalgam, Arcane Concentrator, Death Greeter). It is already final:
@@ -9688,17 +9677,17 @@ export class E {
           // pushes at all — a deploy-timing X spell (Floral Singularity) is
           // never on the stack for a listener to find.
           ...(item.x !== undefined ? { x: item.x } : {}),
-          // R49: the zone it was played out of ('hand' / 'cache' / 'bin').
-          // R342: a spell TOKEN is cast from 'play' — not the hand.
+          // CR 410.6: the zone it was played out of ('hand' / 'cache' / 'bin').
+          // CR 410.6a: a spell TOKEN is cast from 'play' — not the hand.
           ...(item.from ? { from: item.from } : {}),
-          // R178: WHICH ITEM this play is, and WHAT IT WAS AIMED AT as it was
+          // CR 706.13, 706.9: WHICH ITEM this play is, and WHAT IT WAS AIMED AT as it was
           // played. Same reason as `x` above, and the same two consequences:
           // this event fires BEFORE pushItem, so a `when` cannot look the item
           // up on the stack at all, and `commitItem(…, 'resolve')` never
           // pushes one.
           //
           // "Whenever a player plays a nonunit spell TARGETING ME" is a
-          // condition, and R1 puts a condition at EVENT time. Reading the
+          // condition, and CR 109.3a puts a condition at EVENT time. Reading the
           // item's live targets at resolution instead answered a different
           // question — RAQ "[Solved] Earthbound Replicator. No, it's not
           // infinity": *"He must be targeted while playing the spell. If the
@@ -9712,12 +9701,11 @@ export class E {
           // listener asks the same question of it that it used to ask of the
           // item; `item` is the id, which is how a resolution-time lookup finds
           // the RIGHT item when two same-card same-seat spells are on the stack
-          // at once (identity, not a top-down scan — cf. R166).
+          // at once (identity, not a top-down scan).
           item: item.id,
           targets: item.parts.flatMap(p => p.targets),
           // CT-176: …and when there is going to be no stack, THE ITEM ITSELF.
-          // `then === 'resolve'` is the no-stack play — R286 took DEPLOYMENT
-          // out of that set, so what is left is the haste step, a spell token
+          // `then === 'resolve'` is the no-stack play — deployment plays now go on a stack, so what is left is the haste step, a spell token
           // cast from play and an activation outside battle — and the id above
           // then names something that never existed anywhere a listener could
           // look. 19 of the pool's 138
@@ -9735,16 +9723,16 @@ export class E {
           // mutate this copy.
           ...(then === 'resolve' ? { offStack: structuredClone(item) } : {}),
         });
-      // R119: playing a spell burns the Deferral Drone charge — but the Drone
+      // CR 111.10k: playing a spell burns the Deferral Drone charge — but the Drone
       // prints "the next CARD you play", and a spell token is not a card
-      // (R133), so a token cast neither takes the discount (manaToPlay) nor
-      // spends it here. R305 made the cast a PLAY; it did not make the token
+      // (CR 304.2), so a token cast neither takes the discount (manaToPlay) nor
+      // spends it here. Casting it is a PLAY (CR 702.7a); that does not make the token
       // a card. Engine-side, so the charge outlives the Drone in both halves
       // (grant AND spend).
       if (item.kind !== 'spellToken') this.spendNextPlayDiscount(item.controller);
       this.fireEvent('spellPlayed', ev);
     }
-    // R129: "when a CARD is played" — the wide event, fired ALONGSIDE
+    // CR 108.1a: "when a CARD is played" — the wide event, fired ALONGSIDE
     // 'spellPlayed' rather than replacing it, so every existing listener keeps
     // the exact meaning it has today and nothing above this line changed.
     //
@@ -9755,10 +9743,10 @@ export class E {
     //    {Battle} unit and an Ambush pushed a stack item with no play event at
     //    all before this, which is the half of Void Mandible's printed noun
     //    that could never fire.
-    //  · 'spellToken' is OUT: a token is not a card (R133). Casting one IS
-    //    playing a spell (R305) and fires 'spellPlayed' above — but this is
+    //  · 'spellToken' is OUT: a token is not a card (CR 304.2). Casting one IS
+    //    playing a spell (CR 701.1c) and fires 'spellPlayed' above — but this is
     //    the event for the noun "card".
-    //  · 'virus' is OUT: applying a mod is not playing a card (R37). It never
+    //  · 'virus' is OUT: applying a mod is not playing a card (CR 701.2a). It never
     //    reaches commitItem today (doAugment pushes it straight onto the
     //    stack), and naming it there is what keeps that true if it ever does.
     //  · 'triggered' / 'activated' are not plays at all.
@@ -9767,11 +9755,11 @@ export class E {
     if (CARD_PLAY_KINDS.has(item.kind)) {
       const ev = this.ev('cardPlayed', '', {
         seat: item.controller, card: item.card, token: false, region: item.region,
-        ...(item.x !== undefined ? { x: item.x } : {}),   // R157 §1: the X that was paid
-        ...(item.from ? { from: item.from } : {}),   // R49: the zone it came out of
-        // R207 / CT-79: WHICH ITEM this play is — the same field R178 put on
-        // `spellPlayed` a few lines up, for the same reason and with the same
-        // caveats. `cardPlayed` is the WIDE event (R129), so it is the only
+        ...(item.x !== undefined ? { x: item.x } : {}),   // CR 111.11: the X that was paid
+        ...(item.from ? { from: item.from } : {}),   // CR 410.6: the zone it came out of
+        // CR 706.13 / CT-79: WHICH ITEM this play is — the same field
+        // `spellPlayed` carries a few lines up, for the same reason and with the same
+        // caveats. `cardPlayed` is the WIDE event (CR 108.1a), so it is the only
         // one a card watching for a played UNIT can read; Void Mandible's
         // "negate THAT EFFECT" had no way to name the item and fell back to a
         // (card, controller) scan, which negates the wrong one whenever two
@@ -9793,12 +9781,12 @@ export class E {
     }
     if (then === 'push') {
       this.pushItem(item);
-      // R178: the as-you-play copies go on AFTER the original, so they sit
+      // CR 710.8: the as-you-play copies go on AFTER the original, so they sit
       // above it and resolve first (RAQ: "above original spell effect").
       this.makeAsYouPlayCopies(item);
       return;
     }
-    // R178, the no-stack branch: this play never reaches the stack at all, so
+    // CR 710.8, the no-stack branch: this play never reaches the stack at all, so
     // "above the original" can only mean "resolves before it". Each copy is
     // still made through pushSpellCopy — it IS a stack item for as long as it
     // exists, which is what keeps `resolveTop`'s bookkeeping honest — and then
@@ -9825,7 +9813,7 @@ export class E {
   }
 
   /**
-   * R78: mark `item` as the one currently resolving and hand back whatever was
+   * CR D6.3: mark `item` as the one currently resolving and hand back whatever was
    * marked before (resolution can nest: an effect that resolves another item
    * inline). Publishing is gated on the BATTLE phase — outside it, resolution
    * runs inside a hidden simultaneous segment (resource step, haste step,
@@ -9839,7 +9827,7 @@ export class E {
     return outer;
   }
 
-  /** R78: resolution finished (or fizzled, or partially resolved, or the item
+  /** CR D6.3: resolution finished (or fizzled, or partially resolved, or the item
    * was never really there) — hand the marker back. Called on EVERY normal
    * exit from resolveItem; a suspension deliberately throws past it, which is
    * the whole point: the item stays marked until it has ACTUALLY resolved. */
@@ -9852,7 +9840,7 @@ export class E {
   }
 
   /**
-   * R286 — resolve the item at `i`, which is the top of SOMEBODY's stack.
+   * CR 703.7 — resolve the item at `i`, which is the top of SOMEBODY's stack.
    *
    * Everywhere but an isolated deployment that is the top of `s.stack` and
    * this is exactly the old `resolveTop`. In deployment the one array holds
@@ -9861,7 +9849,7 @@ export class E {
    */
   resolveStackAt(i: number): void {
     const item = this.s.stack.splice(i, 1)[0]!;
-    // R78: it is off the stack — nobody may respond to it or negate it now —
+    // CR D6.3: it is off the stack — nobody may respond to it or negate it now —
     // but it has not resolved yet, and it says so until it has.
     const outer = this.beginResolving(item);
     this.resolveItem(item);
@@ -9870,10 +9858,10 @@ export class E {
   }
 
   /**
-   * R286 — WHICH SEAT'S DEPLOYMENT THIS settle() IS FOR, and only when that
+   * CR 507.5a — WHICH SEAT'S DEPLOYMENT THIS settle() IS FOR, and only when that
    * distinction is load-bearing: a decision is open, we are in deployment, we
    * know whose action we are running (`E.acting`), and it is not the seat
-   * being asked. Null in every other case, which is what keeps the pre-R286
+   * being asked. Null in every other case, which is what keeps the older
    * behaviour byte-identical in battle, in the haste step, at game creation
    * and in every test that pokes `settle()` with no action behind it.
    */
@@ -9887,12 +9875,12 @@ export class E {
   }
 
   /**
-   * R286 — ONE SEAT'S HALF OF A DEPLOYMENT, drained while the other seat's
+   * CR 507.5a — ONE SEAT'S HALF OF A DEPLOYMENT, drained while the other seat's
    * question stands open.
    *
    * The same two steps the shared path runs, scoped to one player:
    *
-   *  1. their trigger batch goes onto their stack and is AIMED first (R144(a)
+   *  1. their trigger batch goes onto their stack and is AIMED first (CR 706.3c
    *     — a pile of triggers that never coexists is not a pile), and
    *  2. then their topmost item resolves, one at a time.
    *
@@ -9905,15 +9893,15 @@ export class E {
    * ends a "revealing moment", and with somebody else's question open we
    * cannot tell whether the moment being ended is theirs. It is idempotent and
    * runs at the next unblocked settle, so nothing is lost but the timing of a
-   * UI aid. The other seat's triggers are skipped for R154's original reason,
-   * which this ruling does not touch — it narrows the SCOPE of the hold from
+   * UI aid. The other seat's triggers are skipped for the reason they always were (CR D2.1d),
+   * which this does not touch — it narrows the SCOPE of the hold from
    * "everyone" to "the seat being asked", and nothing else.
    *
    * ⚠ AND IF THIS SEAT'S OWN WORK RAISES A QUESTION, the suspension overwrites
    * a decision slot that holds exactly one — so `apply()`'s after-gate
    * (`pendingFingerprint`) throws the whole draft away and refuses the action
    * with `disturbs`, and the server's deferral queue lands it once the other
-   * seat has answered. That is R154's existing contract, not a new failure
+   * seat has answered. That is CR D2.1d's existing contract, not a new failure
    * mode: the same thing already happened when a deployment PLAY needed a
    * target while the other seat was being asked something.
    */
@@ -9941,7 +9929,7 @@ export class E {
   }
 
   /**
-   * R68: there is no `item.negated` branch here any more. A negated item is
+   * CR 704.4: there is no `item.negated` branch here any more. A negated item is
    * off the stack and binned before this can ever see it, so the branch was
    * unreachable from both of resolveItem's callers — `resolveTop()` pops from
    * a stack that no longer holds negated items, and `commitItem(…, 'resolve')`
@@ -9950,7 +9938,7 @@ export class E {
    */
   resolveItem(item: StackItem, chain?: ChainRest): void {
     if (item.kind === 'unit') {
-      // R29: `formationSpot` is where this card was PLAYED — chosen at cast
+      // CR 602.7: `formationSpot` is where this card was PLAYED — chosen at cast
       // (collectFormationSpot), taken here, atomically with the spawn.
       this.spawnUnit(item.controller, item.card!, item.region, {
         ...(item.from ? { from: item.from } : {}),
@@ -9959,19 +9947,19 @@ export class E {
       return;
     }
     if (item.kind === 'virus') {
-      // R79: a virus aimed at a SPELL ON THE STACK. Its host is legal exactly
-      // while it is still ON the stack: negated out from under it (R68) or
+      // CR 723.4: a virus aimed at a SPELL ON THE STACK. Its host is legal exactly
+      // while it is still ON the stack: negated out from under it (CR 704.4) or
       // recalled, and the virus fizzles to the bin — Manual p.34, "If a virus
       // is negated or its target becomes invalid, it is placed into the bin,
       // and cannot be used as a virus again".
       //
-      // R145 — ⚠ both fizzle branches used to call `toBin(…, 'stack')` RAW,
+      // CR 803.8k — ⚠ both fizzle branches used to call `toBin(…, 'stack')` RAW,
       // which made them a third computation of "is this Unstable?" that simply
       // said no. They go through `dischargeItem` now, exactly as `negate()`
       // does, so the three stack exits share one predicate and one erase.
       // dischargeItem is the right choke rather than a smaller helper because
-      // it already owns the whole disposition — the R65 per-owner erased pile,
-      // the R79 virus split, the eraseSelf branch, and `disposeItemMods` — and
+      // it already owns the whole disposition — the CR 407.1 per-owner erased pile,
+      // the CR 723.4b virus split, the eraseSelf branch, and `disposeItemMods` — and
       // a fizzling item is entitled to every one of them (a {Modular} virus
       // that fizzled used to strand its mods nowhere). Everything below the
       // predicate is unchanged for the ordinary case: a plain virus item
@@ -9988,7 +9976,7 @@ export class E {
         const erased = this.itemIsUnstable(item);
         this.ev('fizzled', `${item.label} fizzles (${why}) → ${erased ? 'erased (Unstable)' : 'bin'}.`,
           { id: item.id });
-        this.dischargeItem(item, true);   // R40: from the stack, no trash either way
+        this.dischargeItem(item, true);   // CR 801.2b: from the stack, no trash either way
       };
       if (item.hostStack !== undefined) {
         const target = this.s.stack.find(it => it.id === item.hostStack);
@@ -10009,11 +9997,11 @@ export class E {
     }
     // spell / spellUnit / spellToken / triggered / activated: run live parts
     //
-    // R324 (CT-208): judge every declared target against its slot ONCE, now,
+    // CR 704.5, 704.5a (CT-208): judge every declared target against its slot ONCE, now,
     // as the item begins to resolve.
     this.markIllegalTargets(item);
     //
-    // R86, playtest report #71 (game GETD, 2026-08-22): an item fizzles when it
+    // CR 704.6, 704.6a, playtest report #71 (game GETD, 2026-08-22): an item fizzles when it
     // DECLARED targets and has lost every one of them — and when it does, the
     // UNTARGETED parts of the same item die with it. The ruling is Caleb's, in
     // the RAQ thread "[Solved] When does effect fizzles?":
@@ -10047,13 +10035,13 @@ export class E {
     const partAlive = (part: EffectPart): boolean => {
       if (part.spent) return false;
       const def = effectByKey(part.effectKey);
-      // R144: a declared SUBJECT is exactly a declared target for this vote —
+      // CR 706.12: a declared SUBJECT is exactly a declared target for this vote —
       // it was aimed in the stack window and it can go stale. A part that
       // declared NOTHING (`subject === null`: there was no ally at all) still
-      // does not vote and still cannot fizzle the item, which is R71's "with
+      // does not vote and still cannot fizzle the item, which is the engine's "with
       // no ally it simply does nothing", unmoved.
       if (def.subject) return part.subject != null && !!this.entity(part.subject);
-      if (!def.targets) return false;   // R86: untargeted parts do not vote
+      if (!def.targets) return false;   // CR 704.6d: untargeted parts do not vote
       // "UP TO one target …" (min 0): declaring no target is a legal choice, so
       // the part still resolves — anything printed alongside the optional
       // target ("Recall up to one target cached card. You gain 3 life.") must
@@ -10064,7 +10052,7 @@ export class E {
       if (!part.targets.length) return (def.targets.min ?? 1) === 0;
       return part.targets.some((t, ti) => !part.invalid?.includes(ti) && this.targetStillLegal(t));
     };
-    // R144: "did this item declare anything it could lose?" — a target, or a
+    // CR 706.12: "did this item declare anything it could lose?" — a target, or a
     // subject that actually named something. A subject-bearing part whose
     // `subject` is null declared nothing and keeps the item off this branch.
     const declaredTargets = item.parts.some(p => !p.spent && !!effectByKey(p.effectKey).targets);
@@ -10072,7 +10060,7 @@ export class E {
       !p.spent && !!effectByKey(p.effectKey).subject && p.subject != null);
     const targeted = declaredTargets || declaredSubject;
     if (targeted && !item.parts.some(partAlive)) {
-      // R109's precedent, and the owner's "the final triggers would just
+      // CR D7.3d's precedent, and the owner's "the final triggers would just
       // fizzle": a no-op ANNOUNCES. A trigger that vanished silently because
       // the unit it was aimed at died under it is indistinguishable from a bug
       // at the table, which is the whole reason this line is not a `return`.
@@ -10085,8 +10073,8 @@ export class E {
           : `${item.label} fizzles — what it was aimed at has left play.`,
         { id: item.id });
       /**
-       * R113 / CARD-TODO #20: a fizzle SPENDS the bounded budget. It does NOT
-       * refund it, and the previous R108 answer here was wrong.
+       * CR 109.9a / CARD-TODO #20: a fizzle SPENDS the bounded budget. It does NOT
+       * refund it, and the previous bounded-use answer here was wrong.
        *
        * RULED (designer, 2026-08-23), asked about `[bounded_graft]`: *"can only
        * be activated or triggered once per turn. REGARDLESS OF IF THAT ABILITY
@@ -10095,7 +10083,7 @@ export class E {
        * reading ("a fizzle is the ability doing nothing, like a decline") is
        * the one that sentence rules out by name.
        *
-       * THE LINE R113 DRAWS, and the reason this branch is on the far side of
+       * THE LINE CR 109.9b DRAWS, and the reason this branch is on the far side of
        * it: a bounded use survives only where the player was OFFERED the
        * ability and did not take it up (or could not be offered it at all).
        * Once it is on the stack it has been used, and what happens afterwards —
@@ -10105,14 +10093,14 @@ export class E {
        */
       // a fizzled spell unit never spawns; a fizzled ambusher is binned too
       // ("you could find yourself losing both units" — Manual p.40).
-      // R40: still the stack, so still not a trash. R79: a fizzled carrier is
+      // CR 801.2b: still the stack, so still not a trash. CR 723.4b: a fizzled carrier is
       // still a modded card leaving the stack, so Unstable still replaces the
       // bin with an erase — the virus was applied and is spent either way.
       this.dischargeItem(item,
         item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'ambush');
       return;
     }
-    // R78, playtest 2026-08-22: this line is a HEADING for the effects printed
+    // Playtest 2026-08-22: this line is a HEADING for the effects printed
     // under it, not a statement that resolution finished — and it is emitted
     // BEFORE resolveParts, which can suspend for as long as the controller
     // takes to answer. "X resolves." asserted completion while the table
@@ -10128,7 +10116,7 @@ export class E {
    * The `ctx.choose` of the part currently resolving, or null outside one.
    *
    * ENGINE-side helpers that must raise a mid-resolution decision (E.glimpse's
-   * R45 "cache one of these N") would otherwise have to take an EffectCtx, and
+   * CR 801.9a "cache one of these N") would otherwise have to take an EffectCtx, and
    * every one of the eleven glimpse callers would have to be edited to pass it.
    * This is the seam instead: resolveParts publishes the live choose for the
    * duration of one `def.run`, keyed per call so a helper invoked twice in one
@@ -10143,7 +10131,7 @@ export class E {
   private partChoose: ((tag: string, dec: PartChoice['dec']) => unknown) | null = null;
 
   /**
-   * R130: the controller of the part currently resolving, or null outside one
+   * CR 708.8b: the controller of the part currently resolving, or null outside one
    * — `partChoose`'s sibling, published and restored on the same two lines.
    *
    * "When YOU put a counter on an enemy" needs the seat that put it, and every
@@ -10159,13 +10147,13 @@ export class E {
    */
   private partActor: Seat | null = null;
 
-  /** R325: the item whose part is resolving right now — `partActor`'s sibling,
+  /** CR 704.7a: the item whose part is resolving right now — `partActor`'s sibling,
    * published on the same lines, so a source's last-known state can be read
    * off the item that carries it while its effect runs. */
   private partItem: StackItem | null = null;
 
   /**
-   * R325 (CT-209) — TAKE A UNIT'S LAST-KNOWN STATE AS IT LEAVES PLAY.
+   * CR 714.1 (CT-209) — TAKE A UNIT'S LAST-KNOWN STATE AS IT LEAVES PLAY.
    *
    * Called at every place a unit leaves `s.entities`, BEFORE it leaves the
    * grid and before its face is turned back, so the snapshot has the column it
@@ -10191,7 +10179,7 @@ export class E {
   }
 
   /**
-   * R325: what an effect knows of its source `id` once that source has left
+   * CR 704.7a: what an effect knows of its source `id` once that source has left
    * play — the snapshot on the item resolving now, else on any item or
    * waiting trigger that carries one. Undefined while the unit is in play (read
    * the live entity) and for an id nothing remembers.
@@ -10206,11 +10194,11 @@ export class E {
   /**
    * Run parts [from..]; the composite is ONE ability resolving top-to-bottom.
    * A suspending part is replayed from its own boundary with `answers` filled
-   * in — R85: the world is rolled back to that boundary on RESUME
+   * in — CR D6.3b: the world is rolled back to that boundary on RESUME
    * (E.resumeResolve), not at the suspension, so the half-finished resolution
    * is what the table gets to look at while somebody is being asked something.
    *
-   * `shownEvents` is R85's other half, and applies to part `from` only: that
+   * `shownEvents` is the resume rollback's other half, and applies to part `from` only: that
    * many events of this part are already on everyone's screen, so the replay's
    * re-emission of them is dropped instead of doubling the log.
    *
@@ -10223,7 +10211,7 @@ export class E {
       const part = item.parts[pi]!;
       if (part.spent) continue;
       const def = effectByKey(part.effectKey);
-      // R324: a slot judged illegal when resolution began is lost like a
+      // CR 704.5: a slot judged illegal when resolution began is lost like a
       // target that left play
       const resolved = part.targets
         .filter((_, ti) => !part.invalid?.includes(ti))
@@ -10233,52 +10221,52 @@ export class E {
         this.ev('info', part.invalid?.length
           ? `${item.label}: a part fizzles (its target is not legal any more).`
           : `${item.label}: a part fizzles (target gone).`);
-        continue;                                       // R5: partial resolution
+        continue;                                       // CR 704.6b: partial resolution
       }
       // never had a target — but "up to one" (min 0) still runs, with an empty
       // ctx.targets, so its unconditional half happens
       if (def.targets && !part.targets.length && (def.targets.min ?? 1) > 0) continue;
-      // R144: the part's declared SUBJECT, looked up NOW. A part that aimed at
+      // CR 706.12: the part's declared SUBJECT, looked up NOW. A part that aimed at
       // something which has since left play is lost — the sibling of the
       // target line above, and the reason a pile of triggers may all be aimed
       // at one unit: the surplus lands here. `null` (nothing to aim at) is not
-      // a loss and runs normally, so the effect can say it did nothing (R71).
+      // a loss and runs normally, so the effect can say it did nothing.
       const subject = def.subject && part.subject != null
         ? (this.entity(part.subject) ?? null) : null;
       if (def.subject && part.subject != null && !subject) {
         this.ev('info', `${item.label}: a part fizzles (what it was aimed at is gone).`);
-        continue;                                       // R5: partial resolution
+        continue;                                       // CR 704.6b: partial resolution
       }
       const ctx: EffectCtx = {
         controller: item.controller,
         sourceName: item.card ?? item.label,
         sourceId: item.sourceId,
-        // R131: the mod entity whose donated text this is, if any — the only
+        // CR 720.6d: the mod entity whose donated text this is, if any — the only
         // handle "my OTHER Augments" has on the one augment that is itself.
         ...(item.selfModId !== undefined ? { selfModId: item.selfModId } : {}),
         region: item.region,
         targets: resolved,
-        // R64: a VARIABLE cast cost defines this part's X (Discharge's "remove
+        // CR 702.6b: a VARIABLE cast cost defines this part's X (Discharge's "remove
         // X counters … deal X damage"). It wins over the item-wide mana X so a
         // grafted rider that paid its own cost cannot read its carrier's.
         x: part.costPaid?.x ?? item.x,
         costPaid: part.costPaid,
-        // R57: the modal half, declared in the cast window by collectModes and
+        // CR 702.5: the modal half, declared in the cast window by collectModes and
         // visible on the stack for the whole response window. The effect reads
         // it; it never asks.
         ...(part.mode !== undefined ? { mode: part.mode } : {}),
-        // R144: what this effect was AIMED at, declared in the stack window by
+        // CR 706.12: what this effect was AIMED at, declared in the stack window by
         // collectSubjects. The live entity, or null when there was nothing to
         // aim at — never a dead one, because the branch above already fizzled
         // that part rather than handing its run a corpse.
         ...(def.subject ? { subject } : {}),
         ...(part.mods ? { mods: part.mods } : {}),
-        // R79's virus grants UNIONED with R105's {Modular}-mod grants and
-        // R94's continuous ones. All three are "attributes this effect has
+        // CR 721.4b's virus grants UNIONED with CR 724.4a's {Modular}-mod grants and
+        // the continuous ones. All three are "attributes this effect has
         // that its card did not print", all three land in the one field
         // everything downstream already reads, and the union must stay INSIDE
-        // the per-part loop: R94's answer is per-part (Envoy of Lightning
-        // counts THIS part's declared targets), while R79's and R105's are
+        // the per-part loop: CR 707.8's answer is per-part (Envoy of Lightning
+        // counts THIS part's declared targets), while CR 721.4b's and CR 724.4a's are
         // per-item.
         // #188: assembled by `stackItemGrants`, which the board's stack chips
         // also read (`stackItemAttrs`), so what a spell shows and what it
@@ -10290,20 +10278,20 @@ export class E {
         // "Erase me." — raise the flag ON THE ITEM (see StackItem.eraseSelf).
         // It has to be state and not a closure variable because a part can
         // suspend mid-resolution and be replayed out of the serialised
-        // suspension (R85); `item` is what the suspension carries, so the
+        // suspension; `item` is what the suspension carries, so the
         // answer survives the round trip. `dischargeItem` reads it afterwards.
         eraseSelf: () => { item.eraseSelf = true; },
-        // R143: "…gains control of me" on a SPELL UNIT — the body has not been
+        // CR 303.10: "…gains control of me" on a SPELL UNIT — the body has not been
         // spawned yet (afterParts does that once every part has run), so this
         // says who it ENTERS under rather than moving it afterwards. Same
-        // on-the-item shape as eraseSelf above, same R85 reason.
+        // on-the-item shape as eraseSelf above, same reason.
         spawnUnder: (seat: Seat) => { item.spawnUnder = seat; },
-        // R147: "I become an exact copy of that unit." on a SPELL UNIT — the
+        // CR 303.11: "I become an exact copy of that unit." on a SPELL UNIT — the
         // same seam one question over (spawnUnder says whose the body is,
-        // this says what it is), and on the item for the same R85 reason.
+        // this says what it is), and on the item for the same reason.
         spawnWearing: (face: SpawnFace) => { item.spawnWearing = face; },
         // CARD-TODO #18: "I did nothing — give the [once] back." The same
-        // shape as eraseSelf directly above, and for the same R85 reason: the
+        // shape as eraseSelf directly above, and for the same reason: the
         // flag lives on the PART (which the suspension carries), not in this
         // closure, and it is paid out by settleBudgetRefund once the part has
         // actually finished — never mid-run, because the reservation made at
@@ -10321,21 +10309,21 @@ export class E {
           throw new PartChoice(k, { ...dec, options: dec.options });
         },
       };
-      // R48/R184: snapshot the units in play, so the kills this part makes —
+      // CR 802.23c, 802.21b: snapshot the units in play, so the kills this part makes —
       // by damage, by -1/-1 counters, by a stat swap, by anything — can be
       // diffed out once it has finished and every KILL-scoped rider the source
       // carries can be paid off that one diff. Discarded on a suspension
       // rollback and retaken when the part replays.
       const killAttrs = this.itemAttrs(item);
       const beforeUnits = this.wantsKillDiff(killAttrs) ? this.snapshotUnits() : null;
-      // R184: published on the engine for the duration of the part, so the
+      // published on the engine for the duration of the part, so the
       // damage site knows the diff will pay and stands down (see
       // `dealEffectDamageAll`). Saved and restored because resolution nests.
       const outerKillWatch = this.killWatch;
       this.killWatch = beforeUnits
         ? { before: beforeUnits, reaps: killAttrs.has('Reaping') }
         : null;
-      // R85: the rollback state, carried ON the suspension and applied when
+      // CR D6.3b: the rollback state, carried ON the suspension and applied when
       // the answer comes back rather than here.
       const snap = structuredClone(this.s);
       const evLen = this.events.length;
@@ -10343,16 +10331,16 @@ export class E {
       // part that has suspended before); the re-emission is dropped below.
       const shown = pi === from ? shownEvents : 0;
       const outerChoose = this.partChoose;
-      const outerActor = this.partActor;                  // R130
+      const outerActor = this.partActor;                  // CR 708.8b
       this.partActor = item.controller;
-      const outerItem = this.partItem;                    // R325
+      const outerItem = this.partItem;                    // CR 704.7a
       this.partItem = item;
       let helperSeq = 0;
       // ctx.choose already namespaces by part index; the seq keeps a helper
       // invoked twice in one part asking two distinct questions
       this.partChoose = (tag, dec) => ctx.choose(`${tag}#${helperSeq++}`, dec);
-      // R104: ONE RESOLVING PART IS ONE TOKEN-CREATION BATCH — the same unit
-      // R80 gave effect damage ("One resolution of one effect, one batch").
+      // CR 708.9: ONE RESOLVING PART IS ONE TOKEN-CREATION BATCH — the same unit
+      // effect damage is dealt in, CR 112.8 ("One resolution of one effect, one batch").
       // Biotoxicity's three Poisons are one creation, so "an additional copy of
       // each UNIQUE token you created" has one creation to be unique across
       // (report #60), and Cosmic Conspirator is asked once per token inside it
@@ -10362,7 +10350,7 @@ export class E {
       // decision raised by a batch replacement suspends and replays through
       // exactly the machinery every other mid-resolution question uses. A part
       // that suspends before finishing leaves its batch unsettled on purpose:
-      // R85 rolls the world back to the part boundary and replays it, and a
+      // the resume rolls the world back to the part boundary and replays it, and a
       // batch settled at the suspension would be paid out twice.
       const outerBatch = this.tokenBatch;
       this.tokenBatch = [];
@@ -10379,7 +10367,7 @@ export class E {
           // suppress.
           const emitted = this.events.length - evLen;
           this.events.splice(evLen, Math.min(shown, emitted));
-          // R78: `s.resolving` and the suspension's `item` must be ONE object,
+          // `s.resolving` and the suspension's `item` must be ONE object,
           // so that structuredClone at the apply() boundary memoises them
           // together and a replay can never drift the marker and the
           // suspension apart.
@@ -10401,10 +10389,10 @@ export class E {
             },
             {
               seat: sig.dec.seat, kind: sig.dec.kind, prompt: sig.dec.prompt, options: sig.dec.options,
-              // BL-25/R139: an effect that removes counters says its own
+              // BL-25/CR D7.2: an effect that removes counters says its own
               // ceiling here — the quantity stepper is not a cost-only thing.
               ...(sig.dec.counterMax !== undefined ? { counterMax: sig.dec.counterMax } : {}),
-              // R197: a `kind: 'number'` question carries its whole range here
+              // CR D7.2a: a `kind: 'number'` question carries its whole range here
               // — `options` is empty and `choice` is the value itself.
               ...(sig.dec.numeric !== undefined ? { numeric: sig.dec.numeric } : {}),
               // the picker hint (Wake the Dead, Tides): display only
@@ -10415,10 +10403,10 @@ export class E {
         throw sig;
       } finally {
         this.partChoose = outerChoose;
-        this.partActor = outerActor;                      // R130
-        this.partItem = outerItem;                        // R325
+        this.partActor = outerActor;                      // CR 708.8b
+        this.partItem = outerItem;                        // CR 704.7a
         this.tokenBatch = outerBatch;
-        this.killWatch = outerKillWatch;                  // R184
+        this.killWatch = outerKillWatch;                  // CR 802.21b
       }
       // the part finished: the same suppression, for the last replay of it
       if (shown) this.events.splice(evLen, Math.min(shown, this.events.length - evLen));
@@ -10427,7 +10415,7 @@ export class E {
       // part that is still being answered keeps its reservation.
       this.settleBudgetRefund(item, part);
       this.checkDeaths();   // sequential within the composite; triggers wait for settle()
-      // R184: one diff, every kill-scoped rider the source carries.
+      // CR 802.21b: one diff, every kill-scoped rider the source carries.
       if (beforeUnits) {
         this.killRiders(beforeUnits, killAttrs, item.card ?? item.label, item.controller);
       }
@@ -10437,7 +10425,7 @@ export class E {
   /**
    * CARD-TODO #18: pay back the `[once]` a finished part refused to spend.
    *
-   * THE RULING, as R113 finally settles it (designer, 2026-08-23): a bounded
+   * THE RULING (designer, 2026-08-23; now CR 109.9a): a bounded
    * ability "can only be activated or triggered once per turn, REGARDLESS OF
    * IF THAT ABILITY RESOLVES OR DOESN'T" — and, for Hexbane Shiitake's [once],
    * "you can choose for each spell if you want to let it trigger and to put
@@ -10446,10 +10434,10 @@ export class E {
    * player declining the ability, or no offer being possible at all.
    *
    * WHAT THIS IS NOT, and the reason to read it twice: it is not "the ability
-   * did nothing". That was R108's first reading and R113 reverses it. A run
+   * did nothing". That was the decline ruling's first reading, and the designer's 2026-08-23 ruling (CR 109.9a) reverses it. A run
    * that was used and found nothing to do — an activated ability with no legal
    * subject, a targeted trigger whose target left, a fizzle — spends the use.
-   * Six such calls were deleted from the card pool when R113 landed; do not
+   * Six such calls were deleted from the card pool when the spent-on-use ruling landed; do not
    * add them back. The test of a branch is "was there a yes/no about the
    * ability itself, and was the answer no?", not "did anything happen?".
    *
@@ -10470,13 +10458,13 @@ export class E {
    *    the same string by construction, which is what lets a part identify its
    *    own reservation without carrying a second copy of the key.
    *
-   * A {Modular} graft riding a SPELL (`item.parts.push({ effectKey: 'graft:…' })`,
-   * R105) has no `fromMod` and no source entity, so it reserves nothing and
+   * A {Modular} graft riding a SPELL (`item.parts.push({ effectKey: 'graft:…' })`)
+   * has no `fromMod` and no source entity, so it reserves nothing and
    * this is correctly a no-op: that mod was paid as a cast cost, not budgeted.
    *
    * IDEMPOTENT in both directions. Zeroing an already-zero budget is the same
    * as zeroing it once; and because the flag is raised inside the run while
-   * R85 rolls a suspended part back to its boundary, a replay that reaches a
+   * the resume rolls a suspended part back to its boundary, a replay that reaches a
    * DIFFERENT branch the second time arrives here with no flag at all and the
    * reservation stands.
    */
@@ -10489,18 +10477,19 @@ export class E {
    * CARD-TODO #18: hand `part`'s bounded reservation back, unconditionally.
    *
    * The half of `settleBudgetRefund` that does the work, split out so the
-   * CAST-TIME routes can reach it too. R113: the fizzle branch of `resolveItem`
+   * CAST-TIME routes can reach it too. CR 109.9a: the fizzle branch of `resolveItem`
    * used to call this as well — it does not any more, and must not again. A cast [cost] that is DECLINED or
-   * UNPAYABLE marks its part `spent` before the run exists (R35), so that part
+   * UNPAYABLE marks its part `spent` before the run exists (the engine offers the decline; CR 111.15
+   * says a grafted cost cannot be declined, and CR 724.4c skips an unpayable Modular graft part), so that part
    * can never call `ctx.refundBudget()` — and "the [cost] is declined" is the
    * most reachable decline in the pool, because a bounded [Switch1] rider is
    * usually met as a graft on somebody else's composite.
    */
   private refundPart(item: StackItem, part: EffectPart): void {
     part.refunded = true;
-    // R124: a zone-dispatched part's reservation lives in GameState.zoneBudgets
+    // CR 109.9m: a zone-dispatched part's reservation lives in GameState.zoneBudgets
     // (its stand-in source, id -1, is not in s.entities and is long gone) —
-    // hand it back there, so R113 holds from a bin exactly as it does in play.
+    // hand it back there, so CR 109.9b holds from a bin exactly as it does in play.
     if (part.fromMod === undefined && item.sourceId === -1) {
       const zb = this.s.zoneBudgets;
       const zoneKey = `${item.controller}:${part.effectKey}`;
@@ -10524,22 +10513,22 @@ export class E {
   }
 
   /**
-   * R94/R294: the attributes an effect's SOURCE lends the effect — the source
-   * unit's live attributes (column-shared, R294) while it is in play, else the
+   * CR 802.1, 712.8a: the attributes an effect's SOURCE lends the effect — the source
+   * unit's live attributes (column-shared, CR 712.8a) while it is in play, else the
    * printed card's. `dealEffectDamageAll` reads it; so does `stackItemAttrs`.
    */
   private effectSourceAttrs(sourceId: EntityId | undefined, sourceName: CardName): Set<string> {
     const src = sourceId !== undefined ? this.entity(sourceId) : undefined;
     if (src) return new Set(this.effAttrs(src));
-    // R325: a source that left play lends what it had as it left — Bellowing
+    // CR 714.2: a source that left play lends what it had as it left — Bellowing
     // Boulder's ping stays Deadly from the column it was standing in
     const lk = this.lastKnownOf(sourceId);
     return new Set(lk ? lk.attrs : this.card(sourceName)?.attrs ?? []);
   }
 
   /**
-   * R79 + R105 + R94: the attributes ONE PART of a stack item is granted on
-   * top of its source's — a virus's (R79) and a {Modular} mod's (R105)
+   * CR 721.4b, 724.4a, 707.8: the attributes ONE PART of a stack item is granted on
+   * top of its source's — a virus's (CR 721.4b) and a {Modular} mod's (CR 724.4a)
    * type-line attributes, per item, and the continuous `effectAttrs` grants
    * (Emberflame Enlightener's {Powerful}, Envoy of Lightning's {Electric}),
    * per part. resolveParts hands exactly this to the part as
@@ -10548,7 +10537,7 @@ export class E {
   stackItemGrants(item: StackItem, part: EffectPart): Attr[] {
     return [
       ...(item.augments?.length ? this.stackAugmentAttrs(item) : []),
-      // R105: a mod applied through the {Modular} window donates its
+      // CR 724.4a: a mod applied through the {Modular} window donates its
       // type-line [Augment] attributes exactly as a virus does. Without
       // this line the widened offer would donate nothing and the fix
       // would look done while changing nothing.
@@ -10599,14 +10588,14 @@ export class E {
   itemAttrs(item: StackItem): Set<string> {
     const src = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
     const set = src ? this.ownAttrs(src)
-      : new Set<string>(item.lastKnown?.attrs ?? (item.card ? this.card(item.card).attrs : []));   // R325
-    for (const a of this.stackAugmentAttrs(item)) set.add(a);   // R79
-    for (const a of this.stackModAttrs(item)) set.add(a);       // R105
+      : new Set<string>(item.lastKnown?.attrs ?? (item.card ? this.card(item.card).attrs : []));   // CR 714.2
+    for (const a of this.stackAugmentAttrs(item)) set.add(a);   // CR 723.4
+    for (const a of this.stackModAttrs(item)) set.add(a);       // CR 724.4a
     return set;
   }
 
   /**
-   * R79: the attributes a VIRUS augmented onto this stack item donates to it.
+   * CR 723.4: the attributes a VIRUS augmented onto this stack item donates to it.
    *
    * Type-line `[Augment]` attributes only, exactly as `ownAttrs` reads them off
    * a unit's augment mods — Caleb 2025-04-06: augmenting a virus onto a spell
@@ -10622,14 +10611,14 @@ export class E {
   }
 
   /**
-   * R105: the attributes a {Modular} MOD donates to the card it was applied to.
+   * CR 724.4a: the attributes a {Modular} MOD donates to the card it was applied to.
    *
    * The same channel as `stackAugmentAttrs` above, by a different timing — a
    * mod paid as a cast cost rather than a virus applied as a response — and
    * deliberately the same rule, because it is the same act: a mod is on a
    * spell, and "the only useful thing you can do is give them attributes"
    * (Caleb 2025-04-24). A separate method, not a widened `stackAugmentAttrs`,
-   * so R79's virus channel keeps meaning exactly what its name says.
+   * so CR 723.4's virus channel keeps meaning exactly what its name says.
    *
    * This is the half that makes the owner's ruling mean something. Graftable
    * cards and type-line-attribute cards are DISJOINT in the pool (137 and 22,
@@ -10642,7 +10631,7 @@ export class E {
     return out;
   }
 
-  /** R79: attach a virus to a stack item. Rules-inert beyond the attachment:
+  /** CR 723.4: attach a virus to a stack item. Rules-inert beyond the attachment:
    * 'modApplied' means a mod reached a UNIT (every listener reads
    * `ev.data.host`) and there is no host entity here, so this logs like the
    * {Modular} path does. */
@@ -10657,11 +10646,11 @@ export class E {
   }
 
   /**
-   * R68/R79: a stack item's CARD leaves the stack. Normally it goes to its
-   * controller's bin — R40: it comes FROM THE STACK, so this is never a trash.
+   * CR 406.4, 723.4b: a stack item's CARD leaves the stack. Normally it goes to its
+   * controller's bin — CR 801.2b: it comes FROM THE STACK, so this is never a trash.
    *
    * If a virus rode it, the item is MODDED, and Unstable is a BIN replacement
-   * rather than a death replacement (R69, Caleb 2025-03-13): the card and every
+   * rather than a death replacement (CR 803.8i, Caleb 2025-03-13): the card and every
    * virus on it are ERASED instead, and nothing reaches a bin. That is the
    * mechanism behind Caleb 2025-03-06's "you can hit enemy spells and the spell
    * gets erased on resolution".
@@ -10672,7 +10661,7 @@ export class E {
    * with its own log line rather than a second way to set `unstable`, because
    * the two mean different things and a player reading the log has to be able
    * to tell them apart: Unstable is a fact about the object (a virus rode it,
-   * R79; it was played from a bin, R96) and survives negation, while "Erase
+   * CR 803.8f; it was played from a bin, CR 704.2c) and survives negation, while "Erase
    * me" is a sentence in the effect and only happens if the effect happened.
    * When both are true, Unstable is announced and the card is erased ONCE —
    * the branches are exclusive, so nothing is double-logged or pushed to the
@@ -10685,28 +10674,29 @@ export class E {
    * needs a card of its own and does nothing without one.
    */
   dischargeItem(item: StackItem, hasCard: boolean): void {
-    // R164: a COPY of a spell has no card of its own, whichever of the four
-    // exits it took (resolution, R5 fizzle, negation, virus fizzle). Applied
+    // CR 704.2d: a COPY of a spell has no card of its own, whichever of the four
+    // exits it took (resolution, CR 704.6 fizzle, negation, virus fizzle). Applied
     // HERE rather than at each caller for the same reason `itemIsUnstable`
     // lives in one place: four sites computing "does this have a card?" is
     // exactly how one of them ends up conjuring a card into a bin.
     if (item.copy === true) hasCard = false;
     const viruses = item.augments ?? [];
     // THREE ways in, all meaning "this card is modded, was stamped, or prints
-    // it": a virus rode it (derived, R79); it was played from a bin under a
-    // permission that stamped it (R96, Abyssal Evocation) or a {Modular} mod
-    // was applied to it as it was played (R105, stamped in payModularMod); or
-    // R145 — its printed type line says {Unstable} and the STACK is an active
+    // it": a virus rode it (derived, CR 803.8f); it was played from a bin under a
+    // permission that stamped it (CR 704.2c, Abyssal Evocation) or a {Modular} mod
+    // was applied to it as it was played (CR 724.5, stamped in payModularMod); or
+    // CR 803.8k — its printed type line says {Unstable} and the STACK is an active
     // zone. All three live in `E.itemIsUnstable`, which `negate()` reads too:
     // the printed one went missing here and there simultaneously because the
     // expression was written out twice instead of shared.
     // THIS is the site an ordinary bin-played spell hits — the one choke point
     // for both resolution and negation. The virus loop below is correctly a
     // no-op at zero, so it stays untouched, and `disposeItemMods` at the foot
-    // of the method is R105's matching half.
+    // of the method is CR 724.5's matching half.
     if (this.itemIsUnstable(item)) {
-      // R65: each card reaches ITS OWN owner's erased pile — a virus on an
-      // enemy spell is the enemy's card, and the two piles are public.
+      // CR 723.4b: the spell and its viruses are erased. Each card goes to the
+      // pile of the seat that played it (the spell's controller, each virus's
+      // applier), and the two piles are public.
       this.ev('erased',
         `${item.label} is Unstable — `
         + (viruses.length ? `it and its ${viruses.length} virus mod(s) are ERASED.` : 'it is ERASED instead of binned.'),
@@ -10717,8 +10707,8 @@ export class E {
       }
     } else if (item.eraseSelf === true && hasCard && item.card) {
       // "Erase me." — the effect asked for this as it resolved, so the card
-      // never reaches the bin. R65: it goes to its controller's public erased
-      // pile, which ev() keeps off exactly this event type. R40 does not enter
+      // never reaches the bin. CR 407.1: it goes to its controller's public erased
+      // pile, which ev() keeps off exactly this event type. CR 801.2 does not enter
       // into it — nothing was binned, so nothing can be trashed out of a bin.
       this.ev('erased',
         `${item.label} erases itself — it does not go to a bin.`,
@@ -10726,28 +10716,28 @@ export class E {
     } else if (hasCard && item.card) {
       this.toBin(item.controller, item.card, 'stack');
     }
-    this.disposeItemMods(item);   // R105 {Modular}: its mods are erased with it
+    this.disposeItemMods(item);   // CR 724.5 {Modular}: its mods are erased with it
   }
 
   afterParts(item: StackItem): void {
     if (item.kind === 'spellUnit') {
-      // R143: the body normally enters under whoever cast it. `spawnUnder` is
+      // CR 303.10: the body normally enters under whoever cast it. `spawnUnder` is
       // the one exception the pool has — Hush Mush's "its controller gains
       // control of me" — and it is a DIFFERENT CONTROLLER AT ENTRY, not a
       // handover afterwards, so no ally-spawn watcher of the caster's ever
-      // sees the body as theirs (report #96). OWNERSHIP does not move: R107's
+      // sees the body as theirs (report #96). OWNERSHIP does not move: CR 400.4a's
       // owner≠controller split, and the card is still the caster's, so it is
       // still the caster's bin it dies to. `owner` is passed unconditionally
       // because it is exactly `seat` in every other case.
       const u = this.spawnUnit(item.spawnUnder ?? item.controller, item.card!, item.region, {
         owner: item.controller,
         ...(item.from ? { from: item.from } : {}),
-        // R147: …and WEARING what its own text made it, if its own text made
+        // CR 303.11: …and WEARING what its own text made it, if its own text made
         // it anything (Borrower of Forms). Same shape, same place, same
         // reason: one spell resolution is one body arriving, not a body
         // arriving and then changing.
         ...(item.spawnWearing ? { wearing: item.spawnWearing } : {}),
-        // R198: …and INTO THE SPOT it was played into, if it was played into
+        // CR 702.3e: …and INTO THE SPOT it was played into, if it was played into
         // one. `resolveItem`'s `kind === 'unit'` arm already passes this; the
         // spell-unit arm did not, so a spell unit played into a formation
         // (Hooba-Pon's menu offers them — the RAQ that card is quoted under)
@@ -10756,21 +10746,21 @@ export class E {
         // plain unit, so no item reached here carrying a spot.
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
       });
-      // R79: a spell UNIT's card does not leave — it arrives. Its viruses ride
+      // CR 723.4c: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes
       // the body Unstable. Erasing the card here instead would delete a unit
       // on its way into play, which no ruling asks for.
       for (const a of item.augments ?? []) this.attachMod(u, a.card, a.by, 'augment');
-      // R96: a spell UNIT played from a bin spawns a body, and the stamp goes
+      // CR 803.8d: a spell UNIT played from a bin spawns a body, and the stamp goes
       // with it — the card said "THEY gain unstable until regroup", and the
       // body is what the card became. This is the "edge, noted for review" in
       // Spell Excavation's own comment, closed.
       if (item.unstable) u.unstable = true;
-      this.disposeItemMods(item);   // R105 {Modular}: its mods are erased with it here too
+      this.disposeItemMods(item);   // CR 724.5 {Modular}: its mods are erased with it here too
       return;
     }
-    // R40: a resolved spell goes to the bin FROM THE STACK — explicitly not a
-    // trash. R79: unless a virus rode it, in which case it is Unstable and the
+    // CR 801.2b: a resolved spell goes to the bin FROM THE STACK — explicitly not a
+    // trash. CR 723.4b: unless a virus rode it, in which case it is Unstable and the
     // whole pile is erased instead. spellToken: already out of play;
     // triggered/activated: nothing to move.
     this.dischargeItem(item, item.kind === 'spell');
@@ -10780,7 +10770,7 @@ export class E {
   suspend(susp: Suspension, dec: Omit<Decision, 'id'>): never {
     this.s.suspension = susp;
     /**
-     * R78's phase gate, applied to EVERY suspension rather than only to the
+     * CR D6.3a's phase gate, applied to EVERY suspension rather than only to the
      * mid-resolution one.
      *
      * `s.resolving` is a BATTLE-PHASE publication and always was:
@@ -10791,7 +10781,7 @@ export class E {
      * resolved a Wraith's start-of-deployment trigger INLINE, which suspended
      * and stranded the outer battle item's marker in the deploy phase.
      *
-     * R144(b) reopened exactly that hole from a new direction: the Wraith now
+     * Aiming the Wraith on the way to the stack reopened that hole from a new direction: the Wraith now
      * suspends in `collectSubjects` — a 'cast' suspension raised on the way TO
      * the stack — which never went anywhere near that catch. Two sites cannot
      * both be remembered, so the gate moves to the one door every suspension
@@ -10800,7 +10790,7 @@ export class E {
      * abandoned the outer resolution either way.
      */
     if (this.s.phase !== 'battle') this.s.resolving = null;
-    // R85: `nextId` is rewound by a resolution replay, so on its own it can
+    // `nextId` is rewound by a resolution replay, so on its own it can
     // hand out a decision id that has already been on a client's screen — and
     // ui/sfx.ts reads "a new id" as "a new question was asked". The high-water
     // mark keeps decision ids strictly increasing; outside a replay it never
@@ -10812,7 +10802,7 @@ export class E {
   }
 
   /**
-   * R85 — the answer to a mid-resolution question has arrived: put the world
+   * CR D6.3b — the answer to a mid-resolution question has arrived: put the world
    * back at the boundary of the part that is about to be replayed, and say how
    * many of that part's events the table has already seen.
    *
@@ -10842,7 +10832,7 @@ export class E {
    * columns, `declareBlocks`' blocks and sends, `activateAbility`, `augment`),
    * so the id stream is part of the replay contract: get it wrong by one and
    * every later action in an old log addresses the wrong unit and is refused.
-   * The pre-R85 engine rolled back at the suspension and THEN spent one id on
+   * The older engine rolled back at the suspension and THEN spent one id on
    * the decision, so each replay of a part started one higher than the last;
    * `snapshot.nextId + 1` reproduces that recurrence exactly, attempt for
    * attempt. (Verified against saved room UFAB, which suspends mid-resolution
@@ -10856,7 +10846,7 @@ export class E {
    */
   resumeResolve(sus: Extract<Suspension, { type: 'resolve' }>): number {
     const snap = sus.snapshot;
-    // pre-R85 suspension (an old saved game, mid-resolution): it rolled back
+    // pre-resume-rollback suspension (an old saved game, mid-resolution): it rolled back
     // when it suspended, so the state IS the boundary already.
     if (!snap) return 0;
     const live = this.s;
@@ -10868,16 +10858,16 @@ export class E {
     live.players.forEach((p, i) => { const q = this.s.players[i]; if (q) q.name = p.name; });
     this.s.suspension = null;
     this.s.decision = null;
-    // R78, exactly as at the suspension: ONE object for the resolving item.
+    // Exactly as at the suspension: ONE object for the resolving item.
     this.s.resolving = this.s.phase === 'battle' ? sus.item : null;
     return sus.shown ?? 0;
   }
 
   // ── mods ────────────────────────────────────────────────────────────
-  /** opts.token (R71): the mod IS a token — a Wraith augmented onto a unit is
+  /** opts.token (CR 721.6): the mod IS a token — a Wraith augmented onto a unit is
    * the token card, applied rather than spawned. A token mod is erased
    * when it leaves play instead of being binned (a mod has no card to bin,
-   * R40), which recall()/cacheUnit() honour. */
+   * CR 410.4c), which recall()/cacheUnit() honour. */
   attachMod(host: Entity, name: CardName, byPlayer: Seat, appliedAs: 'augment' | 'graft',
     position?: number, opts: { token?: boolean } = {}): Entity {
     const mod = this.newEntity({
@@ -10896,7 +10886,7 @@ export class E {
   }
 
   /**
-   * R178 — MOVE an existing mod entity onto another host. `attachMod`'s
+   * CR 720.10 — MOVE an existing mod entity onto another host. `attachMod`'s
    * sibling: that one MINTS a mod, this one RE-PARENTS the one already there.
    *
    * Two cards print it — Reconfigure ("Augment target unit and all of its mods
@@ -10914,7 +10904,7 @@ export class E {
    *  · {Unstable}. `isUnstable` reads `e.mods.length > 0` LIVE, so the old host
    *    stops being Unstable the moment its last mod leaves and the new host
    *    starts being Unstable the moment one arrives. No stamp is moved, and
-   *    `Entity.unstable` (R96's until-regroup stamp, a different thing) is
+   *    `Entity.unstable` (CR 803.8d's until-regroup stamp, a different thing) is
    *    deliberately untouched: that one is about how a CARD was played.
    *  · Statics, cost modifiers, permissions, attribute donations, triggered
    *    text. Every one of these radiates through `anchored()`, which resolves
@@ -10924,19 +10914,18 @@ export class E {
    *  · CONTROLLER. It follows the new host, exactly as `attachMod` sets it, so
    *    a mod moved onto an enemy now radiates for the enemy — which is the
    *    whole point of Rotbeast's printed line.
-   *  · BOUNDED BUDGETS (R9) RIDE ALONG. A graft's budget lives on the mod
+   *  · BOUNDED BUDGETS (CR 109.9e) RIDE ALONG. A graft's budget lives on the mod
    *    entity itself, which is the same one. But an AUGMENT ability's [once]
    *    (Graxxlid's negate, activated or triggered off the mod's augment text)
    *    is written on the HOST, under `augment:<card>#<n>` — so those marks
-   *    are copied onto the new host here. R331 / CT-213, the RAQ
+   *    are copied onto the new host here. CR 720.10b / CT-213, the RAQ
    *    ("Reconfigure vs Once per Turn Abilities"): "Since Graxxlid was
    *    already Activated this turn, you CANNOT use his Ability again." Copied,
-   *    not moved: R9 keys the budget per card name on a host, so a second
-   *    same-name mod left behind stays spent too. `from` names the old host
+   *    not moved (CR 109.9e): the engine keys the budget per card name on a host, so a second same-name mod left behind stays spent too — CR 109.9k gives each mod its own use (engine differs, no ticket yet). `from` names the old host
    *    when the caller has already taken it out of play (Reconfigure).
    *
    * NOT an `attachMod`: no 'modApplied' event fires, because moving is not
-   * applying (R37's spirit) — nothing that watches for a mod being applied
+   * applying (CR 720.10c's spirit) — nothing that watches for a mod being applied
    * re-triggers off a mod merely changing hosts. The caller announces the move
    * in its own printed words, and the caller owns `checkDeaths()` afterwards
    * (a host that loses a +X/+X mod can die of it).
@@ -10967,14 +10956,14 @@ export class E {
   }
 
   /**
-   * R208 / CT-86 — take a mod OFF a host that stays in play, and remove the
-   * entity from the game. `attachMod`'s inverse and `moveMod`'s (R178)
+   * CR 720.9 / CT-86 — take a mod OFF a host that stays in play, and remove the
+   * entity from the game. `attachMod`'s inverse and `moveMod`'s (CR 720.10)
    * sibling: that one re-parents, this one unlinks and deletes.
    *
    * WHY IT EXISTS. There was no choke point for this at all, and five sites
    * hand-rolled the same two lines — `host.mods.splice(…)` plus
    * `delete s.entities[id]` — each with its own announcement and its own
-   * answer to the R65 public-erased-pile question:
+   * answer to the CR 407.2 public-erased-pile question:
    *
    *  · Slag Spewer's `[Erase one of my mods]` cast cost (`payCastCost`) — 'info'
    *  · Suppression Field (batch-metal-c)                                 — 'info'
@@ -10983,9 +10972,7 @@ export class E {
    *  · Reclaim the Fallen (batch-hybrids-ld-a) — not an erase at all, see below
    *
    * ⚠ THIS REFACTOR DELIBERATELY CHANGES NOTHING A PLAYER CAN SEE, AND THAT IS
-   * THE ENTIRE POINT. Whether a mod erased as a COST reaches the R65 public
-   * erased pile is an OPEN OWNER RULING (round-27 Q3/Q9, unanswered): R157 §3
-   * arguably wants it there, and the R196 agent left it rather than guess. So
+   * THE ENTIRE POINT. Whether a mod erased as a cost reaches the public erased pile (CR 407.2 now says it does) is an OPEN OWNER RULING (round-27 Q3/Q9, unanswered): the exchange ruling arguably wants it there and the agent who moved the erase into the cost left it rather than guess. So
    * every caller keeps the exact announcement it had, including Slag Spewer's
    * 'info', and this method emits NOTHING. What the choke point buys is that
    * when Q3 is answered the pile line goes in ONE place — right here, guarded
@@ -11007,7 +10994,7 @@ export class E {
    * the engine is a HOST-LEAVES-PLAY disposal (`leavePlay`, `disposeToBin`,
    * `eraseFromPlay`, `eraseUnit`, the regroup token sweep, `exchangeInPlace`,
    * apply.ts's deployment-augment ride). There the host is already gone, so
-   * there is no `host.mods` to unlink from and the mods' destination is R40's
+   * there is no `host.mods` to unlink from and the mods' destination is the bin-entry code's
    * question, not this one. They stay where they are.
    *
    * Returns false and does nothing if this is not a mod, or its entity is
@@ -11023,14 +11010,14 @@ export class E {
       if (i !== -1) host.mods.splice(i, 1);
     }
     delete this.s.entities[mod.id];
-    // R219 — AN ERASED CARD GOES TO THE ERASED PILE. This was written as "the
+    // CR 801.6 — AN ERASED CARD GOES TO THE ERASED PILE. This was written as "the
     // Q3 seam, deliberately empty" and left `void`ed across two rounds while a
     // question was carried to the owner. There was no question: the card says
     // "erase", which names the destination. His answer, when finally asked:
     // "Obviously the card says where it should end up. It's erased… It should
     // just end up in the erased zone."
     //
-    // R65 exists because of his complaint that "there's currently no way to
+    // The erased pile exists because of his complaint that "there's currently no way to
     // view erased cards". A site that erases a card and files it NOWHERE is
     // that bug, and every such site is now this one.
     //
@@ -11038,8 +11025,8 @@ export class E {
     //  · `leavesGame: false` skips the pile. Reclaim the Fallen "erases" a mod
     //    that is going INTO PLAY, not out of the game, and a pile listing a
     //    card you can see on the table is worse than no pile.
-    //  · A TOKEN mod is not filed. R133: a token is not a card, it has no card
-    //    to show, and R65's pile is a list of cards. (`disposeToBin` files
+    //  · A TOKEN mod is not filed. CR 304.2: a token is not a card, it has no card
+    //    to show, and CR 720.9a's pile is a list of cards. (`disposeToBin` files
     //    token mods today; that disagreement predates this and is left alone
     //    rather than widened here.)
     //  · `alreadyFiled` is for the ONE caller that files the pile itself and
@@ -11047,9 +11034,9 @@ export class E {
     //    single `erased` line per owner, which reads as one event because it
     //    is one. Per-mod lines underneath would be the same cards twice.
     if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {
-      // R262: `mod.controller`, was `mod.owner`. The R65 erased pile is a
+      // CR 720.9: `mod.controller`, was `mod.owner`. The erased pile is a
       // per-seat zone like the others, so the Return to Nature family follows
-      // control too — one rule, no seam. R244 already moved the mod BIN this
+      // control too — one rule, no seam. Zones following control already moved the mod bin this
       // way; this is the pile that was left behind.
       this.ev('erased', opts.msg ?? `${mod.card} is erased.`,
         { seat: mod.controller, cards: [mod.card] });
@@ -11058,9 +11045,9 @@ export class E {
   }
 
   /** Compose the parts of a firing ability: base effect + graft-mod effects,
-   * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (R9). */
+   * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (CR 803.4). */
   composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName): EffectPart[] | null {
-    // R118 layer 0: with no `viaCard` the ability is the source's OWN, which
+    // CR 710.1: with no `viaCard` the ability is the source's OWN, which
     // means the card it currently IS — the face, not the physical card.
     const cardName = viaCard ?? this.faceName(source);
     const def = this.card(cardName);
@@ -11068,21 +11055,21 @@ export class E {
     const ability = list?.[abilityIndex];
     if (!ability) return null;
     const budgetKey = `${abilityKeyPrefix}:${cardName}#${abilityIndex}`;
-    const budgetHolder = source;   // per card = per entity instance (R9)
+    const budgetHolder = source;   // per card = per entity instance (CR 803.4)
     if (ability.bounded) {
-      // R124 / CARD-TODO #21: a ZONE-dispatched firing (R51) arrives on a
+      // CR 109.9m / CARD-TODO #21: a ZONE-dispatched firing (CR 400.5) arrives on a
       // throwaway stand-in (id -1) whose `budgets` dies with the call, so its
       // [once] reservation moves to real, serialized state instead —
-      // GameState.zoneBudgets, per (seat, card name). "Per card" (R9) for a
+      // GameState.zoneBudgets, per (seat, card name). "Per card" (CR 109.9m) for a
       // card that is not in play can only mean the NAME in that seat's zone:
       // a bin holds bare names, not instances, so three copies leaving one
-      // bin share one budget, the same way R51 gives three copies one firing.
+      // bin share one budget, the same way the zone dispatch gives three copies one firing.
       // Cleared by startTurn beside the Entity.budgets wipe; refunded by
-      // refundPart's stand-in branch (R113 keeps working from a zone).
-      // ZONE-dispatched only: R40's trash-trigger stand-in also has id -1,
+      // refundPart's stand-in branch (CR 109.9b keeps working from a zone).
+      // ZONE-dispatched only: CR 109.9n's trash-trigger stand-in also has id -1,
       // but there the throwaway per-instance budget is DELIBERATE ("each
       // trashed card is its own instance" — see fireOwnTrashTrigger); only a
-      // zone listener is a standing per-name permission (R51), so only it
+      // zone listener is a standing per-name permission (CR 109.9m), so only it
       // keeps its reservation here.
       if (source.id === -1 && (ability as { zone?: 'bin' | 'cache' }).zone !== undefined) {
         const zb = (this.s.zoneBudgets ??= {});
@@ -11101,7 +11088,7 @@ export class E {
     // grafted effects join only a graft cause, and only from graft-applied mods
     if (ability.graftCause && abilityKeyPrefix === 'ability') {
       const grafts: EffectPart[] = [];
-      // R336 / CT-219: a COPY of a graft cause carries the grafts it copied
+      // CR 722.8, 710.2b / CT-219: a COPY of a graft cause carries the grafts it copied
       // (CopyRef.mods), and they come FIRST — RAQ "Borrower of Forms": "it
       // inherits all of the combined text", and a graft added to the copy
       // later goes "only 'underneath' original copied grafts". A copied graft
@@ -11129,7 +11116,7 @@ export class E {
         }
         grafts.push({ effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id });
       }
-      // R110: "(Trigger two copies of this graft ability as one single
+      // CR 722.7: "(Trigger two copies of this graft ability as one single
       // trigger)" — a multiplier in the composite (the cause itself, Lost
       // Guardian's own ability; or a multiplier grafted under this host)
       // repeats every OTHER graft N times, top-to-bottom and then top-to-
@@ -11152,10 +11139,10 @@ export class E {
 
   // ── triggers ────────────────────────────────────────────────────────
   /** Scan for triggered abilities matching an event. Conditions are evaluated
-   * NOW, at event time (R1); effects run later, at resolution. Never processes
+   * NOW, at event time (CR 109.3a); effects run later, at resolution. Never processes
    * the queue — that happens at safe points via settle(). */
   /**
-   * `beingPlayed` — R347: the entity whose own PLAY this event announces, when
+   * `beingPlayed` — CR 701.1e: the entity whose own PLAY this event announces, when
    * that entity is already standing in play as the event fires. It is not a
    * listener: "an ability that triggers when its controller plays a unit works
    * only while its card is in play", and a card being played is on the stack,
@@ -11169,18 +11156,18 @@ export class E {
   fireEvent(type: EventType, ev: EngineEvent, dyingUnit?: Entity, beingPlayed?: EntityId): void {
     const region = (ev.data?.region as number | undefined) ?? (ev.data?.unit !== undefined ? this.entity(ev.data.unit as EntityId)?.region : undefined);
     const sourceId = (ev.data?.unit as EntityId | undefined);
-    // region-scoped listeners (R12 / Manual: other regions don't exist)
+    // region-scoped listeners (CR 101.6 / Manual: other regions don't exist)
     const listeners = Object.values(this.s.entities).filter(e =>
       e.kind === 'unit' && !e.absent && e.id !== beingPlayed && (region === undefined || e.region === region));
     if (dyingUnit) listeners.unshift(dyingUnit);   // a unit sees its own death
-    // R278: and every OTHER body of the same simultaneous death batch is still
+    // CR 706.8c: and every OTHER body of the same simultaneous death batch is still
     // a listener, even though `destroy` has already deleted it from
-    // `s.entities`. A batch that is simultaneous in the rules (R80/R189) must
+    // `s.entities`. A batch that is simultaneous in the rules (CR 112.8, D6.7) must
     // be simultaneous to the triggers watching it: "when you trash a card",
     // "whenever a unit dies", "whenever another ally dies" do not stop hearing
     // the step they died in. Members not yet disposed are still in
     // `s.entities` and were collected above; the one being disposed right now
-    // is excluded, which is R40's "excludes the trigger source itself".
+    // is excluded, which is the trash rule's "excludes the trigger source itself" (CR 713.6a).
     for (const d of this.deathBatch) {
       if (d.id === this.disposingSelf) continue;
       if (this.s.entities[d.id]) continue;            // has not left play yet
@@ -11192,7 +11179,7 @@ export class E {
     listeners.sort((a, z) => (a.controller === this.initiative ? 0 : 1) - (z.controller === this.initiative ? 0 : 1));
     let queued = false;
     for (const u of listeners) {
-      // R328: a stripped unit's triggered text is its own, its [Augment] text,
+      // CR 712.1a, 712.2: a stripped unit's triggered text is its own, its [Augment] text,
       // its mods' donated text and anything granted to it — and a stripper
       // takes only what arrived BEFORE it. Its own text is the oldest thing on
       // it, so any stripper silences that; a mod attached or text granted
@@ -11200,7 +11187,7 @@ export class E {
       const strips = this.strippersOf(u, 'abilities');
       const kept = (at: Stamp): boolean => !strips.length || !E.strippedBy(at, strips);
       const src = sourceId ?? dyingUnit?.id;
-      // R118 layer 0: the triggered text comes off the FACE. A Unit Token that
+      // CR 710.1: the triggered text comes off the FACE. A Unit Token that
       // became a Noxious Deathcap really has "when I die, …" — and "I" is the
       // token, because the face is what the entity IS, not a second card.
       if (kept(E.PRINTED)) for (const face of this.facesWith(u, 'triggered')) {
@@ -11208,7 +11195,7 @@ export class E {
         // a card's own [Augment] text is active when played normally (Manual Q&A)
         queued = this.collectTriggersFrom(u, face, 'augment', type, ev, src) || queued;
       }
-      // R341: the [Augment] text of the mods a copy copied — the copy's own
+      // CR 710.2a: the [Augment] text of the mods a copy copied — the copy's own
       // text (no mod entity, so no `selfModId`), stamped as printed
       if (kept(E.PRINTED)) for (const card of this.copiedAugments(u, 'triggered')) {
         queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src) || queued;
@@ -11216,13 +11203,13 @@ export class E {
       for (const modId of u.mods) {
         const mod = this.entity(modId);
         if (mod && mod.appliedAs === 'augment' && kept(E.entityStamp(mod.id))) {
-          // R131: the mod's OWN id rides along, so its donated text can say
+          // CR 720.6d: the mod's OWN id rides along, so its donated text can say
           // "my other Augments" and mean every augment on this host except
           // this one entity — a second copy of the same card included.
           queued = this.collectTriggersFrom(u, mod.card, 'augment', type, ev, src, mod.id) || queued;
         }
       }
-      // R63: text granted until regroup listens exactly like printed text
+      // CR 109.8: text granted until regroup listens exactly like printed text
       for (const g of u.granted ?? []) {
         if (!kept(g.at ?? E.PRINTED)) continue;
         queued = this.collectTriggersFrom(u, g.card, g.via, type, ev, src) || queued;
@@ -11233,31 +11220,31 @@ export class E {
   }
 
   /**
-   * R51: dispatch to cards sitting in a BIN or a CACHE — "If I am in your bin,
+   * CR 400.5: dispatch to cards sitting in a BIN or a CACHE — "If I am in your bin,
    * after combat …" (Lurking Dread, Inexorable Miasma, Cinder Scuttler). The
    * in-play scan above cannot find them: they are not entities at all, just
    * names in a zone.
    *
    * Each listener is anchored on a DETACHED stand-in entity (id -1), exactly
-   * like R40's fireOwnTrashTrigger: not in s.entities, untargetable, radiating
+   * like fireOwnTrashTrigger: not in s.entities, untargetable, radiating
    * nothing, thrown away with the call. `owner`/`controller` are the seat whose
    * zone holds the card, so "if I am in YOUR bin" is that seat throughout, and
    * `region` is that seat's action region so the resolution lands somewhere.
    *
    * ONE firing per zone per event even when the zone holds several copies: the
    * printed texts are standing permissions ("if I am in your bin"), not
-   * per-copy triggers. Bounded budgets (R9) cannot persist on a stand-in, so
+   * per-copy triggers. Bounded budgets (CR 109.9m) cannot persist on a stand-in, so
    * composeParts keeps a zone firing's [Switch1] reservation in
    * GameState.zoneBudgets instead — per turn per (seat, card name), refunded
-   * by refundPart's stand-in branch (R124 / CARD-TODO #21).
+   * by refundPart's stand-in branch (CR 109.9m / CARD-TODO #21).
    *
    * Cost: one Map.get() per event when nothing in the pool listens from a zone.
    */
   /**
-   * A DETACHED stand-in entity for a trigger whose card is not in play (R40
-   * trash-self triggers, R51 zone triggers). Never put into s.entities — it
+   * A DETACHED stand-in entity for a trigger whose card is not in play (for
+   * trash-self triggers, CR 400.5 zone triggers). Never put into s.entities — it
    * cannot be targeted, radiates no statics and turns up in no other scan. It
-   * exists only to give `when` and the bounded-budget bookkeeping (R9)
+   * exists only to give `when` and the bounded-budget bookkeeping
    * something to read, and is thrown away with the call. Its id -1 is not in
    * s.entities, so `g.entity(ctx.sourceId)` correctly answers "there is no
    * such unit".
@@ -11271,10 +11258,10 @@ export class E {
 
   /**
    * The collect-and-queue step every trigger dispatch shares: evaluate `when`
-   * NOW, at event time (R1); compose the parts (null = bounded and already
-   * used this turn, R9); push the pending trigger; log it. The caller supplies
+   * NOW, at event time (CR 109.3a); compose the parts (null = bounded and already
+   * used this turn, CR 109.9); push the pending trigger; log it. The caller supplies
    * the log line and payload — those differ per site. `host.region` rides the
-   * queued trigger because the host may be GONE by the time it resolves (R70:
+   * queued trigger because the host may be GONE by the time it resolves (CR 714.9a:
    * every "when I die" trigger is exactly that, and a stand-in was never in
    * s.entities to read later).
    */
@@ -11288,7 +11275,7 @@ export class E {
       sourceId: host.id, sourceCard: cardName, controller: host.controller,
       abilityIndex, label: `${cardName}: ${ability.label}`, parts,
       region: host.region,
-      // R131: which MOD donated this text, when a mod did. See PendingTrigger.
+      // CR 720.6d: which MOD donated this text, when a mod did. See PendingTrigger.
       ...(selfModId !== undefined ? { selfModId } : {}),
       event: ev,
     });
@@ -11307,7 +11294,7 @@ export class E {
     let queued = false;
     for (const seat of [this.initiative, this.nit]) {
       for (const { card: name, abilityIndex, zone } of listeners) {
-        // R124: 'leftBin' is the one event whose subject has ALREADY left the
+        // CR 405.7: 'leftBin' is the one event whose subject has ALREADY left the
         // zone it listens from, so presence-in-the-bin is exactly the wrong
         // test — the event itself is the presence. It reaches the card that
         // just left (this name, out of this seat's bin) and nobody else,
@@ -11338,13 +11325,13 @@ export class E {
     const list = prefix === 'ability' ? def.abilities : def.augmentText;
     if (!list) return false;
     let queued = false;
-    let narrow: { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] | undefined;   // R269
+    let narrow: { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] | undefined;   // CR 712.4
     list.forEach((ability, idx) => {
       if (!isTriggered(ability)) return;
       if (!ability.events.includes(type)) return;
       if (ability.self && eventSource !== host.id) return;
       /**
-       * R51/R300 — BIN AND CACHE TEXT IS NOT LIVE FROM PLAY.
+       * CR 400.5 — BIN AND CACHE TEXT IS NOT LIVE FROM PLAY.
        *
        * `zone` says this clause only exists while the card SITS in that zone
        * ("if I am in your bin, recall me"). `fireZoneTriggers` is the only
@@ -11362,7 +11349,7 @@ export class E {
        * Cinder Scuttler is the one where that re-check saves nothing, and it
        * is the Discord report this comes from. The Scuttler attacks, its own
        * body hears `combatFaceDamage` and queues "recall me from your bin"
-       * while standing in play; R261 holds the batch to the after-combat
+       * while standing in play; CR 608.9b holds the batch to the after-combat
        * stack; in between the Scuttler dies to the blocker and arrives in the
        * bin for real — so the effect's `bin.lastIndexOf` finds it and recalls
        * the card out of the combat that killed it.
@@ -11375,8 +11362,8 @@ export class E {
        * combat damage and be returned at the same moment since, technically,
        * it's not in the bin when the damage is dealt."* The engine already
        * does exactly that — `checkDeaths()` runs after the sub-step returns
-       * (R3, no priority), the trigger queue is held across sub-steps and
-       * drains after combat (R261), and R295 gives a split damage step its
+       * (CR 608.7b, no priority), the trigger queue is held across sub-steps and
+       * drains after combat (CR 608.9b), and CR 608.3b gives a split damage step its
        * reaction windows. The event trace confirms the order: the Scuttler's
        * `died` lands AFTER `combatFaceDamage`. Only the listener scan was
        * wrong, so the Swift case the owner describes still works — a Scuttler
@@ -11384,7 +11371,7 @@ export class E {
        * sub-step's damage is dealt, and `fireZoneTriggers` finds it there.
        */
       if (ability.zone) return;
-      // R269: a suppressor that names ONE clause switches off that clause and
+      // CR 712.4: a suppressor that names ONE clause switches off that clause and
       // nothing else. fireEvent's whole-layer gate above has already answered
       // "loses all abilities"; this is the narrow question.
       //
@@ -11413,19 +11400,19 @@ export class E {
       && a.label === b.label && JSON.stringify(a.parts) === JSON.stringify(b.parts);
   }
 
-  /** Drain the trigger queue. In battle AND in deployment (R144), triggers
+  /** Drain the trigger queue. In battle AND in deployment (CR 706.3c), triggers
    * become stack items (owner orders their own; NIT's enter last so they
-   * resolve first — R2). Everywhere else they resolve immediately in the order
+   * resolve first — CR 706.5). Everywhere else they resolve immediately in the order
    * the stack would produce.
    * A seat whose queued triggers are ALL identical (sameTrigger) skips the
    * ordering decision — the order cannot matter or even be expressed. */
   processTriggerQueue(only?: Seat): void {
-    // R286: `only` scopes the whole drain to ONE seat's batch — the isolated
+    // CR 507.5a: `only` scopes the whole drain to ONE seat's batch — the isolated
     // deployment path, where the other seat has a question open and their
     // triggers must not be built, aimed or resolved on this seat's tick (the
-    // R154 reason, unchanged; it is the SCOPE that is new, not the rule).
+    // CR D2.1d reason, unchanged; it is the SCOPE that is new, not the rule).
     // Undefined everywhere else, and every expression below then reads
-    // exactly as it did before R286.
+    // exactly as it did before the per-seat deployment drain.
     const mineOnly = (t: import('./types.ts').PendingTrigger) =>
       only === undefined || t.controller === only;
     while (this.s.triggerQueue.some(mineOnly)) {
@@ -11449,21 +11436,21 @@ export class E {
       }
       // 2. next trigger: stack mode → stack entry order IT(reversed) then
       //    NIT(reversed); immediate → resolution order NIT first (equivalent
-      //    outcomes, R2)
+      //    outcomes, CR 706.5)
       /**
-       * R261 (owner, round-32 Q1): THE DAMAGE STEP NO LONGER HAS A MODE OF
+       * CR 608.9b (owner, round-32 Q1): THE DAMAGE STEP NO LONGER HAS A MODE OF
        * ITS OWN. This used to read `&& !this.s.battle?.damageStep`, which is
-       * how R3 was implemented — a trigger fired by a damage sub-step found
+       * how the old no-window-between-damage-sub-steps ruling was implemented — a trigger fired by a damage sub-step found
        * `battleMode` false, took the `'resolve'` branch and was built, aimed
        * and resolved to completion with nobody able to answer it. The owner
        * moved every damage-caused trigger to after combat instead, so nothing
-       * reaches this line with `battle.damageStep` set at all: settle()'s R261
+       * reaches this line with `battle.damageStep` set at all: settle()'s CR 608.9b
        * hold returns before `processTriggerQueue` is ever called. In battle,
        * battle IS stack mode — damage and death triggers included.
        */
       const battleMode = this.s.phase === 'battle';
       /**
-       * R144(a), OWNER RULING (report #101, room SMVJ, 2026-08-24):
+       * CR 507.5, OWNER RULING (report #101, room SMVJ, 2026-08-24):
        * *"Deployment should use the stack."*
        *
        * Before this, `battleMode` was the ONLY way onto the stack and every
@@ -11479,10 +11466,10 @@ export class E {
        * queue first then IT's, front to back; stack mode pushes each seat's
        * queue in REVERSE (so its front ends up on top) with NIT's pushed last
        * (so NIT's is above IT's) — and pops FILO. Both spell exactly the same
-       * resolution order, which is what keeps R2, the seeded replay and every
+       * resolution order, which is what keeps CR 706.5, the seeded replay and every
        * existing deployment test saying what they said before.
        *
-       * NOT taxed: `gateTaxedTrigger` below stays keyed on `battleMode`. R121
+       * NOT taxed: `gateTaxedTrigger` below stays keyed on `battleMode`. CR 505.1b
        * is Crevice Lurker's "during battle" clause and deployment is not
        * battle; routing deployment through the stack must not invent a tax the
        * card does not print.
@@ -11498,12 +11485,13 @@ export class E {
         ? (itQ.length ? itQ[itQ.length - 1]! : nitQ[nitQ.length - 1]!)
         : (nitQ.length ? nitQ[0]! : itQ[0]!);
       this.s.triggerQueue.splice(this.s.triggerQueue.indexOf(next), 1);
-      // R121: the pay-to-trigger gate — ONE choke point for every trigger
-      // headed to the stack (card triggers, augment-donated triggers and R51
+      // CR 111.10g: the pay-to-trigger gate — ONE choke point for every trigger
+      // headed to the stack (card triggers, augment-donated triggers and CR 400.5
       // zone triggers alike; never per-card). Only battleMode triggers pass
       // through it: outside battle the taxing card's own "during battle"
-      // clause zeroes the tax anyway, and deployment is not battle (R144(a)).
-      // ⚠ R261 WIDENED WHAT THIS TAXES, and that is intended. Combat-damage
+      // clause zeroes the tax anyway, and deployment is not battle.
+      // ⚠ HOLDING DAMAGE TRIGGERS TO AFTER COMBAT WIDENED WHAT THIS TAXES (CR 608.9d),
+      // and that is intended. Combat-damage
       // and combat-death triggers used to slip past with `battleMode` false;
       // they now arrive here with `damageStep` already null and ARE taxed.
       // Crevice Lurker prints "Abilities cost [one] more to activate or
@@ -11519,30 +11507,30 @@ export class E {
     }
   }
 
-  /** The build-and-commit tail of processTriggerQueue, split out so the R121
+  /** The build-and-commit tail of processTriggerQueue, split out so the CR 111.10g
    * pay gate can resume a dequeued trigger from doDecide with the queue loop
    * long unwound. */
   stackPendingTrigger(next: PendingTrigger, then: 'push' | 'resolve'): void {
     const item: StackItem = {
       id: this.s.nextId++, kind: 'triggered', card: next.sourceCard, label: next.label,
       controller: next.controller,
-      // R70: the live source's CURRENT region if it is still in play (it may
+      // CR 714.9a: the live source's CURRENT region if it is still in play (it may
       // have moved between firing and resolving), else the region it fired
       // in, and only then the controller's action region. That last fallback
       // used to be the only answer for a dead source, which put every "when
-      // I die" trigger in the wrong region (R12).
+      // I die" trigger in the wrong region (CR 101.6).
       region: this.entity(next.sourceId)?.region ?? next.region ?? this.actionRegion(next.controller),
       negated: false, parts: next.parts, sourceId: next.sourceId, event: next.event,
-      // R131: which mod donated the text, carried to the EffectCtx
+      // CR 720.6d: which mod donated the text, carried to the EffectCtx
       ...(next.selfModId !== undefined ? { selfModId: next.selfModId } : {}),
-      ...(next.lastKnown ? { lastKnown: next.lastKnown } : {}),     // R325
+      ...(next.lastKnown ? { lastKnown: next.lastKnown } : {}),     // CR 704.7a
     };
     this.collectTargets(item, then, []);
     this.commitItem(item, then);
   }
 
   /**
-   * R121: Crevice Lurker's pay-to-trigger gate ("choosing to not pay this
+   * CR 111.10g: Crevice Lurker's pay-to-trigger gate ("choosing to not pay this
    * prevents the abilities from triggering"). Returns true when the trigger
    * must NOT be stacked here: either it was just prevented outright (its
    * controller has no legal way to pay — announced, never silent), or its
@@ -11557,7 +11545,7 @@ export class E {
     if (tax <= 0) return false;
     const taxers = byCard.join(', ');
     if (this.openMana(t.controller) < tax) {
-      // R108/R113: "no offer could be made at all" — the bounded reservation
+      // CR 109.9b: "no offer could be made at all" — the bounded reservation
       // composeParts wrote at queue time goes back.
       this.refundTriggerBudgets(t);
       this.ev('info',
@@ -11575,10 +11563,10 @@ export class E {
     });
   }
 
-  /** R121: the answer to a pay-to-trigger question. Pay: charge the tax and
+  /** CR 111.10g: the answer to a pay-to-trigger question. Pay: charge the tax and
    * stack the trigger exactly where processTriggerQueue left off. Decline:
    * the trigger simply does not happen — and does NOT spend its [once]
-   * (R108/R113: declining never spends it; the reservation goes back).
+   * (CR 109.9b: declining never spends it; the reservation goes back).
    * settle() then drains whatever else the queue still holds. */
   resumeTriggerGate(t: PendingTrigger, tax: number, pay: boolean): void {
     if (pay) {
@@ -11596,7 +11584,7 @@ export class E {
     this.settle();
   }
 
-  /** R121 + R108/R113: hand back the bounded reservations composeParts wrote
+  /** CR 111.10h, 109.9b: hand back the bounded reservations composeParts wrote
    * for a trigger that is now NOT happening (declined or unpayable at the
    * pay gate). refundPart's bookkeeping keyed off the PendingTrigger instead
    * of a StackItem — a mod-donated part's budget lives on the mod under
@@ -11617,24 +11605,24 @@ export class E {
   settle(): void {
     for (let i = 0; i < 100; i++) {
       this.checkDeaths();
-      // R44: latch any prophecy the last mutation just fulfilled. settle() is
+      // CR 803.7g: latch any prophecy the last mutation just fulfilled. settle() is
       // the general safe point, so it covers the state-based conditions (life
       // totals, units in play); the counting ones latch at their own moments
       // (startTurn / endBattleRound / end of the haste step).
       this.refreshProphecies();
       this.markFrame();   // a no-op unless a client asked to watch (see `frames`)
       /**
-       * R154: A PENDING QUESTION STOPS THE WORLD — for everyone.
+       * CR D2.1a: A PENDING QUESTION STOPS THE WORLD — for everyone.
        *
        * Two lines below already say this for their own piece of business:
        * the deployment stack drain is guarded `&& !this.s.decision`, and the
        * combat-damage pump opens `if (this.s.decision || …) return`. The
-       * trigger queue never needed it, because before R154 nothing could run
+       * trigger queue never needed it, because before the gate became seat-aware nothing could run
        * at all while a decision was open — apply()'s gate refused every
        * action from BOTH seats, so settle() was only ever entered with the
        * slot empty.
        *
-       * R154 lets the other seat act inside a hidden simultaneous segment,
+       * CR D2.1b lets the other seat act inside a hidden simultaneous segment,
        * and their action reaches settle() with somebody else's question open.
        * Without this line `processTriggerQueue` would drain the ASKING seat's
        * trigger batch on the acting seat's tick — building, aiming and
@@ -11648,7 +11636,7 @@ export class E {
        * waits, exactly like anything else the batch is holding.
        */
       if (this.s.decision) {
-        // R286: …EXCEPT IN DEPLOYMENT, WHERE THERE ARE TWO WORLDS.
+        // CR 703.7, 507.5a: …EXCEPT IN DEPLOYMENT, WHERE THERE ARE TWO WORLDS.
         // The owner, 2026-09-01: deployment uses the stack, but "it's an
         // isolated stack just for the person in that region … the two players
         // are, essentially, playing different games during deployment". So a
@@ -11661,15 +11649,15 @@ export class E {
       }
       // CT-174(b): the revealing moment has ended — no question is open, so
       // the effect that looked at the hand has stopped moving cards out of it.
-      // Deliberately BELOW the R154 guard (a snapshot must not be finished
+      // Deliberately BELOW the open-decision guard (a snapshot must not be finished
       // while the very effect that took it is still asking its owner which
-      // card to discard) and ABOVE the R261 hold (an Eldritch Dreamtender look
+      // card to discard) and ABOVE the CR 608.9b hold (an Eldritch Dreamtender look
       // is a combat-damage trigger, and its moment ends inside that hold).
       // Idempotent: it clears `pending`, so the settle loop's other passes and
       // every later settle are no-ops.
       this.settleSeenHands();
       /**
-       * R261: HOLD THE TRIGGER QUEUE THROUGH THE COMBAT DAMAGE SUB-STEPS.
+       * CR 608.9b: HOLD THE TRIGGER QUEUE THROUGH THE COMBAT DAMAGE SUB-STEPS.
        *
        * The owner (2026-08-30, round-32 Q1): *"all triggers that are caused by
        * damage get moved to 'After combat', along with anything that triggers
@@ -11681,8 +11669,8 @@ export class E {
        * the same batch.
        *
        * This is the ONE choke point, deliberately: the pump is not the only
-       * thing that reaches settle() mid-damage. An R120 elective-assign answer
-       * or an R121 pay answer resumes through `doDecide` → settle() with a
+       * thing that reaches settle() mid-damage. A CR 608.6a elective-assign answer
+       * or a CR 111.10g pay answer resumes through `doDecide` → settle() with a
        * sub-step half-run, and before this guard existed each of those would
        * have drained the held batch on the way past. Guarding the pump alone
        * would have left three back doors open.
@@ -11696,7 +11684,7 @@ export class E {
       }
       if (!this.s.triggerQueue.length) {
         /**
-         * R144(a): DRAIN THE DEPLOYMENT STACK.
+         * CR 507.5: DRAIN THE DEPLOYMENT STACK.
          *
          * In battle the stack is drained by priority — two passes resolve the
          * top item — because a battle stack exists so that people may respond
@@ -11720,13 +11708,13 @@ export class E {
           this.resolveTop();
           return;
         }
-        // R261: resuming a suspended combat-damage pump used to live HERE,
+        // resuming a suspended combat-damage pump used to live HERE,
         // reachable only with the queue already empty. It now lives in the
-        // R261 hold above, which is reached whether the queue is empty or
-        // not — a sub-step suspended by an R120 election or an R121 pay
+        // CR 608.9b hold above, which is reached whether the queue is empty or
+        // not — a sub-step suspended by a CR 608.6a election or a CR 111.10g pay
         // question may well have a held batch waiting behind it.
-        this.finishDeployStart();   // R102: resume a suspended rot-damage opening
-        this.finishHasteEnd();   // R50: resume a suspended end-of-haste window
+        this.finishDeployStart();   // CR 507.4: resume a suspended rot-damage opening
+        this.finishHasteEnd();   // CR 504.6: resume a suspended end-of-haste window
         this.finishTurnEnd();
         return;
       }
@@ -11765,13 +11753,13 @@ export class E {
       this.ev('phase', `${this.pname(b.defender)} declares blocks.`, { step: 'blocks' });
     } else if (b.step === 'blockWindow') {
       this.ev('combatDamage', 'Combat damage (simultaneous):', { region: b.region });
-      // R295: fixed ONCE, here, before a single point of damage is dealt —
+      // CR 608.3d: fixed ONCE, here, before a single point of damage is dealt —
       // see the `damageSubs` field doc for why it must not be recomputed.
       b.damageSubs = this.subStepsWithStrikes(b);
       b.damageStep = 'Swift';
       this.pumpCombatDamage();
     } else if (b.step === 'damageWindow') {
-      // R295: the window between two damage sub-steps has closed. Everything
+      // CR 608.3b: the window between two damage sub-steps has closed. Everything
       // the last sub-step queued is resolved and off the stack; the next
       // sub-step deals its damage into the board that left behind.
       const next = b.pendingSub ?? 'after';
@@ -11783,15 +11771,15 @@ export class E {
     }
   }
 
-  /** R295: which of the three damage sub-steps have a column actually
+  /** CR 608.3: which of the three damage sub-steps have a column actually
    * striking in them. Two or more and the damage step is SPLIT — each is a
    * real step with priority between them. The walk is `assignCombatDamage`'s
    * own, asked of all three sub-steps instead of one, so a sub-step counts
    * here exactly when that method would deal damage in it. */
   private subStepsWithStrikes(b: BattleState): DamageSubStep[] {
     const ALL = ['Swift', 'normal', 'Sluggish'] as const;
-    // R321: a blocking column strikes only with an attacker in front of it, so
-    // a side-block (and an R72 hole) opens no damage window of its own
+    // CR 606.4f: a blocking column strikes only with an attacker in front of it, so
+    // a side-block (and a CR 608.4e hole) opens no damage window of its own
     return ALL.filter(sub => b.columns.some((_col, ci) => {
       const x = this.exchangeAt(b, ci);
       return (x.atk.length > 0 && this.strikes(b, 'atk', ci, x.atk, sub, x.pure))
@@ -11805,9 +11793,9 @@ export class E {
   /**
    * Simultaneous damage in three sub-steps: Swift → normal → Sluggish, then
    * 'after'. Formation changes recalc between sub-steps but nobody gets
-   * priority (R3, which stands).
+   * priority (CR 608.3e, which stands).
    *
-   * R261 (owner, 2026-08-30, round-32 Q1) — **NOTHING TRIGGERED BY COMBAT
+   * CR 608.9b (owner, 2026-08-30, round-32 Q1) — **NOTHING TRIGGERED BY COMBAT
    * DAMAGE RESOLVES DURING THE DAMAGE STEP.**
    *
    * > *"If there are no units in combat with sluggish or [swift], there will
@@ -11822,13 +11810,13 @@ export class E {
    * branch: built, aimed and resolved to completion, never on the stack,
    * never respondable, never taxed. That line is gone. The queue is now HELD
    * across every sub-step (`settle()` refuses to drain it while `damageStep`
-   * is set — see the R261 guard there) and drains in the `'after'` branch
+   * is set — see the CR 608.9b guard there) and drains in the `'after'` branch
    * below, where `damageStep` is already null, `battleMode` is true and the
    * afterCombat triggers are in the SAME batch. That is the RAQ's stack.
    *
    * ⚠ WHAT DID NOT MOVE. `checkDeaths()` still runs between sub-steps: deaths,
    * promotion and formation recalculation are state-based bookkeeping with no
-   * choices in them and R3 still demands them immediately. Only the TRIGGER
+   * choices in them and CR 608.3e still demands them immediately. Only the TRIGGER
    * QUEUE waits — the "when I die" triggers those deaths queue are held with
    * everything else, which is exactly what the RAQ names.
    *
@@ -11853,14 +11841,13 @@ export class E {
         }
         const sub = b.damageStep;
         this.combatSubStep(sub);
-        this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)
+        this.checkDeaths();   // deaths + promotion between sub-steps, no priority (CR 608.3e)
         const next = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
         /**
-         * R295 — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
+         * CR 608.3b — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
          * boundary between two of them.
          *
-         * R261's own quote carried the condition and the implementation
-         * dropped it: *"**If there are no units in combat with sluggish or
+         * The owner's quote carried the condition and the implementation dropped it: *"**If there are no units in combat with sluggish or
          * [swift]**, there will be no triggers during the damage step."* With
          * a Swift or Sluggish column on the board there ARE triggers during
          * the damage step — each sub-step is a step, and what it fired
@@ -11880,9 +11867,9 @@ export class E {
          *
          * The handover is deliberately shaped like the 'after' branch above,
          * because it wants the identical machinery: `damageStep` is nulled
-         * FIRST, which is the whole of what settle()'s R261 guard reads, so
+         * FIRST, which is the whole of what settle()'s CR 608.9b guard reads, so
          * the held batch drains with `battleMode` true — on the stack, aimed,
-         * respondable, past the R121 pay gate. `pendingSub` is where the pump
+         * respondable, past the CR 111.10g pay gate. `pendingSub` is where the pump
          * comes back to when `advanceBattleStep` closes the window.
          *
          * Two conditions, not one. `struckNow` — an empty sub-step queued
@@ -11891,7 +11878,7 @@ export class E {
          * window of its own; offering one here too would be two priority
          * rounds with no damage between them. Together they mean an ordinary
          * battle (every column in the normal sub-step) sees NO new window and
-         * behaves exactly as R261 left it.
+         * behaves exactly as an unsplit step does (CR 608.3a).
          */
         const subs = b.damageSubs ?? [];
         const ORDER = ['Swift', 'normal', 'Sluggish'] as const;
@@ -11914,7 +11901,7 @@ export class E {
   }
 
   /**
-   * R320 — does this SIDE of column `ci` strike in `sub`? `scheduled()`'s
+   * CR 608.2e — does this SIDE of column `ci` strike in `sub`? `scheduled()`'s
    * attribute answer, less what the column has already done. The RAQ
    * ("Swift/Normal/Sluggish"), _passer: *"If a column dealt swift damage, it
    * won't deal normal damage. If a column dealt normal damage it won't deal
@@ -11932,7 +11919,7 @@ export class E {
     return true;
   }
 
-  /** R320: column `ci`'s `side` struck in `sub` — remember it for the battle */
+  /** CR 608.2e: column `ci`'s `side` struck in `sub` — remember it for the battle */
   private markStruck(b: BattleState, side: 'atk' | 'blk', ci: number, sub: DamageSubStep): void {
     const struck = (b.struck ??= {});
     const key = `${side}:${ci}`;
@@ -11942,7 +11929,7 @@ export class E {
 
   private scheduled(colIds: EntityId[], sub: DamageSubStep,
     suppressed = false): boolean {
-    // R61 {Pure}: an attribute-blind exchange has no Swift or Sluggish in it,
+    // CR 608.2d {Pure}: an attribute-blind exchange has no Swift or Sluggish in it,
     // so it strikes in the normal sub-step whatever the column is printed with
     const attrs = suppressed ? new Set<string>() : this.colAttrs(colIds);
     if (sub === 'Swift') return attrs.has('Swift');
@@ -11951,7 +11938,7 @@ export class E {
   }
 
   /**
-   * R117 + R157 §5: EVERY combat-damage sub-step `u`'s column strikes in, in
+   * CR 608.9a, 608.2c: EVERY combat-damage sub-step `u`'s column strikes in, in
    * running order, or `[]` when `u` is not in a column at all.
    *
    * The owner's ruling (2026-08-23): a "when my column deals combat damage"
@@ -11963,7 +11950,7 @@ export class E {
    * sub-step's `lifeLost` and sacrificed itself a sub-step early whenever any
    * Swift column also connected.
    *
-   * R157 §5 (owner, 2026-08-25) is why this is a LIST and not one answer:
+   * CR 608.2c (owner, 2026-08-25) is why this is a LIST and not one answer:
    * *"Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish
    * unit that's in combat with a normal unit will (potentially, assuming they
    * all survive all damage) end up having damage done in all three sub damage
@@ -11974,7 +11961,7 @@ export class E {
    *
    * The answer is `scheduled()`'s, asked over the three sub-steps in order,
    * with the pairing's `pure` threaded in the way `assignCombatDamage` threads
-   * it, because R61 {Pure} collapses a whole exchange (both sides, in both
+   * it, because CR 608.2d {Pure} collapses a whole exchange (both sides, in both
    * directions) into the normal sub-step whatever the columns are printed
    * with. Reconstructing `pure` here rather than reading the column's own
    * attributes is the entire reason this is an engine method and not three
@@ -12003,7 +11990,7 @@ export class E {
         if (!col.includes(u.id)) continue;
         const blk = alive(col);
         const atk = alive(b.columns[Number(key)] ?? []);
-        // R321: a side-block has nothing in front of it, so it never strikes
+        // CR 606.4f: a side-block has nothing in front of it, so it never strikes
         if (!atk.length) return [];
         mine = blk;
         pure = this.pure(atk, blk);
@@ -12012,17 +11999,17 @@ export class E {
       }
     }
     if (!mine) return [];
-    // R320: less the sub-steps the column's own marks bar
+    // CR 608.2e: less the sub-steps the column's own marks bar
     return (['Swift', 'normal', 'Sluggish'] as const)
       .filter(sub => this.strikes(b, side, at, mine!, sub, pure));
   }
 
   /**
-   * R117, singular: the FIRST sub-step `u`'s column strikes in, or null when it
+   * CR 608.9a, singular: the FIRST sub-step `u`'s column strikes in, or null when it
    * is in no column. Kept as the readable one-answer form for the ordinary
    * column, which strikes in exactly one sub-step.
    *
-   * ⚠ LOSSY, by R157 §5: a {Swift}{Sluggish} column strikes in TWO sub-steps
+   * ⚠ LOSSY, by CR 608.2c: a {Swift}{Sluggish} column strikes in TWO sub-steps
    * and this reports only the Swift one. Card text must never gate on it —
    * `strikesInCurrentSubStep` (which reads the full list) is the gate.
    */
@@ -12031,33 +12018,33 @@ export class E {
   }
 
   /**
-   * R117, as card text asks it: is the sub-step running RIGHT NOW one that
+   * CR 608.9a, as card text asks it: is the sub-step running RIGHT NOW one that
    * `u`'s column strikes in? The one shared gate behind every "when my column
    * deals combat damage" trigger — reached through `columnDealtCombatDamage`
    * by Zephyrzoa, Vroot, Eldritch Dreamtender, Blightmound, Amphivore,
-   * Rippleback Skulker, Flowstone Arcanite and Bloodwind Revenant (R195 put
+   * Rippleback Skulker, Flowstone Arcanite and Bloodwind Revenant (the per-column attribution fix put
    * the last four through it too).
    *
-   * R157 §5: "is one that", not "is the one" — a {Swift}{Sluggish} column
+   * CR 608.9a: "is one that", not "is the one" — a {Swift}{Sluggish} column
    * strikes in both the Swift and the Sluggish sub-step, so its triggers fire
    * in both, matching the damage that really lands in both.
    *
    * ⚠ TIMING — this is only true inside `when()`. `when()` is evaluated at
-   * event time (R1), which is inside `combatSubStep(sub)`, and `b.damageStep`
+   * event time (CR 109.3a), which is inside `combatSubStep(sub)`, and `b.damageStep`
    * is advanced only AFTER `combatSubStep` returns — so it reads the CURRENT
    * sub-step here. Putting this gate in a `run()` would read the wrong
-   * sub-step every time. Under R261 it would not even read a sub-step: the
+   * sub-step every time. Under CR 608.9b it would not even read a sub-step: the
    * queue is held to the after-combat step and `damageStep` is null by the
    * time any of these triggers RUNS, so this returns false for all of them.
-   * It was already wrong there (it used to read the NEXT sub-step); R261 only
+   * It was already wrong there (it used to read the NEXT sub-step); holding the queue to after combat (CR 608.9b) only
    * changed which wrong answer you get.
    *
-   * ⚠ WHAT THIS DOES NOT CLOSE — CLOSED BY R195, and this note is kept
+   * ⚠ WHAT THIS DOES NOT CLOSE — closed by the per-column attribution fix (CR 608.9a), and this note is kept
    * because it says what the sub-step gate is and is not. Face damage still
    * arrives as one aggregated `lifeLost` per seat per sub-step (it is one
    * simultaneous strike and splitting the event would make "when a player
    * loses life" fire once per column), so this gate alone left two of the SAME
-   * controller's columns indistinguishable to card text. R195 carried the live
+   * controller's columns indistinguishable to card text. The per-column attribution fix carried the live
    * column ids onto the ledger and out on the event as `hits` — see
    * `FaceDamageHit`, `faceDamageDealtBy` and `unitsDealingFaceDamage` — so the
    * face channel is now ATTRIBUTION and this is only the timing gate.
@@ -12069,7 +12056,7 @@ export class E {
   }
 
   /**
-   * R157 §4 — THE one shared "my column deals combat damage" predicate.
+   * CR 608.9a — THE one shared "my column deals combat damage" predicate.
    *
    * Verbatim (Bena, 2026-08-25): *"Only if the other unit in the column has a
    * positive power. 0 power units do no damage. But the other thing in the
@@ -12091,7 +12078,7 @@ export class E {
    *    Only for text that is not narrowed to a player: Vroot ("my column deals
    *    combat damage") and Blightmound ("when I deal combat damage") hear it;
    *    Zephyrzoa and Eldritch Dreamtender print "to an opponent" and must not.
-   *  · 'poison' — RETIRED BY R237, and kept only as a no-op arm so a stale
+   *  · 'poison' — RETIRED once Poisonous damage counted as damage dealt, and kept only as a no-op arm so a stale
    *    caller fails loudly in review rather than silently. It existed because
    *    a {Poisonous} column's unit damage arrived as -1/-1 counters with "NO
    *    'damage' event emitted at all", so Blightmound could not hear its own
@@ -12104,7 +12091,7 @@ export class E {
    *    both events.
    *  · 'face' — the aggregated combat 'lifeLost' against a seat that is not
    *    mine, of which MY COLUMN dealt a share. All four hear this one.
-   *    ⚠ R195 changed what this arm asks. It used to RECONSTRUCT "my column
+   *    ⚠ Per-column attribution (CR 608.9a) changed what this arm asks. It used to RECONSTRUCT "my column
    *    connected" from the formation — attacking and never blocked, or
    *    blocked/blocking with {Piercing} — which is a statement about
    *    geometry, not about damage: a {Piercing} pool the blockers absorbed
@@ -12120,10 +12107,10 @@ export class E {
     if (!b) return false;
     const col = this.columnOf(self.id);
     if (!col) return false;
-    // R117 / R157 §5: only in a sub-step my own column strikes in.
+    // CR 608.9a: only in a sub-step my own column strikes in.
     if (!this.strikesInCurrentSubStep(self)) return false;
     const alive = col.filter(id => this.entity(id));
-    // R157 §4: the LIVE column's power, not mine. A column whose hitters all
+    // CR 608.9a: the LIVE column's power, not mine. A column whose hitters all
     // died in an earlier sub-step deals nothing either.
     const power = alive.reduce((n, id) => n + Math.max(0, this.effStats(this.entity(id)!)[0]), 0);
     if (power <= 0) return false;
@@ -12141,12 +12128,12 @@ export class E {
       if (ev.data?.['source'] !== undefined) return false;          // effect damage, not combat
       return opposing(ev.data?.['unit'] as EntityId | undefined);
     }
-    // R237: the 'poison' arm is retired (see the channel note above). A
+    // CR 802.18b: the 'poison' arm is retired (see the channel note above). A
     // 'countersChanged' is no longer evidence that anybody dealt combat
     // damage — the hit that caused it announced itself on 'damage'.
     if (ev.type === 'countersChanged') return false;
-    // R238: 'combatFaceDamage' is the carrier a face-channel card should
-    // listen on — it fires for a hit an R38 replacement consumed as well as
+    // CR 608.8a: 'combatFaceDamage' is the carrier a face-channel card should
+    // listen on — it fires for a hit a replacement consumed as well as
     // for one that cost life. The combat 'lifeLost' is still accepted, because
     // one card printing this clause (Zephyrzoa, batch-hybrids-ld-a) is owned
     // by another agent this wave and still declares `events: ['lifeLost']`;
@@ -12157,7 +12144,7 @@ export class E {
     if (ev.data?.['why'] !== 'combat') return false;
     const victim = ev.data?.['seat'] as Seat | undefined;
     if (victim === undefined || victim === self.controller) return false;
-    // R195: ASKED, not reconstructed. The event names the columns that made
+    // CR 608.9a: ASKED, not reconstructed. The event names the columns that made
     // this loss up, so "did my column connect?" is membership rather than a
     // re-derivation of the formation — and a column that connects but deals
     // NOTHING (a {Piercing} pool the blockers absorbed whole, a strike a
@@ -12166,10 +12153,10 @@ export class E {
     return this.faceDamageDealtBy(self, ev) > 0;
   }
 
-  /** R195/R238 — the per-column breakdown a face-damage event carries, or `[]`
-   * for anything else. Both carriers are accepted: 'combatFaceDamage' (R238,
+  /** CR 608.9a, 608.8a — the per-column breakdown a face-damage event carries, or `[]`
+   * for anything else. Both carriers are accepted: 'combatFaceDamage' (CR 608.8a,
    * every hit including the ones a replacement consumed) and the combat
-   * 'lifeLost' (R195, the hits that cost life). A combat loss with no
+   * 'lifeLost' (CR 608.9a, the hits that cost life). A combat loss with no
    * breakdown means no column is claiming it, which is the same answer as an
    * empty one. */
   combatFaceHits(ev: EngineEvent): FaceDamageHit[] {
@@ -12181,21 +12168,21 @@ export class E {
   }
 
   /**
-   * R195 — how much of this combat 'lifeLost' `self`'s OWN COLUMN dealt; 0
+   * CR 608.9a — how much of this combat 'lifeLost' `self`'s OWN COLUMN dealt; 0
    * when it dealt none of it. This is the amount "each opponent gains that
    * much life" (Vroot) is about: the aggregate on the event is every column's
    * total, and a card printed about MY column is owed only my column's share.
    *
-   * ⚠ pre-`lifeAmount` (R162): the shares sum to the raw loss, and the event's
+   * ⚠ pre-`lifeAmount` (CR 112.3): the shares sum to the raw loss, and the event's
    * `n` is that total after the multiplicative layer. A doubler on the LIFE
    * LOSS is not a doubler on the combat damage a column dealt.
    *
-   * ⚠ R238: this reads `dealt`, not `amount` — the damage the column DEALT,
-   * before an R38 replacement had it. A hit Blightsea Polyp turned into rot is
+   * ⚠ CR 608.8a: this reads `dealt`, not `amount` — the damage the column DEALT,
+   * before a replacement had it. A hit Blightsea Polyp turned into rot is
    * *"still damage. Just not as life"* (owner, 2026-08-28), so Vroot's "that
    * much" is the 4 the column dealt and not the 0 the player lost. On a
    * `lifeLost` the two are equal for every hit that survived to be on it, so
-   * this only ever differs on the R238 event.
+   * this only ever differs on the `combatFaceDamage` event.
    */
   faceDamageDealtBy(self: Entity, ev: EngineEvent): number {
     return this.combatFaceHits(ev)
@@ -12204,13 +12191,13 @@ export class E {
   }
 
   /**
-   * R195 — every UNIT that dealt combat damage to a player on this event, in
+   * CR 608.5a — every UNIT that dealt combat damage to a player on this event, in
    * assignment order and deduplicated. Sarcophage's "whenever a unit deals
    * combat damage to a player" asks exactly this, and the printed clause has
    * no "your" in it (owner, 2026-08-24: *"All the cards in Algomancy are
    * pretty literal"*) — so BOTH sides' units are here, whoever was hit.
    *
-   * A 0-power passenger is NOT in this list: R157 §4, *"0 power units do no
+   * A 0-power passenger is NOT in this list: CR 608.5a, and the owner's *"0 power units do no
    * damage"*. Nor is a member of a column whose damage never reached the
    * player at all.
    */
@@ -12237,20 +12224,20 @@ export class E {
    * where it does — and the ledger lives for exactly this sub-step. */
   private combatSubStep(sub: DamageSubStep): void {
     const b = this.s.battle!;
-    // R120: elective damage splits are asked for FIRST — before the ledger
+    // CR 608.6h: elective damage splits are asked for FIRST — before the ledger
     // exists, before any event is emitted — so a suspension here leaves
     // nothing half-done and the sub-step re-enters from scratch when the
     // answer lands (settle() resumes the pump).
     this.collectAssignPlans(b, sub);
     const L = this.newCombatLedger();
     this.assignCombatDamage(b, sub, L);
-    // R120: the plans were consumed by the assignment above, and they are
+    // CR 608.6h: the plans were consumed by the assignment above, and they are
     // meaningless outside their own sub-step (`ci` is only an identity for
-    // its length — R72), so they do not outlive it.
+    // its length), so they do not outlive it.
     b.assignPlans = undefined;
     const shielded = this.commitUnitDamage(b, L);
     this.sweepDeadly(L, shielded);
-    // R106 {Unaware}: an exchange collapsed to printed stats settles its own
+    // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
     // deaths, because the state-based sweep reads effStats and would keep a
     // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
     // both are "this exchange killed something the ordinary check misses".
@@ -12274,7 +12261,7 @@ export class E {
   }
 
   /** living members of a column, front-to-back — the one filter both the
-   * assignment walk and the R120 election planner read */
+   * assignment walk and the CR 608.6a election planner read */
   private aliveInCol(ids: EntityId[]): EntityId[] { return ids.filter(id => this.entity(id)); }
 
   private colLabel(ids: EntityId[]): string {
@@ -12290,9 +12277,9 @@ export class E {
     }, 0);
   }
 
-  /** R195: which members of a column actually DEAL its combat damage — the
+  /** CR 608.5a, 608.5c: which members of a column actually DEAL its combat damage — the
    * ones `colPower` above counts a positive contribution from, read with the
-   * same {Unaware} collapse. R157 §4 (owner, 2026-08-25) is the whole rule:
+   * same {Unaware} collapse. CR 608.5a (owner, 2026-08-25) is the whole rule:
    * *"0 power units do no damage. But the other thing in the column can still
    * contribute to the shared column power."* So the COLUMN is the dealer of a
    * column-scoped clause and this list is the dealer of a UNIT-scoped one. */
@@ -12307,14 +12294,14 @@ export class E {
   /** the unit in a column that carries `attr` on its OWN (not by column
    * sharing), else the column's first living unit — the source a column-wide
    * attribute's trigger hangs on, so that removing THAT unit is what stops
-   * it (the shape of R84's Alluring trigger). */
+   * it (the shape of CR 802.15d's Alluring trigger). */
   private attrCarrier(ids: EntityId[], attr: Attr): EntityId | undefined {
     const live = ids.filter(id => this.entity(id));
     return live.find(id => this.ownAttrs(this.entity(id)!).has(attr)) ?? live[0];
   }
 
   /**
-   * R315 — {RESONANT} IS ITS SOURCE'S TRIGGER, NOT LIFE LOSS.
+   * CR 802.19a — {RESONANT} IS ITS SOURCE'S TRIGGER, NOT LIFE LOSS.
    *
    * The printed reminder: "Whenever a resonant source deals damage to a unit,
    * it deals that much damage to that unit's controller." The RAQ "[Solved]
@@ -12323,16 +12310,16 @@ export class E {
    * 4 combat damage to enemy unit and then put effect on stack to deal 8
    * damage to enemy face", and with Conduit of Pain "(4+1)x2 = 10". So the
    * rider is queued here as a trigger of the source (held to after combat by
-   * R261 when the hit was combat damage), and resolves as effect damage from
-   * that source: Conduit of Pain adds to it, {Powerful} doubles it (R316's
+   * CR 608.9b when the hit was combat damage), and resolves as effect damage from
+   * that source: Conduit of Pain adds to it, {Powerful} doubles it (CR 802.19e's
    * order), it is a 'damage' event to a player, and Crevice Lurker taxes it
    * like any trigger in battle — Caleb, "[Solved] Trigger-like Attributes vs
    * Crevice Lurker & Containment Protocol": "my intent is for it to stop
-   * those from triggering". It was `loseLife` inline until R315, which none
+   * those from triggering". It was `loseLife` inline until the Resonant fix, which none
    * of those could see.
    *
    * `n` is what the unit RECEIVED ("that much damage") — after {Vulnerable}
-   * and after prevention (a fully prevented hit never reaches here: R98).
+   * and after prevention (a fully prevented hit never reaches here: CR 112.11).
    * The effect itself is ability #1 of the synthetic `Alluring Attribute`
    * (apply.ts), for the reason Alluring's is a card: `effectByKey` resolves
    * every stack part through `getCard`.
@@ -12361,19 +12348,19 @@ export class E {
     return this.colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);
   }
 
-  /** One column pairing's shared derivation: who is alive on each side, R61
-   * {Pure}, the R106 {Unaware} collapse, and each side's post-Pure attribute
-   * set. Extracted (R120) so `assignCombatDamage` and the election planner
+  /** One column pairing's shared derivation: who is alive on each side, CR 802.25b
+   * {Pure}, the CR 802.9d {Unaware} collapse, and each side's post-Pure attribute
+   * set. Extracted so `assignCombatDamage` and the election planner
    * `collectAssignPlans` read the SAME exchange and cannot drift — the
    * planner prices floors with exactly the pools and attributes the
    * assignment will use.
    *
-   * R106 {Unaware}: `collapsed` is the whole exchange's flag, not one
+   * CR 802.9d {Unaware}: `collapsed` is the whole exchange's flag, not one
    * column's — if either side carries {Unaware}, BOTH sides deal and receive
    * at their printed numbers ("it looks ONLY at what is the literal printed
    * text on all cards 'involved'"). It is threaded exactly like `pure`, and
    * for the same reason: it is a property of the pairing. Note it survives
-   * {Pure}: Pure switches the ATTRIBUTE layer off for the exchange (R61), and
+   * {Pure} in the engine: the engine switches only the ATTRIBUTE layer off for the exchange and treats this as a stat layer — CR 802.25f says Unaware does not apply in an exchange involving a Pure card (engine differs, CT-260), and
    * this is a stat layer — an Unaware unit's numbers are its printed numbers
    * whether or not anyone is reading its attributes. `unaware` is
    * column-shared, so a vanilla unit standing beside Bubb carries it into the
@@ -12385,7 +12372,7 @@ export class E {
     const atk = this.aliveInCol(b.columns[ci] ?? []);
     const blockedEver = b.blocks[ci] !== undefined;
     const blk = blockedEver ? this.aliveInCol(b.blocks[ci]!) : [];
-    // R61 {Pure}: one Pure card in either column blinds the whole exchange
+    // CR 802.25b {Pure}: one Pure card in either column blinds the whole exchange
     // to attributes — both sides', in both directions.
     const pure = this.pure(atk, blk);
     const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
@@ -12396,17 +12383,17 @@ export class E {
     return { atk, blk, blockedEver, pure, collapsed, atkAttrs: attrsOf(atk), blkAttrs: attrsOf(blk) };
   }
 
-  /** R114: one victim's PASS-ALONG SHARE — the pool it must be assigned
+  /** CR 608.6b, 608.6c: one victim's PASS-ALONG SHARE — the pool it must be assigned
    * before any may walk on to the unit behind it, and NOT a ceiling on what
    * it may be dealt. {Deadly}'s 1 is the same thing: a FLOOR on the share
    * ("1 pool point suffices to kill"), so the rest is free to pass along; it
    * never means a Deadly column only deals 1. A {Vulnerable} victim receives
-   * double, so half the pool is its share (rounded up — R23).
-   * R106: in an exchange collapsed by {Unaware} the victim is priced at the
+   * double, so half the pool is its share (rounded up — CR 608.6e).
+   * CR 608.6e: in an exchange collapsed by {Unaware} the victim is priced at the
    * defense PRINTED on its card, so a Robot 7 needs 0 and a counter-laden
    * 1/1 needs 1. The kill itself is `sweepCollapsedDeaths`, because a
    * 0-defense victim is assigned nothing at all here.
-   * Shared by the assignment walk and the R120 election (floors AND option
+   * Shared by the assignment walk and the CR 608.6a election (floors AND option
    * ranges) — one price, one place. `prevPool` is what this sub-step's ledger
    * already assigned the victim (always 0 in practice: a unit stands in one
    * column, so exactly one strike prices it per sub-step; the election walk
@@ -12420,7 +12407,7 @@ export class E {
     return poolNeed;
   }
 
-  /** R120: the DEFAULT split, computed without a ledger — shares
+  /** CR D1.2g: the DEFAULT split, computed without a ledger — shares
    * front-to-back, leftover on the back-most living unit. The same numbers
    * `assignColumnDamage`'s no-plan walk produces (its `prev` is always 0 in
    * combat), used only to label the one-click default option. */
@@ -12438,7 +12425,7 @@ export class E {
     return out;
   }
 
-  /** R120 — the ELECTIVE split (playtest ledger #84, the deferred half): "each
+  /** CR 608.6a, 608.6b — the ELECTIVE split (playtest ledger #84, the deferred half): "each
    * player is allowed to split the damage however they want … The only rule is
    * that the front unit must be assigned lethal damage before assigning any to
    * the back unit."
@@ -12452,7 +12439,7 @@ export class E {
    * final per-victim pool amounts for `assignColumnDamage`, or undefined when
    * the strike holds no election (the silent default path).
    *
-   * R319 — {PIERCING} IS ELECTIVE TOO (reverses R7's "automatic, never
+   * CR 802.16c — {PIERCING} IS ELECTIVE TOO (the old split ruling said "automatic, never
    * elective"). RAQ "[Solved] Excessive Combat Damage & interaction with
    * Piercing, Deadly and Phytochemical Protection": the attacker may "overkill
    * the front or back unit, keeping that excess off the player", and "[Solved]
@@ -12468,12 +12455,12 @@ export class E {
    *  - pool ≤ the front unit's share: every point is owed to the front, so
    *    every split is forced.
    *  - `def` recorded: the one-click default — undefined on purpose, so the
-   *    no-plan walk (the exact pre-R120 code path) produces the numbers.
+   *    no-plan walk (the exact pre-election code path) produces the numbers.
    *
    * The options offered are exactly the LEGAL amounts [share .. remaining]:
    * a front unit can never be given less than lethal while anything would go
    * behind it — an illegal split is not refused, it is never shown (the same
-   * doctrine as R64 targeting). Choosing `remaining` is the reported elective
+   * doctrine as targeting, CR D1.2a). Choosing `remaining` is the reported elective
    * case: ALL of it to the front, none behind, even past lethal. */
   private electionWalk(b: BattleState, key: string, seat: Seat, ids: EntityId[], amount: number,
     srcAttrs: Set<string>, pure: boolean, collapsed: boolean, label: string, ask: boolean): number[] | undefined {
@@ -12486,7 +12473,7 @@ export class E {
     if (amount <= needs[0]!) return undefined;
     const plan = b.assignPlans?.[key];
     if (plan?.def) return undefined;
-    // R319: where a Piercing strike's excess lands — the victims' controller
+    // CR 802.16b: where a Piercing strike's excess lands — the victims' controller
     const face = this.pname(living[0]!.controller);
     const amounts = living.map(() => 0);
     let remaining = amount, pi = 0;
@@ -12512,7 +12499,7 @@ export class E {
       for (let a = needs[i]!; a <= remaining; a++) {
         const tag = a === needs[i]! && a > 0 ? (deadly ? ' (the {Deadly} floor)' : ' (lethal)')
           : a === remaining ? ' (everything)' : '';
-        // R319: on a Piercing strike's last victim, what is not kept goes to the player
+        // CR 802.16c: on a Piercing strike's last victim, what is not kept goes to the player
         const rest = piercing && last && remaining - a > 0 ? `, ${remaining - a} to ${face}` : '';
         options.push({ label: `${a} to ${u.card}${tag}${rest}`, value: a });
       }
@@ -12528,7 +12515,7 @@ export class E {
     return amounts;
   }
 
-  /** R120 — collection pass: raise every elective-split question for this
+  /** CR 608.6h — collection pass: raise every elective-split question for this
    * sub-step, one victim at a time, BEFORE the ledger exists and before any
    * event is emitted. `suspend` throws, and the sub-step re-enters from
    * scratch once the answer lands (doDecide records it and settle() resumes
@@ -12563,15 +12550,15 @@ export class E {
   private assignCombatDamage(b: BattleState, sub: DamageSubStep, L: CombatLedger): void {
     b.columns.forEach((_atkCol, ci) => {
       // the shared derivation (alive sides, {Pure}, the {Unaware} collapse,
-      // attrs, column power) lives in exchangeAt / dealtColPower so the R120
+      // attrs, column power) lives in exchangeAt / dealtColPower so the CR 608.6a
       // election planner prices EXACTLY what is assigned here
       const { atk, blk, blockedEver, pure, collapsed, atkAttrs, blkAttrs } = this.exchangeAt(b, ci);
       if (collapsed) for (const id of [...atk, ...blk]) L.collapsed.add(id);
       // attacker side
       if (atk.length && this.strikes(b, 'atk', ci, atk, sub, pure)) {
-        this.markStruck(b, 'atk', ci, sub);   // R320
+        this.markStruck(b, 'atk', ci, sub);   // CR 608.2e
         const pow = this.dealtColPower(atk, atkAttrs, collapsed);
-        // R72: `ci` is only an identity for the length of THIS sub-step. The
+        // `ci` is only an identity for the length of THIS sub-step. The
         // key is a local bucket label for the afflicting diff below and is
         // never stored, because the formation may collapse (and every index
         // move) before the next sub-step runs.
@@ -12591,37 +12578,37 @@ export class E {
         if (toPlayer > 0) {
           L.playerHits.push({
             seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure,
-            col: [...atk], dealers: this.dealersIn(atk, collapsed),   // R195
+            col: [...atk], dealers: this.dealersIn(atk, collapsed),   // CR 608.9a
           });
           if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;
         }
       }
       // blocker side
       if (blk.length && this.strikes(b, 'blk', ci, blk, sub, pure)) {
-        // R72 (Bena 2026-08-21): a blocking column whose attackers are all
+        // CR 608.4e (Bena 2026-08-21): a blocking column whose attackers are all
         // dead "has nothing to deal damage to, so it doesn't deal damage" —
         // and that INCLUDES Piercing. Piercing is the excess left over after
-        // an assignment (R7); with nothing to assign to there is no exchange
+        // an assignment (CR 802.16b); with nothing to assign to there is no exchange
         // to be the excess of, and the whole power would otherwise wash
         // through to the attacking player.
         //
         // The Manual answers the other half of that ruling by itself — the
         // blocker STAYS because after blocks are declared no column moves —
         // so this is all that is left of it. Note the deliberate asymmetry
-        // with R13, which is the Manual's own: "the column is considered
+        // with CR 802.16e, which is the Manual's own: "the column is considered
         // blocked even if the defending unit is removed during combat", so a
         // Piercing ATTACKER still gets through a dead block. There the attack
         // is still real; here it is the attack that is gone.
         if (!atk.length) {
           const pow = this.dealtColPower(blk, blkAttrs, collapsed);
-          // R321: a side-block never faced anyone, so it has nothing to report
+          // CR 606.4f: a side-block never faced anyone, so it has nothing to report
           if (pow > 0 && !b.sideCols?.includes(ci)) {
             this.ev('info',
               `Column ${ci + 1} has no attackers left — its blockers have nothing to fight.`,
               { region: b.region });
           }
         } else {
-          this.markStruck(b, 'blk', ci, sub);   // R320
+          this.markStruck(b, 'blk', ci, sub);   // CR 608.2e
           const src = { dealer: b.defender, key: `blk:${ci}`, label: this.colLabel(blk), resonantSrc: this.attrCarrier(blk, 'Resonant') };
           const blkPow = this.dealtColPower(blk, blkAttrs, collapsed);
           const left = this.assignColumnDamage(L, atk, blkPow, blkAttrs, src, pure, collapsed,
@@ -12629,7 +12616,7 @@ export class E {
           if (blkAttrs.has('Piercing') && left > 0) {
             L.playerHits.push({
               seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure,
-              col: [...blk], dealers: this.dealersIn(blk, collapsed),   // R195
+              col: [...blk], dealers: this.dealersIn(blk, collapsed),   // CR 608.9a
             });
             if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
           }
@@ -12638,16 +12625,16 @@ export class E {
     });
   }
 
-  /** front-to-back assignment (R7: the controller's split is elective —
-   * `plan` is R120's elected split when the controller recorded one, and the
-   * walk below is the DEFAULT; since R319 a {Piercing} strike elects too,
+  /** front-to-back assignment (CR 608.6a: the controller's split is elective —
+   * `plan` is the elected split when the controller recorded one, and the
+   * walk below is the DEFAULT; under CR 802.16c a {Piercing} strike elects too,
    * and its plan's unassigned remainder is the overflow). In the default walk each victim in turn takes its PASS-ALONG
    * SHARE — the pool that would kill it — and whatever is left over walks on;
-   * R114 lands the final leftover on the back-most living unit instead of
-   * dropping it. Returns that leftover only for {Piercing} (see the R114 note
+   * CR 608.6d lands the final leftover on the back-most living unit instead of
+   * dropping it. Returns that leftover only for {Piercing} (see the CR 608.6d note
    * below). A Vulnerable victim receives double, so half the pool is its share
-   * and the pre-double remainder passes along sooner (R23); Deadly's lethal
-   * SHARE is 1 (R21) — a floor on what passes along, never a cap on what is
+   * and the pre-double remainder passes along sooner (CR 802.11c); Deadly's lethal
+   * SHARE is 1 (CR 802.3c) — a floor on what passes along, never a cap on what is
    * dealt. */
   private assignColumnDamage(L: CombatLedger, ids: EntityId[], amount: number, srcAttrs: Set<string>,
     src: { dealer: Seat; key: string; label: string; resonantSrc?: EntityId }, pure = false, collapsed = false,
@@ -12658,7 +12645,7 @@ export class E {
     const blessedTo = srcAttrs.has('Blessed') ? src.dealer : undefined;
     /** write one hit into the ledger. Called twice: once for a victim's
      * pass-along share inside the front-to-back walk, and once more for
-     * R114's leftover onto the back-most unit. The overflow hit is a REAL
+     * CR 608.6d's leftover onto the back-most unit. The overflow hit is a REAL
      * hit — it carries every flag a share does (Poisonous, Resonant, the
      * source attrs and label, Pure, Blessed, the Deadly mark and the
      * Afflicting bucket), because it is the same column dealing the same
@@ -12666,8 +12653,8 @@ export class E {
     const give = (id: EntityId, a: number): void => {
       const cur = L.perUnit.get(id) ?? { pool: 0, poisonous, resonant };
       cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
-      cur.attrs = srcAttrs; cur.label = src.label;   // R98
-      if (resonant && src.resonantSrc !== undefined) { cur.resonantSrc = src.resonantSrc; cur.resonantBy = src.dealer; }   // R315
+      cur.attrs = srcAttrs; cur.label = src.label;   // CR 608.7a
+      if (resonant && src.resonantSrc !== undefined) { cur.resonantSrc = src.resonantSrc; cur.resonantBy = src.dealer; }   // CR 802.19a
       if (pure) cur.pure = true;
       if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
       L.perUnit.set(id, cur);
@@ -12681,17 +12668,17 @@ export class E {
     };
     let remaining = amount;
     if (plan) {
-      // R120: the controller's ELECTED split, collected by collectAssignPlans
+      // CR 608.6a: the controller's ELECTED split, collected by collectAssignPlans
       // before this sub-step touched anything. The floors — every unit in
       // front assigned its pass-along share before anything goes behind it —
       // were enforced when the options were offered (electionWalk never shows
       // an illegal amount), so nothing is re-checked here. Everything
       // downstream of "unit U is assigned K" goes through the same give():
-      // Deadly marks, Afflicting buckets, Blessed, Poisonous/Resonant, R98
+      // Deadly marks, Afflicting buckets, Blessed, Poisonous/Resonant, CR 608.7a
       // prevention and Vulnerable's receive-side doubling are identical
       // between the elected and the default path. A plan assigns the whole
       // pool to units (the ruling deals ALL damage to units) unless the strike
-      // is {Piercing} (R319): then what the plan did not give a unit is the
+      // is {Piercing} (CR 802.16c): then what the plan did not give a unit is the
       // excess, returned for the caller to send to the player.
       const living = ids.filter(id => this.entity(id));
       let given = 0;
@@ -12702,15 +12689,15 @@ export class E {
       const u = this.entity(id);
       if (!u || remaining <= 0) continue;
       const prev = L.perUnit.get(id)?.pool ?? 0;
-      // the R114 pass-along share / {Deadly} floor / R106 printed-defense
-      // pricing all live in victimShare — shared with the R120 election so
+      // the CR 608.6b pass-along share / {Deadly} floor / CR 608.6e printed-defense
+      // pricing all live in victimShare — shared with the CR 608.6a election so
       // the floors it offers are the shares this walk pays
       const poolNeed = this.victimShare(u, prev, deadly, pure, collapsed);
       const a = Math.min(remaining, poolNeed);
       if (a > 0) give(id, a);
       remaining -= a;
     }
-    // R114 (Bena 2026-08-23, report #84): "ALL damage is dealt to units, even
+    // CR 608.6d (Bena 2026-08-23, report #84): "ALL damage is dealt to units, even
     // if it surpasses its defense. The only exception is Piercing, which deals
     // excess to the controller." The follow-up ruling the same day makes the
     // split ELECTIVE — "each player is allowed to split the damage however
@@ -12720,17 +12707,17 @@ export class E {
     // DEFAULT auto-assignment, and it picks the legal split the rulebook
     // describes ("excess damage beyond the health of the back row unit"): the
     // leftover lands on the back-most living unit rather than evaporating.
-    // The player-elective mode is R120 (`collectAssignPlans` / `electionWalk`):
+    // The player-elective mode is CR 608.6a (`collectAssignPlans` / `electionWalk`):
     // an elected split arrives as `plan` and short-circuits this walk; with no
     // real choice, or the one-click default, THIS remains the split.
     //
     // DELIBERATELY UNCHANGED, so the next reader does not "fix" them:
     //  - {Piercing} still returns `remaining` and the caller sends it to the
     //    face. That is the ruling's own stated exception, not an oversight —
-    //    and it is the DEFAULT: R319 lets the player keep it on a unit
+    //    and it is the DEFAULT: CR 802.16c lets the player keep it on a unit
     //    instead, through the election above (`plan`).
     //  - The "blocked, but every blocker died" branch above still drops
-    //    non-Piercing power: there is no unit left to deal it to (R72/R13, a
+    //    non-Piercing power: there is no unit left to deal it to (CR 606.3b, 608.4c, a
     //    separate rule).
     //  - Vulnerable's `mult` is untouched: `remaining` is SOURCE-side pool, so
     //    a Vulnerable back-row unit receives 2 x `remaining`.
@@ -12744,9 +12731,9 @@ export class E {
   /** COMMIT half, units: deal each unit its assigned pool. Vulnerable doubles
    * received; Poisonous replaces it with -1/-1 counters; Resonant riders the
    * same amount onto the unit's controller. Returns the units whose damage
-   * was fully prevented (R98), which the Deadly sweep must skip. */
+   * was fully prevented (CR 802.3h), which the Deadly sweep must skip. */
   private commitUnitDamage(b: BattleState, L: CombatLedger): Set<EntityId> {
-    /** R98: units whose damage this sub-step was fully prevented. {Deadly}
+    /** CR 802.3h: units whose damage this sub-step was fully prevented. {Deadly}
      * kills "any combat damage from a deadly unit" — with none dealt there is
      * nothing for it to kill through, exactly as the shield stops Poisonous's
      * counters ("if there is not damage being dealt, then no counters are
@@ -12758,23 +12745,23 @@ export class E {
       const u = this.entity(id);
       if (!u) continue;
       const mult = (!hit.pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
-      // R98: the choke point, after Vulnerable's doubling (the shield stops
+      // CR 708.11b: the choke point, after Vulnerable's doubling (the shield stops
       // "all damage that WOULD BE DEALT") and after every assignment decision.
       const received = this.preventUnitDamage(u, hit.pool * mult, {
         region: b.region, source: hit.label ?? 'combat', combat: true,
         attrs: hit.attrs ?? new Set<string>(), pure: !!hit.pure,
       });
       if (received <= 0) { shielded.add(id); continue; }
-      // R48 {Blessed}: the gain is on the same game-state check as the damage
+      // CR 802.22b {Blessed}: the gain is on the same game-state check as the damage
       if (hit.blessedTo !== undefined) this.blessedGain(hit.blessedTo, received, hit.blessedFrom ?? 'combat');
-      // R166: the same `lethal` fact the effect-damage path puts on its
+      // CR 608.7b: the same `lethal` fact the effect-damage path puts on its
       // 'damage' event, computed against the three doors out of this
       // sub-step in the order `combatSubStep` runs them — `sweepDeadly`
-      // (R21), `sweepCollapsedDeaths` (R106, printed defense) and the
+      // (CR 802.3d), `sweepCollapsedDeaths` (CR 802.9e, printed defense) and the
       // ordinary state check on effective defense. A listener asking "did I
       // survive this?" (Molten Tormentor) may not read marked damage alone.
       const [, ct] = L.collapsed.has(id) ? this.printedStats(u) : this.effStats(u);
-      // R237: {Poisonous} is a FORM, not a replacement — see the long note in
+      // CR 802.18a, 802.18b: {Poisonous} is a FORM, not a replacement — see the long note in
       // `dealEffectDamageAll`, which this half must not drift from. The hit is
       // DEALT either way and says so on a 'damage' event; only the mark below
       // differs, and the permanent counters make lethality a question about
@@ -12796,22 +12783,22 @@ export class E {
       // because `addCounters` runs `checkDeaths` and a lethal poison hit would
       // otherwise destroy the victim before it could hear the hit.
       if (hit.poisonous) this.addCounters(u, -received);   // permanent
-      // R315: the rider is the source's trigger, held to after combat (R261)
+      // CR 802.19i: the rider is the source's trigger, held to after combat (CR 608.9b)
       if (hit.resonant && hit.resonantSrc !== undefined) {
         this.queueResonant(hit.resonantSrc, hit.resonantBy ?? b.attacker, u.controller, received, b.region);
       }
     }
-    // R98: "a +1/+1 counter for each damage prevented", after the whole
+    // "a +1/+1 counter for each damage prevented", after the whole
     // sub-step is marked (addCounters runs checkDeaths — see the method)
     this.settleDamagePrevention();
     return shielded;
   }
 
-  /** R21 {Deadly}: any damage from a Deadly column kills — unless none was
-   * actually dealt (R98 `shielded`). */
+  /** CR 802.3a {Deadly}: any damage from a Deadly column kills — unless none was
+   * actually dealt (CR 802.3h `shielded`). */
   private sweepDeadly(L: CombatLedger, shielded: Set<EntityId>): void {
     for (const id of L.deadlyHit) {
-      if (shielded.has(id)) continue;   // R98: no damage dealt, nothing to kill through
+      if (shielded.has(id)) continue;   // CR 802.3h: no damage dealt, nothing to kill through
       const u = this.entity(id);
       if (u) {
         this.ev('info', `Deadly — ${u.card} dies.`);
@@ -12820,7 +12807,7 @@ export class E {
     }
   }
 
-  /** R48 {Afflicting}: whatever an afflicting column damaged and killed gives
+  /** CR 802.23d {Afflicting}: whatever an afflicting column damaged and killed gives
    * its controller a rot, before any life is lost this sub-step. Ordinary
    * combat damage does not kill until the state check, which pumpCombatDamage
    * runs only AFTER this sub-step returns — so run it here first, or a
@@ -12838,23 +12825,23 @@ export class E {
    * itself, then Lethal. Each step's comment says why it sits where it does. */
   private commitPlayerDamage(b: BattleState, L: CombatLedger): void {
     const playerDmg: number[] = this.s.players.map(() => 0);
-    // R48 {Blessed}: combat damage to a PLAYER gains too, and — the whole
+    // CR 802.22b, 802.22c {Blessed}: combat damage to a PLAYER gains too, and — the whole
     // point of "same game state check" — it is committed before the lethal
     // check below, so a blessed column can never kill its own controller.
     for (const hit of L.playerHits) {
       if (hit.attrs.has('Blessed')) this.blessedGain(hit.by, hit.amount, hit.label);
     }
-    // R38 (Blightsea Polyp): a per-COLUMN replacement of combat damage to
+    // CR 608.8a (Blightsea Polyp): a per-COLUMN replacement of combat damage to
     // players — "as 1 rot", whatever the column's power. Offered per hit, and
     // a replaced hit still counts as DEALT (Caleb 2024-10-24), which is why
     // Thieving above and Lethal below read playerHits, not playerDmg.
-    // R195: the ATTRIBUTION carried alongside the aggregate. One `lifeLost`
+    // CR 608.9a: the ATTRIBUTION carried alongside the aggregate. One `lifeLost`
     // per seat per sub-step is still emitted — splitting it would make "when a
     // player loses life" fire once per column for one simultaneous strike —
     // but the event now says WHICH columns made it up, so card text can stop
     // reconstructing "did my column connect?" from the formation.
     /**
-     * R238 — A REPLACED HIT WAS STILL DEALT, and the breakdown now says so.
+     * CR 608.8a — A REPLACED HIT WAS STILL DEALT, and the breakdown now says so.
      *
      * This loop used to `continue` on a fully replaced hit, so the column that
      * dealt it appeared nowhere: not in `breakdown`, and — since a seat whose
@@ -12875,10 +12862,10 @@ export class E {
      * 2024-10-24, answering "Is combat damage still applied after this
      * replacement effect?" with *"Yes"* — which is the ruling {Thieving} and
      * {Lethal} already read `playerHits` for, three lines up and three lines
-     * down from here. R197 (2026-08-26) measured this exact gap and filed it
+     * down from here. An audit on 2026-08-26 measured this exact gap and filed it
      * *"Reported, not fixed"*; this is the fix.
      *
-     * ⚠ PREVENTION IS STILL THE OTHER THING (R98). A hit a shield stopped was
+     * ⚠ PREVENTION IS STILL THE OTHER THING (CR 708.11). A hit a shield stopped was
      * never dealt and is not in `L.playerHits` to begin with — replacement
      * substitutes, prevention subtracts, and nothing here may merge them.
      */
@@ -12894,7 +12881,7 @@ export class E {
       playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + left;
     }
     /**
-     * R238 — the face-damage event, fired BEFORE the life is lost because the
+     * CR 608.8a — the face-damage event, fired BEFORE the life is lost because the
      * damage is what causes the loss, and fired whether or not any loss
      * follows. One per victim seat per sub-step, exactly as `lifeLost` is one
      * per seat per sub-step: face damage is one simultaneous strike and
@@ -12909,7 +12896,7 @@ export class E {
       const hits = breakdown[seat] ?? [];
       if (!hits.length) continue;
       // `region` rides it for the same reason the combat `lifeLost` carries it
-      // (R12: other regions do not exist) — `fireEvent` scopes its listener
+      // (CR 101.6: other regions do not exist) — `fireEvent` scopes its listener
       // scan off exactly this field, and an event without it would be heard
       // across the board.
       const ev = this.ev('combatFaceDamage', '',
@@ -12920,11 +12907,11 @@ export class E {
     for (const seat of [this.initiative, this.nit]) {
       const n = playerDmg[seat] ?? 0;
       // the `hits` on a `lifeLost` keep their post-replacement shares summing
-      // to the loss it reports (R195); `combatFaceDamage` above is where the
+      // to the loss it reports (CR 608.9a); `combatFaceDamage` above is where the
       // dealt-but-not-lost half is answerable.
       if (n > 0) this.loseLife(seat, n, 'combat', { hits: breakdown[seat] ?? [] });
     }
-    // R48 {Lethal}: "Any combat damage from a lethal unit will kill a player."
+    // CR 802.24a {Lethal}: "Any combat damage from a lethal unit will kill a player."
     // Last, because a normal-damage kill above already ended the game (and a
     // {Blessed} gain has already been applied).
     for (const hit of L.playerHits) {
@@ -12932,7 +12919,7 @@ export class E {
     }
   }
 
-  /** Thieving: a column that dealt combat damage to a player draws one card (R24) */
+  /** Thieving: a column that dealt combat damage to a player draws one card (CR 802.20) */
   private thievingDraws(L: CombatLedger): void {
     for (const seat of [this.initiative, this.nit]) {
       for (let i = 0; i < (L.thievingDraw[seat] ?? 0); i++) {
@@ -12946,7 +12933,7 @@ export class E {
   startTurn(): void {
     this.s.turn++;
     this.s.phase = 'planning';
-    this.expireNextPlayDiscount('planning');   // R119 errata: the discount lasts ONE phase
+    this.expireNextPlayDiscount('planning');   // CR 111.10k errata: the discount lasts ONE phase
     this.s.planningDone = this.s.players.map(() => false);
     this.s.hasteDone = null;
     this.ev('turn', `— Turn ${this.s.turn} (initiative: ${this.pname(this.initiative)}) —`, { turn: this.s.turn });
@@ -12956,7 +12943,7 @@ export class E {
       // draft mode: turn 1's draws were dealt with the opening hand (Manual
       // p.16), and later draws go clockwise from initiative like the packs.
       // constructed: the combined draw phase (draw 4, bottom 2) is below.
-      // R162 (R157 §2): 'shared' has no draft step and no draw phase, so this
+      // CR 901.7b: 'shared' has no draft step and no draw phase, so this
       // flat 2 IS its card step — the whole of what the turn gives a seat — and
       // it is therefore what `replaceCardStep` replaces here. Owner: *"Shared
       // mode isn't a real thing. You invented it for testing. So I guess it'd
@@ -12965,10 +12952,10 @@ export class E {
       // Consulting it AT the draw (rather than beside startDraftStep /
       // startConstructedDraw at the foot of this method) is what keeps the
       // replaced seat from drawing its 2 and then being handed a third.
-      // R298: a single card duel takes this same flat 2 in place of the
+      // CR D8.2a: a single card duel takes this same flat 2 in place of the
       // constructed draw phase — bottoming a deck of one card changes nothing.
       if ((this.s.mode === 'shared' || this.s.singleCard) && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);
-      // R297: a lesson game's card step is its per-seat draw (no bottoming),
+      // CR D8.1: a lesson game's card step is its per-seat draw (no bottoming),
       // and its Shard income — the Tutorial Bot's whole economy — pays here.
       const lesson = this.s.lesson;
       if (lesson) {
@@ -12986,16 +12973,16 @@ export class E {
       if (n > 0) for (const seat of this.dealOrder()) this.draw(seat, n);
     }
     for (const e of Object.values(this.s.entities)) e.budgets = {};
-    // R124: the zone-trigger budgets (CARD-TODO #21) are per-turn like every
+    // CR 109.9m: the zone-trigger budgets (CARD-TODO #21) are per-turn like every
     // other [once] — wiped beside the Entity.budgets they stand in for.
     this.s.zoneBudgets = {};
-    // R119 + ERRATA 2026-09-21: the discount used to be wiped HERE, because
+    // CR 111.10k + ERRATA 2026-09-21: the discount used to be wiped HERE, because
     // the card read "this TURN". It reads "this PHASE" now, and entering
     // planning is a phase boundary like the other three — so the wipe lives in
     // `expireNextPlayDiscount`, called from all four transitions, and startTurn
     // gets it by way of the `s.phase = 'planning'` above. Not duplicated here:
     // one effect, one reason.
-    this.refreshProphecies();   // R43: "N Turns Pass" ticks here
+    this.refreshProphecies();   // CR 803.7: "N Turns Pass" ticks here
     if (this.s.mode === 'draft') this.startDraftStep();
     if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();
   }
@@ -13049,7 +13036,7 @@ export class E {
   dealPacks(): void {
     this.s.packMeta ??= this.s.players.map(() => null);
     for (const seat of this.dealOrder()) {
-      // R296: dealing a pack reads the deck like any draw, so it reaches the
+      // CR 408.2b: dealing a pack reads the deck like any draw, so it reaches the
       // mark like any draw — the packs recycled at the top of this cycle come
       // back here, shuffled, if the deck has nothing else left to deal.
       this.refillFromRecycled(seat, this.packSize());
@@ -13070,7 +13057,7 @@ export class E {
    * mode 'draft' opens a draft step (look at your pack, merge, leave 10) on
    * top of the flat 2-card turn draw; mode 'constructed' has no pack and
    * folds the turn draw into its draw phase (draw 4, put 2 back); mode
-   * 'shared' — R157 §2, *"not a real thing … I guess it'd be constructed"* —
+   * 'shared' — CR 901.7b, and the owner's *"not a real thing … I guess it'd be constructed"* —
    * has neither, so its card step is the bare 2-card turn draw and it is
    * consulted from `startTurn` itself. A card that
    * REPLACES that step therefore cannot be written as "skip and draw one
@@ -13078,7 +13065,7 @@ export class E {
    * which is exactly what `CardBehavior.replaceCardStep` is for.
    *
    * Returns true when some card took the step over, in which case the caller
-   * must NOT run the normal one. First true consumes (the R104 rule): two
+   * must NOT run the normal one. First true consumes (the CR 708.4a rule): two
    * Worldbenders replace the step once, not twice.
    *
    * Anchored like the other replacement hooks — units in play plus augment
@@ -13086,14 +13073,14 @@ export class E {
    * region: "your draft step" is a turn-structure thing that belongs to a
    * seat, and at the top of a turn there is no battle and so no region to
    * scope to (the reasoning `replaceLifeGain` spells out for life gained
-   * outside a battle). R62 suppression is the full projection, as it is for
+   * outside a battle). CR 712.1a suppression is the full projection, as it is for
    * every other replacement.
    */
   private replaceCardStep(seat: Seat): boolean {
     const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceCardStep')                   // R127: off the FACES
+      this.donates(h, a, 'replaceCardStep')                   // CR 710.7: off the FACES
       && a.controller === seat
-      && !this.textStripped(h, a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { def, anchor } of this.donorFaces(holders, 'replaceCardStep')) {
       if (def.replaceCardStep!(this, anchor, seat)) return true;
@@ -13113,7 +13100,7 @@ export class E {
   startDraftStep(): void {
     const n = this.s.players.length;
     if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {
-      // R296: a recycled pack goes PAST THE MARK like every other recycled
+      // CR 408.2a: a recycled pack goes PAST THE MARK like every other recycled
       // card (owner, 2026-09-16: everything that hits the bottom does), so it
       // is dealt again only once the deck has run out.
       //
@@ -13158,8 +13145,8 @@ export class E {
    * only {Haste} cards playable, each resolving immediately (planning is not
    * interactive); ends when everyone is done.
    *
-   * ⚠ R228 (owner, 2026-08-28): **THE STEP IS ALWAYS OFFERED.** It used to be
-   * skipped outright when no seat had a legal haste play — R18's optimisation,
+   * ⚠ CR 504.5 (owner, 2026-08-28): **THE STEP IS ALWAYS OFFERED.** It used to be
+   * skipped outright when no seat had a legal haste play — the earlier optimisation, since reversed,
    * decided here by a local `canHaste` predicate. That skip was two faults at
    * once, and the second is why the first could not simply be patched:
    *
@@ -13181,8 +13168,8 @@ export class E {
    *
    *  2. THE PREDICATE WAS A HAND-MAINTAINED DUPLICATE of apply.ts's
    *     `castable()` — the shape report #74 already cost us once, after which
-   *     R95 (`mayApplyModAtHaste`) and R97 (`hastePlayAllowance`) each became
-   *     THE ONE PREDICATE. `canHaste` was the last haste gate still keeping
+   *     the haste-mod permission (`mayApplyModAtHaste`) and the haste-play allowance
+   *     (`hastePlayAllowance`) each became THE ONE PREDICATE. `canHaste` was the last haste gate still keeping
    *     its own copy, and the copy disagreed three ways: it judged the
    *     spec-wide `targets` where `castable` judges slot 0 via `specForSlot`,
    *     it treated a min-0 "up to N" spec as NEEDING a candidate where
@@ -13194,7 +13181,7 @@ export class E {
    *     population ZERO — every card carrying a `castCost`, a `gainDebt`, a
    *     `noPlayFromHand` or a slotted target spec is {Battle} and so can
    *     never be reached at haste timing (Flesh Tithe is the one non-{Battle}
-   *     castCost card, and it is a spell, which no R97 grant reaches), and
+   *     castCost card, and it is a spell, which no haste-play grant reaches), and
    *     none of the 21 printed {Haste} cards has `targets` or a `castCost` at
    *     all. Under-permissive ("the step is SKIPPED while a playable card
    *     sits in hand"): LIVE, on exactly one card — Eldritch Reclaimer, the
@@ -13214,16 +13201,16 @@ export class E {
    * do is served `doneHaste` and nothing else, which is indistinguishable
    * from a seat that is bluffing. That indistinguishability is the point.
    *
-   * Nothing replaces `canHaste` anywhere: `hasHasteModAvailable` (its R95
+   * Nothing replaces `canHaste` anywhere: `hasHasteModAvailable` (its CR 504.8a
    * arm, kept in step with apply.ts's `pushMods` BY HAND, and documented as
    * such) went with it.
    */
   startHasteStep(): void {
-    // R43: a fresh window for "End [Haste] with used mana"
+    // CR 803.7: a fresh window for "End [Haste] with used mana"
     this.s.hasteManaSpent = this.s.players.map(() => 0);
-    // R97: and the same fresh window for the printed "Each turn" play budget
+    // CR 504.7a: and the same fresh window for the printed "Each turn" play budget
     this.s.hastePlaysUsed = this.s.players.map(() => 0);
-    // R228: unconditional. No seat is pre-marked done, because "done" is a
+    // CR 504.5: unconditional. No seat is pre-marked done, because "done" is a
     // thing a PLAYER says, and a step that says it for them is a broadcast.
     this.s.hasteDone = this.s.players.map(() => false);
     this.ev('phase', 'Haste step: haste cards may be played.');
@@ -13233,15 +13220,15 @@ export class E {
    * The haste step is over. Two things happen here, in this order, and the
    * order is load-bearing:
    *
-   *  1. R50: the 'endOfHaste' EVENT fires, inside a settle() window, while
+   *  1. CR 504.6: the 'endOfHaste' EVENT fires, inside a settle() window, while
    *     `hasteDone` still describes the step that is closing — so "At the end
    *     of [Haste], …" (Keeper of Tithes, Debt Plant) can read the step's own
-   *     state, and so R43's `hasteWithUsedMana` (which requires
+   *     state, and so CR 803.7's `hasteWithUsedMana` (which requires
    *     `hasteDone === null`) cannot latch early off a trigger's spending.
-   *     It fires even when the step was SKIPPED outright (R18): the haste step
+   *     It fires even in a turn when nobody had a card for the step: the haste step
    *     is part of the turn whether or not anybody had a card for it, and an
    *     optimisation must not be observable.
-   *  2. R43: `hasteDone` is nulled, the prophecy sweep latches "End [Haste]
+   *  2. CR 803.7: `hasteDone` is nulled, the prophecy sweep latches "End [Haste]
    *     with used mana" while the tally still describes that window, and the
    *     tally is then zeroed so no later sweep this turn can read it.
    *
@@ -13267,9 +13254,9 @@ export class E {
     this.s.hasteDone = null;
     this.refreshProphecies();
     this.s.hasteManaSpent = this.s.players.map(() => 0);
-    this.s.hastePlaysUsed = this.s.players.map(() => 0);   // R97, beside its R43 sibling
+    this.s.hastePlaysUsed = this.s.players.map(() => 0);   // CR 504.7a, beside its CR 803.7 sibling
     this.s.phase = 'battle';
-    this.expireNextPlayDiscount('battle');   // R119 errata: the discount lasts ONE phase
+    this.expireNextPlayDiscount('battle');   // CR 111.10k errata: the discount lasts ONE phase
     this.s.battleCounters = this.s.regions.map(() => ({}));
     this.s.battleRound = 1;
     this.startBattleRound(this.initiative);
@@ -13290,7 +13277,7 @@ export class E {
     const b = this.s.battle!;
     this.s.battle = null;
     this.s.priority = null;
-    // R43: a battle has completed. In 1v1 BOTH the initiative battle and the
+    // CR 803.7: a battle has completed. In 1v1 BOTH the initiative battle and the
     // counterattack battle tick "One Battle Passes" (Caleb 2024-09-24), so
     // every battle ROUND counts — a declined one included: the round happened,
     // it just had no attackers.
@@ -13302,7 +13289,7 @@ export class E {
         const u = this.entity(id);
         if (u) { u.absent = false; u.region = this.homeRegion(this.initiative); }
       }
-      // R270: they exist again, in a NEW region, so this is the first moment
+      // CR 610.2e: they exist again, in a NEW region, so this is the first moment
       // their stats can be read — and `checkDeaths` skipped them for as long
       // as they were absent. A counterattacker that arrives already dead (it
       // landed alone and its "+1/+1 per other ally" has nobody to count, or a
@@ -13324,10 +13311,10 @@ export class E {
     }
   }
 
-  /** R11: exact regroup sequence per the Manual (p.7). */
+  /** CR 506.2: exact regroup sequence per the Manual (p.7). */
   startRegroup(): void {
     this.s.phase = 'regroup';
-    this.expireNextPlayDiscount('regroup');   // R119 errata: the discount lasts ONE phase
+    this.expireNextPlayDiscount('regroup');   // CR 111.10k errata: the discount lasts ONE phase
     this.ev('regroup', 'Regroup: everyone returns home; damage, temporary changes and spell tokens are cleaned up.');
     // (1) all units and players return to their regions
     for (const e of Object.values(this.s.entities)) {
@@ -13349,7 +13336,7 @@ export class E {
     //     Deliberately BEFORE step (3) rather than after it, which is where
     //     the unconditional erase used to sit. The query reads statics, and
     //     step (3) tears down the until-regroup layers a protector's own state
-    //     depends on — most sharply `suppressed`, the R62 stamp that switches
+    //     depends on — most sharply `suppressed`, the CR 712.1a stamp that switches
     //     a silenced Harbinger's abilities (a static IS an ability) off. Read
     //     after the sweep, a Harbinger silenced for the whole battle would
     //     come back to life just in time to save the tokens.
@@ -13358,7 +13345,7 @@ export class E {
     //     runs over every entity, so the survivor's own temporary changes are
     //     still cleaned up. Its `x` — the Fireball's number — is not something
     //     regroup touches at all, so it carries over intact.
-    //     R194 / CT-55: …AND ANNOUNCED, PER SEAT, BEFORE IT HAPPENS.
+    //     CR D2.6a / CT-55: …AND ANNOUNCED, PER SEAT, BEFORE IT HAPPENS.
     //
     //     Report #66 asked for the unused-token warning to fire only on the
     //     pass that reaches Regroup, and ui/battle.ts `passEndsBattlePhase`
@@ -13394,14 +13381,14 @@ export class E {
         `${this.pname(seat)} loses ${mine.length} unused spell token(s) to regroup: `
         + `${mine.map(e => `${e.card} ${e.x ?? ''}`.trimEnd()).join(', ')}.`,
         // ⚠ NO `cards` KEY, AND THAT IS LOAD-BEARING RATHER THAN AN OMISSION.
-        // `ev()` keeps the R65 erased pile centrally: any 'erased' event with
+        // `ev()` keeps the CR 407.1 erased pile centrally: any 'erased' event with
         // a numeric `seat` has its `cards` pushed onto that seat's PUBLIC
         // erased list. Passing them here put every unused spell token into the
-        // pile — reversing the rule stated ten lines below, in the R89 block:
+        // pile — reversing the rule stated ten lines below, in the spell-token regroup block:
         // a spell token is not a card and has never been recorded there. The
         // message already names them as text and `ids` carries them for the
         // client, so the key bought nothing and cost a zone query its meaning.
-        // Caught by the round-27 class audit hours after R194 landed; the
+        // Caught by the round-27 class audit hours after the token-loss announcement landed; the
         // announcement was right and its payload was not.
         { seat, ids: mine.map(e => e.id) });
     }
@@ -13409,11 +13396,11 @@ export class E {
     for (const e of Object.values(this.s.entities)) {
       if (e.kind !== 'spellToken') continue;
       if (this.spellTokenSurvivesRegroup(e)) { spared.push(e.id); continue; }
-      // R89: a token can now be MODDED (an augment applied in deployment), and
+      // CR 506.2h: a token can now be MODDED (an augment applied in deployment), and
       // a modded card is Unstable — "when it dies or is erased, it and all of
       // its mods are erased with it" (Manual p.35). Without this the mod
       // entities would outlive their host as orphans pointing at a dead id.
-      // The augment reaches the public erased pile (R65) exactly as it would
+      // The augment reaches the public erased pile (CR 506.2h) exactly as it would
       // if the token had been cast and discharged; the TOKEN itself does not,
       // because a spell token is not a card and has never been recorded there.
       const mods = e.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
@@ -13434,13 +13421,13 @@ export class E {
       e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs; delete e.tempAttrsAt;
       delete e.baseSet;      // layer 2 is an until-regroup rewrite too
       delete e.baseSetSeq;
-      delete e.suppressed;   // R62: so is a switched-off attribute/ability layer
-      delete e.unstable;     // R96: "they gain unstable UNTIL REGROUP" — this is that
-      delete e.damageShield; // R98: "UNTIL REGROUP, prevent all damage …" — and this
+      delete e.suppressed;   // CR 506.2d: so is a switched-off attribute/ability layer
+      delete e.unstable;     // CR 803.8d: "they gain unstable UNTIL REGROUP" — this is that
+      delete e.damageShield; // CR 506.2d: "UNTIL REGROUP, prevent all damage …" — and this
       delete e.shieldPending;
-      delete e.granted;      // R63: and so is granted text
-      delete e.allured;      // R84 {Alluring}: "can't attack" lasted the battle phase
-      // R118 layer 0: an until-regroup FACE lapses here (Apex Prime's "until
+      delete e.granted;      // CR 109.8: and so is granted text
+      delete e.allured;      // CR 802.15e {Alluring}: "can't attack" lasted the battle phase
+      // CR 710.6: an until-regroup FACE lapses here (Apex Prime's "until
       // regroup"). A 'permanent' one does NOT — Borrower of Forms prints "I
       // BECOME an exact copy", with no duration, and a live test pins it.
       if (e.copies) {
@@ -13448,7 +13435,7 @@ export class E {
         if (kept.length) e.copies = kept; else delete e.copies;
       }
     }
-    // R118: reverting a face can be LETHAL, and nothing else here would
+    // CR 710.6: reverting a face can be LETHAL, and nothing else here would
     // notice. Damage is already gone (step 2) but COUNTERS are not — they are
     // facts about the unit, not about the face — so a 1/1 that took two -1/-1
     // counters while wearing a 7/5 face dies the moment the face lapses. The
@@ -13460,10 +13447,10 @@ export class E {
   }
 
   /**
-   * R50: two things happen at the start of deployment and the ORDER is a
+   * CR 507.4: two things happen at the start of deployment and the ORDER is a
    * ruling, because nothing in the printed rules sequences them:
    *
-   *  1. R38's rot damage — an automatic turn-structure step, not a trigger,
+   *  1. CR 112.13c's rot damage — an automatic turn-structure step, not a trigger,
    *     that the manual puts "before anyone may deploy". It runs FIRST and
    *     settles (rotDamage() has its own settle()).
    *  2. The 'startOfDeployment' EVENT, which is what card text hooks
@@ -13480,7 +13467,7 @@ export class E {
    * on finishing (the phase is already flipped), so it simply resumes through
    * the normal decision path.
    *
-   * ⚠ R102: step 1 is a different matter, and this is the deferral for it.
+   * ⚠ CR 507.4: step 1 is a different matter, and this is the deferral for it.
    * Rot damage can now RAISE A DECISION — Beyond, Codex Incarnate's "put that
    * many -1/-1 counters on target unit instead" queues a triggered effect from
    * inside rotDamage(), whose settle() collects its target and therefore
@@ -13493,18 +13480,18 @@ export class E {
    */
   startDeployment(): void {
     this.s.phase = 'deploy';
-    this.expireNextPlayDiscount('deploy');   // R119 errata: the discount lasts ONE phase
+    this.expireNextPlayDiscount('deploy');   // CR 111.10k errata: the discount lasts ONE phase
     this.s.deployDone = this.s.players.map(() => false);
     this.s.deployPlayer = this.initiative;
     // report #86: nobody has acted in THIS deployment yet (see types.ts)
     this.s.deployActed = this.s.players.map(() => false);
     this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
-    this.s.deployStarting = true;   // R102: step 2 is owed
-    this.rotDamage();   // R38: start of deployment, before anyone may deploy
+    this.s.deployStarting = true;   // CR 507.4: step 2 is owed
+    this.rotDamage();   // CR 507.4: start of deployment, before anyone may deploy
     this.finishDeployStart();
   }
 
-  /** R102: fire 'startOfDeployment' once R38's rot damage — and anything the
+  /** CR 507.4: fire 'startOfDeployment' once the rot damage — and anything the
    * rot replacement queued — has fully drained (see startDeployment). Called
    * from settle() and directly. */
   finishDeployStart(): void {

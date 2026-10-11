@@ -13,10 +13,10 @@
  *  - the OPPONENT's DORMANT resources     -> element hidden (they are face-down)
  *  - the seed / rngState                 -> dropped (deck order derivation)
  *  - a decision (+ its options/suspension) that belongs to the other seat.
- *    R247: the FACT that a seat owes an answer is public even so, and rides as
+ *    CR D6.4: the FACT that a seat owes an answer is public even so, and rides as
  *    `pendingAsk` — the asking seat plus, at most, an entity id the receiving
  *    seat already holds. Never the question. See `PendingAsk`.
- *  - R144: the OPPONENT's STACK ITEMS, inside a hidden simultaneous segment
+ *  - CR 703.7: the OPPONENT's STACK ITEMS, inside a hidden simultaneous segment
  *    only (see viewFor). Outside one — i.e. in battle — the stack is public.
  *
  * Public (sent as-is): bins, life, in-play entities (units/tokens/mods),
@@ -59,7 +59,7 @@ export interface PackInfo {
 }
 
 /**
- * R247 — THAT A SEAT OWES AN ANSWER IS PUBLIC; WHAT IS BEING CHOSEN IS NOT.
+ * CR D6.4 — THAT A SEAT OWES AN ANSWER IS PUBLIC; WHAT IS BEING CHOSEN IS NOT.
  *
  * Playtest report #117: *"opponent's should see the same effect like thing on
  * the stack that's lightly flashing to indicate when an opponent is choosing
@@ -106,7 +106,7 @@ export type SeatView = GameState & { packInfo?: PackInfo; pendingAsk?: PendingAs
 /**
  * The stub, or null when there is nothing publishable.
  *
- * `frozenOpp` gates the whole thing, and it is the SAME gate R144 uses for the
+ * `frozenOpp` gates the whole thing, and it is the SAME gate the deployment-stack redaction (CR 703.7) uses for the
  * stack a few lines up — for the same reason and with no second opinion about
  * it. Inside a hidden simultaneous segment the opponent's half of the world is
  * served from the segment-start snapshot; "they are being asked something about
@@ -189,9 +189,9 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     // is meant to hide. Constructed piles and decks are per-seat, so the
     // opponent's are simply served frozen.
     //
-    // ⚠ R296 MOVED THIS ARITHMETIC, and moving it was not optional. Before the
+    // ⚠ THE RECYCLE MARK (CR 408.2) MOVED THIS ARITHMETIC, and moving it was not optional. Before the
     // mark, a recycle grew `sharedDeck` and the subtraction below was applied
-    // to the deck. R296 sends the card to `sharedRecycled` instead — so the
+    // to the deck. CR 408.2 sends the card to `sharedRecycled` instead — so the
     // deck count stopped moving during the resource step and the PILE count
     // started. Left where it was, the guard would have gone on subtracting
     // from a number that no longer changes while the number that does change
@@ -210,7 +210,7 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
         v.sharedRecycled = v.sharedRecycled.slice(0, Math.max(0, v.sharedRecycled.length - oppAdded));
       }
     } else {
-      // R310: THE HASTE STEP AND DEPLOYMENT get no such arithmetic, because
+      // CR D6.1b: THE HASTE STEP AND DEPLOYMENT get no such arithmetic, because
       // there is no such invariant: a glimpse takes N off the deck and puts
       // N−1 past the mark, a draw takes one, a reshuffle turns the pile over —
       // and any of them may be the opponent's. Served live, the shared counts
@@ -234,11 +234,11 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     // where it belongs, because it must be hidden whether or not a segment
     // snapshot exists.)
     //
-    // R144(a): THE STACK IS PUBLIC IN BATTLE AND ONLY IN BATTLE. A battle
+    // CR 703.7: THE STACK IS PUBLIC IN BATTLE AND ONLY IN BATTLE. A battle
     // stack is public because it exists to be responded to; a HIDDEN
     // SIMULTANEOUS SEGMENT has no responses and no priority, and everything
     // else about the opponent's half of it is already served frozen (their
-    // entities, their resources, their held log lines). Until R144 nothing
+    // entities, their resources, their held log lines). Until start-of-deployment triggers were put on the stack, nothing
     // ever sat on the stack inside a segment, so this had nothing to redact
     // and did not exist. Now a start-of-deployment trigger does sit there
     // while its controller is being asked something — carrying its label, its
@@ -254,7 +254,7 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     // freeze" and "serve nothing" are the same array. Your OWN items stay —
     // you may see what you are being asked about.
     //
-    // R286 made this line a RULE rather than a redaction, and it was already
+    // This line is a RULE (CR 703.7) rather than a redaction, and it was already
     // written the right way. The owner: deployment's stack "is an isolated
     // stack just for the person in that region. No one else cares about it or
     // interacts with it." Filtering to `it.controller === seat` is exactly
@@ -263,13 +263,13 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     v.stack = v.stack.filter(it => it.controller === seat);
   }
 
-  /* R236: WHO IS READY IN THE HASTE STEP IS NOT PUBLIC WHILE THE STEP IS OPEN.
+  /* CR D2.5d: WHO IS READY IN THE HASTE STEP IS NOT PUBLIC WHILE THE STEP IS OPEN.
    *
-   * R228 made the step unconditional precisely because `hasteDone` is served
+   * The haste step is unconditional (CR 504.5) precisely because `hasteDone` is served
    * live and public: a step that appeared only when somebody COULD act was a
-   * readout of a hidden hand. R224 recorded the debt that left — "an
+   * readout of a hidden hand. The ruling that made it so recorded the debt that left — "an
    * always-open window is a tax on every turn unless passing through it is
-   * cheap" — and R236 pays it: a client with nothing legal in the step but
+   * cheap" — and auto-readying (CR D2.5) pays it: a client with nothing legal in the step but
    * `doneHaste` readies itself the moment the step opens.
    *
    * ⚠ THAT MOVES THE LEAK FROM THE STEP'S PRESENCE TO ITS TIMING. `ready ✓`
@@ -296,7 +296,7 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   // Constructed per-player decks too: even your OWN deck's order is hidden.
   v.sharedDeck = v.sharedDeck.map(() => HIDDEN_CARD);
   if (v.decks) v.decks = v.decks.map(d => d.map(() => HIDDEN_CARD));
-  // R296: the recycle pile is a deck, not a bin. The owner, 2026-09-16, on
+  // CR 408.2c: the recycle pile is a deck, not a bin. The owner, 2026-09-16, on
   // what the client shows: "you see how many cards are actually left in the
   // deck, plus recycled (but can't look at the cards still)". So the COUNT
   // goes over the wire — the client draws it beside the deck — and the
@@ -334,7 +334,7 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   // a pending decision (and the suspension carrying its private options) is
   // only ever shown to the seat that must answer it.
   //
-  // R247: but THAT one is owed is public, and — when the question came from an
+  // CR D6.4: but THAT one is owed is public, and — when the question came from an
   // ability of something already on this seat's board — so is what it came
   // from. `pendingAsk` is that, and only that. Built BEFORE the decision is
   // nulled, because it is derived from it.
@@ -345,7 +345,7 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     v.suspension = null;
   }
 
-  // R85: a 'resolve' suspension carries a WHOLE unredacted state snapshot —
+  // A 'resolve' suspension carries a WHOLE unredacted state snapshot —
   // the world as it stood at the boundary of the part being resolved, which
   // the engine rewinds to when the answer arrives. It is engine-internal, and
   // it holds both hands and the deck order, so it never leaves the server —
@@ -378,7 +378,7 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
 export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): EngineEvent {
   // recycle names the card that went past the (hidden) mark.
   //
-  // ⚠ R296 ADDED A SECOND 'recycle' EVENT AND IT MUST NOT BE REWRITTEN. The
+  // ⚠ THE RESHUFFLE (CR 408.2b) ADDED A SECOND 'recycle' EVENT AND IT MUST NOT BE REWRITTEN. The
   // reshuffle announcement ("X's deck is out — the 14 recycled cards are
   // shuffled into a new deck") carries `reshuffled: true`, names no card, and
   // is PUBLIC — a deck turning over is something everyone at the table sees.
@@ -390,9 +390,9 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
     const who = names[ev.data['seat'] as number] ?? 'Opponent';
     return { ...ev, msg: `${who} recycles a card for a dormant resource.` };
   }
-  // R202: `handEntered` NAMED THE OPPONENT'S INCOMING CARDS, IN EVERY PHASE.
+  // CR D6.5: `handEntered` NAMED THE OPPONENT'S INCOMING CARDS, IN EVERY PHASE.
   //
-  // R179's `E.toHand` emits `{ seat, from, cards: names, card: names[0], n }`
+  // `E.toHand` emits `{ seat, from, cards: names, card: names[0], n }`
   // for every route a card takes into a hand — a draw, a bin recursion, a
   // recall, an uncache, a pull off the stack, a card taken out of a hand. The
   // STATE channel redacts an opponent's hand to `HIDDEN_CARD` (see `viewFor`,
@@ -433,9 +433,8 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
  * The undo note rode the reveal because holding it was all the server could
  * do; this is the seam that lets it simply not be theirs.
  *
- * There used to be a third case, R235's exemption from the hold for a
- * `glimpsed` reveal ("now"). R310 removed it (report #192): a glimpse is not
- * private, so this returns true for it, and inside a hidden step it is held
+ * There used to be a third case, the old exemption from the hold for a
+ * `glimpsed` reveal ("now"). The 2026-10-04 ruling removed it (CR D6.2, D6.2c): a glimpse is not private, so this returns true for it, and inside a hidden step it is held
  * like everything else and reaches the other seat at the barrier, in the
  * recap. Two channels, independent: `privateTo` is "never yours", the hold is
  * "not yet".
@@ -452,18 +451,18 @@ export function redactLog(events: EngineEvent[], seat: Seat, names: string[]): s
   return events.filter(e => e.msg && visibleToSeat(e, seat)).map(e => redactEvent(e, seat, names).msg);
 }
 
-/* ── Moved here from rooms.ts (R297) ─────────────────────────────────────
+/* ── Moved here from rooms.ts for Learn to Play (CR D8.1) ─────────────────────────────────────
  * The hidden-segment rules a seat's PUSH is built from, pure, so the Learn to
  * Play client (ui/solo.ts) — which runs a game in the browser against the
  * Tutorial Bot and must hide the bot's half exactly as a room would — reads
  * the same copy the server does. The reasoning stays in rooms.ts, beside the
- * room machinery it is about: R150/R154 (`legalForSeat`).
+ * room machinery it is about: CR D2.1b, D2.1c (`legalForSeat`).
  *
- * R310: R235's `escapesHold` lived here too — a one-entry set that let a
+ * History: the old live-reveal exemption (`escapesHold`) lived here too — a one-entry set that let a
  * `glimpsed` reveal out of the hidden hold live. It is deleted, not emptied:
  * every hidden-step runner (rooms.ts, ui/solo.ts, ui/replayserver.ts) now holds
  * an action's events whole, and a seam left behind would be one line from
- * leaking again. rooms.ts's R310 block has the history;
+ * leaking again. rooms.ts's glimpse-hold block (CR D6.2) has the history;
  * server/test/203-reveal-waits-for-the-barrier.test.ts is the guard. */
 
 export function legalForSeat(state: GameState, seat: Seat, _segKey?: string | null): Action[] {

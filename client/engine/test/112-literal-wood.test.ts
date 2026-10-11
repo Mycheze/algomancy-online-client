@@ -1,6 +1,6 @@
 /* The 2026-08-24 LITERAL-READING audit of batch-wood-b/c and batch-earth-a/b.
  *
- * R125's principle — "when a printed text carries no qualifier, do not invent
+ * The literal-reading principle — "when a printed text carries no qualifier, do not invent
  * one… the narrow reading was the shape of the mechanism that happened to be
  * built first, quietly promoted into a rule about the card" — applied to three
  * sentences whose code was narrower than their words:
@@ -11,7 +11,7 @@
  *  2. Woodland Warding, "negate all enemy effects targeting allied effects,
  *     players or units", vs a VIRUS — a stack item with no parts and no target
  *     refs, which the designer calls a targeted effect in as many words.
- *  3. Return to Nature, "Erase ALL mods", vs a mod on a spell token (R89).
+ *  3. Return to Nature, "Erase ALL mods", vs a mod on a spell token (CR 721.4a).
  *
  * Seeds 11200-11299.
  */
@@ -150,7 +150,7 @@ test('Return to Nature erases a mod riding a SPELL TOKEN, not just mods on units
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[unit]] });
   const region = h.state.battle!.region;
-  // R89: an augment on a spell token in play — the board state Caleb described
+  // CR 721.4a: an augment on a spell token in play — the board state Caleb described
   // ("you can only do this with attributes"), built directly here.
   const e = new E(h.state);
   const tok = e.createSpellToken(D, 'Poison', 1, region);

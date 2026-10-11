@@ -21,7 +21,7 @@
  *
  * The number it marks is `partedAt` — where the boards diverged — and NOT
  * `refusedAt`, where this engine first choked. They are different numbers and
- * the gap is the whole of R200: on ANBB it is 93 actions. Tinting from the
+ * the gap is the whole point (see server/replay-room.ts): on ANBB it is 93 actions. Tinting from the
  * refusal would present a third of a game that never happened as though it had.
  *
  * ── SPEED ────────────────────────────────────────────────────────────

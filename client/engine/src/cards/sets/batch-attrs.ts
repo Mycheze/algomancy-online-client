@@ -2,14 +2,14 @@
  * carry new attributes (Powerful / Vulnerable / Thieving / Resonant / Poisonous),
  * the two counter-placing spell tokens (Poison / Crystal), and the cards that
  * make or use them. Engine support for the attributes lives in engine.ts
- * (combatSubStep + dealEffectDamage). See docs/digital-rules R23-R24.
+ * (combatSubStep + dealEffectDamage). See the attribute rules (CR 802).
  *
  * BOTH DAMAGE PATHS, checked 2026-08-24: {Powerful}, {Vulnerable}, {Poisonous}
  * and {Resonant} are read in combat (colOutput / commitDamage) AND in
  * dealEffectDamage, and the effect path reads the source's LIVE attrs plus
- * `EffectCtx.grantedAttrs` (R79/R94), so a SPELL source carries them too.
+ * `EffectCtx.grantedAttrs` (CR 721.4b, 802.1), so a SPELL source carries them too.
  * {Thieving} is combat-only by definition, not by omission — the glossary
- * prints "when its COLUMN deals COMBAT damage to a player" (R24).
+ * prints "when its COLUMN deals COMBAT damage to a player" (CR 802.20).
  *
  * Owned by one card-scripting agent; see sets/index.ts for ordering rules.
  */
@@ -93,7 +93,7 @@ card('Geode', {
 // ── counter-placing spell ────────────────────────────────────────────
 
 // "{Battle} Mystic Elemental Spell — Put a +1/+1 counter on target unit for
-// each of your [e]." Amount = earth affinity read at RESOLUTION (R1, like
+// each of your [e]." Amount = earth affinity read at RESOLUTION (CR 107.8, like
 // All-Consuming Blaze). {Battle}: only playable during battle.
 card('Accumulated Nucleation', {
   spellEffect: {

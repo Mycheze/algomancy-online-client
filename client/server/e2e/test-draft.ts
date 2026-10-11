@@ -63,7 +63,7 @@ class Client {
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
 }
 
-/* R204/CT-85: the server picks its own port and tells us which — see
+/* CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
  * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
  * in the child, which left the port held by nobody for as long as node took
  * to boot; anything else on the box could take it in that window.

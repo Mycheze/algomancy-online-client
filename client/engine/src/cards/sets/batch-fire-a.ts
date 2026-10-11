@@ -4,40 +4,40 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded budgets
- * per card), R12/R25 ("each player/opponent" and "your units" are
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.1a (mid-resolution payments/choices via ctx.choose), CR 803.4 (bounded budgets
+ * per card), CR 101.6, 601.4d ("each player/opponent" and "your units" are
  * region-scoped via presentSeats / unitsOf(region)).
  *
  * UN-PARKED (history kept; NO card in this batch is parked. Every entry below
  * records a park that has since shipped, and is kept so nobody re-derives the
  * old conclusion. The inline ⚠ markers are two still-open QUESTIONS and one
  * do-not-implement warning — none of them is a park):
- *  - Abyssal Evocation: UN-PARKED (R96). A `playFromBin` action gated on a
+ *  - Abyssal Evocation: UN-PARKED (CR 405.9). A `playFromBin` action gated on a
  *    battle-scoped permission (E.mayPlaySpellsFromBin), plus a real
  *    {Unstable} stamp on the item and on any body it spawns. ⚠ Open: a
- *    bin-played card obeys its PRINTED timing (R42/R45's answer to the
+ *    bin-played card obeys its PRINTED timing (as CR 403.3d and 801.9f answer the
  *    analogous cache question), so only {Battle} spells in your bin are
- *    reachable — flagged in R96, shipped restrictive.
- *  - Cinder Scuttler: UN-PARKED (R51) — "if I am in your bin, recall me" is a
+ *    reachable — flagged as open, since settled by CR 702.2a, shipped restrictive.
+ *  - Cinder Scuttler: UN-PARKED (CR 400.5) — "if I am in your bin, recall me" is a
  *    `zone: 'bin'` trigger, dispatched to the card while it sits in a bin on a
  *    detached stand-in owned by that bin's seat.
- *  - Conduit of Pain: UN-PARKED (R104). "an allied source would deal noncombat
+ *  - Conduit of Pain: UN-PARKED (CR 708.5). "an allied source would deal noncombat
  *    damage ... plus 1 instead" is the pure AMOUNT half of the replacement
  *    layer — an `AmountMod`, summed like a CostMod, consulted by
  *    dealEffectDamageAll after {Powerful} has doubled and before {Vulnerable}
  *    prices the victim. It never reaches the stack, so it cannot be negated.
- *  - Emberflame Enlightener: UN-PARKED (R94). Both halves are live. The
+ *  - Emberflame Enlightener: UN-PARKED (CR 802.10d). Both halves are live. The
  *    units half is a static ({Powerful} to your units in its region) in BOTH
  *    forms; the SPELLS half is an `effectAttrs` mod — CostMod's sibling, not
  *    a StaticMod, because StaticMod.affects is typed over an Entity and a
- *    resolving spell is a StackItem. R79 had already built the READ side
+ *    resolving spell is a StackItem. The virus-donation change (CR 721.4b) had already built the READ side
  *    (`EffectCtx.grantedAttrs`, unioned into the source's attrs by
  *    dealEffectDamage); what was missing and now exists is the WRITE side for
  *    a continuous source. ⚠ One thing is still open and it is a real deck
  *    question: whether "your spells" includes your spell TOKENS. The engine
  *    says yes; `dsl.isSpellEffect` is the single line that decides it.
- *  - Envoy of Lightning: UN-PARKED (R94), same channel. Its predicate counts
+ *  - Envoy of Lightning: UN-PARKED (CR 802.17i), same channel. Its predicate counts
  *    the part's DECLARED targets, never the survivors — RAQ "[Solved] Envoy of
  *    Lightning vs Twin Flame." rules that a two-target spell that lost a
  *    target is still a two-target spell.
@@ -51,12 +51,12 @@
  *    is the correct definition (the Robot precedent), because the face owns no
  *    behaviour. ⚠ Do NOT "implement" it: printed.json has Resource faces for
  *    only fire, water and earth, so moving the rule onto card definitions
- *    would drop the bonus for wood/metal/light/dark. R116, R54; the
+ *    would drop the bonus for wood/metal/light/dark. CR 106.7c; the
  *    seven-element conformance sweep in test/12-fire-a is the guard rail.
  *    registry.ts keeps every element's Resource face out of DECK_LIST.
- *  - Gravitational Correction (X half): UN-PARKED (R35) — X is now chosen and
+ *  - Gravitational Correction (X half): UN-PARKED (CR 107.2a) — X is now chosen and
  *    paid at cast; item.x is set before the spell hits the stack.
- *  - Harbinger of Immolation: UN-PARKED (R11). This note used to read "the
+ *  - Harbinger of Immolation: UN-PARKED (CR 506.2). This note used to read "the
  *    augment half needs a regroup-replacement hook (startRegroup erases all
  *    spell tokens unconditionally)". It never needed a replacement hook: the
  *    erase is a cleanup STEP, not an event, and "your spell tokens stay
@@ -64,7 +64,7 @@
  *    StaticMod (`survivesRegroup`) that startRegroup consults per token, live
  *    in both forms because a mod's statics radiate from its host. Reported
  *    twice from real games (rooms ZQPC and SAAY) before it was fixed.
- *  - Infernal Wispweaver: UN-PARKED (R62) — "do not sacrifice themselves after
+ *  - Infernal Wispweaver: UN-PARKED (CR 712.4) — "do not sacrifice themselves after
  *    combat" was waiting on a way to suppress ANOTHER card's trigger, and
  *    StaticMod.suppressAbilities is it. The Wisp has exactly one ability, so
  *    the same static that gives +2/+1 switches the self-sacrifice off.
@@ -83,8 +83,8 @@ const isSpellCard = (name: string): boolean => {
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** "You may sacrifice a unit. If you do, draw a card." — mid-resolution
- * choice (R6 model): the controller picks one of their units in the event
- * region (R12) or declines. Plan-then-commit: the choose happens before any
+ * choice (CR 704.1a model): the controller picks one of their units in the event
+ * region (CR 601.4e) or declines. Plan-then-commit: the choose happens before any
  * mutation, so replay suspension stays deterministic. */
 const sacrificeToDraw = (source: string): EffectDef => ({
   run: (g, ctx) => {
@@ -107,23 +107,20 @@ const sacrificeToDraw = (source: string): EffectDef => ({
 
 // "In this battle, you may play spells from your bin. If you do, they gain
 // {p}unstable until regroup. (If they would enter a bin, erase them instead.)"
-// — rr/4 {Battle} Arcane Occult Spell. Live as of round 17 (R96).
+// — rr/4 {Battle} Arcane Occult Spell. Live as of round 17.
 //
 // The permission is BATTLE-SCOPED STATE, not a radiating static, and that is
 // forced rather than chosen: E.anchored() walks units in play and augment
 // mods, and this is a SPELL — it resolves and goes to the bin, leaving nothing
 // in play to radiate from. So it is a battleCounter, which is region-keyed
-// (R14: "'this battle' = this region's battle", so round 1's permission does
+// (CR 505.6: "'this battle' = this region's battle", so round 1's permission does
 // not leak into round 2), wiped by the existing per-battle reset, and NOT a
 // new GameState field — no serialization or replay risk.
 //
 // The {p}unstable half is a STAMP taken when a card is played this way
 // (StackItem.unstable → Entity.unstable), not a derivation off the
 // permission: the card says "gain … UNTIL REGROUP", so it has to outlive the
-// battle the permission belonged to. R69 names this card for the mechanism:
-// "Reminder text on both cards that GRANT it (Abyssal Evocation, Spell
-// Excavation): '(If they would enter a bin, erase them instead.)' — a bin
-// replacement, in as many words. … Only the destination changes."
+// battle the permission belonged to. CR 803.8c names this card for the mechanism; the granting cards' reminder reads '(If they would enter a bin, erase them instead.)' — only the destination changes.
 //
 // ⚠ Note for the owner: this card is a {Battle} spell, so after it resolves it
 // sits in your bin and is itself one of the spells you may now play from it.
@@ -146,7 +143,7 @@ card('Abyssal Evocation', {
 // units that arrive mid-battle, and drops when the Spark leaves.
 card('Animated Spark', {
   augmentable: true,   // text-box [Augment]: the static transfers when augmented
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -166,13 +163,13 @@ card('Animated Spark', {
 
 // "When my column deals combat damage to an opponent, [Switch1] You may
 // sacrifice a unit. If you do, draw a card." — r/2 1/2 {Flying}. Condition at
-// event time (R1) on the 'lifeLost' fired during combat.
+// event time (CR 109.3a) on the 'lifeLost' fired during combat.
 //
-// R195 — THE ONE SHARED PREDICATE, `E.columnDealtCombatDamage`, on the 'face'
+// CR 608.9a — THE ONE SHARED PREDICATE, `E.columnDealtCombatDamage`, on the 'face'
 // channel ("to an opponent" excludes the unit channels). This card hand-rolled
-// the reconstruction — R117's sub-step gate, R157 §4's column power gate, then
+// the reconstruction — the sub-step and column power gates (CR 608.9a), then
 // "attacking and unblocked, or {Piercing}" — and every line of it is now
-// inside the predicate, including the R195 attribution the comment here used
+// inside the predicate, including the per-column attribution the comment here used
 // to hedge as "a connecting zero-power column alongside another dealing column
 // would also pass". The real reachable version of that hedge is a {Piercing}
 // column the blockers absorb whole: it connects, deals the player nothing, and
@@ -186,7 +183,7 @@ card('Animated Spark', {
 const revenantSac = sacrificeToDraw('Bloodwind Revenant');
 card('Bloodwind Revenant', {
   abilities: [{
-    type: 'triggered', events: ['combatFaceDamage'], bounded: true, graftCause: true,   // R238
+    type: 'triggered', events: ['combatFaceDamage'], bounded: true, graftCause: true,   // CR 608.8a
     label: 'you may sacrifice a unit to draw a card',
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: revenantSac,
@@ -195,7 +192,7 @@ card('Bloodwind Revenant', {
 });
 
 // "When you deal combat damage to an opponent, if I am in your bin, recall
-// me. (Put me into your hand.)" — r/1 2/1 {Haste}. UNPARKED by R51: a
+// me. (Put me into your hand.)" — r/1 2/1 {Haste}. UNPARKED by the zone-trigger change (CR 400.5): a
 // `zone: 'bin'` trigger is dispatched to the card while it SITS IN A BIN,
 // anchored on a detached stand-in entity (id -1) whose controller is the bin's
 // owner — so "if I am in YOUR bin" is ctx.controller throughout.
@@ -208,7 +205,7 @@ card('Bloodwind Revenant', {
 // bin has no column to check, and this is as close as a bin-resident card can
 // get. ⚠ In a multiplayer game a third player's damage would also fire it.
 //
-// ⚠ AND IT IS NOT LIVE FROM PLAY (R300). `collectTriggersFrom` refuses a
+// ⚠ AND IT IS NOT LIVE FROM PLAY (CR 400.5). `collectTriggersFrom` refuses a
 // clause carrying a `zone`, so an attacking Cinder Scuttler does not hear its
 // own `combatFaceDamage` from the battlefield — where "if I am in your bin" is
 // false — and cannot recall itself out of the combat that killed it. The
@@ -218,13 +215,13 @@ card('Bloodwind Revenant', {
 // and `fireZoneTriggers` finds it there. Guard:
 // `310-zone-abilities.test.ts`.
 //
-// R51: one firing per zone however many copies sit in the bin — right here,
+// CR 400.5: one firing per zone however many copies sit in the bin — right here,
 // since the printed text is a standing "if I am in your bin", not per-copy.
 // The recall is unconditional ("recall me", no "may"), so it raises no
-// decision; leaving a bin is not trashing (R40), so no trash event fires.
+// decision; leaving a bin is not trashing (CR 801.2), so no trash event fires.
 card('Cinder Scuttler', {
   abilities: [{
-    type: 'triggered', events: ['combatFaceDamage'], zone: 'bin',   // R238
+    type: 'triggered', events: ['combatFaceDamage'], zone: 'bin',   // CR 608.8a
     label: 'recall me from your bin (you dealt combat damage to an opponent)',
     when: (_g, self, ev) =>
       ev.data?.['why'] === 'combat' && ev.data?.['seat'] !== self.controller,
@@ -236,8 +233,8 @@ card('Cinder Scuttler', {
           g.ev('info', 'Cinder Scuttler: it has already left the bin — nothing to recall.');
           return;
         }
-        g.removeFromBin(ctx.controller, i, 'recalled');   // R124
-        g.toHand(ctx.controller, 'Cinder Scuttler', 'bin');  // R179
+        g.removeFromBin(ctx.controller, i, 'recalled');   // CR 405.7
+        g.toHand(ctx.controller, 'Cinder Scuttler', 'bin');  // CR 402.4
         g.ev('info', `Cinder Scuttler is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },
     },
@@ -247,7 +244,7 @@ card('Cinder Scuttler', {
 // "[Augment] If an allied source would deal noncombat damage, it deals that
 // much damage plus 1 instead." — rr/2 2/1.
 //
-// UNPARKED (R104). This is the pure AmountMod case: nothing is substituted and
+// UNPARKED (CR 708.5). This is the pure AmountMod case: nothing is substituted and
 // nothing is redirected, the number is simply bigger by the time it lands. It
 // never reaches the stack — Containment Protocol and Nothyr have nothing to
 // negate — which is the owner's rule for a card that prints "instead" and
@@ -265,13 +262,13 @@ card('Cinder Scuttler', {
 // host, and the whole clause moves to the host's side with it.
 //
 // NONCOMBAT only, which is the printed word and also the seam: combat damage
-// has its own two hooks (R38/R98) and never comes through
+// has its own two hooks and never comes through
 // `dealEffectDamageAll`. `augmentable` is what keeps the card recognised as an
 // augment now that the inert augmentText entry is gone — the Rook/Emberflame
 // precedent for [Augment] text implemented as a continuous mod.
 card('Conduit of Pain', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     amountMods: [{
@@ -285,12 +282,12 @@ card('Conduit of Pain', {
 // Arcane Elemental Spell Unit. No spell in the bin → the recall part does
 // nothing and the body still spawns. (The paragraph that used to sit here —
 // "the bin isn't a target zone in TargetSpec, so the pick is a mid-resolution
-// choice by the controller (R6 model)" — was made false by R64/R67 and is
+// choice by the controller […]" — was made false once a card in a bin became a legal target and is
 // contradicted by the card's own comment two lines below.)
 card('Delver of Mysteries', {
   spellEffect: {
-    // R67: "target spell in your bin" is a DECLARED target, chosen as the
-    // spell goes on the stack (R64's 'binCard' kind) — it used to be a
+    // CR 110.1a: "target spell in your bin" is a DECLARED target, chosen as the
+    // spell goes on the stack ('binCard' kind, CR 110.3) — it used to be a
     // mid-resolution pick, so the Delver reached the stack aiming at nothing
     // and the opponent could not see what it was about to take back.
     targets: {
@@ -301,9 +298,9 @@ card('Delver of Mysteries', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('binCard' in t) || t.binCard.index === -1) return;
-      const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
+      const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
       if (name !== undefined) {
-        g.toHand(ctx.controller, name, 'bin');   // R179
+        g.toHand(ctx.controller, name, 'bin');   // CR 402.4
         g.ev('info', `${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
       }
     },
@@ -322,13 +319,13 @@ card('Delver of Mysteries', {
 // augmentText stand-in it needed is gone with it (`augmentable: true` is what
 // keeps the card applicable).
 //
-// The SPELLS half is live as of round 17 (R94). It is NOT a static — statics
+// The SPELLS half is live as of round 17 (CR 802.10d). It is NOT a static — statics
 // are typed over an Entity and a resolving spell is a StackItem, not one — but
 // an `effectAttrs` mod, CostMod's sibling: the same anchored() radiation, the
-// same R12 region scope, the same shallow R62 guard, and ownership decided
+// same CR 101.6 region scope, the same shallow CR 712.1a guard, and ownership decided
 // here in `affects` rather than in the gatherer, exactly as the units half
 // above decides it. The grant lands in `EffectCtx.grantedAttrs`, which
-// dealEffectDamage has unioned into the source's attrs since R79 — so a
+// dealEffectDamage has unioned into the source's attrs since the virus-donation rule (CR 721.4b) landed — so a
 // Fireball resolving under this aura deals double.
 //
 // The designer scales a unit-sourced noncombat effect by a {Powerful} the
@@ -338,34 +335,34 @@ card('Delver of Mysteries', {
 // this card's own case, since the only way that Resonant unit gets {Powerful}
 // is by being granted it.
 //
-// ⚠ OPEN (R94): "your spells" and spell TOKENS. `isSpellEffect` is the single
+// SETTLED (CR 302.3: a spell token is a spell): "your spells" and spell TOKENS. `isSpellEffect` is the single
 // place that answers it and it currently says YES — a Burst Fireball under
 // this aura deals double. See its doc comment; one edit moves both cards.
 //
 // LITERAL-READING AUDIT (2026-08-24) — the code DOES match that stated
 // default, in both cards and on every path that reads the attribute, and the
-// R125 shape is NOT present here. Checked and pinned in 111-literal-fire:
+// invented-qualifier shape is NOT present here. Checked and pinned in 111-literal-fire:
 //  · `isSpellEffect` is the one predicate both Emberflame and Envoy of
 //    Lightning use, and it lists 'spellToken' beside 'spell'/'spellUnit', so
 //    the two cards cannot drift apart.
 //  · a spell token is CAST FROM PLAY: `doCastSpellToken` deletes the entity
 //    and rebuilds a StackItem off the printed card, so a cast token has no
-//    `sourceId` and `dealEffectDamageAll` reads printed attrs + R94's
+//    `sourceId` and `dealEffectDamageAll` reads printed attrs + its
 //    `grantedAttrs`. `effectAttrs` is therefore the channel that reaches it —
 //    the statics channel could not, whatever it filtered on.
 //  · so both halves of the printed sentence have live code: `statics` is
 //    "your units" and `effectAttrs` is "your spells", spell tokens included.
-// The one asymmetry with Rotspore Herald is COSMETIC and left alone: R125
+// The one asymmetry with Rotspore Herald is COSMETIC and left alone: the literal-reading ruling (CR 707.7)
 // widened its `statics` so a Fireball STANDING in the region shows {Deadly}
 // in `ownAttrs`, and this card's units-only `statics` means your Fireball
 // does not show {Powerful} before you cast it. Nothing reads that (the grant
-// is regenerated on the stack item), and the owner's R125 wording — "all
+// is regenerated on the stack item), and the owner's Rotspore wording (CR 707.7) — "all
 // spells AND SPELL TOKENS" — names the two as separate categories, so
 // widening on the strength of it would be inventing the ruling, not applying
 // it. Flagged for the owner rather than changed.
 card('Emberflame Enlightener', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -385,7 +382,7 @@ card('Emberflame Enlightener', {
 });
 
 // "[Augment] Your spell effects with a single target are {g}Electric." —
-// rr/2 3/2. Live as of round 17 (R94), on the same `effectAttrs` channel as
+// rr/2 3/2. Live as of round 17 (CR 802.17i), on the same `effectAttrs` channel as
 // Emberflame Enlightener above and for the same reason: a resolving spell is
 // a StackItem and statics only reach Entities.
 //
@@ -409,7 +406,7 @@ card('Emberflame Enlightener', {
 // whole card is.
 card('Envoy of Lightning', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     effectAttrs: [{
@@ -426,21 +423,21 @@ card('Envoy of Lightning', {
 // apply.ts::maybeGrantShard for all seven elements. Bare is CORRECT — the
 // face owns no behaviour. ⚠ Adding it here would double the bonus for fire
 // and, once the rule moved off maybeGrantShard, delete it for wood, metal,
-// light and dark (no printed faces). R116; guarded by test/12-fire-a.
+// light and dark (no printed faces). CR 106.7c; guarded by test/12-fire-a.
 card('Fire Resource', {});
 
 // "Negate all other effects. For each nontoken spell negated this way,
 // create a Fireball 1." — rr/4 {Battle} Arcane Spell. At resolution Flame
 // Shield is already off the stack, so "all other effects" = every remaining
 // un-negated stack item (spells, spell units, spell tokens, triggered/
-// activated abilities, viruses, ambushes — R22 counts them all as negatable
+// activated abilities, viruses, ambushes — CR 803.6h counts them all as negatable
 // effects). Only nontoken SPELLS (kind spell / spellUnit) pay out Fireballs.
 card('Flame Shield', {
   spellEffect: {
     creates: ['Fireball'],
     run: (g, ctx) => {
       let fireballs = 0;
-      // R68: negate() splices, so the sweep runs over a COPY — and the count
+      // CR 704.4: negate() splices, so the sweep runs over a COPY — and the count
       // is taken off the copy's own entries, never off the live stack.
       for (const it of [...g.s.stack]) {
         g.negate(it.id);
@@ -455,9 +452,9 @@ card('Flame Shield', {
 });
 
 // "After combat, [Switch1] Each player sacrifices a unit." — r/2 2/2.
-// "Each player" = the seats present in the battle region (R12/R25), in
+// "Each player" = the seats present in the battle region (CR 601.4d), in
 // presentSeats order (region owner first); each picks their own sacrifice
-// (mid-resolution choices, R6 model). All choices are gathered before any
+// (mid-resolution choices, CR 704.1a model). All choices are gathered before any
 // destruction (plan-then-commit), then committed together.
 const smofSacrifice: EffectDef = {
   run: (g, ctx) => {
@@ -491,8 +488,8 @@ card('General Smof', {
 // "When you sacrifice a unit, [Switch1] Each opponent sacrifices a nontoken
 // unit." — rr/3 4/3. Sacrifice detection: 'died' events carry no verb in
 // data, but destroy() renders it into the message — the when() reads it from
-// the event snapshot (R1: event-time condition). "Each opponent" is
-// region-scoped (R25); their picks are mid-resolution choices, gathered
+// the event snapshot (CR 109.3a: event-time condition). "Each opponent" is
+// region-scoped (CR 601.4d); their picks are mid-resolution choices, gathered
 // before committing. Note the recursion guard is the condition itself: the
 // opponents' sacrifices have seat !== my controller, so Ghord can't loop.
 const ghordSacrifice: EffectDef = {
@@ -521,7 +518,7 @@ card('Ghord', {
     type: 'triggered', events: ['died'], bounded: true, graftCause: true,
     label: 'each opponent sacrifices a nontoken unit',
     when: (g, self, ev) =>
-      // R70: the death event carries the VERB; this used to match the log text
+      // CR 714.9: the death event carries the VERB; this used to match the log text
       ev.data?.seat === self.controller && ev.data?.verb === 'is sacrificed',
     effect: ghordSacrifice,
   }],
@@ -530,7 +527,7 @@ card('Ghord', {
 
 // "Change the targets of target effect unless its controller pays [x]." —
 // rr/X 2/1 {Battle} Temporal Cosmic Spell. X is chosen and paid AT CAST
-// (R35) and stored on the item. R6 payment: the targeted item's controller
+// (CR 107.2a) and stored on the item. CR 702.5a payment: the targeted item's controller
 // pays x mid-resolution (offered only if affordable) or the Correction's
 // controller re-picks every declared target from the current legal
 // candidates. All choices happen before any mutation.
@@ -561,10 +558,10 @@ card('Gravitational Correction', {
         return;
       }
       // change the targets: the Correction's controller re-picks each one.
-      // R307: each menu is the SLOT's legal candidates (`rechooseTargets`) —
+      // CR 110.9: each menu is the SLOT's legal candidates (`rechooseTargets`) —
       // its own restriction, never a ref in a sibling slot. It keeps offering
       // the slot's current occupant when that is still legal (unchanged from
-      // before R307): choosing it is not a change.
+      // before the retarget fix): choosing it is not a change.
       const { slots, picks } = rechooseTargets(g, item, (pi, ti, _cur, cands) =>
         ctx.choose(`retarget:${pi}:${ti}`, {
           kind: 'payOrDecline', seat: ctx.controller,
@@ -577,7 +574,7 @@ card('Gravitational Correction', {
       // The SUCCESS path used to say nothing at all: it rewrote another
       // player's targets and the log showed only the payOrDecline. Found by
       // 65-effect-conformance's "no effect resolves into silence" the moment
-      // R95 reordered legalActions enough for the fuzz to reach it — the
+      // the Rook permission reordered legalActions enough for the fuzz to reach it — the
       // retarget itself had never been driven to completion before.
       if (changed) {
         g.ev('info',
@@ -594,13 +591,13 @@ card('Gravitational Correction', {
 // — rr/4 2/4 Infernal Elemental Unit. Text-box [Augment]: live on the card
 // played normally AND donated to a host (Hooba-Lin convention, below).
 //
-// The TRIGGER half: X is read at RESOLUTION from live state (R1). It fires
+// The TRIGGER half: X is read at RESOLUTION from live state (CR 109.3b). It fires
 // after regroup has wiped the battle's tokens, so X counts the ones made
 // since — exactly what "stay through regroup" feeds it.
 //
 // The [Augment] half is a STATIC, not a trigger and not a replacement hook
 // (playtest ZQPC/SAAY: "my fireball was erased during regroup even tho I have
-// the Harbinger"). The regroup erase is a step of the R11 cleanup sequence,
+// the Harbinger"). The regroup erase is a step of the CR 506.2 cleanup sequence,
 // not an event — nothing to respond to, nothing to negate — so the only honest
 // model is a standing property of the tokens, which is what StaticMod is for.
 // `survivesRegroup` is that property; startRegroup asks
@@ -611,7 +608,7 @@ card('Gravitational Correction', {
 // have their temporary changes swept — they are only spared the erase.
 card('Harbinger of Immolation', {
   augmentable: true,   // text-box [Augment]: the static transfers when augmented
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -637,7 +634,7 @@ card('Harbinger of Immolation', {
 
 // "[Augment] When I attack, create a 1/1 unit in my formation." — rr/1 1/1
 // {Haste}. Text-box [Augment]: live on the card played normally and donated
-// to a host. "In my formation": R75 — the controller of the effect chooses the
+// to a host. "In my formation": CR 602.6 — the controller of the effect chooses the
 // slot at resolution (either end of the line, or the back slot of a one-unit
 // column). It used to silently take my own column's back slot, or open one on
 // the right.
@@ -648,17 +645,17 @@ card('Hooba-Lin', {
     effect: {
       creates: ['Unit Token'],
       run: (g, ctx) => {
-        // R225: "in MY formation" is a REFERENT read off the source at
-        // resolution (R27), so it is checked BEFORE the token is minted —
+        // CR 602.6e: "in MY formation" is a REFERENT read off the source at
+        // resolution, so it is checked BEFORE the token is minted —
         // report FTUW/45, where Hooba-Lin was killed in response to its own
         // attack trigger and still put a 1/1 in the line from the bin. The
         // guard is ahead of the spawn because a token created and then refused
         // a slot is left stranded in the region, which is a second wrong
         // answer rather than a safe one.
-        // R325 reverses R225's dead-source half: a Hooba-Lin killed under its
+        // Reversing the earlier dead-source reading: a Hooba-Lin killed under its
         // own trigger "remembers it was in formation" (RAQ, Dead Unit Effect on
         // Stack), so the formation is the one it last stood in. One that is
-        // alive and out of the line (R172) still names none.
+        // alive and out of the line (CR 711.3) still names none.
         const src = ctx.sourceId;
         if (src === undefined || g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-Lin: I am not in a formation any more — no unit is created.');
@@ -672,16 +669,16 @@ card('Hooba-Lin', {
 });
 
 // "[Switch1] /[Sacrifice a unit]: Draw a card." — r/1 {Battle} Occult Spell.
-// The bracketed sacrifice is a CAST COST (R35): chosen and paid before the
+// The bracketed sacrifice is a CAST COST (CR 702.4): chosen and paid before the
 // spell reaches the stack — no unit, no cast. Grafted, the rider's cost is
 // paid (or declined) when the composite collects its cast-time decisions,
-// exactly where graft targeting happens. Bounded graft ([Switch1], R9).
+// exactly where graft targeting happens. Bounded graft ([Switch1], CR 722.5).
 const immolateEffect: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
     if (!ctx.costPaid?.sacrificed) {
       // CARD-TODO #18: declining a [Switch1] rider's cost never spends the use.
-      // (The cast-time decline route refunds it too — R35 marks the part spent
+      // (The cast-time decline route refunds it too — the part is marked spent
       // before it runs — so this is the belt to that braces.)
       ctx.refundBudget?.();
       g.ev('info', 'Immolate: no unit was sacrificed — no card is drawn.');
@@ -699,14 +696,14 @@ card('Immolate', {
 // An ACTIVATED ability in the [Augment] text box: live when played normally
 // (via: 'augment') and donated to hosts (via: { mod }) — apply.ts activates
 // augmentText abilities directly. X = however many of your in-region units
-// you pick. [once] = bounded (R9).
+// you pick. [once] = bounded (CR 109.9).
 //
-// R196 — THE SACRIFICES ARE PAID AT ACTIVATION. They used to be picked one at
+// CR 705.3b — THE SACRIFICES ARE PAID AT ACTIVATION. They used to be picked one at
 // a time at RESOLUTION, so the ability reached the stack with X unknown: the
 // opponent had to decide whether to answer without knowing whether one
 // Fireball was coming or five, and a negation removed the ability without a
-// single unit having been paid for it. R157 §21 — a bracketed clause is a COST
-// — and R64's own founding complaint about Discharge, one card over.
+// single unit having been paid for it. CR 205.3 — a bracketed clause is a COST
+// — and the same complaint once raised about Discharge, one card over.
 //
 // `castCost: { kind: 'sacrificeUnits', n: 'X' }` needed NO new engine code:
 // the variable machinery a spell's bracketed cost already used reaches an
@@ -737,13 +734,13 @@ card('Infernal Cultivator', {
 // ONE sentence, one static. The +2/+1 and the no-sacrifice clause are the same
 // continuous effect on the same units, so they are the same StaticMod: main
 // text, so unit-form only (correct — only the [Augment] line transfers to
-// hosts), and region-scoped like every static (R12).
+// hosts), and region-scoped like every static (CR 101.6).
 //
-// R62 UNPARKED (playtest: "I have infernal wispweaver, but my wisps sacrificed
+// UNPARKED via the suppression layer, CR 712.1a (playtest: "I have infernal wispweaver, but my wisps sacrificed
 // themselves anyway!!!"). This was parked on "there is no way to suppress
 // ANOTHER card's trigger"; the suppression layer is that way.
 //
-// ⚠ R269 NARROWED IT. This used to carry `suppressAbilities`, the WHOLE-LAYER
+// ⚠ IT WAS NARROWED (CR 712.4). This used to carry `suppressAbilities`, the WHOLE-LAYER
 // veto, on the argument that "the Wisp has exactly ONE ability, so switching
 // its abilities off and 'it does not sacrifice itself after combat' name the
 // same set of behaviour". The owner filed the counterexample: *"it should just
@@ -758,7 +755,7 @@ card('Infernal Cultivator', {
 // directions: kill the weaver mid-combat and the Wisps sacrifice themselves
 // again in the same instant, which is what a printed static means.
 //
-// R268: the static is BODY text — printed above the [Augment] line — so it is
+// CR 721.1: the static is BODY text — printed above the [Augment] line — so it is
 // live only while this card is a unit in play. Augment the Wispweaver onto a
 // host and the host's controller gets the end-of-turn Wisp and NOTHING ELSE:
 // no +2/+1, no no-sacrifice (owner, report #139).
@@ -768,7 +765,7 @@ card('Infernal Wispweaver', {
       t.kind === 'unit' && t.card === 'Wisp' && t.controller === self.controller,
     dp: 2, dt: 1,
     // "…and do not sacrifice themselves after combat" — the second half of the
-    // same sentence, and no wider than the words. R269.
+    // same sentence, and no wider than the words. CR 712.4.
     suppressAbility: (_g, _self, _t, ab) =>
       ab.type === 'triggered' && !!ab.selfSacrifice && ab.events.includes('afterCombat'),
   }],

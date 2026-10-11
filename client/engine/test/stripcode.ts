@@ -19,8 +19,7 @@
  *    first draft).
  *  · `Function.prototype.toString()` KEEPS comments and strings, so a comment
  *    that merely MENTIONS the bad idiom — very often the comment explaining
- *    that the card no longer does it — holds the check true (R140's three
- *    fixed cards).
+ *    that the card no longer does it — holds the check true (three cards fixed in one round showed it).
  *
  * Strings go last so a `'` inside a comment ("a unit's mods") is already gone
  * and cannot open a string that swallows the rest of the file. The one known
@@ -28,7 +27,7 @@
  * rest of its line. Nothing in src/ does that, and the cost of the miss is one
  * unread line, never a false alarm.
  *
- * Exported (R148) because the sweeps in 90-coverage-census read whole FILES
+ * Exported because the sweeps in 90-coverage-census read whole FILES
  * this way, and a second copy of these three regexes is a second thing to get
  * wrong.
  */
@@ -67,7 +66,7 @@ export function stripCode(src: string): string {
   let st: 'code' | 'line' | 'block' | 'sq' | 'dq' | 'tpl' | 're' = 'code';
   let prev = '';   // last significant code char, for the regex/division call
   reClass = false;
-  // R201 / CT-68: `${ … }` INSIDE A TEMPLATE LITERAL IS CODE, NOT STRING, and
+  // CT-68 (see 164-sweep-sight): `${ … }` INSIDE A TEMPLATE LITERAL IS CODE, NOT STRING, and
   // this is the THIRD time this one function has been caught blind.
   //
   // Without the stack below, a NESTED template inverts parity: the inner
@@ -83,7 +82,7 @@ export function stripCode(src: string): string {
   //
   // The cost was not theoretical. A real `z.bin.push(1)` planted inside a
   // nested template in src/rng.ts left all nine tests of 90-coverage-census
-  // GREEN — a live bypass of the R124/R145 bin choke point, invisible to every
+  // GREEN — a live bypass of the bin choke point, invisible to every
   // sweep that rests on this helper. 164-sweep-sight.test.ts §C runs an
   // INDEPENDENT oracle beside this function over all of src/ and reports only
   // the disagreements, because a checker cannot audit itself: measuring
@@ -151,7 +150,7 @@ export function stripCode(src: string): string {
     if (c === "'") { out += ' '; st = 'sq'; continue; }
     if (c === '"') { out += ' '; st = 'dq'; continue; }
     if (c === '`') { out += ' '; st = 'tpl'; continue; }
-    // R201: track brace depth so an interpolation's CLOSING `}` — and no other
+    // CT-68: track brace depth so an interpolation's CLOSING `}` — and no other
     // `}` — returns to the template it opened inside.
     if (c === '{') braceDepth++;
     if (c === '}') {

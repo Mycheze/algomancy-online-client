@@ -1,12 +1,12 @@
 /**
- * R328 / R329 — stripping is a layer applied in timestamp order, and
+ * CR 712.2, 712.3 — stripping is a layer applied in timestamp order, and
  * Suppression Field takes the attributes of the target's whole column.
  *
  * The RAQ is the authority (owner, 2026-10-09). calebgannon: "Suppression field
  * just removes attributes from the time it was played, so anything after that
  * will still apply." _passer: "if any unit in play later gains Attribute or
  * Ability, then timestamps takes precedence and this new Attribute/Ability is
- * NOT affected by Monke or Transmogrifant". This reverses R62's veto.
+ * NOT affected by Monke or Transmogrifant". This reverses the old suppression ruling's veto.
  *
  * The RAQ examples themselves are guarded in 393/390; this file pins the
  * ORDER both ways (a grant before a stripper is taken, after it is kept) for
@@ -112,7 +112,7 @@ test('§5 a stripped unit that joins a Balanced column later is Balanced, and gi
   finishBattle(h);
 });
 
-test('§6 a strip with no time on it (a state saved before R328) still takes everything, as the old veto did', () => {
+test('§6 a strip with no time on it (a state saved before strips carried a time) still takes everything, as the old veto did', () => {
   const h = new Harness(40206);
   toDeployment(h);
   const A = h.state.deployPlayer!;

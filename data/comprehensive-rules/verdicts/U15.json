@@ -1,7 +1,7 @@
 [
   {
     "key": "effects.activated.cost-cannot-whiff",
-    "textHash": "3ad09960cc212e75",
+    "textHash": "c523f074be5fa15d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -103,7 +103,7 @@
   },
   {
     "key": "effects.activated.not-activations",
-    "textHash": "52c17203acf417e1",
+    "textHash": "74101c73d5bd2765",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -160,7 +160,7 @@
   },
   {
     "key": "effects.activated.procedure",
-    "textHash": "7cb7c3127619ee44",
+    "textHash": "eea98ab5d5bbe803",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -260,7 +260,7 @@
   },
   {
     "key": "effects.activated.procedure.gates",
-    "textHash": "921cab28d90d4465",
+    "textHash": "aa8673bace620971",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U15-r2",
@@ -320,7 +320,7 @@
   },
   {
     "key": "effects.activated.procedure.stack",
-    "textHash": "c31bd6ec08c5375d",
+    "textHash": "dd92757b89885ba4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -359,7 +359,7 @@
   },
   {
     "key": "effects.activated.procedure.targets",
-    "textHash": "5e107c655800d590",
+    "textHash": "623bfd1f392cd5d0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -407,7 +407,7 @@
   },
   {
     "key": "effects.activated.procedure.variable-cost",
-    "textHash": "7d8eac306d97701d",
+    "textHash": "c742761fda8a21c1",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U15-r2",
@@ -455,7 +455,7 @@
   },
   {
     "key": "effects.activated.timing-icon",
-    "textHash": "f12e21196c877a3a",
+    "textHash": "7e502d859fe31686",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -509,7 +509,7 @@
   },
   {
     "key": "effects.activated.what",
-    "textHash": "0d0e81bc7d520e27",
+    "textHash": "d14fecbf415c670e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -711,7 +711,7 @@
   },
   {
     "key": "effects.replacement.multipliers",
-    "textHash": "a615edaef29848b5",
+    "textHash": "8a57f1b7a9accddd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -923,7 +923,7 @@
   },
   {
     "key": "effects.replacement.no-stack.targeted",
-    "textHash": "a332cd8de4e84ecb",
+    "textHash": "bdbe3ccb86018dda",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -1388,7 +1388,7 @@
   },
   {
     "key": "effects.replacement.substitute",
-    "textHash": "95d6ff22d0497e9d",
+    "textHash": "c1f300c8b794c977",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -1448,7 +1448,7 @@
   },
   {
     "key": "effects.replacement.token-batch",
-    "textHash": "72b4bf5eff99c9bc",
+    "textHash": "2946a76b98cb548e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -1599,7 +1599,7 @@
   },
   {
     "key": "effects.static.continuous.not-counters",
-    "textHash": "f1dd0ba1a164dacf",
+    "textHash": "1586e09c0e1bcaa8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -1760,7 +1760,7 @@
   },
   {
     "key": "effects.static.from-mod",
-    "textHash": "2a0b4db77c4ec8c8",
+    "textHash": "774307a383004718",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -1829,7 +1829,7 @@
   },
   {
     "key": "effects.static.literal",
-    "textHash": "f3f61ad3676039c3",
+    "textHash": "b2d2d5bb62588aa4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -1945,7 +1945,7 @@
   },
   {
     "key": "effects.static.no-stack",
-    "textHash": "189e8f3840f3dee2",
+    "textHash": "7971bb3f9ed111f6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2134,7 +2134,7 @@
   },
   {
     "key": "effects.static.region",
-    "textHash": "8a903e3ab6d18f55",
+    "textHash": "cd22fdd11413c5f2",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U15-r2",
@@ -2397,7 +2397,7 @@
   },
   {
     "key": "effects.triggered.attributes",
-    "textHash": "1aca15c9bcae9b37",
+    "textHash": "5957c0042bae0580",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2471,7 +2471,7 @@
   },
   {
     "key": "effects.triggered.chosen-unit",
-    "textHash": "ef85645e329c8a0e",
+    "textHash": "b62b19e026d1c7ca",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U15-r2",
@@ -2525,7 +2525,7 @@
   },
   {
     "key": "effects.triggered.chosen-unit.not-target",
-    "textHash": "e86cfe0b3d5b8a84",
+    "textHash": "4882d866418b9a2f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2621,7 +2621,7 @@
   },
   {
     "key": "effects.triggered.once-per-event",
-    "textHash": "1d276a6db20819e6",
+    "textHash": "43ba9fd09855c2ef",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2750,7 +2750,7 @@
   },
   {
     "key": "effects.triggered.order",
-    "textHash": "1f5ae6e4d5a62b64",
+    "textHash": "2c289f1c09d38333",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2816,7 +2816,7 @@
   },
   {
     "key": "effects.triggered.own-death",
-    "textHash": "6fb239d573a8f7b8",
+    "textHash": "9a36e51fba31bbae",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2864,7 +2864,7 @@
   },
   {
     "key": "effects.triggered.own-death.despawn",
-    "textHash": "f1bc9add196bcfb6",
+    "textHash": "4c0bec84748a252a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2948,7 +2948,7 @@
   },
   {
     "key": "effects.triggered.own-death.same-batch",
-    "textHash": "e8952839470fd132",
+    "textHash": "a3a49882fc196b31",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -2996,7 +2996,7 @@
   },
   {
     "key": "effects.triggered.region",
-    "textHash": "a820c46fee139c76",
+    "textHash": "480f02ecdb6d6c9d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -3094,7 +3094,7 @@
   },
   {
     "key": "effects.triggered.targets-as-played",
-    "textHash": "721f7eca4d7a4b6a",
+    "textHash": "1e8d13f79ff21c65",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U15-r2",
@@ -3148,7 +3148,7 @@
   },
   {
     "key": "effects.triggered.that-item",
-    "textHash": "7ed4b782a8b9e057",
+    "textHash": "2b3aa1f368f2433e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U15-r4",
@@ -3206,7 +3206,7 @@
   },
   {
     "key": "effects.triggered.two-moments",
-    "textHash": "f4eff4cd07531d6d",
+    "textHash": "2764d599032cfdbd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -3367,7 +3367,7 @@
   },
   {
     "key": "effects.triggered.when-stacked.battle",
-    "textHash": "70f9139f5463c025",
+    "textHash": "8b8181ed1fc2d2d6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -3424,7 +3424,7 @@
   },
   {
     "key": "effects.triggered.when-stacked.combat-damage",
-    "textHash": "67f0050affe85265",
+    "textHash": "1b1b08cbbca9341a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",
@@ -3472,7 +3472,7 @@
   },
   {
     "key": "effects.triggered.when-stacked.deployment",
-    "textHash": "f511442ae9747836",
+    "textHash": "f313e0d0898068ac",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U15-r1",

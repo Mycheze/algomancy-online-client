@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: THE LESSONS.
+/* CR D8.1 — LEARN TO PLAY: THE LESSONS.
  *
  * The order a game reaches each idea (the owner's outline, revised after the
  * first playtest — viruses moved behind augmenting, the stack given its own

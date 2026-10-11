@@ -3,7 +3,7 @@ export { createGame, apply, replay, legalActions, checkDeck, IllegalAction } fro
 export { E, other, normalizeProphecy } from './engine.ts';
 export {
   getCard, allCardNames, affinityPips, registerSynthetic,
-  // R71: "Wraith" and "Wight" are one card — anything that resolves a printed
+  // "Wraith" and "Wight" are one card — anything that resolves a printed
   // card NAME (card browsers, deck tools) should go through these
   registerAlias, canonicalCardName,
 } from './cards/dsl.ts';

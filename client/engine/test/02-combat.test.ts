@@ -27,7 +27,7 @@ test('combat math: columns, flying, piercing overflow, deaths', () => {
     'flying block restriction enforced');
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   pass(h); pass(h);   // block window → damage
-  assignDefault(h);   // R319: Piercing elects; the default is the split below
+  assignDefault(h);   // CR 802.16c: Piercing elects; the default is the split below
 
   // Whale 7: 2 lethal to b1 (front), 3 to b2 (back), 2 excess → Piercing → player
   assert.ok(!ent(h, b1), 'front blocker died');
@@ -109,7 +109,7 @@ test('1v1 counterattack: NIT sends units at block time, they attack in round 2',
   assert.equal(ent(h, atk)!.region, e.homeRegion(A), 'regroup returned the attacker home');
 });
 
-test('R3/Swift: swift column deals damage first, no priority between sub-steps', () => {
+test('Swift: swift column deals damage first, no priority between sub-steps', () => {
   const h = new Harness(43);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

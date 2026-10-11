@@ -1,4 +1,4 @@
-/* R259 — A QUESTION THE OWNER HAS ALREADY ANSWERED MUST NOT STILL READ AS OPEN.
+/* A QUESTION THE OWNER HAS ALREADY ANSWERED MUST NOT STILL READ AS OPEN.
  *
  * ── THE FAILURE THIS FILE COMES FROM ──────────────────────────────────
  *
@@ -6,9 +6,7 @@
  *
  *     `docs/questions-round27.md` — Q2, Q4, Q6, Q7, Q8 unanswered.
  *
- * **Four of those five were answered the day before.** Q2 by R237, Q5 by R238,
- * Q6 by R240, Q8 by R239 — all on 2026-08-28, all rulings the owner gave, and
- * R237 and R238 each name the question by number in their own first line. What
+ * Four of those five were answered the day before — Q2, Q5, Q6 and Q8, all on 2026-08-28, all rulings the owner gave, and two of them name the question by number in their own first line. What
  * never happened is the boring half: nobody went back to the SHEET and filled in
  * its `ANSWER:` line. So the sheet still had a blank there, and every list built
  * by looking for a blank reported the question open.
@@ -18,30 +16,32 @@
  * blockers; the real number was five, and it took a manual pass over the
  * register to find that out.
  *
- * ── WHY NO EXISTING GUARD CATCHES IT ──────────────────────────────────
+ * ── WHY NO OTHER GUARD CAUGHT IT ──────────────────────────────────────
  *
- * `202-settled-rulings-not-reopened` exists for the OPPOSITE direction — round
- * 28's Q1 re-asked a settled question and recommended reversing it — and its
- * header states the lesson as *"a question sheet is not proof a thing is
- * unruled"*. This file is the mirror: **a blank answer line is not proof of it
- * either.**
+ * `202-settled-rulings-not-reopened` (deleted with the ruling register) was the
+ * guard for the OPPOSITE direction — round 28's Q1 re-asked a settled question
+ * and recommended reversing it — and its header stated the lesson as *"a
+ * question sheet is not proof a thing is unruled"*. This file is the mirror:
+ * **a blank answer line is not proof of it either.**
  *
- * 202 structurally cannot see these four. It matches on CARD NAMES appearing in
- * a ruling section marked "Already correct", and all four of these rulings are
- * about MECHANICS — {Deadly} reaching effect damage, a replaced hit still being
- * dealt, region scoping, a type-line transcription error. There is no card to
- * match on. Widening 202 to match mechanics is not available: it would have to
- * decide "is this ruling about the same question as that sheet", which is the
- * judgement its own header says no test can make.
+ * 202 structurally could not see these four. It matched on CARD NAMES appearing
+ * in a ruling section marked "Already correct", and all four of these rulings
+ * are about MECHANICS — {Deadly} reaching effect damage, a replaced hit still
+ * being dealt, region scoping, a type-line transcription error. There was no
+ * card to match on. Widening 202 to match mechanics was not available: it would
+ * have had to decide "is this ruling about the same question as that sheet",
+ * which is the judgement its own header said no test can make.
  *
  * ── THE TWO SIGNALS, AND WHY BOTH ─────────────────────────────────────
  *
- * §1 is DERIVED and catches the case with no human in the loop: a ruling that
- * says it answers `questions-round27 Q2` is a machine-readable back-pointer, and
- * the sheet had better agree. It caught two of the four real cases, and it is
+ * §1 is DERIVED and catches the case with no human in the loop: an owner call
+ * that says it answers `questions-round27 Q2` is a machine-readable back-pointer,
+ * and the sheet had better agree. Since the R-ruling register was retired
+ * (2026-10), the pointer lives where the owner's call does: `from` on the
+ * `sources.owner` entry of the comprehensive-rules record it settles. It caught two of the four real cases, and it is
  * free forever after.
  *
- * §2 is an INVENTORY, the pattern R246 used for printed Xs: the set of blank
+ * §2 is an INVENTORY, the pattern the printed-X forecast round used: the set of blank
  * answers must equal a list that names each one and says why it is still open.
  * It catches all four — not by cleverness but by making a human look at each
  * blank once. Its second direction is the load-bearing one: when the owner
@@ -55,19 +55,21 @@
  * ⚠ THE ONE RULE FOR EDITING `OPEN_QUESTIONS`: you may DELETE a row, because the
  * owner answered it and you backfilled the sheet. You may ADD a row only for a
  * question you have just ASKED. Adding a row for a question that has been
- * sitting blank is how this file stops working — that is CT-68's bug and
- * 184-ruling-register's `UNREGISTERED` carries the identical warning.
+ * sitting blank is how this file stops working — that is CT-68's bug.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DIGITAL_RULES } from '../scripts/paths.mjs';
+import { CR_LEDGER } from '../scripts/paths.mjs';
+import { loadInputs } from '../scripts/cr/render.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DOCS = join(HERE, '..', '..', 'docs');
-const REGISTER = readFileSync(DIGITAL_RULES, 'utf8');
+/** every owner call's `from`, one line each ("<rule key>: questions-round27 Q2") */
+const REGISTER = loadInputs().records
+  .flatMap(r => (r.sources?.owner ?? []).filter(o => o.from).map(o => `${r.key}: ${o.from}`)).join('\n');
 
 interface Question {
   /** e.g. `questions-round27.md` */
@@ -88,7 +90,7 @@ const SHEETS = (): string[] =>
 /**
  * Every `## Qn.` section of every sheet, with its answer.
  *
- * ⚠ The split pattern is the same one `202-settled-rulings-not-reopened` uses,
+ * ⚠ The split pattern is the same one the deleted `202-settled-rulings-not-reopened` used,
  * deliberately: two readers of these files that disagree about what a question
  * IS would produce two different open lists, which is the failure one directory
  * up. `parses something` below is the positive control on it.
@@ -127,19 +129,15 @@ function backPointers(md: string): { round: number; n: number; where: string }[]
   return out;
 }
 
-/** every `## R<n>` / `### R<n>` section number in the register (R197b counts as 197) */
-function registered(md: string): Set<number> {
-  const out = new Set<number>();
-  for (const m of md.matchAll(/^#{2,3} R(\d+)b? /gm)) out.add(Number(m[1]));
-  return out;
-}
+/** every live rule number in the comprehensive rules' ledger (sections too) */
+const LIVE = new Set((JSON.parse(readFileSync(CR_LEDGER, 'utf8')) as { entries: { num: string; removed?: string }[] })
+  .entries.filter(e => !e.removed).map(e => e.num));
 
 const QUESTIONS = questions();
-const REGISTERED = registered(REGISTER);
 
 /* ══ §0 · POSITIVE CONTROLS — every channel here must be able to see ══ */
 
-test('R259 §0: the sheet reader, the back-pointer scan and the register scan all find something', () => {
+test('§0: the sheet reader, the back-pointer scan and the register scan all find something', () => {
   // docs/13 §7.4. A reader that matches nothing reports "no blanks", which is
   // the most flattering possible answer and indistinguishable from working.
   assert.ok(SHEETS().length >= 3, `only ${SHEETS().length} question sheets found — the filename pattern has drifted`);
@@ -151,12 +149,12 @@ test('R259 §0: the sheet reader, the back-pointer scan and the register scan al
     + QUESTIONS.filter(q => !Number.isFinite(q.n)).map(q => q.heading).join(' / '));
 
   assert.ok(backPointers(REGISTER).length >= 2,
-    'no ruling in the register says which question it answers. That back-pointer is what §1 '
-    + 'runs on, and without it §1 has no subjects.');
-  assert.ok(REGISTERED.size > 150, `only ${REGISTERED.size} rulings found — the heading pattern drifted`);
+    'no owner call in the comprehensive rules says which question it answers. That back-pointer '
+    + 'is what §1 runs on, and without it §1 has no subjects.');
+  assert.ok(LIVE.size > 1500, `only ${LIVE.size} live rule numbers found — the ledger went missing`);
 });
 
-test('R259 §0: the scans can go red — synthetic inputs, both directions', () => {
+test('§0: the scans can go red — synthetic inputs, both directions', () => {
   assert.deepEqual(
     backPointers('*(round 29b. Answers questions-round27 Q2. Two commits changed)*')
       .map(b => [b.round, b.n]),
@@ -171,19 +169,19 @@ test('R259 §0: the scans can go red — synthetic inputs, both directions', () 
 
 /* ══ §1 · DERIVED — a ruling that says it answers a question is believed ══ */
 
-test('R259 §1: every question a ruling claims to answer has a non-blank ANSWER on its sheet', () => {
+test('§1: every question a ruling claims to answer has a non-blank ANSWER on its sheet', () => {
   const byKey = new Map(QUESTIONS.map(q => [`${q.round}/${q.n}`, q]));
   const unbackfilled: string[] = [];
   for (const b of backPointers(REGISTER)) {
     const q = byKey.get(`${b.round}/${b.n}`);
     if (!q) continue;               // a pointer at a sheet or number that does not exist is §3's problem
     if (q.answer !== '') continue;
-    unbackfilled.push(`${q.file} ${q.heading} is still blank, but the register says: "${b.where}"`);
+    unbackfilled.push(`${q.file} ${q.heading} is still blank, but the rule says it answered it: "${b.where}"`);
   }
   assert.deepEqual([...new Set(unbackfilled)].sort(), [],
     'a ruling says it answered a question and the sheet still shows it open:\n  '
     + unbackfilled.join('\n  ')
-    + '\n\n⚠ THIS IS THE EXACT SHAPE THAT HAPPENED. R237 and R238 each open by naming the '
+    + '\n\n⚠ THIS IS THE EXACT SHAPE THAT HAPPENED. Two owner rulings of 2026-08-28 each opened by naming the '
     + 'round-27 question they answer, and both questions sat blank on the sheet for a day, so '
     + 'round 32 opened believing they were still open work. Fill in the ANSWER line with a '
     + 'pointer to the ruling — do not delete the question.');
@@ -214,7 +212,7 @@ const OPEN_QUESTIONS: { round: number; n: number; why: string }[] = [
   // raw text so a regex that stops matching cannot also stop it noticing.
 ];
 
-test('R259 §2: the blank answers on every sheet are exactly the inventory, no more and no fewer', () => {
+test('§2: the blank answers on every sheet are exactly the inventory, no more and no fewer', () => {
   const blanks = QUESTIONS.filter(q => q.answer === '').map(q => `${q.round}/${q.n}`).sort();
   const listed = OPEN_QUESTIONS.map(o => `${o.round}/${o.n}`).sort();
   assert.deepEqual(blanks, listed,
@@ -227,7 +225,7 @@ test('R259 §2: the blank answers on every sheet are exactly the inventory, no m
     + 'that has been sitting blank; that is how the list stops meaning anything.');
 });
 
-test('R259 §0b CONTROL: an answer the sheet really carries is never read as blank', () => {
+test('§0b CONTROL: an answer the sheet really carries is never read as blank', () => {
   // The parse above is the ONLY thing standing between "the owner answered it"
   // and "nothing here can tell". §0 measures that questions are found; this
   // measures that ANSWERS are, which is a different claim and the one that
@@ -252,7 +250,7 @@ test('R259 §0b CONTROL: an answer the sheet really carries is never read as bla
     + 'truth and the inventory can be made to agree with it.');
 });
 
-test('R259 CONTROL: the sheets were really read, even when nothing is open', () => {
+test('CONTROL: the sheets were really read, even when nothing is open', () => {
   // The inventory is empty today. `assert.deepEqual([], [])` above would pass
   // identically if `SHEETS()` returned nothing, if the heading parser stopped
   // matching, or if every ANSWER line were being read as non-blank - three
@@ -270,7 +268,7 @@ test('R259 CONTROL: the sheets were really read, even when nothing is open', () 
     'a sheet has a blank ANSWER line the inventory does not list, or the reverse');
 });
 
-test('R259 §2: every inventory row points at a question that exists and says what it blocks', () => {
+test('§2: every inventory row points at a question that exists and says what it blocks', () => {
   const byKey = new Set(QUESTIONS.map(q => `${q.round}/${q.n}`));
   for (const o of OPEN_QUESTIONS) {
     assert.ok(byKey.has(`${o.round}/${o.n}`),
@@ -281,53 +279,52 @@ test('R259 §2: every inventory row points at a question that exists and says wh
   }
 });
 
-/* ══ §3 · AN ANSWER THAT CITES A RULING MUST RESOLVE ══════════════════ */
+/* ══ §3 · AN ANSWER THAT CITES A RULE MUST RESOLVE ═════════════════════ */
 
-test('R259 §3: every R-number an ANSWER line cites is a ruling that exists', () => {
+const CR_IN = (s: string): string[] =>
+  [...s.matchAll(/\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*)/g)].flatMap(m => m[1]!.split(/,\s/));
+
+test('§3: every CR number an ANSWER line cites is a live rule', () => {
+  assert.deepEqual(CR_IN('see CR 608.2b and CR 702.3, 704.6b'), ['608.2b', '702.3', '704.6b'], 'the citation scan reads lists');
+  assert.ok(!LIVE.has('999.9z') && LIVE.has('608'), 'the ledger lookup can say no, and yes');
   const dangling: string[] = [];
   for (const q of QUESTIONS) {
-    for (const m of q.answer.matchAll(/\bR(\d{1,3})b?\b/g)) {
-      const n = Number(m[1]);
-      if (n === 0) continue;
-      if (!REGISTERED.has(n)) dangling.push(`${q.file} ${q.heading} cites R${n}, which has no section`);
-    }
+    for (const n of CR_IN(q.answer)) if (!LIVE.has(n)) dangling.push(`${q.file} ${q.heading} cites CR ${n}, which is no live rule`);
   }
   assert.deepEqual(dangling.sort(), [],
-    'an answer points at a ruling that does not exist:\n  ' + dangling.join('\n  ')
-    + '\n\nAn ANSWER that cites a number is the only trail from the sheet back to the reasoning. '
-    + 'A number that does not resolve is R215\'s bug on a surface R215 does not scan.');
+    'an answer points at a rule that does not exist:\n  ' + dangling.join('\n  ')
+    + '\n\nAn ANSWER that cites a number is the only trail from the sheet back to the reasoning.');
 });
 
 /* ══ §4 · POSITIVE CONTROLS ON THE GUARDS THEMSELVES ══════════════════ */
 
-test('R259 §4: the guard convicts the HISTORICAL state — round-27 Q2 blank while R237 claims it', () => {
+test('§4: the guard convicts the HISTORICAL state — round-27 Q2 blank while an owner call claims it', () => {
   // ⚠ Reconstructed from what actually shipped, not a fixture built to be
-  // caught. R237's first line is `*(2026-08-28, round 29b. Answers
+  // caught. The owner ruling's first line was `*(2026-08-28, round 29b. Answers
   // questions-round27 Q2. …` and the sheet's line 61 was the bare word
   // `ANSWER:` with nothing after it.
   const sheet = '# s\n\n## Q2. Does a kill rider fire?\n\nsome body\n\nANSWER:\n\n---\n';
-  const md = '## R237 — {Deadly} reaches every damage site\n\n'
-    + '*(2026-08-28, round 29b. Answers questions-round27 Q2. Two commits changed.)*\n';
+  const md = 'attr.deadly.effect-damage: questions-round27 Q2';
 
   const block = sheet.split(/\n(?=## Q)/)[1]!;
   const answer = (/\nANSWER:(.*)/.exec(block)?.[1] ?? '').trim();
   assert.equal(answer, '', 'the reconstruction is wrong — the historical line was blank');
   assert.deepEqual(backPointers(md).map(b => [b.round, b.n]), [[27, 2]],
-    'the back-pointer scan cannot see R237, which is the case this guard was built from');
+    'the back-pointer scan cannot see the owner call this guard was built from');
 
   // and the two together are exactly what §1 convicts on
   assert.ok(answer === '' && backPointers(md).length === 1,
     '§1 would not have caught the real case');
 });
 
-test('R259 §4: the guard does NOT convict a backfilled answer, or ordinary unreferenced work', () => {
+test('§4: the guard does NOT convict a backfilled answer, or ordinary unreferenced work', () => {
   const backfilled = '# s\n\n## Q2. Does a kill rider fire?\n\nbody\n\n'
-    + 'ANSWER: **YES** — answered 2026-08-28, recorded as **R237**.\n\n---\n';
+    + 'ANSWER: **YES** — answered 2026-08-28, recorded in the comprehensive rules.\n\n---\n';
   const block = backfilled.split(/\n(?=## Q)/)[1]!;
   assert.notEqual((/\nANSWER:(.*)/.exec(block)?.[1] ?? '').trim(), '',
     'a backfilled answer must read as answered, or this guard fires on the fix it asks for');
 
-  assert.deepEqual(backPointers('## R241 — a card menu carries card things\n\nno sheet named here\n'), [],
+  assert.deepEqual(backPointers('ui.card-menu.card-things: comment c-41'), [],
     'a ruling that answers nothing on a sheet must produce no subject, or every ordinary '
     + 'ruling becomes a false positive and this file is switched off within a round');
 });

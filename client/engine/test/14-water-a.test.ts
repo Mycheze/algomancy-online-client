@@ -3,16 +3,16 @@
  * parallel card registration can't shift assertions; seeds are 1400-1499.
  *
  * Covers: a tripling graft cause (Amphivore), hand disruption (Bripp), erase
- * + Glimpse (Celestial Purge — R45: reveal N, cache exactly ONE of the
+ * + Glimpse (Celestial Purge — CR 801.9: reveal N, cache exactly ONE of the
  * glimpser's choice and recycle the rest; the cached one is playable
  * until end of turn ignoring affinity), stack recall (Cosmic Reversal), a live hand-size static (Dreadspawn
  * Horror; its augment-donated form stays parked — mod-carried statics),
  * targeted draw trigger (Dreamfloat Drifter), the engine's per-battle
- * life-loss ledger (Echo of Despair, Null Drone; R14), bin recall (Eldritch
- * Reclaimer), R6 payments (Frosted Denial), hand-entry pump — recalls AND
+ * life-loss ledger (Echo of Despair, Null Drone; CR 505.6), bin recall (Eldritch
+ * Reclaimer), CR 111.9 payments (Frosted Denial), hand-entry pump — recalls AND
  * battle draws (Galerider Eel), playing units mid-battle (Hooba-Pon,
  * Insidious Invitation), ambush
- * (Mirage Walker and Lurking Slimebeast, R22),
+ * (Mirage Walker and Lurking Slimebeast, CR 803.6),
  * targeted recall (Minor Kraken), deployment-idle tracking (Mirage Walker),
  * Glimpse spells (Oracle of Foretelling, Premonition) and until-regroup
  * pumps (Overwhelm, Protective Adaptations).
@@ -30,7 +30,7 @@ const passUntil = (h: Harness, seat: Seat) => { while (h.state.priority !== seat
 const drainStack = (h: Harness) => { while (h.state.stack.length) pass(h); };
 import type { CachedCard, Seat } from '../src/types.ts';
 
-/** R41: the cache zone — optional field, so read it through here. */
+/** CR 403.1: the cache zone — optional field, so read it through here. */
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
 // ── Amphivore ────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ test('Amphivore: combat damage to an opponent triggers grafts thrice (one trigge
   h.do({ type: 'declareAttack', seat: A, columns: [[amph]] });
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
-  // R261: was "trigger resolves at once (R3 sub-step drain)". A combat-damage
+  // CR 608.9b: was "trigger resolves at once ([…] sub-step drain)". A combat-damage
   // trigger now waits and goes on the stack in the after-combat window, so the
   // Fireballs are not on the board until it drains. The COUNT is unchanged —
   // this test is about Amphivore tripling a graft, not about when it happens.
@@ -71,7 +71,7 @@ test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feebl
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
-  // R64 (playtest UFAB): "target player" is the 'player' kind. Under the old
+  // CR 110.3c (playtest UFAB): "target player" is the 'player' kind. Under the old
   // 'any' — the DAMAGE kind — every unit in the region was on this menu, the
   // cast was legal, and the spell resolved into "no hand to look at".
   notOffered(h, { unit: foe }, 'a unit has no hand');
@@ -85,7 +85,7 @@ test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feebl
   const picked = dHand[0]!;
   pick(h, 0);                                               // recycle D's first card
   assert.equal(h.state.players[D]!.hand.length, dHand.length, 'recycled one, drew one');
-  // R296: Bripp's "recycle that card" is a recycle like any other — past the
+  // CR 801.10: Bripp's "recycle that card" is a recycle like any other — past the
   // mark, not onto the bottom of the live deck
   assert.equal(h.q.recycleOf(D).at(-1), picked, 'the recycled card is past the mark');
   assert.equal(h.state.players[D]!.hand[dHand.length - 1], deckTop, 'the draw came off the top');
@@ -113,7 +113,7 @@ test('Celestial Purge: erases target unit (no bin); its controller Glimpses 3 �
   const deckBefore = h.q.deckOf(D).length;
   const dHandBefore = [...h.state.players[D]!.hand];
   pass(h); pass(h);                                         // resolve → erase + glimpse
-  // R45: the GLIMPSER chooses which one to cache — here the erased unit's
+  // CR 801.9a, 801.9d: the GLIMPSER chooses which one to cache — here the erased unit's
   // controller, D, not the caster
   const dec = h.state.decision!;
   assert.equal(dec.seat, D, 'the glimpser chooses, and the glimpser is D');
@@ -122,9 +122,9 @@ test('Celestial Purge: erases target unit (no bin); its controller Glimpses 3 �
   assert.ok(!ent(h, slime), 'unit erased');
   assert.ok(!h.state.players[D]!.bin.includes('Lurking Slimebeast'), 'erase, not bin');
   assert.deepEqual(cacheOf(h, D).map(c => c.card), [top3[1]],
-    'exactly ONE card is cached — the chosen one (R45)');
+    'exactly ONE card is cached — the chosen one (CR 801.9)');
   assert.deepEqual(h.state.players[D]!.hand, dHandBefore, 'nothing reaches hand');
-  // R296: all THREE leave the deck — the cached one to the cache, the other
+  // CR 408.2a: all THREE leave the deck — the cached one to the cache, the other
   // two past the mark. This used to read `deckBefore - 1`, on the old rule
   // where a recycle landed back on the same deck it came off.
   assert.equal(h.q.deckOf(D).length, deckBefore - 3, 'all three left the deck');
@@ -132,7 +132,7 @@ test('Celestial Purge: erases target unit (no bin); its controller Glimpses 3 �
     'the other two are recycled PAST THE MARK, in revealed order');
   assert.equal(h.q.cachePermission(D, 0), 'glimpse', 'it carries the until-end-of-turn permission');
   assert.equal(cacheOf(h, D)[0]!.prophecy, undefined, 'glimpse attaches no prophecy');
-  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'and the reveal is public (R41)');
+  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'and the reveal is public (CR D6.2c)');
   finishBattle(h);
 });
 
@@ -267,7 +267,7 @@ test('Eldritch Reclaimer: recalls a unit from your bin to your hand, spawns 4/2'
   const p = h.state.deployPlayer!;
   h.state.players[p]!.bin.push('Echo of Despair', 'Overwhelm');   // unit + spell in the bin
   giveResources(h, p, 'water', 4);                          // bb/4
-  // R64: a real cast-time target — the spell in the bin is never on the menu
+  // CR 110.3: a real cast-time target — the spell in the bin is never on the menu
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Eldritch Reclaimer') });
   assert.equal(h.state.decision!.options.length, 2,
     'the one unit, plus the "up to" decline (an empty bin must not block the 4/2)');
@@ -295,13 +295,13 @@ test('Frosted Denial: controller cannot pay X → the effect is negated', () => 
   pick(h, { unit: tok });
   const owId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Frosted Denial') });
-  assert.equal(h.state.decision!.seat, A, 'caster picks X at cast (R35)');
+  assert.equal(h.state.decision!.seat, A, 'caster picks X at cast (CR 107.2a)');
   assert.equal(h.state.decision!.options[0]!.label, 'X = 1', "X can't be zero (xMin 1)");
   pick(h, 1);                                               // X = 1, paid at cast
   pick(h, { stack: owId });
   pass(h); pass(h);                                         // resolve; D has 0 open → auto-negate
   assert.equal(h.state.decision, null, 'no pay decision when the opponent cannot pay');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Overwhelm left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, tok), [1, 1], 'the token was never shrunk');
   assert.equal(h.state.players[A]!.resources.filter(r => r.state === 'open').length, 2, 'A paid X=1');
@@ -324,7 +324,7 @@ test('Frosted Denial: controller pays X → the effect survives and you draw', (
   pick(h, { unit: whale });
   const owId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Frosted Denial') });
-  pick(h, 2);                                               // A chooses X = 2 at cast (R35), paid now
+  pick(h, 2);                                               // A chooses X = 2 at cast (CR 107.2a), paid now
   pick(h, { stack: owId });
   const aHand = h.state.players[A]!.hand.length;
   pass(h); pass(h);                                         // resolve Frosted Denial
@@ -395,8 +395,8 @@ test('Hooba-Pon: attack → you may pay for a unit from hand into my formation',
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
   pass(h); pass(h);                                         // resolve the trigger
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));   // play the second Hooba-Pon
-  // R198: where it goes is declared WITH the play now — an R29 `FormationSpot`
-  // on the stack item, not R75's post-spawn slot index — and the play itself
+  // CR 702.3e: where it goes is declared WITH the play now — a CR 602.7 `FormationSpot`
+  // on the stack item, not CR 602.6's post-spawn slot index — and the play itself
   // goes on the stack, so the two passes below are the response window the
   // opponent is owed before the body arrives.
   pick(h, { kind: 'behind', unit: hooba });                 // behind me
@@ -428,7 +428,7 @@ test('Insidious Invitation: draw, then each player (you first) may play a unit a
   pick(h, h.state.players[A]!.hand.indexOf('Echo of Despair'));
   assert.equal(h.state.decision!.seat, D, 'then the opponent');
   pick(h, h.state.players[D]!.hand.indexOf('Hooba-Pon'));
-  // R198: both plays are on the stack (D's above A's, since D played second),
+  // CR 703.5: both plays are on the stack (D's above A's, since D played second),
   // and each is drained by its own priority window — which is the whole change.
   pass(h); pass(h); pass(h); pass(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Echo of Despair'), 'A played a deploy-timing unit in battle');
@@ -453,8 +453,8 @@ test('Lurking Slimebeast: plays as an 8/3', () => {
 
 // UNPARKED (round 15). The oracle file once spelled this cost as the word
 // "[three_blue]"; it is "[3b]" at source now, so printed.ambush is real and
-// the R22 mode is offered like any other ambusher's.
-test('Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)', () => {
+// the CR 803.6 mode is offered like any other ambusher's.
+test('Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (CR 803.6a, 107.10a)', () => {
   const h = new Harness(1417);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -497,7 +497,7 @@ test('Minor Kraken: attack → recall target unit with 5 or less defense', () =>
   assert.ok(h.state.players[D]!.hand.includes('Unit Token'), 'to its owner\'s hand');
   finishBattle(h);
 
-  // R64 — defense > 5: not a legal target, so it is never offered
+  // CR 110.3a — defense > 5: not a legal target, so it is never offered
   const h2 = new Harness(1417);
   toDeployment(h2);
   const A2 = h2.state.deployPlayer!, D2 = 1 - A2;
@@ -514,7 +514,7 @@ test('Minor Kraken: attack → recall target unit with 5 or less defense', () =>
 
 // ── Mirage Walker ────────────────────────────────────────────────────────
 
-test('Mirage Walker: ambush [4bb] recalls an ally and takes its formation slot (R22)', () => {
+test('Mirage Walker: ambush [4bb] recalls an ally and takes its formation slot (CR 803.6e)', () => {
   const h = new Harness(1418);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -647,7 +647,7 @@ test('Null Drone: negates a spell costing ≤ the greatest life lost this battle
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Null Drone') });
   pick(h, { stack: owId });
   pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 2 lost
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Overwhelm left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, drone), [2, 1], 'the drone was never shrunk');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Null Drone').length, 2, 'the spell unit spawned too');
@@ -677,7 +677,7 @@ test('Null Drone: life loss is ledgered engine-side — no tracker unit needed i
   pick(h, { stack: owId });
   pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 1 lost
   assert.ok(h.log.some(l => l.includes('is negated')), 'Overwhelm negated');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Overwhelm left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the token was never shrunk');
   finishBattle(h);
@@ -699,19 +699,19 @@ test('Oracle of Foretelling: Glimpse 5 caches ONE of the five; it is playable IG
   const oracleIdx = give(h, p, 'Oracle of Foretelling');
   const handBefore = h.state.players[p]!.hand.filter((_, i) => i !== oracleIdx);
   h.do({ type: 'playCard', seat: p, handIndex: oracleIdx });
-  // R45: reveal 5, cache exactly ONE of the glimpser's choice, recycle 4
+  // CR 801.9: reveal 5, cache exactly ONE of the glimpser's choice, recycle 4
   const dec = h.state.decision!;
   assert.equal(dec.seat, p);
   assert.deepEqual(dec.options.map(o => o.card), top5, 'all five are offered, in deck order');
   h.do({ type: 'decide', seat: p, choice: 0 });             // keep the Ignis Sprite on top
   assert.deepEqual(cacheOf(h, p).map(c => c.card), ['Ignis Sprite'], 'exactly one cached');
   assert.deepEqual(h.state.players[p]!.hand, handBefore, 'and nothing reaches hand');
-  assert.equal(h.q.deckOf(p).length, deckBefore - 5, 'R296: all five left the deck');
+  assert.equal(h.q.deckOf(p).length, deckBefore - 5, 'CR 408.2: all five left the deck');
   assert.deepEqual(h.q.recycleOf(p).slice(-4), top5.slice(1),
     'the other four are past the mark, in revealed order');
   const oracle = unitsOf(h, p).find(u => u.card === 'Oracle of Foretelling')!;
   assert.deepEqual(effStats(h, oracle.id), [4, 1]);
-  // R45's whole point: the SAME card that is unplayable from hand is playable
+  // CR 801.9's whole point: the SAME card that is unplayable from hand is playable
   // from the cache, because the glimpse permission ignores affinity.
   assert.equal(h.q.cachePermission(p, 0), 'glimpse');
   assert.ok(h.legal(p).some(a => a.type === 'playCached' && a.index === 0),
@@ -739,7 +739,7 @@ test('Overwhelm: target unit gains -1/-1 per card in your hand, until regroup', 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Overwhelm') });
   pick(h, { unit: whale });
   pass(h); pass(h);                                         // resolve
-  assert.deepEqual(effStats(h, whale), [5, 3], '2 cards in hand at resolution → -2/-2 (R1)');
+  assert.deepEqual(effStats(h, whale), [5, 3], '2 cards in hand at resolution → -2/-2 (CR 107.8)');
   finishBattle(h);
   assert.deepEqual(effStats(h, whale), [7, 5], 'temporary — gone at regroup');
 });
@@ -762,14 +762,14 @@ test('Premonition: Glimpse X where X is your water affinity; the permission dies
   const dec = h.state.decision!;
   assert.equal(dec.options.length, 3, 'X = 3 water affinity → Glimpse 3, so three options');
   h.do({ type: 'decide', seat: A, choice: 2 });             // cache the LAST of the three
-  assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[2]], 'exactly one cached (R45)');
+  assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[2]], 'exactly one cached (CR 801.9i)');
   assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing to hand');
-  assert.equal(h.q.deckOf(A).length, deckBefore - 3, 'R296: all three left the deck');
+  assert.equal(h.q.deckOf(A).length, deckBefore - 3, 'CR 408.2: all three left the deck');
   assert.deepEqual(h.q.recycleOf(A).slice(-2), [top3[0], top3[1]],
     'recycled PAST THE MARK, in revealed order');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse');
   finishBattle(h);
-  // R45: the permission expires at end of turn — the card stays cached, inert
+  // CR 801.9i: the permission expires at end of turn — the card stays cached, inert
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[2]], 'still in the cache next turn');
@@ -811,14 +811,14 @@ test('Protective Adaptations: the target also gains piercing until regroup', () 
   assert.ok(!ownAttrs(h, tok).has('Piercing'), 'temporary — gone at regroup');
 });
 
-// ── R110: the ruling Amphivore is named in ──────────────────────────────
+// ── The ruling Amphivore is named in (CR 109.9j) ──────────────────────────────
 //
 // "Amphivore / Lost Guardian. Bounded Grafts and Ralph explained." (moderator,
 // 2025-03-21): one stack item, the grafts tripled top-to-bottom and again,
 // "Any Bounded Grafts will be repeated", and a targeted graft aims each copy.
 // This file used to assert the opposite (bounded grafts "correctly run once").
 
-test('R110: Amphivore triples a BOUNDED [Switch1] graft — nine Fireballs from one "Create three"', () => {
+test('CR 109.9j: Amphivore triples a BOUNDED [Switch1] graft — nine Fireballs from one "Create three"', () => {
   const h = new Harness(1470);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -830,13 +830,13 @@ test('R110: Amphivore triples a BOUNDED [Switch1] graft — nine Fireballs from 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
   pass(h); pass(h);                                         // → 2 combat damage
-  resolveAfterCombat(h);   // R261: the graft trigger is stacked after combat, not in the damage step
+  resolveAfterCombat(h);   // CR 608.9b: the graft trigger is stacked after combat, not in the damage step
   const fires = tokensOf(h, A).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 9, 'bounded "Create three Fireball 1" ran THREE times — "Any Bounded Grafts will be repeated"');
   finishBattle(h);
 });
 
-test('R110: a TARGETED graft under Amphivore aims each of its three copies separately', () => {
+test('CR 722.7c: a TARGETED graft under Amphivore aims each of its three copies separately', () => {
   const h = new Harness(1471);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -849,7 +849,7 @@ test('R110: a TARGETED graft under Amphivore aims each of its three copies separ
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                         // 2 combat damage → the trigger asks for targets
-  // R261: the three target questions are unmoved — targeting still happens on
+  // CR 608.9b, 608.9: the three target questions are unmoved — targeting still happens on
   // the way to the stack — but the tripled graft now RESOLVES in the
   // after-combat window rather than inside the damage step.
   let asked = 0;

@@ -63,7 +63,7 @@ product." Concrete failings the redesign targets (Bena's brief):
 - **Join game**: enter a code → lobby.
 - **Local hotseat**: ⚠ REMOVED 2026-09-23. It was never a product — `ui/main.ts` opened with
   "Both hands are visible: this is the M1 test rig, not the product" — and the owner had it taken off
-  the home screen and out of the client. The both-seats capability it provided is still needed by R170
+  the home screen and out of the client. The both-seats capability it provided is still needed by CR D2.1
   and lives in `ui/test/ui-driver.ts`'s `local()`, a server in the test file rather than a route.
   `?demo` is the remaining no-server board. (This file is a 2026-07 draft; see BL-09.)
 - **Practice / demo**: the `?demo` mid-battle, and/or a scripted tutorial board.
@@ -109,7 +109,7 @@ is a CSS var (`--cw`) as today; hands fan and overlap to fit.
 - **Target arrows**: SVG lines from a stack item to its targeted unit(s)/player, drawn from
   `item.parts[].targets` (`TargetRef`: `{unit}|{player}|{stack}`). Hovering an item lights its arrows.
 - **Graft composites**: `parts.length > 1` renders as a stacked/fanned group with a "⑂ n parts" tag;
-  a single negation greys the whole group (matches R9 semantics).
+  a single negation greys the whole group (matches CR 722.4b semantics).
 - **Negated / fizzled**: greyed with a slash; `fizzled` gets a puff.
 - **Interaction**: when a stack item is a legal target (`decision.kind==='targets'` and it's an
   option), it highlights and is clickable to target. Otherwise click = inspect (enlarge + full text).

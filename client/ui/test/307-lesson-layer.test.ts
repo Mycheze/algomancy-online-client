@@ -1,4 +1,4 @@
-/* R297 — the Learn to Play window and menu, as the HTML they paint.
+/* CR D8.1 — the Learn to Play window and menu, as the HTML they paint.
  *
  * The ui-driver cannot hover or query the DOM, so the builders are pure and
  * this reads their output:

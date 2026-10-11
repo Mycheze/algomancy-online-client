@@ -4,16 +4,16 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded budgets
- * per card), R12/R25 ("each player/opponent"/"all …" effects read the event
- * region's present seats/units; listeners are region-scoped), R27 (counting
- * amounts are live at resolution), R115 (created UNITS arrive where their
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.1a (mid-resolution payments/choices via ctx.choose), CR 803.4 (bounded budgets
+ * per card), CR 101.6, 601.4d ("each player/opponent"/"all …" effects read the event
+ * region's present seats/units; listeners are region-scoped), CR 107.8 (counting
+ * amounts are live at resolution), CR 601.5 (created UNITS arrive where their
  * SOURCE is — ctx.region — unless the text names a place; that is where spell
  * tokens always appeared).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- * ✔ MYCELIAL MENTOR HEARS SPELL TOKENS NOW (R129). "When you create a token"
+ * ✔ MYCELIAL MENTOR HEARS SPELL TOKENS NOW (CR 300.5c). "When you create a token"
  *    carries no qualifier, and the set itself proves spell tokens are tokens:
  *    Cosmic Conspirator prints "if you would create a Robot, POISON, CRYSTAL
  *    or FIREBALL", and this very batch mints Poisons on four cards. The engine
@@ -24,8 +24,8 @@
  *    (owner, 2026-08-24: spell tokens are still tokens).
  *  - NOXIOUS DEMISE is printed {Reaping} and kills via a -1/-1 counter. The
  *    rider used to be hand-rolled in the effect, because the engine's
- *    {Reaping} lived in dealEffectDamage and no damage is dealt. R184 moved
- *    the attribute onto the engine's kill diff (the R48 {Afflicting} one), so
+ *    {Reaping} lived in dealEffectDamage and no damage is dealt. A later fix moved
+ *    the attribute onto the engine's kill diff (the one {Afflicting} uses; CR 802.21b, 802.23c), so
  *    the card is back to doing only what it prints.
  *  - ORGANIC EXCHANGE "swap their positions": position = formation slot
  *    (attacker/blocker grids). Units outside any formation simply trade
@@ -33,14 +33,14 @@
  *    everyone returns to their new controller's home region, which is what
  *    a permanent control exchange needs.
  *  - MINDSPORE FIEND "give an opponent control": the opponent is the other
- *    present seat of the effect's region (R25) — resolving with no opponent
+ *    present seat of the effect's region (CR 601.4d) — resolving with no opponent
  *    present (out-of-battle graft timing) is a no-op, no draw.
  *
  * PARKED: none. (Kept as history — the one entry below has shipped.)
- *  - (Phytochemical Protection UNPARKED by R98, round 17 — see the card. The
+ *  - Phytochemical Protection UNPARKED in round 17 — see the card. The
  *    prevention layer it waited on is `E.preventUnitDamage`, the one choke
  *    point both unit-damage commits now pass through, with the shield kept on
- *    `Entity.damageShield` and swept by the R11 regroup cleanup.)
+ *    `Entity.damageShield` and swept by the CR 506.2 regroup cleanup.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -50,15 +50,15 @@ import { isEnt, chooseUnit } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order).
- * R243: this ordering became `E.seatsHere` for the whole pool. */
+ * CR 601.4c: this ordering became `E.seatsHere` for the whole pool. */
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 // ────────────────────────────── the cards ──────────────────────────────
 
 // "When I attack, [Switch1] Create a Poison 5." — ggg/4 5/3 Blight Beast
-// Unit. Attack trigger (self), [Switch1] bounded (R9), graft cause. The
+// Unit. Attack trigger (self), [Switch1] bounded (CR 722.5), graft cause. The
 // Poison is a SPELL token — it appears where the effect resolves (the
-// battle region, R115), ready to be thrown this battle.
+// battle region, CR 601.5), ready to be thrown this battle.
 const createPoison5: EffectDef = {
   creates: ['Poison'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Poison', 5, ctx.region); },
@@ -75,7 +75,7 @@ card('Megadeath', {
 // "[Switch1] Target unit gains +1/+1 for each of your units until regroup."
 // — g/2 {Battle} Tree Druid Spell. The whole line is the bounded graftable
 // effect. Amount = the caster's units IN THE EFFECT'S REGION, live at
-// RESOLUTION (R1/R27); "until regroup" = addTemp (cleared at regroup R11).
+// RESOLUTION (CR 107.8); "until regroup" = addTemp (cleared at regroup CR 506.2).
 const groveMight: EffectDef = {
   targets: { what: 'unit', prompt: 'Might of the Grove: target unit gains +1/+1 for each of your units until regroup' },
   run: (g, ctx) => {
@@ -98,13 +98,13 @@ card('Might of the Grove', {
 // If you do, draw a card." — g/1 1/1 Alien Fungus Unit. NOT self: the
 // afterCombat event carries no source unit (Deathglow Strider precedent) —
 // region scoping keeps it to the battle I'm in. The ally is the cast-time
-// target; "you may" is a mid-resolution decline (R6). ⚠ header note: the
-// opponent is the other present seat (R25) — none present → no-op, no draw.
+// target; "you may" is a mid-resolution decline (CR 704.1a). ⚠ header note: the
+// opponent is the other present seat (CR 601.4d) — none present → no-op, no draw.
 //
-// R148/CT-38: the handover is E.giveControl, so the unit's MODS change
+// CT-38: the handover is E.giveControl, so the unit's MODS change
 // controller with it. It used to be a raw `u.controller = opp`, which left a
 // stolen unit's augments and grafts answering to the seat that gave it away —
-// latent, never reported, found by the R143 sweep.
+// latent, never reported, found by the Hush Mush sweep.
 //
 // ⚠ The note that used to sit here — "the unit keeps its formation slot for
 // the (already finished) battle" — is GONE, and deliberately: it was a
@@ -113,8 +113,8 @@ card('Might of the Grove', {
 // battle; the afterWindow priority is still to come, and through it the unit
 // would have been standing in its OLD controller's column while the OPPONENT
 // controlled it. giveControl unslots it. Nothing is lost by that: combat
-// damage is over, and R72's horizontal collapse is already switched off after
-// blocks, so the line does not shuffle either. The region is unchanged (the
+// damage is over, and the horizontal collapse is already switched off after
+// blocks (CR 602.5a), so the line does not shuffle either. The region is unchanged (the
 // opponent is a present seat here by construction, so giveControl's exclusivity
 // branch does not fire) and regroup still sends it to its NEW controller's home.
 const mindsporeGive: EffectDef = {
@@ -125,7 +125,7 @@ const mindsporeGive: EffectDef = {
     const u = g.entity(t.id)!;
     if (u.controller !== ctx.controller) { g.ev('info', `Mindspore Fiend: ${u.card} is no longer an ally — no effect.`); return; }
     const opp = presentSeats(g, ctx.region).find(s => s !== ctx.controller);
-    if (opp === undefined) { g.ev('info', 'Mindspore Fiend: no opponent is present (R25) — no effect.'); return; }
+    if (opp === undefined) { g.ev('info', 'Mindspore Fiend: no opponent is present — no effect.'); return; }
     const gives = ctx.choose('give', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `Mindspore Fiend: give ${g.pname(opp)} control of ${u.card} and draw a card?`,
@@ -145,13 +145,13 @@ card('Mindspore Fiend', {
 });
 
 // "When you create a token, [Switch1] Target ally gains +3/+3 until
-// regroup." — g/1 2/1 Fungus Unit. Conditions at event time (R1): a unit
+// regroup." — g/1 2/1 Fungus Unit. Conditions at event time (CR 109.3a): a unit
 // token I control spawning ('spawned' with the token flag), or a SPELL token
-// I create ('tokenCreated', which the engine dispatches as of R129 — spell
+// I create ('tokenCreated', which the engine dispatches — CR 300.5c: spell
 // tokens are still tokens). "A token" is unqualified, so the card means both
 // and hears both; each creation fires exactly ONE of the two events, so
-// nothing double-triggers. Region-scoped listener (R12): I only hear tokens
-// made in my region. [Switch1] bounded (R9).
+// nothing double-triggers. Region-scoped listener (CR 101.6): I only hear tokens
+// made in my region. [Switch1] bounded (CR 722.5).
 const mentorBuff: EffectDef = {
   targets: { what: 'allyUnit', prompt: 'Mycelial Mentor: target ally gains +3/+3 until regroup' },
   run: (g, ctx) => {
@@ -175,7 +175,7 @@ card('Mycelial Mentor', {
 // "[Augment] When I die, put a -1/-1 counter on each unit." — gg/3 4/2
 // Blight Fungus {Virus} Unit. Text-box [Augment]: donated, "I" is the host
 // (the Virus points it at an enemy unit); live when played normally
-// (Manual Q&A). "Each unit" = every unit in the event's region (R12), both
+// (Manual Q&A). "Each unit" = every unit in the event's region (CR 101.6), both
 // sides — the list is snapshotted, then each still-alive unit is hit.
 card('Noxious Deathcap', {
   augmentText: [{
@@ -194,9 +194,9 @@ card('Noxious Deathcap', {
 });
 
 // "Put a -1/-1 counter on target unit." — gg/1 {Battle} {Reaping} Arcane
-// Blight Spell. The counter (not damage) is what kills, so R184 moved
+// Blight Spell. The counter (not damage) is what kills, so the Reaping fix (CR 802.21b) moved
 // {Reaping} out of `dealEffectDamageAll` onto the engine's kill diff — the
-// same one {Afflicting} has ridden since R48. The rider used to be
+// same one {Afflicting} has ridden since the Afflicting ruling (CR 802.23c). The rider used to be
 // hand-rolled here; the card now only puts the counter on.
 card('Noxious Demise', {
   spellEffect: {
@@ -217,7 +217,7 @@ card('Noxious Demise', {
 // formation just trades controller), and regroup sends everyone to their NEW
 // controller's home.
 //
-// R148/CT-38: both handovers go through E.giveControl now (they were raw
+// CT-38: both handovers go through E.giveControl now (they were raw
 // `a.controller = cb`, which left both units' MODS behind with their old
 // controllers), and this is the one caller in the pool that passes
 // `keepFormation`. The unslot inside the choke point exists to stop a unit
@@ -271,7 +271,7 @@ card('Organic Exchange', {
           `Organic Exchange: ${a.card} and ${b.card} are both ${g.pname(ca)}'s — `
           + 'their positions swap and control does not change.');
       } else {
-        // R148/CT-38: the choke point announces each handover itself, so this
+        // CR 711.5/CT-38: the choke point announces each handover itself, so this
         // line says only the half it owns — the positions.
         g.ev('info', `Organic Exchange: ${a.card} and ${b.card} swap positions.`);
         g.giveControl(a, cb, { keepFormation: true });
@@ -298,7 +298,7 @@ card('Overbloom', {
 // "[Augment] [two]: Create a 1/1 unit." — gg/6 4/4 Plant Unit. An ACTIVATED
 // ability in the [Augment] text box: live when played normally
 // (via: 'augment') and donated to hosts (via: { mod }). The created unit
-// arrives where the carrier is (R115: ctx.region) — activate it while Pack
+// arrives where the carrier is (CR 601.5: ctx.region) — activate it while Pack
 // Leader is attacking and the 1/1 is minted in the enemy region, in no column
 // and unable to block the counterattack. Unbounded (no [once]).
 card('Pack Leader', {
@@ -316,11 +316,11 @@ card('Pack Leader', {
 
 // "When I spawn, create two 1/1 units. [Augment] When I despawn, delete all
 // token allies." — gg/2 2/3 Fungus Parasite {Virus} Unit. The spawn clause
-// is a normal ability (created units arrive at ctx.region, R115). The despawn clause
+// is a normal ability (created units arrive at ctx.region, CR 601.5). The despawn clause
 // is text-box [Augment] — as a Virus on an enemy unit, "allies" are the
 // HOST's controller's units, which is the whole point of the card. DESPAWN
 // = ANY leave-play: 'died' + 'despawned' (the Bloated Manablub precedent).
-// "All token allies" is region-scoped (R12): tokens in the event's region.
+// "All token allies" is region-scoped (CR 101.6): tokens in the event's region.
 card('Pathogenic Enclave', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
@@ -351,7 +351,7 @@ card('Pathogenic Enclave', {
 
 // "[Switch1] Your units gain +2/+2 and {Piercing} until regroup." — gg/4
 // Alien Druid Spell (deploy timing). The whole line is the bounded graftable
-// effect. "Your units" = the caster's units in the effect's region (R12),
+// effect. "Your units" = the caster's units in the effect's region (CR 101.6),
 // snapshotted at resolution; addTemp + addTempAttr both clear at regroup.
 const photosynthesis: EffectDef = {
   run: (g, ctx) => {
@@ -372,8 +372,8 @@ card('Pernicious Photosynthesis', {
 // opponent loses 1 life." — gg/2 1/3 {Poisonous} Blight Unit. Text-box
 // [Augment]; live when played normally (Manual Q&A) — its own Poisonous
 // damage lands as -1/-1 counters and feeds the trigger. Condition at event
-// time (R1): the countersChanged batch was negative ("one or more" = one
-// firing per batch). "Each opponent" is region-scoped (R25), read from the
+// time (CR 109.3a): the countersChanged batch was negative ("one or more" = one
+// firing per batch). "Each opponent" is region-scoped (CR 601.4d), read from the
 // carrier's controller at resolution.
 card('Pestilent Mycelion', {
   augmentText: [{
@@ -382,7 +382,7 @@ card('Pestilent Mycelion', {
     when: (g, self, ev) => ((ev.data?.n as number) ?? 0) < 0,
     effect: {
       run: (g, ctx) => {
-        // R187/CT-70: region-scoped (R25) — alone in a home region the loop is
+        // CR D7.3/CT-70: region-scoped (CR 601.4d) — alone in a home region the loop is
         // empty, which is correct, and used to be silent, which was not.
         const foes = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         if (!foes.length) {
@@ -397,14 +397,14 @@ card('Pestilent Mycelion', {
 
 // "Until regroup, prevent all damage that would be dealt to target unit.
 // Put a +1/+1 counter on it for each damage prevented this way." — gg/2
-// {Battle} Plant Spell. UNPARKED by R98 (report #72, GETD 2026-08-22:
+// {Battle} Plant Spell. UNPARKED in round 17 (report #72, GETD 2026-08-22:
 // "Phytochemical Protection is entirely non functional. Needs to work like the
 // text says."). It was: the spell targeted, logged and did nothing, because
 // there was no "damage would be dealt to a UNIT" hook anywhere in the engine.
 //
-// R98 built the three things the park named: `E.preventUnitDamage`, the one
+// Round 17 built the three things the park named: `E.preventUnitDamage`, the one
 // choke point both unit-damage commits now pass through; `Entity.damageShield`
-// (the CARD that shielded, like `suppressed`), swept by the R11 regroup
+// (the CARD that shielded, like `suppressed`), swept by the CR 506.2 regroup
 // cleanup; and `Entity.shieldPending` + `E.settleDamagePrevention`, the running
 // per-unit total that pays out "a +1/+1 counter for each damage prevented".
 //
@@ -419,7 +419,7 @@ card('Pestilent Mycelion', {
 //    will receive +2/+2 counters from Phytochemical Protection."
 // So no 'damage' event fires, "whenever I am dealt damage" stays silent, and
 // {Deadly}, {Resonant}, {Blessed} and Poisonous all have nothing to key on.
-// ⚠ This is the OPPOSITE of the R38 replacement hooks, where "replacing the
+// ⚠ This is the OPPOSITE of the CR 708.11 replacement hooks, where "replacing the
 // damage does NOT unmake it" (Caleb 2024-10-24) and {Lethal} still kills
 // through. Prevention unmakes it; replacement does not.
 //
@@ -436,19 +436,19 @@ card('Pestilent Mycelion', {
 // ⚠ OPEN, and deliberately answered the simple way: two Phytochemical
 // Protections on ONE unit. The shield is a single named flag, so the second
 // spell re-stamps it and the unit still gets ONE counter per damage prevented,
-// not two. Nothing in the corpus addresses it; flagged in R98.
+// not two. Nothing in the corpus addresses it; flagged when the shield was built.
 //   AUDITED 2026-08-24 (literal-reading sweep) and left alone: here the simple
 //   answer and the literal reading coincide. "Put a +1/+1 counter on it for
 //   each damage prevented THIS WAY" is paid by the prevention that did the
 //   preventing, and once the first shield has prevented all the damage there
 //   is no damage the second one "would" prevent — so a second copy pays for
 //   nothing however the flag is stored. The note's REASONING is still
-//   mechanism-shaped (one flag → one payout), which is the R125 smell; the
+//   mechanism-shaped (one flag → one payout), which is the invented-mechanism smell; the
 //   ANSWER is not. Left open in case the owner rules preventions stack.
 //
 // ⚠ WHAT THE SAME SWEEP DID FIND: "prevent ALL damage that would be dealt to
 // target unit" carries no qualifier, so it has to reach every unit-damage
-// commit — and there were THREE, not the two R98 counted. Oorblak
+// commit — and there were THREE, not the two first counted. Oorblak
 // (batch-earth-b) is a card-side commit: its replacement hook wrote
 // `self.damage` directly and never asked `preventUnitDamage`, so redirected
 // combat damage went through a shielded Oorblak. Fixed in the hook, which is
@@ -475,7 +475,7 @@ card('Phytochemical Protection', {
 // "[Augment] [three]: Each opponent chooses one of their units. Put a -1/-1
 // counter on each of the chosen units." — g/2 2/2 Insect Plant Unit. An
 // ACTIVATED ability in the [Augment] text box. "Each opponent" = the event
-// region's present seats other than mine (R25) — activated at home during
+// region's present seats other than mine (CR 601.4d) — activated at home during
 // deployment it affects nobody. Each opponent picks their OWN unit (auto when
 // they have only one); all picks are gathered before any counter lands
 // (plan-then-commit), then each chosen unit gets a -1/-1 counter.
@@ -514,7 +514,7 @@ const otherAllies = (g: E, self: Entity): number =>
   g.unitsOf(self.controller, self.region).filter(u => u.id !== self.id).length;
 card('Prickly Protector', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{

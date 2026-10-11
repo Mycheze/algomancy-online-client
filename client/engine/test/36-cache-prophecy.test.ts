@@ -1,25 +1,25 @@
 /* Light & Dark engine wave B: the cache zone, prophecy and glimpse.
  *
- *  - R41 Cache: a fourth zone beside hand, bin and deck, holding cards PLUS
+ *  - CR 403.1 Cache: a fourth zone beside hand, bin and deck, holding cards PLUS
  *    per-card metadata. Public information (no redaction). A cached card stays
  *    cached; being cached is NOT permission to play it. Mods may be applied
  *    out of it, paying normally.
- *  - R42 Prophecy: a deployment-only action that caches a banner card for the
- *    banner's plain mana (no affinity). Once the condition is fulfilled the
+ *  - Prophecy: a deployment action (CR 803.7b) that caches a banner card for the
+ *    banner's cost, mana and affinity (CR 803.7d). Once the condition is fulfilled the
  *    card may be played from cache FREE and affinity-free — but at normal
  *    timing, "as if it were in your hand". A fulfilled prophecy also makes a
  *    graft/augment of that card free.
- *  - R43 Conditions count FORWARD from the moment of prophesying, never
+ *  - CR 803.7 Conditions count FORWARD from the moment of prophesying, never
  *    backwards. The vocabulary is data-driven (PROPHECY_RULES) and an
  *    unrecognised condition fails safely and loudly.
- *  - R44 Fulfilment LATCHES: once met it stays met.
- *  - R45 Glimpse N: reveal N, cache exactly ONE of the glimpser's choice and
- *    recycle the other N-1 — which R296 sends PAST THE MARK, into the recycle
+ *  - CR 803.7g Fulfilment LATCHES: once met it stays met.
+ *  - CR 801.9 Glimpse N: reveal N, cache exactly ONE of the glimpser's choice and
+ *    recycle the other N-1 — which CR 408.2a sends PAST THE MARK, into the recycle
  *    pile, rather than onto the bottom of the live deck. The cached card may be
  *    played until end of turn ignoring affinity but paying the mana. The
  *    permission expires; the card stays cached, inert.
- *  - R46 A unit cached from play sheds its mods to the bin (which, per wave
- *    A's R40, trashes them).
+ *  - CR 403.7 A unit cached from play sheds its mods to the bin (which trashes
+ *    them, CR 801.2f).
  *
  * No Light & Dark card is scripted yet — every primitive here is proven with
  * synthetic test cards, the way the suite already tests bare mechanics.
@@ -47,14 +47,14 @@ const unit = (name: string, power: number, toughness: number, extra: Partial<Pri
 /* Every fixture below prophesies for `cost: ''` — a banner that demands no
  * affinity. That is what these tests have always meant, and it stayed
  * implicit until 2026-09-20, when `prophecy` gained the `cost` field the real
- * cards turned out to print (see R42's ⚠ OPEN note). The engine still pays a
+ * cards turned out to print (CR 203.2, 803.7d). The engine still pays a
  * banner through payMana(), so '' and a pip string behave identically today;
  * the day that changes, these fixtures say plainly which case they test. */
 
 /** the workhorse: a [6] unit with EARTH pips that can be prophesied for [2].
  * The mismatch is deliberate — releasing it from cache must work with neither
  * 6 mana nor any earth affinity, which is what "for free also ignores
- * affinity" (R42) means. */
+ * affinity" means (the prophecy ruling; now CR 803.7h). */
 registerSynthetic(unit('Test Prophet', 4, 4, {
   cost: 'ee', mana: 6, prophecy: { cost: '', mana: 2, condition: 'One Turn Passes' },
 }), {});
@@ -67,7 +67,7 @@ registerSynthetic(unit('Test Battle Prophet', 0, 0, {
   spellEffect: { run: (g, ctx) => { g.ev('info', `${ctx.sourceName} resolves.`); } },
 });
 
-/** R111: an X SPELL with a banner — a free release must not ask for X */
+/** CR 702.6c: an X SPELL with a banner — a free release must not ask for X */
 let lastX: number | undefined;
 registerSynthetic(unit('Test X Prophet', 0, 0, {
   kind: 'spell', timing: 'deploy', type: 'Test Spell', cost: 'r', mana: 'X',
@@ -88,8 +88,7 @@ registerSynthetic(unit('Test Haste Prophet', 1, 1, {
   timing: 'haste', prophecy: { cost: '', mana: 1, condition: 'End [Haste] with used mana' },
 }), {});
 
-/** Divine Intervention's shape: a {Battle} card whose banner marks the RELEASE
- * [Haste] — the marker is timing, not condition (R42). */
+/** Divine Intervention's shape: a {Battle} card whose banner ends in [Haste] — the marker is not part of the condition: it lets the card be prophesied in the haste step (CR 803.7b) and does not move the release (CR 803.7i). */
 registerSynthetic(unit('Test Release Prophet', 0, 0, {
   kind: 'spell', timing: 'battle', type: 'Test Spell',
   prophecy: { cost: '', mana: 1, condition: 'One Turn Passes [Haste]' },
@@ -108,7 +107,7 @@ registerSynthetic(unit('Test Bad Prophet', 1, 1, {
 }), {});
 
 /** an augment (type-line grant) with a prophecy banner: proves a fulfilled
- * prophecy makes the AUGMENT free too, not only the play (R42) */
+ * prophecy makes the AUGMENT free too, not only the play (CR 803.7k) */
 registerSynthetic(unit('Test Aug Prophet', 1, 1, {
   cost: 'ee', mana: 5, augmentAttrs: ['Tough'],
   prophecy: { cost: '', mana: 1, condition: 'One Turn Passes' },
@@ -118,8 +117,8 @@ registerSynthetic(unit('Test Aug Prophet', 1, 1, {
  * works and still costs the normal price (Caleb 2024-12-02) */
 registerSynthetic(unit('Test Aug Mod', 1, 1, { cost: 'rr', mana: 3, augmentAttrs: ['Tough'] }), {});
 
-/** graft host + graft mod (the mod carries a prophecy banner so the free-graft
- * half of R42 can be shown) */
+/** graft host + graft mod (the mod carries a prophecy banner so the free graft (CR 803.7k) can be
+ * shown) */
 registerSynthetic(unit('Test Graft Host', 2, 2), {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true, graftCause: true,
@@ -141,7 +140,7 @@ registerSynthetic(unit('Test Cost0', 1, 1, { mana: 0 }), {});
 registerSynthetic(unit('Test Cost1', 1, 1, { mana: 1 }), {});
 registerSynthetic(unit('Test Cost2', 1, 1, { mana: 2 }), {});
 registerSynthetic(unit('Test Cost3', 1, 1, { mana: 3 }), {});
-/** R45: glimpse carriers. The choose-one decision is raised through the
+/** CR 801.9a: glimpse carriers. The choose-one decision is raised through the
  * RESOLVING PART's ctx.choose, so a real stack item is the only honest way to
  * exercise it — a bare white-box e.glimpse() has no decision window. */
 registerSynthetic(unit('Test Glimpse 3', 0, 0, {
@@ -152,7 +151,7 @@ registerSynthetic(unit('Test Glimpse 1', 0, 0, {
 }), { spellEffect: { run: (g, ctx) => { g.glimpse(ctx.controller, 1); } } });
 
 /** a [1] unit with EARTH pips: unplayable from hand without earth affinity,
- * playable from cache for mana alone (R45 ignores affinity, not cost) */
+ * playable from cache for mana alone (CR 801.9f ignores affinity, not cost) */
 registerSynthetic(unit('Test Pips', 1, 1, { cost: 'ee', mana: 1 }), {});
 
 /** a [1] haste spell: something to spend mana on during the haste step */
@@ -192,7 +191,7 @@ function nextTurnsDeployment(h: Harness): void {
 }
 
 
-// ── R42: the prophesy action ──────────────────────────────────────────
+// ── CR 803.7: the prophesy action ──────────────────────────────────────────
 
 
 /** the inert deck filler behind sterile() below: unaffordable (mana 20, no
@@ -226,7 +225,7 @@ function sterile(seed: number): Harness {
   return h;
 }
 
-test('R42: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {
+test('CR 803.7b: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {
   const h = sterile(3600);
   const P = 0 as const;
   giveResources(h, P, 'fire', 4);
@@ -254,13 +253,13 @@ test('R42: prophesying is a DEPLOYMENT action — illegal in planning, the haste
   assert.ok(!h.legal(h.state.priority!).some(a => a.type === 'prophesy'));
 });
 
-/* R42/R301: the banner's affinity is the BANNER'S, not the card's. Test
+/* CR 803.7d, 203.2: the banner's affinity is the BANNER'S, not the card's. Test
  * Prophet costs `ee` and its banner costs [2] with no pips at all, so a seat
  * holding nothing but fire can prophesy it while being unable to play it —
- * the two costs are read separately. R301 made a banner's own pips binding
- * (313-prophecy-affinity.test.ts); it did not make the CARD's pips binding on
+ * the two costs are read separately. A banner's own pips are binding (CR 203.2,
+ * 313-prophecy-affinity.test.ts); that does not make the CARD's pips binding on
  * the banner, and this is the test that says so. */
-test('R42/R301: the banner is priced on its own pips, not the card\'s', () => {
+test('the banner is priced on its own pips, not the card\'s', () => {
   const h = sterile(3601);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -279,13 +278,13 @@ test('R42/R301: the banner is priced on its own pips, not the card\'s', () => {
   assert.equal(cache.length, 1);
   assert.equal(cache[0]!.card, 'Test Prophet');
   assert.equal(cache[0]!.prophecy!.condition, 'One Turn Passes');
-  assert.equal(cache[0]!.prophecy!.turn, h.state.turn, 'R43: anchored to the turn it was prophesied on');
+  assert.equal(cache[0]!.prophecy!.turn, h.state.turn, 'CR 803.7: anchored to the turn it was prophesied on');
   assert.ok(!cache[0]!.prophecy!.fulfilled, 'not fulfilled yet');
   assert.ok(h.events.some(ev => ev.type === 'prophesied'), 'the action is in the log');
   assert.ok(h.events.some(ev => ev.type === 'cached'), 'and so is the zone change');
 });
 
-test('R42: with less than the banner mana the prophecy is refused and never offered', () => {
+test('CR 803.7d: with less than the banner mana the prophecy is refused and never offered', () => {
   const h = sterile(3602);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -295,7 +294,7 @@ test('R42: with less than the banner mana the prophecy is refused and never offe
   assert.throws(() => h.do({ type: 'prophesy', seat: P, from: 'hand', index: idx }), IllegalAction);
 });
 
-test('R42: a card with no banner cannot be prophesied at all', () => {
+test('CR 803.7: a card with no banner cannot be prophesied at all', () => {
   const h = sterile(3603);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -304,7 +303,7 @@ test('R42: a card with no banner cannot be prophesied at all', () => {
   assert.throws(() => h.do({ type: 'prophesy', seat: P, from: 'hand', index: idx }), IllegalAction);
 });
 
-test('R42: only a card that SAYS SO may be prophesied from the bin', () => {
+test('CR 803.7c: only a card that SAYS SO may be prophesied from the bin', () => {
   const h = sterile(3604);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -319,9 +318,9 @@ test('R42: only a card that SAYS SO may be prophesied from the bin', () => {
   assert.equal(cacheOf(h, P)[0]!.card, 'Test Bin Prophet');
 });
 
-// ── R43: conditions count forward ─────────────────────────────────────
+// ── CR 803.7: conditions count forward ─────────────────────────────────────
 
-test('R43: "One Turn Passes" counts from the PROPHESYING, not from turn 1', () => {
+test('CR 803.7: "One Turn Passes" counts from the PROPHESYING, not from turn 1', () => {
   const h = sterile(3610);
   // burn a few turns first: a naive "turn >= 1" would already be satisfied
   toDeployment(h);
@@ -337,7 +336,7 @@ test('R43: "One Turn Passes" counts from the PROPHESYING, not from turn 1', () =
   assert.ok(cacheOf(h, P)[0]!.prophecy!.fulfilled, 'and the latch was written to state');
 });
 
-test('R43: "Two Turns Pass" needs two, not one', () => {
+test('CR 803.7: "Two Turns Pass" needs two, not one', () => {
   const h = sterile(3611);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -351,7 +350,7 @@ test('R43: "Two Turns Pass" needs two, not one', () => {
   assert.equal(h.q.cachePermission(P, 0), 'prophecy');
 });
 
-test('R43: "One Battle Passes" — both battles of a turn tick it, counted forward', () => {
+test('CR 803.7: "One Battle Passes" — both battles of a turn tick it, counted forward', () => {
   const h = sterile(3612);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -372,7 +371,7 @@ test('R43: "One Battle Passes" — both battles of a turn tick it, counted forwa
   assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'one completed battle round is enough');
 });
 
-test('R43: "Your life is 5 or less" is a live check while the prophecy stands', () => {
+test('CR 803.7: "Your life is 5 or less" is a live check while the prophecy stands', () => {
   const h = sterile(3613);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -384,7 +383,7 @@ test('R43: "Your life is 5 or less" is a live check while the prophecy stands', 
   assert.equal(h.q.cachePermission(P, 0), 'prophecy');
 });
 
-test('R43: "Your units have four unique costs" counts DISTINCT printed costs in play', () => {
+test('CR 803.7: "Your units have four unique costs" counts DISTINCT printed costs in play', () => {
   const h = sterile(3614);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -399,7 +398,7 @@ test('R43: "Your units have four unique costs" counts DISTINCT printed costs in 
   assert.equal(h.q.cachePermission(P, 0), 'prophecy');
 });
 
-test('R43: "End [Haste] with used mana" needs mana spent IN that haste step', () => {
+test('CR 803.7: "End [Haste] with used mana" needs mana spent IN that haste step', () => {
   const h = sterile(3615);
   toDeployment(h);
   const P = h.state.deployPlayer!, O = (1 - P) as Seat;
@@ -428,7 +427,7 @@ test('R43: "End [Haste] with used mana" needs mana spent IN that haste step', ()
   assert.equal(h.state.hasteManaSpent![P], 0, 'and the window tally is cleared behind it');
 });
 
-/** R50 landed an 'endOfHaste' EVENT in exactly the place R43's mana-tally
+/** The 'endOfHaste' EVENT (CR 504.6) landed in exactly the place the prophecy (CR 803.7) mana-tally
  * sweep already lived. The order is load-bearing and easy to break, so it is
  * pinned here: the event fires while `hasteDone` still describes the closing
  * step (so `hasteWithUsedMana`, which requires hasteDone === null, cannot latch
@@ -442,7 +441,7 @@ registerSynthetic(unit('Test Haste Listener', 1, 1), {
   }],
 });
 
-test("R43 + R50: the end-of-haste EVENT and the 'used mana' prophecy sweep coexist", () => {
+test("the end-of-haste EVENT and the 'used mana' prophecy sweep coexist", () => {
   const h = sterile(3617);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -458,17 +457,17 @@ test("R43 + R50: the end-of-haste EVENT and the 'used mana' prophecy sweep coexi
   skipHasteStep(h);
 
   // 1. the event fired, and it fired while the step was still open
-  assert.ok(h.events.some(e => e.type === 'endOfHaste'), "R50: 'endOfHaste' is dispatched");
+  assert.ok(h.events.some(e => e.type === 'endOfHaste'), "CR 504.6: 'endOfHaste' is dispatched");
   assert.ok(h.log.some(l => l.includes('Test Haste Listener heard the end of haste (hasteDone set)')),
-    'R50: the listener sees the step it is closing, not the state after it');
-  // 2. …and the R43 sweep still latched, in the same breath
-  assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'R43/R44: the prophecy latched');
+    'CR 504.6: the listener sees the step it is closing, not the state after it');
+  // 2. …and the CR 803.7 sweep still latched, in the same breath
+  assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'CR 803.7, 803.7g: the prophecy latched');
   assert.equal(h.state.hasteManaSpent![P], 0, 'and the window tally was cleared behind it');
   assert.equal(h.state.hasteDone, null);
   assert.equal(h.state.phase, 'battle', 'and the phase flip completed');
 });
 
-test('R43: an UNRECOGNISED condition never fulfils, never crashes, and says so in the log', () => {
+test('CR 803.7: an UNRECOGNISED condition never fulfils, never crashes, and says so in the log', () => {
   const h = sterile(3616);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -482,13 +481,13 @@ test('R43: an UNRECOGNISED condition never fulfils, never crashes, and says so i
     'and the game log carries the warning');
 });
 
-test('R43: condition normalisation absorbs the transcription differences', () => {
+test('condition normalisation absorbs the transcription differences', () => {
   // Blurf: 'Prophecy: 1 turn passes'; everything else: 'Prophecy — One Turn Passes'
   assert.equal(normalizeProphecy('Prophecy: 1 turn passes').norm, '1 turn passes');
   assert.equal(normalizeProphecy('Prophecy — One Turn Passes').norm, '1 turn passes');
   assert.equal(normalizeProphecy('Two Turns Pass').norm, '2 turns pass');
   assert.equal(normalizeProphecy('Your units have four unique costs.').norm, 'your units have 4 unique costs');
-  // R42/R277: a TRAILING [Haste] marks the PROPHESY window, not the release,
+  // CR 803.7b, 203.5b: a TRAILING [Haste] marks the PROPHESY window, not the release,
   // and either way it is not part of the condition…
   const di = normalizeProphecy('Your life is 5 or less [Haste]');
   assert.equal(di.norm, 'your life is 5 or less');
@@ -499,9 +498,9 @@ test('R43: condition normalisation absorbs the transcription differences', () =>
   assert.equal(te.prophesyAt, undefined);
 });
 
-// ── R44: fulfilment latches ───────────────────────────────────────────
+// ── CR 803.7g: fulfilment latches ───────────────────────────────────────────
 
-test('R44: a fulfilled prophecy LATCHES — gaining the life back leaves it playable', () => {
+test('CR 803.7g: a fulfilled prophecy LATCHES — gaining the life back leaves it playable', () => {
   const h = sterile(3620);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -511,7 +510,7 @@ test('R44: a fulfilled prophecy LATCHES — gaining the life back leaves it play
   whiteBox(h, () => { /* sweep */ });
   assert.ok(cacheOf(h, P)[0]!.prophecy!.fulfilled, 'latched');
   h.state.players[P]!.life = 30;
-  assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'still playable at full life (R44)');
+  assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'still playable at full life (CR 803.7g)');
   // and it really is playable: the unit deploys for free
   assert.ok(h.legal(P).some(a => a.type === 'playCached' && a.index === 0));
   h.do({ type: 'playCached', seat: P, index: 0 });
@@ -519,9 +518,9 @@ test('R44: a fulfilled prophecy LATCHES — gaining the life back leaves it play
   assert.ok(Object.values(h.state.entities).some(e => e.card === 'Test Life Prophet'));
 });
 
-// ── R42: playing from cache ───────────────────────────────────────────
+// ── CR 803.7h: playing from cache ───────────────────────────────────────────
 
-test('R42: a released prophecy is FREE and ignores affinity', () => {
+test('CR 803.7h: a released prophecy is FREE and ignores affinity', () => {
   const h = sterile(3630);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -538,7 +537,7 @@ test('R42: a released prophecy is FREE and ignores affinity', () => {
   assert.equal(cacheOf(h, P).length, 0);
 });
 
-test('R42: normal TIMING still applies — a {Battle} release is refused at deployment', () => {
+test('CR 803.7i: normal TIMING still applies — a {Battle} release is refused at deployment', () => {
   const h = sterile(3631);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -570,8 +569,8 @@ test('R42: normal TIMING still applies — a {Battle} release is refused at depl
   assert.equal(h.state.stack.length, 1, 'and it went on the stack like any battle card');
 });
 
-/* R277 REPLACES what stood here. This test asserted that a trailing [Haste] on
- * the banner "moves the RELEASE into the haste step", citing R42 — and R42 says
+/* The release-timing ruling (now CR 504.9a, 803.7i) REPLACES what stood here. This test asserted that a trailing [Haste] on
+ * the banner "moves the RELEASE into the haste step", citing the prophecy ruling — and that ruling says
  * the opposite in so many words: the card is played "as if it were in your
  * hand", so "normal TIMING still applies". The engine, this test and the doc
  * comment agreed with each other and disagreed with the ruling, which is how a
@@ -580,7 +579,7 @@ test('R42: normal TIMING still applies — a {Battle} release is refused at depl
  *
  * The marker widens the PROPHESY window instead. Both halves are guarded in
  * 257-prophecy-release-timing.test.ts; what stays here is the split itself. */
-test('R42: a trailing [Haste] on the banner is stripped from the CONDITION', () => {
+test('a trailing [Haste] on the banner is stripped from the CONDITION', () => {
   const h = sterile(3632);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -591,7 +590,7 @@ test('R42: a trailing [Haste] on the banner is stripped from the CONDITION', () 
   assert.equal(cc.prophecy!.norm, '1 turn passes', 'so the condition table still matches it');
 });
 
-test('R41: being in the cache is NOT permission — an unpermitted card is unplayable, forever', () => {
+test('CR 403.3: being in the cache is NOT permission — an unpermitted card is unplayable, forever', () => {
   const h = sterile(3633);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -607,9 +606,9 @@ test('R41: being in the cache is NOT permission — an unpermitted card is unpla
   assert.ok(!h.state.players[P]!.bin.includes('Test Grunt'));
 });
 
-// ── R45: glimpse ──────────────────────────────────────────────────────
+// ── CR 801.9: glimpse ──────────────────────────────────────────────────────
 
-test('R45: Glimpse N reveals N, caches exactly ONE of the glimpser\'s choice and recycles the rest', () => {
+test('CR 801.9: Glimpse N reveals N, caches exactly ONE of the glimpser\'s choice and recycles the rest', () => {
   const h = sterile(3640);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -624,22 +623,22 @@ test('R45: Glimpse N reveals N, caches exactly ONE of the glimpser\'s choice and
     'all three revealed cards are offered, top-first');
   h.do({ type: 'decide', seat: P, choice: 0 });        // cache Test Cost2
   // the reveal event is re-emitted when the suspended part replays, so it
-  // lands in the log once the choice is in (R41: public information)
-  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'and revealed publicly (R41)');
+  // lands in the log once the choice is in (CR D6.2c: public information)
+  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'and revealed publicly (CR D6.2c)');
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Cost2'], 'exactly ONE card is cached');
   assert.equal(h.q.cachePermission(P, 0), 'glimpse', "and it carries cachePermission 'glimpse'");
   assert.equal(cacheOf(h, P)[0]!.prophecy, undefined, 'glimpse attaches no prophecy');
   assert.deepEqual(h.state.players[P]!.hand, handBefore, 'NOTHING reaches hand');
-  assert.equal(h.q.deckOf(P).length, deckBefore - 3, 'R296: all three left the deck (one cached, two past the mark)');
+  assert.equal(h.q.deckOf(P).length, deckBefore - 3, 'CR 408.2a: all three left the deck (one cached, two past the mark)');
   assert.deepEqual(h.q.recycleOf(P).slice(-2), ['Test Grunt', 'Test Deck Top'],
-    'the other two are PAST THE MARK, in revealed order (R296)');
+    'the other two are PAST THE MARK, in revealed order (CR 408.2)');
   const mana = h.q.openMana(P);
   h.do({ type: 'playCached', seat: P, index: 0 });     // Test Cost2 costs [2]
   assert.equal(h.q.openMana(P), mana - 2, 'the mana cost IS paid (Caleb 2023-08-13)');
   assert.ok(Object.values(h.state.entities).some(e => e.card === 'Test Cost2'));
 });
 
-test('R45: choosing the LAST revealed card recycles the two above it, in order', () => {
+test('CR 801.9a: choosing the LAST revealed card recycles the two above it, in order', () => {
   const h = sterile(3643);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -648,10 +647,10 @@ test('R45: choosing the LAST revealed card recycles the two above it, in order',
   h.do({ type: 'decide', seat: P, choice: 2 });
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Deck Top'], 'the third one is cached');
   assert.deepEqual(h.q.recycleOf(P).slice(-2), ['Test Cost2', 'Test Grunt'],
-    'R296: the first two are past the mark, still in revealed order');
+    'CR 408.2: the first two are past the mark, still in revealed order');
 });
 
-test('R45: Glimpse 1 raises no decision — cache-one and cache-all coincide', () => {
+test('CR 801.9b: Glimpse 1 raises no decision — cache-one and cache-all coincide', () => {
   const h = sterile(3644);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -663,7 +662,7 @@ test('R45: Glimpse 1 raises no decision — cache-one and cache-all coincide', (
   assert.equal(h.q.deckOf(P).length, deckBefore - 1, 'and nothing was recycled');
 });
 
-test('R45: a card with no affinity is ILLEGAL from hand but LEGAL from cache, for mana only', () => {
+test('CR 801.9e: a card with no affinity is ILLEGAL from hand but LEGAL from cache, for mana only', () => {
   const h = sterile(3645);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -683,7 +682,7 @@ test('R45: a card with no affinity is ILLEGAL from hand but LEGAL from cache, fo
   assert.ok(Object.values(h.state.entities).some(e => e.card === 'Test Pips'));
 });
 
-test('R45: the glimpse permission expires at end of turn — the cards stay cached, inert', () => {
+test('CR 403.5: the glimpse permission expires at end of turn — the cards stay cached, inert', () => {
   const h = sterile(3641);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -698,7 +697,7 @@ test('R45: the glimpse permission expires at end of turn — the cards stay cach
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Grunt'], 'but it is still in the cache');
 });
 
-test('R45: glimpse still obeys timing, and a short deck glimpses fewer', () => {
+test('CR 801.9f: glimpse still obeys timing, and a short deck glimpses fewer', () => {
   const h = sterile(3642);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -712,17 +711,17 @@ test('R45: glimpse still obeys timing, and a short deck glimpses fewer', () => {
   whiteBox(h, e => { e.deckOf(P).length = 0; assert.deepEqual(e.glimpse(P, 3), []); });
 });
 
-// ── R41/R42/R303: augment & graft from cache ──────────────────────────
+// ── CR 403.3b, 803.7k, 720.5a: augment & graft from cache ──────────────────────────
 
-/* ⚠ THIS BLOCK USED TO ASSERT THE OPPOSITE. Until R303 (2026-09-20) the first
+/* ⚠ THIS BLOCK USED TO ASSERT THE OPPOSITE. Until 2026-09-20 the first
  * test here was "you can augment from cache WITHOUT a prophecy — paying the
  * normal cost", citing Caleb's 2024-12-02 "Yes" to "Can you Augment/Graft from
  * cache?". The next day he was asked whether an UNFULFILLED prophecy could be
  * grafted and said "Oh, no you can't do that. You can only play cached cards
  * that allow you to play them (like glimpse)." The cache's mod verbs are gated
- * on the same permission as its play verb; see R303. */
+ * on the same permission as its play verb; see CR 720.5a. */
 
-test('R303: a cached card with NO permission cannot be modded at all', () => {
+test('CR 720.5a: a cached card with NO permission cannot be modded at all', () => {
   const h = sterile(3650);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -731,14 +730,14 @@ test('R303: a cached card with NO permission cannot be modded at all', () => {
   whiteBox(h, e => { e.cacheCard(P, 'Test Aug Mod', 'effect'); });
   assert.equal(h.q.cachePermission(P, 0), null, 'cached by an effect: no prophecy, no glimpse');
   assert.ok(!h.legal(P).some(a => a.type === 'augment' && a.from === 'cache'),
-    'not offered — being in the cache is not permission to do anything (R41/R303)');
+    'not offered — being in the cache is not permission to do anything (CR 403.3)');
   assert.throws(() => h.do({ type: 'augment', seat: P, from: 'cache', index: 0, hostId: host }),
     IllegalAction);
   assert.equal(h.q.openMana(P), 3, 'and nothing was paid');
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Aug Mod'], 'the card stays put');
 });
 
-test('R303: an unaffordable cached mod is not offered', () => {
+test('CR 720.4b: an unaffordable cached mod is not offered', () => {
   const h = sterile(3651);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -751,7 +750,7 @@ test('R303: an unaffordable cached mod is not offered', () => {
     'the mana is what is missing');
 });
 
-test('R42: a FULFILLED prophecy makes the augment free too — and ignores affinity', () => {
+test('CR 803.7k: a FULFILLED prophecy makes the augment free too — and ignores affinity', () => {
   const h = sterile(3652);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -768,7 +767,7 @@ test('R42: a FULFILLED prophecy makes the augment free too — and ignores affin
   assert.ok(h.q.ownAttrs(ent(h, host)!).has('Tough'), 'and the augment really applied');
 });
 
-test('R42: a FULFILLED prophecy makes the graft free too', () => {
+test('CR 803.7k: a FULFILLED prophecy makes the graft free too', () => {
   const h = sterile(3653);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -786,9 +785,9 @@ test('R42: a FULFILLED prophecy makes the graft free too', () => {
   assert.equal(ent(h, ent(h, host)!.mods[0]!)!.appliedAs, 'graft');
 });
 
-// ── R46: mods do not follow a card into cache ─────────────────────────
+// ── CR 403.7: mods do not follow a card into cache ─────────────────────────
 
-test('R46: caching a unit sheds its mods to the bin, and that TRASHES them (R40)', () => {
+test('caching a unit sheds its mods to the bin, and that TRASHES them (CR 801.2f)', () => {
   const h = sterile(3660);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -807,7 +806,7 @@ test('R46: caching a unit sheds its mods to the bin, and that TRASHES them (R40)
   assert.equal(Object.values(h.state.entities).filter(e => e.kind === 'mod').length, 0, 'no orphan mod entity');
 });
 
-test('R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness)', () => {
+test('CR 803.7a: a cached unit can carry a granted prophecy (Grob / Waxen Witness)', () => {
   const h = sterile(3661);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -815,10 +814,10 @@ test('R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness)', (
   whiteBox(h, e => { e.cacheUnit(e.entity(u)!, { prophecy: 'Prophecy — One Battle Passes' }); });
   const cc = cacheOf(h, P)[0]!;
   assert.equal(cc.prophecy!.norm, '1 battle passes');
-  assert.equal(h.q.cachePermission(P, 0), null, 'not yet — R43 counts forward');
+  assert.equal(h.q.cachePermission(P, 0), null, 'not yet — CR 803.7 counts forward');
 });
 
-test('R46: a TOKEN cached from play is erased, not cached (there is no card)', () => {
+test('CR 410.5c: a TOKEN cached from play is erased, not cached (there is no card)', () => {
   const h = sterile(3662);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -831,9 +830,9 @@ test('R46: a TOKEN cached from play is erased, not cached (there is no card)', (
   assert.equal(trashes(h).length, 0);
 });
 
-// ── R41: cache-zone plumbing ──────────────────────────────────────────
+// ── CR 403.1: cache-zone plumbing ──────────────────────────────────────────
 
-test('R41: the cache primitives move cards out of hand, bin and deck', () => {
+test('CR 403.1: the cache primitives move cards out of hand, bin and deck', () => {
   const h = sterile(3670);
   const P = 0 as const;
   h.q.deckOf(P).unshift('Test Deck Top');                 // explicit, not seed-derived
@@ -862,7 +861,7 @@ test('R41: the cache primitives move cards out of hand, bin and deck', () => {
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Mod', deckTop]);
 });
 
-test('R41: a card leaving the cache for a BIN is trashed (R40 classifies it automatically)', () => {
+test('CR 801.2: a card leaving the cache for a BIN is trashed (classified automatically)', () => {
   const h = sterile(3671);
   const P = 0 as const;
   whiteBox(h, e => {
@@ -876,7 +875,7 @@ test('R41: a card leaving the cache for a BIN is trashed (R40 classifies it auto
   assert.ok(h.log.some(l => l.includes('trashes Test Grunt (from the cache)')));
 });
 
-test('R41: the cache is PUBLIC — both seats read the same zone, unredacted', () => {
+test('CR 403.2: the cache is PUBLIC — both seats read the same zone, unredacted', () => {
   const h = sterile(3672);
   toDeployment(h);
   const P = h.state.deployPlayer!, O = (1 - P) as Seat;
@@ -971,9 +970,9 @@ test('a populated cache survives a JSON round-trip, and pre-expansion states sti
   assert.equal(h.state.phase, 'planning', 'and the old state still drives fine');
 });
 
-// ── R111: a free release of an X spell is cast for X = 0 ─────────────
+// ── CR 702.6c: a free release of an X spell is cast for X = 0 ─────────────
 
-test('R111: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid', () => {
+test('CR 803.7j: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid', () => {
   const h = sterile(3680);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -991,11 +990,11 @@ test('R111: a fulfilled prophecy releases an X spell for X = 0 — no X asked, n
   assert.ok(h.log.some(l => /released .* for FREE .*X = 0/.test(l)), 'the log says so');
 });
 
-// ── R308: a glimpsed card may be prophesied from the cache ────────────
+// ── CR 801.9h: a glimpsed card may be prophesied from the cache ────────────
 // "As if it was in your hand" — and from the hand it could be prophesied.
 // Report on room FXAE (2026-10-01): a glimpsed Vengeance offered no prophecy.
 
-test('R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache', () => {
+test('CR 403.8: a GLIMPSED card with a banner may be prophesied where it stands in the cache', () => {
   const h = sterile(3694);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1023,7 +1022,7 @@ test('R308: a GLIMPSED card with a banner may be prophesied where it stands in t
   assert.equal(cacheOf(h, P).length, 0);
 });
 
-test('R308: only a LIVE glimpse opens the cache to prophesying — not bare caching, not an expired stamp', () => {
+test('only a LIVE glimpse opens the cache to prophesying — not bare caching, not an expired stamp', () => {
   const h = sterile(3695);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1037,7 +1036,7 @@ test('R308: only a LIVE glimpse opens the cache to prophesying — not bare cach
   assert.ok(!h.legal(P).some(x => x.type === 'prophesy' && x.from === 'cache'), 'the stamp expired: no');
 });
 
-test('R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment', () => {
+test('CR 801.9h: the real card — a glimpsed Vengeance is offered its prophecy in deployment', () => {
   const h = sterile(3696);
   toDeployment(h);
   const P = h.state.deployPlayer!;

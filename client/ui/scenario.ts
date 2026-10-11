@@ -1,4 +1,4 @@
-/* R216 — THE RUNNER SCREEN (docs/14 §3 and §5).
+/* CR D8.4 — THE RUNNER SCREEN (docs/14 §3 and §5).
  *
  * The board is the ordinary board. This is the strip beside it that says what
  * the card is supposed to do and takes the owner's judgement.
@@ -172,7 +172,7 @@ function file(verdict: string, ctx: RunnerCtx): void {
   // Note what is NOT in this body: the scenario id, the engine SHA and the
   // action index. All three are read off the room by the server — a verdict
   // whose engine SHA came from the browser would be worth nothing the moment
-  // anybody wanted to re-run it, which is the whole R200 lesson.
+  // anybody wanted to re-run it, which is the whole lesson of the replay forensics.
   fetch('/api/verdict', {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -223,7 +223,7 @@ export function rewire(): void {
   }
 }
 
-// R193 / 147-comment-conformance §4: a `draftsForTest()` accessor stood here,
+// 147-comment-conformance §4: a `draftsForTest()` accessor stood here,
 // exporting the note/ruling/clause drafts for a driver to inspect. Nothing
 // called it — the CDP run that verified this panel reads the DOM instead — and
 // a dead exported helper carries a doc comment describing machinery nobody

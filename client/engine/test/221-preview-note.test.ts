@@ -1,19 +1,19 @@
 /* WHAT A CARD WILL BE WORTH SOMEWHERE IT IS NOT YET.
  *
- * The owner, 2026-08-29, on The Mighty Doot after R243:
+ * The owner, 2026-08-29, on The Mighty Doot after "all" became region-scoped:
  *
  *   "it's correct about the Mighty Doot, but in a 1v1 game, it'd be nice to
  *    show what the value WILL be when you get into combat. They don't get the
  *    bonus in deployment, but it'd help with descision making at least."
  *
- * R243 made "all" mean "all in this region", which is right and which cost the
+ * The ruling that "all" means "all in this region" (CR 601.1c) is right, and it cost the
  * player something real: a static reading the opposition is worth nothing in a
  * home region, where no opponent is standing, and comes alive in battle. The
  * rule does not change; the SCREEN stops being silent about it.
  *
  * ── ⚠ THE TENSION THIS FILE EXISTS TO HOLD ───────────────────────────
  *
- * A preview has to look past the region — which is exactly what R243 forbids a
+ * A preview has to look past the region — which is exactly what CR 101.6 forbids a
  * card from doing. So the card does not: `E.seatsInBattleWith` answers "who
  * would be there" once, in the engine, and the seats are HANDED to
  * `previewNote`. §2 asserts the card never goes looking, because a preview
@@ -60,7 +60,7 @@ const noteOf = (e: E, self: Entity): string | null => {
 test('§1a out of battle it says what the bonus WILL be', () => {
   const { e, self, h, p } = doot(22100, 10);
   const ally = spawn(h, p, 'Unit Token');
-  assert.deepEqual(effStats(h, ally), [1, 1], 'R243: no bonus here, and that is unchanged');
+  assert.deepEqual(effStats(h, ally), [1, 1], 'CR 101.6: no bonus here, and that is unchanged');
   assert.equal(noteOf(e, self), '+3/+3 in battle', 'floor(10 / 3)');
 });
 
@@ -91,7 +91,7 @@ test('§1d a card with nothing to preview has no note at all', () => {
 /* ══ §2 the card never goes looking for the seats ════════════════════════ */
 
 test('§2a the seats are a PARAMETER — the card does not reach for the table', () => {
-  // R243 forbids a card reading g.s.players (219 §1a). A preview that peeked
+  // CR 101.6 forbids a card reading g.s.players (219 §1a). A preview that peeked
   // around that would be the exact hole that guard keeps shut, so the engine
   // answers "who would be there" once and hands it over.
   const src = readFileSync(join(HERE, '..', 'src', 'cards', 'sets', 'batch-hybrids-ld-a.ts'), 'utf8');

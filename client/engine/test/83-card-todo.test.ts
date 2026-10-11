@@ -222,7 +222,7 @@ test('every unanswered owner report is carried into the todo list, and none is i
   // the two is lying; a DONE item still citing a `live` report means the same
   // thing the other way round. Either way the pair is checked, never one.
   //
-  // ⚠ R260 — `partial` IS NOT `live`, AND TREATING IT AS ONE MADE THIS GUARD
+  // ⚠ `partial` IS NOT `live`, AND TREATING IT AS ONE MADE THIS GUARD
   // PUSH FOR THE BUG IT EXISTS TO CATCH. This loop used to fold `partial` in
   // with `live` on both arms, so a report with one half done and one half open
   // — which is the *definition* of partial — could not be expressed. Report
@@ -263,7 +263,7 @@ test('every unanswered owner report is carried into the todo list, and none is i
   // ⚠ IT DOES *NOT* HAVE TO HAVE A DONE ONE, and the first draft of this check
   // demanded that and was wrong within a second of running. Report #119 is
   // legitimately partial with 0 done / 1 open: what the owner wanted to DO
-  // became possible under R250, but that work is tracked under report #121's
+  // became possible under the owner's Cosmic Reversal ruling, but that work is tracked under report #121's
   // ticket, not #119's. A report can be part-fixed by work booked elsewhere.
   // Demanding a same-report `done` entry would have forced either a lie
   // (mark it live) or an invented bookkeeping ticket — which is how a guard
@@ -297,7 +297,7 @@ test('the todo list reports honestly on how much is open', () => {
     `    ${open.length - unproven} of ${open.length} are machine-checked; ${unproven} rely on a `
     + 'human following "verify"');
   // Read LIVE, never hardcoded. This line said "28" for exactly one day before
-  // R104 deleted five entries, which is the whole failure mode this file exists
+  // the replacement layer deleted five entries, which is the whole failure mode this file exists
   // to prevent — a number in a comment is a claim about the repo on the day it
   // was typed.
   console.log(

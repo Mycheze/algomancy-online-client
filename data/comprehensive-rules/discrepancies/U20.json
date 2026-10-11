@@ -53,7 +53,7 @@
         "quote": "Unaware cards and units they are interacting with ignore all stat changes."
       }
     ],
-    "resolution": "Tooling: let the extract fold client/ui/scan-reminders.json into each card's checkable text (or accept a scan reference as a printed source), then re-cite the six definitions as printed. The sentences themselves were read off the scans (R283 for Reaping)."
+    "resolution": "Tooling: let the extract fold client/ui/scan-reminders.json into each card's checkable text (or accept a scan reference as a printed source), then re-cite the six definitions as printed. The sentences themselves were read off the scans (the owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”) for Reaping)."
   },
   {
     "id": "D-U20-2",
@@ -67,11 +67,11 @@
         "quote": "\"text\": \"Sneaky units can't be blocked if attacking alone.\", \"card\": \"Whispering Mantid\""
       },
       {
-        "source": "R20",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
       }
     ],
-    "resolution": "Question for the owner. R20 says what \"alone\" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.",
+    "resolution": "Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”) says what \"alone\" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.",
     "question": {
       "topic": "Stats and attributes",
       "ask": "Is a Sneaky unit \"attacking alone\" judged when attacks are declared, or when blocks are declared?",
@@ -87,7 +87,7 @@
           "table": "It stays blockable once declared with company."
         }
       ],
-      "follows": "Neither: the rule states R20 only.",
+      "follows": "Neither: the rule states the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”) only.",
       "recommend": "A: \"can't be blocked\" applies at the block, so \"attacking alone\" is read then; it is also the permissive reading."
     }
   },
@@ -96,10 +96,10 @@
     "kind": "c-owner-call-only",
     "rule": "attr.sneaky.alone",
     "tier": 3,
-    "summary": "What \"attacking alone\" means (the only attacking unit in the formation; spell tokens do not count; two Sneaky attackers are both blockable) is R20's engine reading, marked ⚠, with no designer source.",
+    "summary": "What \"attacking alone\" means (the only attacking unit in the formation; spell tokens do not count; two Sneaky attackers are both blockable) is the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)’s engine reading, marked ⚠, with no designer source.",
     "sides": [
       {
-        "source": "R20",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "attacking are NOT alone — both blockable. ⚠ Engine reading of \"unblockable if attacking"
       }
     ],
@@ -110,14 +110,14 @@
     "kind": "c-owner-call-only",
     "rule": "attr.alluring.two-duties",
     "tier": 3,
-    "summary": "When two Alluring triggers target the same unit, R84 lets blocking either column excuse both duties. R84 calls this a judgement call by the owner; no designer source.",
+    "summary": "When two Alluring triggers target the same unit, the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) lets blocking either column excuse both duties. The owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) calls this a judgement call by the owner; no designer source.",
     "sides": [
       {
-        "source": "R84",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "### ⚠ Two duties on one unit — a judgement call"
       },
       {
-        "source": "R84",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "**Discharging either duty excuses the rest**, and the \"must be among its"
       }
     ],
@@ -128,28 +128,28 @@
     "kind": "g-other",
     "rule": "attr.resonant.tax-and-negate",
     "tier": 2,
-    "summary": "The RAQ register's note on the Containment Protocol claim says Resonant never waits on the stack. Since R315 the Resonant trigger does go on the stack, so the note is stale.",
+    "summary": "The RAQ register's note on the Containment Protocol claim says Resonant never waits on the stack. Since the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) the Resonant trigger does go on the stack, so the note is stale.",
     "sides": [
       {
         "source": "file: client/ledgers/raq.ts",
         "quote": "Resonant never waits on the stack, so there is nothing to negate."
       },
       {
-        "source": "R315",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
       }
     ],
-    "resolution": "Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (R315) and would be negated by the engine."
+    "resolution": "Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (owner ruling of 2026-10-09, “{Resonant} is its source's trigger: damage…”) and would be negated by the engine."
   },
   {
     "id": "D-U20-7",
     "kind": "c-owner-call-only",
     "rule": "attr.electric.no-revisit",
     "tier": 3,
-    "summary": "That Electric excess never jumps back to a unit already in the chain is stated only by R206's description of the engine (a visited chain) and our glossary; no printed or designer source says so. \"Recursively\" does not settle it.",
+    "summary": "That Electric excess never jumps back to a unit already in the chain is stated only by the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s description of the engine (a visited chain) and our glossary; no printed or designer source says so. \"Recursively\" does not settle it.",
     "sides": [
       {
-        "source": "R206",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it"
       },
       {
@@ -164,14 +164,14 @@
     "kind": "g-other",
     "rule": "attr.electric.dead-end",
     "tier": 2,
-    "summary": "Our glossary's Electric row still says the excess is lost when the chain runs out. R317 (from the RAQ) deals it to the last unit.",
+    "summary": "Our glossary's Electric row still says the excess is lost when the chain runs out. The owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”) (from the RAQ) deals it to the last unit.",
     "sides": [
       {
         "source": "glossary: Electric",
         "quote": "When the chain runs out the excess is lost"
       },
       {
-        "source": "R317",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's \"ALL"
       },
       {
@@ -179,21 +179,21 @@
         "quote": "All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play"
       }
     ],
-    "resolution": "Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Filed as the register-level finding F-REG-2 (CT-231)."
+    "resolution": "Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Filed as the register-level finding F-REG-2 (CT-231). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U20-9",
     "kind": "f-register-chain-wrong",
     "rule": "attr.poisonous.is-damage",
     "tier": 2,
-    "summary": "R166, still current with no supersession mark, says Poisonous \"replaces the damage with counters and never reaches the branch\". R237 later ruled, on Caleb's words, that Poisonous is a form of dealing damage and not a replacement.",
+    "summary": "The owner ruling of 2026-08-25 (“four cards answered a layer, an…”), still current with no supersession mark, says Poisonous \"replaces the damage with counters and never reaches the branch\". The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) later ruled, on Caleb's words, that Poisonous is a form of dealing damage and not a replacement.",
     "sides": [
       {
-        "source": "R166",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "{Resonant} drains life, {Poisonous} replaces the damage with counters and never"
       },
       {
-        "source": "R237",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —"
       },
       {
@@ -201,7 +201,7 @@
         "quote": "Poisonous damage is damage dealt: it fires \"when I am dealt damage\" (Awoken Tomb makes its X/X)."
       }
     ],
-    "resolution": "Register fix: mark R166's Poisonous sentence as corrected by R237 (a scoped supersession edge). The document follows R237 and the RAQ."
+    "resolution": "Register fix: mark the owner ruling of 2026-08-25 (“four cards answered a layer, an…”)’s Poisonous sentence as corrected by the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) (a scoped supersession edge). The document follows the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) and the RAQ."
   },
   {
     "id": "D-U20-10",
@@ -226,28 +226,28 @@
     "kind": "g-other",
     "rule": "attr.reaping.loses",
     "tier": 3,
-    "summary": "Reaping's second printed sentence (\"It loses reaping until regroup.\") is deliberately not built: R283 says no source in the pool can kill twice with Reaping, because all four Reaping cards are spells and nothing can give a unit Reaping. A guard test goes red if that changes.",
+    "summary": "Reaping's second printed sentence (\"It loses reaping until regroup.\") is deliberately not built: The owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”) says no source in the pool can kill twice with Reaping, because all four Reaping cards are spells and nothing can give a unit Reaping. A guard test goes red if that changes.",
     "sides": [
       {
-        "source": "R283",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "### 2. \"It loses reaping until regroup\" is deliberately NOT built"
       },
       {
-        "source": "R283",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "clause would bite only if a UNIT could carry {Reaping}, and nothing in the pool"
       }
     ],
-    "resolution": "The document states the printed rule (basis owner, confidence low, citing R283's quote of the reminder). No engine bug while it stays unreachable; 263 §4 is the tripwire."
+    "resolution": "The document states the printed rule (basis owner, confidence low, citing the owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”)’s quote of the reminder). No engine bug while it stays unreachable; 263 §4 is the tripwire."
   },
   {
     "id": "D-U20-12",
     "kind": "c-owner-call-only",
     "rule": "attr.afflicting.one-rot",
     "tier": 3,
-    "summary": "One rot per controller per kill event, however many of that player's units died, is the owner's reading of the Afflicting reminder; R48 says no designer statement was found.",
+    "summary": "One rot per controller per kill event, however many of that player's units died, is the owner's reading of the Afflicting reminder; the owner ruling of 2026-08-19 (“Blessed is simultaneous; Afflicting fires on…”) says no designer statement was found.",
     "sides": [
       {
-        "source": "R48",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "kills anything. ⚠ One rot per affected controller per kill event, however"
       },
       {
@@ -262,14 +262,14 @@
     "kind": "c-owner-call-only",
     "rule": "attr.modular.unstable",
     "tier": 3,
-    "summary": "The Manual makes a modded card Unstable \"when it dies or is erased\". A resolving or negated spell does neither. R105 extends the erase to a modded Modular spell leaving the stack, on the owner's design reason (Spellbind is a flashback).",
+    "summary": "The Manual makes a modded card Unstable \"when it dies or is erased\". A resolving or negated spell does neither. The owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) extends the erase to a modded Modular spell leaving the stack, on the owner's design reason (Spellbind is a flashback).",
     "sides": [
       {
         "source": "Manual p.35",
         "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
       },
       {
-        "source": "R105",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> \"A modded Spellbind should also have unstable. It basically works as a"
       }
     ],
@@ -305,7 +305,7 @@
         "quote": "\"text\": \"Whenever a thieving source deals combat damage to an opponent, draw a card.\", \"card\": \"Slink\""
       },
       {
-        "source": "R24",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
       }
     ],
@@ -323,7 +323,7 @@
         "quote": "(Any combat damage from a lethal unit will kill a player.)"
       },
       {
-        "source": "R166",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,"
       }
     ],
@@ -334,14 +334,14 @@
     "kind": "g-other",
     "rule": "attr.pure.column",
     "tier": 4,
-    "summary": "No source applies R294's column sharing to Pure outside combat. The rule is derived: R294 makes both sides of a noncombat damage pairing read column-shared attributes, and Pure is an attribute.",
+    "summary": "No source applies the owner ruling of 2026-09-16 (“A unit in a column HAS…”)’s column sharing to Pure outside combat. The rule is derived: The owner ruling of 2026-09-16 (“A unit in a column HAS…”) makes both sides of a noncombat damage pairing read column-shared attributes, and Pure is an attribute.",
     "sides": [
       {
-        "source": "R294",
+        "source": "owner ruling, adopted 2026-09-16",
         "quote": "adjacent) share all of their attributes.\"* So both sides of a non-combat damage"
       },
       {
-        "source": "R289",
+        "source": "owner ruling, adopted 2026-09-05",
         "quote": "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
       }
     ],
@@ -352,10 +352,10 @@
     "kind": "c-owner-call-only",
     "rule": "attr.resonant.amount",
     "tier": 3,
-    "summary": "That Resonant's \"that much damage\" is the damage the unit received, after Vulnerable doubled it and after prevention, is R315's own reading. The RAQ examples never involve Vulnerable.",
+    "summary": "That Resonant's \"that much damage\" is the damage the unit received, after Vulnerable doubled it and after prevention, is the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”)’s own reading. The RAQ examples never involve Vulnerable.",
     "sides": [
       {
-        "source": "R315",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "The amount is what the unit **received** (\"that much damage\"): after {Vulnerable},"
       }
     ],
@@ -384,14 +384,14 @@
     "kind": "g-other",
     "rule": "attr.lethal.prevented",
     "tier": 4,
-    "summary": "Sources are silent on Lethal when combat damage to a player is prevented. R98's prevention ruling covers damage to units only, and no card in the pool prevents damage to a player, so the engine has no path for it. The rule was removed rather than derived by analogy.",
+    "summary": "Sources are silent on Lethal when combat damage to a player is prevented. The owner ruling of 2026-08-23 (“PREVENTED damage was never dealt […]”)’s prevention ruling covers damage to units only, and no card in the pool prevents damage to a player, so the engine has no path for it. The rule was removed rather than derived by analogy.",
     "sides": [
       {
-        "source": "R98",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
       },
       {
-        "source": "R98",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "{Lethal} still kills through it\"*. **Replacement is a substitution; prevention is a"
       }
     ],
@@ -402,7 +402,7 @@
     "kind": "g-other",
     "rule": "attr.piercing.redirect",
     "tier": 4,
-    "summary": "Since R319 the attacker may keep Piercing excess on a unit it strikes. No source says whether the same elective keep applies when the hit is redirected into Oorblak; the engine's redirect absorbs exactly lethal (1 if Deadly) and passes the rest on, with no choice (round-1 verifier).",
+    "summary": "Since the owner ruling of 2026-10-09 (“{Piercing} is elective in combat […]”) the attacker may keep Piercing excess on a unit it strikes. No source says whether the same elective keep applies when the hit is redirected into Oorblak; the engine's redirect absorbs exactly lethal (1 if Deadly) and passes the rest on, with no choice (round-1 verifier).",
     "sides": [
       {
         "source": "RAQ 1397188292239163454#0",

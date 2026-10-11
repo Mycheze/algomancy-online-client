@@ -1,4 +1,4 @@
-/* R298 — SINGLE CARD DUEL: the card picker.
+/* CR D8.2 — SINGLE CARD DUEL: the card picker.
  *
  * Pick one card; your deck is thirty copies of it. Used in two places — the
  * home screen's Constructed card, where the creator picks before the room

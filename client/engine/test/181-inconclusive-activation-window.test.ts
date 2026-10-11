@@ -1,5 +1,5 @@
 /**
- * THE WINDOW THAT NEVER CLOSED — R211, CARD-TODO #87.
+ * THE WINDOW THAT NEVER CLOSED — CARD-TODO #87.
  *
  * ── WHAT WAS ACTUALLY WRONG ──────────────────────────────────────────────
  *
@@ -17,13 +17,13 @@
  *
  * It had a live victim. **Slag Spewer read as OBSERVED** because the span
  * swallowed an `erased` produced when its HOST was destroyed several beats
- * later (CT-86). R199 made press runs end cleanly, the span closed, and the
+ * later (CT-86). The battle-position fix made press runs end cleanly, the span closed, and the
  * card went dark — which is how the EVENTLESS category in `84-card-semantics`
- * was discovered at all. R199 REPORTED it rather than changing it, correctly:
+ * was discovered at all. CARD-TODO #49 REPORTED it rather than changing it, correctly:
  * a late unverified edit to the drill would have invalidated that round's
- * measurements. R211 is the follow-through.
+ * measurements. The inconclusive-window fix is the follow-through.
  *
- * ── WHAT R211 MEASURED FIRST ─────────────────────────────────────────────
+ * ── WHAT THIS ROUND MEASURED FIRST ─────────────────────────────────────────────
  *
  * Before changing anything: over all 491 drillable cards, in the exact scenario
  * set `84-card-semantics` drives (1296 runs), **the tail fired ZERO times.**
@@ -42,7 +42,7 @@
  * A run is FORCED to end mid-activation, a later card is caught emitting events
  * inside the unclosed span, and the same run is driven BOTH WAYS:
  *
- *   · with `unboundedActTailForControl` — the pre-R211 code, which credits the
+ *   · with `unboundedActTailForControl` — the pre-fix code, which credits the
  *     other card's events to the card under test;
  *   · without it — which refuses them and records INCONCLUSIVE.
  *
@@ -124,7 +124,7 @@ test('CT-87 POSITIVE CONTROL: a later card emits inside the unclosed window, and
   assert.ok(borrowed.length > 0, 'the unclosed span carried nothing new — nothing to refuse');
   for (const t of borrowed) {
     assert.ok(before.activateTypes.includes(t),
-      `the pre-R211 tail did not credit "${t}", so this control is not measuring the old bug`);
+      `the pre-fix tail did not credit "${t}", so this control is not measuring the old bug`);
   }
 
   // 3. THE NEW CODE REFUSES THEM.
@@ -166,7 +166,7 @@ test('CT-87: the borrowed evidence was SCORING evidence, not harmless noise', ()
   // these two lines are the scoring decision verbatim, in both directions.
   const scored = (types: string[]) => EVIDENCE.pump.some(t => types.includes(t));
   assert.equal(scored(before.activateTypes), true,
-    "the pre-R211 window scored a `pump` claim off another card's +1/+1 — if this is false the "
+    "the pre-fix window scored a `pump` claim off another card's +1/+1 — if this is false the "
     + "control has stopped reproducing CT-86's mechanism");
   assert.equal(scored(after.activateTypes), false,
     `${CARD} prints no pump ("[Augment][once] [one], Erase one of my mods: I deal 2 damage to `
@@ -197,7 +197,7 @@ test('CT-87: the inconclusive flag can also say NO — measured in the other dir
   // everything, so nothing is borrowed") while quietly discarding real evidence.
   const full = drillCard(CARD, 900_000, OPTS);
   assert.equal(full.actInconclusive, false,
-    'the unclipped run must close its activation window — R199 made runs end cleanly and the '
+    'the unclipped run must close its activation window — the battle-position fix made runs end cleanly and the '
     + 'whole-pool measurement for CT-87 (0 of 1296 runs) rests on it');
   assert.deepEqual(full.actInconclusiveTail, []);
   assert.deepEqual(full.actInconclusiveTailEvents, []);
@@ -206,7 +206,7 @@ test('CT-87: the inconclusive flag can also say NO — measured in the other dir
     + 'distinction and not a dead observation');
 });
 
-test('CT-87: the pre-R211 behaviour is reachable ONLY from this control', () => {
+test('CT-87: the pre-fix behaviour is reachable ONLY from this control', () => {
   // `unboundedActTailForControl` reinstates a known bug. It exists so the
   // control can show a before, and for nothing else — a second caller would be
   // the bug back in production with a plausible name on it. Derived by scanning
@@ -233,7 +233,7 @@ test('CT-87: the pre-R211 behaviour is reachable ONLY from this control', () => 
 //
 // CT-87 (above) is about evidence CREDITED to a card that did not produce it.
 // CT-92 is the other half: evidence a card DID produce, DISCARDED. `pendingAct`
-// in drill.ts is a single SLOT, and before R232 the branch that takes an
+// in drill.ts is a single SLOT, and before the one-slot fix the branch that takes an
 // activation did not require an empty stack — so a second activation offered
 // while the first was unresolved OVERWROTE the open window and everything the
 // first delivered vanished. It now REFUSES and counts, the way CT-87 records
@@ -281,7 +281,7 @@ test('CT-92 POSITIVE CONTROL: the refusal counter fires when a window really is 
 });
 
 test('CT-92: the control hatch cannot leak into a scoring path', () => {
-  // Same guard as R211 put on `unboundedActTailForControl`, and for the same
+  // Same guard as CARD-TODO #87 put on `unboundedActTailForControl`, and for the same
   // reason: a test-only hatch that quietly acquires a second caller stops being
   // a control and becomes behaviour. Counts FILES, not call sites — prose in a
   // comment is exactly how such a hatch gets re-adopted.

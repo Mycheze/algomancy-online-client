@@ -89,17 +89,17 @@ const ok = (cond: unknown, label: string): void => {
 const codes: string[] = [];
 const room$ = (code: string, seed: number): Room => { codes.push(code); return createRoom(code, seed); };
 /** did action `k` allocate an entity id? (read off the id floors — the room's
- * old `segTouched` flag, removed in R312, was this plus the RNG) */
+ * old `segTouched` flag, removed in the undo-lock work (CR D4.3), was this plus the RNG) */
 const movedIds = (room: Room, k: number): boolean =>
   (room.segIdFloor[k + 1] ?? room.state.nextId) > room.segIdFloor[k]!;
 /** did action `k` draw from the RNG stream? (its reference key says so) */
 const drewRng = (room: Room, k: number): boolean => room.segRefs[k]!.includes('|rng@');
 
 /**
- * R228: the haste step is ALWAYS offered, so `donePlanning` from both seats
+ * CR 504.5: the haste step is ALWAYS offered, so `donePlanning` from both seats
  * lands in it rather than sailing past it. Nothing auto-closes it — an
  * automatic `doneHaste` would broadcast that the seat had no haste play, which
- * is the side channel R224 deleted — so a section that is about deployment
+ * is the side channel the always-offer-the-step ruling deleted — so a section that is about deployment
  * says so in both seats' names. Same shape as `engine/test/util.ts`'s
  * `skipHasteStep`.
  */
@@ -135,7 +135,7 @@ function drain(room: Room): void {
 function entityIdsOf(a: Action): number[] {
   switch (a.type) {
     case 'castSpellToken': return [a.entityId];
-    // R181: only a `{ mod }` via names an id. `{ face }` (R63's granted-face
+    // Only a `{ mod }` via names an id. `{ face }` (CR 109.8's granted-face
     // channel) is also an object and has no `.mod`; the old `typeof === 'object'`
     // test read `undefined` out of one and reported it as a referenced id.
     case 'activateAbility':
@@ -461,7 +461,7 @@ function positionOf(s: GameState, seat: Seat): string {
   console.log('\n[the residue: a later move about the very unit being un-played]');
   actOn(room, { type: 'donePlanning', seat: 0 });
   actOn(room, { type: 'donePlanning', seat: 1 });
-  passHaste(room);                      // R228 — this section is about DEPLOYMENT
+  passHaste(room);                      // CR 504.5 — this section is about DEPLOYMENT
   for (const s of [0, 1] as Seat[]) {
     for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
   }
@@ -613,7 +613,7 @@ function positionOf(s: GameState, seat: Seat): string {
   console.log('\n[the floor sits above whatever the phase itself started]');
   actOn(room, { type: 'donePlanning', seat: 0 });
   actOn(room, { type: 'donePlanning', seat: 1 });
-  ok(room.segKey === 'haste', 'R228: the haste segment comes first, unconditionally');
+  ok(room.segKey === 'haste', 'CR 504.5: the haste segment comes first, unconditionally');
   passHaste(room);
   ok(room.segKey === 'deploy', 'a deployment segment');
   const start = room.segStartIndex;
@@ -782,11 +782,11 @@ function positionOf(s: GameState, seat: Seat): string {
     'and the reported error text is gone for good');
 }
 
-// ══ 8. R181: a `via: { face }` activation survives its own renumbering ═══
+// ══ 8. a `via: { face }` activation survives its own renumbering ═══
 //
 // `ActivateVia` has three shapes: the string 'augment', `{ mod }` (activate
 // through a mod sitting on the unit) and `{ face }` (activate through a
-// granted face's text — R63, and R118's "an activateAbility carrying via:{face}
+// granted face's text — CR 109.8, and the copy layer's "an activateAbility carrying via:{face}
 // replays byte for byte"). `renumberAction` tested `typeof via === 'object'`
 // and rewrote `via.mod`, which was written when `{ mod }` was the only OBJECT
 // shape. On a `{ face }` activation `.mod` is `undefined`, `undefined < hi` is
@@ -801,7 +801,7 @@ function positionOf(s: GameState, seat: Seat): string {
 // can trace. This is exactly the class the reference-key measurement above
 // cannot see — the payload was destroyed BEFORE it was measured.
 {
-  console.log('\n[R181: renumbering does not eat a via:{face}]');
+  console.log('\n[renumbering does not eat a via:{face}]');
   type Activate = Extract<Action, { type: 'activateAbility' }>;
   const at = (via: ActivateVia): Activate =>
     ({ type: 'activateAbility', seat: 0, entityId: 40, abilityIndex: 0, via });

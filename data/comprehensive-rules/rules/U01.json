@@ -30,14 +30,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Both printed editions agree. How elimination works is 104.",
     "sourceHashes": {}
@@ -69,14 +69,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The turn structure itself is 500-508 (U08/U09).",
     "sourceHashes": {}
@@ -107,12 +107,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The modes and setups themselves are 900-905 (U22). The Manual calls the modes \"formats\" and the configurations \"player setups\"; the Rulebook 2023 calls them \"game modes\" and \"player configurations\".",
     "sourceHashes": {},
@@ -141,24 +141,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R27 (the \"Project decisions\" block recorded under it, not its own ruling)",
-          "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed."
+          "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "R27's 'Project decisions' block is a process note (classification: process, not rules), but it is the only source that states the client's player count. Later additions (tutorial, Single Card Duel, custom draft rules) are still two-seat; Annex D covers them. Every printed multiplayer rule this unit states (concepts.ending.win.teams, concepts.ending.continues) is therefore not enforced by the client: D-U01-9. Round 1: the client's variants (Learn to Play lessons, Single Card Duel) are two-seat too (verifier, createGame).",
-    "sourceHashes": {
-      "R27": "f9de0bd386630de9d13ba5eaecf8f59a21043f5695f988e9a7fcff619ce2a071"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Formation-counting amounts are live at resolution”)’s 'Project decisions' block is a process note (classification: process, not rules), but it is the only source that states the client's player count. Later additions (tutorial, Single Card Duel, custom draft rules) are still two-seat; Annex D covers them. Every printed multiplayer rule this unit states (concepts.ending.win.teams, concepts.ending.continues) is therefore not enforced by the client: D-U01-9. Round 1: the client's variants (Learn to Play lessons, Single Card Duel) are two-seat too (verifier, createGame).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.golden.printed-text-wins",
@@ -168,7 +167,7 @@
     "examples": [
       {
         "text": null,
-        "test": "135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit"
+        "test": "135-exchange-and-zones.test.ts::§27: Grob caches a STOLEN unit"
       }
     ],
     "see": [
@@ -179,26 +178,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its standing steer)",
-          "quote": "and, on Grob: **\"Printed text always wins.\"** When two readings are available"
+          "quote": "and, on Grob: **\"Printed text always wins.\"** When two readings are available",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (its §27)",
-          "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
+          "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "No printed or RAQ sentence in the pack states this principle; it is the owner's (R157, 2026-08-25). D-U01-5. R262 §3 applies it to destinations (an explicit printed destination beats the zones-follow-control default, 400.4b). Round 1: R157 says \"always\"; the designer-intent rule (Crevice Lurker) is an exception the designer made, and the designer outranks R157 (D-U01-11).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "No printed or RAQ sentence in the pack states this principle; it is the owner's (the owner ruling of 2026-08-25 (“the owner's answers to the 27…”), 2026-08-25). D-U01-5. The owner ruling of 2026-08-30 (“zones follow control, in all four…”) applies it to destinations (an explicit printed destination beats the zones-follow-control default, 400.4b). Round 1: The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) says \"always\"; the designer-intent rule (Crevice Lurker) is an exception the designer made, and the designer outranks the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (D-U01-11).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.golden.designer-intent",
@@ -223,12 +222,12 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "The one designer statement in the pack of this kind (Crevice Lurker vs Resonant). The project's authority order says the same in general (README § Authority order: 'Where Caleb states an intent that differs from print, follow Caleb'); that README is not a pack source.",
     "sourceHashes": {
@@ -248,22 +247,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R340",
-          "quote": "\"Trust the RAQ over our rulings.\""
+          "quote": "\"Trust the RAQ over our rulings.\"",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R340 quotes the owner (2026-10-10); R315 and R319 carry the same line. Which RAQ answers count (a [Solved] write-up by _passer, or calebgannon's own words) is the project's authority order, not a pack source.",
-    "sourceHashes": {
-      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
-    },
+    "notes": "The owner ruling of 2026-10-10 (“{Piercing} is elective outside combat too […]”) quotes the owner (2026-10-10); the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) and the owner ruling of 2026-10-09 (“{Piercing} is elective in combat […]”) carry the same line. Which RAQ answers count (a [Solved] write-up by _passer, or calebgannon's own words) is the project's authority order, not a pack source.",
+    "sourceHashes": {},
     "untested": true,
     "untestableReason": "an authority order for writing this document, not a game behaviour"
   },
@@ -280,26 +278,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its standing steer)",
-          "quote": "and neither is absurd, take the one that lets more things happen."
+          "quote": "and neither is absurd, take the one that lets more things happen.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (its standing steer)",
-          "quote": "> Algomancy is meant to be a highly exploratory and synergistic game where"
+          "quote": "> Algomancy is meant to be a highly exploratory and synergistic game where",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The owner's standing steer (R157), which R157 says governs every future ambiguity. No printed or designer source states it. D-U01-6.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    },
+    "notes": "The owner's standing steer (owner ruling of 2026-08-25, “the owner's answers to the 27…”), which the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) says governs every future ambiguity. No printed or designer source states it. D-U01-6.",
+    "sourceHashes": {},
     "untested": true,
     "untestableReason": "a principle for reading card text; its outcomes are demonstrated under the individual card rulings"
   },
@@ -339,21 +337,21 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R30 (provisional, marked ⚠)",
-          "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+          "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Manual p.43 is not in the pack (added from the extract's printed pages); it says this of a spell that lost some of its targets. When ALL targets are gone the spell fizzles instead (704, U14), and a fight or exchange that loses one of its two targets does nothing (Manual p.43, also 704). Round 2: the general statement rests on R30, which the register marks provisional (⚠), and on Caleb's graft answer; the Manual says it only of a spell whose targets were removed. The verifier measured Recall and Fight/Organic Exchange agreeing. Recorded as D-U01-15.",
+    "notes": "Manual p.43 is not in the pack (added from the extract's printed pages); it says this of a spell that lost some of its targets. When ALL targets are gone the spell fizzles instead (704, U14), and a fight or exchange that loses one of its two targets does nothing (Manual p.43, also 704). Round 2: the general statement rests on the owner ruling of 2026-08-18 (“\"Each player recalls a unit and…”), which the register marks provisional (⚠), and on Caleb's graft answer; the Manual says it only of a spell whose targets were removed. The verifier measured Recall and Fight/Organic Exchange agreeing. Recorded as D-U01-15.",
     "sourceHashes": {
-      "R30": "e7c2373b72ed97eb303382b135763419e5615c1da0ef3030b93bf9212ca66efd",
       "RAQ 1353859961855148103#3": "0f00309dc741ed7d3ff9c1a0dbfa514d90cf1c3320dd08e4d1f95e0225957f20"
     }
   },
@@ -380,22 +378,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R30",
-          "quote": "by \"if you do\".)"
+          "quote": "by \"if you do\".)",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R30's closing words, read with its line before ('the two clauses are not linked / by \"if you do\"'), are the independence half; Shoreline Specter's printed sentence is the dependent half.",
-    "sourceHashes": {
-      "R30": "e7c2373b72ed97eb303382b135763419e5615c1da0ef3030b93bf9212ca66efd"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“\"Each player recalls a unit and…”)’s closing words, read with its line before ('the two clauses are not linked / by \"if you do\"'), are the independence half; Shoreline Specter's printed sentence is the dependent half.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.golden.as-much-as-possible.costs",
@@ -405,7 +402,7 @@
     "examples": [
       {
         "text": "Lost Guardian with Darkblast grafted must pay [Discard a card] twice. With one card in hand nothing is discarded and nothing happens.",
-        "test": "17-earth-b.test.ts::R110: all or nothing — one card in hand cannot pay a doubled [Discard a card]"
+        "test": "17-earth-b.test.ts::CR 111.14: all or nothing — one card in hand cannot pay a doubled [Discard a card]"
       }
     ],
     "see": [
@@ -420,12 +417,12 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "_passer's answer is about a cost multiplied by a graft multiplier (\"must Sacrifice 2 or 3 units, but have only 1\"). Costs in general are 111 (U04).",
     "sourceHashes": {
@@ -440,11 +437,11 @@
     "examples": [
       {
         "text": "Cosmic Reversal, cast in one region, leaves a spell unit in another region alone.",
-        "test": "229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region"
+        "test": "229-cosmic-and-control.test.ts::CR 601.1c: the board half is scoped to the region"
       },
       {
         "text": null,
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 601.4e no ally or enemy slot"
       }
     ],
     "see": [
@@ -476,21 +473,21 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R243",
-          "quote": "card that says 'all' is actually 'all in this region')."
+          "quote": "card that says 'all' is actually 'all in this region').",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "RAQ 1454169054402314362#0 is not in the pack (found in the extract's RAQ register). Regions themselves are 601 (U10). R243 notes that the stack is not regional (R250 §1); that is 406/601. Round 1: R265 makes the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions in the client. Print and Caleb outrank R265, so the rule states them: D-U01-12, F-U01-2. Round 2: the verifier's probe confirmed the divergence: Molten Riftbreaker's effect resolving in one region negated its controller's Luminous Arc on the stack in another (F-U01-2). Example 1 now claims only the half its test asserts.",
+    "notes": "RAQ 1454169054402314362#0 is not in the pack (found in the extract's RAQ register). Regions themselves are 601 (U10). The owner ruling of 2026-08-29 (“regions scope \"all\", and they do…”) notes that the stack is not regional (owner ruling of 2026-08-29, “Cosmic Reversal reaches the board; every…”); that is 406/601. Round 1: The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) makes the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions in the client. Print and Caleb outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”), so the rule states them: D-U01-12, F-U01-2. Round 2: the verifier's probe confirmed the divergence: Molten Riftbreaker's effect resolving in one region negated its controller's Luminous Arc on the stack in another (F-U01-2). Example 1 now claims only the half its test asserts.",
     "sourceHashes": {
-      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315",
       "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
     },
     "engineDiffers": [
@@ -515,28 +512,29 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R243",
-          "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+          "quote": "Regions do NOT scope information, but they do scope 'global' things (every",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R243",
-          "quote": "effect may COUNT is narrowed; what a player may READ is not.**"
+          "quote": "effect may COUNT is narrowed; what a player may READ is not.**",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
+    "digitalClause": "In the digital client they do not limit what players may see: a player may read what happens in a region they are not in.",
     "confidence": "medium",
-    "notes": "Manual p.19 says regions have \"zero information or interaction between regions\". Whether 'information' there means what effects can read or what players can see is D-U01-1, a question for the owner. Round 1: stated as the client's convention (R243) because Manual p.19 says \"zero information or interaction between regions\" and printed outranks an owner ruling; which reading of that sentence holds is D-U01-1.",
-    "sourceHashes": {
-      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315"
-    }
+    "notes": "Manual p.19 says regions have \"zero information or interaction between regions\". Whether 'information' there means what effects can read or what players can see is D-U01-1, a question for the owner. Round 1: stated as the client's convention (owner ruling of 2026-08-29, “regions scope \"all\", and they do…”) because Manual p.19 says \"zero information or interaction between regions\" and printed outranks an owner ruling; which reading of that sentence holds is D-U01-1.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.region-and-life",
@@ -566,14 +564,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Regions are 601; starting life is concepts.starting.live-draft.life.",
     "sourceHashes": {}
@@ -602,24 +600,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R187",
-          "quote": "CARD-TODO #70. R25 scopes an effect to its region, and \"each opponent\" is read"
+          "quote": "CARD-TODO #70. R25 scopes an effect to its region, and \"each opponent\" is read",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.42 answers the question 'If an effect says \"each opponent loses 1 life\", who does that refer to?'.",
-    "sourceHashes": {
-      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.each-opponent.none",
@@ -648,22 +645,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R187",
-          "quote": "lists only its owner, so the loop runs **zero times** — a real, ordinary,"
+          "quote": "lists only its owner, so the loop runs **zero times** — a real, ordinary,",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R187 also makes the client say so in the log; that is a display convention (Annex D).",
-    "sourceHashes": {
-      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed"
-    }
+    "notes": "The owner ruling of 2026-08-26 (“\"each opponent\" in a region that…”) also makes the client say so in the log; that is a display convention (Annex D).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.each-player",
@@ -688,14 +684,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -708,11 +704,11 @@
     "examples": [
       {
         "text": "A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.",
-        "test": "246-zones-follow-control.test.ts::R262 §3: ownership does NOT move"
+        "test": "246-zones-follow-control.test.ts::CR 400.4a: ownership does NOT move"
       },
       {
         "text": "The same recalled unit goes to the hand of the player who controls it, not its owner's hand.",
-        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand"
+        "test": "246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand"
       }
     ],
     "see": [
@@ -723,27 +719,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R250 (its §4, zones follow control)",
-          "quote": "| whose card is this? | its OWNER's, always, forever |"
+          "quote": "| whose card is this? | its OWNER's, always, forever |",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R262",
-          "quote": "**2. Ownership does not move. Only the destination does.**"
+          "quote": "**2. Ownership does not move. Only the destination does.**",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Who owns a card in live draft, where every card comes out of one shared deck, is not stated by any source (D-U07-8). In constructed it is the player who brought the card (400.4c). Round 1: the verifier measured that a stolen card recalled to the thief's hand and replayed is recorded as owned by the thief; the rule states the ruling (F-U01-1).",
-    "sourceHashes": {
-      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
-      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
-    },
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U01-1"
     ]
@@ -766,24 +761,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R107 (its owner-is-not-controller half)",
-          "quote": "a creation is owned by its creator."
+          "quote": "a creation is owned by its creator.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R107's still-standing half; its destination half (dies to the owner's bin) was reversed by R250.",
-    "sourceHashes": {
-      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“OWNER is not CONTROLLER, and putting…”)’s still-standing half; its destination half (dies to the owner's bin) was reversed by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.controller",
@@ -809,22 +803,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R107 (its owner-is-not-controller half)",
-          "quote": "OWNER is not CONTROLLER, and putting a card into play never transfers it"
+          "quote": "OWNER is not CONTROLLER, and putting a card into play never transfers it",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Change of control is 711 (U16). Which zone a card goes to when it leaves play follows its controller, not its owner: 400.4.",
-    "sourceHashes": {
-      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.controller.from-other-zone",
@@ -849,27 +842,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R107 (its owner-is-not-controller half)",
-          "quote": "piles are public.\"* Putting a card into play out of a zone you do not own does not"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R107",
-          "relation": "its destination half (the card dies to its OWNER's bin) reversed by R250: zones follow control"
+          "quote": "piles are public.\"* Putting a card into play out of a zone you do not own does not",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R107's next sentence ('It dies to its owner's bin') was reversed by R250: the unit now dies into its controller's bin (400.4, 405).",
-    "sourceHashes": {
-      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“OWNER is not CONTROLLER, and putting…”)’s next sentence ('It dies to its owner's bin') was reversed by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”): the unit now dies into its controller's bin (400.4, 405).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.you",
@@ -889,24 +876,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §9)",
-          "quote": "> refers to YOU, the controller/caster of the effect.\"*"
+          "quote": "> refers to YOU, the controller/caster of the effect.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R157 §9 quotes the owner: 'Cards always specify when something is an opponent. But just \"Gain rot\" refers to YOU, the controller/caster of the effect.' Whose effect it is: concepts.players.you.pays and 703 (U14).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) quotes the owner: 'Cards always specify when something is an opponent. But just \"Gain rot\" refers to YOU, the controller/caster of the effect.' Whose effect it is: concepts.players.you.pays and 703 (U14).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.you.mod",
@@ -931,22 +917,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §6)",
-          "quote": "### 6. \"You\" on a {Virus} [Augment] is the unit's CONTROLLER"
+          "quote": "### 6. \"You\" on a {Virus} [Augment] is the unit's CONTROLLER",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.34 is not in the pack (added from the extract). Its line before reads 'When a card is augmented onto an opposing unit, they'. Mods are 720-724 (U17).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.you.the-deck",
@@ -966,28 +951,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (its §18)",
-          "quote": "> 'The deck' always refers to the deck of the effect's controller. The targeted"
+          "quote": "> 'The deck' always refers to the deck of the effect's controller. The targeted",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (its §18)",
-          "quote": "> *\"Your deck. It will be shared during live draft and solo in constructed."
+          "quote": "> *\"Your deck. It will be shared during live draft and solo in constructed.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Decks are 401 (U07).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.you.pays",
@@ -997,11 +982,11 @@
     "examples": [
       {
         "text": "With an opponent's Crevice Lurker in the battle, a triggered ability asks its own controller whether to pay [one]; paying puts it on the stack.",
-        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller"
+        "test": "16-earth-a.test.ts::Crevice Lurker: CR 111.10g — a taxed trigger ASKS its controller"
       },
       {
         "text": null,
-        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger"
+        "test": "16-earth-a.test.ts::Crevice Lurker: CR 111.10h — declining prevents the trigger"
       }
     ],
     "see": [
@@ -1016,12 +1001,12 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "_passer's answer is about Crevice Lurker's trigger tax (an opponent's Crevice Lurker taxes YOUR trigger, and you pay). Costs are 111 (U04).",
     "sourceHashes": {
@@ -1036,7 +1021,7 @@
     "examples": [
       {
         "text": null,
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 102.7 ally is measured from the EFFECT controller"
       }
     ],
     "see": [
@@ -1047,22 +1032,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
-          "quote": "* **Ally** = every unit under your control **in the region the effect is happening in** — the source included."
+          "quote": "* **Ally** = every unit under your control **in the region the effect is happening in** — the source included.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R265 quotes the owner verbatim (2026-08-30). Targeting with 'ally' is 110 (U03).",
-    "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) quotes the owner verbatim (2026-08-30). Targeting with 'ally' is 110 (U03).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.ally.self",
@@ -1072,11 +1056,11 @@
     "examples": [
       {
         "text": "Shoreline Specter's \"recall target ally\" may target the Specter itself.",
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §1c an ally target offers the source"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 110.4a an ally target offers the source"
       },
       {
         "text": "Riftwalker's \"another target ally in my formation\" offers its column-mate and not itself.",
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §2b the ANOTHER side"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 102.7a the ANOTHER side"
       }
     ],
     "see": [
@@ -1091,22 +1075,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
-          "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
+          "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\".",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R265 measured that 'another' excludes whatever the sentence's other noun is; it is the source only when that noun is the source (110).",
-    "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) measured that 'another' excludes whatever the sentence's other noun is; it is the source only when that noun is the source (110).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.ally.control",
@@ -1126,24 +1109,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
-          "quote": "* \"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you hold it."
+          "quote": "* \"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you hold it.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.enemy",
@@ -1163,24 +1145,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
-          "quote": "* **Enemy** = every unit **not** under your control in that same region."
+          "quote": "* **Enemy** = every unit **not** under your control in that same region.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R265 also measured that no printed card targets an enemy UNIT; 'enemy' is used by statics, triggers and region sweeps.",
-    "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) also measured that no printed card targets an enemy UNIT; 'enemy' is used by statics, triggers and region sweeps.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.starting.live-draft",
@@ -1212,12 +1193,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.11 gives the steps in this order (elements, shuffle, seating, help cards, initiative, prismites, cards). Seating and the optional help cards have no digital counterpart and are left out. Starting life is from Manual p.6 and Rulebook 2023 p.2; the Manual gives no position for it in the order. The Rulebook 2023 quick start deals differently: D-U01-2.",
     "sourceHashes": {},
@@ -1252,16 +1233,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "How the elements are chosen is 105/902. R292 lets a custom live-draft lobby use 2 to 7 elements (Annex D / 902).",
+    "notes": "How the elements are chosen is 105/902. The owner ruling of 2026-09-14 (“Custom rules on a live draft…”) lets a custom live-draft lobby use 2 to 7 elements (Annex D / 902).",
     "sourceHashes": {}
   },
   {
@@ -1296,12 +1277,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The deck list is 902 and 401.",
     "sourceHashes": {}
@@ -1334,14 +1315,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The initiative is 500 and 508.",
     "sourceHashes": {}
@@ -1373,24 +1354,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "  standard 30)."
+          "quote": "  standard 30).",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R292's line before is '**draws per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,'. A custom live-draft lobby may change starting life (R292, Annex D).",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "notes": "The owner ruling of 2026-09-14 (“Custom rules on a live draft…”)’s line before is '**draws per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,'. A custom live-draft lobby may change starting life (the owner ruling of 2026-09-14 (“Custom rules on a live draft…”), Annex D).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.starting.live-draft.prismites",
@@ -1419,22 +1399,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R17",
-          "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana"
+          "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.18 is not in the pack (added from the extract). Prismites are 106 (U02).",
-    "sourceHashes": {
-      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.starting.live-draft.deal",
@@ -1464,24 +1443,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.16: packs are dealt 'clockwise starting with the initiative player'; that order is 503/902 (U08/U22).",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.starting.no-first-draw",
@@ -1519,14 +1497,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.16 presents dealing the draw with the hand as a shortcut players 'typically' take; the client always does it (the 6-card opening hand, concepts.starting.live-draft.deal). The draw step is 503 (U08). Round 1: scoped to live draft; constructed takes its turn-1 draw phase (concepts.starting.constructed.first-draw).",
     "sourceHashes": {}
@@ -1555,12 +1533,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Deck rules (at least 30 cards, at most 2 copies of a card) and the draw-4 / put-back-2 step are 901 and 503. The client deals a constructed opening hand of 4 plus the first turn's draw of 4 (34-constructed); no printed source gives a constructed opening hand, so that is left to 901/503.",
     "sourceHashes": {}
@@ -1596,12 +1574,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whether a life total can go below 0 is not stated: D-U01-4. Life loss itself is 112 (U04).",
     "sourceHashes": {}
@@ -1614,7 +1592,7 @@
     "examples": [
       {
         "text": null,
-        "test": "37-attrs-wight.test.ts::R48 {Blessed}: without the attribute the same shot is lethal"
+        "test": "37-attrs-wight.test.ts::CR 802.22b {Blessed}: without the attribute the same shot is lethal"
       }
     ],
     "see": [
@@ -1625,33 +1603,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R49 (its life-cost half)",
-          "quote": "reaching 0 ends the game inside `loseLife`, so paying at cast would hand the"
+          "quote": "reaching 0 ends the game inside `loseLife`, so paying at cast would hand the",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R49 (its life-cost half)",
-          "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only"
+          "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R197 (its §1, predict your life total)",
-          "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
+          "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "412-cr-general.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Both rulings describe the engine (they name its loseLife function) rather than a printed rule; no printed or designer source says when elimination is checked. This sentence is a two-player statement: with more than two players the game would continue (concepts.ending.continues), and no source says when a player in such a game is removed. A life COST may not be paid if it would bring you to 0 (R49; 111, U04). Round 1: because R49 refuses a life cost that would bring the payer to 0, the game can end mid-cost only when something makes the cost cost more life than its printed amount (a life-loss multiplier, per the verifier); whether R49 checks the multiplied amount is D-U01-14.",
-    "sourceHashes": {
-      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b",
-      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
-    }
+    "notes": "Both rulings describe the engine (they name its loseLife function) rather than a printed rule; no printed or designer source says when elimination is checked. This sentence is a two-player statement: with more than two players the game would continue (concepts.ending.continues), and no source says when a player in such a game is removed. A life COST may not be paid if it would bring you to 0 (the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”); 111, U04). Round 1: because the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) refuses a life cost that would bring the payer to 0, the game can end mid-cost only when something makes the cost cost more life than its printed amount (a life-loss multiplier, per the verifier); whether the owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) checks the multiplied amount is D-U01-14.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.ending.win",
@@ -1680,12 +1658,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1708,12 +1686,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Quoted with the Rulebook's own spelling ('elimiate'). Not enforced by the client, which plays two-player games only (concepts.general.digital-scope, D-U01-9).",
     "sourceHashes": {},
@@ -1747,12 +1725,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Not enforced by the client (concepts.general.digital-scope, D-U01-9). Regions and neighbours are 601; free-for-all is 903.",
     "sourceHashes": {},
@@ -1782,14 +1760,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The Rulebook 2023 adds 'in a random order'. In the client every card put on the bottom of the deck goes to the recycle pile instead (R296, 408). Not reachable in a two-player client game: the game is over (D-U01-9).",
+    "notes": "The Rulebook 2023 adds 'in a random order'. In the client every card put on the bottom of the deck goes to the recycle pile instead (the owner ruling of 2026-09-16 (“Recycling puts a card past the…”), 408). Not reachable in a two-player client game: the game is over (D-U01-9).",
     "sourceHashes": {},
     "untested": true,
     "untestableReason": "games of more than two players are not implemented in the client (1v1 only), so there is nothing to execute"
@@ -1802,7 +1780,7 @@
     "examples": [
       {
         "text": "A player concedes during deployment: the game is over and the other player has won.",
-        "test": "58-playtest-round9.test.ts::R65: conceding ends the game the way a lethal blow does"
+        "test": "58-playtest-round9.test.ts::CR 104.4: conceding ends the game the way a lethal blow does"
       }
     ],
     "see": [
@@ -1812,22 +1790,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R65 (its concede half)",
-          "quote": "reaches the result record exactly as a lethal blow does. It is the one action"
+          "quote": "reaches the result record exactly as a lethal blow does. It is the one action",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "No printed or designer source mentions conceding: D-U01-7. How a conceded game is weighted for ratings and statistics (R290) and where the concede command is shown (R241) are digital conventions (Annex D).",
-    "sourceHashes": {
-      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
-    }
+    "notes": "No printed or designer source mentions conceding: D-U01-7. How a conceded game is weighted for ratings and statistics (owner ruling of 2026-09-05, “a conceded game weighs by the…”) and where the concede command is shown (owner ruling of 2026-08-29, “a card menu carries card things…”) are digital conventions (Annex D).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.ending.concede.any-time",
@@ -1837,11 +1814,11 @@
     "examples": [
       {
         "text": "A player who must choose a target for their own spell may concede instead; nothing else can be done until they choose.",
-        "test": "58-playtest-round9.test.ts::R65: you may concede even while a decision is pending against you"
+        "test": "58-playtest-round9.test.ts::CR 104.4a: you may concede even while a decision is pending against you"
       },
       {
         "text": null,
-        "test": "130-seat-aware-gate.test.ts::R154 §4: concede is always reachable"
+        "test": "130-seat-aware-gate.test.ts::CR D2.1e: concede is always reachable"
       }
     ],
     "see": [
@@ -1851,26 +1828,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R65 (its concede half)",
-          "quote": "with no timing, no priority and no phase, and the one thing you may do while a"
+          "quote": "with no timing, no priority and no phase, and the one thing you may do while a",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R65 (its concede half)",
-          "quote": "decision is pending *against* you, since that decision may be the reason you"
+          "quote": "decision is pending *against* you, since that decision may be the reason you",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "concepts.ending.no-deck-out",
@@ -1880,7 +1857,7 @@
     "examples": [
       {
         "text": "A player with an empty deck and an empty recycle pile is told to draw 3: nothing is drawn, and nobody has won.",
-        "test": "300-recycle-mark.test.ts::R296 §4 an empty deck AND an empty pile draws fewer"
+        "test": "300-recycle-mark.test.ts::CR 401.4 an empty deck AND an empty pile draws fewer"
       }
     ],
     "see": [
@@ -1891,22 +1868,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R296",
-          "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+          "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "In the client a deck that runs out is refilled from the recycle pile first (R296, 401/408); only when both are empty does a player draw fewer. No printed source mentions running out: D-U01-8.",
-    "sourceHashes": {
-      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
-    }
+    "notes": "In the client a deck that runs out is refilled from the recycle pile first (the owner ruling of 2026-09-16 (“Recycling puts a card past the…”), 401/408); only when both are empty does a player draw fewer. No printed source mentions running out: D-U01-8.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.starting.constructed.first-draw",
@@ -1933,8 +1909,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [
         "createGame"
       ],
@@ -1944,6 +1919,8 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "Print gives the draw phase; no source says the first turn takes it, which is the client's convention.",
     "confidence": "medium",
     "notes": "Basis mixed (round 2): Rulebook 2023 p.6 states what the constructed draw phase is (503); that the first turn takes it is engine-only (the verifier: no printed, designer or R-ruling source says so). The Rulebook's neighbouring line deals draws only \"on every turn after the first\", and Manual p.16 deals the first turn's draws with the opening hand. The opening hand is split out to concepts.starting.constructed.opening-hand. D-U01-13 (b). The engine-only half awaits owner sign-off (Annex P).",
     "sourceHashes": {}
@@ -1967,8 +1944,7 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [
         "createGame"
       ],
@@ -1978,6 +1954,7 @@
       ]
     },
     "basis": "engine",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "Split out of concepts.starting.constructed.first-draw in round 2. Basis engine: the verifier measured createGame dealing 4 in constructed. The printed setup deals 4 for the starting hand only in the draft setup (Manual p.11 / Rulebook 2023 p.6), together with the first turn's draws. D-U01-13 (b). Awaits owner sign-off (Annex P).",
     "sourceHashes": {}

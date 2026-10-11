@@ -1,4 +1,4 @@
-/* digital-rules.md encoded as tests: one per ruling R1-R12.
+/* the retired ruling register encoded as tests: one per ruling of the first twelve.
  * Where a ruling's core is already exercised by the ported prototype tests,
  * the test here isolates the ruling-specific behavior. */
 import { test } from 'node:test';
@@ -12,7 +12,7 @@ import {
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
-test('R1: trigger conditions check at event time; amounts compute at resolution', () => {
+test('CR 109.3a: trigger conditions check at event time; amounts compute at resolution', () => {
   const h = new Harness(101);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -31,14 +31,14 @@ test('R1: trigger conditions check at event time; amounts compute at resolution'
   pass(h); pass(h);                            // resolve Arc: Tidewraith dies
   assert.ok(!ent(h, tide), 'Tidewraith died before its trigger resolved');
   const lifeBefore = h.state.players[D]!.life;
-  pass(h); pass(h);                            // resolve the trigger anyway (R1:
+  pass(h); pass(h);                            // resolve the trigger anyway (CR 109.3a:
   // once on the stack it resolves regardless of later changes to the source)
   assert.equal(h.state.players[D]!.life, lifeBefore - 1,
     'D took damage equal to their hand AT RESOLUTION (1 card left, not 2)');
   assert.equal(h.state.players[A]!.life, 30, 'A: empty hand, no damage');
 });
 
-test('R2: simultaneous triggers — owners order their own, NIT resolves first', () => {
+test('CR 706.5: simultaneous triggers — owners order their own, NIT resolves first', () => {
   const h = new Harness(102);
   toDeployment(h);
   const A = h.state.initiative;
@@ -56,7 +56,7 @@ test('R2: simultaneous triggers — owners order their own, NIT resolves first',
   h.do({ type: 'declareBlocks', seat: NIT, blocks: {} });   // no blocks: both survive
   pass(h); pass(h);   // damage to face; afterCombat fires BOTH sacrifices
   assert.equal(h.state.stack.length, 2, 'both triggers stacked simultaneously');
-  assert.equal(h.state.stack[1]!.controller, NIT, "NIT's trigger entered last (R2)");
+  assert.equal(h.state.stack[1]!.controller, NIT, "NIT's trigger entered last (CR 706.5)");
   pass(h); pass(h);   // resolve top: NIT's sacrifice first
   assert.ok(!ent(h, dUnit), "NIT's unit sacrificed first");
   assert.ok(ent(h, aUnit), "IT's not yet");
@@ -64,15 +64,15 @@ test('R2: simultaneous triggers — owners order their own, NIT resolves first',
   assert.ok(!ent(h, aUnit), "IT's sacrifice resolved second");
 });
 
-test('R3 + R295: formation recalc between damage sub-steps is immediate; the priority window follows it', () => {
-  // R3's content is the RECALC: the blocker died in the Swift sub-step and the
+test('CR 608.3e: formation recalc between damage sub-steps is immediate; the priority window follows it', () => {
+  // CR 608.3e's content is the RECALC: the blocker died in the Swift sub-step and the
   // promoted back-row unit applied to the normal sub-step, as a state-based
   // action with nothing in between. Here: back-row promotion between sub-steps.
   //
-  // ⚠ THE TITLE USED TO END "no priority window", and R295 took half of that
+  // ⚠ THE TITLE USED TO END "no priority window", and the split-step ruling (now CR 608.3b) took half of that
   // away. A damage step split by {Swift} or {Sluggish} offers priority at each
   // sub-step boundary (owner, 2026-09-16, report #165) — so there IS a window
-  // here now. What R3 still says, and what this test still proves, is that the
+  // here now. What CR 608.3e still says, and what this test still proves, is that the
   // recalc does not WAIT for it: the promotion has already happened when the
   // window opens, so the normal sub-step strikes with the promoted unit
   // whether anybody responds or not.
@@ -88,12 +88,12 @@ test('R3 + R295: formation recalc between damage sub-steps is immediate; the pri
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [front, back] } });
   pass(h); pass(h);
   // swift sub-step: 2 damage kills the 2/2 front; back promotes IMMEDIATELY —
-  // before the window, which is R3
+  // before the window, which is CR 608.3e
   assert.ok(!ent(h, front), 'front blocker died to swift damage');
   assert.equal(h.state.battle!.step, 'damageWindow',
-    'R295: Swift and normal both strike, so the step is split and priority is offered between them');
+    'CR 608.3b: Swift and normal both strike, so the step is split and priority is offered between them');
   assert.deepEqual(h.state.battle!.blocks[0], [back],
-    'R3: the promotion is already done when the window opens — the blocking column is the '
+    'CR 608.3e: the promotion is already done when the window opens — the blocking column is the '
     + 'back unit alone, and it did not wait for priority to become so');
   throughDamageWindows(h);
   // normal sub-step: the promoted 4/3 kills the 2/1
@@ -101,7 +101,7 @@ test('R3 + R295: formation recalc between damage sub-steps is immediate; the pri
   assert.ok(ent(h, back), 'back blocker took no damage (swift power was spent on the front)');
 });
 
-test('R4: electric excess follows a controller-chosen non-overlapping path, atomically', () => {
+test('CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically', () => {
   const h = new Harness(104);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -117,7 +117,7 @@ test('R4: electric excess follows a controller-chosen non-overlapping path, atom
   pick(h, { unit: front1 });
   pass(h); pass(h);                                // resolve: 2 lethal, 4 excess
   // two adjacent candidates (back1 vertically, front2 horizontally) → decision
-  assert.equal(h.state.decision?.kind, 'electricPath', 'controller chooses the path (R4)');
+  assert.equal(h.state.decision?.kind, 'electricPath', 'controller chooses the path (CR 802.17)');
   assert.equal(h.state.decision!.seat, D, "the Electric SOURCE's controller chooses");
   const toSprite = h.state.decision!.options.findIndex(o => o.label === 'Ignis Sprite');
   h.do({ type: 'decide', seat: D, choice: toSprite });
@@ -128,7 +128,7 @@ test('R4: electric excess follows a controller-chosen non-overlapping path, atom
   assert.ok(ent(h, back1) && ent(h, back1)!.damage === 0, 'unchosen neighbor untouched, overflow lost');
 });
 
-test('R5: all targets gone → fizzle; a fizzled spell unit never spawns', () => {
+test('CR 704.6: all targets gone → fizzle; a fizzled spell unit never spawns', () => {
   const h = new Harness(105);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -154,7 +154,7 @@ test('R5: all targets gone → fizzle; a fizzled spell unit never spawns', () =>
   assert.ok(h.state.players[D]!.bin.includes('Jelly'), 'fizzled card → bin');
 });
 
-// R6 needs an "unless its controller pays [x]" card; none is in the M1 pool,
+// CR 111.9 needs an "unless its controller pays [x]" card; none is in the M1 pool,
 // so a synthetic card exercises the engine mechanism (mid-resolution payment,
 // no priority window around it).
 registerSynthetic({
@@ -180,7 +180,7 @@ registerSynthetic({
   },
 });
 
-test('R6: "unless its controller pays" is part of resolution — pay branch', () => {
+test('CR 111.9: "unless its controller pays" is part of resolution — pay branch', () => {
   const h = new Harness(106);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -201,10 +201,10 @@ test('R6: "unless its controller pays" is part of resolution — pay branch', ()
   h.do({ type: 'decide', seat: A, choice: payIdx });
   assert.ok(ent(h, target), 'unit saved');
   assert.equal(new E(h.state).openMana(A), manaBefore - 2, 'payment expended mid-resolution');
-  assert.equal(h.state.stack.length, 0, 'no priority window around the payment (R6)');
+  assert.equal(h.state.stack.length, 0, 'no priority window around the payment (CR 704.1b)');
 });
 
-test('R6: decline branch deletes', () => {
+test('CR 111.9: decline branch deletes', () => {
   const h = new Harness(107);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -228,7 +228,7 @@ function damageTo(h: Harness, id: number): number[] {
     .map(e => e.data!['n'] as number);
 }
 
-test('R114: without Piercing the excess is not lost, it lands on the unit', () => {
+test('CR 608.6d: without Piercing the excess is not lost, it lands on the unit', () => {
   // Report #84 (Bena, 2026-08-23): "ALL damage is dealt to units, even if it
   // surpasses its defense. The only exception is Piercing, which deals excess
   // to the controller." The engine used to CAP the hit at lethal and drop the
@@ -251,7 +251,7 @@ test('R114: without Piercing the excess is not lost, it lands on the unit', () =
   // piercing-automatic is asserted in 02-combat ("piercing overflow hit player")
 });
 
-test("R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () => {
+test("CR 802.3b: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () => {
   // Report #79 (EGCW 212): a 2-power {Deadly} column into a 7/3. {Deadly}
   // means one point of the pool SUFFICES to kill, so only 1 has to be paid
   // before the rest may walk on — it never means only 1 is dealt.
@@ -266,7 +266,7 @@ test("R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [fat] } });
   pass(h); pass(h);
-  // R120: the 7-power BLOCK-side strike over the two 1/2s is now elective;
+  // CR 608.6a: the 7-power BLOCK-side strike over the two 1/2s is now elective;
   // this test is about the attacker's {Deadly} floor, so take the default
   assignDefault(h);
   assert.deepEqual(damageTo(h, fat), [2],
@@ -275,8 +275,8 @@ test("R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () 
   finishBattle(h);
 });
 
-test('R114: {Piercing} is still the exception — excess goes to the controller, not the unit', () => {
-  // The ruling's own carve-out, fenced so the R114 fix cannot swallow it.
+test('CR 802.16b: {Piercing} is still the exception — excess goes to the controller, not the unit', () => {
+  // The ruling's own carve-out, fenced so the dealt-in-full fix cannot swallow it.
   const h = new Harness(1085);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -287,7 +287,7 @@ test('R114: {Piercing} is still the exception — excess goes to the controller,
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
   pass(h); pass(h);
-  // R319: a Piercing strike now ELECTS (the attacker may keep the excess on
+  // CR 802.16c: a Piercing strike now ELECTS (the attacker may keep the excess on
   // the blocker); the default answer is this split, the one this test pins
   assignDefault(h);
   assert.deepEqual(damageTo(h, chump), [1],
@@ -296,7 +296,7 @@ test('R114: {Piercing} is still the exception — excess goes to the controller,
   finishBattle(h);
 });
 
-test('R9: once-per-turn budgets are per card and survive control change', () => {
+test('CR 109.9d: once-per-turn budgets are per card and survive control change', () => {
   const h = new Harness(109);
   toDeployment(h);
   const p = h.state.deployPlayer!, o = 1 - p;
@@ -307,7 +307,7 @@ test('R9: once-per-turn budgets are per card and survive control change', () => 
   h.do({ type: 'playCard', seat: p, handIndex: s1 });
   pick(h, { unit: rc });                           // RC deals 2 to itself
   assert.ok((ent(h, rc)!.budgets['ability:Rune Channeler#0'] ?? 0) > 0, 'budget spent');
-  // steal RC; the budget must NOT reset (R9)
+  // steal RC; the budget must NOT reset (CR 109.9d)
   ent(h, rc)!.controller = o;
   ent(h, rc)!.region = new E(h.state).homeRegion(o);
   h.do({ type: 'doneDeploying', seat: p });
@@ -318,7 +318,7 @@ test('R9: once-per-turn budgets are per card and survive control change', () => 
 });
 
 /*
- * R10 IS NO LONGER A THEORETICAL RULING, AND NO LONGER AN UNBUILT ONE.
+ * UNAWARE IS NO LONGER A THEORETICAL RULING, AND NO LONGER AN UNBUILT ONE.
  *
  * This slot used to hold one `{todo:true}` whose title read "no Unaware card
  * in the M1 pool", and that stopped being true the day the Light & Dark
@@ -329,14 +329,14 @@ test('R9: once-per-turn budgets are per card and survive control change', () => 
  * still could not fail, and the attribute stayed dead through two playtest
  * reports and a conceded game (CARD-TODO #5).
  *
- * Stat layer 6 shipped on 2026-08-23 (R106): an {Unaware} card, and everything
+ * Stat layer 6 shipped on 2026-08-23 (CR 802.9): an {Unaware} card, and everything
  * it is interacting with, reads at the numbers PRINTED on the card. Both
  * halves are exercised below, and the whole layer has its own file,
  * test/92-unaware.test.ts.
  *
  * There is no todo left in this slot. There is no todo left to put here.
  */
-test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat layer 6 reads it', () => {
+test('CR 802.9: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat layer 6 reads it', () => {
   // 1. the printed data. Three cards, one attribute — if a data refresh ever
   //    drops it, this is the first thing that notices.
   for (const name of ['Bubb', 'Trashling', 'Haboob']) {
@@ -354,7 +354,7 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat
   assert.ok(ownAttrs(h, bubb).has('Unaware'), 'a played Bubb has {Unaware}');
   ent(h, bubb)!.counters = 3;
   assert.deepEqual(effStats(h, bubb), [5, 6],
-    'R106: Bubb reads the 5/6 printed on its own card, whatever is stacked on it');
+    'CR 802.9a: Bubb reads the 5/6 printed on its own card, whatever is stacked on it');
   const host = spawn(h, A, 'Unit Token');                 // 1/1
   ent(h, host)!.counters = 2;                             // → 3/3
   assert.deepEqual(effStats(h, host), [3, 3], 'the host is an ordinary pumped 3/3 first');
@@ -392,7 +392,7 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat
   finishBattle(h);
 });
 
-test('R10/R106: an Unaware blocker and what it blocks BOTH read at printed', () => {
+test('CR 802.9d: an Unaware blocker and what it blocks BOTH read at printed', () => {
   // The owner's own example, driven through real combat: "Bubb blocking a
   // Robot token would kill it (do Bubb, it has 0 power and 0 defense), no
   // matter how many +1/+1 counters it has." A Robot is printed 0/0 and carries
@@ -418,7 +418,7 @@ test('R10/R106: an Unaware blocker and what it blocks BOTH read at printed', () 
   finishBattle(h);
 });
 
-test('R11: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {
+test('CR 506.2: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {
   const h = new Harness(111);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -446,7 +446,7 @@ test('R11: regroup runs its exact sequence (return → damage → temp → forma
   assert.ok(!h.state.entities[tok.id], '(+) spell tokens erased');
 });
 
-test('R12: regions are exclusive — home units are not targetable in another region\'s battle', () => {
+test('CR 601.1a: regions are exclusive — home units are not targetable in another region\'s battle', () => {
   const h = new Harness(112);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -460,7 +460,7 @@ test('R12: regions are exclusive — home units are not targetable in another re
   h.do({ type: 'playCard', seat: D, handIndex: arc });
   const offered = h.state.decision!.options.map(o => JSON.stringify(o.value));
   assert.ok(offered.includes(JSON.stringify({ unit: atk })), 'attacker (in region) targetable');
-  assert.ok(!offered.includes(JSON.stringify({ unit: home })), 'home unit does not exist here (R12)');
+  assert.ok(!offered.includes(JSON.stringify({ unit: home })), 'home unit does not exist here (CR 601.1a)');
   pick(h, { unit: atk });
   pass(h); pass(h);
 });

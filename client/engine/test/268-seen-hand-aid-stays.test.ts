@@ -192,7 +192,7 @@ test('CT-174 across every state of the reported game, the aid is never taken awa
     if (firstShown !== null && !sv.show) wentDark.push(i);
   });
 
-  // R325 (2026-10-09) reversed R225: a Hooba-Bot killed under its own trigger
+  // Since 2026-10-09 (RAQ), a Hooba-Bot killed under its own trigger
   // makes its Robot. DQVZ has exactly that at [53]–[54], so the current engine
   // asks a placement question at [59] the logged game never saw, every later
   // entity id is one off, and the replay parts company with the log before the
@@ -201,7 +201,7 @@ test('CT-174 across every state of the reported game, the aid is never taken awa
   // on drift or passing on a board that is not the reported game. §1 and §2
   // above still pin the aid on their own fixtures.
   if (firstShown === null && parted !== null && parted < 119) {
-    t.skip(`DQVZ diverges at [${parted}] under the current rules (R325) before the look — `
+    t.skip(`DQVZ diverges at [${parted}] under the current rules (CR 704.7a) before the look — `
       + 'the whole-game check cannot follow it any more');
     return;
   }

@@ -1,4 +1,4 @@
-/* R227 / R223 — AN EFFECT WITH NO LEGAL TARGET FIZZLES, AND SAYS SO.
+/* CR D7.3a — AN EFFECT WITH NO LEGAL TARGET FIZZLES, AND SAYS SO.
  *
  * The owner, 2026-08-28, asked what a spell should do when it resolves with no
  * legal target: **"Fizzle, and say so in the log."** Not silently, not as an
@@ -18,7 +18,7 @@
  * instrument, and so was report #46 before it, which was closed with a
  * one-card fix and then re-filed by the owner twice as the same class.
  *
- * ── THE CLASS, MEASURED (R227, 2026-08-28)
+ * ── THE CLASS, MEASURED (2026-08-28)
  *
  * Not grepped — grep finds 12 sites of a TOKEN, which is not a guard analysis.
  * Measured by re-driving every EffectDef in the registry through
@@ -42,12 +42,12 @@
  *
  * ── WHY THIS WAS LATENT AND NOT A LIVE CRASH
  *
- * `E.resolveItem` applies R86 first: an item that has lost every target it
+ * `E.resolveItem` applies CR 704.6 first: an item that has lost every target it
  * declared fizzles — and logs — BEFORE `run` is entered, so the ordinary cast
  * path never reaches these lines. That is a property of ONE CALLER. Every one
  * of the 14 has `min >= 1` and none is optional, which was checked rather than
  * assumed; and 65's `unfairThrows` had been printing two of them as "artifacts"
- * for two rounds. R223 makes the cards answer for themselves.
+ * for two rounds. CR D7.3a makes the cards answer for themselves.
  *
  * ── THE GUARDS THIS FILE IS THE REGRESSION SUITE FOR
  *
@@ -73,7 +73,7 @@ import { effectByKey, isEntityTarget, type EffectCtx, type ResolvedTarget } from
 import { spawn, toDeployment } from './util.ts';
 import type { CardName, Entity, GameState, Seat } from '../src/types.ts';
 
-/** the wording R223 requires, in one place here too — if `firstTarget` ever
+/** the wording CR D7.3a requires, in one place here too — if `firstTarget` ever
  * says something else, every case below reddens at once rather than one of
  * them quietly passing on a different sentence. */
 const FIZZLE_LINE = /: it has no legal target — nothing happens\.$/;
@@ -110,7 +110,7 @@ function starve(key: string, extra: object = {}): { threw: Error | null; log: st
 }
 
 /**
- * THE ASSERTION, both halves of R223 at once. A case that only checked "does
+ * THE ASSERTION, both halves of CR D7.3a at once. A case that only checked "does
  * not throw" would pass on a silent `return`, which is the outcome the owner
  * explicitly ruled out ("Not silently").
  */
@@ -120,7 +120,7 @@ function assertFizzlesAndSays(key: string, extra: object = {}): void {
     `${key} THREW with no target instead of fizzling: ${threw?.message}`);
   const said = log.filter(m => FIZZLE_LINE.test(m));
   assert.equal(said.length, 1,
-    `${key} did not say why nothing happened (R223: "Fizzle, and say so in the log"). `
+    `${key} did not say why nothing happened (the owner's ruling, CR D7.3a: "Fizzle, and say so in the log"). `
     + `Its log was: ${log.length ? log.join(' | ') : '(empty)'}`);
   const card = key.slice(key.indexOf(':') + 1).split('#')[0]!;
   assert.ok(said[0]!.startsWith(`${card}:`),
@@ -137,16 +137,16 @@ for (const key of [
   'spell:All-Consuming Blaze',
   'spell:Arc Lightning',
 ]) {
-  test(`R227 ${key}: no target → fizzles and logs`, () => assertFizzlesAndSays(key));
+  test(`CR D7.3a ${key}: no target → fizzles and logs`, () => assertFizzlesAndSays(key));
 }
 
 // ── 2. CT-89's two named cards, which were only ever the visible half ──
 
-test('R227 spell:Luminous Arc: no target → fizzles and logs (CT-89 #1)', () => {
+test('CR D7.3a spell:Luminous Arc: no target → fizzles and logs (CT-89 #1)', () => {
   assertFizzlesAndSays('spell:Luminous Arc');
 });
 
-test('R227 spell:Dreadwave Devourer: no target → fizzles and logs (CT-89 #2)', () => {
+test('CR D7.3a spell:Dreadwave Devourer: no target → fizzles and logs (CT-89 #2)', () => {
   // its old body was `'stack' in (t as object)` — the `in` operator on
   // `undefined`, which is the TypeError the ticket quoted.
   assertFizzlesAndSays('spell:Dreadwave Devourer');
@@ -159,32 +159,32 @@ test('R227 spell:Dreadwave Devourer: no target → fizzles and logs (CT-89 #2)',
 // as well as the behaviour: if a later round splits them into two defs, the
 // identity assertion fails and whoever split them has to guard both.
 
-test('R227 Sacrificial Burst: BOTH routes fizzle — spell and graft are one EffectDef', () => {
+test('CR D7.3a Sacrificial Burst: BOTH routes fizzle — spell and graft are one EffectDef', () => {
   assert.equal(effectByKey('spell:Sacrificial Burst'), effectByKey('graft:Sacrificial Burst'),
     'Sacrificial Burst\'s spell and graft rider are no longer the same EffectDef — '
-    + 'both routes now need their own R227 guard');
+    + 'both routes now need their own CR D7.3a guard');
   const paid = { costPaid: { sacrificed: { card: 'Tidal Menace' as CardName, power: 2, defense: 2 } } };
   assertFizzlesAndSays('spell:Sacrificial Burst', paid);
   assertFizzlesAndSays('graft:Sacrificial Burst', paid);
 });
 
-test('R227 Rune Channeler: BOTH routes fizzle — ability #0 and graft are one EffectDef', () => {
+test('CR D7.3a Rune Channeler: BOTH routes fizzle — ability #0 and graft are one EffectDef', () => {
   assert.equal(effectByKey('ability:Rune Channeler#0'), effectByKey('graft:Rune Channeler'),
     'Rune Channeler\'s triggered ability and graft rider are no longer the same EffectDef — '
-    + 'both routes now need their own R227 guard');
+    + 'both routes now need their own CR D7.3a guard');
   assertFizzlesAndSays('ability:Rune Channeler#0');
   assertFizzlesAndSays('graft:Rune Channeler');
 });
 
 // ── 4. the remaining route shapes: spell-token, X-spell, augment ──────
 
-test('R227 spell:Fireball: a spell TOKEN with no target fizzles and logs', () => {
+test('CR D7.3a spell:Fireball: a spell TOKEN with no target fizzles and logs', () => {
   // the route matters: a Fireball is created by other cards and resolves as a
   // spellToken, so its target can go stale in a window nobody chose.
   assertFizzlesAndSays('spell:Fireball', { x: 3 });
 });
 
-test('R227 spell:Wildfire: X is paid and there is still no target', () => {
+test('CR D7.3a spell:Wildfire: X is paid and there is still no target', () => {
   // ⚠ ordering: Wildfire's `x <= 0` branch returns FIRST, so a starved run with
   // X=0 never reaches the dereference at all. X is forced positive here on
   // purpose — otherwise this test would pass against the unfixed card.
@@ -193,15 +193,15 @@ test('R227 spell:Wildfire: X is paid and there is still no target', () => {
   assert.ok(log.some(m => /X = 0/.test(m)), 'the X = 0 branch stopped announcing itself');
 });
 
-test('R227 spell:Seismomancy: no target → fizzles and logs', () => {
+test('CR D7.3a spell:Seismomancy: no target → fizzles and logs', () => {
   assertFizzlesAndSays('spell:Seismomancy');
 });
 
-test('R227 augment:Voltwrath Behemoth#0: donated [Augment] text fizzles and logs', () => {
+test('CR D7.3a augment:Voltwrath Behemoth#0: donated [Augment] text fizzles and logs', () => {
   assertFizzlesAndSays('augment:Voltwrath Behemoth#0');
 });
 
-test('R227 augment:Throwing Boulder#0: an activated augment fizzles and logs', () => {
+test('CR D7.3a augment:Throwing Boulder#0: an activated augment fizzles and logs', () => {
   // its carrier is already in the bin by the time this runs (the sacrifice was
   // the cost), so there is nothing to fall back on but the log line.
   assertFizzlesAndSays('augment:Throwing Boulder#0');
@@ -212,20 +212,20 @@ test('R227 augment:Throwing Boulder#0: an activated augment fizzles and logs', (
 // Fixed under the same ruling and named here for the same reason: they are the
 // evidence that the sweep alone is not the whole guard.
 
-test('R227 spell:Jelly: silence was the old failure mode, not a crash', () => {
+test('CR D7.3a spell:Jelly: silence was the old failure mode, not a crash', () => {
   // Jelly read `ctx.targets[0]!` and then asked `isEnt(t)`, which is null-safe
-  // — so with no target it completed, did nothing and SAID nothing. R223 rules
+  // — so with no target it completed, did nothing and SAID nothing. CR D7.3a rules
   // that out as explicitly as it rules out the throw.
   assertFizzlesAndSays('spell:Jelly');
 });
 
-test('R227 Leaping Lillik: BOTH routes of the shared `deleteUnit` def fizzle', () => {
+test('CR D7.3a Leaping Lillik: BOTH routes of the shared `deleteUnit` def fizzle', () => {
   assert.equal(effectByKey('spell:Leaping Lillik'), effectByKey('graft:Leaping Lillik'));
   assertFizzlesAndSays('spell:Leaping Lillik');
   assertFizzlesAndSays('graft:Leaping Lillik');
 });
 
-test('R227 Burning Vengeance: the site the drive CANNOT reach', () => {
+test('CR D7.3a Burning Vengeance: the site the drive CANNOT reach', () => {
   // ⚠ THE REASON THE SOURCE SCAN EXISTS. Its dereference sits behind
   // `if (deaths <= 0) return`, and no board 65's rig builds has a battle death
   // on it, so the empty-targets drive convicted every other member of this
@@ -266,17 +266,17 @@ function withTarget(key: string, sourceName: string, extra: object = {}): { vict
   return { victim: g.entity(id) ?? victim, g };
 }
 
-test('R227 regression: Luminous Arc still deals 6 when it HAS a target', () => {
+test('CR D7.3a regression: Luminous Arc still deals 6 when it HAS a target', () => {
   const { victim, g } = withTarget('spell:Luminous Arc', 'Luminous Arc');
   const dead = !g.entity(victim.id);
   assert.ok(dead || (victim.damage ?? 0) >= 6,
-    `Luminous Arc no longer damages its target — the R227 guard swallowed the effect. `
+    `Luminous Arc no longer damages its target — the CR D7.3a guard swallowed the effect. `
     + `damage=${victim.damage}, alive=${!dead}`);
   assert.ok(!g.events.some(e => FIZZLE_LINE.test(e.msg)),
     'Luminous Arc logged a fizzle while holding a perfectly good target');
 });
 
-test('R227 regression: the dealToAnyTarget family still deals when it HAS a target', () => {
+test('CR D7.3a regression: the dealToAnyTarget family still deals when it HAS a target', () => {
   for (const [key, name] of [
     ['spell:Arc Lightning', 'Arc Lightning'],
     ['spell:Flame of History', 'Flame of History'],
@@ -289,13 +289,13 @@ test('R227 regression: the dealToAnyTarget family still deals when it HAS a targ
   }
 });
 
-test('R227 regression: Leaping Lillik still deletes the unit it is given', () => {
+test('CR D7.3a regression: Leaping Lillik still deletes the unit it is given', () => {
   const { victim, g } = withTarget('spell:Leaping Lillik', 'Leaping Lillik');
   assert.equal(g.entity(victim.id), undefined,
-    'Leaping Lillik no longer deletes its target — the R227 guard swallowed the effect');
+    'Leaping Lillik no longer deletes its target — the CR D7.3a guard swallowed the effect');
 });
 
-test('R227 regression: Jelly still applies -2/-2 to the unit it is given', () => {
+test('CR D7.3a regression: Jelly still applies -2/-2 to the unit it is given', () => {
   // Tidal Menace is a 2/2, so -2/-2 kills it and there is no entity left to
   // read the stat off — the `statChanged` receipt is the durable evidence.
   const { g } = withTarget('spell:Jelly', 'Jelly');
@@ -308,7 +308,7 @@ test('R227 regression: Jelly still applies -2/-2 to the unit it is given', () =>
 
 // ── 7. the helper's own contract ──────────────────────────────────────
 
-test('R227: the fizzle wording lives in ONE place, so it cannot drift', () => {
+test('CR D7.3a: the fizzle wording lives in ONE place, so it cannot drift', () => {
   // every card above is asserted against the SAME regex, and the regex matches
   // what `firstTarget` emits. This is the assertion that the sentence is
   // single-sourced: if two cards ever said it differently, one of the cases
@@ -337,7 +337,7 @@ test('R227: the fizzle wording lives in ONE place, so it cannot drift', () => {
     + `it must come from \`firstTarget\` and nowhere else:\n  ${[...lines].join('\n  ')}`);
 });
 
-test('R227: a PLAYER target is not mistaken for an absent one', () => {
+test('CR D7.3a: a PLAYER target is not mistaken for an absent one', () => {
   // `firstTarget` returns the element and the caller tests it for truth, so the
   // helper is only correct while every ResolvedTarget shape is an object. The
   // shape most likely to break that is `{ player: 0 }` — seat 0 is falsy, and a

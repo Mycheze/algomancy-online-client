@@ -1,5 +1,5 @@
 /**
- * R314 — report #199 (UTVU, 2026-10-06): "Twin Flame (and things with two
+ * CR 110.12 — report #199 (UTVU, 2026-10-06): "Twin Flame (and things with two
  * targets) should be allowed to target Gatekeeper of Souls AND other things.
  * As long as Gatekeeper of Souls is one of the targets, it's fine."
  *
@@ -19,7 +19,7 @@ import type { Seat } from '../src/types.ts';
 const values = (h: Harness): unknown[] => h.state.decision!.options.map(o => o.value)
   .filter(v => !(v as { doneTargets?: true }).doneTargets);
 
-test('R314: a two-target spell aims at the Gatekeeper first and then at anything else', () => {
+test('CR 110.12: a two-target spell aims at the Gatekeeper first and then at anything else', () => {
   const h = new Harness(4380);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -45,7 +45,7 @@ test('R314: a two-target spell aims at the Gatekeeper first and then at anything
   finishBattle(h);
 });
 
-test('R314: two Gatekeepers — each one must be targeted if able, so both slots go to them', () => {
+test('CR 110.12: two Gatekeepers — each one must be targeted if able, so both slots go to them', () => {
   const h = new Harness(4381);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

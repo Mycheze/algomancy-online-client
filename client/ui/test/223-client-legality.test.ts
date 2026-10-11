@@ -1,4 +1,4 @@
-/* R245 — WHERE THE CLIENT AND THE ENGINE DISAGREE ABOUT WHAT IS LEGAL.
+/* CR D1.3 — WHERE THE CLIENT AND THE ENGINE DISAGREE ABOUT WHAT IS LEGAL.
  *
  * Three reports from 2026-08-28/29, from two rooms that both replay FAITHFUL
  * at HEAD (VYTV 265/265, DSVQ 174/174). A faithful replay is the evidence: the
@@ -314,7 +314,7 @@ const armFor = (s: GameState, legal: readonly Action[]): AutoPassArm => ({
   armed: true, prefOn: false, yieldIds: new Set<EntityId>(), ...armSnapshot(s, legal),
 });
 
-/** the pre-R245 arm: the two scalars, and no snapshot at all */
+/** the older arm: the two scalars, and no snapshot at all */
 const oldArmFor = (s: GameState, legal: readonly Action[]): AutoPassArm => {
   const { armedStack, armedSig } = armSnapshot(s, legal);
   return { armed: true, prefOn: false, yieldIds: new Set<EntityId>(), armedStack, armedSig };

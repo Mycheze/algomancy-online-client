@@ -28,14 +28,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Orientation rule for chapter 6; the cross-references are this document's structure.",
     "sourceHashes": {}
@@ -65,14 +65,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -85,7 +85,7 @@
     "examples": [
       {
         "text": "Towering Colossus prints “Enemies gain +2/+2.” An enemy unit standing in a different region from the Colossus does not get the bonus.",
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §3c a static that says ENEMIES does not reach an enemy in another region"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 601.4e a static that says ENEMIES does not reach an enemy in another region"
       }
     ],
     "see": [
@@ -108,16 +108,11 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R91 (its region-scoping half)",
-          "quote": "Just treat each region as if they exist in a completely different game"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R91",
-          "relation": "its duration note superseded by R118; the region-scoping half stands"
+          "quote": "Just treat each region as if they exist in a completely different game",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -126,11 +121,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R91 quotes Caleb's own words from rules-questions; they are cited through R91 because they are not in a RAQ thread. Manual p.19's 'zero information' clause is handled in combat.regions.information and D-U10-1.",
-    "sourceHashes": {
-      "R91": "56a9ed56119d29270ebb3a0b394209482176a22f7a55de8195e2defe7500b180"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“\"Name a card\" is a Decision…”) quotes Caleb's own words from rules-questions; they are cited through the owner ruling of 2026-08-23 (“\"Name a card\" is a Decision…”) because they are not in a RAQ thread. Manual p.19's 'zero information' clause is handled in combat.regions.information and D-U10-1.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.definition.every-effect-local",
@@ -166,8 +160,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts",
@@ -175,6 +168,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -189,7 +183,7 @@
     "examples": [
       {
         "text": "Cosmic Reversal recalls all other spell units. A spell unit that its opponent left at home, outside the battle region, is not recalled.",
-        "test": "229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region, like every other all"
+        "test": "229-cosmic-and-control.test.ts::CR 601.1c: the board half is scoped to the region, like every other all"
       }
     ],
     "see": [],
@@ -202,24 +196,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R243",
-          "quote": "card that says 'all' is actually 'all in this region')"
+          "quote": "card that says 'all' is actually 'all in this region')",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "229-cosmic-and-control.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.definition.statics-and-triggers",
@@ -229,7 +222,7 @@
     "examples": [
       {
         "text": "Flourishing Flora watches for another ally spawning. An ally that spawns in a different region does not trigger it.",
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §3d a trigger that watches for another ALLY does not see one spawn in another region"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 601.4e a trigger that watches for another ALLY does not see one spawn in another region"
       },
       {
         "text": "Crevice Lurker makes abilities cost [one] more during battle. It taxes both players' abilities in its region, the opponent's as well as its controller's.",
@@ -254,8 +247,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "243-ally-and-enemy-scope.test.ts",
@@ -263,6 +255,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Prickly Protector is the Manual's example (p.42). The Crevice Lurker example comes from RAQ 1355103348378042515#0 ('It affects all players in his region (both ally & opponent) during battle').",
     "sourceHashes": {}
@@ -292,14 +285,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.41's own example ('if you have no units in a region and play the effect “Each player sacrifices a unit”').",
     "sourceHashes": {}
@@ -325,24 +318,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R12",
-          "quote": "Things exist in exactly one region at a time."
+          "quote": "Things exist in exactly one region at a time.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R12 states it for everything. The Rulebook line is supporting only: it places a spell token in one region, which is consistent with, not a statement of, the rule. R12's Temporal Rift clause ('that region's battle and stack') is not used: see D-U10-5.",
-    "sourceHashes": {
-      "R12": "f6c728716f0fd27850a4344a0498bb1d9607b2f0f9e6a5838dfeeb0ea91292b3"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Regions are exclusive”) states it for everything. The Rulebook line is supporting only: it places a spell token in one region, which is consistent with, not a statement of, the rule. The owner ruling of 2026-08-18 (“Regions are exclusive”)’s Temporal Rift clause ('that region's battle and stack') is not used: see D-U10-5.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.exclusive.no-region-zones",
@@ -388,41 +380,43 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R12",
-          "quote": "affects only that region's battle and stack"
+          "quote": "affects only that region's battle and stack",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R344",
-          "quote": "No player owns a region's stack: it is shared by every player present in that region."
+          "quote": "No player owns a region's stack: it is shared by every player present in that region.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R344",
-          "quote": "Only a player present in a region can put an effect on its stack or respond to one there."
+          "quote": "Only a player present in a region can put an effect on its stack or respond to one there.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R344",
-          "quote": "They are in a region only while their owner is present in it."
+          "quote": "They are in a region only while their owner is present in it.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R286",
-          "quote": "It does get the stack. But it's an isolated stack just for the person in that"
+          "quote": "It does get the stack. But it's an isolated stack just for the person in that",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): it stated R265's premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank R265 and R250 (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, R291) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2). REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so.",
+    "notes": "POLISH (2026-10-10): it stated the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, the owner ruling of 2026-09-05 (“A cached card is a target…”)) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2). REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so.",
     "sourceHashes": {
-      "R12": "f6c728716f0fd27850a4344a0498bb1d9607b2f0f9e6a5838dfeeb0ea91292b3",
-      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03",
-      "R344": "12b48a8206fdd885ac52226912a40889a3057c07b08a6fcd070311794d4bbbef",
       "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
     },
     "engineDiffers": [
@@ -461,14 +455,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Only the two-player clause is executable: the client plays two-player games only.",
     "sourceHashes": {}
@@ -496,12 +490,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -526,12 +520,12 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {},
@@ -546,7 +540,7 @@
     "examples": [
       {
         "text": "A player attacks into the opponent's region. From then until regroup, both players are present there, so a unit that dies in that region dies in front of both of them.",
-        "test": "314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region, so both seats see every death in it"
+        "test": "314-prophecy-units-die.test.ts::CR 803.7m: combat puts the attacker in the region, so both seats see every death in it"
       }
     ],
     "see": [
@@ -573,13 +567,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R302",
-          "quote": "declaring an attack puts the attacker in the defender's"
+          "quote": "declaring an attack puts the attacker in the defender's",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "314-prophecy-units-die.test.ts",
@@ -587,11 +581,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.presence.only-by-attacking",
@@ -616,24 +609,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R302",
-          "quote": "Declining to attack ends the round without entering"
+          "quote": "Declining to attack ends the round without entering",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.presence.outside-battle",
@@ -643,7 +635,7 @@
     "examples": [
       {
         "text": "During deployment, Prismatic Observer can recall a card from its controller's own cache only. The opponent's cache is out of reach, because the opponent is not in the Observer's region.",
-        "test": "293-cached-targets-are-regional.test.ts::R291 §2 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent's cache"
+        "test": "293-cached-targets-are-regional.test.ts::CR 403.6 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent's cache"
       }
     ],
     "see": [
@@ -671,14 +663,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "293-cached-targets-are-regional.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -691,7 +683,7 @@
     "examples": [
       {
         "text": "In battle, both players are present in the battle region, so Prismatic Observer may recall a card from either player's cache.",
-        "test": "293-cached-targets-are-regional.test.ts::R291 §3 the control: in battle the Observer reaches the opponent's cache, as printed"
+        "test": "293-cached-targets-are-regional.test.ts::CR 403.6 the control: in battle the Observer reaches the opponent's cache, as printed"
       }
     ],
     "see": [],
@@ -708,29 +700,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R291",
-          "quote": "A player's cache can be targeted exactly when that player is"
+          "quote": "A player's cache can be targeted exactly when that player is",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R243",
-          "quote": "present and the enemy bin is reachable exactly as before; only a fixture"
+          "quote": "present and the enemy bin is reachable exactly as before; only a fixture",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "293-cached-targets-are-regional.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The Manual names bin, hand, resources and the player; R291 adds the cache. The second sentence (not present -> not reachable) is the converse the Manual implies ('if a player enters a region'), stated outright by R291 for the cache and R239's reach half for players.",
-    "sourceHashes": {
-      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315",
-      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2"
-    }
+    "notes": "The Manual names bin, hand, resources and the player; the owner ruling of 2026-09-05 (“A cached card is a target…”) adds the cache. The second sentence (not present -> not reachable) is the converse the Manual implies ('if a player enters a region'), stated outright by the owner ruling of 2026-09-05 (“A cached card is a target…”) for the cache and the owner ruling of 2026-08-28 (“Region scoping is absolute […]”)’s reach half for players.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.presence.each-opponent",
@@ -767,20 +758,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R25",
-          "quote": "\"Each opponent/player\" effects read the **event region's present seats**"
+          "quote": "\"Each opponent/player\" effects read the **event region's present seats**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R239 (its reach half)",
-          "quote": "that happens in a region where a player or unit currently isn't is 100% ignored, as if that effect"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R239",
-          "relation": "its visibility half narrowed by R243; the reach half stands"
+          "quote": "that happens in a region where a player or unit currently isn't is 100% ignored, as if that effect",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -790,12 +777,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R239": "a02f0bfbccbfab651183f6ddabb290691820d8a135dd82108f62ac824c56d82c",
-      "R25": "07ed90e8f19c288269e80c2ff745b7dad7e92325e0a2eb2092101ab2c79a1521"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.presence.ally-enemy",
@@ -805,7 +790,7 @@
     "examples": [
       {
         "text": null,
-        "test": "243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot in the pool can see a unit in another region"
+        "test": "243-ally-and-enemy-scope.test.ts::CR 601.4e no ally or enemy slot in the pool can see a unit in another region"
       }
     ],
     "see": [
@@ -815,24 +800,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
-          "quote": "Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+          "quote": "Ally = all units under your control in the current region. Enemy = all units not under your control in the current region.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "243-ally-and-enemy-scope.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R265's other halves (an ally includes the source; 'another' excludes it) belong to rule 110 (U03).",
-    "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s other halves (an ally includes the source; 'another' excludes it) belong to rule 110 (U03).",
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.presence.regroup",
@@ -842,7 +826,7 @@
     "examples": [
       {
         "text": "Life Plant's 1/1s, created in the enemy region during an attack, return to their controller's region at regroup.",
-        "test": "98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup"
+        "test": "98-spawn-region.test.ts::the stranded 1/1s walk home at regroup"
       }
     ],
     "see": [
@@ -857,24 +841,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R115",
-          "quote": "already returns every out-of-position unit to its controller's home region"
+          "quote": "already returns every out-of-position unit to its controller's home region",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "98-spawn-region.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.created",
@@ -884,11 +867,11 @@
     "examples": [
       {
         "text": "Life Plant attacks into the opponent's region, and its controller loses life there. Its 1/1s are created in the opponent's region, not at home.",
-        "test": "98-spawn-region.test.ts::R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE"
+        "test": "98-spawn-region.test.ts::CR 601.5: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE"
       },
       {
         "text": "Tidelurker attacks and creates a 2/2 in the enemy region. That 2/2 cannot block the counterattack in its controller's own region.",
-        "test": "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
+        "test": "98-spawn-region.test.ts::CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
       }
     ],
     "see": [
@@ -908,28 +891,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R115",
-          "quote": "**Anything made by anything needs to spawn in that region**"
+          "quote": "**Anything made by anything needs to spawn in that region**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R115",
-          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R28",
-          "relation": "withdrawn by R115 (a created unit arrived in its controller's home region)"
-        },
-        {
-          "ruling": "R52",
-          "relation": "withdrawn by R115 (confirmed R28 as the global default)"
-        },
-        {
-          "ruling": "R33",
-          "relation": "absorbed into R115"
+          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -938,11 +909,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The designer's words reach us through R115 (from playtest report #83), not a RAQ thread, so they are cited as the ruling.",
-    "sourceHashes": {
-      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
-    }
+    "notes": "The designer's words reach us through the owner ruling of 2026-08-23 (“a created unit arrives where its…”) (from playtest report #83), not a RAQ thread, so they are cited as the ruling.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.one-at-a-time",
@@ -972,14 +942,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1009,14 +979,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1057,14 +1027,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The two-player sentence reads Manual p.21's 1v1 paragraph ('when the IT attacks into the NIT's region ... the players will move to IT's region'). The Manual's parenthetical allowing non-overlapping regions to resolve simultaneously is a table convenience and is not stated as a rule.",
     "sourceHashes": {}
@@ -1097,14 +1067,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -1134,20 +1104,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R243",
-          "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+          "quote": "Regions do NOT scope information, but they do scope 'global' things (every",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R91 (its region rule)",
-          "quote": "**the single rule we'll never violate is 'nothing can send information across"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R239",
-          "relation": "its visibility half ('can even see that it exists') narrowed by R243"
+          "quote": "**the single rule we'll never violate is 'nothing can send information across",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1157,12 +1123,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The Manual line and Caleb's words in R91 are cited because the rule reads them, not because they state it: on their surface they say the other way. The reading (effects, not players) is R243's (the owner's); the basis is mixed because the rule reads the printed line rather than stating it: see D-U10-1. The example is now bound to the engine CR test; server test 219 asserts the same through visibleToSeat.",
-    "sourceHashes": {
-      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315",
-      "R91": "56a9ed56119d29270ebb3a0b394209482176a22f7a55de8195e2defe7500b180"
-    }
+    "notes": "The Manual line and Caleb's words in the owner ruling of 2026-08-23 (“\"Name a card\" is a Decision…”) are cited because the rule reads them, not because they state it: on their surface they say the other way. The reading (effects, not players) is the owner ruling of 2026-08-29 (“regions scope \"all\", and they do…”)’s (the owner's); the basis is mixed because the rule reads the printed line rather than stating it: see D-U10-1. The example is now bound to the engine CR test; server test 219 asserts the same through visibleToSeat.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.definition",
@@ -1192,14 +1156,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1235,14 +1199,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1275,14 +1239,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1305,16 +1269,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R184 (its \"target formation\" half)",
-          "quote": "entire formation in that region, every unit arrayed there. Not a column."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R184",
-          "relation": "its Reaping half amended and corrected by R283; the 'target formation' half stands"
+          "quote": "entire formation in that region, every unit arrayed there. Not a column.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1323,11 +1282,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.definition.empty",
@@ -1345,13 +1303,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R184 (its \"target formation\" half)",
-          "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
+          "quote": "legal exactly while its battle runs; **emptying it does not remove it**",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "156-reaping-and-formation.test.ts",
@@ -1359,11 +1317,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R184 states this for a formation as a target. See D-U10-6 for 'my formation' with no living unit, where R75 answers 'no slots'.",
-    "sourceHashes": {
-      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) states this for a formation as a target. See D-U10-6 for 'my formation' with no living unit, where the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) answers 'no slots'.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.definition.locked",
@@ -1403,14 +1360,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "28-metal-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1436,14 +1393,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1484,8 +1441,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
@@ -1493,6 +1449,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1505,11 +1462,11 @@
     "examples": [
       {
         "text": "Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.",
-        "test": "145-erase-routes.test.ts::R172 (viii): Download — a Robot token stolen mid-battle is OUT of the formation"
+        "test": "145-erase-routes.test.ts::CR 711.3 (viii): Download — a Robot token stolen mid-battle is OUT of the formation"
       },
       {
         "text": "At regroup, the stolen Robot joins its new controller's side.",
-        "test": "145-erase-routes.test.ts::R172 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup"
+        "test": "145-erase-routes.test.ts::CR 711.3 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup"
       },
       {
         "text": "After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.",
@@ -1528,16 +1485,11 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R172 (its §4, a unit stolen mid-battle)",
-          "quote": "**it sits out until regroup.**"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R8",
-          "relation": "narrowed by R172: a stolen unit no longer joins the new controller's formation mid-battle"
+          "quote": "**it sits out until regroup.**",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1548,11 +1500,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R172 §4 rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card.",
-    "sourceHashes": {
-      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.front-first",
@@ -1579,13 +1530,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its front-row note)",
-          "quote": "So a column is `[]`, `[front]` or `[front, back]` and never"
+          "quote": "So a column is `[]`, `[front]` or `[front, back]` and never",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts",
@@ -1593,11 +1544,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.22 loses the 'T' of 'The' in extraction; the quote starts at 'front'.",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.promotion",
@@ -1607,7 +1557,7 @@
     "examples": [
       {
         "text": "Blocks have been declared. The front unit of an attacking column dies; the unit behind it moves to the front of that column.",
-        "test": "64-formation-collapse.test.ts::R72 (Manual): the back row promotes AFTER blocks too"
+        "test": "64-formation-collapse.test.ts::CR 602.4 (Manual): the back row promotes AFTER blocks too"
       }
     ],
     "see": [],
@@ -1624,24 +1574,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its gravity rule)",
-          "quote": "a unit behind a removed one moves up and takes its place"
+          "quote": "a unit behind a removed one moves up and takes its place",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.collapse",
@@ -1651,7 +1600,7 @@
     "examples": [
       {
         "text": "A three-column attack loses the only unit of its middle column during the attack window. The right-hand column moves left, and the line is two columns wide.",
-        "test": "64-formation-collapse.test.ts::R72: a middle column emptied before blocks collapses"
+        "test": "64-formation-collapse.test.ts::CR 602.5: a middle column emptied before blocks collapses"
       }
     ],
     "see": [],
@@ -1672,14 +1621,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1692,11 +1641,11 @@
     "examples": [
       {
         "text": "After blocks, the only attacker in the middle column dies. The column stays where it is, empty, and the columns to its right do not move.",
-        "test": "64-formation-collapse.test.ts::R72 (Manual): after blocks are declared, an emptied column stays as a HOLE"
+        "test": "64-formation-collapse.test.ts::CR 602.5a (Manual): after blocks are declared, an emptied column stays as a HOLE"
       },
       {
         "text": "Later in the same battle the blockers of that column die too. The hole still does not close.",
-        "test": "64-formation-collapse.test.ts::R72 (Manual): the hole is permanent"
+        "test": "64-formation-collapse.test.ts::CR 602.5a (Manual): the hole is permanent"
       }
     ],
     "see": [
@@ -1711,13 +1660,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its gravity rule)",
-          "quote": "So after the defender has answered, an emptied column is a **permanent hole**"
+          "quote": "So after the defender has answered, an emptied column is a **permanent hole**",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts",
@@ -1725,11 +1674,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.collapse.any-removal",
@@ -1739,7 +1687,7 @@
     "examples": [
       {
         "text": "Before blocks, the only unit of a middle column is recalled to its owner's hand. The line closes up just as it would after a death.",
-        "test": "64-formation-collapse.test.ts::R72: a unit RECALLED out of a middle column closes the gap too"
+        "test": "64-formation-collapse.test.ts::CR 602.5b: a unit RECALLED out of a middle column closes the gap too"
       }
     ],
     "see": [],
@@ -1756,14 +1704,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual says 'removed' in both the promotion sentence and the collapse sentence, with no restriction on how. That generality is the rule.",
     "sourceHashes": {},
@@ -1777,7 +1725,7 @@
     "examples": [
       {
         "text": "Before blocks, the only unit of a middle column dies. By the time any ability that triggers on the death looks at the formation, the gap has already closed.",
-        "test": "64-formation-collapse.test.ts::R72: the gap is closed before any observer runs"
+        "test": "64-formation-collapse.test.ts::CR 602.5c: the gap is closed before any observer runs"
       }
     ],
     "see": [
@@ -1787,24 +1735,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its gravity rule)",
-          "quote": "It is a **state-based action** in the sense the report asked for"
+          "quote": "It is a **state-based action** in the sense the report asked for",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "64-formation-collapse.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.collapse.defending",
@@ -1814,7 +1761,7 @@
     "examples": [
       {
         "text": "The defender blocks the first and third attacking columns and leaves the second unblocked. The defending formation keeps its gap.",
-        "test": "66-formation-placement.test.ts::R75: a blocking formation may legitimately have EMPTY columns"
+        "test": "66-formation-placement.test.ts::CR 602.5d: a blocking formation may legitimately have EMPTY columns"
       }
     ],
     "see": [
@@ -1833,24 +1780,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its gravity rule)",
-          "quote": "so a sparse block map is never something to repair."
+          "quote": "so a sparse block map is never something to repair.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Rulebook 2023 p.11 is not in this unit's pack; added from the extract's printed pages.",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement",
@@ -1868,24 +1814,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "When something spawns something 'in my formation' or 'in formation', it's up"
+          "quote": "When something spawns something 'in my formation' or 'in formation', it's up",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "to the controller of the effect to choose where the unit goes. They can put it"
+          "quote": "to the controller of the effect to choose where the unit goes. They can put it",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "column which only has 1 unit. That choice should be made on effect"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R75",
-          "relation": "its edge adjacency superseded by R304, and its 'only the attacking line can widen' narrowed by R322; the placement rule stands"
+          "quote": "column which only has 1 unit. That choice should be made on effect",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1895,11 +1838,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.legal-positions",
@@ -1909,11 +1851,11 @@
     "examples": [
       {
         "text": "An attacking line has two columns, the first with two units and the second with one. The legal positions are a new column at the left end, the back slot of the second column, and a new column at the right end.",
-        "test": "66-formation-placement.test.ts::R75: a two-unit column offers no back slot"
+        "test": "66-formation-placement.test.ts::CR 602.6a: a two-unit column offers no back slot"
       },
       {
         "text": null,
-        "test": "66-formation-placement.test.ts::R75: a placement can FILL an R72 hole, and can never create one"
+        "test": "66-formation-placement.test.ts::CR 602.6a: a placement can FILL a CR 602.5a hole, and can never create one"
       }
     ],
     "see": [
@@ -1924,36 +1866,38 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "to either side of the existing units OR in the second slot of a column for a"
+          "quote": "to either side of the existing units OR in the second slot of a column for a",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "**a new column at either END of the line** — leftmost or rightmost;"
+          "quote": "**a new column at either END of the line** — leftmost or rightmost;",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "**the BACK slot of a column that holds exactly one unit**;"
+          "quote": "**the BACK slot of a column that holds exactly one unit**;",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "**the front slot of an R72 hole** — a column emptied of attackers that its"
+          "quote": "**the front slot of an R72 hole** — a column emptied of attackers that its",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The owner's words give the ends and the second slot of a one-unit column; the hole is a third kind added by the ruling's author (R75: 'The hole is a third kind the ruling does not enumerate'). See D-U10-4.",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "notes": "The owner's words give the ends and the second slot of a one-unit column; the hole is a third kind added by the ruling's author (the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”): 'The hole is a third kind the ruling does not enumerate'). See D-U10-4.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.ends-only",
@@ -1963,7 +1907,7 @@
     "examples": [
       {
         "text": "An attacking line has three columns. A unit placed “in my formation” may open a new column at the left or right end, but never between the first and second columns.",
-        "test": "66-formation-placement.test.ts::R75: \"either side\" means the two ENDS"
+        "test": "66-formation-placement.test.ts::CR 602.6b: \"either side\" means the two ENDS"
       }
     ],
     "see": [],
@@ -1971,24 +1915,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "**\"Either side of the existing units\" is read as the two ENDS, not as an"
+          "quote": "**\"Either side of the existing units\" is read as the two ENDS, not as an",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "A reading recorded by the ruling's author, not in the owner's quoted words. See D-U10-4.",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.defending",
@@ -1998,11 +1941,11 @@
     "examples": [
       {
         "text": "The defender's only blocking column already holds two units. An effect that puts a unit into the defender's formation has no position for it.",
-        "test": "66-formation-placement.test.ts::R75: a full BLOCKING formation offers nothing"
+        "test": "66-formation-placement.test.ts::CR 602.6c: a full BLOCKING formation offers nothing"
       },
       {
         "text": "After blocks, the defender plays Tiderunner Initiate in front of an unblocked attacker. That column is now blocked, and the attacker deals its combat damage to the Tiderunner.",
-        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+        "test": "400-raq-fix-blocks.test.ts::CR 608.4d a Tiderunner put in front of an unblocked attacker fights it"
       }
     ],
     "see": [
@@ -2019,21 +1962,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R322",
-          "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand"
+          "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule, as narrowed by R322)",
-          "quote": "**Only the ATTACKING line can widen.**"
+          "quote": "**Only the ATTACKING line can widen.**",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R322",
-          "quote": "attacker and no block entry, from the block window until combat damage is"
+          "quote": "attacker and no block entry, from the block window until combat damage is",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
@@ -2042,11 +1987,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R322 and RAQ thread 1366447016653361192 are not in this unit's pack (classified to U11); added from the register. The bound 'until combat damage has been dealt' is R322's own encoding note ('from the block window until combat damage is over'); the round-2 verifier measured no such spot in the after-combat window. See D-U10-3 on why the defending line has no new end columns, and D-U10-12 on the bound.",
+    "notes": "The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) and RAQ thread 1366447016653361192 are not in this unit's pack (classified to U11); added from the register. The bound 'until combat damage has been dealt' is the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s own encoding note ('from the block window until combat damage is over'); the round-2 verifier measured no such spot in the after-combat window. See D-U10-3 on why the defending line has no new end columns, and D-U10-12 on the bound.",
     "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a",
       "RAQ 1366447016653361192#1": "bb2e9add4233c31bbcfbc92538edbd8db613375135196b284f67dc344abb26c3"
     }
   },
@@ -2058,7 +2002,7 @@
     "examples": [
       {
         "text": null,
-        "test": "66-formation-placement.test.ts::R75: exactly one legal placement is auto-picked"
+        "test": "66-formation-placement.test.ts::CR 602.6d: exactly one legal placement is auto-picked"
       }
     ],
     "see": [],
@@ -2066,24 +2010,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "is legal, and a **logged** no-op when none is."
+          "quote": "is legal, and a **logged** no-op when none is.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.source-formation",
@@ -2093,7 +2036,7 @@
     "examples": [
       {
         "text": "Hooba-Lin's host attacks, then is stolen before the trigger resolves, so it is in play but out of the formation. No 1/1 is created.",
-        "test": "108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172) → no token, no question"
+        "test": "108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3) → no token, no question"
       }
     ],
     "see": [
@@ -2103,20 +2046,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R225 (its second grade)",
-          "quote": "formation by pointing at the SOURCE."
+          "quote": "formation by pointing at the SOURCE.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R225 (its second grade)",
-          "quote": "the source is **alive and in play but unslotted**"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R225",
-          "relation": "its first grade (a source that died with its trigger on the stack places nothing) reversed by R325"
+          "quote": "the source is **alive and in play but unslotted**",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2125,11 +2064,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R225": "1f75c14d516cb37d2dcc1b90fd62e8f808ad5d3fb1fdf808e54c380667a3e1c1"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.source-gone",
@@ -2139,7 +2077,7 @@
     "examples": [
       {
         "text": "Hooba-Lin attacks and is killed with its trigger on the stack. The 1/1 is still created, in the formation Hooba-Lin was in.",
-        "test": "108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger"
+        "test": "108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger"
       }
     ],
     "see": [
@@ -2155,13 +2093,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R325",
-          "quote": "formation it stood in), it reads the source's **last-known state**: what the"
+          "quote": "formation it stood in), it reads the source's **last-known state**: what the",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "108-formation-class.test.ts",
@@ -2169,16 +2107,16 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "engine differs, see F-U10-6: a lone Hooba-Lin killed under its own attack trigger before blocks makes its 1/1 outside any formation (round-2 verifier probe). The designer's answer names Hooba-Lin without excepting a lone attacker, and 602.6k now names this rule as an exception. See D-U10-6.",
     "sourceHashes": {
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
       "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
     },
     "engineDiffers": [
       "F-U10-6"
     ],
-    "rebuttal": "Text kept. The verifier offered two fixes: qualify the rule, or treat the lone-source case as an engine bug. The source is a [Solved] designer answer ('will remember they were in formation and will work fine', naming Hooba-Lin), which outranks R75's 'no slots' prose under the authority order, so the rule states it, 602.6k excepts it, and the engine's behaviour is filed as F-U10-6."
+    "rebuttal": "Text kept. The verifier offered two fixes: qualify the rule, or treat the lone-source case as an engine bug. The source is a [Solved] designer answer ('will remember they were in formation and will work fine', naming Hooba-Lin), which outranks the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots' prose under the authority order, so the rule states it, 602.6k excepts it, and the engine's behaviour is filed as F-U10-6."
   },
   {
     "key": "combat.formations.placement.still-in-formation",
@@ -2210,14 +2148,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2232,7 +2170,7 @@
     "examples": [
       {
         "text": "Embermaw Fledgling attacks and dies in combat. Its after-combat trigger still counts the attacking units of the formation it was in.",
-        "test": "401-raq-fix-stack.test.ts::R325 Embermaw Fledgling gone before its after-combat trigger resolves"
+        "test": "401-raq-fix-stack.test.ts::CR 714.4 Embermaw Fledgling gone before its after-combat trigger resolves"
       }
     ],
     "see": [
@@ -2252,23 +2190,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R27",
-          "quote": "combat deaths reduce X, and a unit that wasn't attacking gets X = 0 → no token."
+          "quote": "combat deaths reduce X, and a unit that wasn't attacking gets X = 0 → no token.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "401-raq-fix-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "See F-U10-1: R27 words the count as units the controller OWNS.",
+    "notes": "See F-U10-1: The owner ruling of 2026-08-18 (“Formation-counting amounts are live at resolution”) words the count as units the controller OWNS.",
     "sourceHashes": {
-      "R27": "f9de0bd386630de9d13ba5eaecf8f59a21043f5695f988e9a7fcff619ce2a071",
       "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
     }
   },
@@ -2300,14 +2238,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2326,7 +2264,7 @@
       },
       {
         "text": "No moment exists in which the Tiderunner is in the region but outside the formation, so the opponent cannot respond to it there.",
-        "test": "73-play-into-formation.test.ts::R29 the opponent’s response window cannot catch it outside the line"
+        "test": "73-play-into-formation.test.ts::CR 602.7 the opponent’s response window cannot catch it outside the line"
       }
     ],
     "see": [
@@ -2346,13 +2284,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R29 (its play-time placement)",
-          "quote": "**And it is a PLAY, so the spot is chosen at CAST.**"
+          "quote": "**And it is a PLAY, so the spot is chosen at CAST.**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "108-formation-class.test.ts",
@@ -2360,11 +2298,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.play-into.spot-gone",
@@ -2374,7 +2311,7 @@
     "examples": [
       {
         "text": "Tiderunner Initiate is cast to go behind an attacker, and the attacker dies before it resolves. The Tiderunner enters the region outside the formation.",
-        "test": "73-play-into-formation.test.ts::R29 the slot is RE-DERIVED at resolution"
+        "test": "73-play-into-formation.test.ts::CR 602.7a the slot is RE-DERIVED at resolution"
       }
     ],
     "see": [],
@@ -2382,24 +2319,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R29 (its play-time placement)",
-          "quote": "card resolves into the region, outside the formation, **and says so**;"
+          "quote": "card resolves into the region, outside the formation, **and says so**;",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "73-play-into-formation.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.play-into.optional",
@@ -2409,7 +2345,7 @@
     "examples": [
       {
         "text": "When casting Tiderunner Initiate, its controller may choose to have it stay out of the formation.",
-        "test": "73-play-into-formation.test.ts::R29 \"stay out of formation\" is still on the menu"
+        "test": "73-play-into-formation.test.ts::CR 602.7b \"stay out of formation\" is still on the menu"
       }
     ],
     "see": [],
@@ -2422,24 +2358,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R29 (its play-time placement)",
-          "quote": "Joining is optional (\"may\")."
+          "quote": "Joining is optional (\"may\").",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "73-play-into-formation.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.play-into.needs-formation",
@@ -2449,7 +2384,7 @@
     "examples": [
       {
         "text": "Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
-        "test": "73-play-into-formation.test.ts::R29 with NO formation of your own the play is legal and asks nothing"
+        "test": "73-play-into-formation.test.ts::CR 602.7c with NO formation of your own the play is legal and asks nothing"
       },
       {
         "text": "After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.",
@@ -2468,28 +2403,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R29 (its play-time placement)",
-          "quote": "Requires an EXISTING formation of yours (you attacked, or you declared"
+          "quote": "Requires an EXISTING formation of yours (you attacked, or you declared",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R322",
-          "quote": "defender may start a formation this way even having declared no blockers."
+          "quote": "defender may start a formation this way even having declared no blockers.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "always grow at an end. A formation you are not standing in cannot be joined at"
+          "quote": "always grow at an end. A formation you are not standing in cannot be joined at",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R322",
-          "quote": "attacker and no block entry, from the block window until combat damage is"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R29",
-          "relation": "its no-formation case ('nothing to join and no prompt') amended by R322"
+          "quote": "attacker and no block entry, from the block window until combat damage is",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2500,13 +2433,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R322 is not in this unit's pack; added from the register. 'Still holds a unit' is R75's ('a formation you are not standing in cannot be joined'), which R29's placement shares; see 602.6k and D-U10-10. The bound 'until combat damage has been dealt' is R322's encoding note; the round-2 verifier measured nothing offered in the after-combat window. See D-U10-12.",
-    "sourceHashes": {
-      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582",
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "notes": "The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) is not in this unit's pack; added from the register. 'Still holds a unit' is the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s ('a formation you are not standing in cannot be joined'), which the owner ruling of 2026-08-18 (“\"An open spot in your formation\" […]”)’s placement shares; see 602.6k and D-U10-10. The bound 'until combat damage has been dealt' is the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s encoding note; the round-2 verifier measured nothing offered in the after-combat window. See D-U10-12.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.definition",
@@ -2541,14 +2471,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2585,14 +2515,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.24 is not in this unit's pack; added from the extract's printed pages. A pointer only: the full rule is drafted in 802.1 and 712.",
     "sourceHashes": {}
@@ -2605,11 +2535,11 @@
     "examples": [
       {
         "text": "Two defending units block where no attacker is, each in its own column beside the attack.",
-        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is, each its own column"
+        "test": "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is, each its own column"
       },
       {
         "text": "A single 2/5 attacks; the defender side-blocks to its left with a 1/1. The 1/1 stands in a new column left of the attack, the attacking column stays unblocked, and it deals 2 to the defender.",
-        "test": "400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1"
+        "test": "400-raq-fix-blocks.test.ts::CR 606.4a a side-block on the left opens a column before column 1"
       }
     ],
     "see": [
@@ -2633,23 +2563,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321",
-          "quote": "Side-blocks may stand to either side of the attack."
+          "quote": "Side-blocks may stand to either side of the attack.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "RAQ thread 1366447016653361192 is not in this unit's pack; added from the register. Caleb's 'Yep you should be able to' permits a column for each side-blocker; it does not require one. Whether two side-blockers may share one column: 603.1c, D-U10-8.",
     "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
       "RAQ 1366447016653361192#3": "124742aaacf8865f4c690dbb58502525babe350889ba1b3e13c54d6e324965e6"
     }
   },
@@ -2686,8 +2616,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "23-wood-a.test.ts",
@@ -2695,8 +2624,9 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "A defending formation's columns are the attacking columns they block (R72, R304: 'A blocking column is keyed to the attacking column it answers'), and the Manual says where a blocker stands matters for adjacency (p.23). The engine reads two blockers with an unblocked column between them as neighbours: F-U10-3, D-U10-7.",
+    "notes": "A defending formation's columns are the attacking columns they block (the owner ruling of 2026-08-22 (“Formation gravity: the back row always…”), the owner ruling of 2026-09-25 (“The empty column past each end…”): 'A blocking column is keyed to the attacking column it answers'), and the Manual says where a blocker stands matters for adjacency (p.23). The engine reads two blockers with an unblocked column between them as neighbours: F-U10-3, D-U10-7.",
     "sourceHashes": {},
     "engineDiffers": [
       "F-U10-3"
@@ -2725,17 +2655,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its adjacency rule)",
-          "quote": "it's referring to its sides and above/below. Nothing diagonal."
+          "quote": "it's referring to its sides and above/below. Nothing diagonal.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its adjacency rule)",
-          "quote": "**The other row of a neighbouring column is diagonal and is"
+          "quote": "**The other row of a neighbouring column is diagonal and is",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
@@ -2744,11 +2675,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The printed words say left/right/front/back; the owner's words (R75) fix what that means within the grid. 'At most': a back-row unit at an end of a line, and any unit at an end of a defending line, has no position past that end (603.3a, 603.3b). Whether a unit is adjacent to the enemy unit facing it across the column is not addressed: D-U10-2. The engine treats blockers on either side of an unblocked column as neighbours: F-U10-3.",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    },
+    "notes": "The printed words say left/right/front/back; the owner's words (owner ruling of 2026-08-22, “Joining a formation is a CHOICE…”) fix what that means within the grid. 'At most': a back-row unit at an end of a line, and any unit at an end of a defending line, has no position past that end (603.3a, 603.3b). Whether a unit is adjacent to the enemy unit facing it across the column is not addressed: D-U10-2. The engine treats blockers on either side of an unblocked column as neighbours: F-U10-3.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U10-3"
     ]
@@ -2761,7 +2691,7 @@
     "examples": [
       {
         "text": "During deployment, Throwing Boulder stands in its region beside an allied unit, but neither is in a formation. Its ability (“only if I have an adjacent ally”) cannot be activated.",
-        "test": "18-earth-c.test.ts::R77: out of formation there are no adjacent slots at all"
+        "test": "18-earth-c.test.ts::CR 111.7b: out of formation there are no adjacent slots at all"
       }
     ],
     "see": [],
@@ -2778,13 +2708,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its adjacency rule)",
-          "quote": "If a unit references its own adjacent slots (which only exist if it's in a"
+          "quote": "If a unit references its own adjacent slots (which only exist if it's in a",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
@@ -2792,11 +2722,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R75 states it ('which only exist if it's in a formation'). The Manual implies it: units are adjacent 'until regroup where they all leave formation'.",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) states it ('which only exist if it's in a formation'). The Manual implies it: units are adjacent 'until regroup where they all leave formation'.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.adjacency.at-resolution",
@@ -2825,13 +2754,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R1",
-          "quote": "amounts are computed at resolution."
+          "quote": "amounts are computed at resolution.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "11-fire-wood.test.ts",
@@ -2839,11 +2768,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R1 is not in this unit's pack; added from the register (classified to U03/U15). No test changes adjacency between the trigger and its resolution; the round-1 verifier's probe did, and measured X as counted at resolution.",
-    "sourceHashes": {
-      "R1": "30128c5c491bd944cd289699e56309513bf26ce92037b2388fa6cc2a53f76493"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“Trigger conditions vs effect values”) is not in this unit's pack; added from the register (classified to U03/U15). No test changes adjacency between the trigger and its resolution; the round-1 verifier's probe did, and measured X as counted at resolution.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.adjacency.left-play",
@@ -2869,16 +2797,16 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The designer source treats adjacency differently from 'my formation': a dead Hoobas' formation is remembered (602.6f), a dead Flamebreath's adjacent allies are not (X = 0). R325 lists Flamebreath as reading its last-known state with X = 0, consistent with this.",
+    "notes": "The designer source treats adjacency differently from 'my formation': a dead Hoobas' formation is remembered (602.6f), a dead Flamebreath's adjacent allies are not (X = 0). The owner ruling of 2026-10-09 (“An effect whose source has left…”) lists Flamebreath as reading its last-known state with X = 0, consistent with this.",
     "sourceHashes": {
       "RAQ 1353895783266516992#3": "228687b3c12ea75e3ea10e368f9f8aca9cfa31a2bdb034c35b498575757e343d"
     }
@@ -2903,16 +2831,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R304",
-          "quote": "The columns to the left and right, even when empty, DO technically exist,"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R75",
-          "relation": "its edge adjacency (nothing past the end of the line is a slot) superseded by R304"
+          "quote": "The columns to the left and right, even when empty, DO technically exist,",
+          "adopted": "2026-09-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2922,11 +2845,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R304": "7bc850df2f66b024982066f79ac34755d92651e9fa2ace8039f143d7807ea07a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.edges.front-only",
@@ -2946,24 +2868,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R304",
-          "quote": "**Front row only.** Past the end, the same-row slot beside a back-row unit is"
+          "quote": "**Front row only.** Past the end, the same-row slot beside a back-row unit is",
+          "adopted": "2026-09-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "23-wood-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R304": "7bc850df2f66b024982066f79ac34755d92651e9fa2ace8039f143d7807ea07a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.edges.attacking-only",
@@ -2973,7 +2894,7 @@
     "examples": [
       {
         "text": null,
-        "test": "66-formation-placement.test.ts::R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge"
+        "test": "66-formation-placement.test.ts::CR 603.3 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge"
       }
     ],
     "see": [],
@@ -2981,24 +2902,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R304",
-          "quote": "**Attacking line only.** A blocking column is keyed to the attacking column it"
+          "quote": "**Attacking line only.** A blocking column is keyed to the attacking column it",
+          "adopted": "2026-09-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R304's reason (a blocking column has no index to open at) predates R321's side-blocks. See D-U10-3.",
-    "sourceHashes": {
-      "R304": "7bc850df2f66b024982066f79ac34755d92651e9fa2ace8039f143d7807ea07a"
-    }
+    "notes": "The owner ruling of 2026-09-25 (“The empty column past each end…”)’s reason (a blocking column has no index to open at) predates the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s side-blocks. See D-U10-3.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.positional-text",
@@ -3027,13 +2947,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its adjacency rule)",
-          "quote": "set of positions, so it does **not** get the placement choice. It fills exactly"
+          "quote": "set of positions, so it does **not** get the placement choice. It fills exactly",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "13-fire-b.test.ts",
@@ -3041,11 +2961,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.width",
@@ -3055,7 +2974,7 @@
     "examples": [
       {
         "text": null,
-        "test": "66-formation-placement.test.ts::R75: formations scale infinitely in width"
+        "test": "66-formation-placement.test.ts::CR 603.5: formations scale infinitely in width"
       }
     ],
     "see": [],
@@ -3076,14 +2995,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -3096,15 +3015,15 @@
     "examples": [
       {
         "text": "A new column opens at the left end of a line that has already been blocked. Every blocker still blocks the same attackers as before.",
-        "test": "66-formation-placement.test.ts::R75: opening a column on the LEFT re-keys every block and every column counter"
+        "test": "66-formation-placement.test.ts::CR 603.5a: opening a column on the LEFT re-keys every block and every column counter"
       },
       {
         "text": null,
-        "test": "64-formation-collapse.test.ts::R72: a column-scoped battle counter rides the collapse to the new index"
+        "test": "64-formation-collapse.test.ts::CR 603.5a: a column-scoped battle counter rides the collapse to the new index"
       },
       {
         "text": "A Swift column led by Dune Drifter has already dealt its damage first. Its controller then plays Tiderunner Initiate into a new column on the left; the Drifter's column shifts right but still counts as having struck, so it does not deal damage again.",
-        "test": "400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left"
+        "test": "400-raq-fix-blocks.test.ts::CR 608.2e a struck mark moves with its column when a new column opens on the left"
       }
     ],
     "see": [],
@@ -3112,17 +3031,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its gravity rule)",
-          "quote": "the blocking column moves with its attacker"
+          "quote": "the blocking column moves with its attacker",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R72 (its gravity rule)",
-          "quote": "the column's ledger moves with it"
+          "quote": "the column's ledger moves with it",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
@@ -3131,11 +3051,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.definition.side-block-shared-column",
@@ -3155,13 +3074,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R321 (its side-block columns, context only)",
-          "quote": "Side-blocks may stand to either side of the attack."
+          "quote": "Side-blocks may stand to either side of the attack.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "checkBlocks"
       ],
@@ -3170,11 +3089,10 @@
       ]
     },
     "basis": "engine",
+    "scope": "game",
     "confidence": "low",
-    "notes": "ENGINE-ONLY. No printed or designer source says whether side-blockers may share a column. R321 is cited as context only (it makes side-blocks columns beside the attack) and does not state this rule: Caleb answered only that eight units may each take a separate column. The round-1 verifier measured the engine accepting {1:[s1,s2]}; the round-2 verifier read the block check as every blocking column, side-block included, holding one or two units. See D-U10-8.",
-    "sourceHashes": {
-      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
-    }
+    "notes": "ENGINE-ONLY. No printed or designer source says whether side-blockers may share a column. The owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”) is cited as context only (it makes side-blocks columns beside the attack) and does not state this rule: Caleb answered only that eight units may each take a separate column. The round-1 verifier measured the engine accepting {1:[s1,s2]}; the round-2 verifier read the block check as every blocking column, side-block included, holding one or two units. See D-U10-8.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.defending-emptied-block",
@@ -3196,13 +3114,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R72 (its emptied BLOCK column note)",
-          "quote": "Key *presence* is that sticky flag (R13), so `blocks[ci] = []` is a hole in"
+          "quote": "Key *presence* is that sticky flag (R13), so `blocks[ci] = []` is a hole in",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "formationSlots"
       ],
@@ -3211,11 +3129,10 @@
       ]
     },
     "basis": "engine",
+    "scope": "game",
     "confidence": "low",
-    "notes": "ENGINE-ONLY. R75's hole is a column emptied of ATTACKERS; R322's extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9. The round-2 verifier measured the spot only while another unit remains in the defending formation; once it holds none, rule 602.6k applies.",
-    "sourceHashes": {
-      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
-    }
+    "notes": "ENGINE-ONLY. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s hole is a column emptied of ATTACKERS; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9. The round-2 verifier measured the spot only while another unit remains in the defending formation; once it holds none, rule 602.6k applies.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.empty-formation",
@@ -3225,7 +3142,7 @@
     "examples": [
       {
         "text": "The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.",
-        "test": "66-formation-placement.test.ts::R75: a formation you are not standing in cannot be joined at all"
+        "test": "66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all"
       },
       {
         "text": "After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation.",
@@ -3233,7 +3150,7 @@
       },
       {
         "text": "The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.",
-        "test": "400-raq-fix-blocks.test.ts::R322 the attacker is never offered a blocking spot"
+        "test": "400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot"
       }
     ],
     "see": [
@@ -3246,21 +3163,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "always grow at an end. A formation you are not standing in cannot be joined at"
+          "quote": "always grow at an end. A formation you are not standing in cannot be joined at",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R75 (its placement rule)",
-          "quote": "all — with no living unit in the grid the answer is \"no slots\", not \"open a"
+          "quote": "all — with no living unit in the grid the answer is \"no slots\", not \"open a",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R322",
-          "quote": "defender may start a formation this way even having declared no blockers."
+          "quote": "defender may start a formation this way even having declared no blockers.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
@@ -3269,11 +3188,9 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Stated in R75's own prose, not in the owner's quoted words; R322 (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the R322 exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with R184 ('emptying it does not remove it'): D-U10-6, D-U10-10.",
-    "sourceHashes": {
-      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
-      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    }
+    "notes": "Stated in the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not in the owner's quoted words; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) ('emptying it does not remove it'): D-U10-6, D-U10-10.",
+    "sourceHashes": {}
   }
 ]

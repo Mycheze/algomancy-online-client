@@ -1,4 +1,4 @@
-/* R261 — NOTHING TRIGGERED BY COMBAT DAMAGE RESOLVES DURING THE DAMAGE STEP.
+/* CR 608.9, 608.9b — NOTHING TRIGGERED BY COMBAT DAMAGE RESOLVES DURING THE DAMAGE STEP.
  *
  * The owner, 2026-08-30, answering the round-32 sheet's Q1 (which was itself
  * the open half of playtest report #119, room YFUE, and ticket CT-112):
@@ -34,23 +34,23 @@
  * `phase === 'battle' && !battle.damageStep`, so every one of those triggers
  * found `battleMode` false, took the `'resolve'` branch of
  * `stackPendingTrigger`, and was built, aimed and resolved to completion:
- * never on the stack, never respondable, never taxed. That was R3's "no
- * priority window between damage sub-steps" read one step too far — R3 is
+ * never on the stack, never respondable, never taxed. That was the sub-step ruling's "no
+ * priority window between damage sub-steps" read one step too far — that ruling (now CR 608.3e) is
  * about FORMATION, and it still stands (§4 below).
  *
  * ── WHAT IT DOES NOW ─────────────────────────────────────────────────
- * The drain line is gone; `settle()` carries an R261 hold that refuses to
- * touch the queue while `battle.damageStep` is set (the one choke point — an
- * R120 election answer and an R121 pay answer both reach settle() mid-damage
+ * The drain line is gone; `settle()` carries a CR 608.9b hold that refuses to
+ * touch the queue while `battle.damageStep` is set (the one choke point — a
+ * CR 608.6a election answer and a CR 111.10g pay answer both reach settle() mid-damage
  * through `doDecide`, so guarding the pump alone would have left back doors
  * open); and the 'after' branch nulls `damageStep`, fires `afterCombat`, opens
  * the `afterWindow` priority and only THEN settles — so the whole held batch
  * and the after-combat triggers are ordered, stacked and answered together.
  *
- * ── R295 PUT THE CONDITION BACK ──────────────────────────────────────
+ * ── THE CONDITION IS BACK (CR 608.3a) ──────────────────────────────────────
  * Read the owner's first sentence again: *"**If there are no units in combat
  * with sluggish or [swift]**, there will be no triggers during the damage
- * step."* R261 implemented the sentence after it and dropped that clause, so
+ * step."* The first implementation took the sentence after it and dropped that clause, so
  * the hold became unconditional — and playtest report #165 (room KAWJ,
  * 2026-09-15) is what that cost. A {Sluggish} Adversary of the Deep, whose
  * whole reason for being Sluggish is to grow off the earlier damage before it
@@ -58,7 +58,7 @@
  *
  * So the rule has two halves, and this file now tests both:
  *
- *   UNSPLIT (no Swift, no Sluggish anywhere in the exchange) — R261 exactly as
+ *   UNSPLIT (no Swift, no Sluggish anywhere in the exchange) — CR 608.9b exactly as
  *     written below. One batch, drained after combat, respondable there. §1's
  *     first test, §2 and §3 are all this shape.
  *   SPLIT (Swift or Sluggish is in it) — each sub-step is a real step. What it
@@ -66,13 +66,13 @@
  *     BEFORE the next sub-step deals damage. `battle.step` is 'damageWindow'
  *     there, and `throughDamageWindows` in test/util.ts drives past it.
  *
- * What did NOT change is the thing R261 is really about: nothing resolves
+ * What did NOT change is the thing CR 608.9 is really about: nothing resolves
  * INSIDE a sub-step, ever. The sweep below is re-aimed at exactly that.
  *
  * ⚠ THE TRIGGER STILL *FIRES* DURING THE DAMAGE STEP, and every test below
  * that reads the log depends on the difference. `fireEvent` announces
  * 'triggered' at QUEUE time, inside the sub-step, and that is correct: the
- * condition is evaluated at event time (R1) and the trigger really did
+ * condition is evaluated at event time (CR 109.3a) and the trigger really did
  * trigger. What waits is the BUILD (targets) and the RESOLUTION. So the shape
  * of a combat trigger in the log is now 'triggered' before 'afterCombat' and
  * 'stackPushed' after it, and §1 asserts exactly that pair.
@@ -101,7 +101,7 @@ function settleDecisions(h: Harness): void {
   assert.ok(guard > 0, 'settleDecisions did not terminate');
 }
 
-/** R120: answer only the elective-split questions the damage step itself
+/** CR D1.2g: answer only the elective-split questions the damage step itself
  * raises, with the one-click default. Anything else is left standing — a
  * trigger asking its controller something is the thing under test. */
 function answerElections(h: Harness): void {
@@ -122,8 +122,8 @@ function damageWindow(evs: EngineEvent[]): [number, number] {
 }
 
 /** every event type that means "an item was built, stacked or resolved" —
- * the three things R261 says cannot happen inside the damage window.
- * 'stackFlash' is R189's signal for a trigger that resolved unanswerably,
+ * the three things CR 608.9 says cannot happen inside the damage window.
+ * 'stackFlash' is the simultaneity signal (CR D6.7) for a trigger that resolved unanswerably,
  * which is precisely the shape the old engine produced here. */
 const RESOLUTION_EVENTS = new Set(['stackPushed', 'resolved', 'stackFlash']);
 
@@ -132,7 +132,7 @@ const RESOLUTION_EVENTS = new Set(['stackPushed', 'resolved', 'stackFlash']);
 /** Lithoghul: "[Augment] Whenever I am dealt damage, I deal that much damage
  * to you." A 4/4 with a self damage trigger that needs no target and cannot
  * fizzle — the cleanest damage trigger in the pool to read a log against. */
-test('R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it', () => {
+test('CR 608.9: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it', () => {
   const h = new Harness(23901);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -150,12 +150,12 @@ test('R261: a combat-damage trigger is announced INSIDE the damage step and push
   const [cd, ac] = damageWindow(evs);
   const win = evs.slice(cd, ac);
 
-  // the trigger really did trigger, in the sub-step, at event time (R1)
+  // the trigger really did trigger, in the sub-step, at event time (CR 109.3a)
   assert.ok(win.some(e => e.type === 'triggered' && /Lithoghul/.test(e.msg)),
-    'the damage sub-step ANNOUNCED the trigger — R1, the condition is read at event time');
+    'the damage sub-step ANNOUNCED the trigger — CR 109.3a, the condition is read at event time');
   // …and nothing was built, stacked or resolved while the damage step ran
   assert.deepEqual(win.filter(e => RESOLUTION_EVENTS.has(e.type)).map(e => e.type), [],
-    'R261: nothing resolves between combat damage and after combat');
+    'CR 608.3a: nothing resolves between combat damage and after combat');
 
   settleDecisions(h);
   const after = h.events.slice(mark).slice(ac);
@@ -169,7 +169,7 @@ test('R261: a combat-damage trigger is announced INSIDE the damage step and push
  * did NOT control the trigger is holding priority with a live window and a
  * castable card. Under the old engine `legalActions` for that seat was the
  * empty array and priority was null — test/229 pins that historical state. */
-test('R261: the other seat holds priority over a combat-damage trigger and can actually respond to it', () => {
+test('CR 608.9b: the other seat holds priority over a combat-damage trigger and can actually respond to it', () => {
   const h = new Harness(23902);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -185,14 +185,14 @@ test('R261: the other seat holds priority over a combat-damage trigger and can a
   pass(h); pass(h);
   settleDecisions(h);
 
-  // R295: the blocker is {Swift}, so this exchange is SPLIT and the window the
+  // CR 608.9c: the blocker is {Swift}, so this exchange is SPLIT and the window the
   // trigger is answerable in is the sub-step boundary rather than after combat
   // — which is the better half of the owner's ruling, not a weaker one. The
   // Drifter's Swift damage fired Lithoghul's "whenever I am dealt damage"; D
   // gets to answer it BEFORE Lithoghul strikes back in the normal sub-step.
   // §1's first test is the unsplit control for the same claim.
   assert.equal(h.state.battle!.step, 'damageWindow',
-    'the sub-step boundary window is open (R295 — {Swift} blocker splits the damage step)');
+    'the sub-step boundary window is open (CR 608.3b — {Swift} blocker splits the damage step)');
   assert.equal(h.state.stack.length, 1, 'with the Swift sub-step batch standing on the stack');
   const mine = h.state.stack.find(it => /Lithoghul/.test(it.label))!;
   assert.ok(mine, 'including the attacker damage trigger');
@@ -216,9 +216,9 @@ test('R261: the other seat holds priority over a combat-damage trigger and can a
  * the subject set is every UNIT in the live registry printing a triggered
  * ability that listens on an event combat damage can cause, computed from the
  * card data at test time. A hand-typed list would stop covering new cards the
- * day the pool grows, and the whole claim of R261 is that it is universal.
+ * day the pool grows, and the whole claim of CR 608.9 is that it is universal.
  *
- * `zone` triggers (R51, "if I am in your bin") are excluded because they are
+ * `zone` triggers (CR 400.5, "if I am in your bin") are excluded because they are
  * dispatched off a detached stand-in and cannot be put on the board as a
  * blocker; they take the same queue and are covered by §1 and §2 through it.
  *
@@ -243,7 +243,7 @@ function damageTriggerUnits(): string[] {
   });
 }
 
-test('R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP', () => {
+test('THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP', () => {
   const names = damageTriggerUnits();
   assert.ok(names.length >= 50,
     `the derived subject set collapsed (${names.length}) — a check with an empty subject set `
@@ -253,7 +253,7 @@ test('R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat
   const unbuildable: string[] = [];
   const swept: string[] = [];
   const firedInDamageStep: string[] = [];
-  /** R295: subjects whose own {Swift}/{Sluggish} split the damage step, so the
+  /** CR 608.9c: subjects whose own {Swift}/{Sluggish} split the damage step, so the
    *  span below is cut at the first boundary window instead of at afterCombat */
   const split: string[] = [];
   let seed = 23910;
@@ -293,10 +293,10 @@ test('R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat
     if (cd < 0 || ac < cd) { unbuildable.push(name); continue; }
     swept.push(name);
     /**
-     * R295 — THE SPAN IS THE SUB-STEP, NOT THE WHOLE DAMAGE STEP.
+     * CR 608.3b — THE SPAN IS THE SUB-STEP, NOT THE WHOLE DAMAGE STEP.
      *
      * This used to slice cd..ac and demand nothing resolve anywhere in it,
-     * which was R261 read without its own first clause. A subject printing
+     * which was the after-combat hold read without its own first clause. A subject printing
      * {Swift} or {Sluggish} splits the step, and at the boundary its triggers
      * are SUPPOSED to stack and resolve — that is report #165's fix. Cutting
      * at the first 'damageWindow' announcement keeps the guard pointed at the
@@ -311,12 +311,12 @@ test('R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat
   }
 
   assert.deepEqual(violations, [],
-    'R261: every one of these resolved something inside a damage SUB-STEP');
-  // R295 POSITIVE CONTROL. Without this the sweep would pass on an engine that
+    'CR 608.9: every one of these resolved something inside a damage SUB-STEP');
+  // CR 608.3b POSITIVE CONTROL. Without this the sweep would pass on an engine that
   // never split a damage step at all — which is the engine report #165 was
   // filed against, and it would look identical here.
   assert.ok(split.length > 0,
-    'no subject in the whole pool split the damage step — R295 is not being exercised, and '
+    'no subject in the whole pool split the damage step — CR 608.3b is not being exercised, and '
     + 'the cut above is then a no-op that can hide anything');
   assert.ok(swept.length >= names.length * 0.9,
     `only ${swept.length} of ${names.length} subjects reached a damage step — the sweep is `
@@ -326,7 +326,7 @@ test('R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat
   assert.ok(firedInDamageStep.length >= 50,
     `only ${firedInDamageStep.length} subjects actually announced a trigger inside the damage `
     + 'step — the window this guard is about is nearly empty and it is proving nothing');
-  console.log(`    R261 SWEEP: ${swept.length}/${names.length} units driven through a real `
+  console.log(`    CR 608.9 SWEEP: ${swept.length}/${names.length} units driven through a real `
     + `damage step, ${firedInDamageStep.length} of them firing inside it, 0 resolving `
     + `(${split.length} split the step and were measured to their first boundary: `
     + `${split.join(', ')}).`);
@@ -339,13 +339,13 @@ test('R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat
  * trigger must wait with everything else, even though `checkDeaths()` still
  * runs between sub-steps and the body is off the board immediately.
  *
- * ⚠ THE BLOCKER USED TO BE A {Swift} Dune Drifter, and under R295 that made
+ * ⚠ THE BLOCKER USED TO BE A {Swift} Dune Drifter, and under CR 608.9c that made
  * this an accidental test of the OTHER half of the rule: a Swift blocker
  * splits the damage step, so the death trigger resolves at the boundary
  * rather than after combat and the RAQ claim went untested. The blocker is
  * the {Evasive} 2/2 Curio Drifter now — same kill, no speed attribute, one
  * sub-step — and the split shape has its own test directly below. */
-test('R261: a combat DEATH trigger waits with the rest — when I die is on the RAQ list by name', () => {
+test('CR 608.9b: a combat DEATH trigger waits with the rest — when I die is on the RAQ list by name', () => {
   const h = new Harness(23903);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -363,7 +363,7 @@ test('R261: a combat DEATH trigger waits with the rest — when I die is on the 
   const [cd, ac] = damageWindow(evs);
   const win = evs.slice(cd, ac);
   assert.ok(win.some(e => e.type === 'died' && /Ignis Sprite/.test(e.msg)),
-    'the Sprite died inside the damage step — R3, deaths are immediate');
+    'the Sprite died inside the damage step — CR 608.7b, deaths are immediate');
   assert.ok(win.some(e => e.type === 'triggered' && /Ignis Sprite/.test(e.msg)),
     'and its death trigger was announced there');
   assert.deepEqual(win.filter(e => RESOLUTION_EVENTS.has(e.type)).map(e => e.type), [],
@@ -372,7 +372,7 @@ test('R261: a combat DEATH trigger waits with the rest — when I die is on the 
     'and it is on the after-combat stack');
 });
 
-/** R295, the split sibling of the test above: the SAME death, in a step that
+/** CR 608.3b, the split sibling of the test above: the SAME death, in a step that
  * {Swift} has made into two steps. The trigger still resolves nothing inside
  * its own sub-step — but it does not wait for after combat either. It stacks
  * and is answerable at the boundary, before the normal sub-step strikes.
@@ -380,7 +380,7 @@ test('R261: a combat DEATH trigger waits with the rest — when I die is on the 
  * This is the shape playtest report #165 was filed about, reduced to its
  * smallest form: what a sub-step fires must land before the next sub-step
  * deals its damage, or a card built to grow first cannot. */
-test('R295: in a SPLIT damage step a death trigger resolves at the boundary, not after combat', () => {
+test('CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary, not after combat', () => {
   const h = new Harness(23913);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -401,10 +401,10 @@ test('R295: in a SPLIT damage step a death trigger resolves at the boundary, not
   assert.ok(evs.findIndex(e => e.type === 'afterCombat') < 0,
     'and combat has NOT reached its after-step — this is mid-damage');
   assert.deepEqual(evs.slice(cd, dw).filter(e => RESOLUTION_EVENTS.has(e.type)).map(e => e.type), [],
-    'R261 still holds inside the sub-step itself: nothing resolved there');
+    'CR 608.9 still holds inside the sub-step itself: nothing resolved there');
   assert.equal(h.state.battle!.step, 'damageWindow');
   assert.ok(h.state.stack.some(it => /Ignis Sprite/.test(it.label)),
-    'R295: the death trigger is on the stack AT THE BOUNDARY, where either seat can answer it');
+    'CR 608.9c: the death trigger is on the stack AT THE BOUNDARY, where either seat can answer it');
   assert.equal(h.state.battle!.pendingSub, 'normal',
     'and the pump is parked, waiting to run the normal sub-step once the window closes');
 });
@@ -418,11 +418,11 @@ test('R295: in a SPLIT damage step a death trigger resolves at the boundary, not
  * exist.
  *
  * ⚠ REGION MATTERS and cost this fixture two attempts: `afterCombat` is fired
- * with the battle's region and CostMod-style radiation is region-scoped (R12),
+ * with the battle's region and CostMod-style radiation is region-scoped (CR 601.1d),
  * so an after-combat trigger only joins the batch if its card stands in the
  * region the battle is in. The defender's own units do; the attacker's, coming
  * from its home region, do not. */
-test('R261 THE RAQ BATCH: a damage-caused trigger and an after-combat trigger are ordered together, in one decision', () => {
+test('CR 608.9b THE RAQ BATCH: a damage-caused trigger and an after-combat trigger are ordered together, in one decision', () => {
   const h = new Harness(23904);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -453,13 +453,13 @@ test('R261 THE RAQ BATCH: a damage-caused trigger and an after-combat trigger ar
  * effects on the stack first, then non-Initiative (NIT) player puts his."*
  * The owner adds that he does not remember which way round it is, so the RAQ
  * text is the authority and this is the guard that pins it. The engine already
- * did this for battle triggers under R2 (NIT enters last, thus resolves
- * first); R261 only widened WHICH triggers get here. IT at the BOTTOM of the
+ * did this for battle triggers under CR 706.5 (NIT enters last, thus resolves
+ * first); holding combat-damage triggers to after combat only widened which triggers get here. IT at the BOTTOM of the
  * stack, NIT on TOP.
  *
  * One trigger per seat, deliberately: with two the per-seat ordering decision
  * would sit in front of the assertion and blur what is being measured. */
-test('R261 RAQ STACK ORDER: the initiative seat effects go on the stack FIRST and sit at the bottom', () => {
+test('CR 609.3c RAQ STACK ORDER: the initiative seat effects go on the stack FIRST and sit at the bottom', () => {
   const h = new Harness(23905);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -478,20 +478,20 @@ test('R261 RAQ STACK ORDER: the initiative seat effects go on the stack FIRST an
   assert.equal(h.state.stack[0]!.controller, A,
     'RAQ: the INITIATIVE player puts his effects on the stack first, so his is the bottom item');
   assert.equal(h.state.stack[1]!.controller, D,
-    'and the non-initiative player puts his on top — R2, so NIT resolves first');
+    'and the non-initiative player puts his on top — CR 703.4, so NIT resolves first');
   assert.ok(/Lithoghul/.test(h.state.stack[0]!.label));
   assert.ok(/Geode/.test(h.state.stack[1]!.label));
 });
 
 /* ══ §3 — WHAT DID NOT MOVE ══════════════════════════════════════════ */
 
-/** R3 IS NOT OVERRULED, only narrowed to what it was always about. Formation
+/** THE SUB-STEP RULING (now CR 608.3e) IS NOT OVERRULED, only narrowed to what it was always about. Formation
  * changes — deaths, promotion, column membership — still recalculate between
  * sub-steps with nobody getting priority. The measurement: a {Swift} blocker
  * kills the attacker in the Swift sub-step, so the attacker deals NOTHING in
  * the normal one. If deaths had moved to after combat with the triggers, the
  * Drifter would have taken 1 and died. */
-test('R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits', () => {
+test('CR 608.3e STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits', () => {
   const h = new Harness(23906);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -507,16 +507,16 @@ test('R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damag
   assert.ok(!ent(h, sprite), 'the Sprite died in the Swift sub-step');
   assert.ok(ent(h, drift), 'and the Drifter survives');
   assert.equal(ent(h, drift)!.damage, 0,
-    'having been dealt NOTHING in the normal sub-step — R3, the death was immediate');
+    'having been dealt NOTHING in the normal sub-step — CR 608.3e, the death was immediate');
 });
 
 /** BITE 4: a decision raised MID-SUB-STEP must not lose the held batch.
- * Column 0 is {Swift} and kills a Geode; column 1 raises an R120 elective
+ * Column 0 is {Swift} and kills a Geode; column 1 raises a CR 608.6a elective
  * split in the NORMAL sub-step, which suspends the pump. `doDecide` resumes
- * through `settle()`, and settle() is where the R261 hold lives — so this is
+ * through `settle()`, and settle() is where the CR 608.9b hold lives — so this is
  * the exact path that would have drained the batch had the hold been put on
  * the pump instead. */
-test('R261: a sub-step suspended by an R120 election resumes with the held batch intact', () => {
+test('CR 608.9: a sub-step suspended by a CR 608.6a election resumes with the held batch intact', () => {
   const h = new Harness(23907);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -532,23 +532,23 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
   pass(h); pass(h);
 
   /**
-   * ⚠ R295 MOVED THE FIRST HALF OF THIS TEST, and the move is the point.
+   * ⚠ SPLIT-STEP WINDOWS (CR 608.9c) MOVED THE FIRST HALF OF THIS TEST, and the move is the point.
    *
    * It used to read: the Swift sub-step is done, the NORMAL one is already
    * asking its election, and the Swift death trigger is sitting HELD in the
-   * queue behind it. That was R261's unconditional hold. The exchange is split
+   * queue behind it. That was the old unconditional hold. The exchange is split
    * ({Swift} Dune Drifter), so the normal sub-step no longer runs until the
    * boundary window has closed — the Swift death trigger stacks and resolves
    * FIRST, and only then is anybody asked how to split the normal damage.
    *
-   * What the test is actually for survives intact and is asserted below: an
-   * R120 suspension in the middle of a sub-step must not leak a resolution
+   * What the test is actually for survives intact and is asserted below: a
+   * CR 608.6a suspension in the middle of a sub-step must not leak a resolution
    * INTO that sub-step. `doDecide` reaches settle() with the pump half-run,
-   * which is one of the three back doors the R261 hold in settle() was built
+   * which is one of the three back doors the CR 608.9b hold in settle() was built
    * to close, and it is still closed.
    */
   assert.equal(h.state.battle!.step, 'damageWindow',
-    'R295: the Swift sub-step has struck and the boundary window is open');
+    'CR 608.3b: the Swift sub-step has struck and the boundary window is open');
   // ⚠ read through a fresh expression, not `h.state.decision` directly: an
   // `assert.equal(x, null)` narrows x to `never` for the rest of the scope,
   // and the assertions after the window would stop typechecking.
@@ -575,7 +575,7 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
     + 'reached the stack together after combat (the Swift death already resolved at the boundary)');
 });
 
-/* ══ §4 — R121, WIDENED ══════════════════════════════════════════════ */
+/* ══ §4 — THE TRIGGER TAX (CR 111.10g), WIDENED ══════════════════════════════════════════════ */
 
 /** Crevice Lurker: "[Augment] Abilities cost [one] more to activate or trigger
  * during battle." Its CostMod delta was always keyed on `phase === 'battle'`
@@ -583,7 +583,7 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
  * `gateTaxedTrigger` for `battleMode` triggers — so a combat-damage trigger
  * slipped past the tax entirely. That exemption was an artefact of where the
  * queue drained, not a reading of any card: combat damage IS during battle.
- * Under R261 these triggers arrive with `damageStep` already null and are
+ * Under the after-combat hold (CR 608.9b) these triggers arrive with `damageStep` already null and are
  * taxed like every other battle trigger.
  *
  * The control is the same board without the Lurker, because a pay gate that
@@ -602,7 +602,7 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
  * assert them. This was the only silent one. It is asserted now rather than
  * funded away — funding the attacker would put ITS pay question in front of
  * the Geode one and change what `taxed.state.decision` even is. */
-test('R121 WIDENED BY R261: a combat-damage trigger is taxed by Crevice Lurker, and is not without one', () => {
+test('CR 111.10g WIDENED BY CR 608.9d: a combat-damage trigger is taxed by Crevice Lurker, and is not without one', () => {
   const build = (seed: number, lurker: boolean): Harness => {
     const h = new Harness(seed);
     toDeployment(h);
@@ -630,13 +630,13 @@ test('R121 WIDENED BY R261: a combat-damage trigger is taxed by Crevice Lurker, 
     + 'prevented outright. Asserted, not assumed: a silently vanished trigger is how a '
     + 'fixture ends up passing on a board nobody described');
   const dec = taxed.state.decision;
-  assert.ok(dec, 'the Geode death trigger is stopped at the R121 pay gate');
+  assert.ok(dec, 'the Geode death trigger is stopped at the CR 111.10g pay gate');
   assert.equal(dec!.kind, 'payOrDecline');
   assert.equal(dec!.seat, taxed.state.initiative === 0 ? 1 : 0,
     'and it is the defender — the seat whose trigger it is — being asked');
   assert.match(dec!.prompt, /Crevice Lurker taxes the trigger/);
   assert.match(dec!.prompt, /Geode/,
-    'a trigger caused by COMBAT DAMAGE, which could never reach this gate before R261');
+    'a trigger caused by COMBAT DAMAGE, which could never reach this gate before the after-combat move (CR 608.9b)');
 
   const free = build(23909, false);
   assert.equal(prevented(free, 'Lithoghul'), false,

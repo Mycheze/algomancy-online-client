@@ -1,4 +1,4 @@
-/* R67 — "target" is chosen when the effect is PUT ON THE STACK.
+/* CR 110.1a — "target" is chosen when the effect is PUT ON THE STACK.
  *
  * The playtest report: "Lots of cards seem to choose targets on resolution
  * rather than when they're played or put onto the stack. In many cases, this
@@ -10,13 +10,13 @@
  * processTriggerQueue) triggered ones, and every cast-time cost is paid in the
  * same pass. What was wrong was eleven individual cards that never declared a
  * `targets` spec and re-derived their "target" with a mid-resolution
- * ctx.choose, most of them written before R58/R64 built the seams they needed.
+ * ctx.choose, most of them written before the engine had the seams they needed.
  *
  * These tests pin the PROPERTY rather than each card's flavour: while the
  * decision is pending the item is not yet on the stack, and once it is on the
  * stack its declared targets are visible in `part.targets`. That is what makes
  * a response window meaningful, what lets a redirect find a slot, and what
- * makes R5's "the target is gone" fizzle possible at all.
+ * makes CR 704.6's "the target is gone" fizzle possible at all.
  *
  * Seeds 6000-6099.
  */
@@ -39,7 +39,7 @@ function clearBin(h: Harness, seat: Seat): void { h.state.players[seat]!.bin = [
 
 /* ── the property: aimed BEFORE it lands on the stack ──────────────────── */
 
-test('R67: a bin target is asked while the stack is still empty, then rides on the stack', () => {
+test('CR 110.1a: a bin target is asked while the stack is still empty, then rides on the stack', () => {
   const h = new Harness(6000);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -56,7 +56,7 @@ test('R67: a bin target is asked while the stack is still empty, then rides on t
   assert.ok(h.state.players[p]!.hand.includes('Immolate'), 'recalled on resolution');
 });
 
-test('R67: a spell played in battle shows its declared target on the stack, before it resolves', () => {
+test('CR 702.3c: a spell played in battle shows its declared target on the stack, before it resolves', () => {
   const h = new Harness(6001);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -81,7 +81,7 @@ test('R67: a spell played in battle shows its declared target on the stack, befo
   finishBattle(h);
 });
 
-test('R67: a triggered ability is aimed as it goes on the stack, not as it resolves', () => {
+test('CR 110.1a: a triggered ability is aimed as it goes on the stack, not as it resolves', () => {
   const h = new Harness(6002);
   toDeployment(h);
   const A = h.state.initiative;
@@ -99,7 +99,7 @@ test('R67: a triggered ability is aimed as it goes on the stack, not as it resol
 
 /* ── a mandatory target with nothing legal makes the CAST illegal ──────── */
 
-test('R67: "put target unit from your bin into play" with an empty bin is refused, not wasted', () => {
+test('CR 110.7: "put target unit from your bin into play" with an empty bin is refused, not wasted', () => {
   const h = new Harness(6003);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -119,9 +119,9 @@ test('R67: "put target unit from your bin into play" with an empty bin is refuse
   assert.ok(unitsOf(h, p).some(u => u.card === 'Gublin'), 'reanimated');
 });
 
-/* ── the ownership kinds: 'opponent' vs the new 'player' (R67) ─────────── */
+/* ── the ownership kinds: 'opponent' vs the new 'player' (CR 110.3c) ─────────── */
 
-test("R67: 'opponent' is measured from the EFFECT's controller, not the chooser's", () => {
+test("CR 110.3c: 'opponent' is measured from the EFFECT's controller, not the chooser's", () => {
   const h = new Harness(6004);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -136,12 +136,12 @@ test("R67: 'opponent' is measured from the EFFECT's controller, not the chooser'
   // D controls the effect, so D is NOT an opponent of it — only A is offered
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ player: A }]);
   pick(h, { player: A });
-  resolveAfterCombat(h);   // R261: the trigger aims here but resolves after combat
+  resolveAfterCombat(h);   // CR 608.9b: the trigger aims here but resolves after combat
   assert.equal(ent(h, frog)!.controller, A);
   finishBattle(h);
 });
 
-test("R67: plain \"target player\" ('player') may legally be YOURSELF", () => {
+test("CR 110.3c: plain \"target player\" ('player') may legally be YOURSELF", () => {
   const h = new Harness(6005);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -167,9 +167,9 @@ test("R67: plain \"target player\" ('player') may legally be YOURSELF", () => {
   finishBattle(h);
 });
 
-/* ── TargetCtx.event: a target phrased relative to the trigger (R67) ───── */
+/* ── TargetCtx.event: a target phrased relative to the trigger (CR 110.1a) ───── */
 
-test("R67: \"that player's bin\" reads the EVENT — only the damaged player's bin is offered", () => {
+test("CR 110.1a: \"that player's bin\" reads the EVENT — only the damaged player's bin is offered", () => {
   const h = new Harness(6006);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -185,14 +185,14 @@ test("R67: \"that player's bin\" reads the EVENT — only the damaged player's b
   assert.equal(h.state.decision?.kind, 'targets');
   notOffered(h, { bin: { seat: A, card: 'Good Whale' } }, "my bin is not THAT player's");
   pick(h, { bin: { seat: D, card: 'Jelly' } });
-  resolveAfterCombat(h);   // R261: the trigger aims here but resolves after combat
+  resolveAfterCombat(h);   // CR 608.9b: the trigger aims here but resolves after combat
   assert.ok(h.state.players[A]!.hand.includes('Jelly'), 'taken into my hand');
   finishBattle(h);
 });
 
 /* ── X sizes the spell first, then the collector asks for that many ────── */
 
-test('R67: "X target units" asks for exactly X targets, after X is fixed and paid', () => {
+test('CR 702.3: "X target units" asks for exactly X targets, after X is fixed and paid', () => {
   const h = new Harness(6007);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -204,7 +204,7 @@ test('R67: "X target units" asks for exactly X targets, after X is fixed and pai
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, "Blight's End") });
-  pick(h, 2);                                       // X = 2, paid at cast (R35)
+  pick(h, 2);                                       // X = 2, paid at cast (CR 107.2a)
   // "target units" is unqualified, so an ENEMY unit is a legal host
   pick(h, { unit: mine });
   pick(h, { unit: theirs });
@@ -217,9 +217,9 @@ test('R67: "X target units" asks for exactly X targets, after X is fixed and pai
   finishBattle(h);
 });
 
-/* ── a declared target that dies before resolution FIZZLES (R5) ────────── */
+/* ── a declared target that dies before resolution FIZZLES (CR 704.6) ────────── */
 
-test('R67: declaring the target is what lets R5 fizzle it when it disappears', () => {
+test('CR 110.1a: declaring the target is what lets CR 704.6 fizzle it when it disappears', () => {
   const h = new Harness(6008);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -241,13 +241,13 @@ test('R67: declaring the target is what lets R5 fizzle it when it disappears', (
   assert.ok(!h.state.stack[0]!.parts[0]!.targets.every(t => e.targetStillLegal(t)),
     'one declared target is gone');
   pass(h); pass(h);
-  assert.ok(!ent(h, atk), 'the surviving target still resolves (R5 partial)');
+  assert.ok(!ent(h, atk), 'the surviving target still resolves (CR 704.6b partial)');
   finishBattle(h);
 });
 
 /* ── the restriction that used to probe ANOTHER card's spec ──────────── */
 
-// R197 RETIRED THE HAZARD THIS TEST WAS WRITTEN FOR, and the test is kept
+// THE GRANT REWRITE RETIRED THE HAZARD THIS TEST WAS WRITTEN FOR, and the test is kept
 // because the CARD is still the one that would have hit it. Spell Excavation's
 // restriction used to ask targetCandidates about the bin card's OWN spec —
 // "could that spell actually be played right now" — which is a nested query,
@@ -259,7 +259,7 @@ test('R67: declaring the target is what lets R5 fizzle it when it disappears', (
 // nested query in it at all. What is asserted below is unchanged and still
 // worth asserting: a Spell Excavation in the bin is a legal target, and asking
 // about it terminates.
-test('R67/R197: a Spell Excavation in the bin is a legal target of another Spell Excavation', () => {
+test('CR 702.2a: a Spell Excavation in the bin is a legal target of another Spell Excavation', () => {
   const h = new Harness(6009);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

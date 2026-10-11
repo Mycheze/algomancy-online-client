@@ -4,18 +4,18 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (partial resolution against remaining legal targets), R6 (mid-resolution
- * choices via ctx.choose, plan-then-commit), R9 (bounded budgets per card),
- * R11 (regroup returns units to their CONTROLLER's region — control changes
- * stick), R12/R25 ("each player/opponent"/"your units"/"all units" read the
- * effect region's present seats / in-region units), R115 (created UNITS spawn
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6b (partial resolution against remaining legal targets), CR 704.1a (mid-resolution
+ * choices via ctx.choose, plan-then-commit), CR 803.4 (bounded budgets per card),
+ * CR 506.2 (regroup returns units to their CONTROLLER's region — control changes
+ * stick), CR 101.6, 601.4d ("each player/opponent"/"your units"/"all units" read the
+ * effect region's present seats / in-region units), CR 601.5 (created UNITS spawn
  * where their SOURCE is — ctx.region — as spell tokens always did),
- * R31 (triggers in combat damage sub-steps resolve immediately).
+ * CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - CONTROL CHANGE (Ralph / Rebalance / Stellarspore Harvester): UN-PARKED
- *    (R112, 2026-08-23) — `E.giveControl(u, to)` is the primitive this note
+ *    (2026-08-23) — `E.giveControl(u, to)` is the primitive this note
  *    used to say did not exist, with exactly this batch's reading (drop out
  *    of the formation, walk home unless the new controller is present) plus
  *    the one thing this batch's local copy got wrong: the unit's MODS change
@@ -23,15 +23,15 @@
  *    — the card still dies/recalls to its owner's bin/hand.
  *  - "TARGET OPPONENT" uses the 'any' TargetSpec (Dreamfloat Drifter
  *    precedent): a non-opponent pick resolves as a no-op. Region scoping
- *    (R25) means an absent opponent (e.g. during your deployment) simply is
+ *    (CR 110.3c) means an absent opponent (e.g. during your deployment) simply is
  *    not a candidate — Ralph's defection is a battle play in practice.
  *  - Saprophytic Oracle's "nontoken unit dies": NO LONGER an approximation.
  *    This said "the died event carries no token flag, so the discriminator is
- *    the death message"; R70 puts `token` on the event itself and the card
+ *    the death message"; the event itself now carries `token` (CR 714.9) and the card
  *    reads it. (The string match is exactly what the redesigned Wraith slipped
  *    past, because its death logged different text.)
  *  - Wandering Blightshell's "when YOU put a counter on an enemy": NO LONGER
- *    an approximation (R130, 2026-08-24). The escalation this entry used to
+ *    an approximation (CR 708.8b, 2026-08-24). The escalation this entry used to
  *    carry was granted exactly as written — `addCounters(target, n, by?: Seat)`
  *    defaulting to the resolving effect's controller, with `by` on the
  *    countersChanged event — so the trigger is now
@@ -42,8 +42,8 @@
  *    in the same change.
  *  - (Verdant Necrophage's entry here is NO LONGER an approximation. It read
  *    "the donated '[Augment] when I despawn' fires on the host's DEATH but not
- *    its recall — recall() erases mod entities before firing the event". R167
- *    fixed exactly that: `E.leavePlay` used to delete the mod entities before
+ *    its recall — recall() erases mod entities before firing the event". That is
+ *    exactly what was fixed: `E.leavePlay` used to delete the mod entities before
  *    the caller built its event, so `fireEvent`'s walk of `u.mods` through the
  *    entity table found nothing to donate; the deletion MOVED to the last
  *    statement of `afterDespawn`, matching the tail `disposeToBin` already
@@ -62,7 +62,7 @@ import { selfOf, isEnt, isUnitCard } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+/** CR 601.4c: `E.seatsHere` is the one answer for the whole pool. SIX files had
  * grown their own copy of this and they did NOT agree — most ordered it
  * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
@@ -82,7 +82,7 @@ const chooseUnit = (
   return g.entity(id) ?? null;
 };
 
-/** create n 1/1 unit tokens for `seat` in `region`. R115: `region` is REQUIRED
+/** create n 1/1 unit tokens for `seat` in `region`. CR 601.5: `region` is REQUIRED
  * and is always the SOURCE's region (`ctx.region`) — a defaulted region is how
  * a card ends up creating units somewhere no line of code names. */
 const create1s = (g: E, seat: Seat, n: number, region: number): void => {
@@ -95,15 +95,15 @@ const create1s = (g: E, seat: Seat, n: number, region: number): void => {
 
 // "[one]: [Switch1] Give target opponent control of me. If you do, create
 // three 1/1 units." — g/1 2/1 Apple Unit. Activated ([one] = mana 1),
-// [Switch1] = bounded (R9) and a graft cause. "Me" is the effect's carrier
+// [Switch1] = bounded (CR 722.5) and a graft cause. "Me" is the effect's carrier
 // (the host when the [Switch1] effect is grafted elsewhere); "you" is the
-// activator, whose 1/1s arrive at the source's region (R115). "If you do": the tokens only
+// activator, whose 1/1s arrive at the source's region (CR 601.5). "If you do": the tokens only
 // come if the control change actually happened — a gone unit or a
 // non-opponent target is a full no-op. ⚠ header notes: control change is the
-// E.giveControl (R112); during deployment the opponent is not present,
-// so they are no target (R25) and the ability no-ops.
+// E.giveControl (CR 711.1); during deployment the opponent is not present,
+// so they are no target (CR 110.3c) and the ability no-ops.
 const ralphDefect: EffectDef = {
-  // R64: "target opponent" is a player, and not you — 'any' offered every
+  // CR 110.3c: "target opponent" is a player, and not you — 'any' offered every
   // unit in the region and Ralph's own controller, all of them dead options.
   targets: { what: 'opponent', prompt: 'Ralph: target opponent gains control of me (then create three 1/1 units)' },
   creates: ['Unit Token'],
@@ -132,17 +132,17 @@ card('Ralph', {
 
 // "Each player gives an opponent control of one of their units." — g/2
 // {Battle} Arcane Fungus Spell. "Each player" = the region's present seats
-// (R12/R25), initiative first; each picks one of their OWN in-region units
+// (CR 601.4d), initiative first; each picks one of their OWN in-region units
 // (auto only when they have exactly one — the question is put even when this
-// resolves in the end-of-turn window, R85), and the receiving opponent is the
-// region's OTHER PRESENT SEAT — R239, never `1 - seat`. All picks are gathered
+// resolves in the end-of-turn window), and the receiving opponent is the
+// region's OTHER PRESENT SEAT — CR 601.4d, never `1 - seat`. All picks are gathered
 // before any control changes (plan-then-commit), then committed via the
-// E.giveControl (R112).
+// E.giveControl (CR 711.1).
 card('Rebalance', {
   spellEffect: {
     run: (g, ctx) => {
       const gives: { u: Entity; to: Seat }[] = [];
-      // R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
+      // CR 601.4d (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
       // that are in the region as an effect can even see that it exists. So
       // anything that happens in a region where a player or unit currently
       // isn't is 100% ignored, as if that effect didn't exist."
@@ -166,7 +166,7 @@ card('Rebalance', {
       if (!gives.length) {
         // conformance: an effect that runs to completion must say something
         g.ev('info', noRecipient
-          ? 'Rebalance: no opponent is in this region (R25/R239) — there is nobody to give a '
+          ? 'Rebalance: no opponent is in this region — there is nobody to give a '
             + 'unit to, so no control changes.'
           : 'Rebalance: nobody in this region has a unit to give — no effect.');
         return;
@@ -180,11 +180,11 @@ card('Rebalance', {
 
 // "[Augment] Whenever a nontoken unit dies, create a 1/1 unit." — gg/3 2/3
 // Fungus Oracle Unit. Text-box [Augment]: live when played normally (Manual
-// Q&A) and donated to hosts. Death listeners are region-scoped (R12).
-// R70: "nontoken" is read off the death EVENT's token flag. It used to be a
+// Q&A) and donated to hosts. Death listeners are region-scoped (CR 101.6).
+// CR 714.9: "nontoken" is read off the death EVENT's token flag. It used to be a
 // string match on the log message ("— token: erased."), which a card whose
 // death logged different text — the redesigned Wraith — slipped straight
-// past. The created 1/1 IS a token, so no loop. It arrives at ctx.region (R115).
+// past. The created 1/1 IS a token, so no loop. It arrives at ctx.region (CR 601.5).
 card('Saprophytic Oracle', {
   augmentText: [{
     type: 'triggered', events: ['died'],
@@ -216,14 +216,14 @@ card('Spawning Ground', {
 
 // "When I attack or block, [Switch] Create a Poison X, where X is my power."
 // — g/2 1/3 Fungus Slime Unit. Unbounded graft ([Switch]). X = the carrier's
-// power at RESOLUTION (R1: effStats live — the host's power when the effect
+// power at RESOLUTION (CR 107.8: effStats live — the host's power when the effect
 // is grafted elsewhere); a gone carrier or 0 power makes no token. The
 // Poison appears at ctx.region (spell tokens are battle materiel).
 const spewPoison: EffectDef = {
   creates: ['Poison'],
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    // R325: X is my power — my LAST-KNOWN power once I have left play
+    // CR 714.3: X is my power — my LAST-KNOWN power once I have left play
     const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
     if (!self && !lk) { g.ev('info', 'Spewing Mushroom: the unit is gone — no Poison.'); return; }
     const p = self ? g.effStats(self)[0] : lk!.power;
@@ -242,10 +242,10 @@ card('Spewing Mushroom', {
 
 // "When I die, [Switch] Delete all units with -1/-1 counters on them." — g/4
 // 2/2 {Poisonous} Blight Fungus Unit. Died trigger (self); unbounded graft.
-// "All units" = every unit in the effect's region (R12), both sides. Its own
+// "All units" = every unit in the effect's region (CR 101.6), both sides. Its own
 // Poisonous hits convert to -1/-1 counters, so trading with the Siren often
 // marks the killer for deletion — counters land during the damage sub-step,
-// before the death trigger resolves (R31). Deleted, not killed: destroy verb
+// before the death trigger resolves (CR 608.9). Deleted, not killed: destroy verb
 // 'is deleted' (nontoken unmodded → owner's bin).
 const deleteCountered: EffectDef = {
   run: (g, ctx) => {
@@ -285,14 +285,13 @@ card('Sprouter', {
 // "After combat, gain control of target unit if it has a -1/-1 counter on it.
 // [Augment] When I die, give each unit you control with a -1/-1 counter on it
 // to target opponent." — ggg/5 3/5 Cosmic Fungus Unit.
-// R157 §15 / R161 — THE CONDITION IS CHECKED AT RESOLUTION ONLY. Owner,
+// CR 110.3a — THE CONDITION IS CHECKED AT RESOLUTION ONLY. Owner,
 // 2026-08-25, verbatim: *"The wording is such that you can target any enemy, it
 // only checks whether you gain control of it on resolution."*
 //
 // The 2026-08-24 literal-reading sweep escalated a `when` gate on BOTH halves
 // that required some unit in the region to already carry a -1/-1 counter at
-// event time, and offered three readings: (a) literal — drop the gate; (b) R64
-// — make it a targeting `restrict`; (c) as written. The ruling picks (a), and
+// event time, and offered three readings: (a) literal — drop the gate; (b) make it a targeting `restrict`; (c) as written. The ruling picks (a), and
 // it picks it twice over: "you can target ANY enemy" refuses (b) as well as
 // (c). The trigger now always fires and always asks, the menu is every unit,
 // and the counter is looked for once — at resolution, on the chosen target.
@@ -308,7 +307,7 @@ card('Sprouter', {
 // carrier's controller. Its `when` goes for the same reason (the printed text
 // carries no trigger condition either — "give EACH unit … with a -1/-1
 // counter" is a quantity read at resolution, and none is a legal none). All
-// handovers go through E.giveControl (R112).
+// handovers go through E.giveControl (CR 711.1).
 card('Stellarspore Harvester', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'],
@@ -329,16 +328,16 @@ card('Stellarspore Harvester', {
   augmentText: [{
     type: 'triggered', events: ['died'], self: true,
     label: 'give each of your units with a -1/-1 counter to target opponent',
-    // R157 §15 / R161: no `when`. The printed text states no trigger condition
+    // CR 107.8: no `when`. The printed text states no trigger condition
     // on this half either, and "each unit you control with a -1/-1 counter on
     // it" is a quantity counted at RESOLUTION — which may be none.
     effect: {
-      // R64/R82 (target audit, playtest round 15): the printed target is
+      // CR 110.3c (target audit, playtest round 15): the printed target is
       // "target OPPONENT", and 'opponent' is the kind that means it — measured
       // from the effect's controller. This said 'any', which is the DAMAGE
       // kind: it offered every unit on the board and both players, so the
       // usual pick was a target that could only fizzle into the info line
-      // below. That line stays as the R58 resolution re-check.
+      // below. That line stays as the CR 704.5 resolution re-check.
       targets: { what: 'opponent', prompt: 'Stellarspore Harvester: target opponent takes your -1/-1-countered units' },
       run: (g, ctx) => {
         const t = ctx.targets[0];
@@ -347,7 +346,7 @@ card('Stellarspore Harvester', {
           return;
         }
         const to = (t as { player: Seat }).player;
-        // R187/CT-70: "each of your units with a -1/-1 counter" is a quantity
+        // CR D7.3/CT-70: "each of your units with a -1/-1 counter" is a quantity
         // counted at RESOLUTION and none is a legal none — but a legal none
         // still has to be SAID, or the trigger leaves the stack in silence.
         const giving = g.unitsOf(ctx.controller, ctx.region)
@@ -364,8 +363,8 @@ card('Stellarspore Harvester', {
 
 // "[Switch] Your units gain +1/+1 until regroup." — g/1 0/1 {Battle} Flower
 // Spell. The whole line is the unbounded graftable effect. "Your units" is
-// region-scoped (R12); the buff is the engine's temp layer (cleared at
-// regroup, R11 step 3).
+// region-scoped (CR 101.6); the buff is the engine's temp layer (cleared at
+// regroup, CR 506.2 step 3).
 const bloomBuff: EffectDef = {
   run: (g, ctx) => {
     const mine = g.unitsOf(ctx.controller, ctx.region);
@@ -379,9 +378,9 @@ card('Sudden Bloom', {
 });
 
 // "Create a 1/1 unit for each of your [g]." — g/3 Plant Spell (deploy).
-// [g] = wood AFFINITY at resolution (R1): non-dormant wood resources,
+// [g] = wood AFFINITY at resolution (CR 107.8): non-dormant wood resources,
 // expended included — paying the spell's own mana never shrinks the count.
-// The 1/1s are created units → they arrive at the source's region (R115),
+// The 1/1s are created units → they arrive at the source's region (CR 601.5),
 // which for a deploy-timing spell IS home.
 card('Sylvan Sprouting', {
   spellEffect: {
@@ -398,13 +397,13 @@ card('Sylvan Sprouting', {
 // recalls a unit from their bin." — gg/3 2/4 Fungus Slime Unit.
 // Spawn half: a Poison 6 at ctx.region (spell-token rule).
 // [Augment] half: "despawn" = ANY leave-play (batch-hybrids-fwe precedent:
-// 'died' + 'despawned'). R167: the DONATED copy fires on a host recall and
+// 'died' + 'despawned'). CR 721.1f: the DONATED copy fires on a host recall and
 // cache too — `leavePlay` used to delete the mod entities before the event was
 // built, so the donated text was unreachable on those two routes. (The header
 // note that flagged this as an asymmetry is retired with it.)
-// "Each opponent" is region-scoped (R25); each recalls (bin → hand) a card
+// "Each opponent" is region-scoped (CR 601.4d); each recalls (bin → hand) a card
 // of their choice that is a unit (spell-units count), auto-picked only when
-// forced — a despawn in the end-of-turn window still asks (R85). Plan-then-
+// forced — a despawn in the end-of-turn window still asks. Plan-then-
 // commit: all picks precede any bin mutation.
 card('Verdant Necrophage', {
   abilities: [{
@@ -417,8 +416,8 @@ card('Verdant Necrophage', {
     label: 'each opponent recalls a unit from their bin',
     effect: {
       run: (g, ctx) => {
-        // R187/CT-70: the per-opponent branch below announces an empty bin,
-        // but the LOOP said nothing when R25 left it with nobody to walk.
+        // CR D7.3b/CT-70: the per-opponent branch below announces an empty bin,
+        // but the LOOP said nothing when CR 601.4d left it with nobody to walk.
         const foes = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         if (!foes.length) {
           g.ev('info', 'Verdant Necrophage: no opponent is present here — nobody recalls a unit.');
@@ -445,9 +444,9 @@ card('Verdant Necrophage', {
           plans.push({ seat, idx });
         }
         for (const { seat, idx } of plans) {
-          const name = g.removeFromBin(seat, idx, 'recalled');   // R124
+          const name = g.removeFromBin(seat, idx, 'recalled');   // CR 405.7
           if (name !== undefined) {
-            g.toHand(seat, name, 'bin');   // R179
+            g.toHand(seat, name, 'bin');   // CR 402.4
             g.ev('info', `${g.pname(seat)} recalls ${name} from their bin.`);
           }
         }
@@ -457,8 +456,8 @@ card('Verdant Necrophage', {
 });
 
 // "[Switch1] I deal damage to target unit equal to the number of units you
-// control." — gg/2 {Battle} Bedlam Plant Spell. Bounded graft (R9). The
-// amount is live at RESOLUTION (R1): your in-region units (R12) when the
+// control." — gg/2 {Battle} Bedlam Plant Spell. Bounded graft (CR 722.5). The
+// amount is live at RESOLUTION (CR 107.8): your in-region units (CR 101.6) when the
 // spell/graft part actually resolves — deaths in response shrink it.
 const vengeance: EffectDef = {
   targets: { what: 'unit', prompt: 'Verdant Vengeance: I deal damage equal to your unit count to target unit' },
@@ -481,9 +480,9 @@ card('Verdant Vengeance', {
 });
 
 // "When you put a counter on an enemy, [Switch1] Draw a card." — g/2 1/2
-// Blight Turtle Unit. Bounded ([Switch1], R9) trigger on countersChanged.
+// Blight Turtle Unit. Bounded ([Switch1], CR 722.5) trigger on countersChanged.
 //
-// R130: BOTH printed words are now real, and neither was before.
+// CR 206.6b, 708.8b: BOTH printed words are now real, and neither was before.
 //  - "A COUNTER" is unqualified, so the sign test is gone. The owner,
 //    2026-08-24: "All counters count as counters." A +1/+1 counter you put on
 //    an enemy (Flux Resonator's plus-one onto their unit, a stat swap, Buffer
@@ -502,7 +501,7 @@ card('Wandering Blightshell', {
     type: 'triggered', events: ['countersChanged'], bounded: true, graftCause: true,
     label: 'draw a card (you put a counter on an enemy)',
     when: (g, self, ev) => {
-      if (ev.data?.['by'] !== self.controller) return false;      // R130: "YOU put"
+      if (ev.data?.['by'] !== self.controller) return false;      // CR 708.8b: "YOU put"
       const u = g.entity(ev.data?.unit as EntityId);
       return !!u && u.controller !== self.controller;             // …"on an enemy"
     },
@@ -513,14 +512,14 @@ card('Wandering Blightshell', {
 
 // "When I attack or block, [Switch] Your units gain +1/+0 until regroup." —
 // g/1 1/1 Flower Unit. Unbounded graft; self-filtered attack/block trigger.
-// "Your units" region-scoped (R12); temp layer, cleared at regroup.
+// "Your units" region-scoped (CR 101.6); temp layer, cleared at regroup.
 const warbloomBuff: EffectDef = {
   run: (g, ctx) => {
     // "Nothing happened" is a legitimate outcome; not SAYING so never is
     // (test/65-effect-conformance.test.ts: "no effect resolves into silence").
     // Latent since the card landed, and reachable without any graft at all —
     // the trigger is queued when the Herald attacks or blocks, and by the time
-    // it RESOLVES (R1: the amount is live at resolution) its controller may
+    // it RESOLVES (CR 109.3b: the amount is live at resolution) its controller may
     // control nothing in the region. The fuzz found it through the grafted
     // copy: Vaporweave Eidolon activated "[zero]: recall me", the host left
     // play, and this rider then ran over an empty region and emitted nothing.
@@ -547,10 +546,10 @@ card('Warbloom Herald', {
 // stack item you control ("allied" = your side; 1v1 = yours). Triggered and
 // activated items count — they are effects too.
 //
-// R79 — the half that was silently dead (found by the 2026-08-24 literal-
+// CR 723.4 (a Virus onto a spell on the stack): the half that was silently dead (found by the 2026-08-24 literal-
 // reading audit). A VIRUS on the stack carries NO parts and NO target refs:
 // apply.ts builds it with `parts: []` and a `hostId` (a unit, or a spell token
-// in play) or a `hostStack` (a SPELL on the stack, R79's other shape). So the
+// in play) or a `hostStack` (a SPELL on the stack, CR 723.4's other shape). So the
 // plain target-ref read above sees an enemy Virus aimed at your unit as a
 // stack item that targets nothing, and the card printed to answer enemy
 // effects aimed at your side sailed straight past the enemy effect that is

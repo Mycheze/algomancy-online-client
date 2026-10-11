@@ -7,7 +7,7 @@
     "examples": [
       {
         "text": "During deployment, nothing a player does in their region reaches the other player until deployment ends.",
-        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §4: of everything a hidden step emits, nothing reaches the other seat before the barrier"
+        "test": "203-reveal-waits-for-the-barrier.test.ts::CR D6.1: of everything a hidden step emits, nothing reaches the other seat before the barrier"
       }
     ],
     "see": [
@@ -17,32 +17,31 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "So a glimpse inside a hidden simultaneous step is held like every other event"
+          "quote": "So a glimpse inside a hidden simultaneous step is held like every other event",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R78",
-          "quote": "opponent cannot see you act until both of you are done. `viewFor` freezes the"
+          "quote": "opponent cannot see you act until both of you are done. `viewFor` freezes the",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "haste or deployment close plays that frame, and the client's playback branch"
+          "quote": "haste or deployment close plays that frame, and the client's playback branch",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "pops the notice again. A resource-step close still arrives whole, without a"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R235",
-          "relation": "reversed by R310 (a reveal inside a hidden step had escaped the hold)"
+          "quote": "pops the notice again. A resource-step close still arrives whole, without a",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -52,12 +51,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R310 names the three hidden steps and the barrier/recap; R78 states the purpose of the segment (and its view freeze). The recap itself is D5 (U23).",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801",
-      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
-    }
+    "notes": "The owner ruling of 2026-10-04 (“A glimpse inside a hidden step…”) names the three hidden steps and the barrier/recap; the owner ruling of 2026-08-22 (“An item stays on the stack…”) states the purpose of the segment (and its view freeze). The recap itself is D5 (U23).",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-steps.frozen",
@@ -75,29 +72,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R78 (its note that viewFor freezes the other seat's players and entities inside a segment)",
-          "quote": "opponent's players and entities inside a segment but `resolving` is a top-level"
+          "quote": "opponent's players and entities inside a segment but `resolving` is a top-level",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "that step produces. The other seat gets it at the barrier, in the recap"
+          "quote": "that step produces. The other seat gets it at the barrier, in the recap",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "the frozen state channel. The event channel now matches it."
+          "quote": "the frozen state channel. The event channel now matches it.",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R228 (its general live done-flag clause; its haste half is overridden by R236)",
-          "quote": "stay live and public … 'they are finished' is exactly what you can see across a"
+          "quote": "stay live and public … 'they are finished' is exactly what you can see across a",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R236",
-          "quote": "construction:** `viewFor` no longer serves the OTHER seat's per-seat haste"
+          "quote": "construction:** `viewFor` no longer serves the OTHER seat's per-seat haste",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "306-solo-backend.test.ts",
@@ -106,14 +107,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R228 and R236 are cited from client/docs/digital-rules.md; they are not in the U24 pack. Revision round 2: R78 and R228 scoped to the parts that state this rule. The verifier measured that the other player's stack items are dropped from the view inside a hidden step rather than frozen; the visible result is the same.",
-    "sourceHashes": {
-      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179",
-      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a",
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801",
-      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
-    }
+    "notes": "The owner ruling of 2026-08-28 (“the haste step opens unconditionally, and…”) and the owner ruling of 2026-08-28 (“the haste step readies itself, and…”) are cited from client/docs/digital-rules.md; they are not in the U24 pack. Revision round 2: The owner ruling of 2026-08-22 (“An item stays on the stack…”) and the owner ruling of 2026-08-28 (“the haste step opens unconditionally, and…”) scoped to the parts that state this rule. The verifier measured that the other player's stack items are dropped from the view inside a hidden step rather than frozen; the visible result is the same.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-steps.counts",
@@ -123,7 +120,7 @@
     "examples": [
       {
         "text": "A player glimpses during deployment. The shared deck count does not drop for either player until deployment ends.",
-        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §1: the shared deck and recycle counts do not move under a hidden Glimpse"
+        "test": "203-reveal-waits-for-the-barrier.test.ts::CR D6.1b: the shared deck and recycle counts do not move under a hidden Glimpse"
       }
     ],
     "see": [],
@@ -131,17 +128,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "served as they were when the step opened, to both seats alike. The cost is"
+          "quote": "served as they were when the step opened, to both seats alike. The cost is",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "that your own deck-moving play also shows on the counts only at the reveal."
+          "quote": "that your own deck-moving play also shows on the counts only at the reveal.",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "203-reveal-waits-for-the-barrier.test.ts",
@@ -149,11 +147,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-steps.battle",
@@ -163,7 +160,7 @@
     "examples": [
       {
         "text": "Premonition is cast in battle. Its Glimpse reveal reaches the opponent at once.",
-        "test": "159-glimpse-reveal-visibility.test.ts::Premonition: the Glimpse X reveal is public to the opponent (R41/R45)"
+        "test": "159-glimpse-reveal-visibility.test.ts::Premonition: the Glimpse X reveal is public to the opponent (CR D6.2c, 801.9)"
       }
     ],
     "see": [],
@@ -171,13 +168,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "Nothing is held in battle, so a battle glimpse (Premonition,"
+          "quote": "Nothing is held in battle, so a battle glimpse (Premonition,",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "159-glimpse-reveal-visibility.test.ts",
@@ -185,11 +182,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-steps.haste-ready",
@@ -199,7 +195,7 @@
     "examples": [
       {
         "text": "One player finishes the haste step while the other is still choosing. The other player is not told that the first has finished.",
-        "test": "205-haste-auto-ready.test.ts::R236 §3a: the opponent is not served my haste readiness while the step is open"
+        "test": "205-haste-auto-ready.test.ts::CR D2.5d: the opponent is not served my haste readiness while the step is open"
       }
     ],
     "see": [],
@@ -207,28 +203,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R236",
-          "quote": "who is ready stops being public while it is open"
+          "quote": "who is ready stops being public while it is open",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R236",
-          "quote": "The step's END is still public"
+          "quote": "The step's END is still public",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "205-haste-auto-ready.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "R236 is not in the U24 pack (classified to U23); read from client/docs/digital-rules.md because it is the hidden-step reveal rule for D6. Overlap with U23 is possible.",
-    "sourceHashes": {
-      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
-    }
+    "notes": "The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) is not in the U24 pack (classified to U23); read from client/docs/digital-rules.md because it is the hidden-step reveal rule for D6. Overlap with U23 is possible.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.glimpse",
@@ -238,7 +234,7 @@
     "examples": [
       {
         "text": "Oracle of Foretelling is played during deployment and glimpses 5. The opponent learns the five cards when deployment ends, in the recap.",
-        "test": "159-glimpse-reveal-visibility.test.ts::Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (R310)"
+        "test": "159-glimpse-reveal-visibility.test.ts::Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (CR D6.2)"
       }
     ],
     "see": [
@@ -248,28 +244,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "The owner: *\"Glimpse cards shouldn't be shown to an opponent *during*"
+          "quote": "The owner: *\"Glimpse cards shouldn't be shown to an opponent *during*",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "that step produces. The other seat gets it at the barrier, in the recap"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R235",
-          "relation": "reversed by R310: R235 had made the reveal public immediately"
-        },
-        {
-          "ruling": "R222",
-          "relation": "reversed by R310: the same \"immediately\" answer, round 29"
-        },
-        {
-          "ruling": "R188",
-          "relation": "the open question (barrier or moment), absorbed into R310"
+          "quote": "that step produces. The other seat gets it at the barrier, in the recap",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -281,11 +265,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.glimpse.own",
@@ -295,7 +278,7 @@
     "examples": [
       {
         "text": "A player plays Oracle of Foretelling during deployment and sees the revealed cards at once; the opponent sees nothing of them until the step ends.",
-        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync"
+        "test": "203-reveal-waits-for-the-barrier.test.ts::CR D6.2: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync"
       }
     ],
     "see": [],
@@ -303,13 +286,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "sees their own reveal live, because it is their own action."
+          "quote": "sees their own reveal live, because it is their own action.",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "203-reveal-waits-for-the-barrier.test.ts",
@@ -317,11 +300,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.glimpse.once",
@@ -331,11 +313,11 @@
     "examples": [
       {
         "text": null,
-        "test": "371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before"
+        "test": "371-glimpse-in-the-recap.test.ts::CR D5.2: the opponent's glimpse notice pops when its recap frame plays, not before"
       },
       {
         "text": null,
-        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §2: the barrier delivers the reveal exactly once, and the finished log holds it once"
+        "test": "203-reveal-waits-for-the-barrier.test.ts::CR D6.2b: the barrier delivers the reveal exactly once, and the finished log holds it once"
       }
     ],
     "see": [],
@@ -343,17 +325,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the"
+          "quote": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "barrier. After the barrier it appears"
+          "quote": "barrier. After the barrier it appears",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "203-reveal-waits-for-the-barrier.test.ts",
@@ -362,11 +345,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.glimpse.public",
@@ -376,7 +358,7 @@
     "examples": [
       {
         "text": "Foretell is played in battle. The card it reveals is shown to the opponent.",
-        "test": "159-glimpse-reveal-visibility.test.ts::Foretell: the Glimpse 1 reveal is public to the opponent (R41/R45)"
+        "test": "159-glimpse-reveal-visibility.test.ts::Foretell: the Glimpse 1 reveal is public to the opponent (CR D6.2c, 801.9)"
       }
     ],
     "see": [
@@ -386,17 +368,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "- **Privacy.** A glimpse is still not private (`privateTo` is unset). The hold"
+          "quote": "- **Privacy.** A glimpse is still not private (`privateTo` is unset). The hold",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         },
         {
-          "ref": "R310",
-          "quote": "only delays it, which is why the barrier can deliver it."
+          "quote": "only delays it, which is why the barrier can deliver it.",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "159-glimpse-reveal-visibility.test.ts",
@@ -404,11 +387,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.glimpse.learn-to-play",
@@ -418,7 +400,7 @@
     "examples": [
       {
         "text": null,
-        "test": "371-glimpse-in-the-recap.test.ts::R310 §2: Learn to Play holds the bot's glimpse for the recap, and the recap pops it"
+        "test": "371-glimpse-in-the-recap.test.ts::CR D6.2d: Learn to Play holds the bot's glimpse for the recap, and the recap pops it"
       }
     ],
     "see": [
@@ -428,24 +410,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R310",
-          "quote": "from `server/view.ts`. All three hidden-step runners now hold an action's"
+          "quote": "from `server/view.ts`. All three hidden-step runners now hold an action's",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "371-glimpse-in-the-recap.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.resolving",
@@ -455,7 +436,7 @@
     "examples": [
       {
         "text": null,
-        "test": "67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted"
+        "test": "67-resolving-and-stack-viruses.test.ts::CR D6.3: a resolving item cannot be responded to, negated or targeted"
       }
     ],
     "see": [
@@ -465,28 +446,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R78",
-          "quote": "An item stays on the stack until it has ACTUALLY resolved"
+          "quote": "An item stays on the stack until it has ACTUALLY resolved",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R78",
-          "quote": "is `resolving.label` and *whose* effect it is is `resolving.controller` —"
+          "quote": "is `resolving.label` and *whose* effect it is is `resolving.controller` —",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "67-resolving-and-stack-viruses.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R78 is classified game (mixed); the display half is here, the respond-to half is 703.6 (U14).",
-    "sourceHashes": {
-      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“An item stays on the stack…”) is classified game (mixed); the display half is here, the respond-to half is 703.6 (U14).",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.resolving.battle-only",
@@ -504,28 +485,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R78",
-          "quote": "`beginResolving` publishes the marker only while `s.phase === 'battle'`."
+          "quote": "`beginResolving` publishes the marker only while `s.phase === 'battle'`.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R78",
-          "quote": "battle still shows the opponent nothing. Its controller has the decision open"
+          "quote": "battle still shows the opponent nothing. Its controller has the decision open",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "No test title asserts the battle-only gate directly; 67 pins the marker in battle and the nested-resolution case.",
-    "sourceHashes": {
-      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.resolving.partial",
@@ -535,7 +516,7 @@
     "examples": [
       {
         "text": "Insidious Invitation lets the caster play a unit first, then asks the opponent. When the opponent is asked, the caster's unit and spent mana are already on the table.",
-        "test": "72-resolution-window.test.ts::R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table"
+        "test": "72-resolution-window.test.ts::CR D6.3b Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table"
       }
     ],
     "see": [],
@@ -543,28 +524,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R85",
-          "quote": "Between the question and the answer, the state on the table is the real,"
+          "quote": "Between the question and the answer, the state on the table is the real,",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R85",
-          "quote": "are on the published board along with their unit. Both halves of the report are"
+          "quote": "are on the published board along with their unit. Both halves of the report are",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "72-resolution-window.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R85": "2ed5ff9815827c7ce9fb99b80cfb4026534c35e30b007abc2060578975b2eea4"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.resolving.only-answer",
@@ -574,7 +555,7 @@
     "examples": [
       {
         "text": null,
-        "test": "72-resolution-window.test.ts::R85 the mid-resolution board is a PREVIEW: only decide and concede are legal on it"
+        "test": "72-resolution-window.test.ts::CR D6.3c the mid-resolution board is a PREVIEW: only decide and concede are legal on it"
       }
     ],
     "see": [
@@ -584,24 +565,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R85",
-          "quote": "`apply()`'s dispatch refuses every action except `decide` and `concede` while"
+          "quote": "`apply()`'s dispatch refuses every action except `decide` and `concede` while",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "72-resolution-window.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R85": "2ed5ff9815827c7ce9fb99b80cfb4026534c35e30b007abc2060578975b2eea4"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.pending-choice",
@@ -611,7 +591,7 @@
     "examples": [
       {
         "text": "The attacker's Tempest Wrangler makes them choose an {Alluring} target. The defender's bar reads \"Waiting for Rashi (Tempest Wrangler)\" and names neither the prompt nor the candidate.",
-        "test": "50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub"
+        "test": "50-ui-inspect.test.ts::CR D6.4: the pause bar names the effect an opponent is answering, off the server stub"
       }
     ],
     "see": [],
@@ -619,29 +599,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R247",
-          "quote": "THAT A CHOICE IS PENDING IS PUBLIC; WHAT IS BEING CHOSEN IS NOT"
+          "quote": "THAT A CHOICE IS PENDING IS PUBLIC; WHAT IS BEING CHOSEN IS NOT",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R247",
-          "quote": "The FACT that a seat owes an answer is public information. The CONTENT of the"
+          "quote": "The FACT that a seat owes an answer is public information. The CONTENT of the",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R247",
-          "quote": "decision **KIND**. Kind was considered and refused: \"they are choosing targets\""
+          "quote": "decision **KIND**. Kind was considered and refused: \"they are choosing targets\"",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R247",
-          "quote": "**The SOURCE of a pending question is public when — and only when — it is"
+          "quote": "**The SOURCE of a pending question is public when — and only when — it is",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R247",
-          "quote": "3. `frozenOpp` — the SAME gate R144 uses for the stack, no second opinion. Inside"
+          "quote": "3. `frozenOpp` — the SAME gate R144 uses for the stack, no second opinion. Inside",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "50-ui-inspect.test.ts",
@@ -649,11 +633,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Revision round 2: the hidden-step exception added from R247's own addendum (the frozenOpp gate), which the verifier measured in client/server/view.ts pendingAskFor.",
-    "sourceHashes": {
-      "R247": "00e4ed51cb8e3f125993351ee0ac4497112a46638a599d2fb0fd1436ed307d0d"
-    }
+    "notes": "Revision round 2: the hidden-step exception added from the owner ruling of 2026-08-29 (“THAT A CHOICE IS PENDING IS…”)’s own addendum (the frozenOpp gate), which the verifier measured in client/server/view.ts pendingAskFor.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.pending-choice.source",
@@ -663,7 +646,7 @@
     "examples": [
       {
         "text": null,
-        "test": "50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub"
+        "test": "50-ui-inspect.test.ts::CR D6.4: the pause bar names the effect an opponent is answering, off the server stub"
       }
     ],
     "see": [],
@@ -671,28 +654,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R247",
-          "quote": "The SOURCE of a pending question is public when — and only when — it is"
+          "quote": "The SOURCE of a pending question is public when — and only when — it is",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R247",
-          "quote": "a hidden simultaneous segment \"they are being asked about their Blightmound\""
+          "quote": "a hidden simultaneous segment \"they are being asked about their Blightmound\"",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "50-ui-inspect.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R247": "00e4ed51cb8e3f125993351ee0ac4497112a46638a599d2fb0fd1436ed307d0d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-names",
@@ -702,7 +685,7 @@
     "examples": [
       {
         "text": "The opponent draws two cards. The player sees the opponent's hand grow by two card backs and is not sent their names.",
-        "test": "172-event-channel-secrecy.test.ts::R202 §2: no event names a card in a zone the state channel hides — the invariant, not the instance"
+        "test": "172-event-channel-secrecy.test.ts::CR D6.5: no event names a card in a zone the state channel hides — the invariant, not the instance"
       }
     ],
     "see": [
@@ -712,17 +695,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R202",
-          "quote": "(hand size is already public from the card backs); only the names go."
+          "quote": "(hand size is already public from the card backs); only the names go.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R202",
-          "quote": "pins the six routes. §2 asserts the INVARIANT — no event may name a card in a"
+          "quote": "pins the six routes. §2 asserts the INVARIANT — no event may name a card in a",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "172-event-channel-secrecy.test.ts",
@@ -730,11 +714,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R202": "8640477ec4f5f835d7388a6f8854e185f9a30cfcd2f13e8aab2f56279dc3da9d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-names.look-at",
@@ -744,7 +727,7 @@
     "examples": [
       {
         "text": "Thought Extraction is aimed at a player's own hand. The opponent is not shown the cards in it.",
-        "test": "173-look-at-a-hand.test.ts::R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to"
+        "test": "173-look-at-a-hand.test.ts::CR 402.2a Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to"
       }
     ],
     "see": [
@@ -754,17 +737,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R197b",
-          "quote": "is a private look — you see it, the table"
+          "quote": "is a private look — you see it, the table",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R197b",
-          "quote": "(the client's note-taking strip) and writes only *\"X looks at Y's hand\"*, which"
+          "quote": "(the client's note-taking strip) and writes only *\"X looks at Y's hand\"*, which",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "173-look-at-a-hand.test.ts",
@@ -772,11 +756,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "engine differs: F-U24-5 (measured by the U24 tester: Thought Extraction aimed at the caster own hand writes no line at all to the other player; aimed at the other hand, the other log says \"looks at\").",
-    "sourceHashes": {
-      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
-    },
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U24-5"
     ]
@@ -789,7 +772,7 @@
     "examples": [
       {
         "text": "Bripp recycles a card from the looked-at hand. The table is told a card was recycled; only Bripp's controller sees its name.",
-        "test": "173-look-at-a-hand.test.ts::R197b §1 Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either"
+        "test": "173-look-at-a-hand.test.ts::CR D6.5b Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either"
       }
     ],
     "see": [],
@@ -797,17 +780,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R197b",
-          "quote": "name is not the table's. It is split: a `privateTo` line carries the NAME to"
+          "quote": "name is not the table's. It is split: a `privateTo` line carries the NAME to",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R197b",
-          "quote": "the looker (who chose it), and a public line says a card moved without saying"
+          "quote": "the looker (who chose it), and a public line says a card moved without saying",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "173-look-at-a-hand.test.ts",
@@ -815,11 +799,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.public-zones",
@@ -829,7 +812,7 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R41: the cache is PUBLIC — both seats read the same zone, unredacted"
+        "test": "36-cache-prophecy.test.ts::CR 403.2: the cache is PUBLIC — both seats read the same zone, unredacted"
       }
     ],
     "see": [
@@ -839,24 +822,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R41",
-          "quote": "no server-side redaction for cache. (Bena's call 2026-08-19 — overturn if"
+          "quote": "no server-side redaction for cache. (Bena's call 2026-08-19 — overturn if",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R41 digital half: no redaction of the cache. Inside a hidden step the cache is frozen like every other zone (annexd.reveal.hidden-steps.frozen).",
-    "sourceHashes": {
-      "R41": "b36860212932ef9298bbee65d84cfe617b23849e3e65bc03a7949f7e67dc0346"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Cache is public information”) digital half: no redaction of the cache. Inside a hidden step the cache is frozen like every other zone (annexd.reveal.hidden-steps.frozen).",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.public-zones.prophecy-meter",
@@ -866,7 +848,7 @@
     "examples": [
       {
         "text": "The opponent has prophesied Vengeance (\"13 Units Die\"). The player can see on the opponent's cache how many of the 13 deaths have been counted.",
-        "test": "294-prophecy-meter.test.ts::§4 it meters the OPPONENT's cache too — the zone is public (R41)"
+        "test": "294-prophecy-meter.test.ts::§4 it meters the OPPONENT's cache too — the zone is public (CR D6.6)"
       }
     ],
     "see": [],
@@ -874,28 +856,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R302",
-          "quote": "Owner, 2026-09-20: *\"the tally and 'progress toward Prophecy working' needs to be VISIBLE"
+          "quote": "Owner, 2026-09-20: *\"the tally and 'progress toward Prophecy working' needs to be VISIBLE",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R302",
-          "quote": "as your own, showing THAT seat's witnessed count. A hidden clock on a public zone is the"
+          "quote": "as your own, showing THAT seat's witnessed count. A hidden clock on a public zone is the",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "294-prophecy-meter.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.public-zones.prophecy-state",
@@ -913,28 +895,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R302",
-          "quote": "Only counting conditions get a meter. A state condition (\"your life is 5 or less\") has"
+          "quote": "Only counting conditions get a meter. A state condition (\"your life is 5 or less\") has",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R302",
-          "quote": "nothing to count and keeps the plain \"⏳ not yet\", and a fulfilled one drops its meter for"
+          "quote": "nothing to count and keeps the plain \"⏳ not yet\", and a fulfilled one drops its meter for",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "294-prophecy-meter.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.public-zones.erased",
@@ -955,20 +937,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R241",
-          "quote": "| bare table | 🚫 each player's erased pile · 🏳 concede |"
+          "quote": "| bare table | 🚫 each player's erased pile · 🏳 concede |",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R65 (its erased-pile half)",
-          "quote": "no way to look at it. `PlayerState.erased` keeps it, appended by `E.ev()` off"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R65",
-          "relation": "narrowed by R241: its view-erased entry left the card menus for the bare-table menu"
+          "quote": "no way to look at it. `PlayerState.erased` keeps it, appended by `E.ev()` off",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -977,12 +955,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R241": "5c1f39f2fff4d9d515f369487b6ccf419e36b237819054e79d891871a45d60af",
-      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.public-zones.bin",
@@ -992,7 +968,7 @@
     "examples": [
       {
         "text": "A Hooba-Mon trigger on the stack targets a card six deep in a bin. That card is drawn on top of the bin for both players.",
-        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §7b the opponent sees the target too, which is the half the report is really about"
+        "test": "260-cost-ramp-and-bin-targets.test.ts::CR D6.6d the opponent sees the target too, which is the half the report is really about"
       }
     ],
     "see": [],
@@ -1000,28 +976,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R280",
-          "quote": "a bin card something on the stack is aiming at is surfaced onto the"
+          "quote": "a bin card something on the stack is aiming at is surfaced onto the",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R280",
-          "quote": "`viewFor` redacts no bin. What"
+          "quote": "`viewFor` redacts no bin. What",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "260-cost-ramp-and-bin-targets.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R280": "a6e58fb86327704be34d7c6ddc940789ae69815e6b6d7649aeb3a89e01b6ead1"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.public-zones.deck-elements",
@@ -1039,28 +1015,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R99",
-          "quote": "**Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot"
+          "quote": "**Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R99",
-          "quote": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+          "quote": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "low",
     "notes": "States the shipped default only; the ruling itself leaves it open. Discrepancy D-U24-2.",
-    "sourceHashes": {
-      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.beats",
@@ -1070,7 +1046,7 @@
     "examples": [
       {
         "text": "Combat kills several units at once and their death triggers are queued together. All of them appear on the stack strip in one beat.",
-        "test": "160-simultaneous-trigger-beats.test.ts::R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame"
+        "test": "160-simultaneous-trigger-beats.test.ts::CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame"
       }
     ],
     "see": [],
@@ -1078,16 +1054,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R189 (its pacing rule)",
-          "quote": "a batch that is simultaneous in the rules must LOOK simultaneous, and a sequence must look sequential"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R189",
-          "relation": "amended by R242 (simultaneous items share one arrival but depart in resolution order); its sub-step fixture replaced by R261"
+          "quote": "a batch that is simultaneous in the rules must LOOK simultaneous, and a sequence must look sequential",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1096,11 +1067,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R189": "b78d91ff66f343aa806b40323485f7a68870671663c9f25d335c1e5482355ee1"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.beats.never-gates",
@@ -1110,7 +1080,7 @@
     "examples": [
       {
         "text": "While the beats of a death sweep are still playing, the units are already gone from the board state.",
-        "test": "160-simultaneous-trigger-beats.test.ts::R189 a beat explains and never gates: the board under it is already final"
+        "test": "160-simultaneous-trigger-beats.test.ts::CR D6.7 a beat explains and never gates: the board under it is already final"
       }
     ],
     "see": [],
@@ -1118,28 +1088,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R189 (its pacing rule)",
-          "quote": "before R189 and is final after it — docs/11's contract is that a beat explains"
+          "quote": "before R189 and is final after it — docs/11's contract is that a beat explains",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R189 (its pacing rule)",
-          "quote": "nothing about when anything resolves. The board underneath a beat was final"
+          "quote": "nothing about when anything resolves. The board underneath a beat was final",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "160-simultaneous-trigger-beats.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R189": "b78d91ff66f343aa806b40323485f7a68870671663c9f25d335c1e5482355ee1"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.copies",
@@ -1149,7 +1119,7 @@
     "examples": [
       {
         "text": "Borrower of Forms copies Sporebloom Siren. It is drawn with Sporebloom Siren's art and a copy mark.",
-        "test": "198-copy-art.test.ts::R229 §1: a Borrower of Forms is DRAWN as the card it borrowed"
+        "test": "198-copy-art.test.ts::CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed"
       }
     ],
     "see": [
@@ -1159,28 +1129,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R229",
-          "quote": "a copy is DRAWN as the card it copied, and stays marked as a copy"
+          "quote": "a copy is DRAWN as the card it copied, and stays marked as a copy",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R229",
-          "quote": "the face; the markings that say *this is a copy* must not. A fix that satisfied"
+          "quote": "the face; the markings that say *this is a copy* must not. A fix that satisfied",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "198-copy-art.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R229": "fac4710b47c174bdf637bf8124a177496a0c99edf56e36a15edfde189cd2c6bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.copies.marked",
@@ -1190,7 +1160,7 @@
     "examples": [
       {
         "text": "Borrower of Forms (2/2) copies a 2/2. It still wears the copy mark.",
-        "test": "198-copy-art.test.ts::R229 §3b: a copy is marked even when the borrowed body matches its own"
+        "test": "198-copy-art.test.ts::CR D6.8: a copy is marked even when the borrowed body matches its own"
       }
     ],
     "see": [],
@@ -1198,28 +1168,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R229",
-          "quote": "emits a `⧉ <first word of the physical card>` chip exactly when"
+          "quote": "emits a `⧉ <first word of the physical card>` chip exactly when",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R229",
-          "quote": "what bins, and the markings below — keeps reading"
+          "quote": "what bins, and the markings below — keeps reading",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "198-copy-art.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R229": "fac4710b47c174bdf637bf8124a177496a0c99edf56e36a15edfde189cd2c6bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.copies.projection",
@@ -1229,7 +1199,7 @@
     "examples": [
       {
         "text": "Ancient One shares the text box of an adjacent ally but keeps its own portrait.",
-        "test": "198-copy-art.test.ts::R229 §3: an Ancient One keeps its OWN art — a projection is not an identity"
+        "test": "198-copy-art.test.ts::CR D6.8: an Ancient One keeps its OWN art — a projection is not an identity"
       }
     ],
     "see": [],
@@ -1237,24 +1207,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R229",
-          "quote": "its own face, so it keeps"
+          "quote": "its own face, so it keeps",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "198-copy-art.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R229": "fac4710b47c174bdf637bf8124a177496a0c99edf56e36a15edfde189cd2c6bd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.live-values",
@@ -1264,7 +1233,7 @@
     "examples": [
       {
         "text": "A Poison created with X = 5 reads \"Put 5 -1/-1 counters on target unit\".",
-        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
+        "test": "127-token-x-and-dormant.test.ts::CR D6.9/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
       }
     ],
     "see": [
@@ -1275,37 +1244,43 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R151",
-          "quote": "> *\"Tokens should have their X value in their text box modified to say the"
+          "quote": "> *\"Tokens should have their X value in their text box modified to say the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R279 (its §1, §3 and §4)",
-          "quote": "is a printed VARIABLE in exactly the sense X is, and `Entity.named` is"
+          "quote": "is a printed VARIABLE in exactly the sense X is, and `Entity.named` is",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R151",
-          "quote": "| `X` (bare) | 59 | **substituted** — this is the value |"
+          "quote": "| `X` (bare) | 59 | **substituted** — this is the value |",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R151",
-          "quote": "| `X/X` | 9 | never touched — **stat notation** |"
+          "quote": "| `X/X` | 9 | never touched — **stat notation** |",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R151",
-          "quote": "| `[x]` | 8 | never touched — a **cost pip**: variable *mana*, drawn as `data/icons/cost_x`. A digit substituted in there silently becomes a different cost icon. |"
+          "quote": "| `[x]` | 8 | never touched — a **cost pip**: variable *mana*, drawn as `data/icons/cost_x`. A digit substituted in there silently becomes a different cost icon. |",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R151",
-          "quote": "broken one. Reminder text **names** the variable; it does not use it."
+          "quote": "broken one. Reminder text **names** the variable; it does not use it.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R246",
-          "quote": "is PUBLIC while the card is on the stack, and is shown as a FORECAST.**"
+          "quote": "is PUBLIC while the card is on the stack, and is shown as a FORECAST.**",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "127-token-x-and-dormant.test.ts",
@@ -1313,13 +1288,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R151": "94372dbd3d49bf1f08db7965552dc760ca020d3295582c003d2a9467faac063a",
-      "R246": "2de7bd404c75cd50c054bb578e025c0d30754d9e419cdbe1ff7115f729b69276",
-      "R279": "f3e7f1067f0c60b2e9ea64529c504e4af6a7eccc2662ce3e3112f1ff43ff919f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.live-values.token-x",
@@ -1329,11 +1301,11 @@
     "examples": [
       {
         "text": null,
-        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
+        "test": "127-token-x-and-dormant.test.ts::CR D6.9/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
       },
       {
         "text": "A Robot reads its X off its counters, so its text changes when they change.",
-        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change"
+        "test": "127-token-x-and-dormant.test.ts::CR D6.9a/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change"
       }
     ],
     "see": [],
@@ -1341,28 +1313,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R151",
-          "quote": "> *\"Tokens should have their X value in their text box modified to say the"
+          "quote": "> *\"Tokens should have their X value in their text box modified to say the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R151",
-          "quote": "broken one. Reminder text **names** the variable; it does not use it."
+          "quote": "broken one. Reminder text **names** the variable; it does not use it.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "127-token-x-and-dormant.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R151": "94372dbd3d49bf1f08db7965552dc760ca020d3295582c003d2a9467faac063a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.live-values.named-card",
@@ -1380,20 +1352,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R279 (its §1, §3 and §4)",
-          "quote": "is a printed VARIABLE in exactly the sense X is, and `Entity.named` is"
+          "quote": "is a printed VARIABLE in exactly the sense X is, and `Entity.named` is",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R279 (its §1, §3 and §4)",
-          "quote": "- `Entity.named === ''` is a REAL value — \"name no card (release my last"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R279",
-          "relation": "its §2 copy premise replaced by R336; the substitution in §1 is unaffected"
+          "quote": "- `Entity.named === ''` is a REAL value — \"name no card (release my last",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1402,11 +1370,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R279": "f3e7f1067f0c60b2e9ea64529c504e4af6a7eccc2662ce3e3112f1ff43ff919f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.live-values.x-forecast",
@@ -1434,36 +1401,38 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R246",
-          "quote": "is PUBLIC while the card is on the stack, and is shown as a FORECAST.**"
+          "quote": "is PUBLIC while the card is on the stack, and is shown as a FORECAST.**",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R246",
-          "quote": "2. **A committed X silences the forecast.** If `stackItemX` has anything to"
+          "quote": "2. **A committed X silences the forecast.** If `stackItemX` has anything to",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R246",
-          "quote": "3. **A declared MODE narrows the forecast.** R57 fixes Retribution Thing's"
+          "quote": "3. **A declared MODE narrows the forecast.** R57 fixes Retribution Thing's",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R246",
-          "quote": "1. **The forecast is the card's own answer, not the client's.** The number comes"
+          "quote": "1. **The forecast is the card's own answer, not the client's.** The number comes",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "225-stack-readout.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R246": "2de7bd404c75cd50c054bb578e025c0d30754d9e419cdbe1ff7115f729b69276"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.live-values.burst",
@@ -1487,20 +1456,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R254 (its §1, §3 and §4)",
-          "quote": "**1. A burst group is a NAME, and the board counts by group.** The spell-token"
+          "quote": "**1. A burst group is a NAME, and the board counts by group.** The spell-token",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R309",
-          "quote": "Each spell token wears its X as a large die face (pips for 1 to 6, the"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R254",
-          "relation": "its §2 fixed entity-id cast order amended by R309 (the caster orders a burst)"
+          "quote": "Each spell token wears its X as a large die face (pips for 1 to 6, the",
+          "adopted": "2026-10-01",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1510,12 +1475,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R254": "97aae316ad5976701bf054a69f8a26d96c18c5989eab0ae30050a7d1d3f84636",
-      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.live-values.x-not-forecast",
@@ -1530,24 +1493,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R246",
-          "quote": "cards are left: their X is read from the board at resolution and only a card"
+          "quote": "cards are left: their X is read from the board at resolution and only a card",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "225-stack-readout.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "Added in revision round 1 after the verifier found x-forecast overbroad. Revision round 2: dropped the sentence about a list of such cards; that list (X_NOT_FORECAST_YET) lives in client/ui/test/225-stack-readout.test.ts and is a repository gate, not a game rule. The example is illustrative because 225 §1e asserts the inventory, not the on-stack display. See D-U24-8.",
-    "sourceHashes": {
-      "R246": "2de7bd404c75cd50c054bb578e025c0d30754d9e419cdbe1ff7115f729b69276"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.text-box",
@@ -1557,11 +1519,11 @@
     "examples": [
       {
         "text": "Whispering Mantid has no ability text and {Sneaky} on its type line. Its text box shows {Sneaky} and its reminder.",
-        "test": "262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text"
+        "test": "262-type-line-attributes.test.ts::CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text"
       },
       {
         "text": "Tidal Menace has no text and no attributes, and still says it has no rules text.",
-        "test": "262-type-line-attributes.test.ts::R282: a card with no attribute and no text still says nothing, and the guard does not reach it"
+        "test": "262-type-line-attributes.test.ts::CR D6.10: a card with no attribute and no text still says nothing, and the guard does not reach it"
       }
     ],
     "see": [
@@ -1571,28 +1533,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R282",
-          "quote": "A card whose printed text box is empty prints, as its text box, the markers its"
+          "quote": "A card whose printed text box is empty prints, as its text box, the markers its",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R282",
-          "quote": "A genuine vanilla still says nothing. Tidal Menace has no text and no"
+          "quote": "A genuine vanilla still says nothing. Tidal Menace has no text and no",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "262-type-line-attributes.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R282": "75937cf1adfaa54c08a624eb297a4b93fe7c606be13c115240236e53fecaef1d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.text-box.modal",
@@ -1602,11 +1564,11 @@
     "examples": [
       {
         "text": "Void Memory's \"[unit or spell]\" is drawn as a unit box and a spell box with \"or\" between them.",
-        "test": "122-cardtext-markup.test.ts::R284: a MODAL bracket draws two boxes with the \"or\" outside them"
+        "test": "122-cardtext-markup.test.ts::CR D6.10a: a MODAL bracket draws two boxes with the \"or\" outside them"
       },
       {
         "text": null,
-        "test": "122-cardtext-markup.test.ts::R284: a COST bracket still draws exactly one box"
+        "test": "122-cardtext-markup.test.ts::CR D6.10a: a COST bracket still draws exactly one box"
       }
     ],
     "see": [
@@ -1616,28 +1578,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R284",
-          "quote": "> *\"the OR should be outside the box and it should be **two** boxes, one around"
+          "quote": "> *\"the OR should be outside the box and it should be **two** boxes, one around",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R284",
-          "quote": "> each mode. And then, when it's put onto the stack, the non chosen mode"
+          "quote": "> each mode. And then, when it's put onto the stack, the non chosen mode",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "122-cardtext-markup.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.text-box.spent",
@@ -1647,11 +1609,11 @@
     "examples": [
       {
         "text": "A spent bounded graft ability shows [Switch1], as its card prints.",
-        "test": "228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints"
+        "test": "228-spent-marker.test.ts::CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card prints"
       },
       {
         "text": null,
-        "test": "228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card"
+        "test": "228-spent-marker.test.ts::CR D6.10b: a spent [once] ability wears [Once] — the same code, the other card"
       }
     ],
     "see": [],
@@ -1659,28 +1621,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R249",
-          "quote": "**A spent once-per-turn note wears the marker printed on the clause that budget"
+          "quote": "**A spent once-per-turn note wears the marker printed on the clause that budget",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R249",
-          "quote": "**The fallback is `[Once]`, and it is R135's answer kept exactly where its"
+          "quote": "**The fallback is `[Once]`, and it is R135's answer kept exactly where its",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "228-spent-marker.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R249": "c9c20fd77b0a6ad92d51578a3d7c023fb2969f671872f556e543c55d03173799"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.text-box.unstable",
@@ -1690,7 +1652,7 @@
     "examples": [
       {
         "text": "A modded unit shows {Unstable} on its attribute line, marked as coming from a mod.",
-        "test": "251-fizzle-label-and-mod-strips.test.ts::R271 §5b the acquired kind says WHICH way in, on the same line"
+        "test": "251-fizzle-label-and-mod-strips.test.ts::CR D6.10c the acquired kind says WHICH way in, on the same line"
       }
     ],
     "see": [],
@@ -1698,28 +1660,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R271",
-          "quote": "### (d) #143 — {Unstable} is an attribute line, not a footnote"
+          "quote": "### (d) #143 — {Unstable} is an attribute line, not a footnote",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R271",
-          "quote": "line, with `AttrOrigin` carrying the reason `unstableWhy` used to spell out in"
+          "quote": "line, with `AttrOrigin` carrying the reason `unstableWhy` used to spell out in",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "251-fizzle-label-and-mod-strips.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R271": "66e57ffcb3549eaabf58b842f7ae07cace8e017d935fe862da379896c5489770"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.text-box.prophecy",
@@ -1737,28 +1699,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R279 (its §1, §3 and §4)",
-          "quote": "1. `prophecyBanner()` reconstructs the printed line — `[0] Prophecy — One Turn"
+          "quote": "1. `prophecyBanner()` reconstructs the printed line — `[0] Prophecy — One Turn",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R279 (its §1, §3 and §4)",
-          "quote": "2. `Prophecy` joins the box's ATTRIBUTE row, on exactly R271's argument for"
+          "quote": "2. `Prophecy` joins the box's ATTRIBUTE row, on exactly R271's argument for",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "259-card-text-surface.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R279": "f3e7f1067f0c60b2e9ea64529c504e4af6a7eccc2662ce3e3112f1ff43ff919f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.text-box.transform",
@@ -1776,16 +1738,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R101 (its inspector row)",
-          "quote": "Re-read the report: the complaint is that you cannot see what you would become *before*"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R101",
-          "relation": "its rot clause corrected by R102; its token transform reversed by R157 — neither touches the inspector row"
+          "quote": "Re-read the report: the complaint is that you cannot see what you would become *before*",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1794,11 +1751,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R101": "b937ce970d76adefa8a8d4e7d281565beddb39e455ba1f6f91fddcbe49c6d2ee"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.reminders",
@@ -1808,11 +1764,11 @@
     "examples": [
       {
         "text": "{Piercing} reads \"Excess damage from piercing sources is dealt to the recipient's controller.\" — the sentence Protective Adaptations prints.",
-        "test": "177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim"
+        "test": "177-glossary-conformance.test.ts::CR D6.11: a row the pool prints a reminder for SHOWS that reminder, verbatim"
       },
       {
         "text": "The card-library sentence for {Rot} is used only because neither a card nor the Manual states one.",
-        "test": "245-printed-reminder-reach.test.ts::R267: the card library is consulted LAST, never over the pool or the manual"
+        "test": "245-printed-reminder-reach.test.ts::CR D6.11: the card library is consulted LAST, never over the pool or the manual"
       }
     ],
     "see": [],
@@ -1820,24 +1776,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R248",
-          "quote": "1. **What a player is shown is the game's own printed reminder, verbatim,"
+          "quote": "1. **What a player is shown is the game's own printed reminder, verbatim,",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R252 (its order of channels)",
-          "quote": "**PRINTED BEATS MANUAL BEATS AUTHORED.** A card in the player's hand is the most"
+          "quote": "**PRINTED BEATS MANUAL BEATS AUTHORED.** A card in the player's hand is the most",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R267",
-          "quote": "**PRINTED (pool) BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED**, extending"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R252",
-          "relation": "its §1 Ambush row and its §3/§4 claim that Glimpse and Unstable have no game statement corrected by R267"
+          "quote": "**PRINTED (pool) BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED**, extending",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1848,13 +1801,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R248": "8ae131f2708881ef34e2033d7372888e38a4e7899bbb54ccfc74dcea1517f9f2",
-      "R252": "bcc4dd67d3a437165c079f36dddac552080438af234eb29da5b47b6f3bd52259",
-      "R267": "0085a279847890923408281560bdfa48454d4917464c1315bfb6fcb1b8909e2f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.reminders.no-numbers",
@@ -1864,7 +1814,7 @@
     "examples": [
       {
         "text": null,
-        "test": "227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number"
+        "test": "227-reminder-text.test.ts::CR D6.11: rendering every card in the pool leaks no R-number"
       }
     ],
     "see": [],
@@ -1872,24 +1822,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R248",
-          "quote": "4. **`ruling` is machinery and never renders.** An R-number is meaningful only"
+          "quote": "4. **`ruling` is machinery and never renders.** An R-number is meaningful only",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "227-reminder-text.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R248": "8ae131f2708881ef34e2033d7372888e38a4e7899bbb54ccfc74dcea1517f9f2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.reminders.fuller-rule",
@@ -1899,7 +1848,7 @@
     "examples": [
       {
         "text": "{Piercing} shows the printed sentence, and the card browser also keeps the client's fuller rule beneath it.",
-        "test": "227-reminder-text.test.ts::R248: Piercing shows the sentence the card prints and keeps the one it does not"
+        "test": "227-reminder-text.test.ts::CR D6.11: Piercing shows the sentence the card prints and keeps the one it does not"
       }
     ],
     "see": [],
@@ -1907,29 +1856,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R248",
-          "quote": "reminder in the card browser. Nothing may shorten a row by removing content:"
+          "quote": "reminder in the card browser. Nothing may shorten a row by removing content:",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R252 (its order of channels)",
-          "quote": "**2. Nothing is shortened. The authored sentence MOVES, exactly as R248 moved"
+          "quote": "**2. Nothing is shortened. The authored sentence MOVES, exactly as R248 moved",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "227-reminder-text.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R248": "8ae131f2708881ef34e2033d7372888e38a4e7899bbb54ccfc74dcea1517f9f2",
-      "R252": "bcc4dd67d3a437165c079f36dddac552080438af234eb29da5b47b6f3bd52259"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.reminders.browser",
@@ -1947,16 +1895,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R257 (its union rule)",
-          "quote": "**A pinned card in the browser explains every glossary term the card NAMES,"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R257",
-          "relation": "its \"No skip\" bullet amended by R282 (a row gives way to a term the text box already states)"
+          "quote": "**A pinned card in the browser explains every glossary term the card NAMES,",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1965,11 +1908,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R257": "b24f09601448eb97cdca9cc90f46982f24e2dc12f83a75c99f07ea9dfa556ffe"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.stack-states",
@@ -1979,7 +1921,7 @@
     "examples": [
       {
         "text": "A spell resolves with no legal target. The strip labels it fizzled.",
-        "test": "251-fizzle-label-and-mod-strips.test.ts::R271 §1b THE REPORT: the strip says the spell fizzled, not that it resolved"
+        "test": "251-fizzle-label-and-mod-strips.test.ts::CR D6.12 THE REPORT: the strip says the spell fizzled, not that it resolved"
       }
     ],
     "see": [
@@ -1989,28 +1931,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R271",
-          "quote": "a fizzle is not a resolution, and a modded card is one picture"
+          "quote": "a fizzle is not a resolution, and a modded card is one picture",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R271",
-          "quote": "— `resolving` (R78), `answered` (R68), `fizzled`, `resolved`, `waiting` — and"
+          "quote": "— `resolving` (R78), `answered` (R68), `fizzled`, `resolved`, `waiting` — and",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "251-fizzle-label-and-mod-strips.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R271": "66e57ffcb3549eaabf58b842f7ae07cace8e017d935fe862da379896c5489770"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.stack-states.mods",
@@ -2020,7 +1962,7 @@
     "examples": [
       {
         "text": "A {Modular} spell with a mod is drawn on the stack with the mod peeking out beneath it, as it would be on a unit.",
-        "test": "251-fizzle-label-and-mod-strips.test.ts::R271 §4a a modded stack item composes the same picture as a modded unit"
+        "test": "251-fizzle-label-and-mod-strips.test.ts::CR D6.12a a modded stack item composes the same picture as a modded unit"
       }
     ],
     "see": [],
@@ -2028,24 +1970,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R271",
-          "quote": "composed a modded UNIT as a physical stack of cards and a modded STACK ITEM not"
+          "quote": "composed a modded UNIT as a physical stack of cards and a modded STACK ITEM not",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "251-fizzle-label-and-mod-strips.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R271": "66e57ffcb3549eaabf58b842f7ae07cace8e017d935fe862da379896c5489770"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.declarations",
@@ -2066,24 +2007,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R273",
-          "quote": "**A live view of a declaration is the declaration, minus commitment.** It may"
+          "quote": "**A live view of a declaration is the declaration, minus commitment.** It may",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "253-combat-orientation.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R273": "acd220ef6974f496df091205c81e96bfa6c56b81d3f0bcfe91bbc7ad41bfd0b5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.hand",
@@ -2093,7 +2033,7 @@
     "examples": [
       {
         "text": "During deployment a {Battle} spell can only be grafted. It is not drawn like a castable deployment card.",
-        "test": "155-hand-affordances.test.ts::R183 §2: a {Battle} spell in deployment is NOT drawn like a castable deployment card"
+        "test": "155-hand-affordances.test.ts::CR D6.14: a {Battle} spell in deployment is NOT drawn like a castable deployment card"
       }
     ],
     "see": [],
@@ -2101,24 +2041,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R183",
-          "quote": "**Casting is the unmarked case.** A plainly castable card in hand keeps the exact"
+          "quote": "**Casting is the unmarked case.** A plainly castable card in hand keeps the exact",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "155-hand-affordances.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R183": "276efc2123bde7a55a5ecd721114f972821aca65eff7bf61023dbefa1d8bbef6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.hand.cached",
@@ -2128,7 +2067,7 @@
     "examples": [
       {
         "text": "A card glimpsed this turn is drawn beside the hand and in the cache row.",
-        "test": "155-hand-affordances.test.ts::R183 §4: a playable cached card is drawn at the right of the hand AND left in the cache row"
+        "test": "155-hand-affordances.test.ts::CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row"
       }
     ],
     "see": [],
@@ -2136,28 +2075,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R183",
-          "quote": "**Owner, report #103 (room GYSR):** cached cards that CAN be played should appear"
+          "quote": "**Owner, report #103 (room GYSR):** cached cards that CAN be played should appear",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R183",
-          "quote": "⚠ **Explicitly ADDITIVE:** *\"They should also be in the cache area as they are"
+          "quote": "⚠ **Explicitly ADDITIVE:** *\"They should also be in the cache area as they are",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "155-hand-affordances.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R183": "276efc2123bde7a55a5ecd721114f972821aca65eff7bf61023dbefa1d8bbef6"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.hand.resource-menu",
@@ -2178,25 +2117,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R99",
-          "quote": "faithful to the game.\"* The client should DEFAULT the menu to `deckElements[mySeat]` and keep"
+          "quote": "faithful to the game.\"* The client should DEFAULT the menu to `deckElements[mySeat]` and keep",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R99",
-          "quote": "the other elements reachable — a \"show all seven\" affordance, not a hard filter."
+          "quote": "the other elements reachable — a \"show all seven\" affordance, not a hard filter.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R299",
-          "quote": "The hand menu lists `Recycle → Prismite` below the elements"
+          "quote": "The hand menu lists `Recycle → Prismite` below the elements",
+          "adopted": "2026-09-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R299",
-          "quote": "**only behind the expander**. The owner's layout (2026-09-19): the main menu is *\"all"
+          "quote": "**only behind the expander**. The owner's layout (2026-09-19): the main menu is *\"all",
+          "adopted": "2026-09-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "34-constructed.test.ts",
@@ -2204,12 +2146,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c",
-      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.menus",
@@ -2233,24 +2173,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R241",
-          "quote": "> ONLY when right clicking the field. Righclicking a card should only show"
+          "quote": "> ONLY when right clicking the field. Righclicking a card should only show",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R241",
-          "quote": "**An unreadable card is not a card, for menu purposes.** A back offers no card"
+          "quote": "**An unreadable card is not a card, for menu purposes.** A back offers no card",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R253",
-          "quote": "Granted as written. The log panel is gone from the side rail; the bare-table"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R65",
-          "relation": "narrowed by R241: view-erased and concede had been on every card menu"
+          "quote": "Granted as written. The log panel is gone from the side rail; the bare-table",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2260,12 +2197,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R241": "5c1f39f2fff4d9d515f369487b6ccf419e36b237819054e79d891871a45d60af",
-      "R253": "544952dd810b685783fa3f05a7595f5cd23bda5f5f8fa681f40b9240bc297c32"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.menus.log",
@@ -2275,7 +2210,7 @@
     "examples": [
       {
         "text": "A log longer than 80 lines is shown in full.",
-        "test": "252-viewport-and-log.test.ts::R272 §1a a log longer than the old 80-line window is shown WHOLE"
+        "test": "252-viewport-and-log.test.ts::CR D6.15a a log longer than the old 80-line window is shown WHOLE"
       }
     ],
     "see": [],
@@ -2283,17 +2218,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R253",
-          "quote": "Granted as written. The log panel is gone from the side rail; the bare-table"
+          "quote": "Granted as written. The log panel is gone from the side rail; the bare-table",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R272",
-          "quote": "**R272c — the game log modal shows the whole log.** The 80-line window in"
+          "quote": "**R272c — the game log modal shows the whole log.** The 80-line window in",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "232-log-modal.test.ts",
@@ -2301,12 +2237,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "R253 carries a STALE warning in the register (its CT-55 cost was answered by R266); the menu placement itself stands.",
-    "sourceHashes": {
-      "R253": "544952dd810b685783fa3f05a7595f5cd23bda5f5f8fa681f40b9240bc297c32",
-      "R272": "a6e4899b6a66b29349e57a954f6ff4abdee2f3a730d0173cc36105aa43730839"
-    }
+    "notes": "The owner ruling of 2026-08-29 (“moving a surface: what a panel…”) carries a STALE warning in the register (its CT-55 cost was answered by the owner ruling of 2026-08-30 (“nothing may exist only in the…”)); the menu placement itself stands.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.never-refuse",
@@ -2316,7 +2250,7 @@
     "examples": [
       {
         "text": "Fight aimed at two of the player's own units is still offered and, if confirmed, resolves exactly as it would have.",
-        "test": "278-ally-misclick.test.ts::R288 §4 the question changes no legality: same candidates, same outcome"
+        "test": "278-ally-misclick.test.ts::CR D2.8 the question changes no legality: same candidates, same outcome"
       }
     ],
     "see": [],
@@ -2324,29 +2258,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R74",
-          "quote": "A variable cost may WARN that X = 0 does nothing; it may not forbid it"
+          "quote": "A variable cost may WARN that X = 0 does nothing; it may not forbid it",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R288",
-          "quote": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
+          "quote": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "278-ally-misclick.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R288 is not in the U24 pack (classified to U23); read from client/docs/digital-rules.md because D7 is this unit's section.",
-    "sourceHashes": {
-      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940",
-      "R74": "457f2e9947acec05101d9c675b9e1d74a601c73f8fdd63f8fcb3999ebba39596"
-    }
+    "notes": "The owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) is not in the U24 pack (classified to U23); read from client/docs/digital-rules.md because D7 is this unit's section.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.never-refuse.x-zero",
@@ -2356,7 +2289,7 @@
     "examples": [
       {
         "text": "Necromantic Rebuke's option to stop at X = 0 is offered with a warning that it negates nothing.",
-        "test": "42-dark-b.test.ts::Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (R74)"
+        "test": "42-dark-b.test.ts::Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (CR D7.1a)"
       }
     ],
     "see": [
@@ -2366,28 +2299,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R74",
-          "quote": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option"
+          "quote": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R74",
-          "quote": "Four cards share the shape and all four now declare it: **Necromantic Rebuke**"
+          "quote": "Four cards share the shape and all four now declare it: **Necromantic Rebuke**",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "42-dark-b.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R74": "457f2e9947acec05101d9c675b9e1d74a601c73f8fdd63f8fcb3999ebba39596"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.never-refuse.ally",
@@ -2397,11 +2330,11 @@
     "examples": [
       {
         "text": "Fight's first target is the player's ally; the player then picks another of their own units. The client asks whether they meant to target an ally.",
-        "test": "278-ally-misclick.test.ts::R288 §1 Fight aimed at a second unit of your own asks whether you meant it"
+        "test": "278-ally-misclick.test.ts::CR D2.8 Fight aimed at a second unit of your own asks whether you meant it"
       },
       {
         "text": null,
-        "test": "278-ally-misclick.test.ts::R288 §5 \"no\" sends nothing and leaves the same pick open"
+        "test": "278-ally-misclick.test.ts::CR D7.1b \"no\" sends nothing and leaves the same pick open"
       }
     ],
     "see": [],
@@ -2409,28 +2342,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R288",
-          "quote": "> \"Anything that says target ally AND target unit on the same card … if a card"
+          "quote": "> \"Anything that says target ally AND target unit on the same card … if a card",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R288",
-          "quote": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the"
+          "quote": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "278-ally-misclick.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "R288 read from client/docs/digital-rules.md (outside the pack).",
-    "sourceHashes": {
-      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940"
-    }
+    "notes": "The owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) read from client/docs/digital-rules.md (outside the pack).",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.never-refuse.regroup",
@@ -2448,28 +2381,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R266",
-          "quote": "You're about to move to Regroup which will remove your Spell Tokens. Are you sure?"
+          "quote": "You're about to move to Regroup which will remove your Spell Tokens. Are you sure?",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R266",
-          "quote": "one of the four armed-confirm bars, it carries Go back / Pass anyway, and it fires on the pass that would reach Regroup and on no other window of the same battle."
+          "quote": "one of the four armed-confirm bars, it carries Go back / Pass anyway, and it fires on the pass that would reach Regroup and on no other window of the same battle.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "165-token-loss-warning.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "The confirm is R194's (classified to U23); R266 states its wording and scope. The second quote is long but one line.",
-    "sourceHashes": {
-      "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
-    }
+    "notes": "The confirm is the owner ruling of 2026-08-26 (“a warning is not worth a…”)’s (classified to U23); the owner ruling of 2026-08-30 (“nothing may exist only in the…”) states its wording and scope. The second quote is long but one line.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.dials",
@@ -2487,17 +2420,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R139",
-          "quote": "**\"All\" SETS the count and does NOT submit**, and that is the whole point: on a"
+          "quote": "**\"All\" SETS the count and does NOT submit**, and that is the whole point: on a",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R197 (its §1)",
-          "quote": "the engine. As with both other steppers, moving the dial never submits; only"
+          "quote": "the engine. As with both other steppers, moving the dial never submits; only",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "124-counter-stepper.test.ts",
@@ -2505,12 +2439,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R139": "0f09cd51d3596c47bc673ad9c5a8415f3126d5c6d144cbb874a81d15341a0b29",
-      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.dials.number",
@@ -2520,7 +2452,7 @@
     "examples": [
       {
         "text": "Prediction Prophet's prediction can be dialled or typed in as any number in range, and that number itself is sent.",
-        "test": "168-three-card-divergences.test.ts::R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index"
+        "test": "168-three-card-divergences.test.ts::CR D7.2a Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index"
       }
     ],
     "see": [],
@@ -2528,16 +2460,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R197 (its §1)",
-          "quote": "`ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R90",
-          "relation": "its menu cap of life + 5 replaced by R197's uncapped number question"
+          "quote": "`ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2546,11 +2473,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.dials.ramp",
@@ -2560,11 +2486,11 @@
     "examples": [
       {
         "text": "Paying X life for Flesh Tithe, the player dials to 5 and back to 3; confirming pays 3.",
-        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §4 one confirm walks the ramp to the dialled X and then stops"
+        "test": "260-cost-ramp-and-bin-targets.test.ts::CR D7.2b one confirm walks the ramp to the dialled X and then stops"
       },
       {
         "text": "With 1 life already paid, the dial does not go below 1.",
-        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §2b the dial goes DOWN as well as up, and never below what is already paid"
+        "test": "260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the dial goes DOWN as well as up, and never below what is already paid"
       }
     ],
     "see": [],
@@ -2572,28 +2498,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R280",
-          "quote": "Down is free because **nothing is spent until Confirm** — that is the \"and had"
+          "quote": "Down is free because **nothing is spent until Confirm** — that is the \"and had",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R280",
-          "quote": "paid the dial cannot show 0, because dialling there would promise a refund the"
+          "quote": "paid the dial cannot show 0, because dialling there would promise a refund the",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "260-cost-ramp-and-bin-targets.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R280": "a6e58fb86327704be34d7c6ddc940789ae69815e6b6d7649aeb3a89e01b6ead1"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.dials.commit",
@@ -2603,7 +2529,7 @@
     "examples": [
       {
         "text": "\"That's enough — X = 3\" is a filled button; \"decline\" stays a quiet one.",
-        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet"
+        "test": "260-cost-ramp-and-bin-targets.test.ts::CR D7.2c that is enough is a full button, and the plain declines stay quiet"
       }
     ],
     "see": [],
@@ -2611,24 +2537,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R280",
-          "quote": "**Ruled: `doneCost` is not a decline.** It is the affirmative end of a ramp —"
+          "quote": "**Ruled: `doneCost` is not a decline.** It is the affirmative end of a ramp —",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "260-cost-ramp-and-bin-targets.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R280": "a6e58fb86327704be34d7c6ddc940789ae69815e6b6d7649aeb3a89e01b6ead1"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.dials.counters",
@@ -2638,7 +2563,7 @@
     "examples": [
       {
         "text": "Four counters are spread over two allies, two each. One pick can take at most two.",
-        "test": "124-counter-stepper.test.ts::R139: the pick max is the biggest SINGLE stack, not the whole ally pool"
+        "test": "124-counter-stepper.test.ts::CR D7.2: the pick max is the biggest SINGLE stack, not the whole ally pool"
       }
     ],
     "see": [
@@ -2648,28 +2573,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R139",
-          "quote": "- the prompt says it — \"— click a unit to take counters off it\" — in the"
+          "quote": "- the prompt says it — \"— click a unit to take counters off it\" — in the",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R139",
-          "quote": "The obvious answer — \"the max is `counterPool`\" — **is wrong for `from:"
+          "quote": "The obvious answer — \"the max is `counterPool`\" — **is wrong for `from:",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "124-counter-stepper.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R139": "0f09cd51d3596c47bc673ad9c5a8415f3126d5c6d144cbb874a81d15341a0b29"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.dials.damage-split",
@@ -2679,7 +2604,7 @@
     "examples": [
       {
         "text": "A strike of 4 into a column of two: the player chooses how much the front unit takes, and the back unit gets the rest.",
-        "test": "126-assign-split.test.ts::R149 (1): the total is forced — under and over allocations are refused, with the remainder said out loud"
+        "test": "126-assign-split.test.ts::CR D7.2e (1): the total is forced — under and over allocations are refused, with the remainder said out loud"
       }
     ],
     "see": [
@@ -2689,17 +2614,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R149",
-          "quote": "1. **The sum is already forced by construction, and never by the client.** An"
+          "quote": "1. **The sum is already forced by construction, and never by the client.** An",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R149",
-          "quote": "time**, front-to-back, and each question is a single scalar — *\"how much of"
+          "quote": "time**, front-to-back, and each question is a single scalar — *\"how much of",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "126-assign-split.test.ts",
@@ -2707,11 +2633,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R149": "0520699effdbb16fa2e10c50e733b156bd77b0c58c230c76a688dcf08ed8ba91"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.say-so",
@@ -2733,25 +2658,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R187",
-          "quote": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never"
+          "quote": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R209",
-          "quote": "Do not make the loop run. The region genuinely holds nobody, the seats"
+          "quote": "Do not make the loop run. The region genuinely holds nobody, the seats",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R209",
-          "quote": "> **A printed clause that promises a per-seat outcome and then resolves over an"
+          "quote": "> **A printed clause that promises a per-seat outcome and then resolves over an",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R209",
-          "quote": "> empty collection — of seats, or of picks — must emit a line saying so, FOR"
+          "quote": "> empty collection — of seats, or of picks — must emit a line saying so, FOR",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "158-silent-region-branches.test.ts",
@@ -2759,12 +2687,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Revision round 2: narrowed from \"an effect, or one clause of it\" to R187 (the whole effect) and R209's stated class. Whether any other clause that does nothing must be announced is open; see D-U24-10.",
-    "sourceHashes": {
-      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed",
-      "R209": "3222c165ef02f8edd512709d5eb111f00f6979febd55e281cd8f71d1f1d1fe05"
-    }
+    "notes": "Revision round 2: narrowed from \"an effect, or one clause of it\" to the owner ruling of 2026-08-26 (“\"each opponent\" in a region that…”) (the whole effect) and the owner ruling of 2026-08-26 (“a clause that delivers nothing must…”)’s stated class. Whether any other clause that does nothing must be announced is open; see D-U24-10.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.say-so.no-target",
@@ -2774,7 +2700,7 @@
     "examples": [
       {
         "text": "Luminous Arc reaches resolution with no target. It fizzles and the log says so.",
-        "test": "196-empty-target-fizzle.test.ts::R227 spell:Luminous Arc: no target → fizzles and logs (CT-89 #1)"
+        "test": "196-empty-target-fizzle.test.ts::CR D7.3a spell:Luminous Arc: no target → fizzles and logs (CT-89 #1)"
       }
     ],
     "see": [
@@ -2784,29 +2710,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R223",
-          "quote": "> **\"Fizzle, and say so in the log.\"**"
+          "quote": "> **\"Fizzle, and say so in the log.\"**",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R227",
-          "quote": "  g.ev('info', `${ctx.sourceName}: it has no legal target — nothing happens.`);"
+          "quote": "  g.ev('info', `${ctx.sourceName}: it has no legal target — nothing happens.`);",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "196-empty-target-fizzle.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R223": "7f6daf7c0e5fefd7a4da465bf40c52d823738ea62a8da29ff5ac9b78d8e2323a",
-      "R227": "6ee05eef04b1367e192f3d56c6967fb54ebb28ea28d3907f7753abaa194aec9e"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.say-so.no-opponent",
@@ -2826,24 +2751,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R187",
-          "quote": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never"
+          "quote": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "158-silent-region-branches.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.say-so.per-clause",
@@ -2861,24 +2785,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R209",
-          "quote": "> THAT CLAUSE, even when another clause of the same card is speaking.**"
+          "quote": "> THAT CLAUSE, even when another clause of the same card is speaking.**",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "179-empty-collection-branches.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R209": "3222c165ef02f8edd512709d5eb111f00f6979febd55e281cd8f71d1f1d1fe05"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.say-so.no-damage",
@@ -2896,24 +2819,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R109",
-          "quote": "`dealEffectDamageAll` handed an empty hit list used to return in silence. Every *\"I deal N"
+          "quote": "`dealEffectDamageAll` handed an empty hit list used to return in silence. Every *\"I deal N",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "93-engine-defects.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "The test file 93-engine-defects is not cited by R109 itself; found by title search.",
-    "sourceHashes": {
-      "R109": "fbe52ae2fdff138031c7991bd78b168bd40e1f7ebf60fcb143382d269305c029"
-    }
+    "notes": "The test file 93-engine-defects is not cited by the owner ruling of 2026-08-23 (“an empty damage batch says so”) itself; found by title search.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.not-only-log",
@@ -2923,7 +2845,7 @@
     "examples": [
       {
         "text": "Spell tokens erased after a declined attack are not announced only in the log: the player who lost them is shown a notice where the prompts appear.",
-        "test": "244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area"
+        "test": "244-log-is-not-the-only-surface.test.ts::[CR D7.4a] the loss is put in front of the player who lost it, in the promptbar area"
       }
     ],
     "see": [
@@ -2933,28 +2855,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R266",
-          "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
+          "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R266",
-          "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
+          "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "244-log-is-not-the-only-surface.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Revision round 2: stated as the standard R266 sets, not as a description of the client. R266 itself records announcements of a loss that are still log-only; see F-U24-4 and D-U24-9. Stage D dropped this rule's engine-differs mark for F-U24-4: that defect is closed (the cost-toast tier gives every tier-1 announcement a toast, so none is log-only); what stands is the ruling's stale count, filed under CT-236. Sources unchanged.",
-    "sourceHashes": {
-      "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
-    }
+    "notes": "Revision round 2: stated as the standard the owner ruling of 2026-08-30 (“nothing may exist only in the…”) sets, not as a description of the client. The owner ruling of 2026-08-30 (“nothing may exist only in the…”) itself records announcements of a loss that are still log-only; see F-U24-4 and D-U24-9. Stage D dropped this rule's engine-differs mark for F-U24-4: that defect is closed (the cost-toast tier gives every tier-1 announcement a toast, so none is log-only); what stands is the ruling's stale count, filed under CT-236. Sources unchanged.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.not-only-log.token-loss",
@@ -2964,11 +2886,11 @@
     "examples": [
       {
         "text": "The round-2 attacker declines; the defender's unused spell tokens are erased, and the defender sees a notice saying so.",
-        "test": "244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area"
+        "test": "244-log-is-not-the-only-surface.test.ts::[CR D7.4a] the loss is put in front of the player who lost it, in the promptbar area"
       },
       {
         "text": null,
-        "test": "244-log-is-not-the-only-surface.test.ts::[R266] a net client is not shown the opponent loss, and the notice goes stale at the next battle"
+        "test": "244-log-is-not-the-only-surface.test.ts::[CR D7.4a] a net client is not shown the opponent loss, and the notice goes stale at the next battle"
       }
     ],
     "see": [],
@@ -2976,17 +2898,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R266",
-          "quote": "A **notice**, not a warning — the tokens are already gone and there is no choice attached, so nothing about R194's \"announce rather than prevent\" call changes."
+          "quote": "A **notice**, not a warning — the tokens are already gone and there is no choice attached, so nothing about R194's \"announce rather than prevent\" call changes.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R266",
-          "quote": "- **Net clients see only their own loss** — \"in front of the player who lost the tokens\" — while hotseat, being one screen for both, shows whichever seat lost."
+          "quote": "- **Net clients see only their own loss** — \"in front of the player who lost the tokens\" — while hotseat, being one screen for both, shows whichever seat lost.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "244-log-is-not-the-only-surface.test.ts",
@@ -2994,11 +2917,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "Hotseat no longer exists (memory: hotseat removed 2026-09-23), so the hotseat clause is left out.",
-    "sourceHashes": {
-      "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.not-only-log.toast",
@@ -3008,11 +2930,11 @@
     "examples": [
       {
         "text": "A spell resolves with nothing to aim at. A toast says so on the screen.",
-        "test": "256-cost-toasts.test.ts::[R276] a spell that resolves with nothing to aim at produces a toast, end to end"
+        "test": "256-cost-toasts.test.ts::[CR D7.4] a spell that resolves with nothing to aim at produces a toast, end to end"
       },
       {
         "text": null,
-        "test": "256-cost-toasts.test.ts::[R276] an ordinary resolution produces no toast at all"
+        "test": "256-cost-toasts.test.ts::[CR D7.4] an ordinary resolution produces no toast at all"
       }
     ],
     "see": [],
@@ -3020,32 +2942,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R276",
-          "quote": "- **Q5, the wording: CHANGED.** The shared label is **`⚠ this did nothing`**, not"
+          "quote": "- **Q5, the wording: CHANGED.** The shared label is **`⚠ this did nothing`**, not",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R276",
-          "quote": "client was allowed to be told, and it is a public log line"
+          "quote": "client was allowed to be told, and it is a public log line",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R276",
-          "quote": "- **Q2, card-text announcements: IN.** The five pool sites are toasted, as built."
+          "quote": "- **Q2, card-text announcements: IN.** The five pool sites are toasted, as built.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "256-cost-toasts.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R276": "c52eb303219ef54bb042d1d798898c084e0b674f4b606899259fb4171d0b5098"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.not-only-log.coalesce",
@@ -3055,7 +2978,7 @@
     "examples": [
       {
         "text": "Three identical \"this did nothing\" sentences in one batch show as one row marked ×3.",
-        "test": "256-cost-toasts.test.ts::[R276] identical sentences in one batch coalesce into one row with a count"
+        "test": "256-cost-toasts.test.ts::[CR D7.4] identical sentences in one batch coalesce into one row with a count"
       }
     ],
     "see": [],
@@ -3063,28 +2986,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R276",
-          "quote": "- **Several in one resolution**: identical sentences coalesce into one row with"
+          "quote": "- **Several in one resolution**: identical sentences coalesce into one row with",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R276",
-          "quote": "  a `×N`; distinct ones stack, at most 4 drawn, the rest counted in a"
+          "quote": "  a `×N`; distinct ones stack, at most 4 drawn, the rest counted in a",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "256-cost-toasts.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R276": "c52eb303219ef54bb042d1d798898c084e0b674f4b606899259fb4171d0b5098"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.learn-to-play",
@@ -3102,24 +3025,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R297",
-          "quote": "programmatic opponent in one continuous game, with lesson popups timed to the moment"
+          "quote": "programmatic opponent in one continuous game, with lesson popups timed to the moment",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "305-lesson-flow.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.learn-to-play.deal",
@@ -3139,21 +3061,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R297",
-          "quote": "- the opening hand and the draw per turn, **per seat**, turn 1 included, with no bottom step;"
+          "quote": "- the opening hand and the draw per turn, **per seat**, turn 1 included, with no bottom step;",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R297",
-          "quote": "first.\"* The lesson deal already had the knob — the learner's `openingHand` is now 0, so"
+          "quote": "first.\"* The lesson deal already had the knob — the learner's `openingHand` is now 0, so",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R297",
-          "quote": "turn 1's draw of 2 is the whole starting hand, and the stacked deck is laid out two cards"
+          "quote": "turn 1's draw of 2 is the whole starting hand, and the stacked deck is laid out two cards",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "303-lesson-deal.test.ts",
@@ -3161,11 +3085,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.learn-to-play.bot-card",
@@ -3183,28 +3106,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R297",
-          "quote": "The bot's only card: *\"Create an X/X unit.\"* — an X-cost deploy spell with `xMin` 1, no"
+          "quote": "The bot's only card: *\"Create an X/X unit.\"* — an X-cost deploy spell with `xMin` 1, no",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R297",
-          "quote": "element and no affinity cost, so Shards alone pay for it. It is a synthetic registered"
+          "quote": "element and no affinity cost, so Shards alone pay for it. It is a synthetic registered",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "303-lesson-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.learn-to-play.bot-play",
@@ -3226,21 +3149,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R297",
-          "quote": "turn it makes \\[a\\] Shard resource and then makes the largest unit it can … it never"
+          "quote": "turn it makes \\[a\\] Shard resource and then makes the largest unit it can … it never",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R297",
-          "quote": "1, no softening (2026-09-17). So `firstShardTurn` is 1, the tutorial is harder, and Metal"
+          "quote": "1, no softening (2026-09-17). So `firstShardTurn` is 1, the tutorial is harder, and Metal",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R297",
-          "quote": "draw-2-a-turn game (no constructed draw-4/bottom-2, no draft step), and the bot's hand"
+          "quote": "draw-2-a-turn game (no constructed draw-4/bottom-2, no draft step), and the bot's hand",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "304-tutorial-bot.test.ts",
@@ -3248,11 +3173,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel",
@@ -3272,28 +3196,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card."
+          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card.",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "Its guards are server/e2e/test-single-card.ts, which has no indexed titles; no executed example is bound here.",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel.draw",
@@ -3313,32 +3237,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it"
+          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "does there — the turn's 2 plus 1), and the draw-4/bottom-2 never runs. The opening hand is"
+          "quote": "does there — the turn's 2 plus 1), and the draw-4/bottom-2 never runs. The opening hand is",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`"
+          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel.blind",
@@ -3356,28 +3281,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "The owner's call on picking: *\"Blind but NO reveal is all that's needed. The reveal"
+          "quote": "The owner's call on picking: *\"Blind but NO reveal is all that's needed. The reveal",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "comes in game.\"* The waiting room tells each seat only whether the opponent's card is in"
+          "quote": "comes in game.\"* The waiting room tells each seat only whether the opponent's card is in",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel.no-units",
@@ -3395,32 +3320,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "does not deal: it keeps the pair as `Room.singleDraw`, clears both cards, and leaves the"
+          "quote": "does not deal: it keeps the pair as `Room.singleDraw`, clears both cards, and leaves the",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "room waiting. The waiting payload then names both cards to both seats (`drawn: { mine,"
+          "quote": "room waiting. The waiting payload then names both cards to both seats (`drawn: { mine,",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "new pair includes a unit-maker. Nothing is recorded: no game was played, so there is no"
+          "quote": "new pair includes a unit-maker. Nothing is recorded: no game was played, so there is no",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel.makes-units",
@@ -3438,28 +3364,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose"
+          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "DECLARED `creates` (R69, `createsOf`) includes a unit token — never read off the printed"
+          "quote": "DECLARED `creates` (R69, `createsOf`) includes a unit token — never read off the printed",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "Names an engine function only because R298 names it.",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "notes": "Names an engine function only because the owner ruling of 2026-09-18 (“Single Card Duel: thirty copies of…”) names it.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel.records",
@@ -3477,28 +3403,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "length. It feeds `server/cardladder.ts` instead, served at `/api/cardladder` and shown as"
+          "quote": "length. It feeds `server/cardladder.ts` instead, served at `/api/cardladder` and shown as",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "(BL-43), a duel is left out of every player fold — `foldSeat` (so no profile total,"
+          "quote": "(BL-43), a duel is left out of every player fold — `foldSeat` (so no profile total,",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.single-card-duel.ladder",
@@ -3518,32 +3444,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R298",
-          "quote": "five games, the same total order), keyed by card. The owner chose **any finished game**:"
+          "quote": "five games, the same total order), keyed by card. The owner chose **any finished game**:",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "`mirrors` and nothing else), and an R290 **walkover** (conceded on turn 1). An early"
+          "quote": "`mirrors` and nothing else), and an R290 **walkover** (conceded on turn 1). An early",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R298",
-          "quote": "concession (turn 2) counts at R290's reduced weight. A card is listed as ranked once it"
+          "quote": "concession (turn 2) counts at R290's reduced weight. A card is listed as ranked once it",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules",
@@ -3563,28 +3490,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "**Ruling.** A live draft may be created with custom rules. They change the"
+          "quote": "**Ruling.** A live draft may be created with custom rules. They change the",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "DEAL, never how a card works:"
+          "quote": "DEAL, never how a card works:",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules.knobs",
@@ -3606,40 +3533,43 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that"
+          "quote": "- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "- **Elements** (2–7, standard 3). The pool is every deck card whose factions"
+          "quote": "- **Elements** (2–7, standard 3). The pool is every deck card whose factions",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "  per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,"
+          "quote": "  per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "- **Banned cards** by name, and an **advanced card filter** in the card"
+          "quote": "- **Banned cards** by name, and an **advanced card filter** in the card",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules.simple",
@@ -3659,24 +3589,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "- **Simple cards only**: only cards with the silver complexity symbol (the"
+          "quote": "- **Simple cards only**: only cards with the silver complexity symbol (the",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "297-custom-rules-resolve.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules.floor",
@@ -3698,21 +3627,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "The pack refresh stays every N+1 turns. **A pool must hold at least"
+          "quote": "The pack refresh stays every N+1 turns. **A pool must hold at least",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,"
+          "quote": "2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "that size must pass. Rules below the floor are refused before the room exists."
+          "quote": "that size must pass. Rules below the floor are refused before the room exists.",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts",
@@ -3720,11 +3651,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules.standard",
@@ -3742,24 +3672,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "custom game: no deal and an untouched deal are the same game, the same shuffle."
+          "quote": "custom game: no deal and an untouched deal are the same game, the same shuffle.",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "296-custom-draft-deal.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules.not-counted",
@@ -3777,32 +3706,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "**Not counted.** A custom game is kept in the match history, tagged, and counts"
+          "quote": "**Not counted.** A custom game is kept in the match history, tagged, and counts",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "toward no profile total, achievement, deck record, rating or game-length"
+          "quote": "toward no profile total, achievement, deck record, rating or game-length",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "average. The matchmaking queue never makes one."
+          "quote": "average. The matchmaking queue never makes one.",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-custom-rules-ui.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.custom-rules.beginner",
@@ -3820,28 +3750,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R292",
-          "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+          "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         },
         {
-          "ref": "R292",
-          "quote": "holds; they are the reporter's suggestion. The Beginner preset (two elements,"
+          "quote": "holds; they are the reporter's suggestion. The Beginner preset (two elements,",
+          "adopted": "2026-09-14",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-custom-rules-ui.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.scenarios",
@@ -3859,17 +3789,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R216 (its scenario-room half)",
-          "quote": "> **A scenario room is an ordinary room with a different deal.** Its file holds"
+          "quote": "> **A scenario room is an ordinary room with a different deal.** Its file holds",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R216 (its scenario-room half)",
-          "quote": "- **A scenario room is a fixture, not a game.** It is skipped by the stats fold"
+          "quote": "- **A scenario room is a fixture, not a game.** It is skipped by the stats fold",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "186-scenario-library.test.ts",
@@ -3877,11 +3808,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
-    "notes": "R216 is game (mixed): its card ruling (donated \"you\") belongs to U17; only the tester architecture is drafted here.",
-    "sourceHashes": {
-      "R216": "2ee0f4a54ffe9e00c7c89393897f88f6c84faaf5aca812758970bdf0408ca214"
-    }
+    "notes": "The owner ruling of 2026-08-26 (“a scenario is a DEAL, not…”) is game (mixed): its card ruling (donated \"you\") belongs to U17; only the tester architecture is drafted here.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.scenarios.gated",
@@ -3899,13 +3829,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R216 (its scenario-room half)",
-          "quote": "> **With no `ALGO_TESTER_TOKEN` in the environment, the scenario routes do not"
+          "quote": "> **With no `ALGO_TESTER_TOKEN` in the environment, the scenario routes do not",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "185-scenario-determinism.test.ts",
@@ -3913,11 +3843,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R216": "2ee0f4a54ffe9e00c7c89393897f88f6c84faaf5aca812758970bdf0408ca214"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.concession",
@@ -3927,7 +3856,7 @@
     "examples": [
       {
         "text": "A player concedes on turn 1. The result says it is a walkover, names the conceder and the turn, and says it was not counted.",
-        "test": "291-concession-weight.test.ts::R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted"
+        "test": "291-concession-weight.test.ts::CR D8.5 a walkover says so, names the conceder and the turn, and says it was not counted"
       }
     ],
     "see": [
@@ -3937,28 +3866,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R290",
-          "quote": "is a WEIGHT beside the result, and the weight is decided by one number: the"
+          "quote": "is a WEIGHT beside the result, and the weight is decided by one number: the",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "R65 made concede a real `Action` that \"reaches the result record exactly as a"
+          "quote": "R65 made concede a real `Action` that \"reaches the result record exactly as a",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "291-concession-weight.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.concession.walkover",
@@ -3968,7 +3897,7 @@
     "examples": [
       {
         "text": null,
-        "test": "291-concession-weight.test.ts::R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted"
+        "test": "291-concession-weight.test.ts::CR D8.5 a walkover says so, names the conceder and the turn, and says it was not counted"
       }
     ],
     "see": [],
@@ -3976,21 +3905,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R290",
-          "quote": "| **walkover** | turn ≤ 1 | `WALKOVER_MAX_TURN = 1`, `WALKOVER_PENALTY = 5` |"
+          "quote": "| **walkover** | turn ≤ 1 | `WALKOVER_MAX_TURN = 1`, `WALKOVER_PENALTY = 5` |",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "- **A walkover is not a game.** It counts toward NOTHING for EITHER player:"
+          "quote": "- **A walkover is not a game.** It counts toward NOTHING for EITHER player:",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "  `WALKOVER_PENALTY` flat; the winner gains nothing; and it does not count as"
+          "quote": "  `WALKOVER_PENALTY` flat; the winner gains nothing; and it does not count as",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "291-concession-weight.test.ts",
@@ -3998,11 +3929,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.concession.early",
@@ -4012,7 +3942,7 @@
     "examples": [
       {
         "text": "A player concedes on turn 2. The post-game screen says half weight, and that it still counts.",
-        "test": "291-concession-weight.test.ts::R290 §1 an early concession says half weight, and that it still counts"
+        "test": "291-concession-weight.test.ts::CR D8.5 an early concession says half weight, and that it still counts"
       }
     ],
     "see": [],
@@ -4020,21 +3950,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R290",
-          "quote": "| **early** | turn 2 | `EARLY_MAX_TURN = 2`, `EARLY_K_SCALE = 0.5` |"
+          "quote": "| **early** | turn 2 | `EARLY_MAX_TURN = 2`, `EARLY_K_SCALE = 0.5` |",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "- **An early concession is a game for the record.** Win, loss, streak,"
+          "quote": "- **An early concession is a game for the record.** Win, loss, streak,",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "  fast-game measures — the feats a game that barely happened would hand out"
+          "quote": "  fast-game measures — the feats a game that barely happened would hand out",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "291-concession-weight.test.ts",
@@ -4042,11 +3974,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.concession.normal",
@@ -4056,7 +3987,7 @@
     "examples": [
       {
         "text": "A player concedes on turn 5: the result is an ordinary loss, with no note attached.",
-        "test": "291-concession-weight.test.ts::R290 §1 ⭐ a normal concession (turn 3+) and a game with no concession say NOTHING"
+        "test": "291-concession-weight.test.ts::CR D8.5 ⭐ a normal concession (turn 3+) and a game with no concession say NOTHING"
       }
     ],
     "see": [],
@@ -4064,17 +3995,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R290",
-          "quote": "| **normal** | turn ≥ 3, or no concession | — |"
+          "quote": "| **normal** | turn ≥ 3, or no concession | — |",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "- **Normal is normal.** A turn-3+ concession is byte-for-byte a lethal blow in"
+          "quote": "- **Normal is normal.** A turn-3+ concession is byte-for-byte a lethal blow in",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "291-concession-weight.test.ts",
@@ -4082,11 +4014,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.modes.concession.rated-only",
@@ -4104,28 +4035,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R290",
-          "quote": "Only a RATED game (rating.ts `isRated`) moves a rating at all; the tiers sit on"
+          "quote": "Only a RATED game (rating.ts `isRated`) moves a rating at all; the tiers sit on",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         },
         {
-          "ref": "R290",
-          "quote": "top of that gate, never beside it. An unrated walkover moves nobody."
+          "quote": "top of that gate, never beside it. An unrated walkover moves nobody.",
+          "adopted": "2026-09-05",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "medium",
     "notes": "Its guard is server/e2e/test-concession.ts, which has no indexed titles.",
-    "sourceHashes": {
-      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.beats.journeys",
@@ -4135,15 +4066,15 @@
     "examples": [
       {
         "text": "Four units die in one update and their four triggers go to the stack together. They all fly to the stack at once.",
-        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §6: flights that made the same journey in one render share a beat"
+        "test": "176-nested-affordance-and-serialiser.test.ts::CR D6.7b: flights that made the same journey in one render share a beat"
       },
       {
         "text": "A card going from hand to the stack, one going from the stack to the field and one going to the bin are three moves, one after another.",
-        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §6: a sequence still looks sequential — different journeys are spaced"
+        "test": "176-nested-affordance-and-serialiser.test.ts::CR D6.7b: a sequence still looks sequential — different journeys are spaced"
       },
       {
         "text": "Two cards erased from the field, with nowhere named to go, are not grouped.",
-        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §6: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step"
+        "test": "176-nested-affordance-and-serialiser.test.ts::CR D6.7b: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step"
       }
     ],
     "see": [],
@@ -4151,32 +4082,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R205 (its CT-82(d) journey rule)",
-          "quote": "The unit of spacing is a JOURNEY, not an item."
+          "quote": "The unit of spacing is a JOURNEY, not an item.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R205 (its CT-82(d) journey rule)",
-          "quote": "place for the same place in one render are one thing happening and share a"
+          "quote": "place for the same place in one render are one thing happening and share a",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R205 (its CT-82(d) journey rule)",
-          "quote": "a flight joins its neighbours only when *both* ends of its journey are named anchors"
+          "quote": "a flight joins its neighbours only when *both* ends of its journey are named anchors",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "176-nested-affordance-and-serialiser.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R205 (its animation half) had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R205": "4413e5130bb545ff0625e2ff6e8cc9b996f25a77dfafa70e1956a09d81c71314"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-26 (“a checker that cannot see a…”) (its animation half) had no CR rule before the register is retired.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.panels",
@@ -4186,19 +4118,19 @@
     "examples": [
       {
         "text": "A cached card that can be played now is played by one click on it in the region's cache panel.",
-        "test": "163-cache-affordance-and-badges.test.ts::R192 §1: a playable cached card plays on the FIRST click of its region-cache thumb"
+        "test": "163-cache-affordance-and-badges.test.ts::CR D6.16: a playable cached card plays on the FIRST click of its region-cache thumb"
       },
       {
         "text": "A cached {Battle} card during deployment cannot be played now, so clicking it opens the full cache.",
-        "test": "163-cache-affordance-and-badges.test.ts::R192 §2: an unplayable cache thumb carries no affordance, so the click still opens the zone"
+        "test": "163-cache-affordance-and-badges.test.ts::CR D6.16: an unplayable cache thumb carries no affordance, so the click still opens the zone"
       },
       {
         "text": "A mod in the bin that can be applied now is one click from the bin panel: the click starts applying it.",
-        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §4: a bin card usable RIGHT NOW is one click from the region panel"
+        "test": "176-nested-affordance-and-serialiser.test.ts::CR D6.16: a bin card usable RIGHT NOW is one click from the region panel"
       },
       {
         "text": "A bin card that cannot be used now opens the full bin when clicked.",
-        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §4: an unusable bin thumb keeps the old route — the click opens the zone"
+        "test": "176-nested-affordance-and-serialiser.test.ts::CR D6.16: an unusable bin thumb keeps the old route — the click opens the zone"
       }
     ],
     "see": [],
@@ -4206,17 +4138,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R192 (its CT-64 decision)",
-          "quote": "a thumb plays on the first click when — and only when — the entry is playable right now; every other thumb, and every other pixel of the panel, still opens the dialog."
+          "quote": "a thumb plays on the first click when — and only when — the entry is playable right now; every other thumb, and every other pixel of the panel, still opens the dialog.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R205 (its CT-82(b) bin panel)",
-          "quote": "a bin card that could be *played* right now (R96/R123), *prophesied* (R42) or *applied as a mod* took two clicks from the panel and one from the dialog."
+          "quote": "a bin card that could be *played* right now (R96/R123), *prophesied* (R42) or *applied as a mod* took two clicks from the panel and one from the dialog.",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "163-cache-affordance-and-badges.test.ts",
@@ -4224,12 +4157,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R192 and R205 (their panel halves) had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R192": "adedcbd988e9d0a572f71648f0e048fad01a6dab9d08bc68f2dd70d49a14ad3d",
-      "R205": "4413e5130bb545ff0625e2ff6e8cc9b996f25a77dfafa70e1956a09d81c71314"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-26 (“a cache thumb's first click, and…”) and the owner ruling of 2026-08-26 (“a checker that cannot see a…”) (their panel halves) had no CR rule before the register is retired.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.panels.cache-dialog-only",
@@ -4247,17 +4178,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R192 (its decision-target exception)",
-          "quote": "and a cached card that is a legal decision TARGET (Prismatic Observer, R41) likewise"
+          "quote": "and a cached card that is a legal decision TARGET (Prismatic Observer, R41) likewise",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R154 (its decision gate)",
-          "quote": "A decision belonging to another seat stops you only where the engine cannot"
+          "quote": "A decision belonging to another seat stops you only where the engine cannot",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "apply.ts:decisionBlocks",
         "apply.ts:legalActions"
@@ -4268,12 +4200,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round) for R192's exceptions. Revised after the round-4 verifier's partial: R192's other exception (an augment- or graft-only cache entry keeps the dialog route) was overtaken by R311 (the cache plays like the hand), and the client promotes such an entry to the one-click thumb, which D6.16 already states. Only the decision half is kept. F-U24-6 (no R311->R192 supersession edge) is a register question, filed in the round's tickets, not an engine divergence, so it is removed. Revised again after the second partial: scoped to the player the decision stops (R154: in a hidden segment another seat's decision does not stop you), example now drives a real deployment (adopted from the verifier's probe), basis mixed (ruling + engine).",
-    "sourceHashes": {
-      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1",
-      "R192": "adedcbd988e9d0a572f71648f0e048fad01a6dab9d08bc68f2dd70d49a14ad3d"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round) for the owner ruling of 2026-08-26 (“a cache thumb's first click, and…”)’s exceptions. Revised after the round-4 verifier's partial: The owner ruling of 2026-08-26 (“a cache thumb's first click, and…”)’s other exception (an augment- or graft-only cache entry keeps the dialog route) was overtaken by the owner ruling of 2026-10-04 (“The cache plays like the hand…”) (the cache plays like the hand), and the client promotes such an entry to the one-click thumb, which D6.16 already states. Only the decision half is kept. F-U24-6 (no the owner ruling of 2026-10-04 (“The cache plays like the hand…”)->the owner ruling of 2026-08-26 (“a cache thumb's first click, and…”) supersession edge) is a register question, filed in the round's tickets, not an engine divergence, so it is removed. Revised again after the second partial: scoped to the player the decision stops (the owner ruling of 2026-08-25 (“the decision gate learns whose question…”): in a hidden segment another seat's decision does not stop you), example now drives a real deployment (adopted from the verifier's probe), basis mixed (ruling + engine).",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.hover-tip",
@@ -4283,15 +4213,15 @@
     "examples": [
       {
         "text": "The side rail scrolls while the pointer rests on a unit on the board. The unit's tooltip stays.",
-        "test": "199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110"
+        "test": "199-hover-scroll.test.ts::CR D6.17: the focus rail scrolling does NOT hide the tip — this is #110"
       },
       {
         "text": "The page scrolls while the pointer rests on a unit. The tooltip is hidden.",
-        "test": "199-hover-scroll.test.ts::R230 §2: a scroll that could have MOVED the card still hides the tip"
+        "test": "199-hover-scroll.test.ts::CR D6.17: a scroll that could have MOVED the card still hides the tip"
       },
       {
         "text": "A panel holding a different card scrolls. The hovered card's tooltip stays.",
-        "test": "199-hover-scroll.test.ts::R230 §4: a scroller holding some OTHER card does not hide this one"
+        "test": "199-hover-scroll.test.ts::CR D6.17: a scroller holding some OTHER card does not hide this one"
       }
     ],
     "see": [],
@@ -4299,32 +4229,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R230",
-          "quote": "A scroll hides the long-hover tooltip when it could have MOVED the hovered"
+          "quote": "A scroll hides the long-hover tooltip when it could have MOVED the hovered",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R230",
-          "quote": "The document scrolled → everything moved, hide."
+          "quote": "The document scrolled → everything moved, hide.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R230",
-          "quote": "Nothing hovered → nothing to protect, hide. An element scrolled → hide only if"
+          "quote": "Nothing hovered → nothing to protect, hide. An element scrolled → hide only if",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "199-hover-scroll.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R230 had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R230": "c99d59d4f1e19bcfb72ced5132ab1b09e63e59b00ba7345357bf886aa8b0371f"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-28 (“the hover tooltip cancelled itself: a…”) had no CR rule before the register is retired.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.display.arrows",
@@ -4334,15 +4265,15 @@
     "examples": [
       {
         "text": "An effect targets a player. The arrow points at their life total, and its head stops short of the number.",
-        "test": "234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text"
+        "test": "234-arrowhead-clears-text.test.ts::[CR D6.18] every measured endpoint has an arrowhead that clears its text"
       },
       {
         "text": "An arrow to a unit whose picture has loaded ends in the usual place.",
-        "test": "234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all"
+        "test": "234-arrowhead-clears-text.test.ts::[CR D6.18] an endpoint with nothing legible in the middle is not moved at all"
       },
       {
         "text": "A target whose label is too big to clear keeps the usual stopping point.",
-        "test": "234-arrowhead-clears-text.test.ts::[R255] a label too big to clear keeps the old inset rather than parking outside"
+        "test": "234-arrowhead-clears-text.test.ts::[CR D6.18] a label too big to clear keeps the old inset rather than parking outside"
       }
     ],
     "see": [],
@@ -4350,40 +4281,43 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R255",
-          "quote": "When an effect is targeting a player, the arrow covers up their life total, making it impossible to read."
+          "quote": "When an effect is targeting a player, the arrow covers up their life total, making it impossible to read.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R255",
-          "quote": "the AIM does not move; the STOP does."
+          "quote": "the AIM does not move; the STOP does.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R255",
-          "quote": "enough to clear the text the destination actually shows"
+          "quote": "enough to clear the text the destination actually shows",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R255",
-          "quote": "An endpoint with nothing legible near its middle is not touched."
+          "quote": "An endpoint with nothing legible near its middle is not touched.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R255",
-          "quote": "When the label cannot be cleared from inside the element at all, the old inset wins."
+          "quote": "When the label cannot be cleared from inside the element at all, the old inset wins.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "234-arrowhead-clears-text.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R255 had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R255": "373caf333ad53e419e9c91577ff0a1e80b90ded88de68fbda5f13199be3b3838"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-29 (“an arrow points at the middle…”) had no CR rule before the register is retired.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.confirm.refusals",
@@ -4393,15 +4327,15 @@
     "examples": [
       {
         "text": "A player types a room code that no game has. The connecting screen shows the refusal instead of waiting forever.",
-        "test": "254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever"
+        "test": "254-join-nonexistent-room.test.ts::CR D7.5 a refused join reaches the connecting screen instead of Connecting forever"
       },
       {
         "text": "An error arriving in the constructed waiting room, where there is no board yet, is shown there.",
-        "test": "254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board"
+        "test": "254-join-nonexistent-room.test.ts::CR D7.5 an error in the constructed waiting room lands too, where there is still no board"
       },
       {
         "text": "The refusal for an unknown code names the code.",
-        "test": "254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it"
+        "test": "254-join-nonexistent-room.test.ts::CR D7.5 a code the server never minted is refused, and the refusal names it"
       }
     ],
     "see": [],
@@ -4409,27 +4343,27 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R274",
-          "quote": "A refusal from the server reaches the player on the connecting screen, in the constructed/draft waiting room, and on the board alike."
+          "quote": "A refusal from the server reaches the player on the connecting screen, in the constructed/draft waiting room, and on the board alike.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R274",
-          "quote": "There is no screen on which the server may say \"no\" and the client may say nothing."
+          "quote": "There is no screen on which the server may say \"no\" and the client may say nothing.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "254-join-nonexistent-room.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R274 had no CR rule before the register is retired.",
-    "sourceHashes": {
-      "R274": "0479ef6ddff6827343ea9cc6a0ebd96b31f6ddfaa9873cc96a5e81af4e1ede3e"
-    }
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-30 (“A refusal the player earns before…”) had no CR rule before the register is retired.",
+    "sourceHashes": {}
   }
 ]

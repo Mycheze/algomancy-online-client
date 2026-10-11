@@ -37,7 +37,7 @@
         "quote": "Cards with no icon can only be played during deployment."
       },
       {
-        "source": "R97",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
       },
       {
@@ -49,7 +49,7 @@
         "quote": "with another player (and not during the main phase!)"
       }
     ],
-    "resolution": "Wording only; no rule differs. This document uses the Manual's words. R97 quotes Caleb that the Rulebook's \"mana step\" is the haste step. A judge's CR built from the 2023 Rulebook will say threshold, health, main phase, mana step and discard for the same things."
+    "resolution": "Wording only; no rule differs. This document uses the Manual's words. The owner ruling of 2026-08-23 (“A card may be granted permission…”) quotes Caleb that the Rulebook's \"mana step\" is the haste step. A judge's CR built from the 2023 Rulebook will say threshold, health, main phase, mana step and discard for the same things."
   },
   {
     "id": "D-U05-2",
@@ -71,7 +71,7 @@
         "quote": "In addition to stats, some units have Attributes (1), which can change how they engage"
       }
     ],
-    "resolution": "The rule states the Manual: combat (gold) attributes are shared in a column, purple ones are not. The Rulebook's sentence introduces the combat attributes it goes on to describe; it does not make every attribute a combat one (Rulebook 2023 p.3, Manual p.25, and R345: an attribute applies in combat or not). No owner question."
+    "resolution": "The rule states the Manual: combat (gold) attributes are shared in a column, purple ones are not. The Rulebook's sentence introduces the combat attributes it goes on to describe; it does not make every attribute a combat one (Rulebook 2023 p.3, Manual p.25, and the owner ruling of 2026-10-11 (“An attribute is a quality of…”): an attribute applies in combat or not). No owner question."
   },
   {
     "id": "D-U05-3",
@@ -99,7 +99,7 @@
         "quote": "haste basically says 'This card can be played during the haste step in addition to its other timings' … so it should work"
       }
     ],
-    "resolution": "The designer's later answer reverses his earlier one, and the [Solved] Dispatch Courier write-up agrees with the later one. The register marks the 2025 claim outdated. The rule states the later answer. A judge's CR that cites the 2025 screenshot will disagree."
+    "resolution": "The designer's later answer reverses his earlier one, and the [Solved] Dispatch Courier write-up agrees with the later one. The register marks the 2025 claim outdated. The rule states the later answer. A judge's CR that cites the 2025 screenshot will disagree. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U05-4",
@@ -177,7 +177,7 @@
     "summary": "The sources are silent on what a subtype does in play. They say only which words are subtypes.",
     "sides": [
       {
-        "source": "R240",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "spurious token is, by construction, a population-of-one subtype. The pool has twenty real"
       }
     ],
@@ -205,11 +205,11 @@
     "summary": "The sources are silent on whether a \"Discard me\" line (Sacrifice Dude, Dropslime, Nothyr) is printed in an alternative-cost banner like Ambush and Prophecy.",
     "sides": [
       {
-        "source": "R65 (its discard-me half)",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "me\"* line as an alternative play MODE, and inherited the card's own timing with"
       }
     ],
-    "resolution": "This document treats \"Discard me\" under 207.8 and 801, not 203, because discarding is not playing (R37, R65). Where it is printed is a question for the scans, not a ruling."
+    "resolution": "This document treats \"Discard me\" under 207.8 and 801, not 203, because discarding is not playing (the owner ruling of 2026-08-19 (“\"Playing\" a card means units and…”), the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)). Where it is printed is a question for the scans, not a ruling."
   },
   {
     "id": "D-U05-10",
@@ -237,7 +237,7 @@
         "quote": "italics to help players remember what each attribute"
       },
       {
-        "source": "R55",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
       }
     ],
@@ -248,14 +248,14 @@
     "kind": "g-other",
     "rule": "card.general.printed-card-governs",
     "tier": 2,
-    "summary": "R162 and R240 still describe a type-line override table in the extractor (two entries left, Might of the Grove and Arbiter of Armistice). That patch layer was removed on 2026-09-20; the oracle file now carries both corrected lines.",
+    "summary": "The owner ruling of 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”) and the owner ruling of 2026-08-28 (“Interdiction Rift has no AI, and…”) still describe a type-line override table in the extractor (two entries left, Might of the Grove and Arbiter of Armistice). That patch layer was removed on 2026-09-20; the oracle file now carries both corrected lines.",
     "sides": [
       {
-        "source": "R240",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "overrides remain (Might of the Grove, Arbiter of Armistice), both still wrong upstream,"
       },
       {
-        "source": "R162",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "the rules bot and corpus outside this package. The correction therefore lives"
       },
       {
@@ -274,18 +274,18 @@
     "kind": "g-other",
     "rule": "card.cost-orb.x-outside-cast",
     "tier": 2,
-    "summary": "R158 says Living Vault still refuses an X-cost card in hand. A current test says Living Vault offers it at pay [0].",
+    "summary": "The owner ruling of 2026-08-25 (“the three cost contexts of an…”) says Living Vault still refuses an X-cost card in hand. A current test says Living Vault offers it at pay [0].",
     "sides": [
       {
-        "source": "R158 §1",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "of the Cosmos' deck, Blurf's deck) and one still refuses (Living Vault's"
       },
       {
         "source": "file: client/engine/test/39-light-b.test.ts",
-        "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {"
+        "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (CR 107.3a)', () => {"
       }
     ],
-    "resolution": "The test is the later state, and the rule follows R158's principle (0, not refused). Register fix: mark R158's Living Vault sentence as fixed."
+    "resolution": "The test is the later state, and the rule follows the owner ruling of 2026-08-25 (“the three cost contexts of an…”)’s principle (0, not refused). Register fix: mark the owner ruling of 2026-08-25 (“the three cost contexts of an…”)’s Living Vault sentence as fixed."
   },
   {
     "id": "D-U05-14",
@@ -317,7 +317,7 @@
     "summary": "That the affinity pips are not part of a card's cost is an owner call with no designer source.",
     "sides": [
       {
-        "source": "R157 §1",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
       },
       {
@@ -339,11 +339,11 @@
         "quote": "Cards with no icon can only be played during deployment."
       },
       {
-        "source": "R65 (its discard-me half)",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "(Nothyr) still restricts it to battle; nothing restricts it to deployment."
       },
       {
-        "source": "R157 §8",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
       }
     ],
@@ -357,10 +357,10 @@
     "summary": "That a Spell Unit answers an effect asking for either a unit or a spell is the owner's permissive reading.",
     "sides": [
       {
-        "source": "R284",
+        "source": "owner ruling, adopted 2026-09-01",
         "quote": "A {Spell Unit} answers **both** halves, on the permissive reading, and the"
       }
     ],
-    "resolution": "Owner call. The RAQ thread on spell units played as units (quoted in R97) agrees for \"playing a spell\"."
+    "resolution": "Owner call. The RAQ thread on spell units played as units (quoted in the owner ruling of 2026-08-23 (“A card may be granted permission…”)) agrees for \"playing a spell\"."
   }
 ]

@@ -1,10 +1,10 @@
 /* Per-card tests for batch-fire-b (project rule: a test for every card).
  * Covers spawn/death triggers with stack interaction (Molten Riftbreaker),
- * token-spell triggers and bounded budgets (Nimbus Eel R9), spell-played
- * self-buffs (Ravenous Fireslinger), R6-style mid-resolution payments and bin
- * picks (Reclaimer of Secrets, Resurrect, Soul Tithe, Wildfire), the R1
+ * token-spell triggers and bounded budgets (Nimbus Eel CR 109.9), spell-played
+ * self-buffs (Ravenous Fireslinger), CR 704.1a-style mid-resolution payments and bin
+ * picks (Reclaimer of Secrets, Resurrect, Soul Tithe, Wildfire), the CR 109.3c
  * "still in formation" resolution recheck (Rousing Spirit), sacrifices as real
- * costs (Soul Swallower's R49 `sacrificeOther`) and as effects (Sacrificial
+ * costs (Soul Swallower's CR 111.7 `sacrificeOther`) and as effects (Sacrificial
  * Burst, Spiteful Shadow),
  * text-box [Augment] triggers (Sparkwraith, Spirit of Vengeance, Static
  * Courier, Stormsowing Nimbus, Unstable Apparition, Voltwrath Behemoth), and
@@ -52,7 +52,7 @@ test('Molten Riftbreaker: [Augment] text — my despawn negates all allied spell
   assert.ok(!ent(h, rift), 'Riftbreaker died');
   pass(h); pass(h);                                  // the despawn trigger resolves
   assert.ok(h.log.some(l => l.includes('Jelly is negated')), 'allied spell negated');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Jelly left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Jelly left the stack at once');
   assert.deepEqual(effStats(h, whale), [7, 5], 'the negated Jelly never buffed/debuffed');
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Jelly'), 'a negated spell unit never spawns');
   assert.ok(h.state.players[D]!.bin.includes('Jelly'), 'negated Jelly → bin');
@@ -80,7 +80,7 @@ test('Nimbus Eel: token spell → target gains +2/+0 ([Switch1]: once per turn)'
   assert.deepEqual(effStats(h, eel), [4, 1], '2/1 + 2/0 = 4/1');
   pass(h); pass(h);                                  // Fireball resolves
   assert.equal(h.state.players[A]!.life, 29, 'Fireball 1 hit A');
-  // a second token spell the same turn: [Switch1] budget is spent (R9)
+  // a second token spell the same turn: [Switch1] budget is spent (CR 722.5)
   {
     const e = new E(h.state);
     e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region);
@@ -145,13 +145,13 @@ test('Reclaimer of Secrets: on death, pay [two] to recall a bin spell to hand', 
   pass(h); pass(h);                                  // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rec] } });
   pass(h); pass(h);                                  // combat: Reclaimer dies
-  assignDefault(h);                                  // R319: the {Piercing} Whale elects
+  assignDefault(h);                                  // CR 802.16c: the {Piercing} Whale elects
   assert.ok(!ent(h, rec), 'Reclaimer died blocking');
-  // R64: the bin spell is a declared TARGET, chosen as the trigger is stacked…
+  // CR 110.1a: the bin spell is a declared TARGET, chosen as the trigger is stacked…
   assert.equal(h.state.decision?.kind, 'targets');
   assert.equal(h.state.decision!.seat, D);
   pick(h, { bin: { seat: D, card: 'Luminous Arc' } });
-  // R261: the death trigger no longer resolves inside the damage step — it is
+  // CR 608.9b, 608.9: the death trigger no longer resolves inside the damage step — it is
   // stacked in the after-combat window (targeting still happens on the way to
   // the stack, which is why the pick above did not move) and one round of
   // priority resolves it.
@@ -162,7 +162,7 @@ test('Reclaimer of Secrets: on death, pay [two] to recall a bin spell to hand', 
   assert.ok(h.state.players[D]!.hand.includes('Luminous Arc'), 'spell recalled to hand');
   assert.deepEqual(h.state.players[D]!.bin, ['Reclaimer of Secrets'],
     'the Arc left the bin; the dead unit (not a spell) stayed');
-  assert.equal(new E(h.state).openMana(D), 0, '[two] was paid mid-resolution (R6)');
+  assert.equal(new E(h.state).openMana(D), 0, '[two] was paid mid-resolution (CR 111.9)');
   finishBattle(h);
 });
 
@@ -173,7 +173,7 @@ test('Resurrect: put a bin unit with cost 2 or less into play', () => {
   // two legal picks (cost <= 2 units), one too expensive, one not a unit
   h.state.players[p]!.bin.push('Sparkwraith', 'Ignis Sprite', 'Good Whale', 'Luminous Arc');
   giveResources(h, p, 'fire', 2);                    // r / 2
-  // R64: the bin card is a declared TARGET, chosen as the spell is cast
+  // CR 110.1a: the bin card is a declared TARGET, chosen as the spell is cast
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Resurrect') });
   assert.equal(h.state.decision?.kind, 'targets', 'the target is asked for at cast');
   assert.deepEqual(h.state.decision!.options.map(o => o.label),
@@ -193,7 +193,7 @@ test('Rousing Spirit: attack → a cheap bin unit fills the slot behind me', () 
   h.state.players[A]!.bin.push('Sparkwraith');       // cost 1 unit
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[spirit]] });
-  // R64: the bin card is targeted as the trigger goes on the stack
+  // CR 110.1a: the bin card is targeted as the trigger goes on the stack
   assert.equal(h.state.decision?.kind, 'targets', 'the bin card is targeted up front');
   pick(h, { bin: { seat: A, card: 'Sparkwraith' } });
   pass(h); pass(h);                                  // attack trigger resolves
@@ -217,8 +217,8 @@ test('Sacrificial Burst: sacrifice a unit, deal 4 to any target', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atkr]] });
   pass(h);                                           // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Sacrificial Burst') });
-  // R57: TARGET first, cost second. Both still happen at cast, before the
-  // spell reaches the stack (R35) — only the order of the two questions
+  // CR 702.3f: TARGET first, cost second. Both still happen at cast, before the
+  // spell reaches the stack (CR 702.3) — only the order of the two questions
   // changed, so you see what you are aiming at before you pay for it.
   assert.equal(h.state.decision?.kind, 'targets');
   assert.equal(h.state.decision!.seat, D, 'the controller aims it');
@@ -234,7 +234,7 @@ test('Sacrificial Burst: sacrifice a unit, deal 4 to any target', () => {
 });
 
 test('Soul Swallower: activated [Augment] text — sacrifice another unit for +2/+2', () => {
-  // R49 UN-PARKED: "Sacrifice another unit" is a real AbilityCost
+  // UN-PARKED (CR 111.7): "Sacrifice another unit" is a real AbilityCost
   // (sacrificeOther), not a target that dies at resolution.
   const h = new Harness(1310);
   toDeployment(h);
@@ -292,7 +292,7 @@ test('Soul Tithe: decline → the effect is negated and I draw', () => {
   pick(h, false);
   assert.ok(h.log.some(l => l.includes('Luminous Arc is negated')), 'effect negated');
   assert.equal(h.state.players[D]!.hand.length, handBefore + 1, 'and I drew a card');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Arc left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Arc left the stack at once');
   assert.ok(ent(h, du), 'the negated Arc never dealt its damage');
   assert.ok(h.state.players[A]!.bin.includes('Luminous Arc'));
   finishBattle(h);
@@ -374,7 +374,7 @@ test('Spiteful Shadow: my death makes each player sacrifice a unit', () => {
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
   pass(h); pass(h);                                  // combat: the 0/1 Shadow dies
-  // R261: the death trigger waits for the after-combat window instead of
+  // CR 608.9b: the death trigger waits for the after-combat window instead of
   // resolving inside the damage step; one round of priority there resolves it.
   pass(h); pass(h);
   assert.ok(!ent(h, shadow));
@@ -456,7 +456,7 @@ test("Unstable Apparition: [once] — first nontoken spell makes a Fireball = it
   assert.equal(fires[0]!.x, 3, "X = the spell's cost (Lonely Forager: 3)");
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Lonely Forager') });
   fires = tokensOf(h, p).filter(t => t.card === 'Fireball');
-  assert.equal(fires.length, 1, '[once]: no second Fireball this turn (R9)');
+  assert.equal(fires.length, 1, '[once]: no second Fireball this turn (CR 109.9)');
 });
 
 test('Voltwrath Behemoth: [Augment] text — my spell lets me deal 1 to any target', () => {
@@ -472,7 +472,7 @@ test('Voltwrath Behemoth: [Augment] text — my spell lets me deal 1 to any targ
   assert.equal(ent(h, fodder)!.damage, 1, '1 damage delivered');
 });
 
-test('Wildfire: X is chosen and paid AT CAST (R35), then dealt to any target', () => {
+test('Wildfire: X is chosen and paid AT CAST (CR 107.2a), then dealt to any target', () => {
   const h = new Harness(1321);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

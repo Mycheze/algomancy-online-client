@@ -12,7 +12,7 @@ export interface FuzzResult {
   finished: boolean;      // reached gameover (vs action cap)
   turns: number;
   state: GameState;
-  /** R169 / CT-47: how many times legalActions' ONE documented exception
+  /** CT-47 (see 143-replay-divergence): how many times legalActions' ONE documented exception
    * actually fired in this game (see the catch block below). Exposed so a test
    * can assert the exception is EXERCISED rather than merely tolerated — a
    * fuzzer that swallows a whole class of refusal without ever proving it
@@ -73,10 +73,10 @@ export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draf
 }
 
 /**
- * R169 / CT-47 — THE ONE NAMED EXCEPTION to `legalActions`' contract
+ * CT-47 (see 143-replay-divergence) — THE ONE NAMED EXCEPTION to `legalActions`' contract
  * ("every action returned is legal", apply.ts). Nothing else may pass.
  *
- * R154 lets a seat act while the OTHER seat holds an open question, so long as
+ * CR D2.1b lets a seat act while the OTHER seat holds an open question, so long as
  * the engine can prove the question is none of its business. Whether the action
  * it picks will DISTURB that question cannot be known until the action has run
  * — it depends on the card, its targets and the board — so `legalActions`
@@ -86,7 +86,7 @@ export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draf
  *
  * Three properties keep this from being a hole the fuzzer falls through:
  *   · it is recognised BY THE FLAG, never by matching on a message;
- *   · it is CHECKED, not assumed — a disturbance is only the R154 exception
+ *   · it is CHECKED, not assumed — a disturbance is only the CR D2.1d exception
  *     when a question is actually standing and belongs to somebody else, so a
  *     mis-flagged refusal is louder here than an unflagged one;
  *   · `fuzzGame` COUNTS it (`FuzzResult.disturbed`), so a test can assert the
@@ -100,10 +100,10 @@ export function isContractException(
   if (!(err instanceof IllegalAction) || err.disturbs !== true) return false;
   const at = where ? ` (${where})` : '';
   if (!state.decision) {
-    throw new Error(`\`disturbs\` refusal with NO decision standing — that is not the R154 exception: ${JSON.stringify(action)}${at}`);
+    throw new Error(`\`disturbs\` refusal with NO decision standing — that is not the CR D2.1d exception: ${JSON.stringify(action)}${at}`);
   }
   if (state.decision.seat === action.seat) {
-    throw new Error(`\`disturbs\` refusal on the ASKING seat's own action — that is not the R154 exception: ${JSON.stringify(action)}${at}`);
+    throw new Error(`\`disturbs\` refusal on the ASKING seat's own action — that is not the CR D2.1d exception: ${JSON.stringify(action)}${at}`);
   }
   return true;
 }
@@ -196,7 +196,7 @@ export function checkInvariants(s: GameState): void {
     if (!Number.isFinite(p.life)) die('life is not a number');
     if (p.activationsLeft < 0) die('negative activations');
     for (const c of [...p.hand, ...p.bin]) if (!KNOWN.has(c)) die(`unknown card: ${c}`);
-    // R41: the cache is a real zone — its contents are held to the same
+    // CR 403.1: the cache is a real zone — its contents are held to the same
     // standard as hand and bin, and a prophecy must carry its anchors
     for (const cc of p.cache ?? []) {
       if (!KNOWN.has(cc.card)) die(`unknown card in cache: ${cc.card}`);
@@ -215,7 +215,7 @@ export function checkInvariants(s: GameState): void {
   }
   if (s.decision) {
     if (!s.suspension) die('decision without suspension');
-    // R197: `kind: 'number'` is the ONE decision with no options, by contract —
+    // CR D7.2a: `kind: 'number'` is the ONE decision with no options, by contract —
     // `choice` is the value itself and an option list cannot express "any
     // number". It owes a RANGE instead, and the invariant moves onto that, so
     // "a question nobody can answer" is still caught for every kind.
@@ -231,14 +231,14 @@ export function checkInvariants(s: GameState): void {
   if (s.phase === 'battle' && !s.battle) die('battle phase without battle state');
   for (const item of s.stack) {
     if (item.region < 0 || item.region >= s.regions.length) die('stack item in bad region');
-    // R79: a virus is aimed at EITHER a unit or a stack item, never both and
+    // CR 723.4: a virus is aimed at EITHER a unit or a stack item, never both and
     // never neither
     if (item.kind === 'virus' && (item.hostId === undefined) === (item.hostStack === undefined)) {
       die(`virus ${item.card} names ${item.hostId === undefined ? 'no host' : 'two hosts'}`);
     }
     for (const a of item.augments ?? []) if (!KNOWN.has(a.card)) die(`unknown virus on the stack: ${a.card}`);
   }
-  // R78: an item is only ever left mid-resolution because somebody has to
+  // CR D6.3: an item is only ever left mid-resolution because somebody has to
   // answer something. A resolving item with no open decision is off the stack
   // with nothing left to put it back — the stuck state this whole rule exists
   // to make visible rather than invisible.

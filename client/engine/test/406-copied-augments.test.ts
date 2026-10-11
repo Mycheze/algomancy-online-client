@@ -1,20 +1,20 @@
 /**
- * R341 — a copy's copied AUGMENT mods work: it carries each copied mod's
- * [Augment] box (extends R336, which made copied grafts run).
+ * CR 710.2a — a copy's copied AUGMENT mods work: it carries each copied mod's
+ * [Augment] box (extending the fix that made copied grafts run, CR 722.8).
  *
  * Borrower of Forms: "Erase target unit. I become an exact copy of that unit
  * (I copy all stat changes, counters, card text and mods)." RAQ "[Solved &
  * Expanding?] Borrower of Forms - The weird interactions" (_passer quoting
- * Caleb): "it inherits all of the combined text". R118 ruling 2: "Inherit the
+ * Caleb): "it inherits all of the combined text". The owner (now CR 710.2): "Inherit the
  * mods text".
  *
  * What is pinned, channel by channel — each one the channel a REAL augment
  * mod's box reaches: type-line attrs (Chitin Shredder's {Powerful}), the
- * activated [Augment] text and its R9 [once] budget (Graxxlid), the
+ * activated [Augment] text and its CR 109.9 [once] budget (Graxxlid), the
  * continuous box (Dreadspawn Horror's static), the triggered [Augment] text
  * (Mirage Scuttler). And what is NOT copied: no mod entity, no Unstable, no
  * second card in any bin. The copied text is part of the copy's card text, so
- * a stripper takes it (R328).
+ * a stripper takes it (CR 712.7).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -80,19 +80,19 @@ const graxOffers = (h: Harness, seat: Seat, id: number) => legalActions(h.state,
   a.type === GRAX && a.entityId === id && typeof a.via === 'object' && 'face' in a.via
   && a.via.face === 'Graxxlid' && a.via.text === 'augment');
 
-test('R341: a Borrower that copied a unit carrying a Powerful virus is Powerful — and is not itself modded or Unstable', () => {
+test('CR 710.2a: a Borrower that copied a unit carrying a Powerful virus is Powerful — and is not itself modded or Unstable', () => {
   const { h, bof } = borrowModded(40601, 'Good Whale', ['Chitin Shredder']);
   const u = ent(h, bof)!;
-  assert.equal(u.mods.length, 0, 'no mod entity was cloned (R336)');
+  assert.equal(u.mods.length, 0, 'no mod entity was cloned (CR 710.2a)');
   assert.deepEqual(u.copies?.[0]?.mods, [{ card: 'Chitin Shredder', appliedAs: 'augment' }], 'the face records it');
   assert.ok(ownAttrs(h, bof).has('Powerful'), 'the copied [Augment] {Powerful} is the copy\'s');
   let unstable = true;
   whiteBox(h, e => { unstable = e.isUnstable(e.s.entities[bof]!); });
-  assert.equal(unstable, false, 'and the copy is not Unstable (R336 / CT-225)');
+  assert.equal(unstable, false, 'and the copy is not Unstable (CR 710.2a / CT-225)');
   finishBattle(h);
 });
 
-test('R341: when that copy dies, only Borrower of Forms goes to the bin — nothing is erased, no virus binned', () => {
+test('CR 710.2c: when that copy dies, only Borrower of Forms goes to the bin — nothing is erased, no virus binned', () => {
   const { h, A, D, bof } = borrowModded(40602, 'Good Whale', ['Chitin Shredder']);
   const binA = [...h.state.players[A]!.bin], binD = [...h.state.players[D]!.bin];
   const erasedA = [...(h.state.players[A]!.erased ?? [])], erasedD = [...(h.state.players[D]!.erased ?? [])];
@@ -105,7 +105,7 @@ test('R341: when that copy dies, only Borrower of Forms goes to the bin — noth
   finishBattle(h);
 });
 
-test('R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid — once, on its own [once] budget', () => {
+test('CR 710.2d: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid — once, on its own [once] budget', () => {
   const { h, A, D, bof } = borrowModded(40603, 'Bubb', ['Graxxlid']);
   giveResources(h, A, 'earth', 2);
   giveResources(h, D, 'fire', 4);                             // two Channeled Boons, rr/2 each
@@ -122,7 +122,7 @@ test('R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid �
   pass(h); pass(h);                                           // Graxxlid's negate resolves
   assert.ok(!h.state.stack.some(i => i.id === boon), 'the Boon is negated');
   assert.equal(h.state.players[D]!.hand.length, handD + 1, 'and its controller draws');
-  assert.equal(ent(h, bof)!.budgets['augment:Graxxlid#0'], 1, 'the [once] is spent on the copy (R9, the real mod\'s key)');
+  assert.equal(ent(h, bof)!.budgets['augment:Graxxlid#0'], 1, 'the [once] is spent on the copy (the real mod\'s key)');
   // a second Boon at the copy: the [once] is gone
   passTo(h, D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channeled Boon') });
@@ -134,7 +134,7 @@ test('R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid �
   finishBattle(h);
 });
 
-test('R341: the address is refused on a unit that copied no Graxxlid', () => {
+test('CR 710.2a: the address is refused on a unit that copied no Graxxlid', () => {
   const { h, A, bof } = borrowModded(40604, 'Bubb', []);
   passTo(h, A);
   assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: bof, abilityIndex: 0,
@@ -142,7 +142,7 @@ test('R341: the address is refused on a unit that copied no Graxxlid', () => {
   finishBattle(h);
 });
 
-test('R341: a copied [Augment] static box radiates off the copy (Dreadspawn Horror: -1/-1 per card in hand)', () => {
+test('CR 710.2a: a copied [Augment] static box radiates off the copy (Dreadspawn Horror: -1/-1 per card in hand)', () => {
   const { h, A, bof } = borrowModded(40605, 'Good Whale', ['Dreadspawn Horror']);
   h.state.players[A]!.hand = ['Geode', 'Geode'];
   assert.deepEqual(effStats(h, bof), [5, 3], 'the borrowed 7/5, less two for A\'s two cards');
@@ -151,7 +151,7 @@ test('R341: a copied [Augment] static box radiates off the copy (Dreadspawn Horr
   finishBattle(h);
 });
 
-test('R341: copied [Augment] triggered text fires off the copy (Mirage Scuttler: survive damage, gain counters)', () => {
+test('CR 710.2a: copied [Augment] triggered text fires off the copy (Mirage Scuttler: survive damage, gain counters)', () => {
   const { h, A, D, bof } = borrowModded(40606, 'Good Whale', ['Mirage Scuttler']);
   void A;
   let fire = -1;
@@ -165,7 +165,7 @@ test('R341: copied [Augment] triggered text fires off the copy (Mirage Scuttler:
   finishBattle(h);
 });
 
-test('R341: a copy of an unmodded unit is exactly what it was — no copied mods, no extra text', () => {
+test('CR 710.2a: a copy of an unmodded unit is exactly what it was — no copied mods, no extra text', () => {
   const { h, A, bof } = borrowModded(40607, 'Good Whale', []);
   assert.equal(ent(h, bof)!.copies?.[0]?.mods, undefined, 'the face records no mods');
   let copied: readonly string[] = ['x'];
@@ -178,7 +178,7 @@ test('R341: a copy of an unmodded unit is exactly what it was — no copied mods
   finishBattle(h);
 });
 
-test('R341 / R328: the copied augment text is the copy\'s card text — Suppression Field strips it', () => {
+test('CR 712.7: the copied augment text is the copy\'s card text — Suppression Field strips it', () => {
   const { h, A, D, bof } = borrowModded(40608, 'Bubb', ['Chitin Shredder', 'Graxxlid']);
   giveResources(h, A, 'earth', 2);
   giveResources(h, D, 'fire', 2);
@@ -193,7 +193,7 @@ test('R341 / R328: the copied augment text is the copy\'s card text — Suppress
   finishBattle(h);
 });
 
-test('R341 / R328: Transmogrifant arriving after the copy takes the copied {Powerful}', () => {
+test('Transmogrifant arriving after the copy takes the copied {Powerful}', () => {
   const { h, A, bof } = borrowModded(40609, 'Good Whale', ['Chitin Shredder']);
   assert.ok(ownAttrs(h, bof).has('Powerful'), 'setup: Powerful');
   whiteBox(h, e => { e.spawnUnit(A, 'Transmogrifant', e.s.entities[bof]!.region); });  // "Your other units … lose all attributes"
@@ -201,7 +201,7 @@ test('R341 / R328: Transmogrifant arriving after the copy takes the copied {Powe
   finishBattle(h);
 });
 
-test('R341: a copy of the copy chains — it carries the copied virus too', () => {
+test('CR 710.4: a copy of the copy chains — it carries the copied virus too', () => {
   const { h, A, bof } = borrowModded(40610, 'Good Whale', ['Chitin Shredder']);
   let tok = -1;
   whiteBox(h, e => {
@@ -214,7 +214,7 @@ test('R341: a copy of the copy chains — it carries the copied virus too', () =
   finishBattle(h);
 });
 
-test('R341: a copied [Augment] box radiates to OTHER units, and an adjacent Ancient One borrows it too', () => {
+test('a copied [Augment] box radiates to OTHER units, and an adjacent Ancient One borrows it too', () => {
   const h = new Harness(40611);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

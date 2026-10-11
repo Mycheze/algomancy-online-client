@@ -18,28 +18,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R206 (its rule 1: printed text wins)",
-          "quote": "1. **Printed text wins.** Where a card prints a reminder and the glossary"
+          "quote": "1. **Printed text wins.** Where a card prints a reminder and the glossary",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R206 (its rule 1: printed text wins)",
-          "quote": "disagrees, the card is right and the glossary is behind. This is the third"
+          "quote": "disagrees, the card is right and the glossary is behind. This is the third",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "429-cr-keyword-actions.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "No source defines the term \"keyword action\"; the first sentence is a framing sentence for the section. R206 states the precedence of printed reminders over our glossary paraphrase. The keyword list here is the verbs the pack evidences: trash, discard, sacrifice, delete, erase, recall, cache, glimpse, recycle, fight, rockfall, exchange, prophesy.",
-    "sourceHashes": {
-      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3"
-    }
+    "notes": "No source defines the term \"keyword action\"; the first sentence is a framing sentence for the section. The owner ruling of 2026-08-26 (“the glossary is a rules document…”) states the precedence of printed reminders over our glossary paraphrase. The keyword list here is the verbs the pack evidences: trash, discard, sacrifice, delete, erase, recall, cache, glimpse, recycle, fight, rockfall, exchange, prophesy.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash",
@@ -49,11 +49,11 @@
     "examples": [
       {
         "text": "A card discarded from a hand enters a bin from the hand, so it is trashed.",
-        "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters"
+        "test": "35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters"
       },
       {
         "text": "A card that leaves a cache for a bin is trashed.",
-        "test": "36-cache-prophecy.test.ts::R41: a card leaving the cache for a BIN is trashed (R40 classifies it automatically)"
+        "test": "36-cache-prophecy.test.ts::CR 801.2: a card leaving the cache for a BIN is trashed (classified automatically)"
       }
     ],
     "see": [
@@ -63,24 +63,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R306",
-          "quote": "with its noun restored: *a card entering a bin from anywhere but the stack is"
+          "quote": "with its noun restored: *a card entering a bin from anywhere but the stack is",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "Trashing: a card entering a bin from anywhere but the stack"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R40",
-          "relation": "its 2026-08-21 token amendment reversed by R306"
-        },
-        {
-          "ruling": "R133",
-          "relation": "its tokens-are-trashed half withdrawn by R306"
+          "quote": "Trashing: a card entering a bin from anywhere but the stack",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -90,12 +82,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R40 credits the definition to Caleb 2025-02-01 and Void Scavenger's reminder text, but no designer words are quoted and Void Scavenger is cut from the set: D-U18-2. Restates 405.4 from the action's side.",
-    "sourceHashes": {
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) credits the definition to Caleb 2025-02-01 and Void Scavenger's reminder text, but no designer words are quoted and Void Scavenger is cut from the set: D-U18-2. Restates 405.4 from the action's side.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.ways",
@@ -105,11 +95,11 @@
     "examples": [
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: milling from the deck trashes one event per card"
+        "test": "35-rot-debt-trash.test.ts::CR 801.2a: milling from the deck trashes one event per card"
       },
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: sacrificing and dying both trash — the card enters a bin from PLAY"
+        "test": "35-rot-debt-trash.test.ts::CR 801.2a: sacrificing and dying both trash — the card enters a bin from PLAY"
       }
     ],
     "see": [
@@ -121,24 +111,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R40 says \"dying in combat\"; the definition (a bin from anywhere but the stack) covers every death into a bin, which is how the rule is written. No card prints \"mill\": D-U18-3.",
-    "sourceHashes": {
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) says \"dying in combat\"; the definition (a bin from anywhere but the stack) covers every death into a bin, which is how the rule is written. No card prints \"mill\": D-U18-3.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.not-from-stack",
@@ -148,15 +137,15 @@
     "examples": [
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)"
+        "test": "35-rot-debt-trash.test.ts::CR 801.2b: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)"
       },
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either"
+        "test": "35-rot-debt-trash.test.ts::CR 801.2b: a NEGATED spell is not trashed either"
       },
       {
         "text": "A spell Tides of the Cosmos plays for free off the deck goes to the bin afterwards and is not trashed.",
-        "test": "15-water-b.test.ts::R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash"
+        "test": "15-water-b.test.ts::CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash"
       }
     ],
     "see": [
@@ -167,21 +156,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "ability going to the bin after resolving does NOT (it comes from the stack),"
+          "quote": "ability going to the bin after resolving does NOT (it comes from the stack),",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R146",
-          "quote": "**Answer: `from: 'stack'` — it is NOT a trash.** Written down explicitly so a"
+          "quote": "**Answer: `from: 'stack'` — it is NOT a trash.** Written down explicitly so a",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts",
@@ -189,12 +180,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"failed to resolve\" (fizzle) is read into R40's \"from the stack\" sentence: a fizzled card leaves the stack too. The inline-play sentence is R146's decision.",
-    "sourceHashes": {
-      "R146": "b10694e95019e609b8999d033086b28612f6b68c67226f0b0e6b4a3b9bd2ef35",
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
-    }
+    "notes": "\"failed to resolve\" (fizzle) is read into the owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”)’s \"from the stack\" sentence: a fizzled card leaves the stack too. The inline-play sentence is the owner ruling of 2026-08-25 (“a card entering a bin goes…”)’s decision.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.not-erase",
@@ -204,7 +193,7 @@
     "examples": [
       {
         "text": "Banishment erases a unit: no death and no trash happen.",
-        "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed'"
+        "test": "145-erase-routes.test.ts::(vii): Banishment still fires no 'died' and no 'trashed'"
       }
     ],
     "see": [
@@ -215,24 +204,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "145-erase-routes.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 407.1c from the trash side.",
-    "sourceHashes": {
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.tokens",
@@ -242,11 +230,11 @@
     "examples": [
       {
         "text": null,
-        "test": "338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads"
+        "test": "338-tokens-are-not-trashed.test.ts::CR 801.2i: a token unit dying in battle does not bump the trashed ledger that Dropslime reads"
       },
       {
         "text": "A token copy of Dropslime that dies does not trigger its own \"When I am trashed\".",
-        "test": "338-tokens-are-not-trashed.test.ts::R306: a token copy of an own-trash card does not fire its own when-I-am-trashed"
+        "test": "338-tokens-are-not-trashed.test.ts::CR 801.2d: a token copy of an own-trash card does not fire its own when-I-am-trashed"
       }
     ],
     "see": [
@@ -257,36 +245,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R306",
-          "quote": "trashed.* A token is not a card (R133's first half, which stands), so a token"
+          "quote": "trashed.* A token is not a card (R133's first half, which stands), so a token",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R306",
-          "quote": "A dying token still **enters the bin** and is then erased from it by the"
+          "quote": "A dying token still **enters the bin** and is then erased from it by the",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R306",
-          "quote": "- no \"when I am trashed\", **its own included** (a token copy of Dropslime)."
+          "quote": "- no \"when I am trashed\", **its own included** (a token copy of Dropslime).",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R306",
-          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R40",
-          "relation": "its 2026-08-21 amendment (tokens can be trashed) reversed by R306"
-        },
-        {
-          "ruling": "R133",
-          "relation": "its second half (tokens are trashed) withdrawn by R306"
-        },
-        {
-          "ruling": "R137",
-          "relation": "its token-symmetry argument amended by R306"
+          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\"",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -295,11 +273,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "That a dying token enters the bin is also the designer's (RAQ 1355689559609839787#4, \"they enter your hand/bin and then are instantly erased\"), but that claim says nothing about trashing, so it is not cited as the basis.",
-    "sourceHashes": {
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.trasher",
@@ -309,11 +286,11 @@
     "examples": [
       {
         "text": "A stolen unit that dies goes to the bin of the player who controls it, and that player trashes it.",
-        "test": "229-cosmic-and-control.test.ts::R250: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin"
+        "test": "229-cosmic-and-control.test.ts::CR 801.2e: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin"
       },
       {
         "text": "Pull Under deletes an enemy unit and puts it into the caster's bin: the caster trashes it.",
-        "test": "15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (R40, binTo)"
+        "test": "15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (CR 801.2e, binTo)"
       }
     ],
     "see": [
@@ -324,24 +301,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R40 (its trasher sentence, for a card that is not a mod)",
-          "quote": "not trashing. The trasher is the owner of the bin the card enters. A"
+          "quote": "not trashing. The trasher is the owner of the bin the card enters. A",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R250 (its §4, zones follow control)",
-          "quote": "| which zone does it go to? | its CONTROLLER's |"
+          "quote": "| which zone does it go to? | its CONTROLLER's |",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R250 (its §4, zones follow control)",
-          "quote": "| who trashed it? | its CONTROLLER (R244, unchanged) |"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R244",
-          "relation": "its §1 destination paragraph (a card goes to its owner's bin) reversed by R250"
+          "quote": "| who trashed it? | its CONTROLLER (R244, unchanged) |",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -351,12 +325,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "\"owner of the bin\" in R40 means the player whose bin it is, not the card's owner. R250 makes the bin the controller's; since then trasher and bin owner coincide (test 229 'no live caller can make the trasher and the bin owner differ any more').",
-    "sourceHashes": {
-      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
-    }
+    "notes": "\"owner of the bin\" in the owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) means the player whose bin it is, not the card's owner. The owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) makes the bin the controller's; since then trasher and bin owner coincide (test 229 'no live caller can make the trasher and the bin owner differ any more').",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.mods-left-behind",
@@ -366,11 +338,11 @@
     "examples": [
       {
         "text": null,
-        "test": "224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner"
+        "test": "224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner"
       },
       {
         "text": null,
-        "test": "224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does"
+        "test": "224-mod-trash.test.ts::CR 720.8: a cached host attributes its left-behind mods the same way a recalled one does"
       }
     ],
     "see": [
@@ -381,24 +353,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R244 (its attribution and mod-erase halves)",
-          "quote": "- **Recalled or cached** — the host leaves for a hand or a cache and the mod is"
+          "quote": "- **Recalled or cached** — the host leaves for a hand or a cache and the mod is",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R244 (its attribution and mod-erase halves)",
-          "quote": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed."
+          "quote": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         },
         {
-          "ref": "R244 (its attribution and mod-erase halves)",
-          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R137",
-          "relation": "its section 'The mods ride with it' reversed by R244"
+          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -407,11 +376,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.mods-erased-with-host",
@@ -421,7 +389,7 @@
     "examples": [
       {
         "text": null,
-        "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
+        "test": "224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all"
       }
     ],
     "see": [
@@ -432,24 +400,11 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R244 (its attribution and mod-erase halves)",
-          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R137",
-          "relation": "its section 'The mods ride with it' reversed by R244"
-        },
-        {
-          "ruling": "R152",
-          "relation": "its §2 (a nontoken mod on an Unstable host is trashed) superseded by R244"
-        },
-        {
-          "ruling": "R153",
-          "relation": "its step 4 (each nontoken mod is trashed) superseded by R244"
+          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -458,11 +413,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Pull Under keeps its victim's mods in the bin (R137/R244 keepBinned) and so does trash them: an effect that names the bin overrides the erase.",
-    "sourceHashes": {
-      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
-    }
+    "notes": "Pull Under keeps its victim's mods in the bin (the owner rulings of 2026-08-24 (“an {Unstable} unit that dies IS…”) and 2026-08-29 (“a mod is PART of the…”) keepBinned) and so does trash them: an effect that names the bin overrides the erase.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.trash.unstable-death",
@@ -472,7 +426,7 @@
     "examples": [
       {
         "text": "Aberrant Statweaver (printed {Unstable}) discarded from a hand goes to the bin and is trashed: the hand is inactive.",
-        "test": "125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive"
+        "test": "125-active-zone.test.ts::CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive"
       }
     ],
     "see": [
@@ -489,20 +443,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R145 (the Unstable glossary line it quotes)",
-          "quote": "\"Unstable\": \"If an unstable card would enter a bin from an active"
+          "quote": "\"Unstable\": \"If an unstable card would enter a bin from an active",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R145",
-          "quote": "A card leaving an **inactive** zone for a bin is **binned and trashed"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R137",
-          "relation": "STILL CURRENT as an owner ruling and NOT followed here: a dying {Unstable} card enters the bin, is trashed there and is only then erased. It records itself as a deliberate divergence from the printed reminder and from Caleb; under the authority order print and designer outrank it (D-U18-1, F-U18-1)"
+          "quote": "A card leaving an **inactive** zone for a bin is **binned and trashed",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -511,15 +461,14 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "low",
     "engineDiffers": [
       "F-U18-1"
     ],
-    "notes": "States the printed reading, as 405.5 (zones.bin.unstable) does, because print and Caleb outrank R137. R137 (owner) deliberately rules the other way: the card enters the bin, is trashed there and is then erased, and the engine does that. Open question D-U18-1 (the same as D-U07-3). If the owner keeps R137, restate the first sentence as: an {Unstable} card that dies enters the bin, is trashed there, and is then erased.",
-    "sourceHashes": {
-      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
-    },
-    "rebuttal": "Kept. The verifier is right that R137 and the engine trash a dying {Unstable} card, but the rule states the printed reading on purpose: the authority order puts printed text and Caleb above our R-rulings, and the reminder (\"If they would enter a bin, erase them instead.\") and Caleb's glossary line quoted in R145 (\"would enter a bin from an active zone\") both replace the bin entry. R137 records itself as diverging from both. The rule already carries engineDiffers F-U18-1 and D-U18-1 asks the owner, matching 405.5 (zones.bin.unstable). The R40 erase quote, which did not support the clause, is replaced by R145; R137 is now listed in history."
+    "notes": "States the printed reading, as 405.5 (zones.bin.unstable) does, because print and Caleb outrank the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”). The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) deliberately rules the other way: the card enters the bin, is trashed there and is then erased, and the engine does that. Open question D-U18-1 (the same as D-U07-3). If the owner keeps the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), restate the first sentence as: an {Unstable} card that dies enters the bin, is trashed there, and is then erased.",
+    "sourceHashes": {},
+    "rebuttal": "Kept. The verifier is right that the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) and the engine trash a dying {Unstable} card, but the rule states the printed reading on purpose: the authority order puts printed text and Caleb above our R-rulings, and the reminder (\"If they would enter a bin, erase them instead.\") and Caleb's glossary line quoted in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) (\"would enter a bin from an active zone\") both replace the bin entry. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) records itself as diverging from both. The rule already carries engineDiffers F-U18-1 and D-U18-1 asks the owner, matching 405.5 (zones.bin.unstable). The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) erase quote, which did not support the clause, is replaced by the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”); the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) is now listed in history."
   },
   {
     "key": "keywords.actions.trash.count-cards-only",
@@ -529,7 +478,7 @@
     "examples": [
       {
         "text": "Dropslime deals damage equal to the cards trashed this battle, and the tokens that died in it do not count.",
-        "test": "338-tokens-are-not-trashed.test.ts::R306: Dropslime deals damage for the CARDS trashed this battle and not for the tokens"
+        "test": "338-tokens-are-not-trashed.test.ts::CR 801.2i: Dropslime deals damage for the CARDS trashed this battle and not for the tokens"
       }
     ],
     "see": [],
@@ -542,24 +491,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R306",
-          "quote": "| Dropslime | \"damage equal to the number of cards trashed in this battle\" | the count is cards only; a token dying never raises it |"
+          "quote": "| Dropslime | \"damage equal to the number of cards trashed in this battle\" | the count is cards only; a token dying never raises it |",
+          "adopted": "2026-09-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "338-tokens-are-not-trashed.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Follows from keywords.actions.trash.tokens; kept as its own rule because counting effects are where it shows.",
-    "sourceHashes": {
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.discard",
@@ -569,7 +517,7 @@
     "examples": [
       {
         "text": null,
-        "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters"
+        "test": "35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters"
       },
       {
         "text": null,
@@ -585,21 +533,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R65 (its discard-me section)",
-          "quote": "Discarding is not playing (R37) — nothing reaches the stack, nothing"
+          "quote": "Discarding is not playing (R37) — nothing reaches the stack, nothing",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R311 (its \"Discard me\" bullet)",
-          "quote": "is not in your hand, so it can't be discarded from there."
+          "quote": "is not in your hand, so it can't be discarded from there.",
+          "adopted": "2026-10-04",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts",
@@ -607,13 +557,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The hand-to-bin move and \"not playing\" are also 402.5 (U07, from R65); the cache exclusion is also 403.4 (R311). Round 1: Manual p.44 dropped (it only names the discard pile); R65 and R311 now cited for the two clauses they state.",
-    "sourceHashes": {
-      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789",
-      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
-    }
+    "notes": "The hand-to-bin move and \"not playing\" are also 402.5 (U07, from the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)); the cache exclusion is also 403.4 (owner ruling of 2026-10-04, “The cache plays like the hand…”). Round 1: Manual p.44 dropped (it only names the discard pile); the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”) and the owner ruling of 2026-10-04 (“The cache plays like the hand…”) now cited for the two clauses they state.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.sacrifice",
@@ -639,14 +586,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The Manual's word is \"permanent\"; every sacrifice in the pool names a unit. The quote's next line reads \"to die.\". A sacrificed card is trashed: keywords.actions.trash.ways.",
     "sourceHashes": {}
@@ -680,8 +627,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts",
@@ -689,6 +635,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -722,14 +669,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 601.1e for the action. RAQ 1454169054402314362#0 is not in the U18 pack: added.",
     "sourceHashes": {
@@ -759,14 +706,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "179-empty-collection-branches.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The Manual's note (\"This can be beneficial, for example if you have no units in a region and play the effect 'Each player sacrifices a unit'\") implies the empty-handed player sacrifices nothing; it does not say it in so many words.",
     "sourceHashes": {}
@@ -804,17 +751,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R348",
-          "quote": "A deleted unit dies."
+          "quote": "A deleted unit dies.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R348",
-          "quote": "Abilities that trigger when a unit dies, its own \"When I die\" included, trigger when it is deleted."
+          "quote": "Abilities that trigger when a unit dies, its own \"When I die\" included, trigger when it is deleted.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "182-correctness-sample.test.ts",
@@ -822,11 +770,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The Manual lists \"dies or is deleted\" side by side and does not say whether a deletion is a death. The engine treats it as one (test 182, \"a death\"; R70's died-event verb table lists `is deleted`). D-U18-9 records that no source states it, so the rule says only where the unit goes. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading.",
-    "sourceHashes": {
-      "R348": "03f8588ee647163ef0a44600f19ad5b068177c844a0fe274b076213f16cd688f"
-    }
+    "notes": "The Manual lists \"dies or is deleted\" side by side and does not say whether a deletion is a death. The engine treats it as one (test 182, \"a death\"; the owner ruling of 2026-08-22 (“Facts about a leaving unit ride…”)’s died-event verb table lists `is deleted`). D-U18-9 records that no source states it, so the rule says only where the unit goes. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, the owner ruling of 2026-10-11 (“A deleted unit dies: deletion is…”). 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, the owner ruling of 2026-10-11 (“A deleted unit dies: deletion is…”). 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, the owner ruling of 2026-10-11 (“A deleted unit dies: deletion is…”). 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, the owner ruling of 2026-10-11 (“A deleted unit dies: deletion is…”). 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, the owner ruling of 2026-10-11 (“A deleted unit dies: deletion is…”). 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.delete.named-bin",
@@ -851,16 +798,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "15-water-b.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "Pull Under's full text: \"Delete target unit. If you do, put it and {/n}all of its mods into your bin.\" (the {/n} markup keeps the second half out of a single quote). That the card's own destination beats {Unstable}'s erase is R137's \"Pull Under keeps its override\" (R137 is cited only in history elsewhere; its Pull Under section stands).",
+    "notes": "Pull Under's full text: \"Delete target unit. If you do, put it and {/n}all of its mods into your bin.\" (the {/n} markup keeps the second half out of a single quote). That the card's own destination beats {Unstable}'s erase is the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”)’s \"Pull Under keeps its override\" (the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) is cited only in history elsewhere; its Pull Under section stands).",
     "sourceHashes": {}
   },
   {
@@ -883,28 +830,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R219",
-          "quote": "> **\"Obviously the card says where it should end up. It's erased… It should just"
+          "quote": "> **\"Obviously the card says where it should end up. It's erased… It should just",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R219",
-          "quote": "\"erase\". That names the destination.** R65 exists *because* of his earlier"
+          "quote": "\"erase\". That names the destination.** R65 exists *because* of his earlier",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "A pointer to 407. Printed: Rulebook 2023 p.15 \"erased (permanantly removed from the game)\" also exists; not cited because the line carries the typo and the pack did not give it.",
-    "sourceHashes": {
-      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.erase.not-death",
@@ -914,7 +861,7 @@
     "examples": [
       {
         "text": "Banishment erases a unit: it does not die and is not trashed, but it does despawn.",
-        "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed'"
+        "test": "145-erase-routes.test.ts::(vii): Banishment still fires no 'died' and no 'trashed'"
       }
     ],
     "see": [
@@ -925,33 +872,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R40 (its bin-entry definition, for cards)",
-          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R172 (§1 and its what-did-not-widen note)",
-          "quote": "an ERASE is a despawn"
+          "quote": "an ERASE is a despawn",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R172 (§1 and its what-did-not-widen note)",
-          "quote": "An erase is still not a death and still not a trash."
+          "quote": "An erase is still not a death and still not a trash.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "145-erase-routes.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "\"not trashing\" is R40; \"not a death\" and \"a despawn\" are R172 (cited from round 1; U07 states them as 407.1c and 410.2).",
-    "sourceHashes": {
-      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d",
-      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
-    }
+    "notes": "\"not trashing\" is the owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”); \"not a death\" and \"a despawn\" are the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) (cited from round 1; U07 states them as 407.1c and 410.2).",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.recall",
@@ -997,8 +944,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "15-water-b.test.ts",
@@ -1008,6 +954,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Round 1: the cache added (Prismatic Observer). The zone list is what the printed pool recalls from, not a closed rule.",
     "sourceHashes": {}
@@ -1020,11 +967,11 @@
     "examples": [
       {
         "text": "A stolen unit that is recalled goes to the thief's hand, not its owner's.",
-        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner"
+        "test": "246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner"
       },
       {
         "text": "Cosmic Reversal recalls a stolen spell unit to the hand of the player who controls it.",
-        "test": "229-cosmic-and-control.test.ts::R250: a STOLEN spell unit is recalled to the seat that CONTROLS it"
+        "test": "229-cosmic-and-control.test.ts::CR 801.7a: a STOLEN spell unit is recalled to the seat that CONTROLS it"
       }
     ],
     "see": [
@@ -1035,21 +982,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R262",
-          "quote": "| `recall` → **hand** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |"
+          "quote": "| `recall` → **hand** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R262",
-          "quote": "**1. The Manual's recall sentence is overruled, knowingly.** The Manual says a"
+          "quote": "**1. The Manual's recall sentence is overruled, knowingly.** The Manual says a",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R262",
-          "quote": "**3. An explicit `to` still wins.** `opts.to` is how a card whose PRINTED TEXT"
+          "quote": "**3. An explicit `to` still wins.** `opts.to` is how a card whose PRINTED TEXT",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "246-zones-follow-control.test.ts",
@@ -1057,11 +1006,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R262 is not in the U18 pack (sections 102/402/...): added. R262 says it knowingly overrules a Manual sentence sending a recall to its owner's hand; that sentence is not in the printed pages the extract carries (D-U18-5). The printed reminders agree with R262 or are neutral: Cosmic Reversal \"their controller's hands\", Tidal Reversion \"(Return it to their hand.)\".",
-    "sourceHashes": {
-      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) is not in the U18 pack (sections 102/402/...): added. The owner ruling of 2026-08-30 (“zones follow control, in all four…”) says it knowingly overrules a Manual sentence sending a recall to its owner's hand; that sentence is not in the printed pages the extract carries (D-U18-5). The printed reminders agree with the owner ruling of 2026-08-30 (“zones follow control, in all four…”) or are neutral: Cosmic Reversal \"their controller's hands\", Tidal Reversion \"(Return it to their hand.)\".",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.recall.unstable",
@@ -1071,7 +1019,7 @@
     "examples": [
       {
         "text": null,
-        "test": "125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires"
+        "test": "125-active-zone.test.ts::CR 803.8j: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires"
       }
     ],
     "see": [
@@ -1087,14 +1035,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "125-active-zone.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "Derived: the printed reminder speaks only of entering a bin, and the test asserts the consequence. The unit's mods go to the bin (410.4) and are trashed there (keywords.actions.trash.mods-left-behind).",
     "sourceHashes": {}
@@ -1130,8 +1078,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "12-fire-a.test.ts",
@@ -1139,6 +1086,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -1155,7 +1103,7 @@
       },
       {
         "text": "Dream Lapse recalls a cast Fireball token: it enters its controller's hand, so Rider of the Tides grows, and then it is erased.",
-        "test": "403-raq-fix-mods.test.ts::R335: Dream Lapse recalls a cast Fireball token"
+        "test": "403-raq-fix-mods.test.ts::CR 801.7d: Dream Lapse recalls a cast Fireball token"
       }
     ],
     "see": [
@@ -1171,13 +1119,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R335",
-          "quote": "Token Spell technically enter your hand if you Recall them and are instantly erased"
+          "quote": "Token Spell technically enter your hand if you Recall them and are instantly erased",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts",
@@ -1185,11 +1133,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The token sentence is the designer's (RAQ 1355689559609839787#3), quoted in R335; cited through R335 because the pack gives the RAQ claim through it.",
-    "sourceHashes": {
-      "R335": "a64cd8c064631a89300a212d31e5dd2ecf07fd7e02e8d15f31d3a7365d11b52b"
-    }
+    "notes": "The token sentence is the designer's (RAQ 1355689559609839787#3), quoted in the owner ruling of 2026-10-09 (“A recalled spell token passes through…”); cited through the owner ruling of 2026-10-09 (“A recalled spell token passes through…”) because the pack gives the RAQ claim through it.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.recall.nothing-to-recall",
@@ -1218,17 +1165,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R30",
-          "quote": "The life loss is unconditional per present player: a player with no unit to"
+          "quote": "The life loss is unconditional per present player: a player with no unit to",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R30",
-          "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+          "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "179-empty-collection-branches.test.ts",
@@ -1236,11 +1184,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R30's heading carries ⚠ (provisional); see D-U01-15. Shoreline Specter's printed \"If you do\" is the counterexample the rule names.",
-    "sourceHashes": {
-      "R30": "e7c2373b72ed97eb303382b135763419e5615c1da0ef3030b93bf9212ca66efd"
-    }
+    "notes": "The owner ruling of 2026-08-18 (“\"Each player recalls a unit and…”)’s heading carries ⚠ (provisional); see D-U01-15. Shoreline Specter's printed \"If you do\" is the counterexample the rule names.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.cache",
@@ -1250,11 +1197,11 @@
     "examples": [
       {
         "text": "A stolen unit that is cached goes to the thief's cache.",
-        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit cached goes to the THIEF cache"
+        "test": "246-zones-follow-control.test.ts::CR 801.8: a stolen unit cached goes to the THIEF cache"
       },
       {
         "text": "Grob caches a stolen unit into its controller's cache, as its text says.",
-        "test": "135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache"
+        "test": "135-exchange-and-zones.test.ts::§27: Grob caches a STOLEN unit into the CONTROLLER’s cache"
       }
     ],
     "see": [
@@ -1271,17 +1218,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R262",
-          "quote": "| `cacheUnit` → **cache** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |"
+          "quote": "| `cacheUnit` → **cache** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (§27)",
-          "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
+          "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "246-zones-follow-control.test.ts",
@@ -1289,12 +1237,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The mods half restates 403.7 (R46). R262 and R46 are not in the U18 pack: added.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
-    }
+    "notes": "The mods half restates 403.7 (owner ruling of 2026-08-19, “Mods do not follow a card…”). The owner ruling of 2026-08-30 (“zones follow control, in all four…”) and the owner ruling of 2026-08-19 (“Mods do not follow a card…”) are not in the U18 pack: added.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.cache.no-permission",
@@ -1321,24 +1267,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R303",
-          "quote": "Being in the cache is not permission to do *anything* with a card (R41). A cached card"
+          "quote": "Being in the cache is not permission to do *anything* with a card (R41). A cached card",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "182-correctness-sample.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "403.3a lists only a glimpse and a fulfilled prophecy; Murkdrop Distiller and Big Glimpse Card grant the play in their own text (D-U18-8). The example test asserts the caching; whether it asserts the play permission was not checked by the drafter.",
-    "sourceHashes": {
-      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse",
@@ -1352,7 +1297,7 @@
       },
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R45: Glimpse N reveals N, caches exactly ONE of the glimpser's choice and recycles the rest"
+        "test": "36-cache-prophecy.test.ts::CR 801.9: Glimpse N reveals N, caches exactly ONE of the glimpser's choice and recycles the rest"
       }
     ],
     "see": [
@@ -1368,13 +1313,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "Glimpse N reveals the top N cards of the deck, caches exactly **one** of the"
+          "quote": "Glimpse N reveals the top N cards of the deck, caches exactly **one** of the",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts",
@@ -1382,11 +1327,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "The recycled cards go past the mark into the recycle pile (408.2a).",
-    "sourceHashes": {
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.choice",
@@ -1396,7 +1340,7 @@
     "examples": [
       {
         "text": "In a Glimpse 3, choosing the last revealed card caches it and recycles the two above it.",
-        "test": "36-cache-prophecy.test.ts::R45: choosing the LAST revealed card recycles the two above it, in order"
+        "test": "36-cache-prophecy.test.ts::CR 801.9a: choosing the LAST revealed card recycles the two above it, in order"
       }
     ],
     "see": [],
@@ -1404,24 +1348,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "glimpser's choice, and recycles the other N-1 to the bottom of the deck."
+          "quote": "glimpser's choice, and recycles the other N-1 to the bottom of the deck.",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The printed reminder says \"cache one\" without saying who picks; R45 gives the pick to the glimpser.",
-    "sourceHashes": {
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "notes": "The printed reminder says \"cache one\" without saying who picks; the owner ruling of 2026-08-19 (“Glimpse N: reveal N, cache ONE…”) gives the pick to the glimpser.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.one",
@@ -1431,7 +1374,7 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R45: Glimpse 1 raises no decision"
+        "test": "36-cache-prophecy.test.ts::CR 801.9b: Glimpse 1 raises no decision"
       }
     ],
     "see": [],
@@ -1444,24 +1387,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "The N=1 cards read \"reveal the top card and cache it\" only because cache-one"
+          "quote": "The N=1 cards read \"reveal the top card and cache it\" only because cache-one",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.repeated",
@@ -1471,7 +1413,7 @@
     "examples": [
       {
         "text": "Glook discards X cards when activated and then glimpses 1, X times.",
-        "test": "167-variable-ability-costs.test.ts::R196 Glook \"[once] Discard X cards: Glimpse 1, X times\""
+        "test": "167-variable-ability-costs.test.ts::CR 705.3b Glook \"[once] Discard X cards: Glimpse 1, X times\""
       }
     ],
     "see": [],
@@ -1484,24 +1426,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "one-card glimpses, not one Glimpse X. `Big Glimpse Card` is a deliberate"
+          "quote": "one-card glimpses, not one Glimpse X. `Big Glimpse Card` is a deliberate",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "167-variable-ability-costs.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The example test is about when Glook's discard cost is paid; it may not assert the X separate glimpses. No test title found that does.",
-    "sourceHashes": {
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.whose-deck",
@@ -1535,13 +1476,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (§18, its shared-deck sentence)",
-          "quote": "> *\"Your deck. It will be shared during live draft and solo in constructed."
+          "quote": "> *\"Your deck. It will be shared during live draft and solo in constructed.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "14-water-a.test.ts",
@@ -1549,11 +1490,10 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "Round 1: the first sentence no longer says \"the deck of the effect's controller\". R157 §18 quotes that phrase, but it answered Big Glimpse Card, where the controller is the glimpser; on Celestial Purge and Dematerialize the reminder names \"their deck\", the glimpser's. The conflict is D-U18-12. No test runs a constructed game where the two readings differ.",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "notes": "Round 1: the first sentence no longer says \"the deck of the effect's controller\". The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) quotes that phrase, but it answered Big Glimpse Card, where the controller is the glimpser; on Celestial Purge and Dematerialize the reminder names \"their deck\", the glimpser's. The conflict is D-U18-12. No test runs a constructed game where the two readings differ.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.permission",
@@ -1563,7 +1503,7 @@
     "examples": [
       {
         "text": "A card with affinity its glimpser cannot meet can be played from the cache, for its mana only.",
-        "test": "36-cache-prophecy.test.ts::R45: a card with no affinity is ILLEGAL from hand but LEGAL from cache, for mana only"
+        "test": "36-cache-prophecy.test.ts::CR 801.9e: a card with no affinity is ILLEGAL from hand but LEGAL from cache, for mana only"
       }
     ],
     "see": [
@@ -1579,24 +1519,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "Until end of turn the cached card may be played as if it were in the"
+          "quote": "Until end of turn the cached card may be played as if it were in the",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.permission.cost-timing",
@@ -1606,11 +1545,11 @@
     "examples": [
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana — broke means refused"
+        "test": "315-cache-mod-permission.test.ts::CR 801.9g: the glimpse waives the pips, NOT the mana — broke means refused"
       },
       {
         "text": "A glimpsed {Battle} card cannot be played in deployment.",
-        "test": "36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer"
+        "test": "36-cache-prophecy.test.ts::CR 801.9f: glimpse still obeys timing, and a short deck glimpses fewer"
       }
     ],
     "see": [
@@ -1621,17 +1560,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "glimpser's hand, **ignoring affinity** (Caleb 2024-10-28) but still paying its"
+          "quote": "glimpser's hand, **ignoring affinity** (Caleb 2024-10-28) but still paying its",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R45",
-          "quote": "mana cost (Caleb 2023-08-13) and still obeying timing restrictions (Caleb"
+          "quote": "mana cost (Caleb 2023-08-13) and still obeying timing restrictions (Caleb",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "315-cache-mod-permission.test.ts",
@@ -1639,11 +1579,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R45 attributes each limit to a dated Caleb statement but quotes none of them, so the basis is the ruling. The printed reminder's \"as if it was in your hand\" supports both limits.",
-    "sourceHashes": {
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "notes": "The owner ruling of 2026-08-19 (“Glimpse N: reveal N, cache ONE…”) attributes each limit to a dated Caleb statement but quotes none of them, so the basis is the ruling. The printed reminder's \"as if it was in your hand\" supports both limits.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.permission.mods",
@@ -1653,11 +1592,11 @@
     "examples": [
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
+        "test": "315-cache-mod-permission.test.ts::CR 801.9g: a LIVE glimpse grafts for the card's mana, ignoring affinity"
       },
       {
         "text": "A glimpsed {Virus} in the cache goes onto an enemy unit in battle.",
-        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity"
+        "test": "370-cached-virus-in-battle.test.ts::CR 723.2a: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity"
       }
     ],
     "see": [
@@ -1679,13 +1618,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R303",
-          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
+          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "315-cache-mod-permission.test.ts",
@@ -1693,10 +1632,10 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The price half is R303 (owner); the permission half is the designer's.",
+    "notes": "The price half is the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) (owner); the permission half is the designer's.",
     "sourceHashes": {
-      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
       "RAQ 1537748882501668934#3": "58d15a8f21bd69d98736c68f7e52c872ebcbec1bd08dd995eedac13a2d589288",
       "RAQ 1537748882501668934#4": "df4d0cd9f8f8f6ffe2cb2d5cb96411c53fe72b7bdf7ebd4d83a69d41061fd0ec"
     }
@@ -1709,7 +1648,7 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
+        "test": "36-cache-prophecy.test.ts::CR 403.8: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
       }
     ],
     "see": [
@@ -1721,28 +1660,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R308",
-          "quote": "prophesied too: same window (deployment, or the haste step for a banner with a"
+          "quote": "prophesied too: same window (deployment, or the haste step for a banner with a",
+          "adopted": "2026-10-01",
+          "from": "register@72de434"
         },
         {
-          "ref": "R308",
-          "quote": "- The glimpse permission is spent. The hand-like permission is what the"
+          "quote": "- The glimpse permission is spent. The hand-like permission is what the",
+          "adopted": "2026-10-01",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "36-cache-prophecy.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 403.8 from the glimpse side.",
-    "sourceHashes": {
-      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.glimpse.permission.ends",
@@ -1752,7 +1691,7 @@
     "examples": [
       {
         "text": null,
-        "test": "315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything"
+        "test": "315-cache-mod-permission.test.ts::CR 801.9i: an expired glimpse is not a graft, not an augment, not anything"
       },
       {
         "text": "Premonition's permission dies with the turn; the card stays cached.",
@@ -1771,24 +1710,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R45",
-          "quote": "2025-12-28). The permission expires at end of turn; the card stays in cache,"
+          "quote": "2025-12-28). The permission expires at end of turn; the card stays in cache,",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R303",
-          "quote": "| expired glimpse, unfulfilled banner, or neither | refused | refused |"
+          "quote": "| expired glimpse, unfulfilled banner, or neither | refused | refused |",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R308",
-          "quote": "- A cached card with no permission, or whose glimpse has expired, still cannot"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R190",
-          "relation": "its Glimpse glossary row's \"stays cached, inert\" amended by R206; R303 later restored \"inert\" (D-U18-10)"
+          "quote": "- A cached card with no permission, or whose glimpse has expired, still cannot",
+          "adopted": "2026-10-01",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1798,13 +1734,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R206 presents its Glimpse tightening (an expired glimpse card is still moddable) as current, and R303 reverses it: D-U18-10. Our glossary row still says moddable: F-U18-2 (a text finding, not an engine divergence).",
-    "sourceHashes": {
-      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
-      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f",
-      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
-    }
+    "notes": "The owner ruling of 2026-08-26 (“the glossary is a rules document…”) presents its Glimpse tightening (an expired glimpse card is still moddable) as current, and the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) reverses it: D-U18-10. Our glossary row still says moddable: F-U18-2 (a text finding, not an engine divergence).",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.recycle",
@@ -1818,7 +1751,7 @@
       },
       {
         "text": null,
-        "test": "300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark while the deck still has cards"
+        "test": "300-recycle-mark.test.ts::CR 408.2 a recycled card stays behind the mark while the deck still has cards"
       }
     ],
     "see": [
@@ -1839,21 +1772,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R190 (its Recycle row)",
-          "quote": "never does. Recycling has a single meaning in Algomancy — put a card on the bottom"
+          "quote": "never does. Recycling has a single meaning in Algomancy — put a card on the bottom",
+          "adopted": "2026-08-26",
+          "from": "register@72de434"
         },
         {
-          "ref": "R296",
-          "quote": "A deck has a **mark** at the original end of the library. A recycled card goes"
+          "quote": "A deck has a **mark** at the original end of the library. A recycled card goes",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R296",
-          "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+          "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck.",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "15-water-b.test.ts",
@@ -1861,12 +1796,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "The first sentence is printed; the mark and the recycle pile are R296, an owner report of an unwritten rule with no printed or designer source (D-U18-13, the same as D-U07-12). Also 408.2.",
-    "sourceHashes": {
-      "R190": "2c143552cacb38910f6dc1519d8a523d96382a92393de01fc335337f1c1a60a1",
-      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
-    }
+    "notes": "The first sentence is printed; the mark and the recycle pile are the owner ruling of 2026-09-16 (“Recycling puts a card past the…”), an owner report of an unwritten rule with no printed or designer source (D-U18-13, the same as D-U07-12). Also 408.2.",
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.fight",
@@ -1895,14 +1828,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "16-earth-a.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Whether the two hits are simultaneous is not stated: D-U18-6. A unit with negative power deals 0 (Manual p.42; 206).",
     "sourceHashes": {}
@@ -1915,11 +1848,11 @@
     "examples": [
       {
         "text": "A fighter that gained {Powerful} deals double damage.",
-        "test": "399-raq-fix-combat.test.ts::R318: Fight — a fighter that GAINED Powerful deals double"
+        "test": "399-raq-fix-combat.test.ts::CR 801.11a: Fight — a fighter that GAINED Powerful deals double"
       },
       {
         "text": "A {Powerful} virus on the Fight spell does not double either fighter's damage.",
-        "test": "399-raq-fix-combat.test.ts::R318: Fight — a Powerful virus on the Fight spell does not double either fighter"
+        "test": "399-raq-fix-combat.test.ts::Fight — a Powerful virus on the Fight spell does not double either fighter"
       }
     ],
     "see": [
@@ -1935,23 +1868,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R318",
-          "quote": "So the unit dealing the damage is the source, with its **live** attributes (its"
+          "quote": "So the unit dealing the damage is the source, with its **live** attributes (its",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "399-raq-fix-combat.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
-    "notes": "RAQ thread 1402292180499955884 and R318 are not in the U18 pack (they are filed under 112 and 802.9/802.10): added. Restates 112.6 for fights.",
+    "notes": "RAQ thread 1402292180499955884 and the owner ruling of 2026-10-09 (“Squish, Fight and Battle: the unit…”) are not in the U18 pack (they are filed under 112 and 802.9/802.10): added. Restates 112.6 for fights.",
     "sourceHashes": {
-      "R318": "b13b3ca34a471fdb76cb9272f2929ad8b0eec17d7ea5cff2cba441ffdae5947a",
       "RAQ 1402292180499955884#0": "8ca0618915f46ba0c16263c38e217d8b045a1e4767421a8e648967c065ada9d9"
     }
   },
@@ -1982,8 +1915,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "388-raq-blocks-and-windows.test.ts",
@@ -1991,6 +1923,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "No test asserts it for Fight itself, only for Squish; the designer's claim names all three.",
     "sourceHashes": {
@@ -2026,8 +1959,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -2035,6 +1967,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "Restates 704.6c for fights. RAQ thread 1354013430805434389 is not in the U18 pack: added.",
     "sourceHashes": {
@@ -2068,14 +2001,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "182-correctness-sample.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"Each player\" is each player in the region (601.1b).",
     "sourceHashes": {}
@@ -2107,14 +2040,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "396-raq-timing.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2144,14 +2077,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "93-engine-defects.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "\"Living\" matters for a repeated rockfall: a unit killed by an earlier rockfall cannot be chosen by a later one.",
     "sourceHashes": {
@@ -2186,36 +2119,38 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R80",
-          "quote": "Meteor Shower making several Rockfalls: *\"Each copy of Rockfall is a separate"
+          "quote": "Meteor Shower making several Rockfalls: *\"Each copy of Rockfall is a separate",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R80",
-          "quote": "three batches for the same reason."
+          "quote": "three batches for the same reason.",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R349",
-          "quote": "An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall."
+          "quote": "An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         },
         {
-          "ref": "R349",
-          "quote": "It waits until the whole effect has resolved, like any ability that triggers while an effect resolves."
+          "quote": "It waits until the whole effect has resolved, like any ability that triggers while an effect resolves.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "17-earth-b.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R80 (not in the U18 pack) quotes Caleb 2025-03-20: each rockfall is a separate source. Whether abilities triggered by one rockfall resolve before the next is open: D-U18-4. This rule does not say. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies).",
+    "notes": "The owner ruling of 2026-08-22 (“ALL of one effect's damage is…”) (not in the U18 pack) quotes Caleb 2025-03-20: each rockfall is a separate source. Whether abilities triggered by one rockfall resolve before the next is open: D-U18-4. This rule does not say. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies).",
     "sourceHashes": {
-      "R349": "a1419d016163476c680418d5050dbdae8a5282343161435caaa2b342436cf67e",
-      "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860",
       "RAQ 1353899470156206152#4": "d5427bf9e0aaf457b7dcf397581cb20f332ef855d05381becc46e40f79ba1097"
     }
   },
@@ -2263,8 +2198,7 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts",
@@ -2273,6 +2207,7 @@
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "medium",
     "notes": "An index of the printed senses, not a definition. A Prismite exchange (106.8) is a further, resource-step sense with no card text. Round 1: Hexbane Shiitake moved out of the two-units sense into its own (a unit for a spell).",
     "sourceHashes": {}
@@ -2285,11 +2220,11 @@
     "examples": [
       {
         "text": "Necromorph's exchange fires no death trigger, but the unit despawns and is trashed.",
-        "test": "135-exchange-and-zones.test.ts::R157 §3: Necromorph’s exchange fires NO death trigger — but it despawns and it trashes"
+        "test": "135-exchange-and-zones.test.ts::CR 801.13a: Necromorph’s exchange fires NO death trigger — but it despawns and it trashes"
       },
       {
         "text": "Hooba-Mon exchanging an unmodded host: the host goes to the bin and stays there.",
-        "test": "42-dark-b.test.ts::R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there"
+        "test": "42-dark-b.test.ts::CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there"
       }
     ],
     "see": [
@@ -2301,13 +2236,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R157 (§3)",
-          "quote": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
+          "quote": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "135-exchange-and-zones.test.ts",
@@ -2315,11 +2250,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "A modded (so {Unstable}) unit exchanged this way is erased with its mods (410.4d); whether it is trashed on the way is D-U18-1 / D-U07-16. Losing either unit makes the exchange do nothing (Manual p.43; 704.6c).",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "keywords.actions.prophesy",
@@ -2329,7 +2263,7 @@
     "examples": [
       {
         "text": null,
-        "test": "36-cache-prophecy.test.ts::R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment"
+        "test": "36-cache-prophecy.test.ts::CR 801.9h: the real card — a glimpsed Vengeance is offered its prophecy in deployment"
       }
     ],
     "see": [
@@ -2340,20 +2274,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R42 (its cache-with-the-prophecy-attached definition)",
-          "quote": "with its prophecy attached. Only a card that says so may be prophesied from"
+          "quote": "with its prophecy attached. Only a card that says so may be prophesied from",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
         },
         {
-          "ref": "R308",
-          "quote": "trailing [Haste], R277), same cost (the banner's mana and affinity, R301)."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R42",
-          "relation": "its no-affinity cost corrected by R301; its window amended by R277; its source zone amended by R308"
+          "quote": "trailing [Haste], R277), same cost (the banner's mana and affinity, R301).",
+          "adopted": "2026-10-01",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2362,11 +2292,9 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "A pointer to 803 (U21). R42 is not in the U18 pack: added for the definition. When and from where a card may be prophesied belong to 803.",
-    "sourceHashes": {
-      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f",
-      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
-    }
+    "notes": "A pointer to 803 (U21). The owner ruling of 2026-08-19 (“Prophecy: cache during deployment for the…”) is not in the U18 pack: added for the definition. When and from where a card may be prophesied belong to 803.",
+    "sourceHashes": {}
   }
 ]

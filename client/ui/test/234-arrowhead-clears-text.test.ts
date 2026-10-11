@@ -1,4 +1,4 @@
-/* R255 / CT-126 — report #133: "When an effect is targeting a player, the
+/* CR D6.18 / CT-126 — report #133: "When an effect is targeting a player, the
  * arrow covers up their life total, making it impossible to read."
  *
  * The report names the life pill; the CLASS is every endpoint that shows text
@@ -27,7 +27,7 @@
  *    the subject set cannot quietly empty out and keep passing;
  *  - an endpoint with nothing legible in the middle — every card whose art is
  *    showing — is not moved by so much as a pixel. That is [26] itself, and
- *    the reason R255 is not "point at the edge again".
+ *    the reason CR D6.18 is not "point at the edge again".
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -87,7 +87,7 @@ const ENDPOINTS: Record<TargetKind, Endpoint[]> = {
       // at 21px. Re-read out of headless Chrome rather than scaled, and that
       // paid: the first cut of the redesign put a 36px glyph box in a 34.6px
       // pill, which leaves the head nowhere to stop, so headStop fell back to
-      // resting ON the number — R255's own report, reintroduced by a CSS
+      // resting ON the number — report #133 itself, reintroduced by a CSS
       // tweak, caught here from 135deg. The pill's padding is what buys the
       // room back, at any font size.
       what: 'the life pill at 30 life — the report',
@@ -192,7 +192,7 @@ const DIRS: [number, number][] = Array.from({ length: 16 }, (_, k) => {
 
 /* ── the guards ────────────────────────────────────────────────────────── */
 
-test('[R255] the fixtures are the bug: at the old inset the head sits on their text', () => {
+test('[CR D6.18] the fixtures are the bug: at the old inset the head sits on their text', () => {
   // THE POSITIVE CONTROL. Every assertion below is about arrowheads that no
   // longer cover text; a fixture table that had quietly stopped occluding
   // anything would satisfy all of them and prove nothing. So first: the ones
@@ -211,7 +211,7 @@ test('[R255] the fixtures are the bug: at the old inset the head sits on their t
   }
 });
 
-test('[R255] every measured endpoint has an arrowhead that clears its text', () => {
+test('[CR D6.18] every measured endpoint has an arrowhead that clears its text', () => {
   for (const e of ALL) {
     for (const [ux, uy] of DIRS) {
       const inset = headStop(e.box, e.text, ux, uy);
@@ -222,7 +222,7 @@ test('[R255] every measured endpoint has an arrowhead that clears its text', () 
   }
 });
 
-test('[R255] an endpoint with nothing legible in the middle is not moved at all', () => {
+test('[CR D6.18] an endpoint with nothing legible in the middle is not moved at all', () => {
   // [26] is intact where it was asked for: ZQPC wanted the head on the middle
   // of a CARD, and a card whose scan is showing keeps exactly that.
   const untouched = ALL.filter(e => !e.occluding);
@@ -237,7 +237,7 @@ test('[R255] an endpoint with nothing legible in the middle is not moved at all'
   assert.equal(headStop(boxOf(78, 108), [], 1, 0), HEAD_INSET);
 });
 
-test('[R255] the head stops just short of the label, never far from the thing it points at', () => {
+test('[CR D6.18] the head stops just short of the label, never far from the thing it points at', () => {
   for (const e of ALL) {
     for (const [ux, uy] of DIRS) {
       const inset = headStop(e.box, e.text, ux, uy);
@@ -257,7 +257,7 @@ test('[R255] the head stops just short of the label, never far from the thing it
   assert.ok(fromAbove < pill.box.height / 2 + HEAD_SLACK, 'and it stopped as soon as it had');
 });
 
-test('[R255] a label too big to clear keeps the old inset rather than parking outside', () => {
+test('[CR D6.18] a label too big to clear keeps the old inset rather than parking outside', () => {
   // the fallback matters: an endpoint plastered edge to edge in text has no
   // clear spot, and an arrow that stops 200px short of it is worse than one
   // resting on a word. Pointing at the right thing wins.
@@ -266,7 +266,7 @@ test('[R255] a label too big to clear keeps the old inset rather than parking ou
   assert.equal(headStop(box, smothered, 1, 0), HEAD_INSET);
 });
 
-test('[R255] arrowGeometry keeps aiming at the exact centre, and reports its own inset', () => {
+test('[CR D6.18] arrowGeometry keeps aiming at the exact centre, and reports its own inset', () => {
   const a: ArrowBox = { left: 100, top: 100, width: 60, height: 84 };
   const pill = ENDPOINTS.player[0]!;
   const plain = arrowGeometry(a, pill.box)!;
@@ -274,7 +274,7 @@ test('[R255] arrowGeometry keeps aiming at the exact centre, and reports its own
   assert.equal(plain.inset, HEAD_INSET, 'and with no text passed in, nothing changes at all');
 
   const aware = arrowGeometry(a, pill.box, pill.text)!;
-  assert.deepEqual([aware.x2, aware.y2], [plain.x2, plain.y2], 'R255 moves the head, never the aim');
+  assert.deepEqual([aware.x2, aware.y2], [plain.x2, plain.y2], 'CR D6.18 moves the head, never the aim');
   assert.ok(aware.inset > plain.inset, 'the head backed off the life total');
   assert.equal(Math.round(Math.hypot(aware.x2 - aware.tx, aware.y2 - aware.ty) * 100) / 100,
     Math.round(aware.inset * 100) / 100, 'the tip really is `inset` short of the centre');

@@ -1,4 +1,4 @@
-/* R173 — guards that can actually reach the code path their report is about.
+/* Guards that can actually reach the code path their report is about (see 154-guard-shape).
  *
  * WHY THIS FILE EXISTS
  *
@@ -83,8 +83,8 @@ function tombFixture(seed: number): { h: Harness; A: Seat; D: Seat; tomb: number
   h.do({ type: 'declareAttack', seat: A, columns: [[tomb]] });
   pass(h);                                   // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
-  pick(h, 1);                                // R35: X = 1, chosen and paid at cast
-  pick(h, { player: A });                    // R83: slot 0, the opponent
+  pick(h, 1);                                // CR 107.2a: X = 1, chosen and paid at cast
+  pick(h, { player: A });                    // CR 110.2b: slot 0, the opponent
   pick(h, { unit: ally });                   // the cast-time ally target
   return { h, A, D, tomb };
 }
@@ -227,8 +227,8 @@ test('#18 …and that empty list is what the server really publishes', () => {
  * it much slower."
  *
  * `combatStages` does the arithmetic and is well tested — on hand-written
- * event arrays. What the report is about is whether the client FEEDS it: R80's
- * fix is `absorbBeats(events)` in the update path plus `heldLines` drawing
+ * event arrays. What the report is about is whether the client FEEDS it: the pacing
+ * fix (CR D5.4) is `absorbBeats(events)` in the update path plus `heldLines` drawing
  * fewer log lines. Cut either and every `combatStages` test stays green while
  * the whole batch lands in one frame again, which is the reported symptom
  * exactly.
@@ -298,7 +298,7 @@ function combatBatch(seed: number): { h: Harness; D: Seat; events: EngineEvent[]
 /**
  * ⚠ TWO CURTAINS NOW COVER THIS LOG, AND #53 IS ABOUT EXACTLY ONE OF THEM.
  *
- * R80's PACING curtain (ui/pace.ts, the beat queue) is what report #53 is: the
+ * CR D5.4's PACING curtain (ui/pace.ts, the beat queue) is what report #53 is: the
  * end of combat arrived in one frame and was over before it could be read. The
  * story curtain added in round 31 for report #125 is a different axis — it
  * folds lines that are *echoes*, whichever beat they arrived on, and it folds
@@ -324,7 +324,7 @@ test('#53 a real combat batch reaches the client PACED, not all in one frame', (
   const told = events.filter(e => e.msg);
   assert.ok(told.length >= 6, `a combat worth pacing (${told.length} lines)`);
 
-  // The legal list is deliberately non-empty. R150's throttle (ui/pace.ts)
+  // The legal list is deliberately non-empty. CR D5.4's throttle (ui/pace.ts)
   // HOLDS an update the player cannot act on, and an update it is holding has
   // not reached `absorbBeats` at all — so an empty list would make this test
   // pass for the wrong reason, and pass or fail depending on how many updates
@@ -369,7 +369,7 @@ test('#53 …and the held lines are a curtain, not an edit — the next update l
   ui.update(viewFor(h.state, D), legal, { events });
   assert.ok(logRows(ui.html()).length < told.length, 'held, as above');
 
-  // R80's own promise: `h.log` is never touched, so an undo, a resync or a bug
+  // CR D5.4e's own promise: `h.log` is never touched, so an undo, a resync or a bug
   // can only ever make the missing lines APPEAR — at worst MAX_LEAD_MS late.
   // A later batch REPLACES the beat queue rather than queueing behind it.
   //

@@ -12,11 +12,11 @@
  * redacted to nothing actionable. Both mechanisms are pinned, because they
  * suspend differently and are redacted differently:
  *
- *   R75 (Hooba-* — "create … in my formation"): the ask is raised while an
+ *   CR 602.6 (Hooba-* — "create … in my formation"): the ask is raised while an
  *   effect RESOLVES, so it rides a 'resolve' suspension whose rollback
  *   snapshot must be stripped even for the seat that owns the decision.
  *
- *   R29 (Tiderunner Initiate — "play me into an open spot"): the ask is part
+ *   CR 702.3e (Tiderunner Initiate — "play me into an open spot"): the ask is part
  *   of the CAST, raised by playCard itself, and its option values are
  *   FormationSpot descriptors that must round-trip JSON unchanged.
  */
@@ -50,7 +50,7 @@ function checkRelay(h: Harness, name: string): void {
   ok(JSON.stringify(mine.decision.options) === JSON.stringify(s.decision!.options),
     `${name}: every option (label and value) round-trips the wire intact`);
   ok(!mine.suspension?.snapshot,
-    `${name}: the R85 rollback snapshot never reaches even the asked seat`);
+    `${name}: the rollback snapshot never reaches even the asked seat`);
   const answers = legalActions(s, seat);
   ok(answers.length === s.decision!.options.length
     && answers.every(a => a.type === 'decide' && a.seat === seat),
@@ -64,7 +64,7 @@ function checkRelay(h: Harness, name: string): void {
   ok(legalActions(s, opp).length === 0, `${name}: the opponent is offered nothing to do`);
 }
 
-// ── R75: Hooba-Bot's Robot, asked while the trigger resolves ─────────────
+// ── CR 602.6: Hooba-Bot's Robot, asked while the trigger resolves ─────────────
 {
   const h = new Harness(9001, ['Ben', 'Rashi']);
   toDeployment(h);
@@ -74,11 +74,11 @@ function checkRelay(h: Harness, name: string): void {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[bot]] });
   pass(h); pass(h);                                   // the trigger resolves and asks
-  ok(h.state.decision?.seat === A, 'R75: the slot ask is pending for the controller');
-  checkRelay(h, 'R75 Hooba-Bot');
+  ok(h.state.decision?.seat === A, 'CR 602.6: the slot ask is pending for the controller');
+  checkRelay(h, 'CR 602.6 Hooba-Bot');
 }
 
-// ── R29: Tiderunner Initiate, asked by the cast itself ───────────────────
+// ── CR 602.7: Tiderunner Initiate, asked by the cast itself ───────────────────
 {
   const h = new Harness(7301, ['Ben', 'Rashi']);
   toDeployment(h);
@@ -88,8 +88,8 @@ function checkRelay(h: Harness, name: string): void {
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   giveResources(h, A, 'water', 1);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
-  ok(h.state.decision?.seat === A, 'R29: the cast raises the spot ask for the caster');
-  checkRelay(h, 'R29 Tiderunner');
+  ok(h.state.decision?.seat === A, 'CR 702.3e: the cast raises the spot ask for the caster');
+  checkRelay(h, 'CR 602.7 Tiderunner');
 }
 
 if (failures) { console.error(`${failures} failure(s)`); process.exit(1); }

@@ -1,8 +1,8 @@
 {
   "_README": [
-    "R252 / report #118 — THE GAME'S OWN WORDS FOR THE MARKERS NO CARD REMINDS YOU ABOUT.",
+    "CR D6.11 / report #118 — THE GAME'S OWN WORDS FOR THE MARKERS NO CARD REMINDS YOU ABOUT.",
     "",
-    "R248 gave every glossary row two audiences: `text` is what a PLAYER reads and",
+    "The first report #118 fix gave every glossary row two audiences: `text` is what a PLAYER reads and",
     "`rule` is what the REPOSITORY states. It filled `text` from the pool's own",
     "`{i}(...)` reminder spans, which covers 15 of the 43 rows. The other 28 kept the",
     "repo's authored generalisation on screen — and that is what the owner objected",
@@ -34,14 +34,14 @@
     "  · {Unstable} is defined under the heading PERMADEATH (p.35), which does not",
     "    name it, and only for the modded route — it would tell a player that",
     "    Aberrant Statweaver and Oorblak, which PRINT the attribute on their type",
-    "    line, do not have it, and it is silent on R145's active-zone scope. Both",
-    "    omissions are ones R206/CT-80 had to put back once already.",
+    "    line, do not have it, and it is silent on the active-zone scope (CR 803.8a). Both",
+    "    omissions are ones CT-80 had to put back once already.",
     "",
     "WHAT MAY NOT. Shortening a row. The authored sentence is never edited and never",
     "deleted — `asShown` MOVES it to `rule`, exactly as it does for a printed",
     "reminder, and 177 §7 asserts it arrives there character for character. For the",
     "twenty rows with no manual entry the authored sentence is still the only",
-    "statement of the rule this repository has (R206 / CT-80), so it stays on screen."
+    "statement of the rule this repository has (CT-80), so it stays on screen."
   ],
   "source": {
     "file": "data/rules/Algomancy-Manual.txt",

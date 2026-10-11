@@ -1,6 +1,6 @@
-/* R258 / CT-123 — WHAT STAYS LIVE WHILE R150's THROTTLE IS HOLDING.
+/* CR D5.5 / CT-123 — WHAT STAYS LIVE WHILE THE THROTTLE (CR D5.4b) IS HOLDING.
  *
- * R150 holds an update the player cannot act on. A held update releases
+ * CR D5.4b holds an update the player cannot act on. A held update releases
  * nothing, so `pumpPace` renders nothing, so NOTHING on screen changes — which
  * is the feature for the board and was a bug for two things that are not the
  * board:
@@ -27,7 +27,7 @@
  * render() reddens that immediately.
  *
  * §1 no chip, and S still skips — on the real client over the real wire
- * §2 the R150 invariant: the live slots moved and nothing else did
+ * §2 the CR D5.5a invariant: the live slots moved and nothing else did
  * §3 presence, the same class, one level deeper (the hold gate never saw it)
  * §4 the measured band, replayed against the real pace.ts arithmetic
  *
@@ -74,7 +74,7 @@ const showsTurn = (html: string, n: number): boolean => new RegExp(`Turn ${n}\\D
 
 /**
  * An update the throttle may NOT hold: it offers the player something to do.
- * R150 flushes on one of these, so it leaves the queue empty AND the release
+ * CR D5.4c flushes on one of these, so it leaves the queue empty AND the release
  * floor at now — which is what makes the next arrival deterministically held,
  * whatever any earlier test in this file left behind.
  */
@@ -91,7 +91,7 @@ const held = (s: GameState, extra: Record<string, unknown> = {}): string =>
 
 /* ══ §1 — no catching-up chip, and S still skips ═══════════════════════ */
 
-test('R258 no catching-up chip is drawn while the throttle is holding', () => {
+test('CR D5.5 no catching-up chip is drawn while the throttle is holding', () => {
   const s = board(23700);
   live(s);
   const html = held(at(s, 7));
@@ -100,7 +100,7 @@ test('R258 no catching-up chip is drawn while the throttle is holding', () => {
   assert.doesNotMatch(html, /catching up/i, 'and no count of what is held, anywhere on screen');
 });
 
-test('R258 several held arrivals still draw nothing, and S releases them all', () => {
+test('CR D5.5 several held arrivals still draw nothing, and S releases them all', () => {
   const s = board(23701);
   live(s);
   for (const turn of [7, 8, 9]) {
@@ -110,7 +110,7 @@ test('R258 several held arrivals still draw nothing, and S releases them all', (
   assert.ok(showsTurn(ui.key('s'), 9), 'S jumps straight to the live state');
 });
 
-test('R258 S drains the throttle, and the board lands on the held state', () => {
+test('CR D5.5 S drains the throttle, and the board lands on the held state', () => {
   const s = board(23702);
   live(s);
   held(at(s, 7));
@@ -119,9 +119,9 @@ test('R258 S drains the throttle, and the board lands on the held state', () => 
   assert.equal(ui.has({ btn: 'paceskip' }), false, 'and there is still no chip');
 });
 
-/* ══ §2 — the R150 invariant: a paint, not a render ════════════════════ */
+/* ══ §2 — the CR D5.5a invariant: a paint, not a render ════════════════════ */
 
-test('R258 a held update moves the live slots and NOTHING else on the board', () => {
+test('CR D5.5a a held update moves the live slots and NOTHING else on the board', () => {
   const s = board(23703);
   const before = live(s);
   assert.ok(showsTurn(before, 1), 'positive control: the board says which turn it is');
@@ -132,7 +132,7 @@ test('R258 a held update moves the live slots and NOTHING else on the board', ()
   assert.equal(ui.renders(), rendersBefore,
     'the whole-page render did not RUN — a held update is a paint, not a policy pass');
   assert.equal(ui.raw(), rawBefore,
-    'and everything R150 is entitled to freeze is byte-identical');
+    'and everything CR D5.5a is entitled to freeze is byte-identical');
   // with the chip gone (2026-09-28) a plain held update moves NO slot at all;
   // §3 is the positive control that a slot still can move during a hold
   assert.equal(after, htmlBefore, 'nothing on screen moved');
@@ -143,7 +143,7 @@ test('R258 a held update moves the live slots and NOTHING else on the board', ()
 
 /* ══ §3 — presence: the same class, one level deeper ═══════════════════ */
 
-test('R258 a disconnect that arrives while the throttle is holding is on screen at once', () => {
+test('CR D5.5b a disconnect that arrives while the throttle is holding is on screen at once', () => {
   // ⚠ ROOT CAUSE, and why this is not a second copy of §1: holdable() never
   // consulted `peers` at all, so a disconnect notice was eligible to wait like
   // any other quiet update. It is not game news — nobody acts on it and it is
@@ -162,7 +162,7 @@ test('R258 a disconnect that arrives while the throttle is holding is on screen 
   assert.equal(showsTurn(ui.html(), 7), false, 'which is to say: the held state is still held');
 });
 
-test('R258 a disconnect is not queued behind the backlog it arrived into', () => {
+test('CR D5.5b a disconnect is not queued behind the backlog it arrived into', () => {
   // THE MAGNITUDE, which is why this half is not cosmetic. A held update is
   // spaced PACE_MS behind the one before it, so a disconnect that lands on a
   // backlog waits for the WHOLE backlog — bounded only by PACE_MAX_HELD, i.e.
@@ -221,8 +221,8 @@ function drain(gap: number, n: number): { paints: number; withChip: number; blin
   return { paints, withChip, blindMs, onArrival };
 }
 
-test('R258 at a one-second arrival gap a release-only chip is drawn zero times', () => {
-  // R150 documents the real arrival pattern as "a few hundred ms apart"; the
+test('CR D5.5 at a one-second arrival gap a release-only chip is drawn zero times', () => {
+  // The pacing round recorded the real arrival pattern as "a few hundred ms apart"; the
   // band that fails outright runs from about PACE_MS/2 up to PACE_MS.
   const worst = drain(Math.round(PACE_MS * 0.9), 10);
   assert.ok(worst.blindMs >= PACE_MS,

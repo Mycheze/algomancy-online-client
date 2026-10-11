@@ -4,14 +4,14 @@
     "kind": "g-other",
     "rule": "combat.columns.adjacency.positions",
     "tier": 4,
-    "summary": "Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; R75 fixes the three positions inside one formation; a test comment calls a facing blocker 'an adjacent ENEMY'.",
+    "summary": "Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) fixes the three positions inside one formation; a test comment calls a facing blocker 'an adjacent ENEMY'.",
     "sides": [
       {
         "source": "Manual p.22",
         "quote": "adjacent to their left, right, front and back neighbors until"
       },
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "it's referring to its sides and above/below. Nothing diagonal."
       },
       {
@@ -19,14 +19,14 @@
         "quote": "// an adjacent ENEMY"
       }
     ],
-    "resolution": "The rule follows R75: adjacency is within the unit's own formation. The Manual sentence describes one formation and its two rows, and Manual p.23 puts blockers 'in front of the formation that is attacking them', not in it. Question for the owner only if a card is meant to count the facing enemy as adjacent (Electric's 'directed to an adjacent unit' is the likeliest place; see 802.17). See F-U10-2 (CT-241)."
+    "resolution": "The rule follows the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”): adjacency is within the unit's own formation. The Manual sentence describes one formation and its two rows, and Manual p.23 puts blockers 'in front of the formation that is attacking them', not in it. Question for the owner only if a card is meant to count the facing enemy as adjacent (Electric's 'directed to an adjacent unit' is the likeliest place; see 802.17). See F-U10-2 (CT-241)."
   },
   {
     "id": "D-U10-4",
     "kind": "c-owner-call-only",
     "rule": "combat.formations.placement.legal-positions",
     "tier": 3,
-    "summary": "Two parts of the placement rule are readings added by R75's author, not in the owner's quoted words: the hole as a third legal position, and 'either side of the existing units' read as the two ends only.",
+    "summary": "Two parts of the placement rule are readings added by the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s author, not in the owner's quoted words: the hole as a third legal position, and 'either side of the existing units' read as the two ends only.",
     "seeAlso": [
       {
         "id": "D-U10-3",
@@ -35,23 +35,23 @@
     ],
     "sides": [
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "to either side of the existing units OR in the second slot of a column for a"
       },
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "**The hole is a third kind the ruling does not enumerate.**"
       },
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "**\"Either side of the existing units\" is read as the two ENDS, not as an"
       },
       {
-        "source": "R304",
+        "source": "owner ruling, adopted 2026-09-25",
         "quote": "**Attacking line only.** A blocking column is keyed to the attacking column it"
       },
       {
-        "source": "R321",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "Side-blocks may stand to either side of the attack."
       },
       {
@@ -59,29 +59,29 @@
         "quote": "where attackers aren’t, which can be beneficial for"
       }
     ],
-    "resolution": "Owner-only readings of R75, which no printed or designer source addresses: the hole as a third legal position; \"either side of the existing units\" read as the two ends; and, for a DEFENDING formation, no end columns at all (R75 and R304: a blocking column is keyed to the attacking column it answers), so a blocking Hooba-Bot or Hooba-God whose column is full places nothing. R321 has since let a block declaration open side columns, which weakens R304's reason, and the permissive reading would give a defending formation a side column too. The rules state R75 and R304 with basis owner, medium confidence, for sign-off (Annex P)."
+    "resolution": "Owner-only readings of the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”), which no printed or designer source addresses: the hole as a third legal position; \"either side of the existing units\" read as the two ends; and, for a DEFENDING formation, no end columns at all (the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) and the owner ruling of 2026-09-25 (“The empty column past each end…”): a blocking column is keyed to the attacking column it answers), so a blocking Hooba-Bot or Hooba-God whose column is full places nothing. The owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”) has since let a block declaration open side columns, which weakens the owner ruling of 2026-09-25 (“The empty column past each end…”)’s reason, and the permissive reading would give a defending formation a side column too. The rules state the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) and the owner ruling of 2026-09-25 (“The empty column past each end…”) with basis owner, medium confidence, for sign-off (Annex P)."
   },
   {
     "id": "D-U10-6",
     "kind": "g-other",
     "rule": "combat.formations.placement.source-gone",
     "tier": 2,
-    "summary": "Sources silent on a remembered formation that holds no living unit: a source that attacked alone and died under its own trigger before blocks leaves a line that has closed to nothing. The designer says Hooba-style effects remember the formation and work; R75 says a formation with no living unit cannot be joined; R184 says an emptied formation is still a formation while its battle runs.",
+    "summary": "Sources silent on a remembered formation that holds no living unit: a source that attacked alone and died under its own trigger before blocks leaves a line that has closed to nothing. The designer says Hooba-style effects remember the formation and work; the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) says a formation with no living unit cannot be joined; the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) says an emptied formation is still a formation while its battle runs.",
     "sides": [
       {
         "source": "RAQ 1353895783266516992#2",
         "quote": "But there are some which will remember they were in formation and will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling, Lumengrove Lurker)."
       },
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "always grow at an end. A formation you are not standing in cannot be joined at"
       },
       {
-        "source": "R184",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
       }
     ],
-    "resolution": "The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to R75's 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6 (CT-250)). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 (CT-250) closes as no-bug and 602.6f gains the qualifier."
+    "resolution": "The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6 (CT-250)). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 (CT-250) closes as no-bug and 602.6f gains the qualifier."
   },
   {
     "id": "D-U10-7",
@@ -95,7 +95,7 @@
         "quote": "where attackers aren’t, which can be beneficial for"
       },
       {
-        "source": "R304",
+        "source": "owner ruling, adopted 2026-09-25",
         "quote": "- **Attacking line only.** A blocking column is keyed to the attacking column it"
       },
       {
@@ -110,32 +110,32 @@
     "kind": "b-engine-only",
     "rule": "combat.columns.definition.side-block-shared-column",
     "tier": 3,
-    "summary": "Sources silent on whether two side-blockers may share one side-block column. Caleb permitted a separate column each; R321 restates it as 'each as its own column'. The engine accepts two side-blockers front and back in one side column.",
+    "summary": "Sources silent on whether two side-blockers may share one side-block column. Caleb permitted a separate column each; the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”) restates it as 'each as its own column'. The engine accepts two side-blockers front and back in one side column.",
     "sides": [
       {
         "source": "RAQ 1366447016653361192#3",
         "quote": "Yep you should be able to"
       },
       {
-        "source": "R321",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "- **Any number** of units may side-block, each as its own column — *\"if I have"
       }
     ],
-    "resolution": "The rule states the engine's behaviour, basis engine. Every column holds a front and a back slot, and nothing printed forbids a side-block column from using both. Question for the owner only if R321's 'each as its own column' was meant as a requirement."
+    "resolution": "The rule states the engine's behaviour, basis engine. Every column holds a front and a back slot, and nothing printed forbids a side-block column from using both. Question for the owner only if the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s 'each as its own column' was meant as a requirement."
   },
   {
     "id": "D-U10-9",
     "kind": "b-engine-only",
     "rule": "combat.formations.placement.defending-emptied-block",
     "tier": 3,
-    "summary": "Sources silent on placing a unit into a blocking column whose blockers have all left after blocks. R75's hole is a column emptied of attackers, and R322's spot is a column with no block entry; the engine offers the emptied blocking column's front slot as well.",
+    "summary": "Sources silent on placing a unit into a blocking column whose blockers have all left after blocks. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s hole is a column emptied of attackers, and the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s spot is a column with no block entry; the engine offers the emptied blocking column's front slot as well.",
     "sides": [
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "- **the front slot of an R72 hole** — a column emptied of attackers that its"
       },
       {
-        "source": "R322",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand"
       },
       {
@@ -143,35 +143,35 @@
         "quote": "    // Only the ATTACKING grid can widen. A blocking column is keyed to an"
       }
     ],
-    "resolution": "The rule states the engine's behaviour, basis engine. It is consistent with R322's reason (the column is still blocked, R13, and the new unit answers the attacker in front of it). Question for the owner only if the defending line was meant to have no hole kind."
+    "resolution": "The rule states the engine's behaviour, basis engine. It is consistent with the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s reason (the column is still blocked, the owner ruling of 2026-08-18 (“Piercing through a fully-dead blocked column […]”), and the new unit answers the attacker in front of it). Question for the owner only if the defending line was meant to have no hole kind."
   },
   {
     "id": "D-U10-10",
     "kind": "c-owner-call-only",
     "rule": "combat.formations.placement.empty-formation",
     "tier": 3,
-    "summary": "'A formation with no living unit offers no position' is R75's own prose, not the owner's quoted words. R184 rules that an emptied formation is still a formation while its battle runs, which a reader might take to leave its hole open to a late play.",
+    "summary": "'A formation with no living unit offers no position' is the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not the owner's quoted words. The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) rules that an emptied formation is still a formation while its battle runs, which a reader might take to leave its hole open to a late play.",
     "sides": [
       {
-        "source": "R75",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "all — with no living unit in the grid the answer is \"no slots\", not \"open a"
       },
       {
-        "source": "R184",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
       }
     ],
-    "resolution": "The rules state R75 (602.6k, 602.7c), basis owner, medium confidence, with two exceptions: R322's after-blocks spot for the defender (602.6c) and the designer's remembered formation (602.6f). The engine follows R75 and R322. R184 is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6."
+    "resolution": "The rules state the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) (602.6k, 602.7c), basis owner, medium confidence, with two exceptions: The owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s after-blocks spot for the defender (602.6c) and the designer's remembered formation (602.6f). The engine follows the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) and the owner ruling of 2026-10-09 (“A blocker put in after blocks…”). The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6."
   },
   {
     "id": "D-U10-11",
     "kind": "g-other",
     "rule": "combat.formations.outside.stolen",
     "tier": 4,
-    "summary": "R172 rules on a one-sided theft mid-battle (Download): the stolen unit sits out until regroup. Sources are silent on a control EXCHANGE mid-battle; Organic Exchange's printed text also swaps the two units' positions, which keeps both in formation.",
+    "summary": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules on a one-sided theft mid-battle (Download): the stolen unit sits out until regroup. Sources are silent on a control EXCHANGE mid-battle; Organic Exchange's printed text also swaps the two units' positions, which keeps both in formation.",
     "sides": [
       {
-        "source": "R172",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "It changes controller **immediately**, is **out of the formation for the rest"
       },
       {
@@ -179,6 +179,6 @@
         "quote": "Exchange control of two target units and swap their positions."
       }
     ],
-    "resolution": "Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states R172 as the default and the card's own positioning as the exception. The engine matches both."
+    "resolution": "Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) as the default and the card's own positioning as the exception. The engine matches both."
   }
 ]

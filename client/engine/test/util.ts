@@ -6,7 +6,7 @@ import { redactLog } from '../../server/view.ts';
 import type { EngineEvent, Entity, EntityId, ResourceKind, Seat } from '../src/types.ts';
 
 /**
- * R231 / CT-88 — THE ONE COPY OF `Harness.absorb()`. Feed the events a
+ * CT-88 — THE ONE COPY OF `Harness.absorb()`. Feed the events a
  * white-box `E` produced back into the harness, exactly the way `h.do()` does.
  *
  * ⚠ THE RULE IS THE `continue`, AND IT IS THE WHOLE POINT OF THIS FUNCTION.
@@ -66,7 +66,7 @@ export function withE(h: Harness, fn: (e: E) => void): void {
 }
 
 /**
- * R203 / CT-84 — the log the SEAT is actually served. Use this, not `h.log`,
+ * CT-84 (see 174-secrecy-is-seat-aware) — the log the SEAT is actually served. Use this, not `h.log`,
  * for anything that claims a piece of information is or is not shared.
  *
  * `h.log` is the HOTSEAT firehose: `Harness.absorb()` pushes every event's
@@ -75,8 +75,8 @@ export function withE(h: Harness, fn: (e: E) => void): void {
  * is public or private. 42-dark-b's
  * `h.log.some(l => l.includes('Thought Extraction reveals'))` passed while the
  * card was publishing an opponent's entire hand to the shared log, and passed
- * again after R197b fixed it. Two genuine leaks (R197b's three "look at a
- * hand" cards, R202's `handEntered`) survived 153 test files for that reason
+ * again after it was fixed. Two genuine leaks (the three "look at a hand" cards,
+ * and the event channel's `handEntered`) survived 153 test files for that reason
  * alone, and both had to be caught from a server-adjacent file.
  *
  * Built from `h.events`, never from `h.log`. Redaction operates on EVENTS — a
@@ -129,8 +129,7 @@ export function tokensOf(h: Harness, seat: Seat): Entity[] {
   return Object.values(h.state.entities).filter(e => e.kind === 'spellToken' && e.controller === seat);
 }
 
-/** decline the haste step for both players if it engaged (R18: it only
- * appears when someone holds a payable haste card) */
+/** decline the haste step for both players if it engaged */
 export function skipHasteStep(h: Harness): void {
   for (const seat of [0, 1]) {
     if (h.state.phase === 'planning' && h.state.hasteDone && !h.state.hasteDone[seat]) {
@@ -174,12 +173,12 @@ export function pick(h: Harness, ref: unknown): void {
   h.do({ type: 'decide', seat: dec.seat, choice: idx });
 }
 
-/** R64: the refs the pending decision is offering, as JSON keys */
+/** the refs the pending decision is offering, as JSON keys */
 export function offered(h: Harness): string[] {
   return (h.state.decision?.options ?? []).map(o => JSON.stringify(o.value));
 }
 
-/** R64: assert a target is NOT on the pending decision's menu — an illegal
+/** CR D1.2a: assert a target is NOT on the pending decision's menu — an illegal
  * target is not something you choose and then have refused, it is something
  * you were never shown. */
 export function notOffered(h: Harness, ref: unknown, why = ''): void {
@@ -197,19 +196,19 @@ export function finishBattle(h: Harness): void {
     const b = h.state.battle!;
     const dec = h.state.decision;
     if (dec) {
-      // R120: an elective-split question is answered with its first option —
+      // CR D1.2g: an elective-split question is answered with its first option —
       // the one-click default front-to-back share, i.e. exactly the split the
       // engine used to auto-assign before the election existed
       if (dec.kind === 'assignDamage') {
         h.do({ type: 'decide', seat: dec.seat, choice: 0 });
         continue;
       }
-      // R261 GENERALISED THIS, and the old version is why ~45 tests broke at
+      // Holding combat-damage triggers until after combat generalised this, and the old version is why ~45 tests broke at
       // once. It answered exactly two kinds by name and threw on everything
       // else. That was fine while combat-damage triggers RESOLVED inside the
       // damage step: any question they asked was answered by the pump before
-      // `finishBattle` ever saw it. Under R261 those triggers go on the stack
-      // in the after-combat window instead, so their targets and their R121
+      // `finishBattle` ever saw it. Under CR 608.9b those triggers go on the stack
+      // in the after-combat window instead, so their targets and their CR 111.10g
       // pay-or-decline questions now land in the battle tail — the exact place
       // this helper walks — and a hard-coded list of two kinds could only
       // throw. `53-playtest-round7::answerAll` had already been written to be
@@ -242,11 +241,11 @@ export function finishBattle(h: Harness): void {
 }
 
 /**
- * R261: drain the AFTER-COMBAT stack, and stop there.
+ * CR 608.9b: drain the AFTER-COMBAT stack, and stop there.
  *
- * Before R261 a combat-damage trigger resolved inside the damage sub-step, so
+ * A combat-damage trigger used to resolve inside the damage sub-step, so
  * a test could `pass(h); pass(h)` into combat damage and read the trigger's
- * effect off the board on the very next line. R261 puts those triggers on the
+ * effect off the board on the very next line. CR 608.9b puts those triggers on the
  * stack in the after-combat window instead — respondable, which is the whole
  * point — so the board does not carry the effect until somebody lets the stack
  * resolve. That is what this does.
@@ -286,7 +285,7 @@ export function resolveAfterCombat(h: Harness): void {
 }
 
 /**
- * R295: drive through every priority window the damage step opens.
+ * CR 608.3b: drive through every priority window the damage step opens.
  *
  * A damage step SPLIT by {Swift} or {Sluggish} is several steps, and priority
  * is offered at each boundary — the triggers the last sub-step fired go on the
@@ -295,7 +294,7 @@ export function resolveAfterCombat(h: Harness): void {
  * window, having dealt only part of the damage it expected.
  *
  * ⚠ THIS IS NOT A TIDY-UP, and a test that needed it should say in words what
- * now happens at that boundary. Before R295 every combat-damage trigger in the
+ * now happens at that boundary. Before split steps had windows, every combat-damage trigger in the
  * battle resolved after combat; a trigger fired by a sub-step that is not the
  * last one now resolves BEFORE the later sub-steps strike, which is the whole
  * of playtest report #165. If adding this call changes a number, the number
@@ -311,7 +310,7 @@ export function throughDamageWindows(h: Harness): void {
     const b = h.state.battle;
     // out of a window, or the pump has taken the board back: the sub-step it
     // resumed into owns whatever happens next, INCLUDING a question it
-    // suspends on (an R120 elective split). Answering that here would step on
+    // suspends on (a CR 608.6a elective split). Answering that here would step on
     // the very thing a caller is usually about to assert.
     if (!b || b.step !== 'damageWindow' || b.damageStep) return;
     const dec = h.state.decision;
@@ -331,7 +330,7 @@ export function throughDamageWindows(h: Harness): void {
   throw new Error('throughDamageWindows did not terminate');
 }
 
-/** R120: answer every pending elective combat-split question with its FIRST
+/** CR D1.2g: answer every pending elective combat-split question with its FIRST
  * option — on the first ask of a strike that is "default: share front-to-back",
  * the exact split the engine auto-assigned before the election existed. Tests
  * whose board raises the election but whose subject is something else call

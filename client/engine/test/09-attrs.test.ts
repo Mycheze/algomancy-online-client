@@ -3,8 +3,8 @@
  * combat damage, effect damage, and column sharing where it matters — plus the
  * cards that carry or make them (Chitin Shredder, Crumbling Ancient, Slink,
  * Resonant Form, Noxious Sporefiend, Biotoxicity, Geode, Accumulated
- * Nucleation, Poison, Crystal). Proposed rulings R23 (Vulnerable × Piercing)
- * and R24 (Thieving = one draw per connecting column) live in the report. */
+ * Nucleation, Poison, Crystal). The rulings on Vulnerable × Piercing
+ * (CR 802.11c) and Thieving = one draw per connecting column (CR 802.20b) are in the CR. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
@@ -101,7 +101,7 @@ test('Vulnerable: Crumbling Ancient marks double the combat damage it receives',
   finishBattle(h);
 });
 
-test('Vulnerable × Piercing (R23): the pre-double amount pierces through', () => {
+test('Vulnerable × Piercing (CR 802.11c): the pre-double amount pierces through', () => {
   const h = new Harness(406);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -112,7 +112,7 @@ test('Vulnerable × Piercing (R23): the pre-double amount pierces through', () =
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [crumb] } });
   pass(h); pass(h);
-  assignDefault(h);   // R319: the {Piercing} strike elects; the default is the split pinned below
+  assignDefault(h);   // CR 802.16c: the {Piercing} strike elects; the default is the split pinned below
   assert.ok(!ent(h, crumb), 'Vulnerable made 4 pool (received 8) lethal on the 8-toughness blocker');
   assert.equal(h.state.players[D]!.life, 27, 'pre-double remainder 3 pierced through');
   assert.ok(ent(h, whale), 'the whale survived the 3 it took back');
@@ -143,10 +143,10 @@ test('Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 count
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [whale] } });
   pass(h); pass(h);   // Swift: nox poisons in the swift sub-step…
-  // R295: {Swift} splits the damage step, so the whale's normal-sub-step swing
+  // CR 802.4e: {Swift} splits the damage step, so the whale's normal-sub-step swing
   // is on the far side of a priority window
   throughDamageWindows(h);
-  assignDefault(h);   // R319: the blocking {Piercing} Whale's strike elects
+  assignDefault(h);   // CR 802.16c: the blocking {Piercing} Whale's strike elects
   assert.ok(!ent(h, nox), 'the 2/2 died to the whale in the normal sub-step');
   assert.equal(ent(h, whale)!.counters, -2, 'took 2 -1/-1 counters, not marked damage');
   assert.deepEqual(effStats(h, whale), [5, 3], 'now a 5/3');
@@ -184,7 +184,7 @@ test('Resonant: Resonant Form combat damage to a unit also hits its controller',
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rune] } });
   pass(h); pass(h);
-  // R315: the rider is Resonant Form's trigger, on the stack after combat —
+  // CR 802.19a, 802.19j: the rider is Resonant Form's trigger, on the stack after combat —
   // it resolves even though its source died in that combat
   assert.ok(h.state.stack.some(i => i.card === 'Resonant Form'), 'the rider waits on the stack');
   drainStack(h);
@@ -207,7 +207,7 @@ test('Resonant: effect damage riders onto the damaged unit\'s controller', () =>
 
 // ─────────────────────────────── THIEVING ───────────────────────────────
 
-test('Thieving: Slink draws when its column deals combat damage to a player (R24)', () => {
+test('Thieving: Slink draws when its column deals combat damage to a player (CR 802.20)', () => {
   const h = new Harness(412);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

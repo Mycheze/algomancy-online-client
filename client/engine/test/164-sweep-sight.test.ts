@@ -1,4 +1,4 @@
-/* SWEEP SIGHT — what would these checkers print if they were BLIND? (R193)
+/* SWEEP SIGHT — what would these checkers print if they were BLIND? (see 147-comment-conformance)
  *
  * WHY THIS FILE EXISTS
  *
@@ -54,14 +54,14 @@ const ENGINE_TS = path.join(ENGINE, 'src', 'engine.ts');
  * know, so the inner opening backtick reads as the outer's CLOSING one and
  * string/code parity inverts for everything up to the following backtick.
  *
- * ✔ CLOSED THE SAME DAY IT WAS FOUND (R201). This test was written as a
+ * ✔ CLOSED THE SAME DAY IT WAS FOUND. This test was written as a
  * CHARACTERISATION of the hole, with instructions to rewrite it as the correct
  * expectation once `card-todo.ts` learned `${ … }` — which is what happened
  * within the hour, and this is that rewrite. The instruction worked exactly as
  * designed: the test failed, said which of the two possible causes it was, and
  * named the follow-up. Keep writing them that way.
  */
-test('§A stripCode reads `${ … }` inside a template literal as CODE (R201)', () => {
+test('§A stripCode reads `${ … }` inside a template literal as CODE', () => {
   const src = 'const a = `x ${ f(`y`) } z`;';
   const out = stripCode(src);
   assert.equal(out.length, src.length, 'stripCode must stay length-preserving');
@@ -69,11 +69,11 @@ test('§A stripCode reads `${ … }` inside a template literal as CODE (R201)', 
   // The CORRECT answer, and the one it now gives: `f(` and `)` survive as code;
   // `x `, the inner body `y` and ` z` are blanked as string.
   //
-  // Before R201 it returned 'const a =          y       ;' — exactly inverted,
+  // Before the interpolation fix it returned 'const a =          y       ;' — exactly inverted,
   // `f(` swallowed and the string body `y` promoted to code — because the inner
   // opening backtick was read as the OUTER literal's closing tick.
   assert.equal(out, 'const a =       f(   )     ;',
-    'stripCode\'s handling of a nested template literal has changed AGAIN. R201 taught '
+    'stripCode\'s handling of a nested template literal has changed AGAIN. The CT-68 fix taught '
     + 'the `tpl` state a `${ … }` brace stack; if this no longer holds, a FOURTH stripper '
     + 'regression is in flight and every sweep in the repo is downstream of it.');
 
@@ -81,7 +81,7 @@ test('§A stripCode reads `${ … }` inside a template literal as CODE (R201)', 
   const two = 'const a = `x ${ f(`y`) } z`;\nconst b = `p ${ g(`q`) } r`;';
   const stripped = stripCode(two);
   assert.ok(!/\by\b/.test(stripped) && !/\bq\b/.test(stripped),
-    'an inner template body handed back as code is the whole hole R201 closed');
+    'an inner template body handed back as code is the whole hole the brace stack closed');
   assert.ok(stripped.includes('f(') && stripped.includes('g('),
     'and the code around it must survive — swallowing `f(` was the other half');
 });
@@ -96,9 +96,9 @@ test('§A stripCode reads `${ … }` inside a template literal as CODE (R201)', 
  * below, so the two cannot drift apart silently.
  */
 const SWEEP_PATTERNS: { what: string; re: RegExp }[] = [
-  { what: 'R124 bin EXIT', re: /\.bin\.splice\(|\bbin\.splice\(|\[from\]\.splice\(/ },
-  { what: 'R145 bin ENTRY', re: /\.bin\.push\(|\bbin\.push\(/ },
-  { what: 'R148 control change', re: /[A-Za-z_$][\w$]*\.controller\s*=(?!=)/ },
+  { what: 'CR 405.7 bin EXIT', re: /\.bin\.splice\(|\bbin\.splice\(|\[from\]\.splice\(/ },
+  { what: 'bin ENTRY', re: /\.bin\.push\(|\bbin\.push\(/ },
+  { what: 'control change', re: /[A-Za-z_$][\w$]*\.controller\s*=(?!=)/ },
 ];
 
 /** one line that trips all three sweeps at once, and contains no quote,
@@ -144,7 +144,7 @@ test('§B a violation planted anywhere in engine.ts is seen by all three whole-f
       + 'any green run of 90-coverage-census.');
   }
 
-  // ✔ AND THE INTERPOLATION IS NO LONGER A HOLE (R201). This block used to
+  // ✔ AND THE INTERPOLATION IS NO LONGER A HOLE. This block used to
   // assert the opposite — that a bin write or controller assignment inside a
   // `${ … }` was invisible to all three sweeps — and said so out loud rather
   // than hiding it, which is why it took under an hour to close once measured.
@@ -152,7 +152,7 @@ test('§B a violation planted anywhere in engine.ts is seen by all three whole-f
   const hidden = stripCode('const s = `${ (e.player(0).bin.push(n), u.controller = 1) }`;');
   for (const { what, re } of SWEEP_PATTERNS.slice(1)) {
     assert.ok(re.test(hidden),
-      `${what} can no longer see inside a \`\${ … }\` interpolation. R201 made an `
+      `${what} can no longer see inside a \`\${ … }\` interpolation. The interpolation fix made an `
       + 'interpolation code; if this reddens, that has been undone and a real bypass can '
       + 'hide there again — which is exactly how a live bin.push sat unseen in src/rng.ts.');
   }
@@ -277,7 +277,7 @@ test('§C the nested-template hole hides no swept idiom in src/ — measured, no
 // ───────────── §D · none of these populations is empty ────────────────────
 
 test('§D no sweep in 90-coverage-census is reading an empty population', () => {
-  // `R148 stays solved: no card in src/cards/ assigns a unit's .controller`
+  // `stays solved: no card in src/cards/ assigns a unit's .controller`
   // walks src/cards/ and asserts the offender list is empty. It carries NO
   // floor of its own: if the walk returned nothing the test would pass, and
   // the only thing anchoring it today is that CONTROLLER_ASSIGN_OK happens to
@@ -294,12 +294,12 @@ test('§D no sweep in 90-coverage-census is reading an empty population', () => 
   };
   walk(path.join(ENGINE, 'src', 'cards'));
   assert.ok(cards.length >= 30,
-    `only ${cards.length} .ts files under src/cards/ — 90-coverage-census's "R148 stays solved" `
+    `only ${cards.length} .ts files under src/cards/ — 90-coverage-census's "stays solved" `
     + 'sweep walks this directory and has no floor of its own, so an empty walk there passes');
 
   // and the sweep must still be able to SEE a controller assignment in a card
   // file: the shape it hunts, planted into the card corpus's own idiom.
   const planted = stripCode("item.controller = ctx.controller;   // in a card file");
   assert.match(planted, SWEEP_PATTERNS[2]!.re,
-    'the card-side R148 sweep can no longer recognise the assignment it exists to find');
+    'the card-side control-change sweep can no longer recognise the assignment it exists to find');
 });

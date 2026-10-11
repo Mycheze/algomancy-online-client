@@ -3,10 +3,10 @@
  * counters) so parallel card registration can't shift assertions; seeds are
  * 4100-4199.
  *
- * Covers the expansion mechanics this batch touches: glimpse (R45 — Glook,
- * Maw of Despair), rot (R38 — Cosmic Devourer, Pestilent Titan, Burn the
- * Blight), trash (R40 — Afflicting Anima, Maw of Despair, Nothyr, Sacrifice
- * Dude, and the "Discard me" play mode) and the Wraith token (R71 —
+ * Covers the expansion mechanics this batch touches: glimpse (CR 801.9 — Glook,
+ * Maw of Despair), rot (CR 112.13 — Cosmic Devourer, Pestilent Titan, Burn the
+ * Blight), trash (CR 801.2 — Afflicting Anima, Maw of Despair, Nothyr, Sacrifice
+ * Dude, and the "Discard me" play mode) and the Wraith token (in
  * Afflicting Anima, Cosmic Devourer); plus bin recursion (Exhume, Spore of
  * Regenesis, Tilling the Graves, Wake the Dead), the stat-change target gate
  * (Leave None Pure) and the ordinary battle triggers (Cull, Gzxyclop,
@@ -28,19 +28,19 @@ const named = (h: Harness, card: string): Entity[] =>
 
 // ── Afflicting Anima ─────────────────────────────────────────────────────
 
-test('Afflicting Anima: trashed from hand → pay [1] to create a Wraith (R40 + R71)', () => {
+test('Afflicting Anima: trashed from hand → pay [1] to create a Wraith (CR 801.3)', () => {
   const h = new Harness(4101);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   giveResources(h, A, 'dark', 1);
   const i = give(h, A, 'Afflicting Anima');
-  whiteBox(h, e => { e.discardFromHand(A, i); });   // discarding is trashing (R40)
+  whiteBox(h, e => { e.discardFromHand(A, i); });   // discarding is trashing (CR 801.3)
   assert.ok(h.log.some(l => l.includes('trashes Afflicting Anima')), 'the discard trashed it');
   assert.equal(h.state.decision!.kind, 'payOrDecline', 'the trigger fires FROM THE BIN');
   pick(h, true);
   const wights = named(h, 'Wraith');
   assert.equal(wights.length, 1, 'a Wraith was created');
-  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'the Wraith is a 3/3 body (R71)');
+  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'the Wraith is a 3/3 body');
   assert.ok(wights[0]!.token, 'and it is a token');
   assert.equal(h.q.openMana(A), 0, 'the [1] was paid');
   assert.ok(h.state.players[A]!.bin.includes('Afflicting Anima'), 'the card itself stays in the bin');
@@ -79,9 +79,9 @@ test('Burn the Blight: removes counters from units AND the rot/debt on players',
   assert.equal(ent(h, atk)!.counters, 0, 'counters gone from the attacker');
   assert.equal(ent(h, def)!.counters, 0, 'and from the defender');
   assert.deepEqual(effStats(h, def), [1, 1]);
-  assert.equal(h.q.rot(A), 0, 'rot is a player counter (R38) — removed');
+  assert.equal(h.q.rot(A), 0, 'rot is a player counter (CR 112.13) — removed');
   assert.equal(h.q.rot(D), 0);
-  assert.equal(h.q.debt(D), 0, 'so is debt (R39)');
+  assert.equal(h.q.debt(D), 0, 'so is debt (CR 112.15)');
   finishBattle(h);
 });
 
@@ -94,20 +94,20 @@ test('Cosmic Devourer: end of turn → create a Wraith and gain 1 rot', () => {
   spawn(h, A, 'Cosmic Devourer');
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // → end of turn
-  assert.equal(named(h, 'Wraith').length, 1, 'a Wraith at end of turn (R71)');
-  assert.equal(h.q.rot(A), 1, 'and a rot (R38)');
+  assert.equal(named(h, 'Wraith').length, 1, 'a Wraith at end of turn');
+  assert.equal(h.q.rot(A), 1, 'and a rot (CR 112.13)');
   const life = h.state.players[A]!.life;
-  // R38: the rot bites at the START of the next deployment
+  // CR 112.13: the rot bites at the START of the next deployment
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  skipHasteStep(h);                              // R228: the step always opens
+  skipHasteStep(h);                              // CR 504.5: the step always opens
   finishBattle(h);
   assert.equal(h.state.players[A]!.life, life - 1, 'rot deals its damage at the start of deployment');
 });
 
 // ── Cull ─────────────────────────────────────────────────────────────────
 
-test('Cull: each player sacrifices a unit (region-scoped, R25)', () => {
+test('Cull: each player sacrifices a unit (region-scoped, CR 601.4d)', () => {
   const h = new Harness(4105);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -124,7 +124,7 @@ test('Cull: each player sacrifices a unit (region-scoped, R25)', () => {
   assert.ok(!ent(h, atk), 'the attacker was auto-sacrificed (its only unit here)');
   assert.ok(!ent(h, d2), 'and D sacrificed the whale it chose');
   assert.ok(ent(h, d1), 'the other one survives');
-  assert.ok(h.state.players[D]!.bin.includes('Good Whale'), 'sacrifice → bin (and a trash, R40)');
+  assert.ok(h.state.players[D]!.bin.includes('Good Whale'), 'sacrifice → bin (and a trash, CR 801.2a)');
   finishBattle(h);
 });
 
@@ -146,7 +146,7 @@ test('Exhume: puts a bin unit costing up to your [d] into play', () => {
 
 // ── Glook ────────────────────────────────────────────────────────────────
 
-test('Glook: [once] discard X cards → glimpse 1, X times (R45)', () => {
+test('Glook: [once] discard X cards → glimpse 1, X times (CR 801.9c)', () => {
   const h = new Harness(4107);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -154,20 +154,20 @@ test('Glook: [once] discard X cards → glimpse 1, X times (R45)', () => {
   const hand = h.state.players[A]!.hand.slice();
   assert.ok(hand.length >= 3, 'the opening hand is big enough to pay with');
   h.do({ type: 'activateAbility', seat: A, entityId: glook, abilityIndex: 0 });
-  // R196: "Discard X cards" is a real cast COST now — the picks belong to the
+  // CR 705.3b: "Discard X cards" is a real cast COST now — the picks belong to the
   // cost collector and are made before the ability is respondable
   pick(h, { discard: 0 }); pick(h, { discard: 0 });      // discard two named cards
   pick(h, { doneCost: true });                          // "That's enough" → X = 2
   assert.equal(h.state.players[A]!.hand.length, hand.length - 2, 'two cards discarded');
-  assert.ok(h.state.players[A]!.bin.includes(hand[0]!), 'discards are trashes into the bin (R40)');
+  assert.ok(h.state.players[A]!.bin.includes(hand[0]!), 'discards are trashes into the bin (CR 801.3)');
   assert.ok(h.state.players[A]!.bin.includes(hand[1]!));
   const cache = h.q.cache(A);
   assert.equal(cache.length, 2, 'glimpse 1 twice → two cached cards');
-  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn (R45)');
+  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn (CR 801.9e)');
   assert.equal(h.q.cachePermission(A, 1), 'glimpse');
   assert.ok(h.events.filter(ev => ev.type === 'glimpsed').length === 2, 'two separate glimpses of 1');
   assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: glook, abilityIndex: 0 }),
-    IllegalAction, '[once]: not twice in a turn (R9)');
+    IllegalAction, '[once]: not twice in a turn (CR 109.9)');
 });
 
 // ── Gzxyclop ─────────────────────────────────────────────────────────────
@@ -201,7 +201,7 @@ test('Leave None Pure: deletes only a unit with no stat changes', () => {
   giveResources(h, A, 'dark', 4);                       // two casts of d/2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  // R64: "with no stat changes" is a targeting restriction — the counter'd
+  // CR 110.3a: "with no stat changes" is a targeting restriction — the counter'd
   // unit is never offered rather than being chosen and then spared.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Leave None Pure') });
   notOffered(h, { unit: dirty }, 'it has a +1/+1 counter');
@@ -218,7 +218,7 @@ test('Leave None Pure: deletes only a unit with no stat changes', () => {
 
 // ── Maw of Despair ───────────────────────────────────────────────────────
 
-test('Maw of Despair: trashed → glimpse 2 — reveal 2, cache ONE, recycle the other (R40 + R45)', () => {
+test('Maw of Despair: trashed → glimpse 2 — reveal 2, cache ONE, recycle the other (CR 801.2, 801.9)', () => {
   const h = new Harness(4110);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -235,7 +235,7 @@ test('Maw of Despair: trashed → glimpse 2 — reveal 2, cache ONE, recycle the
   const cache = h.q.cache(A);
   assert.equal(cache.length, 1, 'exactly ONE card is cached');
   assert.equal(cache[0]!.card, deckTop[0], 'the chosen one');
-  assert.deepEqual(h.q.recycleOf(A).slice(-1), [deckTop[1]], 'R296: the other goes past the mark');
+  assert.deepEqual(h.q.recycleOf(A).slice(-1), [deckTop[1]], 'CR 408.2: the other goes past the mark');
   assert.equal(h.q.deckOf(A).length, deckBefore - 2, 'and both left the deck');
   assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing reaches hand');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable this turn, ignoring affinity');
@@ -276,16 +276,16 @@ test('Nothyr: "Discard me" in battle → its trash trigger negates a nonspell ef
   pick(h, { unit: dTok });                              // the kraken trigger takes its target
   const krakenItem = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Nothyr'), mode: 'discardMe' });
-  assert.ok(h.state.players[D]!.bin.includes('Nothyr'), 'the cost discarded it — a trash (R40)');
+  assert.ok(h.state.players[D]!.bin.includes('Nothyr'), 'the cost discarded it — a trash (CR 801.3)');
   assert.equal(h.q.openMana(D), 0, 'and the [2] was paid');
-  // R67: the negate names its victim as the trigger goes on the stack, while
+  // CR 110.1a: the negate names its victim as the trigger goes on the stack, while
   // there is still a window to respond — not once it is already resolving
   assert.equal(h.state.decision!.kind, 'targets');
   assert.equal(h.state.decision!.seat, D);
   pick(h, { stack: krakenItem });
   pass(h); pass(h);                                     // resolve Nothyr's trigger
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect is negated');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated trigger left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated trigger left the stack at once');
   assert.ok(ent(h, dTok), 'the token was never recalled');
   finishBattle(h);
 });
@@ -319,7 +319,7 @@ test('Reality Siphoner: end of turn recycles your bin and grows by what moved', 
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // → end of turn (then the next turn's draws)
   assert.equal(h.state.players[A]!.bin.length, 0, 'the bin was recycled');
-  // R296: "recycle your bin" is a recycle — the three go past the mark, in bin
+  // CR 801.10: "recycle your bin" is a recycle — the three go past the mark, in bin
   // order, and come back only when the deck runs out
   assert.deepEqual(h.q.recycleOf(A).slice(-3), ['Curio Drifter', 'Bumblecrab', 'Dune Drifter'],
     'PAST THE MARK, in bin order');
@@ -340,10 +340,10 @@ test('Sacrifice Dude: entering the bin offers [2] — each opponent sacrifices a
   h.do({ type: 'declareAttack', seat: A, columns: [[dude]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [whale] } });
-  pass(h); pass(h);                                     // combat: the Dude dies → trashed (R40)
-  assignDefault(h);                                     // R319: the {Piercing} Whale elects
+  pass(h); pass(h);                                     // combat: the Dude dies → trashed (CR 801.2a)
+  assignDefault(h);                                     // CR 802.16c: the {Piercing} Whale elects
   assert.ok(!ent(h, dude), 'it died in combat');
-  pass(h); pass(h);   // R261: the bin trigger is stacked after combat; this resolves it
+  pass(h); pass(h);   // CR 608.9b: the bin trigger is stacked after combat; this resolves it
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, 'its controller is offered the [2]');
   pick(h, true);
@@ -363,9 +363,9 @@ test('Sacrifice Dude: the "Discard me" mode pays its cost and fires the same tri
   assert.equal(h.state.decision!.kind, 'payOrDecline', 'the trash trigger fired from the bin');
   pick(h, true);
   assert.equal(h.q.openMana(A), 0, 'and the [2] was paid');
-  // ⚠ R25: during deployment the home region lists only its owner, so "each
+  // ⚠ CR 601.4d: during deployment the home region lists only its owner, so "each
   // opponent" reaches nobody — the payoff of this play mode is dead by design.
-  assert.ok(!h.log.some(l => l.includes('is sacrificed')), 'no opponent is present in a deployment region (R25)');
+  assert.ok(!h.log.some(l => l.includes('is sacrificed')), 'no opponent is present in a deployment region (CR 601.4d)');
 });
 
 // ── Scuttling Abomination ────────────────────────────────────────────────
@@ -384,7 +384,7 @@ test('Scuttling Abomination: attacking draws a card, then discards one', () => {
   const chosen = String(h.state.decision!.options[0]!.label);
   pick(h, 0);
   assert.equal(h.state.players[A]!.hand.length, before, 'net hand size unchanged');
-  assert.ok(h.state.players[A]!.bin.includes(chosen), 'the chosen card was discarded (a trash, R40)');
+  assert.ok(h.state.players[A]!.bin.includes(chosen), 'the chosen card was discarded (a trash, CR 801.3)');
   finishBattle(h);
 });
 
@@ -430,7 +430,7 @@ test('Tilling the Graves: two bin units back to hand, then a discard', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const handBefore = h.state.players[A]!.hand.length;
-  // R64: "two TARGET units in your bin" are declared as the spell is cast
+  // CR 110.1a: "two TARGET units in your bin" are declared as the spell is cast
   const bn = h.state.players[A]!.name;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
   assert.deepEqual(h.state.decision!.options.map(o => o.label),
@@ -447,7 +447,7 @@ test('Tilling the Graves: two bin units back to hand, then a discard', () => {
   assert.ok(hand.includes('Bumblecrab'), 'and the second');
   assert.equal(hand.length, handBefore + 2 - 1, 'net +2 recalled, -1 discarded');
   assert.ok(h.state.players[A]!.bin.includes('Cull'), 'the spell in the bin stayed put');
-  assert.ok(h.state.players[A]!.bin.includes(chosen), 'the discard is a trash into the bin (R40)');
+  assert.ok(h.state.players[A]!.bin.includes(chosen), 'the discard is a trash into the bin (CR 801.3)');
   finishBattle(h);
 });
 

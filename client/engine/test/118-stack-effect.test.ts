@@ -1,10 +1,10 @@
-/* R128 — ANYTHING ON THE STACK IS AN EFFECT (R60 reversed).
+/* CR 700.1 — ANYTHING ON THE STACK IS AN EFFECT (the earlier carve-out reversed)
  *
  * Owner, 2026-08-24, verbatim: "ANYTHING on the stack is an effect, including
  * units and spell units. Units aren't spells, so if they say 'spell effect' a
  * unit would be unaffected."
  *
- * R60 had carved a {Battle} unit mid-cast out of BOTH halves — not a spell,
+ * An earlier ruling had carved a {Battle} unit mid-cast out of BOTH halves — not a spell,
  * and "not an effect at all, there are no parts to negate". The second half of
  * that is what the owner reversed. So:
  *   - 'stackEffect' ("target effect") is now LITERALLY every item on the stack.
@@ -13,7 +13,7 @@
  *   - "target NONSPELL effect" (Nothyr) is the complement, so it GAINS the
  *     plain unit.
  *   - The all-effect sweeps (Finality, Return to Nature, Temporal Rift) were
- *     already taking units. R128 says that was right; they are pinned, not
+ *     already taking units. CR 700.1 says that was right; they are pinned, not
  *     narrowed.
  *
  * Seeds 12800-12809.
@@ -37,13 +37,12 @@ function openBattle(h: Harness): { A: Seat; D: Seat; attacker: EntityId } {
   return { A, D, attacker };
 }
 
-/** Put A's {Battle} unit Monke on the stack (a 'unit' item — the kind R60
- * refused to call an effect) and return its stack id. */
+/** Put A's {Battle} unit Monke on the stack (a 'unit' item — the kind an earlier ruling refused to call an effect) and return its stack id. */
 function monkeOnStack(h: Harness, A: Seat): number {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
   const it = h.state.stack[h.state.stack.length - 1]!;
   assert.equal(it.kind, 'unit', 'Monke is on the stack as a plain unit item');
-  assert.equal(it.parts.length, 0, 'and it has NO parts — R60\'s whole argument');
+  assert.equal(it.parts.length, 0, 'and it has NO parts — the earlier ruling\'s whole argument');
   return it.id;
 }
 
@@ -52,7 +51,7 @@ const named = (h: Harness, seat: Seat, card: string): boolean =>
 
 // ── "target effect" reaches a unit ───────────────────────────────────────
 
-test('R128: a unit on the stack is a legal "target effect" (Dematerialize)', () => {
+test('CR 700.1: a unit on the stack is a legal "target effect" (Dematerialize)', () => {
   const h = new Harness(12800);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'metal', 2);
@@ -64,10 +63,10 @@ test('R128: a unit on the stack is a legal "target effect" (Dematerialize)', () 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   assert.equal(h.state.decision!.kind, 'targets');
   assert.deepEqual(offered(h), [JSON.stringify({ stack: monke })],
-    'R128: the unit on the stack IS the effect Dematerialize may target');
+    'CR 700.1: the unit on the stack IS the effect Dematerialize may target');
 });
 
-test('R128: negating a unit on the stack — it never arrives, and its card is binned (R68)', () => {
+test('CR 704.4b: negating a unit on the stack — it never arrives, and its card is binned (CR 704.4a)', () => {
   const h = new Harness(12801);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'metal', 2);
@@ -82,13 +81,13 @@ test('R128: negating a unit on the stack — it never arrives, and its card is b
 
   assert.ok(h.log.some(l => l.includes('Monke is negated → bin')),
     'the unit item was negated and its CARD took the bin branch (NEGATE_BINS)');
-  assert.ok(!h.state.stack.some(i => i.id === monke), 'R68: it left the stack at once');
+  assert.ok(!h.state.stack.some(i => i.id === monke), 'CR 704.4: it left the stack at once');
   assert.ok(!named(h, A, 'Monke'), 'the unit never arrived in play');
   assert.ok(h.state.players[A]!.bin.includes('Monke'),
-    'R68: a negated card goes to its controller\'s bin — a unit has a real card to land');
+    'CR 704.4a: a negated card goes to its controller\'s bin — a unit has a real card to land');
 });
 
-test('R128: negating a SPELL unit on the stack — no body, card binned', () => {
+test('negating a SPELL unit on the stack — no body, card binned', () => {
   const h = new Harness(12802);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'water', 4);
@@ -111,7 +110,7 @@ test('R128: negating a SPELL unit on the stack — no body, card binned', () => 
 
 // ── "target NONSPELL effect" gains the unit ──────────────────────────────
 
-test('R128: Nothyr\'s "target nonspell effect" reaches a unit on the stack', () => {
+test('CR 700.1b: Nothyr\'s "target nonspell effect" reaches a unit on the stack', () => {
   const h = new Harness(12803);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'metal', 2);
@@ -123,7 +122,7 @@ test('R128: Nothyr\'s "target nonspell effect" reaches a unit on the stack', () 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Nothyr'), mode: 'discardMe' });
   assert.equal(h.state.decision!.kind, 'targets');
   assert.ok(offered(h).includes(JSON.stringify({ stack: monke })),
-    'a unit is an effect (R128) and is not a spell (same sentence) — so it is a NONSPELL effect');
+    'a unit is an effect (CR 700.1a) and is not a spell (same sentence) — so it is a NONSPELL effect');
   pick(h, { stack: monke });
   pass(h); pass(h);                                   // resolve Nothyr's trigger
 
@@ -133,7 +132,7 @@ test('R128: Nothyr\'s "target nonspell effect" reaches a unit on the stack', () 
 
 // ── "target SPELL effect" does NOT ───────────────────────────────────────
 
-test('R128: "target spell effect" refuses a plain unit but takes a spell unit', () => {
+test('CR 700.1a: "target spell effect" refuses a plain unit but takes a spell unit', () => {
   const h = new Harness(12804);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'metal', 2); giveResources(h, A, 'water', 2); giveResources(h, A, 'dark', 2);
@@ -146,17 +145,17 @@ test('R128: "target spell effect" refuses a plain unit but takes a spell unit', 
   const jelly = h.state.stack[h.state.stack.length - 1]!;
   assert.equal(jelly.kind, 'spellUnit');
 
-  // "Recall target SPELL effect" — 'stackSpell', unchanged by R128
+  // "Recall target SPELL effect" — 'stackSpell', unchanged (CR 700.1a)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Dream Lapse') });
   assert.equal(h.state.decision!.kind, 'targets');
-  notOffered(h, { stack: monke }, 'a unit is not a spell (owner, R128)');
+  notOffered(h, { stack: monke }, 'a unit is not a spell (owner, CR 700.1a)');
   assert.deepEqual(offered(h), [JSON.stringify({ stack: jelly.id })],
     'a SPELL unit stays spell-side: it is a spell that becomes a unit');
 });
 
 // ── the all-effect sweeps: confirmed, not narrowed ───────────────────────
 
-test('R128: Finality\'s "negate all other effects" still catches a unit on the stack', () => {
+test('CR 700.1: Finality\'s "negate all other effects" still catches a unit on the stack', () => {
   const h = new Harness(12805);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'metal', 2);
@@ -169,14 +168,14 @@ test('R128: Finality\'s "negate all other effects" still catches a unit on the s
   pass(h); pass(h);                                   // resolve Finality
 
   assert.ok(h.log.some(l => l.includes('Monke is negated')),
-    'the audit had flagged this sweep as possibly too wide; R128 settles it the other way');
+    'the audit had flagged this sweep as possibly too wide; CR 700.1 settles it the other way');
   assert.ok(!named(h, A, 'Monke'), 'the unit never arrived');
   assert.equal(h.state.stack.length, 0);
 });
 
 // ── no path assumes item.parts.length > 0 ────────────────────────────────
 
-test('R128: an effect that walks the targeted item\'s parts survives a unit\'s empty part list', () => {
+test('CR 700.1: an effect that walks the targeted item\'s parts survives a unit\'s empty part list', () => {
   const h = new Harness(12806);
   const { A, D, attacker } = openBattle(h);
   giveResources(h, A, 'metal', 2);

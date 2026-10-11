@@ -1,4 +1,4 @@
-/* R68 — negation is REMOVAL from the stack.
+/* CR 704.4 — negation is REMOVAL from the stack.
  *
  * Playtest game UZRG, 2026-08-21: "Is negate supposed to remove effects from
  * the stack? I thought it was supposed to work by just removing them from the
@@ -33,9 +33,9 @@ const count = (xs: string[], n: string): number => xs.filter(c => c === n).lengt
 
 // ── the UZRG position ───────────────────────────────────────────────────
 
-test('R68: a mass negate empties the stack of its victims AT ONCE — no extra priority rounds', () => {
+test('CR 704.4: a mass negate empties the stack of its victims AT ONCE — no extra priority rounds', () => {
   // the UZRG shape: four triggered abilities and one spell on the stack, and a
-  // Containment Protocol that answers the four. Before R68 the four stayed on
+  // Containment Protocol that answers the four. Before negation became removal (CR 704.4) the four stayed on
   // the stack greyed out and cost eight further passPriority actions.
   const h = new Harness(6100);
   toDeployment(h);
@@ -70,7 +70,7 @@ test('R68: a mass negate empties the stack of its victims AT ONCE — no extra p
 
 // ── the kind: 'unit' hole ───────────────────────────────────────────────
 
-test("R68: a negated kind:'unit' item reaches its owner's bin (it used to be erased into nowhere)", () => {
+test("CR 704.4a: a negated kind:'unit' item reaches its owner's bin (it used to be erased into nowhere)", () => {
   // The old negated branch gated the bin push on spell/spellUnit/virus/ambush
   // but gated the "→ bin" LOG on kind !== spellToken/triggered/activated. A
   // {Battle} unit caught mid-cast therefore logged "→ bin" and vanished.
@@ -85,10 +85,10 @@ test("R68: a negated kind:'unit' item reaches its owner's bin (it used to be era
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
   assert.equal(h.state.stack[0]!.kind, 'unit', "a {Battle} unit is a kind:'unit' stack item");
-  // R100: Calming Force "can't be played from your hand", so the negator gets
-  // onto the stack the way it now has to — cached with R45's glimpse stamp and
+  // CR 702.2b: Calming Force "can't be played from your hand", so the negator gets
+  // onto the stack the way it now has to — cached with CR 801.9f's glimpse stamp and
   // released from there (the mana is still paid, which is what the `light 2`
-  // above is for). This test is about R68 — what happens to the NEGATED item —
+  // above is for). This test is about CR 704.4a — what happens to the NEGATED item —
   // so the route the negator took to the stack is scenery, not the subject.
   withE(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
   h.do({ type: 'playCached', seat: D, index: 0 });
@@ -98,11 +98,11 @@ test("R68: a negated kind:'unit' item reaches its owner's bin (it used to be era
   assert.ok(!unitsOf(h, A).some(u => u.card === 'Monke'), 'it never spawned');
   assert.equal(count(binOf(h, A), 'Monke'), 1, 'and the CARD is in its bin, exactly once');
   assert.equal(h.events.filter(ev => ev.type === 'trashed').length, trashesBefore,
-    'R40: from the stack, so still not a trash');
+    'CR 801.2b: from the stack, so still not a trash');
   finishBattle(h);
 });
 
-test('R68: a negated spell TOKEN is erased, never binned', () => {
+test('CR 704.4a: a negated spell TOKEN is erased, never binned', () => {
   const h = new Harness(6102);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as 0 | 1;
@@ -115,17 +115,17 @@ test('R68: a negated spell TOKEN is erased, never binned', () => {
   withE(h, e => { fb = e.createSpellToken(A, 'Fireball', 1, e.s.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: A, entityId: fb });
   pick(h, { player: D });
-  // R100 again: the hand route is gone, so the cache release is the vehicle.
+  // CR 702.2b again: the hand route is gone, so the cache release is the vehicle.
   withE(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
   h.do({ type: 'playCached', seat: D, index: 0 });
   pass(h); pass(h);
   assert.equal(h.state.stack.length, 0, 'the negated token left the stack');
-  assert.equal(count(binOf(h, A), 'Fireball'), 0, 'a token never reaches a bin (R40)');
+  assert.equal(count(binOf(h, A), 'Fireball'), 0, 'a token never reaches a bin (CR 704.2b)');
   assert.equal(h.state.players[D]!.life, lifeD, 'and it dealt nothing');
   finishBattle(h);
 });
 
-test('R68: removeFromStack is the bare primitive — it moves nothing but the item', () => {
+test('removeFromStack is the bare primitive — it moves nothing but the item', () => {
   const h = new Harness(6103);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -146,7 +146,7 @@ test('R68: removeFromStack is the bare primitive — it moves nothing but the it
 
 // ── the three cards that used to hand-roll the removal ──────────────────
 
-test('R68: Temporal Rift bins each negated card exactly once', () => {
+test('CR 704.4a: Temporal Rift bins each negated card exactly once', () => {
   // it used to call negate() AND push the card itself AND clear the stack by
   // hand; with negate() doing the removal that would be a duplicate bin entry
   const h = new Harness(6104);
@@ -173,7 +173,7 @@ test('R68: Temporal Rift bins each negated card exactly once', () => {
   assert.ok(ent(h, whale), 'the Arc never dealt its damage');
 });
 
-test('R68: Dream Lapse recalls the card to hand and does NOT also bin it', () => {
+test('CR 801.7d: Dream Lapse recalls the card to hand and does NOT also bin it', () => {
   const h = new Harness(6105);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as 0 | 1;
@@ -199,7 +199,7 @@ test('R68: Dream Lapse recalls the card to hand and does NOT also bin it', () =>
     'exactly one copy of the card exists, wherever the discard put it');
 });
 
-test('R68: Cosmic Reversal puts every recalled spell in its owner’s hand, none in a bin', () => {
+test('CR 801.7d: Cosmic Reversal puts every recalled spell in its owner’s hand, none in a bin', () => {
   const h = new Harness(6106);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as 0 | 1;
@@ -224,7 +224,7 @@ test('R68: Cosmic Reversal puts every recalled spell in its owner’s hand, none
 
 // ── the splice-during-iteration bug ─────────────────────────────────────
 
-test('R68: Flame Shield counts every nontoken spell it negates (the iteration bug)', () => {
+test('CR 704.4: Flame Shield counts every nontoken spell it negates (the iteration bug)', () => {
   // `for (const it of g.s.stack) g.negate(it.id)` used to skip every other
   // item once negate() started splicing — two Arcs would pay out one Fireball
   // and leave the second Arc alive on the stack.
@@ -256,12 +256,12 @@ test('R68: Flame Shield counts every nontoken spell it negates (the iteration bu
 
 // ── the ⚠ ordering question ─────────────────────────────────────────────
 
-test('R68 ⚠: Finality erases the very cards it just negated', () => {
-  // "Negate all other effects. Erase all cards in bins." Under R68 the negated
+test('CR 704.4 ⚠: Finality erases the very cards it just negated', () => {
+  // "Negate all other effects. Erase all cards in bins." Under CR 704.1, 704.4 the negated
   // card reaches the bin DURING the first sentence, so the second sentence
-  // erases it. Before R68 it arrived a whole priority round later and survived.
+  // erases it. Before negation became removal it arrived a whole priority round later and survived.
   // THIS NEEDS A HUMAN RULING — the test pins what is implemented, not what is
-  // necessarily right. See docs/digital-rules.md R68.
+  // necessarily right. See CR 704.1 (its Finality example).
   const h = new Harness(6108);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as 0 | 1;
@@ -279,7 +279,7 @@ test('R68 ⚠: Finality erases the very cards it just negated', () => {
   assert.equal(count(binOf(h, A), 'Luminous Arc'), 0,
     '⚠ it was binned by the negation and then erased by the same resolution');
   assert.ok((h.state.players[A]!.erased ?? []).includes('Luminous Arc'),
-    '⚠ and it is in the erased pile (R65) as a bin card, not as a negated one');
+    '⚠ and it is in the erased pile (CR 407.1) as a bin card, not as a negated one');
   assert.equal(count(binOf(h, D), 'Finality'), 1,
     'Finality itself is binned AFTER the erase, exactly as printed');
 });

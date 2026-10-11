@@ -13,7 +13,7 @@
  * ui/motion.ts and ui/sfx.ts: the arithmetic is pure and tested here, the DOM
  * layer just draws whatever `stackRows()` returns.
  *
- * R80 widens the same idea from stack items to NARRATIVE BEATS — see the
+ * The same idea also covers NARRATIVE BEATS, not just stack items (CR D5.4) — see the
  * second half of this file. A combat damage step is not a stack item and gets
  * no 'stackFlash', but it has exactly the same problem, and it gets the same
  * treatment out of the same three knobs.
@@ -26,7 +26,7 @@ import type { CardName, EngineEvent, EventType, Seat, StackItem } from '../engin
 import type { Census, Slot } from './motion.ts';
 
 /*
- * ── R242: ONE TEMPO FOR THE WHOLE CLIENT ─────────────────────────────
+ * ── CR D5.4: ONE TEMPO FOR THE WHOLE CLIENT ─────────────────────────────
  *
  * The owner, 2026-08-29:
  *
@@ -41,11 +41,11 @@ import type { Census, Slot } from './motion.ts';
  * ⚠ THIS IS THE SECOND TIME HE HAS ASKED, and the first answer was only half
  * built. Report #94 (SMVJ) said *"We need a 'max speed' that the gamestate can
  * resolve/put things onto the stack […] at a max speed of 1 thing per second"*,
- * and R150 built `ui/pace.ts` for it — which throttles updates BETWEEN server
+ * and `ui/pace.ts` was built for it (CR D5.4) — which throttles updates BETWEEN server
  * batches, at `PACE_MS` = 1 second, exactly as asked.
  *
  * But a cascade nobody can respond to is not several batches. `engine.ts`
- * `settle()` drains the whole thing inside ONE action (R144(a): outside battle
+ * `settle()` drains the whole thing inside ONE action (CR 507.5: outside battle
  * there are no priority windows, so the stack is drained at the settle point,
  * top down), and `pumpCombatDamage` runs Swift → normal → Sluggish in one
  * `while` loop. The client receives ONE update. `pace.ts` has nothing to space
@@ -69,7 +69,7 @@ import type { Census, Slot } from './motion.ts';
  * its successor arrived and a cascade would flicker instead of hand over. */
 export const HOLD_MS = 1200;
 /**
- * The gap between two BEATS of one batch — R189's groups, not items, so a
+ * The gap between two BEATS of one batch — CR D6.7's groups, not items, so a
  * batch that is simultaneous in the rules still arrives together ("all the
  * triggers go onto the stack, in the right order, all at once") and it is the
  * RESOLUTION that is paced ("and then slowly resolve").
@@ -97,10 +97,10 @@ export interface Flash {
   at: number;
   /** clock reading at which it leaves again */
   until: number;
-  /** R271 / CT-142: it did not resolve — it fizzled. See `fizzledIds`. */
+  /** CR D6.12 / CT-142: it did not resolve — it fizzled. See `fizzledIds`. */
   fizzled?: boolean;
   /**
-   * R271: this beat was reconstructed from `seen` because the item has LEFT
+   * CR 704.6: this beat was reconstructed from `seen` because the item has LEFT
    * the stack — the client's `s<id>` key really was in the census a render ago
    * and really is gone now, and the CARD is really travelling (to a bin, to
    * the erased pile, out of existence).
@@ -283,7 +283,7 @@ export const shownLife = (life: readonly number[], held: ReadonlyMap<number, num
   life.map((v, seat) => v - (held.get(seat) ?? 0));
 
 /**
- * R68: the stack ids a batch of events removed from the stack WITHOUT
+ * CR 704.4: the stack ids a batch of events removed from the stack WITHOUT
  * resolving, in order.
  *
  * The 'negated' event is the engine's marker for "this item left the stack and
@@ -306,9 +306,9 @@ export function negatedIds(events: readonly EngineEvent[]): number[] {
 /**
  * Snapshots of the items a batch of events negated, for their beat.
  *
- * Before R68, negating set `item.negated = true` and LEFT the item on the
+ * Before negation took an item off at once (CR 704.4), negating set `item.negated = true` and LEFT the item on the
  * stack, so it sat there greyed out until a later priority round popped it —
- * slow, but you could see that your spell had been answered. R68 removes it
+ * slow, but you could see that your spell had been answered. CR 704.4 removes it
  * the instant the negation resolves, which is the right rule and costs the
  * player the only picture they had of it.
  *
@@ -337,7 +337,7 @@ export function negatedFlashItems(
 }
 
 /**
- * R271 / CT-142 — the stack ids a batch of events took off the stack because
+ * CR D6.12 / CT-142 — the stack ids a batch of events took off the stack because
  * the item FIZZLED: it reached its resolution and had nothing left to do.
  *
  * `negated` and `fizzled` are the same SHAPE of fact — "this item left the
@@ -363,7 +363,7 @@ export function fizzledIds(events: readonly EngineEvent[]): number[] {
  *
  * ⚠ THE TWO PATHS ARE NOT THE SAME, which is why this only covers one of them.
  * An item that fizzles on the REAL stack emits no `stackFlash` — nothing
- * snapshotted it, so before R271 it simply vanished from the strip with no
+ * snapshotted it, so before the fizzle label (CR D6.12) it simply vanished from the strip with no
  * beat at all. An item nobody could respond to emits `stackFlash` FIRST
  * (engine.ts commitItem) and then fizzles inside the same batch, so the engine
  * has already handed over a copy and this must NOT hand over a second one.
@@ -399,7 +399,7 @@ export function flashItems(events: readonly EngineEvent[]): StackItem[] {
 }
 
 /**
- * R189 — playtest report #105 (GYSR, 2026-08-25): *"All triggers from death
+ * CR D6.7 — playtest report #105 (GYSR, 2026-08-25): *"All triggers from death
  * (and after combat) should go onto the stack VISUALLY at the same time. The
  * Geode's trigger did, but not visually."*
  *
@@ -443,9 +443,9 @@ export function flashItems(events: readonly EngineEvent[]): StackItem[] {
  *     an update of its own. They were not simultaneous ON THE WIRE and no
  *     pacing rule can honestly make them so.
  *   · a batch this module can read nothing about behaves exactly as it did
- *     before R189.
+ *     before the grouping rule (CR D6.7).
  *
- * R68's negated items are appended after, one group each, exactly as before:
+ * CR 704.4's negated items are appended after, one group each, exactly as before:
  * they are not trigger drains and nothing here knows whether two negations
  * were one act.
  */
@@ -475,7 +475,7 @@ export function flashBatches(
   }
   close();
   for (const item of negatedFlashItems(events, remembered)) groups.push([item]);
-  // R271: …and the same for a fizzle, EXCEPT that the engine may already have
+  // CR D6.12: …and the same for a fizzle, EXCEPT that the engine may already have
   // snapshotted this one (an unrespondable item flashes and then fizzles in
   // one batch). Drawing it twice would put two copies of the spell on the
   // strip, which is the bug `stackRows` guards against one layer down.
@@ -494,7 +494,7 @@ export function flashBatches(
  * after which they land together instead of drifting further from the board
  * they are supposed to be explaining.
  *
- * R189: the unit of spacing is a `flashBatches` GROUP, not an item. Everything
+ * CR D6.7: the unit of spacing is a `flashBatches` GROUP, not an item. Everything
  * inside one group shares an arrival; groups are STAGGER_MS apart, as items
  * used to be.
  */
@@ -512,11 +512,11 @@ export function queueFlashes(
   step: boolean = born.length > 0,
 ): Flash[] {
   // two sources, one queue: items that never reached the stack (the engine's
-  // own snapshots) and items R68 took OFF it without resolving (ours)
+  // own snapshots) and items CR 704.4 took OFF it without resolving (ours)
   const groups = flashBatches(events, remembered);
   const taken = new Set<string>();
   if (!groups.length) return existing as Flash[];
-  // R271: which of these beats is a fizzle, and which had to be dug out of the
+  // CR D6.12: which of these beats is a fizzle, and which had to be dug out of the
   // client's own memory. Both are read off the SAME batch the groups came
   // from, so nothing here has to be threaded through `flashBatches` — an item
   // the engine snapshotted is in `flashItems`, and one that was not is a beat
@@ -541,11 +541,11 @@ export function queueFlashes(
     if (!fresh.length) continue;
     at = Math.min(at, now + MAX_LEAD_MS);
     /**
-     * R242 — ONE ARRIVAL, N DEPARTURES. The owner's sentence is the spec:
+     * CR D5.4a — ONE ARRIVAL, N DEPARTURES. The owner's sentence is the spec:
      * *"We should see all the triggers go onto the stack (in the right order,
      * all at once) and then slowly resolve."*
      *
-     * A group is simultaneous in the rules (R189), so every item of it SHARES
+     * A group is simultaneous in the rules (CR D6.7), so every item of it SHARES
      * an arrival — that is the "all at once", and it was already true. What
      * was not is the second half: the group also shared a DEPARTURE, so three
      * simultaneous triggers appeared together and then vanished together, and
@@ -566,13 +566,13 @@ export function queueFlashes(
     fresh.forEach((item, i) => {
       if (i > 0) off += sameSource(fresh[i - 1], item) ? PACE_SAME_SOURCE_MS : STAGGER_MS;
       seen.add(item.id);
-      // R271: a negation is never also a fizzle — an item that left the stack
+      // CR D6.12: a negation is never also a fizzle — an item that left the stack
       // because someone answered it never reached the resolution that could
       // fizzle — so the two marks are exclusive at the source, not just at the
       // renderer. `rowState` relies on that.
       const fizz = fizzled.has(item.id) && !item.negated;
       const detached = item.negated || (fizz && !snapshotted.has(item.id));
-      // a beat whose card is really travelling (R271) already makes its own
+      // a beat whose card is really travelling (CR D6.12) already makes its own
       // journey off the strip — nothing of it waits for the beat to end
       const results = detached || !born.length ? [] : resultKeys(events, item, born, taken);
       const life = detached || !step ? [] : lifeResults(events, item);
@@ -601,7 +601,7 @@ export const pruneFlashes = (list: readonly Flash[], now: number): Flash[] =>
   list.filter(f => now < f.until);
 
 /**
- * R242 — THE ESCAPE HATCH, which the ⏭ chip did not previously reach.
+ * CR D5.5 — THE ESCAPE HATCH, which the ⏭ chip did not previously reach.
  *
  * `paceskip` flushed `ui/pace.ts`'s update queue and nothing else, because
  * before this change the beat queues emptied themselves inside 2.2 seconds and
@@ -640,7 +640,7 @@ export interface StackRow {
   /** true: the real top of the real stack — the thing that resolves next */
   top: boolean;
   /**
-   * R78: true for the ONE item that is resolving right now — off `state.stack`
+   * CR D6.3: true for the ONE item that is resolving right now — off `state.stack`
    * (nobody may respond to it, negate it or target it any more) but not
    * finished, because its resolution stopped on a mid-resolution choice.
    *
@@ -650,10 +650,10 @@ export interface StackRow {
    * purple "resolved", red "answered", pending "resolving".
    */
   resolving: boolean;
-  /** R271 / CT-142: this beat is a FIZZLE — it left the stack at its own
+  /** CR D6.12 / CT-142: this beat is a FIZZLE — it left the stack at its own
    * resolution with nothing left to do. Never true unless `flashing` is. */
   fizzled: boolean;
-  /** R271: the beat was reconstructed from `seen`, so the card itself is
+  /** CR 704.6: the beat was reconstructed from `seen`, so the card itself is
    * really travelling. See `Flash.detached` and `censusFlashes`. */
   detached: boolean;  /** a beat's arrival time (`Flash.at`). The strip is rebuilt on every paint,
    * so its arrival animation is drawn with a negative delay of `now - at` —
@@ -663,7 +663,7 @@ export interface StackRow {
 }
 
 /**
- * R271 / CT-142 — WHAT ONE ROW IS, as one word, computed in ONE place.
+ * CR D6.12 / CT-142 — WHAT ONE ROW IS, as one word, computed in ONE place.
  *
  * The board used to spell the question out at each of the three places that
  * asked it (`stackBoardHtml`'s marks, its chip, and `stackCaption`), as nested
@@ -677,9 +677,9 @@ export interface StackRow {
  * have — it is a property of a function with one return. So this is that
  * function, every caller reads it, and a new state is added here once.
  *
- *   resolving  R78 — off the stack, past every response window, NOT finished
- *   answered   R68 — an opponent negated it (or recalled it: same fact)
- *   fizzled    R271 — it resolved into nothing: no legal target left, or the
+ *   resolving  CR D6.12 — off the stack, past every response window, NOT finished
+ *   answered   CR 704.4 — an opponent negated it (or recalled it: same fact)
+ *   fizzled    CR D6.12 — it resolved into nothing: no legal target left, or the
  *              host it was riding has gone
  *   resolved   it did what it said
  *   waiting    it is still on the stack with its turn to come
@@ -703,13 +703,13 @@ export function rowState(row: StackRow): RowState {
  * had the rules given it a stop, and only the real top of the real stack wears
  * the "resolves next" mark, because a flash resolves next to nothing.
  *
- * R78's `resolving` item goes RIGHTMOST — on top of the pile, overlapped by
+ * The `resolving` item goes RIGHTMOST — on top of the pile, overlapped by
  * nothing. It came off the top of the stack a moment ago, so it outranks
  * everything still waiting; and it is the only row whose chip must stay
  * legible whatever else is on the strip, because it is the answer to "why has
  * nothing happened yet?". A beat is a courtesy; this is the state.
  *
- * Passing `resolving` is optional so a pre-R78 saved state — or a caller that
+ * Passing `resolving` is optional so an older saved state — or a caller that
  * only cares about the queue arithmetic — behaves exactly as before.
  */
 export function stackRows(
@@ -720,13 +720,13 @@ export function stackRows(
     item, flashing: false, top: i === stack.length - 1, resolving: false,
     fizzled: false, detached: false,
   }));
-  // R286: ONE CARD PER ID, the same rule the `resolving` fold applies below.
+  // ONE CARD PER ID, the same rule the `resolving` fold applies below.
   // Every push onto a stack with no response window now flashes (see
   // `E.pushItem`), which is the only way the reader gets a beat for an item
   // that is pushed and drained inside one action. In the one case where the
   // drain stopped on a decision the item is ALSO a live row, and drawing both
   // would read as two copies of the spell — which is exactly the objection
-  // R144(a) raised against flashing a deployment trigger at all. The live row
+  // once raised against flashing a deployment trigger at all. The live row
   // wins: it is the real thing, still standing there.
   const live = new Set(stack.map(i => i.id));
   for (const f of visibleFlashes(flashes, now)) {
@@ -765,7 +765,7 @@ export interface StackCaption {
   /** the controller's name for the trailing "by" clause, or null when `verb`
    * has already named them and repeating it would just be noise */
   by: string | null;
-  /** R78: the lead item is mid-resolution. The caption must read as IN
+  /** CR D6.12: the lead item is mid-resolution. The caption must read as IN
    * PROGRESS — the whole playtest complaint was that a half-done effect looked
    * finished — so the board paints this row and this caption differently from
    * both "just resolved" and "was answered". */
@@ -773,7 +773,7 @@ export interface StackCaption {
 }
 
 /**
- * R78: "Opponent is resolving [effect]", and the equivalents.
+ * CR D6.3: "Opponent is resolving [effect]", and the equivalents.
  *
  * `mySeat` is the seat this screen belongs to, or null where the screen has
  * none — a spectator, a replay, or a test client driving both seats. Naming the controller is the whole point of the report
@@ -813,7 +813,7 @@ export function rowCaption(
     const mine = opts.mySeat !== null && opts.mySeat !== undefined && row.item.controller === opts.mySeat;
     return { row, verb: mine ? 'resolving now' : `${name} is resolving`, by: null, pending: true };
   }
-  // R271: one word per state, off the one classifier — the caption cannot hold
+  // CR D6.12: one word per state, off the one classifier — the caption cannot hold
   // a different opinion from the chip above it about the same row.
   const VERB: Record<Exclude<RowState, 'resolving' | 'waiting'>, string> = {
     // owner, 2026-09-30: "I don't like saying ANSWERED. That's giving a
@@ -839,26 +839,26 @@ export function rowCaption(
  * key is born in the after-census and the card visibly flies onto the stack
  * (docs/11). A NEGATED beat is the mirror image: its key was really there a
  * frame ago and is really gone now, and its card is really travelling — to a
- * bin under R68, or out of existence. Handing the census a phantom would keep
+ * bin under CR 704.4a, or out of existence. Handing the census a phantom would keep
  * that key alive across the diff, `stack>bin` would never pair, and the card
  * would pop into the bin instead of flying there.
  *
  * So the ghost stays on the strip and the card still makes its journey. The
  * board underneath is final either way — the beat is explanation, not a gate.
  *
- * R78: a RESOLVING row is a phantom for the opposite reason. Its `s<id>` key
+ * A RESOLVING row is a phantom for the opposite reason. Its `s<id>` key
  * really was in the census one render ago and is really gone from `state.stack`
  * now — but the card has gone NOWHERE, it is mid-resolution and still drawn on
  * the strip. Without the phantom the diff would see the key vanish and fly the
  * card off to a destination that does not exist yet. With it, the card sits
  * still until the resolution actually finishes, and only then flies to the bin.
  *
- * R271: `!item.negated` was the way this asked "has the card LEFT?", and it
+ * CR 704.6: `!item.negated` was the way this asked "has the card LEFT?", and it
  * was right only while negation was the one way to leave without resolving. A
  * FIZZLED item leaves exactly the same way and its card makes exactly the same
  * journey, so the question is now asked of the beat (`detached`) rather than
- * of one of the two answers to it. The negated check stays beside it: a
- * pre-R271 queue entry carries no `detached` flag and must still behave.
+ * of one of the two answers to it. The negated check stays beside it: an
+ * older queue entry carries no `detached` flag and must still behave.
  */
 export const censusFlashes = (rows: readonly StackRow[]): StackRow[] =>
   rows.filter(r => r.resolving || (r.flashing && !r.item.negated && !r.detached));
@@ -917,7 +917,7 @@ export function beatCensus(
   return { ...base, slots: [...phantom, ...slots] };
 }
 
-// ── R80: narrative beats — a combat step told one stage at a time ─────
+// ── CR D5.4: narrative beats — a combat step told one stage at a time ─────
 //
 // Playtest UFAB: "Neither of us had anything to do during the end of that
 // combat, but damage and all effects happened instantly. We should have been
@@ -976,7 +976,7 @@ export interface Beat extends BeatStage {
 /**
  * The motion keys one event is about: the unit it hit, or the player it hit.
  *
- * R266 exports it. It is the client's own answer to "does this announcement
+ * It is exported for the log-only census (CR D7.4). It is the client's own answer to "does this announcement
  * pulse anything on the board?", and `test/244-log-is-not-the-only-surface`
  * derives the log-only inventory by asking it rather than by keeping a second
  * copy of the rule — so widening the rule here narrows that inventory, which
@@ -1069,7 +1069,7 @@ export const heldLines = (beats: readonly Beat[], now: number): number =>
   beats.reduce((n, b) => (b.at > now ? n + b.lines : n), 0);
 
 /**
- * R242 — the same escape hatch for the NARRATIVE beats.
+ * CR D5.5 — the same escape hatch for the NARRATIVE beats.
  *
  * ⚠ NOT the same implementation as `flushFlashes`, and the difference matters:
  * a beat is holding back real LOG LINES, so dropping the queue would drop the

@@ -2,11 +2,11 @@
  * 'Powerful' like the units do."
  *
  * Emberflame Enlightener grants your spells {Powerful} — spell tokens too
- * (R157 §13) — and the engine applied it, but only inside resolution, where
+ * (CR 707.7a) — and the engine applied it, but only inside resolution, where
  * the grant is assembled per part. Nothing on the strip asked for it, so no
  * stack item ever showed a granted attribute: not Emberflame's Powerful, not
- * Envoy of Lightning's Electric, not a virus's (R79) or a {Modular} mod's
- * (R105). A printed spell attribute was on the scan only.
+ * Envoy of Lightning's Electric, not a virus's (CR 723.4) or a {Modular} mod's
+ * (CR 724.4a). A printed spell attribute was on the scan only.
  *
  * The owner chose CHIPS ONLY: the stack card and its zoom wear the chips a
  * unit does; the does-line wording is left alone. The chips read

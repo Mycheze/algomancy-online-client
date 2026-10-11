@@ -71,24 +71,18 @@ export const RULINGS_EXPORTS = join(DATA_DIR, 'rulings', 'exports');
 
 /* ── THE ENGINE'S SPEC, AND THE COMPREHENSIVE RULES BUILT FROM IT ─────────
  *
- * `digital-rules.md` is the register: one `## R<n>` per adjudication the
- * engine forced. Six tests read it, and until 2026-10-10 each spelled the
- * path for itself — `join(CLIENT, 'docs', …)`, `join(HERE, '..', '..',
- * 'docs', …)`, `new URL('../../docs/…')` — three notations for one file that
- * `client/docs/` being a test fixture directory makes load-bearing.
- *
- * `data/comprehensive-rules/` is the comprehensive-rules export: a numbered
- * rules document describing what OUR client enforces, built by the scripts in
- * `scripts/cr/` from the rulings, the printed text and the engine's tests.
+ * `data/comprehensive-rules/` is the comprehensive-rules export, and the
+ * engine's spec: a numbered rules document describing what OUR client
+ * enforces, built by the scripts in `scripts/cr/` from the printed text, the
+ * designer's answers, the owner's calls (recorded in the records) and the
+ * engine's tests. (The R-ruling register it replaced, client/docs/digital-
+ * rules.md, was retired on 2026-10-11; refs/archive/r-register-final.)
  * Shared data, so `bot/paths.py` names the directory and the document too.
  * Its README is the pipeline's documentation, including the contract every
  * record must meet. Two kinds of file live there and they must not be
  * confused: what the scripts GENERATE (rebuild it, never edit it), and the
  * REVIEWED STATE the scripts read back (a human or a reviewed script call
  * decided it; it cannot be rebuilt from anything). */
-
-/** the engine's spec: the `## R<n>` register. Not documentation — a fixture */
-export const DIGITAL_RULES = join(REPO_ROOT, 'client', 'docs', 'digital-rules.md');
 
 /** the comprehensive-rules export: records, reviewed state, the document */
 export const CR_DIR = join(DATA_DIR, 'comprehensive-rules');
@@ -103,13 +97,6 @@ export const CR_RULES_DIR = join(CR_DIR, 'rules');
  * number that has been published is a citation someone may hold.
  */
 export const CR_LEDGER = join(CR_DIR, 'ledger.json');
-/** which ruling supersedes or narrows which, edge by reviewed edge.
- *  Committed reviewed state — append/edit only through the cr scripts. */
-export const CR_SUPERSESSION = join(CR_DIR, 'supersession.json');
-/** every R-ruling's scope and the sections it feeds. A ruling with no row
- *  here fails the gate. Committed reviewed state — append/edit only through
- *  the cr scripts. */
-export const CR_CLASSIFICATION = join(CR_DIR, 'classification.json');
 /** the verifier's verdicts, one file per drafting unit (`U12.json`), written
  *  by `cr/harness.mjs finalize` so parallel units never touch one file.
  *  Committed reviewed state — append/edit only through the cr scripts. */

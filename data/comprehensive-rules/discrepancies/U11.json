@@ -4,7 +4,7 @@
     "kind": "c-owner-call-only",
     "rule": "combat.attack.decline",
     "tier": 3,
-    "summary": "Printed text lists a priority window for the attack step and skips only combat and after combat in a region that was not attacked. It does not say what happens to the attack window and the block step when the attacking player declares no attack. R194 and R15 (owner calls) say a declined attack opens no window at all and gives no block step.",
+    "summary": "Printed text lists a priority window for the attack step and skips only combat and after combat in a region that was not attacked. It does not say what happens to the attack window and the block step when the attacking player declares no attack. The owner ruling of 2026-08-26 (“a warning is not worth a…”) and the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) (owner calls) say a declined attack opens no window at all and gives no block step.",
     "sides": [
       {
         "source": "Rulebook 2023 p.13",
@@ -15,22 +15,22 @@
         "quote": "did not get attacked, in which case combat and after"
       },
       {
-        "source": "R194",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "A declined attack fights no combat, so there is no"
       },
       {
-        "source": "R15",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
       }
     ],
-    "resolution": "The rule states R194/R15: no attack window, block step, block window, combat damage or after combat step. The printed lists describe a battle that happens, and a region that was not attacked has none. No designer source covers the attack window after a declined attack. This is an owner call."
+    "resolution": "The rule states the owner rulings of 2026-08-26 (“a warning is not worth a…”) and 2026-08-18 (“Round-2 attackers when round 1 had…”): no attack window, block step, block window, combat damage or after combat step. The printed lists describe a battle that happens, and a region that was not attacked has none. No designer source covers the attack window after a declined attack. This is an owner call."
   },
   {
     "id": "D-U11-2",
     "kind": "c-owner-call-only",
     "rule": "combat.blocks.side.reach",
     "tier": 3,
-    "summary": "The Manual and the RAQ allow side-blocks, and any number of them, but say nothing about how far from the attack a side-block may stand. R321's encoding limits a declaration to reach no further out than it has blocking columns.",
+    "summary": "The Manual and the RAQ allow side-blocks, and any number of them, but say nothing about how far from the attack a side-block may stand. The owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s encoding limits a declaration to reach no further out than it has blocking columns.",
     "sides": [
       {
         "source": "Manual p.23",
@@ -41,36 +41,36 @@
         "quote": "Yep you should be able to"
       },
       {
-        "source": "R321",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "reach no further out than it has blocking columns"
       }
     ],
-    "resolution": "The rule states R321's limit and is marked basis owner. No printed or designer source sets a distance."
+    "resolution": "The rule states the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s limit and is marked basis owner. No printed or designer source sets a distance."
   },
   {
     "id": "D-U11-3",
     "kind": "a-sources-disagree",
     "rule": "combat.block-window.late-blocker",
     "tier": 4,
-    "summary": "Caleb said a unit put in as a blocker after blocks would be 'considered blocked even against an empty column'. R322 offers the late-blocker spot only for an attacking column that 'still has an attacker' and no block. Caleb's words support two readings.",
+    "summary": "Caleb said a unit put in as a blocker after blocks would be 'considered blocked even against an empty column'. The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) offers the late-blocker spot only for an attacking column that 'still has an attacker' and no block. Caleb's words support two readings.",
     "sides": [
       {
         "source": "RAQ 1366447016653361192#1",
         "quote": "3.) I think it would be considered blocked even against an empty column."
       },
       {
-        "source": "R322",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "for every attacking column that still has an"
       }
     ],
-    "resolution": "Settled by context, not a question. Caleb was answering _passer's point 3, which asks about an unblocked column in the after-block window (R322 quotes it); \"empty column\" there means a column with no blocker. R322 encodes that, and the rule follows it. A column whose attackers have all died after blocks is a different case that no source addresses; it becomes a question only if a game reaches it."
+    "resolution": "Settled by context, not a question. Caleb was answering _passer's point 3, which asks about an unblocked column in the after-block window (the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) quotes it); \"empty column\" there means a column with no blocker. The owner ruling of 2026-10-09 (“A blocker put in after blocks…”) encodes that, and the rule follows it. A column whose attackers have all died after blocks is a different case that no source addresses; it becomes a question only if a game reaches it."
   },
   {
     "id": "D-U11-5",
     "kind": "c-owner-call-only",
     "rule": "combat.block-window.late-blocker.when",
     "tier": 3,
-    "summary": "Two details of the late-blocker rule are R322 encoding decisions with no designer source. (1) The spot is offered from the block window until combat damage is over; the RAQ question spoke only of the 'after block' window. (2) No 'blocked' event fires for the late blocker, so it was not 'declared' as a blocker; whether a 'When I block' unit put in this way triggers is not addressed by any designer source.",
+    "summary": "Two details of the late-blocker rule are the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) encoding decisions with no designer source. (1) The spot is offered from the block window until combat damage is over; the RAQ question spoke only of the 'after block' window. (2) No 'blocked' event fires for the late blocker, so it was not 'declared' as a blocker; whether a 'When I block' unit put in this way triggers is not addressed by any designer source.",
     "seeAlso": [
       {
         "id": "D-U10-12",
@@ -79,11 +79,11 @@
     ],
     "sides": [
       {
-        "source": "R322",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "attacker and no block entry, from the block window until combat damage is"
       },
       {
-        "source": "R322",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "No `blocked` event fires for the late blocker"
       },
       {
@@ -91,11 +91,11 @@
         "quote": "A unit played in as a blocker after blocks (Tiderunner Initiate) blocks an unblocked column"
       },
       {
-        "source": "R322",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "> *\"3. If there is unblocked column and during 'after block' window as defender"
       }
     ],
-    "resolution": "The rules state R322 and are marked basis owner (combat.block-window.late-blocker.when, combat.block-window.late-blocker.not-declared). Question for the owner only if a unit with a 'When I block' ability can reach a blocking spot after blocks (for example one played by a blocking Hooba-Pon 'into an open position in my formation'); then whether its trigger fires needs a decision."
+    "resolution": "The rules state the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) and are marked basis owner (combat.block-window.late-blocker.when, combat.block-window.late-blocker.not-declared). Question for the owner only if a unit with a 'When I block' ability can reach a blocking spot after blocks (for example one played by a blocking Hooba-Pon 'into an open position in my formation'); then whether its trigger fires needs a decision."
   },
   {
     "id": "D-U11-6",
@@ -110,7 +110,7 @@
       },
       {
         "source": "file: client/ui/test/53-playtest-round7.test.ts",
-        "quote": "R84: an attack that has collapsed to nothing still lets the defender declare"
+        "quote": "CR 606.2f: an attack that has collapsed to nothing still lets the defender declare"
       }
     ],
     "resolution": "The rule is basis engine and awaits owner sign-off (Annex P). It matters because the defending player may still want to side-block or send counterattackers."
@@ -153,14 +153,14 @@
         "quote": "so there are no additional counter attacks here."
       }
     ],
-    "resolution": "The Q&A answers summoning sickness; the round-2 pool is the more specific printed rule (combat.attack.declaring.round-two, R15). No change."
+    "resolution": "The Q&A answers summoning sickness; the round-2 pool is the more specific printed rule (combat.attack.declaring.round-two, the owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”)). No change."
   },
   {
     "id": "D-U11-9",
     "kind": "b-engine-only",
     "rule": "combat.attack.effects.triggers",
     "tier": 3,
-    "summary": "Sources silent on exactly when 'When I attack' and 'When I block' triggers reach the stack relative to the following priority window, and on when 'After the blocking step' resolves. Only R84 (for Alluring: it goes on the stack and can be negated) and the tests say so. The same applies to combat.blocks.triggers and combat.block-window.after-blocking-triggers.",
+    "summary": "Sources silent on exactly when 'When I attack' and 'When I block' triggers reach the stack relative to the following priority window, and on when 'After the blocking step' resolves. Only the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) (for Alluring: it goes on the stack and can be negated) and the tests say so. The same applies to combat.blocks.triggers and combat.block-window.after-blocking-triggers.",
     "sides": [
       {
         "source": "card: Palewing",
@@ -171,7 +171,7 @@
         "quote": "[Augment] After the blocking step, I deal 1 damage to each opponent for each blocked column."
       },
       {
-        "source": "R84",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "It goes on the stack and can be negated."
       }
     ],
@@ -204,14 +204,14 @@
     "kind": "g-other",
     "rule": "combat.attack.decline",
     "tier": 4,
-    "summary": "A declined attack fights no combat, but the engine still counts the round as a completed battle for 'One Battle Passes'. R43 says both battles in a turn tick it, without saying whether a round with no attack is one of them.",
+    "summary": "A declined attack fights no combat, but the engine still counts the round as a completed battle for 'One Battle Passes'. The owner ruling of 2026-08-19 (“Prophecy conditions count forward from the…”) says both battles in a turn tick it, without saying whether a round with no attack is one of them.",
     "sides": [
       {
-        "source": "R43",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "battles in a turn tick \"One Battle Passes\" (Caleb 2024-09-24)."
       },
       {
-        "source": "R194",
+        "source": "owner ruling, adopted 2026-08-26",
         "quote": "A declined attack fights no combat, so there is no"
       }
     ],

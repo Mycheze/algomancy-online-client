@@ -4,16 +4,16 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R9 (bounded budgets per card), R12/R25 ("each player/opponent" reads the
- * event region's present seats), R14 ("this battle" counters are per
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 803.4 (bounded budgets per card), CR 601.4d ("each player/opponent" reads the
+ * event region's present seats), CR 505.6 ("this battle" counters are per
  * region-battle).
  *
  * ⚠ NEEDS ESCALATION — "a card enters a hand" is HALF IMPLEMENTED (2026-08-24).
- *   CLOSED BY R179. Rider of the Tides and Xenopod Progenitor here, and
+ *   CLOSED (CR 402.4). Rider of the Tides and Xenopod Progenitor here, and
  *   Galerider Eel in batch-water-a, all print "whenever (one or more other)
  *   cards enter a player's hand during battle". They used to listen on
- *   'despawned' (with `to: 'hand'`, R70) and 'draw' — a RECALL and a DRAW —
+ *   'despawned' (with `to: 'hand'`, CR 714.9) and 'draw' — a RECALL and a DRAW —
  *   and a card moved into a hand any OTHER way fired nothing, because nothing
  *   in the engine announced it: `player(seat).hand.push(name)` was a bare
  *   array write. The count in this note used to read "~9 card files"; it was
@@ -41,7 +41,7 @@
  *    only, which is the CORRECT definition: the face owns no behaviour.
  *    ⚠ Do not "implement" it — printed.json carries Resource faces for only
  *    fire, water and earth, so routing a seven-element rule through them would
- *    silently drop the bonus for wood, metal, light and dark. R116, R54.
+ *    silently drop the bonus for wood, metal, light and dark. CR 106.7c.
  */
 import type { Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -51,18 +51,18 @@ import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn, doubleStats
 // it too). index.ts imports that module first, so importing it here cannot
 // disturb registration order — see the note on `playInline` itself.
 import { inlineCostPayable, inlineModes, inlinePlayGoesToStack, playInline, type InlineMode } from './batch-water-a.ts';
-// R166: "double a stat" is one shared solver — Burgeon and Surly Stalker print
+// CR 709.7: "double a stat" is one shared solver — Burgeon and Surly Stalker print
 // the same verb and must give the same answer under {Tough}/{Balanced}.
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+/** CR 601.4c: `E.seatsHere` is the one answer for the whole pool. SIX files had
  * grown their own copy of this and they did NOT agree — most ordered it
  * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
-/** "Each player recalls a unit" (R12/R25: the region's present seats; each
+/** "Each player recalls a unit" (CR 601.4d: the region's present seats; each
  * player picks their own). All picks are gathered before any recall. */
 const planEachPlayerRecall = (g: E, ctx: EffectCtx, tag: string): Entity[] => {
   const picks: Entity[] = [];
@@ -82,10 +82,10 @@ const planEachPlayerRecall = (g: E, ctx: EffectCtx, tag: string): Entity[] => {
 // victim's card + mods land in the caster's bin instead of being erased
 // (Unstable). destroy() is still used so death triggers / battle counters /
 // formation cleanup all behave; BOTH cases are redirected AT SOURCE, with
-// destroy()'s `binTo` and (R137) `keepBinned`. A token victim — and a token
+// destroy()'s `binTo` and (CR 803.8m) `keepBinned`. A token victim — and a token
 // MOD — is simply erased (there is no card to move).
 //
-// R40 (trashing) is satisfied by `destroy(u, verb, { binTo })`, which routes
+// CR 801.2e (trashing) is satisfied by `destroy(u, verb, { binTo })`, which routes
 // the single bin push AND the single trash attribution at the caster in one
 // decision — a card is trashed by the owner of the bin it enters:
 //
@@ -96,16 +96,14 @@ const planEachPlayerRecall = (g: E, ctx: EffectCtx, tag: string): Entity[] => {
 //    before card code regains control, and a compensating second
 //    trashed(caster) would double-count the ledger and double-fire "when I am
 //    trashed".)
-//  - modded victim: `keepBinned` (R137). destroy() now bins the body AND every
+//  - modded victim: `keepBinned` (CR 803.8m). destroy() now bins the body AND every
 //    nontoken mod in the CASTER's bin and trashes each one there, which is
 //    exactly the move this card describes — so all the card's text has left to
 //    say is "and they STAY": the Unstable sweep does not run. This branch used
 //    to be a second, hand-rolled `toBin` per card, because destroy() erased
-//    everything and fired no trash at all; under R137 that would have binned
+//    everything and fired no trash at all; under CR 803.8m that would have binned
 //    and trashed every one of them TWICE.
-//  - token victim (R69, 2026-08-21): a token is a card and DOES enter a bin, so
-//    destroy({ binTo: caster }) already bins it in the caster's name, trashes
-//    it there, and lets the state-based sweep erase it. Nothing left to do —
+//  - token victim: a token DOES enter a bin (CR 410.5a), so destroy({ binTo: caster }) already bins it in the caster's name — without trashing it — and lets the state-based sweep erase it. Nothing left to do —
 //    hence the early return, which is now about not double-binning rather than
 //    about tokens being exempt. `keepBinned` deliberately does not spare a
 //    token: this card moves CARDS into a bin, and a token has none.
@@ -123,28 +121,28 @@ card('Pull Under', {
       }
       const wasToken = !!u.token;
       const name = u.card;
-      // R69: a token MOD has no card of its own — it is erased with the body,
+      // CR 410.4c: a token MOD has no card of its own — it is erased with the body,
       // exactly as recall()/cacheUnit() erase one, and never trashed.
       const modCards = u.mods
         .map(id => g.entity(id))
         .filter((m): m is Entity => !!m && !m.token)
         .map(m => m.card);
       g.destroy(u, 'is deleted', { binTo: ctx.controller, keepBinned: true });
-      if (wasToken) return;   // R69: destroy() already binned, trashed and erased it
+      if (wasToken) return;   // CR 410.5a: destroy() already binned and erased it (a token is not trashed)
       g.ev('info', `Pull Under: ${name}${modCards.length ? ` and ${modCards.length} mod(s)` : ''} → ${g.pname(ctx.controller)}'s bin.`);
     },
   },
 });
 
 // "[Switch1] Each player recalls a unit and loses 2 life." — b/1, {Battle}
-// Maelstrom Spell. "Each player" = the region's present seats (R12/R25); each
+// Maelstrom Spell. "Each player" = the region's present seats (CR 601.4d); each
 // player picks their own unit (auto when only one). The life loss is
 // unconditional per player — a player with no unit to recall still loses 2.
 const recallSpellEffect: EffectDef = {
   run: (g, ctx) => {
     const picks = planEachPlayerRecall(g, ctx, 'rc');
     const seats = presentSeats(g, ctx.region);
-    // R209/CT-74/CT-81. HALF-SILENT, which is why no sweep could see it: the
+    // CR D7.3/CT-74/CT-81. HALF-SILENT, which is why no sweep could see it: the
     // life loss below is unconditional and always speaks, so the run is never
     // WHOLLY silent and `65-effect-conformance` — which convicts only a run
     // that emits nothing AT ALL — is structurally blind to it forever. The
@@ -162,9 +160,9 @@ card('Recall', {
 // "[Augment] Whenever a card enters a player's hand during battle, I gain
 // +2/+2 until regroup." — b/1 2/2 Fish Unit. Text-box [Augment].
 //
-// R179: ONE listener, on 'handEntered' — the event `E.toHand` fires, and
+// CR 402.4: ONE listener, on 'handEntered' — the event `E.toHand` fires, and
 // `E.toHand` is now the only way a card reaches a hand. That covers the recall
-// (a token recall included: R69's hand window is a real entry, and Caleb was
+// (a token recall included: CR 410.5b's hand window is a real entry, and Caleb was
 // asked about THIS card — "Oh dang yeah it should also trigger it"), the
 // battle draw, and the fourteen bin/stack/cache/hand routes that used to be
 // silent. "A player's hand" carries no ownership clause, so either seat's
@@ -173,7 +171,7 @@ card('Recall', {
 // ⚠ It listened on 'despawned' + 'draw' before. Keeping either alongside
 // 'handEntered' would DOUBLE-FIRE, because a recall and a draw both go
 // through `toHand` now. The event carries no region (like 'draw'), so the
-// when() still pins the listener to the battle region itself (R12).
+// when() still pins the listener to the battle region itself (CR 101.6).
 card('Rider of the Tides', {
   augmentText: [{
     type: 'triggered', events: ['handEntered'],
@@ -183,7 +181,7 @@ card('Rider of the Tides', {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // the carrier can be gone by resolution — R69's hand window makes this
+        // the carrier can be gone by resolution — CR 410.5b's hand window makes this
         // reachable in one more way, since a token recall now fires the trigger
         if (!self) { g.ev('info', 'Rider of the Tides: the carrier is gone — no +2/+2.'); return; }
         g.addTemp(self, 2, 2);
@@ -194,9 +192,9 @@ card('Rider of the Tides', {
 
 // "[Augment] Whenever my column deals combat damage to a player, put target
 // card from that player's bin into your hand." — b/2 2/1 {Evasive}. Text-box
-// [Augment]. The bin pick happens at RESOLUTION from the live bin (R1).
+// [Augment]. The bin card is a declared target, chosen as the trigger goes on the stack (CR 706.2).
 //
-// R195 — "my column deals combat damage to a player" is the ONE shared engine
+// CR 608.9a — "my column deals combat damage to a player" is the ONE shared engine
 // predicate, `E.columnDealtCombatDamage`, on the 'face' channel (the clause is
 // narrowed to a player, so no unit channel). The reconstruction that used to
 // live here — in a column with power, and it reaches the player (attacking and
@@ -205,14 +203,14 @@ card('Rider of the Tides', {
 // measured, a fully-absorbed column claimed a second column's hit and took a
 // card off that player's bin for damage it never dealt. The event now carries
 // the per-column breakdown, so the predicate asks instead of re-deriving, and
-// this copy also picks up R117's sub-step gate, which it never had.
+// this copy also picks up CR 608.9a's sub-step gate, which it never had.
 card('Rippleback Skulker', {
   augmentText: [{
-    type: 'triggered', events: ['combatFaceDamage'],   // R238
+    type: 'triggered', events: ['combatFaceDamage'],   // CR 608.8a
     label: "put target card from that player's bin into your hand",
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: {
-      // R67: "target card from that player's bin" is a DECLARED target,
+      // CR 110.1a: "target card from that player's bin" is a DECLARED target,
       // chosen as the trigger goes on the stack. "That player" is the one the
       // column just damaged, which only the EVENT knows — so the restriction
       // reads `tc.event`, the same snapshot run() sees as ctx.event. The kind
@@ -229,9 +227,9 @@ card('Rippleback Skulker', {
           g.ev('info', 'Rippleback Skulker: no bin card is targeted (or it has left) — nothing is taken.');
           return;
         }
-        const taken = g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // R124
+        const taken = g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // CR 405.7
         if (taken !== undefined) {
-          g.toHand(ctx.controller, taken, 'bin');   // R179
+          g.toHand(ctx.controller, taken, 'bin');   // CR 402.4
           g.ev('info', `Rippleback Skulker: ${taken} → ${g.pname(ctx.controller)}'s hand.`);
         }
       },
@@ -241,15 +239,15 @@ card('Rippleback Skulker', {
 
 // "When the second nontoken spell is played in this battle, [Switch1] Each
 // player recalls a unit." — b/3 2/3. The engine keeps no global spells-played
-// counter, so the listener maintains a per-INSTANCE battle counter (R14: per
+// counter, so the listener maintains a per-INSTANCE battle counter (CR 505.6: per
 // region-battle, reset at battle-phase start), bumped inside when() — which
 // fireEvent evaluates exactly once per event per listener, so the count is
 // exact even with multiple Shellcasters in play. Condition at event time
-// (R1); [Switch1] bounded (R9); the recall effect is the bounded graft.
+// (CR 109.3a); [Switch1] bounded (CR 722.5); the recall effect is the bounded graft.
 const eachPlayerRecalls: EffectDef = {
   run: (g, ctx) => {
     const picks = planEachPlayerRecall(g, ctx, 'ssc');
-    // R209/CT-74: `planEachPlayerRecall` skips a seat with nothing to recall,
+    // CR D7.3/CT-74: `planEachPlayerRecall` skips a seat with nothing to recall,
     // so with every present seat empty it returns [] and this ran to
     // completion emitting nothing. ONE object, TWO conformance labels
     // (`ability:Seabed Shellcaster#0` and `graft:Seabed Shellcaster`) — one
@@ -277,7 +275,7 @@ card('Seabed Shellcaster', {
 // "[Augment] After combat, you may recall target ally. If you do, each
 // opponent loses 2 life." — bb/2 3/2 Spirit Unit. Text-box [Augment]. The
 // target is declared when the trigger goes on the stack; the "may" is a
-// mid-resolution decline (R6 pattern). "Each opponent" region-scoped (R25).
+// mid-resolution decline (CR 704.1a pattern). "Each opponent" region-scoped (CR 601.4d).
 card('Shoreline Specter', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -299,9 +297,9 @@ card('Shoreline Specter', {
         if (!yes) { g.ev('info', 'Shoreline Specter: declined — no recall, no life loss.'); return; }
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         g.recall(u);
-        // R209/CT-81(b): the recall above always speaks, so no silence sweep
+        // CR D7.3/CT-81(b): the recall above always speaks, so no silence sweep
         // could ever convict this — and the prompt the player just answered
-        // said "(each opponent loses 2 life)". With no opponent here (R25: a
+        // said "(each opponent loses 2 life)". With no opponent here (CR 601.4d: a
         // home region out of battle lists only its owner) that half simply did
         // not happen, and the player was told nothing.
         if (!opponents.length) {
@@ -316,10 +314,10 @@ card('Shoreline Specter', {
 // "[Switch1] Create an X/X unit, where X is the life target player lost in
 // this battle." — b/2, {Battle} Occult Horror Spell. X reads the engine's
 // per-battle life-loss ledger (E.loseLife bumps battleCounter
-// `lifeLost:<seat>`; reset per battle, R14; amount at resolution, R1).
+// `lifeLost:<seat>`; reset per battle, CR 505.6; amount at resolution, CR 107.8).
 const soulSiphonMake: EffectDef = {
-  // R67: "target player" is a DECLARED target, chosen as the item goes on the
-  // stack. R64's 'player' kind is the one with no ownership clause — the card
+  // CR 110.1a: "target player" is a DECLARED target, chosen as the item goes on the
+  // stack. CR 110.3c's 'player' kind is the one with no ownership clause — the card
   // says "target player", not "target opponent", so aiming it at YOURSELF is
   // legal (and is what you do when you are the one who has been bled).
   targets: { what: 'player', prompt: 'Soul Siphon: target player (X = the life they lost this battle)' },
@@ -361,37 +359,37 @@ card('Spawntender', {
 // until regroup. (If it would enter a bin, erase it instead.)" — bb/1,
 // {Battle} Arcane Spell.
 //
-// R197: "UNTIL REGROUP" IS A REAL WINDOW NOW. This card used to play the
+// CR 405.9: "UNTIL REGROUP" IS A REAL WINDOW NOW. This card used to play the
 // chosen spell IMMEDIATELY, inline, as part of its own resolution — the whole
 // printed permission collapsed to "right now". Three printed words were lost
 // with it: you could not hold the spell for a better moment, you could not
 // decline after seeing what the Excavation drew out, and — the one that
 // mattered most — an inline play has no `playAtTiming`, so a DEPLOY-timing
-// spell in the bin was castable in the middle of a battle. R157 §12 rules the
+// spell in the bin was castable in the middle of a battle. CR 702.2a rules the
 // opposite: **a bin-play grant does not waive printed timing.**
 //
-// What it does instead is grant, and the grant is R96's mechanism with the
+// What it does instead is grant, and the grant is CR 405.9's mechanism with the
 // card's own two differences printed on it: ONE named card (`E.grantBinCardPlay`
 // / `useBinCardPlay` — "target spell" is singular) and a window that runs to
 // REGROUP rather than to the end of this region's battle. Everything after
 // that is the ordinary `playFromBin` road: the player picks their own moment
 // in their own priority window, `playAtTiming` applies the printed timing,
 // `payCard` takes the cost then and not now, the item goes on the STACK where
-// it can be responded to and negated, and R96's `viaGrant` stamp is what
+// it can be responded to and negated, and the bin grant's `viaGrant` stamp (CR 803.8c) is what
 // carries "{Unstable} until regroup … erase it instead of binning it".
 // The card no longer erases anything by hand: `dischargeItem` does it, on the
-// real R65 pile, because the item is really {Unstable}.
+// real erased pile (CR 407.1), because the item is really {Unstable}.
 /**
- * The restriction Spell Excavation aims under (R64: asked at CAST, as part of
+ * The restriction Spell Excavation aims under (CR 110.3a: asked at CAST, as part of
  * what makes a target legal).
  *
- * R197 shrank this to what the printed noun and R157 §12 between them allow:
- * a SPELL (kind spell/spellUnit — R157 §13's "tokens are spells" cannot apply,
+ * This is narrowed to what the printed noun and CR 702.2a between them allow:
+ * a SPELL (kind spell/spellUnit — the "tokens are spells" ruling (CR 302.3) cannot apply,
  * a token is never in a bin), whose PRINTED TIMING can still be met before the
  * window closes. The window ends at regroup and regroup ends the battle phase,
  * so a card that is not {Battle}-timed could never be played under this grant
  * at all — offering it would be granting a permission that is dead on arrival,
- * which is the same filter `pushBinPlays` already applies to R96's grant.
+ * which is the same filter `pushBinPlays` already applies to Abyssal Evocation's blanket grant.
  *
  * ⚠ WHAT IS DELIBERATELY NOT ASKED ANY MORE: affordability, and "can it find a
  * target". Both were right for an immediate play and are wrong for a window —
@@ -405,12 +403,12 @@ card('Spawntender', {
 const excavatable = (n: string): boolean => {
   const d = getCard(n);
   if (d.kind !== 'spell' && d.kind !== 'spellUnit') return false;
-  return d.timing === 'battle';                   // R157 §12: timing is not waived
+  return d.timing === 'battle';                   // CR 702.2a: timing is not waived
 };
 card('Spell Excavation', {
   spellEffect: {
-    // R67: "target spell from your bin" is a DECLARED target, chosen as the
-    // Excavation goes on the stack (R64's 'binCard'), not a mid-resolution
+    // CR 110.1a: "target spell from your bin" is a DECLARED target, chosen as the
+    // Excavation goes on the stack (CR 110.3's 'binCard'), not a mid-resolution
     // pick. min 0 carries the "You may".
     targets: {
       what: 'binCard', min: 0,
@@ -431,14 +429,13 @@ card('Spell Excavation', {
         g.ev('info', 'Spell Excavation: that spell can no longer be played from the bin — nothing happens.');
         return;
       }
-      // ⚠ R198 -> R197: this card used to call `playInline` here, and R198 taught
-      // that call to push a real StackItem so the play could be answered. R197
-      // then removed the call site altogether — "you MAY play it until regroup"
+      // ⚠ This card used to call `playInline` here, and the mid-resolution stack fix taught
+      // that call to push a real StackItem so the play could be answered. The call site was then removed altogether — "you MAY play it until regroup"
       // is a GRANT, not a play — so `doPlayFromBin` now carries the stack, the
-      // cost, the printed timing, the {Unstable} stamp and the R65 erase in
-      // their ordinary places. R198's inline work still serves the other three
+      // cost, the printed timing, the {Unstable} stamp and the CR 407.1 erase in
+      // their ordinary places. That inline stack work still serves the other three
       // mid-resolution plays (Hooba-Pon, Insidious Invitation, Tides).
-      // R197: the grant, not the play. It stays live until regroup, across
+      // CR 405.9: the grant, not the play. It stays live until regroup, across
       // both battle rounds and both regions — see E.grantBinCardPlay — and
       // `doPlayFromBin` is what honours it, with the printed timing, the
       // stack, the cost and the {Unstable} stamp all in their ordinary places.
@@ -453,14 +450,14 @@ card('Spell Excavation', {
 // "When I attack or block alone, [Switch1] Double my power and defense until
 // regroup." — bb/4 4/4 {Battle} Manatee Unit. "Alone" = the only living unit
 // in my whole formation grid (attackers when attacking, blockers when
-// blocking — the R20 Sneaky reading), checked at event time (R1). The DOUBLE
-// is read at RESOLUTION (R1).
+// blocking — the CR 604.3d Sneaky reading), checked at event time (CR 109.3a). The DOUBLE
+// is read at RESOLUTION (CR 109.3b).
 //
-// R166: this was `addTemp(+p, +t)` off `effStats`, which is the layer-4 number
+// CR 709.7: this was `addTemp(+p, +t)` off `effStats`, which is the layer-4 number
 // written back in at layer 3 — so a {Tough} or {Balanced} Stalker had the
 // doubling doubled again on the way out. Unlike Burgeon's targets it prints no
 // stat-layer attribute of its own, so one has to be handed to it; the cheapest
-// door is not a virus at all but R19 COLUMN SHARING — attack in a column with
+// door is not a virus at all but CR 802.1c COLUMN SHARING — attack in a column with
 // Rampart Guardian (a printed {Tough} 0/4) and the Stalker is {Tough} too,
 // "in all situations". A {Virus} augment (Rampart Guardian, Child of Aether)
 // is the other.
@@ -494,27 +491,27 @@ card('Surly Stalker', {
 
 // "[Augment] {Haste} {Alluring} Eel Unit" — b/1 1/3. Type-line [Augment]
 // grants {Alluring}; printed.augmentAttrs carries it, and printed.attrs keeps
-// it live when played normally ({Haste}: playable in the haste step, R18).
+// it live when played normally ({Haste}: playable in the haste step, CR 803.2).
 card('Tempest Wrangler', {});
 
-// "{Haste} Lizard Fish Beast Unit" — b/3 7/2 vanilla haste beater (R18).
+// "{Haste} Lizard Fish Beast Unit" — b/3 7/2 vanilla haste beater (CR 803.2).
 card('Tidal Menace', {});
 
 // "For each player, recall target unit that player controls." — bb/2,
-// {Battle} Mystic Spell. R58/R64/R67: BOTH units are declared targets, chosen
+// {Battle} Mystic Spell. CR 110.1a: BOTH units are declared targets, chosen
 // as the spell goes on the stack — `count: 2, min: 0` with a one-per-
 // CONTROLLER restriction, spelled out six lines below. (The "⚠ the engine's
 // cast-time targeting holds one target per part, so the CASTER picks both
 // units mid-resolution" line that used to sit here contradicted it.)
-// Region-scoped (R12).
+// Region-scoped (CR 101.6).
 card('Tidal Reversion', {
   spellEffect: {
-    // R67: "recall target unit that player controls" is a DECLARED target —
+    // CR 110.1a: "recall target unit that player controls" is a DECLARED target —
     // one per player, all chosen as the spell goes on the stack rather than
     // mid-resolution. Expressed as two unrestricted-`what` slots with a
     // one-per-CONTROLLER restriction rather than ['allyUnit','enemyUnit'], so
     // the caster may name either player's unit first.
-    // R323: min 2. It was min 0 so that an empty board on one side would not
+    // CR 110.7: min 2. It was min 0 so that an empty board on one side would not
     // stop the spell; Caleb ruled the opposite ("You can't play it if one
     // player doesn't have a valid target, but it will still resolve if one of
     // the selected targets is removed"), so both are required at cast and the
@@ -542,10 +539,10 @@ card('Tidal Reversion', {
 
 // "When a player is dealt combat damage, [Switch1] Create a 2/2 unit." —
 // bb/3 1/4. Fires on 'lifeLost' with why 'combat' (ANY player; the event is
-// region-scoped in battle, R12). Bounded (R9); the 2/2 is the bounded graft.
-// The 2/2 is created where the SOURCE is (R115: ctx.region). This card WAS
-// R28's rationale — "a token minted while Tidelurker attacks must be home to
-// block the counterattack" — and R115 withdrew it: the 2/2 minted mid-attack
+// region-scoped in battle, CR 101.6). Bounded (CR 109.9); the 2/2 is the bounded graft.
+// The 2/2 is created where the SOURCE is (CR 601.5: ctx.region). This card WAS
+// the withdrawn home-region rule's rationale — "a token minted while Tidelurker attacks must be home to
+// block the counterattack" — and the source-region ruling (now CR 601.5) withdrew it: the 2/2 minted mid-attack
 // stands in the enemy region, in no column, blocks nothing, and walks home at
 // regroup. The designer confirmed the power cut.
 const makeTwoTwo: EffectDef = {
@@ -567,13 +564,13 @@ card('Tidelurker', {
 // "You may play me into an open spot in your formation." — b/1 2/2 {Battle}
 // Fish Unit.
 //
-// R29, rewritten 2026-08-22 (playtest UFAB): the whole card is one engine
+// Rewritten 2026-08-22 (playtest UFAB): the whole card is one engine
 // flag. `playsIntoFormation` makes the spot part of the CAST — asked in the
-// same window as X, mods, targets and costs (R35), and taken at resolution
+// same window as X, mods, targets and costs (CR 702.3), and taken at resolution
 // atomically with the spawn, so the unit's first appearance anywhere is
 // already standing in the line.
 //
-// It used to be a triggered ability on its own `spawned` event, calling R75's
+// It used to be a triggered ability on its own `spawned` event, calling CR 602.6's
 // `E.placeInFormation` when the trigger resolved. That read the printed words
 // as an effect, and the report is what it cost: *"Tiderunner Initiate should
 // never have entered the Invader's zone. It gets played directly into the
@@ -583,7 +580,7 @@ card('Tidelurker', {
 // opponent a priority window; in the reported game Good Whale and Tidal
 // Reversion used it to recall the Initiate before it ever reached the line.
 //
-// R75 keeps `placeInFormation` for what it was written for: an EFFECT that
+// CR 602.6 keeps `placeInFormation` for what it was written for: an EFFECT that
 // creates a unit in a formation (Hooba-Bot/Lin/God/Pon). Those units really
 // are made and then placed. This one is played into a spot.
 card('Tiderunner Initiate', { playsIntoFormation: true });
@@ -595,18 +592,18 @@ card('Tiderunner Initiate', { playsIntoFormation: true });
 // ⚠ see playInline; a played spell is then binned as usual). The rest recycle
 // to the bottom in revealed order.
 //
-// R157 §1: an X card among the eight counts as cost 0 against the [8] budget
+// CR 107.3a: an X card among the eight counts as cost 0 against the [8] budget
 // — no X has been paid for a card sitting in a deck, so it has no cost, and
 // the standing steer takes the reading that lets more things happen (the card
 // is choosable, and plays for free at X = 0 like any other free release,
-// R111). `manaOf` is the right read here.
+// CR 202.6). `manaOf` is the right read here.
 /**
  * Can Tides of the Cosmos offer this revealed card at all? Two things the
  * RAQ says it cannot play, whatever the budget:
- *  · R339 — point 6: "Any spells with X cost can only be played with X=0 …
+ *  · CR 107.4a — point 6: "Any spells with X cost can only be played with X=0 …
  *    you CANNOT play Frosted Denial from Tides of Cosmos." A card that prints
  *    "X can't be zero" (`xMin` above 0) has no legal free play.
- *  · R338 — point 5: "Any additional [cost] of the card must be paid. That
+ *  · CR 702.4e — point 5: "Any additional [cost] of the card must be paid. That
  *    means you CANNOT use Volatile Toxicity on Towering Colossus from same
  *    Tides." A card whose bracketed cost cannot be paid right now — before
  *    either pick is on the stack, so the other revealed card is never a payer
@@ -655,7 +652,7 @@ card('Tides of the Cosmos', {
       for (const i of picks) {
         const name = top[i]!;
         g.ev('info', `Tides of the Cosmos: ${g.pname(ctx.controller)} plays ${name} for free.`);
-        // R263 `from: 'deck'` — THE FIFTH ZONE, and the one the owner's ruling
+        // CR 701.4a `from: 'deck'` — THE FIFTH ZONE, and the one the owner's ruling
         // reached without naming: *"If it originates from the cache or bin or
         // somewhere else, it's not played from the hand."* These eight cards
         // were revealed off the TOP OF THE DECK and are played from there;
@@ -663,7 +660,7 @@ card('Tides of the Cosmos', {
         // fire on a Tides play — the only one of the three mid-resolution
         // players that feeds them. See `InlinePlayZone` for why the engine's
         // own union does not carry 'deck' yet.
-        // R337 — RAQ point 3: "Tides allows you to play Viruses/Ambushes/
+        // CR 701.2c, 803.6j — RAQ point 3: "Tides allows you to play Viruses/Ambushes/
         // Prophecy (you still look at 'main' cost of the card, even if you
         // used it as Ambush/Prophecy)". Asked here, as each card is played,
         // and only when a mode is actually open — so a pick with no
@@ -685,30 +682,30 @@ card('Tides of the Cosmos', {
         // a played spell card is binned as normal; a fizzled spell unit never
         // spawns and is binned too; units stay in play
         //
-        // ⚠ R198: NONE of that is this card's business once the play is on the
+        // ⚠ CR 701.4: NONE of that is this card's business once the play is on the
         // stack. `'stacked'` means `E.dischargeItem` owns the disposal — and it
-        // reaches the SAME two destinations by the same two rules (the R146(b)
-        // "Erase me." branch and `toBin(…, 'stack')`, i.e. R146(a)'s pinned
+        // reaches the SAME two destinations by the same two rules (the CR 406.4a
+        // "Erase me." branch and `toBin(…, 'stack')`, i.e. CR 405.4a's pinned
         // not-a-trash), so the answer below is unchanged and only the hand
         // that gives it moved.
         const kind = getCard(name).kind;
         if (r.outcome !== 'stacked' && r.outcome !== 'cached'
           && (kind === 'spell' || (kind === 'spellUnit' && r.outcome === 'fizzled'))) {
           if (r.eraseSelf) {
-            // R146(b): the spell printed "Erase me." and said so as it
+            // CR 406.4a: the spell printed "Erase me." and said so as it
             // resolved. Same shape (and same log sentence) as the eraseSelf
-            // branch of E.dischargeItem — no bin, so R40 never comes up, and
-            // the 'erased' event is what files it on the public pile (R65).
+            // branch of E.dischargeItem — no bin, so CR 801.2c never comes up, and
+            // the 'erased' event is what files it on the public pile (CR 407.1).
             g.ev('erased', `${name} erases itself — it does not go to a bin.`,
               { seat: ctx.controller, card: name });
           } else {
-            // R146(a): through the choke point, not a raw `bin.push`.
+            // CR 405.4a: through the choke point, not a raw `bin.push`.
             //
             // ⚠ THE `from` IS THE RULES QUESTION, and it is 'stack' — NOT a
             // trash. The card was PLAYED and it RESOLVED; `playInline` skips
             // the stack for engine reasons (there is no priority window to
-            // open on a free mid-resolution play), and R40's stack clause is
-            // not really about the zone, it is R40's own sentence *"a spell or
+            // open on a free mid-resolution play), and the stack clause (CR 801.2b) is
+            // not really about the zone, it is the old trashing ruling's own sentence *"a spell or
             // ability going to the bin AFTER RESOLVING does not [trash]"*. The
             // zone is how that is normally detected, not what it means.
             //
@@ -716,7 +713,7 @@ card('Tides of the Cosmos', {
             // left) would trash it, and then the SAME spell would trash when
             // Tides played it and not trash when it was cast from hand — two
             // routes to "play a spell", two answers. That is precisely the bug
-            // class R133/R137 closed when they made R40 key on the
+            // class that was closed when the trashing rule (CR 801.2) was made to key on the
             // destination rather than on the object.
             //
             // It also matches the pool: the other two `playInline` callers
@@ -755,7 +752,7 @@ card('Upheaval', {
           }
           picks.push(...chosen);
         }
-        // R209/CT-74: every present seat can be here with no unit to recall —
+        // CR D7.3/CT-74: every present seat can be here with no unit to recall —
         // the pools are all empty, `picks` comes back empty and the iteration
         // broke out in silence.
         if (!picks.length) {
@@ -774,7 +771,7 @@ card('Upheaval', {
 
 // "[zero]: [Switch1] Recall me." — bb/3 4/3 Cloud Spirit Unit. A zero-mana
 // activated ability; the [Switch1] recall is the bounded graft (on a host it
-// recalls the host). Bounded once per turn (R9).
+// recalls the host). Bounded once per turn (CR 109.9).
 const recallSelf: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
@@ -802,14 +799,14 @@ card('Vaporweave Eidolon', {
 // apply.ts::maybeGrantShard for all seven elements. Bare is CORRECT — the face
 // owns no behaviour. ⚠ Adding it here would double the bonus for water and,
 // once the rule moved off maybeGrantShard, delete it for the four elements
-// with no printed face. R116; guarded by test/12-fire-a's sweep.
+// with no printed face. CR 106.7c; guarded by test/12-fire-a's sweep.
 // (Note: printed.kind is 'unit', so the shared deck legally contains it;
 // played, its 0 toughness kills it immediately — harmless.)
 card('Water Resource', {});
 
 // "[Augment] Whenever one or more other cards enter a player's hand during
 // battle, you may pay [one] to create a 2/2 unit." — b/5 3/3. Text-box
-// [Augment]. Same channel as Rider of the Tides, and R179's same rewire onto
+// [Augment]. Same channel as Rider of the Tides, and the same rewire (CR 402.4) onto
 // 'handEntered' alone (see that card for why keeping 'draw'/'despawned' would
 // double-fire).
 //
@@ -817,7 +814,7 @@ card('Water Resource', {});
 // recalling a fourteen-card bin is ONE firing, exactly as a two-card draw
 // always was. "OTHER" excludes the carrier's own card — `ev.data.unit` is the
 // recalled entity, stamped by `toHand`'s `from: 'play'` route.
-// The [one] payment is a mid-resolution pay-or-decline (R6), skipped outright
+// The [one] payment is a mid-resolution pay-or-decline (CR 111.9), skipped outright
 // when the controller cannot pay.
 card('Xenopod Progenitor', {
   augmentText: [{

@@ -17,7 +17,7 @@
  *      changes the fix. The rule that makes the question urgent is
  *      `apply.ts:1005` — casting one token casts EVERY token of the same NAME
  *      in that region, in one `castChain` (`apply.ts:1032`) that nobody can
- *      respond to in the middle. Before R254 the word "burst" appeared in
+ *      respond to in the middle. Before the burst-count work (CR D6.9d) the word "burst" appeared in
  *      ui/main.ts zero times, so that rule was never once stated on the board.
  *
  *  (b) "sizes" is NOT mana and NOT power/toughness. Every burst token in the
@@ -436,7 +436,7 @@ test('§2d a stack with no repeats claims no run — the chip does not invent on
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const e = new E(h.state);
-  // two DIFFERENT burst names: R16/R81 says these are two chains, not one
+  // two DIFFERENT burst names: CR 803.5a says these are two chains, not one
   const names = BURST.slice(0, 2);
   assert.equal(names.length, 2, 'POSITIVE CONTROL: two distinct burst names exist to tell apart');
   const ids = names.map(n => e.createSpellToken(D, n, 4, h.state.battle!.region).id);

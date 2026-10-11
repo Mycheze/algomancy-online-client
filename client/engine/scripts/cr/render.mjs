@@ -16,11 +16,11 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 
 import { join, basename, dirname } from 'node:path';
 import {
   CR_OUTLINE, CR_FRONT_MATTER, CR_RULES_DIR, CR_LEDGER, CR_VERDICTS_DIR, CR_DISCREPANCIES_DIR,
-  CR_FINDINGS_DIR, CR_CLASSIFICATION, CR_SUPERSESSION, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
+  CR_FINDINGS_DIR, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
   CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_OWNER_QUESTIONS, CR_CHANGELOG, CR_REVIEW_DEBUG_JSON,
 } from '../paths.mjs';
 import { allocate, compareNums, formatLedger, indexLedger, parseNum, readLedger, resolveKey } from './ledger.mjs';
-import { ANY_NUM_RE, BASES, TIERS, VERDICTS, parseRulingCite, recordHash } from './schema.mjs';
+import { ANY_NUM_RE, BASES, TIERS, VERDICTS, recordHash } from './schema.mjs';
 
 /* ── inputs ─────────────────────────────────────────────────────────────── */
 
@@ -45,8 +45,6 @@ export function loadInputs(paths = {}) {
     verdicts: rows(P.verdictsDir, 'verdicts'),
     discrepancies: rows(P.discrepanciesDir, 'discrepancies'),
     findings: rows(P.findingsDir, 'findings'),
-    classification: readJson(P.classification, null),
-    supersession: readJson(P.supersession, null),
   };
 }
 
@@ -55,7 +53,7 @@ function inputPaths(paths = {}) {
   return {
     outline: CR_OUTLINE, frontMatter: CR_FRONT_MATTER, rulesDir: CR_RULES_DIR, ledger: CR_LEDGER,
     verdictsDir: CR_VERDICTS_DIR, discrepanciesDir: CR_DISCREPANCIES_DIR, findingsDir: CR_FINDINGS_DIR,
-    classification: CR_CLASSIFICATION, supersession: CR_SUPERSESSION, ...paths,
+    ...paths,
   };
 }
 
@@ -66,7 +64,7 @@ function inputPaths(paths = {}) {
  */
 function inputFiles(paths = {}) {
   const P = inputPaths(paths);
-  const out = [P.outline, P.frontMatter, P.ledger, P.classification, P.supersession];
+  const out = [P.outline, P.frontMatter, P.ledger];
   for (const dir of [P.rulesDir, P.verdictsDir, P.discrepanciesDir, P.findingsDir]) {
     out.push(dir);
     if (existsSync(dir)) for (const f of readdirSync(dir).filter((x) => x.endsWith('.json')).sort()) out.push(join(dir, f));
@@ -251,21 +249,43 @@ function viewOf(M, e) {
   return { num: e.num, level, key: e.key, title: M.slotByKey.get(e.key)?.title, rec: M.recByKey.get(e.key) };
 }
 
-/** the rulings a record cites (current and history), as ids */
-export function citedRulings(rec) {
-  const s = rec.sources ?? {};
-  const out = [];
-  for (const x of s.rulings ?? []) { const c = parseRulingCite(typeof x === 'string' ? x : x.ref ?? ''); if (c) out.push(c.id); }
-  for (const h of s.history ?? []) { const c = parseRulingCite(h.ruling ?? ''); if (c) out.push(c.id); }
-  return out;
+/** the dates the owner adopted the calls a record rests on, earliest first */
+export function ownerDates(rec) {
+  return [...new Set((rec.sources?.owner ?? []).map((o) => o.adopted).filter(Boolean))].sort();
 }
-const rulingLabel = (x) => (typeof x === 'string' ? x : x.ref);
+/** an owner entry absorbed from the retired ruling register (`from` names `register@<sha>`): its quote
+ *  is the register's write-up of his decision, not necessarily his own words, and says so */
+export const fromRegister = (o) => /\bregister@[0-9a-f]{7,40}\b/.test(String(o?.from ?? ''));
+const REGISTER_LABEL = 'quoted from the retired ruling register';
+/** "Owner call · adopted 2026-09-02", or for absorbed calls "Owner ruling, adopted 2026-08-18 (quoted from the
+ *  retired ruling register)"; several dates are listed */
+const ownerMeta = (rec) => {
+  const os = rec.sources?.owner ?? [];
+  const ds = ownerDates(rec);
+  if (!ds.length) return null;
+  const reg = os.filter(fromRegister).map((o) => o.adopted), own = os.filter((o) => !fromRegister(o)).map((o) => o.adopted);
+  const part = [];
+  if (own.length) part.push(`Owner call · adopted ${[...new Set(own)].sort().join(', ')}`);
+  if (reg.length) part.push(`Owner ruling, adopted ${[...new Set(reg)].sort().join(', ')} (${REGISTER_LABEL})`);
+  return part.join('; ');
+};
+/** a main-document rule whose scope is the digital client (an Annex D rule is digital by its place) */
+export const isDigitalTagged = (rec) => rec.scope === 'digital' && !/^annexd(\.|$)/.test(String(rec.key ?? ''));
+const DIGITAL_TAG = 'Digital client';
+/** the rule's text with its digital-client clause marked: md/txt put the tag after the
+ *  clause (or before a whole digital rule); `mark(text)` wraps it for the edition */
+function scopedText(rec, text, mark) {
+  if (isDigitalTagged(rec)) return `${mark(DIGITAL_TAG)} ${text}`;
+  const c = rec.digitalClause;
+  if (c && text.includes(c)) return text.replace(c, `${c} ${mark(DIGITAL_TAG)}`);
+  return text;
+}
 
 /* ── shared text helpers ────────────────────────────────────────────────── */
 
 const BASIS_LABEL = { printed: 'Printed', designer: 'Designer', mixed: 'Mixed', owner: 'Owner call', engine: 'Engine only' };
 const VERDICT_LABEL = { confirmed: 'Confirmed', partial: 'Partial', contradicted: 'Contradicted', unsupported: 'Unsupported', untested: 'Untested' };
-const KIND_LABEL = { a: 'Sources disagree', b: 'Engine only', c: 'Owner call only', d: 'RAQ open', f: 'Register chain wrong', g: 'Other' };
+const KIND_LABEL = { a: 'Sources disagree', b: 'Engine only', c: 'Owner call only', d: 'RAQ open', f: 'Ruling chain wrong', g: 'Other' };
 
 function seeNums(M, rec) {
   return (rec.see ?? []).map((s) => M.numOfRef(s) ?? `${s}(?)`);
@@ -329,11 +349,11 @@ function verdictWords(M, rec) {
 }
 function provenanceBits(M, rec) {
   const s = rec.sources ?? {};
-  const bits = [`Basis: ${BASIS_LABEL[rec.basis] ?? rec.basis}`, `Verified: ${verdictWords(M, rec)}`];
+  const om = ownerMeta(rec);
+  const bits = [rec.basis === 'owner' && om ? `Basis: ${om}` : `Basis: ${BASIS_LABEL[rec.basis] ?? rec.basis}`, `Verified: ${verdictWords(M, rec)}`];
   if (s.printed?.length) bits.push(`Printed: ${s.printed.map((x) => x.ref).join('; ')}`);
   if (s.designer?.length) bits.push(`Designer: ${s.designer.map((x) => x.ref).join('; ')}`);
-  if (s.rulings?.length) bits.push(`Rulings: ${s.rulings.map(rulingLabel).join(', ')}`);
-  if (s.history?.length) bits.push(`Replaces: ${s.history.map((h) => `${h.ruling} (${h.relation})`).join('; ')}`);
+  if (om && rec.basis !== 'owner') bits.push(om);
   if (s.ours?.length) bits.push(`Our glossary (not a source): ${s.ours.map((x) => x.ref.replace(/^glossary: /, '')).join('; ')}`);
   if (s.engine?.length) bits.push(`Engine: ${s.engine.join(', ')}`);
   if (s.tests?.length) bits.push(`Tests: ${s.tests.join(', ')}`);
@@ -380,12 +400,8 @@ export function provenance(M) {
   }
   const engineOnly = numbered.filter((r) => r.basis === 'engine').map((r) => ({ num: M.I.numOf(r.key), rec: r }))
     .sort((a, b) => compareNums(a.num, b.num));
-  const cited = new Set([...numbered, ...M.glossary].flatMap(citedRulings));
-  const cls = M.inputs.classification;
-  const rows = cls ? Object.entries(cls).sort((a, b) => cmpRuling(a[0], b[0])) : [];
-  const uncitedGame = rows.filter(([id, c]) => c.scope === 'game' && !cited.has(id)).map(([id]) => id);
-  const process = rows.filter(([, c]) => c.scope === 'process').map(([id, c]) => ({ id, reason: c.reason ?? '' }));
-  return { total: numbered.length, basis, verdicts, engineOnly, uncitedGame, process, classified: !!cls };
+  const digital = numbered.filter(isDigitalTagged).map((r) => M.I.numOf(r.key)).filter(Boolean).sort(compareNums);
+  return { total: numbered.length, basis, verdicts, engineOnly, digital };
 }
 /**
  * Annex P's findings, each divergence ONCE. Several units' verifiers found the
@@ -443,11 +459,6 @@ const rulesWord = (nums) => (nums.length === 1 ? 'Rule' : 'Rules');
 /** an entry's re-check notes, its own and its dupes': [[id, note]] */
 const rechecked = (e) => [e.f, ...e.also].filter((x) => x.closed).map((x) => [x.id, x.closed]);
 
-function cmpRuling(a, b) {
-  const A = parseRulingCite(a), B = parseRulingCite(b);
-  return (A?.n ?? 0) - (B?.n ?? 0) || cmpStr(A?.suffix ?? '', B?.suffix ?? '');
-}
-
 /** the changelog, from the ledger's edition stamps */
 function changelog(M) {
   const ed = new Map();
@@ -472,7 +483,7 @@ function mdRule(M, v) {
   const head = v.title ? `**${label} ${v.title}.**` : `**${label}**`;
   if (!v.rec) return `${a}${head}${v.title ? '' : ' [No record]'}\n`;
   const r = v.rec;
-  const lines = [`${a}${head} ${M.refText(r.text)}${seeSentence(seeNums(M, r))}${differsText(r) ? ` *${differsText(r).trim()}*` : ''}`];
+  const lines = [`${a}${head} ${scopedText(r, M.refText(r.text), (t) => `*(${t})*`)}${seeSentence(seeNums(M, r))}${differsText(r) ? ` *${differsText(r).trim()}*` : ''}`];
   // the body is the rule and its examples' words; each example's test is in the small line
   for (const x of r.examples ?? []) {
     const t = exampleText(x.text);
@@ -494,7 +505,7 @@ function mdSection(M, s) {
 
 function mdAnnexP(M, P) {
   const o = M.outline;
-  const out = [`## ${o.annexP.title}`, '', 'Generated from the records, the verdicts and the ruling classification. Nothing here is a rule.', ''];
+  const out = [`## ${o.annexP.title}`, '', 'Generated from the records and the verdicts. Nothing here is a rule.', ''];
   out.push(`### Basis`, '', `${P.total} numbered rules.`, '', '| basis | rules |', '|---|---|');
   for (const b of BASES) out.push(`| ${BASIS_LABEL[b]} | ${P.basis[b] ?? 0} |`);
   out.push('', '### Verification', '', '| verdict | rules |', '|---|---|');
@@ -511,7 +522,7 @@ function mdAnnexP(M, P) {
     const entry = (e, ct, pad) => {
       const f = e.f;
       const ids = [f, ...e.also].map((x) => `<a id="${x.id}"></a>`).join('');
-      const where = e.nums.length ? `${rulesWord(e.nums)} ${e.nums.join(', ')}` : 'Ruling register';
+      const where = e.nums.length ? `${rulesWord(e.nums)} ${e.nums.join(', ')}` : 'No rule of its own';
       return [`${pad}- ${ids}**${f.id}** ${M.refText(f.title)}${ct ? ` (${ct})` : ''}. ${where}.${e.also.length ? ` Also found as ${e.also.map((x) => x.id).join(', ')}.` : ''}`,
         `${pad}  ${M.refText(f.summary)}${rechecked(e).map(([id, c]) => ` Re-checked${id === f.id ? '' : ` (${id})`}: ${c}`).join('')}`];
     };
@@ -521,13 +532,8 @@ function mdAnnexP(M, P) {
       for (const e of g.entries) out.push(...entry(e, null, '  '));
     }
   }
-  out.push('', '### Game rulings no rule cites', '');
-  if (!P.classified) out.push('The rulings are not classified yet.');
-  else out.push(P.uncitedGame.length ? P.uncitedGame.join(', ') : 'None.');
-  out.push('', '### Process rulings, excluded', '');
-  if (!P.classified) out.push('The rulings are not classified yet.');
-  else if (!P.process.length) out.push('None.');
-  else for (const p of P.process) out.push(`- ${p.id}${p.reason ? `: ${p.reason}` : ''}`);
+  out.push('', '### Digital-client rules in the main document', '');
+  out.push(P.digital.length ? `${P.digital.map((n) => `[${n}](#r${n})`).join(', ')}. Each is true of this client, not of a game at a table; Annex D holds the rest.` : 'None.');
   return out.join('\n') + '\n';
 }
 
@@ -665,7 +671,7 @@ function txtRule(M, v) {
   const head = v.title ? `${label} ${v.title}.` : label;
   if (!v.rec) return `${head}${v.title ? '' : ' [No record]'}\n`;
   const r = v.rec;
-  const lines = [`${head} ${M.refText(r.text)}${seeSentence(seeNums(M, r))}${differsText(r)}`];
+  const lines = [`${head} ${scopedText(r, M.refText(r.text), (t) => `(${t})`)}${seeSentence(seeNums(M, r))}${differsText(r)}`];
   for (const x of r.examples ?? []) { const t = exampleText(x.text); if (t) lines.push(`${pad}Example: ${M.refText(t)}`); }
   lines.push(`${pad}[${provenanceBits(M, r).join(' | ')}]`);
   return lines.join('\n') + '\n';
@@ -744,11 +750,12 @@ function htmlSources(M, rec) {
   for (const [k, label] of [['printed', 'Printed'], ['designer', 'Designer'], ['ours', 'Our glossary (not a source)']]) {
     for (const x of s[k] ?? []) rows.push(`<li><span class="sk">${label}</span> ${E(x.ref)}: <q>${E(x.quote)}</q></li>`);
   }
-  for (const x of s.rulings ?? []) {
-    if (typeof x === 'string') rows.push(`<li><span class="sk">Ruling</span> ${E(x)}</li>`);
-    else rows.push(`<li><span class="sk">Ruling</span> ${E(x.ref)}${x.quote ? `: <q>${E(x.quote)}</q>` : ''}</li>`);
+  for (const x of s.owner ?? []) {
+    const sheet = String(x.from ?? '').split(';').map((t) => t.trim()).filter((t) => t && !/^register@/.test(t)).join('; ');
+    rows.push(fromRegister(x)
+      ? `<li><span class="sk">Owner ruling</span> adopted ${E(x.adopted)} — ${REGISTER_LABEL}${sheet ? ` (${E(sheet)})` : ''}: <q>${E(x.quote)}</q></li>`
+      : `<li><span class="sk">Owner call</span> adopted ${E(x.adopted)}${x.from ? ` (${E(x.from)})` : ''}: <q>${E(x.quote)}</q></li>`);
   }
-  for (const h of s.history ?? []) rows.push(`<li><span class="sk">Replaces</span> ${E(h.ruling)}: ${E(h.relation)}</li>`);
   if (s.engine?.length) rows.push(`<li><span class="sk">Engine</span> ${s.engine.map((e) => `<code>${E(e)}</code>`).join(', ')}</li>`);
   if (s.tests?.length) rows.push(`<li><span class="sk">Tests</span> ${s.tests.map((t) => `<code>${E(t)}</code>`).join(', ')}</li>`);
   const ex = exampleTests(rec);
@@ -811,7 +818,7 @@ function htmlRule(M, v, review = false) {
   const ds = M.discByNum.get(v.num) ?? [];
   const dl = ds.length ? ` <span class="meta">discrepancies ${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
   return `<article class="rule ${lvl}" id="r${v.num}"${mark}>
-<p class="rt">${num} ${title}${inline(M, M.refText(r.text))}${seeHtml}${differs}${untested}</p>${ex}
+<p class="rt">${num} ${title}${scopedText(r, inline(M, M.refText(r.text)), (t) => `<span class="chip s-digital">${t}</span>`)}${seeHtml}${differs}${untested}</p>${ex}
 <details class="prov"><summary>Sources and verification${htmlVerdictFlag(M, r)}</summary>
 <div class="tags"><span class="chip b-${E(r.basis)}">${BASIS_LABEL[r.basis] ?? E(r.basis)}</span>${chip}${dl}</div>${vnote}${htmlSources(M, r)}</details>
 </article>`;
@@ -855,7 +862,7 @@ function htmlDiscItem(M, d, review = false) {
 function htmlAnnexP(M, P, review = false) {
   const o = M.outline;
   const tbl = (rows) => `<div class="tw"><table>${rows.map((r, i) => `<tr>${r.map((c) => (i ? `<td>${c}</td>` : `<th>${c}</th>`)).join('')}</tr>`).join('')}</table></div>`;
-  const out = [`<h2 id="annex-p">${E(o.annexP.title)}</h2>`, '<p>Generated from the records, the verdicts and the ruling classification. Nothing here is a rule.</p>'];
+  const out = [`<h2 id="annex-p">${E(o.annexP.title)}</h2>`, '<p>Generated from the records and the verdicts. Nothing here is a rule.</p>'];
   out.push(`<div class="figs"><div class="fig"><b>${P.total}</b><span>numbered rules</span></div>${BASES.map((b) => `<div class="fig"><b>${P.basis[b] ?? 0}</b><span>${BASIS_LABEL[b]}</span></div>`).join('')}</div>`);
   out.push('<h3>Verification</h3>', tbl([['verdict', 'rules'], ...Object.entries(P.verdicts).map(([k, n]) => [E(k), n])]));
   out.push('<h3>Engine-only rules (awaiting the owner\'s sign-off)</h3>');
@@ -872,7 +879,7 @@ function htmlAnnexP(M, P, review = false) {
       const nums = e.nums.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ');
       const seen = new Set();
       const ev = [f, ...e.also].flatMap((x) => x.evidence ?? []).filter((x) => !seen.has(`${x.file}\n${x.quote}`) && seen.add(`${x.file}\n${x.quote}`));
-      return `<article class="fnd" id="${E(f.id)}"${crt(review, `finding:${f.id}`)}>${e.also.map((x) => `<span id="${E(x.id)}"></span>`).join('')}<p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${ct ? ` <span class="meta">${E(ct)}</span>` : ''} <span class="meta">${e.nums.length ? `${rulesWord(e.nums).toLowerCase()} ${nums}` : 'ruling register'}</span>${e.also.length ? ` <span class="meta">also ${E(e.also.map((x) => x.id).join(', '))}</span>` : ''}</p>`
+      return `<article class="fnd" id="${E(f.id)}"${crt(review, `finding:${f.id}`)}>${e.also.map((x) => `<span id="${E(x.id)}"></span>`).join('')}<p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${ct ? ` <span class="meta">${E(ct)}</span>` : ''} <span class="meta">${e.nums.length ? `${rulesWord(e.nums).toLowerCase()} ${nums}` : 'no rule of its own'}</span>${e.also.length ? ` <span class="meta">also ${E(e.also.map((x) => x.id).join(', '))}</span>` : ''}</p>`
         + `<details><summary>Details and evidence</summary><p>${inline(M, M.refText(f.summary))}</p>${e.also.length ? `<p class="meta">Also found as ${E(e.also.map((x) => x.id).join(', '))}.</p>` : ''}${rechecked(e).map(([id, c]) => `<p><strong>Re-checked${id === f.id ? '' : ` (${E(id)})`}:</strong> ${E(c)}</p>`).join('')}<ul class="src">${ev.map((x) => `<li><span class="sk">${E(x.file)}</span> <q>${E(x.quote)}</q></li>`).join('')}</ul></details></article>`;
     };
     for (const g of groups) {
@@ -880,8 +887,7 @@ function htmlAnnexP(M, P, review = false) {
       out.push(`<div class="fgroup"><p class="fgh"><span class="num">${E(g.ct)}</span> <span class="meta">${plural(g.entries.length, 'divergence')}</span></p>`, ...g.entries.map((e) => entry(e, null)), '</div>');
     }
   }
-  out.push('<h3>Game rulings no rule cites</h3>', `<p>${!P.classified ? 'The rulings are not classified yet.' : P.uncitedGame.length ? E(P.uncitedGame.join(', ')) : 'None.'}</p>`);
-  out.push('<h3>Process rulings, excluded</h3>', !P.classified ? '<p>The rulings are not classified yet.</p>' : P.process.length ? `<ul>${P.process.map((p) => `<li>${E(p.id)}${p.reason ? `: ${E(p.reason)}` : ''}</li>`).join('')}</ul>` : '<p>None.</p>');
+  out.push('<h3>Digital-client rules in the main document</h3>', `<p>${P.digital.length ? `${P.digital.map((n) => `<a href="#r${n}">${n}</a>`).join(', ')}. Each is true of this client, not of a game at a table; Annex D holds the rest.` : 'None.'}</p>`);
   // the review page comments on the annex as a whole: everything under its heading
   if (review) return `${out[0]}\n<div${crt(true, 'annexP')}>\n${out.slice(1).join('\n')}\n</div>`;
   return out.join('\n');
@@ -956,6 +962,7 @@ code { font-size: 0.88em; background: var(--accent-soft); padding: 1px 4px; bord
 .chip { font: 500 11.5px/1 var(--font-body); padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; letter-spacing: 0.02em }
 .b-printed { color: var(--c-printed) } .b-designer { color: var(--c-designer) } .b-mixed { color: var(--c-mixed) }
 .b-owner { color: var(--c-owner) } .b-engine { color: var(--c-engine) }
+.s-digital { color: var(--muted); font-size: 10.5px; padding: 2px 5px; vertical-align: 1px }
 .v-confirmed { color: var(--ok); background: var(--ok-bg); border-color: transparent }
 .v-partial, .v-untested { color: var(--warn); background: var(--warn-bg); border-color: transparent }
 .v-contradicted, .v-unsupported { color: var(--bad); background: var(--bad-bg); border-color: transparent }

@@ -20,7 +20,7 @@
  *   live         the file's own record, complete. Everything is known.
  *   replay-sigs  a replay on THIS engine whose every board fingerprint matched
  *                the one recorded as the game was played. Same game, proven.
- *   replay-refs  no fingerprints, but every action's R191 zone delta (what it
+ *   replay-refs  no fingerprints, but every action's zone delta (what it
  *                moved through the actor's own zones, in card names) matched.
  *                Weaker: it checks only the actor's zones, action by action.
  *   refs         the replay could not be trusted, so the refs are read as

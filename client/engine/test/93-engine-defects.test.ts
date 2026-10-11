@@ -85,7 +85,7 @@ function damageCtx(g: E, seat: Seat, sourceName: string): EffectCtx {
 // The measurement that found it: `dealEffectDamageAll(ctx, [])` against a live
 // state emitted ZERO events. Every "I deal N damage to each opponent / each
 // enemy unit" card builds a hit list and hands it over, so with no opponent in
-// the region (R25) or no enemy unit on the board the card resolved, the mana
+// the region (CR 601.4d) or no enemy unit on the board the card resolved, the mana
 // was spent and the log was blank.
 //
 // The fix is ONE line in the engine, at the top of the method, keyed on
@@ -131,7 +131,7 @@ test('a damage batch whose every hit computed zero damage stays silent', () => {
 });
 
 test('a fully prevented damage batch reports only the prevention, never emptiness', () => {
-  // R98: prevented damage was never DEALT, and `preventUnitDamage` already logs
+  // CR 112.11: prevented damage was never DEALT, and `preventUnitDamage` already logs
   // itself. Prevention runs after the empty check, so a prevented batch can
   // never be mistaken for an empty one.
   const { g, A, theirs } = board(9303);
@@ -140,7 +140,7 @@ test('a fully prevented damage batch reports only the prevention, never emptines
   g.dealEffectDamageAll(damageCtx(g, A, 'Immolate'), [{ target: theirs, n: 3 }]);
   const evs = g.events.slice(before);
   assert.deepEqual(evs.filter(e => e.data?.['empty'] === true), [],
-    'a prevented batch is not an empty batch — R98 says it was never dealt, not that '
+    'a prevented batch is not an empty batch — CR 112.11 says it was never dealt, not that '
     + 'there was nobody to deal it to');
   assert.ok(evs.some(e => e.data?.['prevented'] === 3),
     'the prevention itself is still reported');
@@ -160,7 +160,7 @@ test('Meteor Shower with no unit anywhere to hit announces each empty rockfall',
     { controller: A, sourceName: 'Meteor Shower' });
   const empties = evs.filter(e => e.data?.['empty'] === true);
   assert.equal(empties.length, 3,
-    'Meteor Shower is three separate rockfalls (R80: one resolution of one effect, one '
+    'Meteor Shower is three separate rockfalls (CR 801.12c: one resolution of one effect, one '
     + 'batch), so an empty board must produce three announcements, not one and not none');
   assert.ok(empties.every(e => e.data?.['source'] === 'Meteor Shower'),
     'each one names the carrier');
@@ -170,15 +170,15 @@ test('Meteor Shower with no unit anywhere to hit announces each empty rockfall',
 // CARD-TODO #17 — OWNER vs CONTROLLER WHEN A CARD IS PUT INTO PLAY
 // ════════════════════════════════════════════════════════════════════════
 //
-// R65: "each card reaches ITS OWN owner's erased pile — a virus on an enemy
-// spell is the enemy's card." `spawnUnit` used to write `owner: seat,
+// Putting a card into play out of another player's zone makes you its
+// controller, not its owner (CR 102.5a). `spawnUnit` used to write `owner: seat,
 // controller: seat` together and took no owner at all, so Wake the Dead ("Play
 // up to two units in ANY bin…") did not BORROW an enemy's unit, it naturalised
 // it: the card went to the caster's bin when it died, counted toward the
 // caster's "cards in your bin" effects for the rest of the game, and its real
 // owner could never recur it.
 //
-// A control change (R8) is NOT this. R8 moves the unit; it does not
+// A control change (CR 711.1) is NOT this. A control change moves the unit; it does not
 // renationalise the card. Uglk needs both at once and is the proof they are
 // separable.
 
@@ -188,7 +188,7 @@ function wake(seed: number, binSeat: (A: Seat, D: Seat) => Seat): {
 } {
   const { g, A, D } = emptyBoard(seed);
   const owner = binSeat(A, D);
-  // R243: "any bin" is any bin IN THIS REGION. Wake the Dead is a {Battle}
+  // CR 601.4c: "any bin" is any bin IN THIS REGION. Wake the Dead is a {Battle}
   // spell, so the only state it can legally be cast in is a battle region
   // holding BOTH seats — and this fixture resolves it directly onto an
   // otherwise empty board, where a home region lists only its owner. Without
@@ -210,12 +210,12 @@ test('Wake the Dead raising a unit from the ENEMY bin gives the caster control, 
   assert.equal(u.controller, A, 'the caster controls what they played');
   assert.equal(u.owner, D,
     "and the opponent still OWNS it — playing another player's card is borrowing it, "
-    + 'not naturalising it (R65)');
+    + 'not naturalising it (CR 102.5a)');
 });
 
 test('a unit raised out of the enemy bin dies into the bin of whoever CONTROLS it', () => {
-  // ⚠ THIS TEST WAS REVERSED BY R250 §4, DELIBERATELY. It used to be titled
-  // "…dies back to the ENEMY's bin" and asserted the opposite, on R244 §1's
+  // ⚠ THIS TEST WAS reversed when zones began to follow control, DELIBERATELY. It used to be titled
+  // "…dies back to the ENEMY's bin" and asserted the opposite, on the earlier owner's-bin
   // reasoning that "a control change is not a transfer of the card". The owner
   // has since ruled the general form, and this is the exact case he was
   // describing:
@@ -230,13 +230,13 @@ test('a unit raised out of the enemy bin dies into the bin of whoever CONTROLS i
   // in your bin" it counts toward, for the rest of the game.
   //
   // OWNERSHIP still does not move — the test above asserts that, and it must
-  // keep passing. R250 separates "whose card is this" from "which zone does it
+  // keep passing. CR 400.4 separates "whose card is this" from "which zone does it
   // go to" and answers the second with control.
   const { g, A, D, u } = wake(9311, (_A, d) => d);
   assert.equal(u.owner, D, 'still the enemy card');
   g.destroy(u, 'dies');
   assert.ok(g.player(A).bin.includes('Tidal Menace'),
-    'R250: it reached the CONTROLLER bin — the seat that played it');
+    'CR 405.3: it reached the CONTROLLER bin — the seat that played it');
   assert.ok(!g.player(D).bin.includes('Tidal Menace'),
     'and not the owner one, however much it is still their card');
 });
@@ -264,7 +264,7 @@ test('the borrowed spawn says so in its event, and an ordinary spawn does not', 
 
 test('Uglk hands an opponent CONTROL of a unit without handing over the card', () => {
   // "[Augment] After combat, each player puts a unit from their bin into play
-  // under an opponent's control." The two halves of R8 and R65 in one sentence,
+  // under an opponent's control." The two halves of CR 711.1 and CR 102.5a in one sentence,
   // which is what makes this the neighbour worth checking.
   const { g, A, D } = emptyBoard(9315);
   const region = g.homeRegion(A);
@@ -278,7 +278,7 @@ test('Uglk hands an opponent CONTROL of a unit without handing over the card', (
   assert.equal(mine.controller, D, '…and D controls it');
   assert.equal(theirs.owner, D, "the card out of D's bin is still D's");
   assert.equal(theirs.controller, A, '…and A controls it');
-  // ⚠ R250 §4 REVERSED THE LAST ASSERTION HERE. The TITLE still holds and is
+  // ⚠ THE ZONES-FOLLOW-CONTROL RULING (now CR 400.4) REVERSED THE LAST ASSERTION HERE. The TITLE still holds and is
   // what card-todo cites this by: Uglk hands over CONTROL and not the card —
   // `mine.owner` is still A above, and always will be. What changed is where
   // the card goes when it dies, and the answer is now "wherever its
@@ -287,7 +287,7 @@ test('Uglk hands an opponent CONTROL of a unit without handing over the card', (
   g.destroy(mine, 'dies');
   assert.equal(mine.owner, A, 'ownership never moved');
   assert.ok(g.player(D).bin.includes('Tidal Menace'),
-    'R250: but the bin follows CONTROL, so D gets the card A lent them');
+    'CR 405.3: but the bin follows CONTROL, so D gets the card A lent them');
   assert.ok(!g.player(A).bin.includes('Tidal Menace'), 'and A does not get it back');
 });
 
@@ -328,8 +328,8 @@ function hexbane(seed: number, opts: { endOfTurn?: boolean; answers?: Record<str
   // the state in which nobody has a deployment. The card used to refuse to
   // raise a decision there; it no longer does (see below).
   if (opts.endOfTurn) g.s.deployPlayer = null;
-  // R191: `item` is the played item's id, and it is how this card finds the
-  // spell now — R178 puts it on every real 'spellPlayed', so a fixture without
+  // CR 706.13: `item` is the played item's id, and it is how this card finds the
+  // spell now — the engine puts it on every real 'spellPlayed', so a fixture without
   // it is not the event `commitItem` emits.
   const ev: EngineEvent = {
     type: 'spellPlayed', msg: '',
@@ -358,7 +358,7 @@ test('Hexbane Shiitake in the end-of-turn window is ASKED, and declining does no
   // the [once] burnt on a question nobody heard. The designer took the silent
   // half away — "Ask — the click is the price" — because a ctx.choose raised in
   // the end-of-turn window IS answered and E.finishTurnEnd closes the owed turn
-  // flip on the way back out of settle() (R85). 99-endofturn.test.ts drives that
+  // flip on the way back out of settle(). 99-endofturn.test.ts drives that
   // claim over the real action path; here it is enough that the question is real.
   // An unanswered ctx.choose throws, so THROWING is "it asked".
   assert.throws(() => hexbane(9320, { endOfTurn: true }).run(),
@@ -453,9 +453,9 @@ test('a bounded ability that DID something keeps the budget spent (Afflicting An
   assert.equal(g.entity(carrier.id)!.budgets[KEY], 1, 'so the use is spent');
 });
 
-// ══ CARD-TODO #20 — a FIZZLE SPENDS the bounded budget (R113) ════════════
+// ══ CARD-TODO #20 — a FIZZLE SPENDS the bounded budget (CR 109.9a) ════════════
 //
-// REVERSED 2026-08-23. This file first asserted the opposite, on R108's
+// REVERSED 2026-08-23. This file first asserted the opposite, on the decline ruling's
 // reading that a fizzle is "the ability did nothing" and therefore refunds.
 // The designer then ruled the family directly — a bounded ability "can only be
 // activated or triggered once per turn, REGARDLESS OF IF THAT ABILITY RESOLVES
@@ -466,7 +466,7 @@ test('a bounded ability that DID something keeps the budget spent (Afflicting An
 // intuitive-feeling behaviour, and it makes removing a target in response a
 // free answer to every one of the pool's 61 targeted bounded abilities.
 
-test('a bounded ability that FIZZLES for want of a target has SPENT its [once] (R113)', () => {
+test('a bounded ability that FIZZLES for want of a target has SPENT its [once] (CR 109.9a)', () => {
   const KEY = 'ability:Minor Kraken#0';
   const { g, h, A, D } = board(9330);
   const kraken = g.entity(spawn(h, A, 'Minor Kraken'))!;
@@ -493,7 +493,7 @@ test('a bounded ability that FIZZLES for want of a target has SPENT its [once] (
     'the item really fizzled — this test is worthless if it resolved normally');
   assert.equal(kraken.budgets[KEY], 1,
     'the trigger was PUT ON THE STACK, so the use is gone — a fizzle does not hand it '
-    + 'back (R113, reversing CARD-TODO #20\'s first answer)');
+    + 'back (CR 109.9a, reversing CARD-TODO #20\'s first answer)');
   assert.equal(g.composeParts(kraken, 0, 'ability'), null,
     'and it cannot be triggered again this turn');
 });

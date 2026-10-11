@@ -192,8 +192,7 @@ test('[08b] a hand card whose only option is prophesy opens a menu, it does not 
   // ⚠ This fixture used to read `giveResources(h, seat, 'fire', 2)` with the
   // note "plain mana, and NOT wood — R42". Report [08b] is *"I was able to
   // Prophecy Air Plant without having any Wood resources"*, and the reply at
-  // the time was that only the click was wrong. It was not: R42's "no
-  // affinity" was false and the banner always wanted `lg` (R301, 2026-09-20).
+  // the time was that only the click was wrong. It was not: the old "no affinity" reading was false and the banner always wanted `lg` (corrected 2026-09-20; CR 803.7d).
   // The reporter had found two bugs and we fixed one. The menu behaviour this
   // test is actually about is unchanged, so it now pays the real cost.
   const h = new Harness(6002);
@@ -208,7 +207,7 @@ test('[08b] a hand card whose only option is prophesy opens a menu, it does not 
   const plays = legal.filter(a => a.type === 'playCard' && a.handIndex === i);
   const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft')
     && a.from === 'hand' && a.index === i);
-  assert.equal(proph.length, 1, 'the banner is payable — two mana and both its pips (R301)');
+  assert.equal(proph.length, 1, 'the banner is payable — two mana and both its pips (CR 803.7d)');
   assert.equal(plays.length + mods.length, 0,
     'and it is the only thing this card can do: Air Plant costs [7] and the '
     + 'seat has two, so casting it is still out of reach');
@@ -230,7 +229,7 @@ test('[08b] offer still fires a lone harmless option, and still menus a choice',
 test('[08b] prophesy is the action that needs the menu; playing a card is not', () => {
   assert.equal(actionNeedsMenu({ type: 'prophesy', seat: 0, from: 'hand', index: 0 }), true);
   assert.equal(actionNeedsMenu({ type: 'prophesy', seat: 0, from: 'bin', index: 0 }), true,
-    'R42: the bin is a prophesy source too (Angel of Anguish)');
+    'CR 803.7c: the bin is a prophesy source too (Angel of Anguish)');
   assert.equal(actionNeedsMenu({ type: 'playCard', seat: 0, handIndex: 0 }), false,
     'a cast stops to ask for targets and can be cancelled — it is allowed to just go');
   assert.equal(actionNeedsMenu({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' }), false);
@@ -502,11 +501,11 @@ test('[59] …and the pass it painted really does go out, exactly once per state
     'a repaint of the SAME state sent a second pass — the one the server refuses');
 });
 
-/* R170: this used to be three `indexOf`s into the SOURCE of `promptHtml` —
+/* this used to be three `indexOf`s into the SOURCE of `promptHtml` —
  * "is the autoPassing guard above the Pass button, is the sentFor guard above
  * it". Which is the very thing the block above this file's driver tests
  * complains about, one layer along: it asserts WHERE code sits. It went red
- * the moment `promptHtml` was split in two (R170/CT-46 — a hotseat decision
+ * the moment `promptHtml` was split in two (CT-46 — a hotseat decision
  * bar now has the phase bar UNDER it, so the phase bar had to become a
  * function of its own), while the property it was about held perfectly. The
  * second time this repo has paid that bill.
@@ -565,8 +564,8 @@ test('[59] a fresh authoritative state clears the error from the previous one', 
   // screen for the rest of the game.
   //
   // ⚠ REWRITTEN 2026-08-25. This used to slice MAIN between "m.t === 'update'"
-  // and "m.t === 'kicked'" and look for the assignment inside that window. R150
-  // put every inbound update through a pacing queue and moved the clear into
+  // and "m.t === 'kicked'" and look for the assignment inside that window. The pacing
+  // change put every inbound update through a pacing queue and moved the clear into
   // applyUpdate — the ONE funnel the queue drains into — so the invariant was
   // intact and the test failed anyway. It was asserting WHERE the line sat.
   // It now asserts the shape that actually protects #59: updates funnel, the
@@ -574,7 +573,7 @@ test('[59] a fresh authoritative state clears the error from the previous one', 
   // instead of one, and none of them cares about layout.
   const handler = MAIN.slice(MAIN.indexOf("m.t === 'update'"), MAIN.indexOf("m.t === 'kicked'"));
   assert.match(handler, /this\.paced = pace\(/,
-    "the 'update' handler must hand the message to the pacing queue (R150), not apply it inline");
+    "the 'update' handler must hand the message to the pacing queue (CR D5.4), not apply it inline");
   assert.match(method('applyUpdate'), /uiError = '';/,
     'applyUpdate is the one funnel every update reaches — it must clear uiError');
   for (const release of ['pumpPace', 'flushPace']) {
@@ -589,7 +588,7 @@ test('[59] every intent latches the state it spends, and a refusal releases it',
   const doBody = MAIN.slice(MAIN.indexOf('do(a: Action): void {'), MAIN.indexOf("t: 'action'"));
   assert.match(doBody, /this\.latch\(\);/, 'NetBackend.do() takes the latch');
   // \s* rather than a literal space: this asserted single-LINE formatting until
-  // R150 wrapped the method, and a reformat is not a regression (2026-08-25).
+  // the pacing change wrapped the method, and a reformat is not a regression (2026-08-25).
   assert.match(MAIN, /undo\(\): void \{\s*this\.latch\(\);/, '…and so does undo()');
   assert.match(MAIN, /ui\.sentFor = -1; ui\.autoAt = -1;/,
     'a refused action leaves actionCount alone — the latch must be let go by hand');

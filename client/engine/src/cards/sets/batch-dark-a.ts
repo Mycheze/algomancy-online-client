@@ -2,17 +2,17 @@
  *
  * Behaviour only; printed data comes from printed.json (never hand-copied).
  * Spec for the expansion's new mechanics: docs/08-light-and-dark.md,
- * rulings R38-R48 in docs/digital-rules.md.
+ * and the Comprehensive Rules.
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (payments are part of resolution, via
- * ctx.choose), R9 (bounded budgets per card), R12/R25 ("each unit / each
- * player" is region-scoped), R115 (a created unit arrives where its SOURCE
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 111.9 (payments are part of resolution, via
+ * ctx.choose), CR 803.4 (bounded budgets per card), CR 101.6, 601.4d ("each unit / each
+ * player" is region-scoped), CR 601.5 (a created unit arrives where its SOURCE
  * is — ctx.region — so a Wraith minted mid-attack stays in the battle region),
- * R37 (applying a mod is not playing a card), R40 (trashing), R45 (glimpse),
- * R71 (the Wraith token; retired name Wight).
+ * CR 701.2 (applying a mod is not playing a card), CR 801.2 (trashing), CR 801.9 (glimpse),
+ * CR 110.2c (the Wraith token; retired name Wight).
  *
  * Cards in this batch:
  *   Afflicting Anima, Burn the Blight, Cosmic Devourer, Cull, Exhume, Glook,
@@ -29,30 +29,29 @@
  *  - "PUT INTO PLAY" (Exhume) is spawnUnit: the unit arrives directly in play
  *    and fires its spawn triggers, with no stack step and no play event —
  *    which is exactly right, because putting a card into play is not playing
- *    it. R165 split "PLAY … NOW, FOR FREE" (Wake the Dead) back off it: that
- *    card prints the other verb, so its units spawn `asPlay` and fire R129's
- *    'cardPlayed' from R49's 'bin'. What they still do NOT get is a stack item
+ *    it. The play/put-into-play ruling (CR 301.9) split "PLAY … NOW, FOR FREE" (Wake the Dead) back off it: that
+ *    card prints the other verb, so its units spawn `asPlay` and fire
+ *    'cardPlayed' (CR 108.1a) from 'bin' (CR 410.6). What they still do NOT get is a stack item
  *    of their own — no response window, nothing to negate — which is the
  *    standing `playInline` approximation for a card played mid-resolution.
  *    Wake the Dead reaches into ANY bin, and it is NO LONGER an approximation
  *    that a unit raised out of the opponent's bin becomes the caster's card:
  *    CARD-TODO #17 gave spawnUnit an `owner` option (defaulting to the seat it
  *    enters play under), and Wake the Dead passes the bin's own seat. The
- *    caster CONTROLS it; the opponent still OWNS it, so it dies to THEIR bin
- *    (R65) and can be recurred by them.
+ *    caster CONTROLS it and the opponent still OWNS it (CR 102.5a); zones follow control, so it dies to the caster's bin (CR 400.4), where the caster can recur it.
  *  - "TARGET NONSPELL EFFECT" (Nothyr) IS a TargetSpec now:
  *    `what: 'stackEffect'` is the superset and a `restrict` narrows it to the
- *    nonspell half. R128 made that superset EVERY item on the stack (a unit
+ *    nonspell half. The ruling now at CR 700.1b made that superset EVERY item on the stack (a unit
  *    on its way into play included), so the nonspell half is triggered,
  *    activated, virus AND unit — everything that is not spell / spell unit /
  *    spell token / ambush.
- *    R67 collects it as the trigger goes on the stack.
+ *    It is collected (CR 110.1a) as the trigger goes on the stack.
  *    This entry used to say the card "has no TargetSpec … modelled as a
  *    resolution-time ctx.choose"; that expired, and with it the "slightly
  *    stronger than printed: the pick cannot be responded to" caveat.
  *  - "REMOVE ALL COUNTERS FROM … PLAYERS" (Burn the Blight) reads rot and
- *    debt as the player counters (both are called counters by R38/R39).
- *    R179 gave this a real primitive: E.loseRot / E.loseDebt, which fire
+ *    debt as the player counters (both are called counters by CR 112.15).
+ *    The removal ruling (CR 112.15) gave this a real primitive: E.loseRot / E.loseDebt, which fire
  *    'rotLost' / 'debtLost'. It used to zero p.rot and p.debt DIRECTLY — the
  *    only writes to either field outside gainRot/gainDebt — so nothing
  *    watching a player's counters could see them go. NOT an approximation any
@@ -61,9 +60,9 @@
  *    its printed/token base AND it carries no counters or until-regroup
  *    changes. That deliberately includes stat changes projected onto it by
  *    someone else's static (a lord's +1/+1): those are stat changes too.
- *    It is a TARGETING RESTRICTION (R64's TargetSpec.restrict): only unmodified
+ *    It is a TARGETING RESTRICTION (CR 110.3a; TargetSpec.restrict): only unmodified
  *    units are ever offered. The resolution recheck stays for a unit that
- *    changes between cast and resolution (R5/R56) — but the sentence this note
+ *    changes between cast and resolution (CR 704.5) — but the sentence this note
  *    used to carry, "the spec cannot be a target filter, so an 'illegal'
  *    target simply survives", is no longer true of either half.
  *  - TRASH TRIGGERS CANNOT CARRY GRAFT RIDERS. Afflicting Anima and Maw of
@@ -83,15 +82,15 @@ import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** seats physically in a region (R12/R25: "each player" is region-scoped) */
-// R243: one helper for the whole pool, on E. This file and batch-wood-b had
+/** seats physically in a region (CR 601.4d: "each player" is region-scoped) */
+// CR 601.4c: one helper for the whole pool, on E. This file and batch-wood-b had
 // grown their own copies of it, with different orders.
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** PRINTED/token stats — layer 1 only, deliberately NOT E.baseStatsOf: this
  * is the number the card was made with, so that "no stat changes" counts a
  * rewritten base (Formless, Body Swap, Aberrant Statweaver) as a change.
- * R336: read through `E.printedStats`, which puts the COPY face (layer 0)
+ * CR 710.2: read through `E.printedStats`, which puts the COPY face (layer 0)
  * under layer 1 — a Borrower of Forms that copied an untouched Good Whale is
  * an untouched 7/5, not a changed Borrower. */
 const printedStats = (g: E, u: Entity): [number, number] => g.printedStats(u);
@@ -133,7 +132,7 @@ function planDiscards(g: E, ctx: EffectCtx, key: string, seat: Seat, n: number, 
 }
 
 /** commit planned discards — highest index first, so the rest stay valid.
- * Each one is a trash (R40) and fires its own trashed trigger. */
+ * Each one is a trash (CR 801.3) and fires its own trashed trigger. */
 function discardHand(g: E, seat: Seat, picked: number[]): void {
   for (const i of [...picked].sort((a, z) => z - a)) g.discardFromHand(seat, i);
 }
@@ -141,17 +140,17 @@ function discardHand(g: E, seat: Seat, picked: number[]): void {
 // ───────────────────────────── the cards ──────────────────────────────
 
 // "When I am trashed, [Switch1] You may pay [1] to create a Wraith." — d/1
-// 0/1 Alien Anima Unit. R40: the trigger fires FROM THE BIN, however the card
+// 0/1 Alien Anima Unit. CR 801.2a: the trigger fires FROM THE BIN, however the card
 // got there (discarded, milled, sacrificed, died in combat) — so ctx.sourceId
 // resolves to nothing and nothing here may read "me" as an entity. The [1] is
-// a mid-resolution pay-or-decline (R6). R71: "create a Wraith" spawns the
+// a mid-resolution pay-or-decline (CR 111.9). CR 304.4: "create a Wraith" spawns the
 // Wraith body. Bounded graft ([Switch1]) — ⚠ header: a trash trigger can never
 // actually carry a graft rider, but the card is still graftable.
 const animaWraith: EffectDef = {
   creates: ['Wraith'],
   run: (g, ctx) => {
     if (g.openMana(ctx.controller) < 1) {
-      ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
+      ctx.refundBudget?.();   // CR 109.9b: no offer could be made, so the use is not spent
       g.ev('info', 'Afflicting Anima: cannot pay [1] — no Wraith.');
       return;
     }
@@ -161,12 +160,12 @@ const animaWraith: EffectDef = {
       options: [{ label: 'Pay [1] — create a Wraith', value: true }, { label: 'Decline', value: false }],
     });
     if (pays !== true) {
-      ctx.refundBudget?.();   // R113: declining a "you may" never spends it
+      ctx.refundBudget?.();   // CR 109.9b: declining a "you may" never spends it
       g.ev('info', 'Afflicting Anima: [1] is not paid — no Wraith.');
       return;
     }
     g.payMana(ctx.controller, 1);
-    g.createWraith(ctx.controller, ctx.region);   // R115
+    g.createWraith(ctx.controller, ctx.region);   // CR 601.5
   },
 };
 card('Afflicting Anima', {
@@ -179,17 +178,17 @@ card('Afflicting Anima', {
 });
 
 // "Remove all counters from units and players." — dd/3 {Battle} Blight Spell.
-// Units: their net +1/+1 / -1/-1 counters, region-scoped (R12). Players: rot
-// and debt, the two player counters (R38/R39), for the seats present in this
-// region (R25). Rot "never decreases on its own" (R38) — this is a card
+// Units: their net +1/+1 / -1/-1 counters, region-scoped (CR 101.6). Players: rot
+// and debt, the two player counters (CR 112.15), for the seats present in this
+// region (CR 601.4d). Rot "never decreases on its own" (CR 112.13a) — this is a card
 // decreasing it, which is exactly what the printed text says to do.
 //
-// R179: through E.loseRot / E.loseDebt, which ANNOUNCE the removal
+// CR 112.15: through E.loseRot / E.loseDebt, which ANNOUNCE the removal
 // ('rotLost' / 'debtLost'). This used to write p.rot = 0 / p.debt = 0 raw,
 // the only two such writes in the tree, so a card watching player counters
 // saw them arrive and never saw them leave.
 //
-// ⚠ THE REMOVAL IS NOT SCALED BY R104's AMOUNT LAYER, by owner ruling
+// ⚠ THE REMOVAL IS NOT SCALED BY THE AMOUNT LAYER (CR 112.15), by owner ruling
 // (2026-08-25): *"Resonater says 'put on' so this question is irrelevant.
 // Removing counters isn't 'putting on'."* Flux Resonator and Proliferating
 // Slime price what is PUT ON; a removal is not in their scope, and the scope
@@ -205,8 +204,8 @@ card('Burn the Blight', {
       for (const seat of presentSeats(g, ctx.region)) {
         const rot = g.rot(seat), debt = g.debt(seat);
         if (!rot && !debt) continue;
-        g.loseRot(seat, rot);     // R179
-        g.loseDebt(seat, debt);   // R179
+        g.loseRot(seat, rot);     // CR 112.15
+        g.loseDebt(seat, debt);   // CR 112.15
         g.ev('info',
           `Burn the Blight removes ${g.pname(seat)}'s counters: ${rot} rot, ${debt} debt.`,
           { seat, rot, debt });
@@ -220,7 +219,7 @@ card('Burn the Blight', {
 // "[Augment] At the end of turn, create a Wraith and gain 1 Rot." — dd/1 0/1
 // Alien Unit. Text-box [Augment]: live when played normally (Manual Q&A),
 // donated when it augments a host — and then it is the HOST's controller who
-// gets both the Wraith and the rot. R71 + R38.
+// gets both the Wraith and the rot. CR 305.4, 112.13e.
 card('Cosmic Devourer', {
   augmentText: [{
     type: 'triggered', events: ['endOfTurn'],
@@ -228,7 +227,7 @@ card('Cosmic Devourer', {
     effect: {
       creates: ['Wraith'],
       run: (g, ctx) => {
-        g.createWraith(ctx.controller, ctx.region);   // R115
+        g.createWraith(ctx.controller, ctx.region);   // CR 601.5
         g.gainRot(ctx.controller, 1);
       },
     },
@@ -236,10 +235,10 @@ card('Cosmic Devourer', {
 });
 
 // "[Switch1] Each player sacrifices a unit." — d/1 {Battle} Blight Spell.
-// "Each player" is region-scoped (R25): every seat present here with a unit
+// "Each player" is region-scoped (CR 601.4d): every seat present here with a unit
 // here picks one of their own. Plan-then-commit — all picks first, then all
 // sacrifices — because the engine replays the part on suspension. A seat with
-// exactly one unit has no choice to make. Bounded graft ([Switch1], R9).
+// exactly one unit has no choice to make. Bounded graft ([Switch1], CR 722.5).
 const cullSacrifices: EffectDef = {
   run: (g, ctx) => {
     const picks: EntityId[] = [];
@@ -253,7 +252,7 @@ const cullSacrifices: EffectDef = {
       }) as EntityId;
       picks.push(id);
     }
-    // R209/CT-74: every present seat may be here with NOTHING to sacrifice —
+    // CR D7.3/CT-74: every present seat may be here with NOTHING to sacrifice —
     // an attack whose columns all traded off leaves exactly that board. The
     // loop is then correct and the silence is not (Ghord's precedent).
     if (!picks.length) {
@@ -273,7 +272,7 @@ card('Cull', {
 
 // "Put a unit with cost X or less from your bin into play, where X is your
 // [d]." — d/2 Occult Spell (deployment). X is your DARK AFFINITY, read live
-// at resolution (R1) — dormant resources give no affinity, expended ones
+// at resolution (CR 107.8) — dormant resources give no affinity, expended ones
 // still do. ⚠ header: the bin pick is a resolution-time choose, and the unit
 // is put straight into play (its spawn triggers fire).
 card('Exhume', {
@@ -290,27 +289,27 @@ card('Exhume', {
         prompt: `Exhume: put which unit (cost ${x} or less) into play?`,
         options: units.map(([n, i]) => ({ label: n, value: i, card: n })),
       }) as number;
-      const name = g.removeFromBin(ctx.controller, idx, 'revived');   // R124
+      const name = g.removeFromBin(ctx.controller, idx, 'revived');   // CR 405.7
       if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
     },
   },
 });
 
 // "[once] Discard X cards: Glimpse 1, X times." — d/2 1/3 Alien Fungus Unit.
-// [once] = bounded (R9). "Glimpse 1, X times" is deliberately X separate
-// glimpses (R45), which is what makes X a count of CARDS.
+// [once] = bounded (CR 109.9). "Glimpse 1, X times" is deliberately X separate
+// glimpses (CR 801.9c), which is what makes X a count of CARDS.
 //
-// R196 — X IS PAID AT ACTIVATION. The discards used to be chosen card-by-card
+// CR 705.3b — X IS PAID AT ACTIVATION. The discards used to be chosen card-by-card
 // at RESOLUTION, so the ability reached the stack with X unknown and the
 // opponent had to decide whether to answer without knowing how many glimpses
-// were coming. That is the exact complaint R64 was raised on for Discharge
+// were coming. That is the exact complaint once raised about Discharge
 // ("Shouldn't Discharge have you remove counters as an ADDITIONAL COST? Not on
 // resolution"), and the answer is the same: `castCost: { kind: 'discardCard',
 // n: 'X' }`. Nothing new was needed — the variable machinery a spell's
 // bracketed cost already used simply reaches an activated ability through
 // `EffectDef.castCost`, and `ctx.x` is what was paid.
 //
-// Each discard is still a TRASH (R40) firing its own trigger; the only change
+// Each discard is still a TRASH (CR 801.3) firing its own trigger; the only change
 // is that they are committed one at a time as they are chosen, in the cast
 // window, instead of being planned and then committed at resolution.
 card('Glook', {
@@ -333,7 +332,7 @@ card('Glook', {
 // the card; the [Augment] sentence transfers (the downside rides along to the
 // host's controller). Despawn = ANY leave-play, 'died' + 'despawned' (the
 // Bloated Manablub reading). The two discards are chosen (⚠ header) and are
-// TRASHES (R40).
+// TRASHES (CR 801.3).
 card('Gzxyclop', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
@@ -354,15 +353,15 @@ card('Gzxyclop', {
 });
 
 // "Delete target unit with no stat changes." — d/2 {Battle} Blight Spell.
-// R64: "with no stat changes" is part of what makes a target LEGAL, so only
-// unmodified units are offered. The resolution recheck below is the R5/R56
+// CR 110.3a: "with no stat changes" is part of what makes a target LEGAL, so only
+// unmodified units are offered. The resolution recheck below is the CR 704.5
 // half — a unit that picks up counters, until-regroup changes or somebody's
 // static buff between cast and resolution survives. (The line that used to sit
 // here, "⚠ header: TargetSpec has no filter", contradicted the spec six lines
 // below it.)
 card('Leave None Pure', {
   spellEffect: {
-    // R64: "with no stat changes" is a targeting restriction, so only the
+    // CR 110.3a: "with no stat changes" is a targeting restriction, so only the
     // unmodified units are ever offered; the resolution check stays for the
     // ones that change between cast and resolution.
     targets: {
@@ -384,7 +383,7 @@ card('Leave None Pure', {
 });
 
 // "When I am trashed, [Switch1] Glimpse 2." — d/1 2/1 Bedlam Alien Unit.
-// R40 + R45: the trigger fires from the bin, and glimpse 2 reveals the top two
+// CR 801.9: the trigger fires from the bin, and glimpse 2 reveals the top two
 // cards, caches ONE of the glimpser's choice — playable until end of turn,
 // paying the mana, ignoring affinity — and recycles the other to the bottom of
 // the deck. Bounded graft ([Switch1]); ⚠ header on the graft-rider limitation.
@@ -420,10 +419,10 @@ card("Möbius's Corruption", {
 
 // "When I am trashed, negate up to one target nonspell effect." — d/2 3/1
 // Alien Anima Unit, with a printed "2 [d] Discard Me. {Battle}" cost line:
-// paying it discards the card, which trashes it (R40) and fires this from the
+// paying it discards the card, which trashes it (CR 801.3) and fires this from the
 // bin — a battle-timed hard answer to a trigger. The discard-me mode itself
 // is entirely engine-side (printed.discardMe + legalActions).
-// R60/R67: "target nonspell effect" is a DECLARED target — 'stackEffect'
+// CR 700.1b, 110.1a: "target nonspell effect" is a DECLARED target — 'stackEffect'
 // narrowed by a restriction to the nonspell half — collected as the trigger
 // goes on the stack ("up to one" = min 0). Outside battle the stack is empty
 // and the trigger is simply a no-op. (The "⚠ has no TargetSpec, so the pick is
@@ -434,29 +433,27 @@ card('Nothyr', {
     type: 'triggered', events: ['trashed'], self: true,
     label: 'negate up to one target nonspell effect',
     effect: {
-      // R67: "up to one target nonspell effect" is a DECLARED target, chosen
+      // CR 110.1a: "up to one target nonspell effect" is a DECLARED target, chosen
       // as the trigger goes on the stack, not a mid-resolution pick — the
       // whole point of a negate is that the table can see what it is aimed at
       // while there is still a window to respond. 'stackEffect' is the
-      // superset kind (R60); the restriction narrows it to the NONSPELL half,
+      // superset kind (CR 700.1); the restriction narrows it to the NONSPELL half,
       // which is exactly the qualifier Nothyr prints. min 0 = "up to one".
       //
       // The NONSPELL half is the COMPLEMENT of the spell one, and nothing
       // else: 'stackSpell' is "spell / spell unit / spell token / ambush", so
       // "nonspell effect" is every OTHER item on the stack. That used to mean
-      // triggered + activated + virus, because R60 said a unit on the stack
-      // was not an effect at all.
+      // triggered + activated + virus, because an earlier ruling said a unit on the stack was not an effect at all.
       //
-      // R128 (owner, 2026-08-24) reversed R60: "ANYTHING on the stack is an
+      // The owner (2026-08-24) reversed that reading (now CR 700.1): "ANYTHING on the stack is an
       // effect, including units and spell units. Units aren't spells, so if
       // they say 'spell effect' a unit would be unaffected." A {Battle} unit
-      // mid-cast is therefore an effect (R128) AND not a spell (same
+      // mid-cast is therefore an effect (CR 700.1b) AND not a spell (same
       // sentence), which is precisely what "nonspell effect" names — so
       // Nothyr answers it, and the restriction is written as the complement
       // rather than as a whitelist that would have to be edited again the next
-      // time a kind is added. An 'ambush' is spell-side by R60's table (still
-      // good law: R128 widened the effect half, it did not move the spell
-      // line) and stays out.
+      // time a kind is added. An 'ambush' is spell-side by CR 700.1a (still
+      // good law: the effect half was widened later, the spell line did not move) and stays out.
       targets: {
         what: 'stackEffect', min: 0,
         prompt: 'Nothyr: negate up to one target nonspell effect',
@@ -478,10 +475,10 @@ card('Nothyr', {
 
 // "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each
 // player gains a rot." — d/4 3/4 Blight Zombie Unit. Both halves are
-// region-scoped (R12/R25): every unit in this region, every seat present in
-// it — the Titan and its own controller included. R38: gaining rot is not
+// region-scoped (CR 101.6, 601.4d): every unit in this region, every seat present in
+// it — the Titan and its own controller included. CR 112.13: gaining rot is not
 // damage; it bites at the start of the next deployment. Bounded graft
-// ([Switch1], R9).
+// ([Switch1], CR 722.5).
 const titanPlague: EffectDef = {
   run: (g, ctx) => {
     for (const u of g.unitsIn(ctx.region)) g.addCounters(u, -1);
@@ -514,7 +511,7 @@ card('Reality Siphoner', {
           g.ev('info', 'Reality Siphoner: your bin is empty — nothing is recycled, no counters.');
           return;
         }
-        // R124: per card, back-to-front — each removal fires its own 'leftBin'
+        // CR 405.7: per card, back-to-front — each removal fires its own 'leftBin'
         const moved: string[] = [];
         while (bin.length) moved.unshift(g.removeFromBin(ctx.controller, bin.length - 1, 'recycled')!);
         for (const name of moved) g.recycleToBottom(ctx.controller, name);
@@ -532,9 +529,9 @@ card('Reality Siphoner', {
 // sacrifices a nontoken unit." — d/1 2/1 Blight Unit, with a printed
 // "2 [d] Discard me" cost line (deployment timing — the line carries no
 // marker, so the card's own timing applies).
-// "When I enter your bin" is R40's trashed trigger: a UNIT can only reach a
+// "When I enter your bin" is the trashed trigger (CR 801.2): a UNIT can only reach a
 // bin from play, hand, deck or cache, every one of which trashes, so the two
-// readings coincide here. Plan-then-commit (R6): the payment decision and
+// readings coincide here. Plan-then-commit: the payment decision and
 // every opponent's pick are made before anything is paid or sacrificed.
 card('Sacrifice Dude', {
   abilities: [{
@@ -581,7 +578,7 @@ card('Sacrifice Dude', {
 // card just drawn is a legal discard. The draw is a mutation BEFORE a choice,
 // which is safe here — resolveParts snapshots the state and replays the whole
 // part with the stored answer, so the draw happens exactly once. Bounded
-// graft ([Switch1], R9).
+// graft ([Switch1], CR 722.5).
 const loot: EffectDef = {
   run: (g, ctx) => {
     g.draw(ctx.controller, 1);
@@ -600,9 +597,9 @@ card('Scuttling Abomination', {
 });
 
 // "When I die, you may erase me to put all units with cost [1] from your bin
-// into play." — d/3 0/1 Blight Unit. Dying binned it (and trashed it, R40)
+// into play." — d/3 0/1 Blight Unit. Dying binned it (and trashed it, CR 801.2a)
 // one event earlier, so "erase me" is: take that copy back out of the bin and
-// destroy it — erasing never touches a bin again (R40), so this is NOT a
+// destroy it — erasing never touches a bin again (CR 801.2c), so this is NOT a
 // second trash. A Spore that died MODDED was Unstable-erased instead and has
 // no bin copy to pay with: the cost cannot be paid and nothing happens.
 // "Cost [1]" is exactly 1. ⚠ header: the bin sweep is not targeting.
@@ -636,7 +633,7 @@ card('Spore of Regenesis', {
         const idxs = [mine, ...revivable.map(([, i]) => i)].sort((a, z) => z - a);
         const names: CardName[] = [];
         for (const i of idxs) {
-          const name = g.removeFromBin(ctx.controller, i, i === mine ? 'erased' : 'revived');   // R124
+          const name = g.removeFromBin(ctx.controller, i, i === mine ? 'erased' : 'revived');   // CR 405.7
           if (name !== undefined && i !== mine) names.push(name);
         }
         g.ev('erased', 'Spore of Regenesis is ERASED from the bin (its own cost).',
@@ -650,10 +647,10 @@ card('Spore of Regenesis', {
 // "Recall two target units in your bin, then discard a card." — dd/4 {Battle}
 // Alien Spell. "Recall … in your bin" = back to your HAND (recall is the
 // leave-play/return-to-hand verb; from a bin there is nothing to leave).
-// R64: "two TARGET units in your bin" is real targeting — two cast-time
+// CR 110.1a: "two TARGET units in your bin" is real targeting — two cast-time
 // targets, and BinRef.nth means two copies of one card are two separate
 // targets. min 0: the spell is castable with an empty bin, because "then
-// discard a card" still happens (R5 fizzling would swallow the whole spell,
+// discard a card" still happens (CR 704.6 fizzling would swallow the whole spell,
 // and the printed text makes the discard unconditional).
 card('Tilling the Graves', {
   spellEffect: {
@@ -674,10 +671,10 @@ card('Tilling the Graves', {
         .filter(i => i !== -1);
       const taken: CardName[] = [];
       for (const i of [...new Set(chosen)].sort((a, z) => z - a)) {
-        const name = g.removeFromBin(seat, i, 'recalled');   // R124
+        const name = g.removeFromBin(seat, i, 'recalled');   // CR 405.7
         if (name !== undefined) taken.push(name);
       }
-      // R179: the whole recall is ONE move into a hand, so it announces ONE
+      // CR 706.6a: the whole recall is ONE move into a hand, so it announces ONE
       // 'handEntered' — the printed shape is "one or more cards enter".
       const order = taken.reverse();
       g.toHand(seat, order, 'bin');
@@ -698,14 +695,14 @@ card('Tilling the Graves', {
 // with a running budget — the second pick is offered only from what still
 // fits under 8 minus the first. ⚠ header: "play … now" resolves inside this
 // spell's own resolution — the units arrive with no stack item of their own,
-// so nobody may respond to them and nothing can negate one. R165 made them a
+// so nobody may respond to them and nothing can negate one. CR 301.9 makes them a
 // real PLAY in every other respect (see below); the missing response window is
 // the standing `playInline` approximation, not this card's.
 //
 // CARD-TODO #17, fixed 2026-08-23: a unit taken out of the OPPONENT's bin is
 // BORROWED, not naturalised. `spawnUnit` now takes an owner (defaulting to the
 // seat it enters play under), so the caster is its CONTROLLER while `c.seat`
-// stays its OWNER — it dies to their bin (R65), counts toward their "cards in
+// stays its OWNER (CR 102.5a); it dies to its controller's bin (CR 400.4), counts toward that player's "cards in
 // your bin", and they can recur it. Before the parameter existed the caster
 // became its owner outright and the original owner lost the card for good.
 card('Wake the Dead', {
@@ -717,7 +714,7 @@ card('Wake the Dead', {
       let budget = 8;
       for (let k = 0; k < 2; k++) {
         const opts: { label: string; value: string; card: CardName }[] = [];
-        // R243: "any bin" is any bin IN THIS REGION — a player who is not
+        // CR 601.4c: "any bin" is any bin IN THIS REGION — a player who is not
         // here has no bin for this spell to reach into.
         for (const p of g.seatsHere(ctx.region).map(s => ({ seat: s }))) {
           g.player(p.seat).bin.forEach((name, i) => {
@@ -746,16 +743,17 @@ card('Wake the Dead', {
       }
       if (!chosen.length) { g.ev('info', 'Wake the Dead: nothing playable in any bin.'); return; }
       // remove highest index first within each bin, then spawn in pick order
-      for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) g.removeFromBin(c.seat, c.idx, 'revived');   // R124
+      for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) g.removeFromBin(c.seat, c.idx, 'revived');   // CR 405.7
       // CARD-TODO #17: "any bin" means the card may be the OPPONENT'S, and the
       // two seats are different facts. The CONTROLLER is the caster; the OWNER
-      // is whichever bin it came out of, and it goes back there when it dies.
+      // is whichever bin it came out of. When it dies it goes to its CONTROLLER's bin, like
+      // every card that leaves play (CR 400.4: zones follow control).
       //
-      // R165: the printed verb is "PLAY", not "put into play", and the two are
+      // CR 701.3: the printed verb is "PLAY", not "put into play", and the two are
       // a real distinction in this pool — Exhume, Resurrect, Rousing Spirit and
       // Lurking Dread all print "put into play" and are rightly plain spawns.
-      // `asPlay` fires R129's 'cardPlayed' for each unit immediately before it
-      // arrives, and `from: 'bin'` is R49's other half of the same fact, so
+      // `asPlay` fires 'cardPlayed' (CR 108.1a) for each unit immediately before it
+      // arrives, and `from: 'bin'` is the other half of the same fact (CR 410.6), so
       // "whenever you play a unit" (Bloomcaster) and "when you play a card from
       // anywhere other than your hand" (Stalwart Sentinel, Proph) both hear it
       // — each exactly once, because the spawn-watchers read 'spawned' and

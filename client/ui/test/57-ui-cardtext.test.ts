@@ -7,7 +7,7 @@
  * What is being pinned is that the box a player reads is assembled from the
  * SAME queries the rules run on, so it cannot drift: attribution (which card
  * each clause and each attribute comes from), what is switched off and by
- * whom (R62), what was granted (R63), and stat arithmetic that adds up to the
+ * whom (CR 712.1), what was granted (CR 109.8), and stat arithmetic that adds up to the
  * number the engine reports rather than to a number this module invented.
  *
  * Seeds 5700-5799.
@@ -42,7 +42,7 @@ test('switchClause / augmentClause slice on the markers the scans really carry',
   const sw = switchClause('Ignis Sprite');           // "When I spawn or die, [Switch] Create a Fireball 1."
   assert.ok(sw.startsWith('[Switch]'), `sliced at the marker: ${sw}`);
   assert.ok(sw.includes('Fireball'), 'and keeps the effect');
-  // a card with no [Augment] in its TEXT donates no text (R55) — the type
+  // a card with no [Augment] in its TEXT donates no text (CR 721.1a, 721.1b) — the type
   // line carries the grant instead
   assert.equal(augmentClause('Ephemeral Skywalker'), '',
     'type-line [Augment] is not text-box [Augment]');
@@ -198,7 +198,7 @@ test('a bounded ability that already fired this turn says so', () => {
   finishBattle(h);
 });
 
-/* ── R62: what is switched off, and by whom ─────────────────────────── */
+/* ── CR 712.1: what is switched off, and by whom ─────────────────────────── */
 
 test('Suppression Field: the printed line is struck and names the culprit', () => {
   const h = new Harness(5708);
@@ -243,7 +243,7 @@ test('Monke: a continuous suppressor is named on every box it reaches', () => {
   const box = entityTextBox(q(h), ent(h, theirs)!);
   assert.deepEqual(box.suppressed.by, ['Monke']);
   assert.equal(box.attrs.find(a => a.attr === 'Flying')!.active, false);
-  // R279 / report #149: the box explains WHY exactly once. It used to say it
+  // report #149: the box explains WHY exactly once. It used to say it
   // three times — this banner, the strikethrough on every line, and then a
   // `static` line reading "loses all attributes and abilities." The owner:
   // *"Just the banner and crossing out of the text is enough."* `suppressionOf`
@@ -255,7 +255,7 @@ test('Monke: a continuous suppressor is named on every box it reaches', () => {
 });
 
 test('Transmogrifant: the projection line keeps the half no other row states', () => {
-  // R279 / report #149 drew the boundary of the de-duplication here. Both
+  // report #149 drew the boundary of the de-duplication here. Both
   // halves of Transmogrifant's sentence used to be on this line; only the STAT
   // half stays, because ui/main.ts's `textBoxHtml` drops `statMathHtml` in
   // `compact` (the long-hover tooltip) and this line is then the only
@@ -290,7 +290,7 @@ test('an augment-donated static is blamed on the MOD, not on the unit wearing it
   assert.deepEqual(box.suppressed.by, ['Transmogrifant']);
 });
 
-/* ── R63: granted text ──────────────────────────────────────────────── */
+/* ── CR 109.8: granted text ──────────────────────────────────────────────── */
 
 test('granted text is its own line, attributed to the card that gave it', () => {
   const h = new Harness(5712);

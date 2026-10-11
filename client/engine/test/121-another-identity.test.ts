@@ -1,4 +1,4 @@
-/* R131 — "other" / "another" is a DIFFERENT ENTITY, never a different card name.
+/* CR 201.2 — "other" / "another" is a DIFFERENT ENTITY, never a different card name.
  *
  * Owner, 2026-08-24: "All other/another cards should work based on 'game state
  * tracking UUID' (or whatever we use). It only cares about the other thing
@@ -10,12 +10,12 @@
  *
  *  · ROTBEAST — "[Augment] After combat, move all my other Augments onto one
  *    or more enemies." The text lives on a MOD, and `ctx.sourceId` names the
- *    HOST, so nothing identified the mod carrying the text. R131 threads the
+ *    HOST, so nothing identified the mod carrying the text. For CR 720.6d the engine threads the
  *    granting mod's EntityId onto the pending trigger and into the EffectCtx
  *    (`ctx.selfModId`), so "other" excludes exactly ONE entity — itself.
  *
  *  · BLIGHTWALKER — "recall another target unit from your bin". A bin holds
- *    bare card NAMES, so there is no uid to compare. R64/R124 already settled
+ *    bare card NAMES, so there is no uid to compare. CR 405.6 already fixes
  *    identity there: a BinRef is (name, nth occurrence), because "copies of one
  *    card there are genuinely indistinguishable". `noteTrashed` now stamps the
  *    trashed copy's `binNth` on the 'trashed' event and `notSelfBinCard` reads
@@ -70,7 +70,7 @@ function pickBy(h: Harness, match: (o: DecisionOption) => boolean): void {
 
 // ── Rotbeast: two of the same mod on one host ─────────────────────────
 
-test('R131 Rotbeast: a SECOND Rotbeast augment is "another" — each moves the other', () => {
+test('CR 720.6d Rotbeast: a SECOND Rotbeast augment is "another" — each moves the other', () => {
   const h = new Harness(12100);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -94,7 +94,7 @@ test('R131 Rotbeast: a SECOND Rotbeast augment is "another" — each moves the o
 
   // Two mods donate two triggers, and each moves everything on the host but
   // ITSELF. Trigger #1 carries Rotbeast #2 onto the enemy; trigger #2 then
-  // reads the host live (R1), finds Rotbeast #1 still there — "other" to it —
+  // reads the host live (CR 714.7), finds Rotbeast #1 still there — "other" to it —
   // and moves that too. Both end up on the enemy.
   //
   // THE POINT: under the old card-NAME exclusion neither trigger could see
@@ -112,7 +112,7 @@ test('R131 Rotbeast: a SECOND Rotbeast augment is "another" — each moves the o
   assert.ok(modsOn(h, enemy).every(m => m.modOf === enemy), 'and are really re-parented');
 });
 
-test('R131 Rotbeast: a SINGLE Rotbeast augment still never moves itself', () => {
+test('CR 720.6d Rotbeast: a SINGLE Rotbeast augment still never moves itself', () => {
   const h = new Harness(12101);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -138,7 +138,7 @@ test('R131 Rotbeast: a SINGLE Rotbeast augment still never moves itself', () => 
   assert.deepEqual(modsOn(h, enemy).map(m => m.card), ['Wraith'], 'the rest moved');
 });
 
-test('R131 Rotbeast: played NORMALLY, no mod carries the text, so every augment is "other"', () => {
+test('CR 201.2 Rotbeast: played NORMALLY, no mod carries the text, so every augment is "other"', () => {
   const h = new Harness(12102);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -163,14 +163,14 @@ test('R131 Rotbeast: played NORMALLY, no mod carries the text, so every augment 
 
 // ── Blightwalker: two copies in one bin ───────────────────────────────
 
-test('R131 Blightwalker: a Blightwalker ALREADY in the bin is "another" and is offered', () => {
+test('CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is "another" and is offered', () => {
   const h = new Harness(12110);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   giveResources(h, P, 'dark', 2);
   bin(h, P).push('Blightwalker');                          // an earlier copy, already there
   const i = give(h, P, 'Blightwalker');
-  withE(h, e => e.discardFromHand(P, i));                  // R40: discarding is trashing
+  withE(h, e => e.discardFromHand(P, i));                  // CR 801.3: discarding is trashing
 
   const dec = h.state.decision;
   assert.ok(dec, 'the trash trigger fires from the bin and asks for its target');
@@ -184,7 +184,7 @@ test('R131 Blightwalker: a Blightwalker ALREADY in the bin is "another" and is o
     'and exactly one Blightwalker — the trashed one — is left in the bin');
 });
 
-test('R131 Blightwalker: alone in the bin it is still the only thing excluded', () => {
+test('CR 405.6a Blightwalker: alone in the bin it is still the only thing excluded', () => {
   const h = new Harness(12111);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -195,7 +195,7 @@ test('R131 Blightwalker: alone in the bin it is still the only thing excluded', 
   assert.deepEqual(bin(h, P), ['Blightwalker']);
 });
 
-test("R131: 'trashed' stamps WHICH copy in the bin was trashed (binNth)", () => {
+test("CR 405.6: 'trashed' stamps WHICH copy in the bin was trashed (binNth)", () => {
   const h = new Harness(12112);
   toDeployment(h);
   const P = h.state.deployPlayer!;

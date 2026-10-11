@@ -8,7 +8,7 @@
  *
  * Measured on the box first: 79 unfinished rooms resident, every file with
  * the same mtime — the last restart. Restore aged rooms by mtime and every
- * boot re-wrote every live file (the R200 version stamp), so nothing ever
+ * boot re-wrote every live file (the replay version stamp), so nothing ever
  * aged out. The fix ages a room by `lastActionAt`, which a restart does not
  * touch, and closes it when nobody is in it and its window has passed.
  *

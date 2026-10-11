@@ -70,14 +70,14 @@ export function checkDeck(cards: unknown): { ok: true; cards: CardName[] } | { o
 }
 
 /**
- * R298 — SINGLE CARD DUEL: the goofy format where a deck is thirty copies of
+ * CR D8.2 — SINGLE CARD DUEL: the goofy format where a deck is thirty copies of
  * ONE card. Not a rule change: a constructed game with a deck `checkDeck`
  * would refuse on the copy cap and nothing else, so everything after the deal
  * is ordinary constructed play.
  *
  * Which ROOMS may use such a deck is the server's call (`Room.single`) — the
  * engine accepts one from anybody, which cannot change a single game that
- * already exists: every deck recorded before R298 passed `checkDeck`.
+ * already exists: every deck recorded before Single Card Duel existed passed `checkDeck`.
  */
 export const SINGLE_CARD_COPIES = 30;
 
@@ -89,9 +89,9 @@ export function checkSingleCard(name: unknown): { ok: true; cards: CardName[] } 
 }
 
 /**
- * R298 — can a deck of nothing but `name` ever put a unit on the table? A unit
+ * CR D8.2d, D8.2c — can a deck of nothing but `name` ever put a unit on the table? A unit
  * card can, and so can anything that creates a unit token — read off the
- * DECLARED `creates` (R69: registry.ts `createsOf`, which the conformance pass
+ * DECLARED `creates` (registry.ts `createsOf`, which the conformance pass
  * keeps honest), never the printed text.
  *
  * Two duellists whose cards both fail this can never enter each other's
@@ -125,7 +125,7 @@ export function createGame(
    * equal to the defaults with nothing excluded — is the standard game, dealt
    * by exactly the path every game before BL-43 took. Ignored in other modes. */
   deal?: DraftDeal,
-  /** R297, mode 'constructed' only: a Learn to Play deal (lessondeal.ts) —
+  /** CR D8.1, mode 'constructed' only: a Learn to Play deal (lessondeal.ts) —
    * per-seat hands, draws, stacked decks and Shard income. */
   lessonDeal?: LessonDeal,
 ): ApplyResult {
@@ -149,7 +149,7 @@ export function createGame(
   // constructed: per-player decks, each shuffled with the seeded RNG (seat 0
   // first — deterministic, so replay = seed + decks + actions)
   let seatDecks: CardName[][] | undefined;
-  /** R99: constructed only — each seat's deck ELEMENT IDENTITY, for the client
+  /** CR D6.14b: constructed only — each seat's deck ELEMENT IDENTITY, for the client
    * to default its resource menu to (ledger #63). Computed off the decklist as
    * given, BEFORE the shuffle, because it is a property of the deck and not of
    * the order it happens to be in. Same `getCard(n).factions` idiom
@@ -160,11 +160,11 @@ export function createGame(
   if (mode === 'constructed') {
     if (!decks || decks.length !== 2) throw new Error('constructed mode needs a deck per player');
     for (const d of decks) {
-      // R298: a single-card deck is the one other shape a constructed deck may take
+      // CR D8.2: a single-card deck is the one other shape a constructed deck may take
       const check = lesson ? checkLessonDeck(d) : checkDeck(d);
       if (!check.ok && !checkSingleDeck(d).ok) throw new Error(check.error);
     }
-    // R298: two single-card decks are a duel, and a duel skips the bottoming
+    // CR D8.2a: two single-card decks are a duel, and a duel skips the bottoming
     singleCard = !lesson && decks.every(d => checkSingleDeck(d).ok);
     deckElements = decks.map(d => {
       const seen = new Set<string>();
@@ -175,7 +175,7 @@ export function createGame(
     for (const [seat, d] of decks.entries()) {
       let shuffled: CardName[];
       [shuffled, rngState] = rngShuffle(d, rngState);
-      // R297: a stacked lesson deck is dealt as given; the shuffle still runs
+      // CR D8.1: a stacked lesson deck is dealt as given; the shuffle still runs
       // so the RNG stream does not depend on which seat is stacked
       seatDecks.push(lesson?.stacked[seat] ? [...d] : shuffled);
     }
@@ -189,7 +189,7 @@ export function createGame(
     mode, packs: [[], []], draftDone: null, seenHand: [null, null],
     elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],
     sharedDeck: deck,
-    // R99: absent outside constructed — shared plays all seven and draft has
+    // CR D6.14b: absent outside constructed — shared plays all seven and draft has
     // already narrowed `elements` to its trio, so a client falls back to
     // `elements` when this is undefined.
     ...(deckElements ? { deckElements } : {}),
@@ -203,7 +203,7 @@ export function createGame(
       // they typically receive turn 1's two activations
       resources: Array.from({ length: lesson?.prismites[seat] ?? 2 }, () => ({ kind: 'prismite' as const, state: 'dormant' as const })),
       activationsLeft: ACTIVATIONS_PER_TURN,
-      // Light & Dark player counters (R38/R39) and the cache zone (R41).
+      // Light & Dark player counters (CR 112.15) and the cache zone (CR 403.1).
       // Optional on the type so pre-expansion saved games still load; new
       // games start them explicitly.
       rot: 0, debt: 0, cache: [],
@@ -212,7 +212,7 @@ export function createGame(
     entities: {}, stack: [], battle: null, battleRound: 0,
     battleCounters: [{}, {}], priority: null, passes: 0,
     planningDone: [false, false], hasteDone: null, deployDone: null, deployPlayer: null,
-    // R43 forward-counting anchors for prophecy conditions (additive)
+    // CR 803.7 forward-counting anchors for prophecy conditions (additive)
     hasteManaSpent: [0, 0], battlesCompleted: 0, deathsSeen: [0, 0],
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
     resolving: null,
@@ -230,7 +230,7 @@ export function createGame(
     for (const seat of [0, 1] as Seat[]) e.draw(seat, lesson.openingHand[seat]!, true);
   } else if (mode === 'constructed') {
     // opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)
-    // comes with startTurn, netting the same 6-card start. R298: a duel's
+    // comes with startTurn, netting the same 6-card start. CR D8.2a: a duel's
     // turn draws a flat 2 instead, which nets the same 6. (No log line: the
     // topbar's chip says it's a duel, and 244 counts every log-only announcement.)
     for (const seat of [0, 1]) e.draw(seat, 4, true);
@@ -243,11 +243,11 @@ export function createGame(
 
 // ── the reducer ───────────────────────────────────────────────────────
 
-/* ── R154: THE SEAT-AWARE DECISION GATE ───────────────────────────────────
+/* ── CR D2.1: THE SEAT-AWARE DECISION GATE ───────────────────────────────────
  *
- * CARD-TODO #44, the half R150 could not reach. Playtest #98: *"Rashi's start
+ * CARD-TODO #44, the half the server-side concurrency fix could not reach. Playtest #98: *"Rashi's start
  * of combat (doing all her Wraith triggers) doesn't need to take away from
- * what I'm doing in Deployment."* R150 fixed that entirely in server/rooms.ts
+ * what I'm doing in Deployment."* The server fix for CT-32 settled that entirely in server/rooms.ts
  * — which left hotseat, the `Harness`, and therefore the whole engine test
  * suite still frozen, because they go through `apply()` directly.
  *
@@ -280,7 +280,7 @@ export function createGame(
  *
  * THE definition, and server/rooms.ts `segmentKey` is a thin wrapper over it
  * (its doc block is the long-form ruling). Two copies of this predicate is
- * exactly the drift BL-19 is this repo's standing example of, and R154 needs
+ * exactly the drift BL-19 is this repo's standing example of, and CR D2.1b needs
  * it in the engine because the engine's own gate now turns on it. */
 export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {
   if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
@@ -289,17 +289,17 @@ export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null 
 }
 
 /**
- * R154 — does the open decision (if any) stop `seat` from acting?
+ * CR D2.1 — does the open decision (if any) stop `seat` from acting?
  *
  * Three ways it does, and each is a different rule:
  *
  *  1. **It is yours.** Your own question gates your own input, exactly as
- *     before R154. You must answer it (or concede — R65).
+ *     before the seat-aware gate. You must answer it (or concede — CR 104.4a).
  *  2. **You are not inside a hidden simultaneous segment.** In battle,
  *     priority is sequential and an opponent mid-resolution genuinely does
  *     hold the game; the gate there is the rule working, not a bug.
  *  3. **The answer will rewind the world.** ⚠ THE ONE THE TICKET DID NOT
- *     KNOW ABOUT. A mid-resolution ('resolve') suspension carries an R85
+ *     KNOW ABOUT. A mid-resolution ('resolve') suspension carries a
  *     `snapshot` of the whole GameState taken at the part boundary, and
  *     `E.resumeResolve` does `this.s = snap`, carrying forward only
  *     `actionCount`, `decisionHigh` and the seat names. Anything the OTHER
@@ -338,7 +338,7 @@ export function decisionBlocks(s: GameState, seat: Seat): boolean {
  *                   t.controller === sus.seat)` — and then insists
  *                   `choice.length === mine.length`. An action that queues one
  *                   more trigger while the ordering question is open makes it
- *                   PERMANENTLY unanswerable (R169: `IllegalAction.unanswerable`
+ *                   PERMANENTLY unanswerable (`IllegalAction.unanswerable`
  *                   on every reply, whatever its shape),
  *                   so the queue joins the fingerprint for this arm. The whole
  *                   queue, not just the asking seat's slice: `triggerOrderedSeats`
@@ -372,7 +372,7 @@ export function apply(
   opts: { frames?: boolean } = {},
 ): ApplyResult {
   if (state.phase === 'gameover') throw new IllegalAction('the game is over');
-  // R154: only on the path the seat-aware gate deliberately opens. A concede
+  // CR D2.1d: only on the path the seat-aware gate deliberately opens. A concede
   // is exempt — it ends the game, so there is no later answer to protect.
   const guard = state.decision && action.type !== 'concede'
     && !decisionBlocks(state, action.seat) ? pendingFingerprint(state) : null;
@@ -389,7 +389,7 @@ export function apply(
   if (guard !== null && e.s.phase !== 'gameover' && pendingFingerprint(e.s) !== guard) {
     // The draft is discarded by throwing: the caller keeps `state`, so the
     // clobbered decision never existed. This is the ONLY thing standing
-    // between R154's permissive gate and one seat's action destroying the
+    // between CR D2.1b's permissive gate and one seat's action destroying the
     // other's open question in a slot that holds exactly one.
     const err = new IllegalAction(
       `that would disturb the decision pending for ${e.pname(state.decision!.seat)}`
@@ -406,7 +406,7 @@ export function apply(
 }
 
 /**
- * R313 — NO ACTION ENDS WITH A DEAD UNIT STANDING.
+ * CR 713.3 — NO ACTION ENDS WITH A DEAD UNIT STANDING.
  *
  * `checkDeaths` runs inside `settle()`, and most actions reach a settle — but
  * not every route that changes a unit's defense does. The turn flip is the one
@@ -443,15 +443,15 @@ export function replay(seed: number, actions: Action[], names?: [string, string]
 // ── dispatch ──────────────────────────────────────────────────────────
 
 function dispatch(e: E, action: Action): void {
-  // R286: whose crank turn this is. Set before ANY of the gates below, because
+  // CR 507.5a: whose crank turn this is. Set before ANY of the gates below, because
   // a refused action must still leave the field consistent with the draft it
   // was refused on — and set unconditionally, because `decide` is the one
   // action that is allowed through a foreign question and is exactly the case
   // the seat-aware settle has to tell apart. See `E.acting`.
   e.acting = action.seat;
-  // R65: conceding is the one thing you may always do — including while the
+  // CR 104.4a: conceding is the one thing you may always do — including while the
   // pending decision is the reason you want to stop.
-  // R154: `decisionBlocks`, not a bare `e.s.decision` — a question that is not
+  // CR D2.1b: `decisionBlocks`, not a bare `e.s.decision` — a question that is not
   // yours, inside a hidden simultaneous segment, is not your business and must
   // not freeze you. See its doc block for the three ways it still does block,
   // and apply()'s after-gate for what stops you clobbering it.
@@ -489,7 +489,7 @@ function dispatch(e: E, action: Action): void {
     case 'graft': return doGraft(e, action.seat, action.from, action.index, action.hostId, action.position);
     case 'declareAttack': return doDeclareAttack(e, action.seat, action.columns, action.spellTokens ?? []);
     case 'declareBlocks':
-      // R87: the tokens ride out with the counterattackers, so they are the
+      // CR 610.3: the tokens ride out with the counterattackers, so they are the
       // same list to everything downstream — `send` has always carried them,
       // `spellTokens` is the field the client can SEE (types.ts).
       return doDeclareBlocks(e, action.seat, action.blocks,
@@ -569,7 +569,7 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
-  // R299: a Prismite or a Shard is a resource too — "Yep you can grab
+  // CR 106.6a: a Prismite or a Shard is a resource too — "Yep you can grab
   // prismites. If you meant shards technically yes you could" (Caleb
   // 2025-05-09). Any game can make either, whatever its elements.
   e.need(element === 'prismite' || element === 'shard' || (e.s.elements as string[]).includes(element),
@@ -611,10 +611,10 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
  * drop the bonus for wood/metal/light/dark. Do not "implement" those faces;
  * the conformance sweep in `12-fire-a.test.ts` fails loudly if anyone does.
  *
- * TWO CALLERS as of R132: a plain activation, and a prismite being spent —
+ * TWO CALLERS (CR 106.8c): a plain activation, and a prismite being spent —
  * whose printed text ends "then activate it", so the bonus is owed there too.
- * (This comment used to read "ONE CALLER, by R116: an exchange is not an
- * activation", which the owner reversed on playtest report #92.) */
+ * (This comment used to say there was ONE CALLER, on the old ruling that an exchange is not an
+ * activation, which the owner reversed on playtest report #92.) */
 function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
   if (kind === 'prismite' || kind === 'shard') return;
   if (e.affinity(seat, kind) < 3) return;
@@ -636,7 +636,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');
   r.kind = element;
   e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element} resource.`, { seat, kind: element });
-  // R132 — THE AFFINITY SHARD IS OWED. This is the reversal of R116, and the
+  // CR 106.8c — THE AFFINITY SHARD IS OWED. This is the reversal of the earlier exchange ruling, and the
   // card's own text is the argument (owner, playtest report #92):
   //
   //   "Erase me: Create a non-prismite resource, THEN ACTIVATE IT. Do this
@@ -645,7 +645,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   //
   // So the second half of a prismite's line IS an activation of the new
   // resource, and the Manual p.18 bonus pays out on activating your third of
-  // an element however that activation came about. R116 read the operation as
+  // an element however that activation came about. The earlier ruling read the operation as
   // an EXCHANGE — a later mutation of an already-activated resource — and
   // reasoned from that model rather than from the card. The engine had
   // already disagreed with itself: the line above fires a 'resourceActivated'
@@ -660,7 +660,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
 }
 
 /**
- * R65: concede. The one action with no timing, no priority and no phase — a
+ * CR 104.4, 104.4a: concede. The one action with no timing, no priority and no phase — a
  * player may give up whenever the game is still going, including while a
  * decision they do not want to answer is pending. It ends the game exactly as
  * a lethal blow does (winner set, phase 'gameover', a 'gameOver' event), so
@@ -677,7 +677,7 @@ function doDonePlanning(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
-  // R39: debt is paid HERE — the last thing in the resource step. planningDone
+  // CR 502.4a: debt is paid HERE — the last thing in the resource step. planningDone
   // is set first on purpose: every resource action (recycleForResource,
   // activateResource, exchangePrismite) requires !planningDone[seat], so by
   // the time the mana leaves it is structurally impossible to activate more.
@@ -698,9 +698,9 @@ function doDoneHaste(e: E, seat: Seat): void {
 function timingAllowsDeploy(c: CardDef): boolean { return c.timing === 'deploy' || c.timing === 'haste'; }
 
 /** targeted casts need at least one candidate up front; a spell with a
- * bracketed cast cost (R35/R49) needs the cost to be payable — the cost is
+ * bracketed cast cost (CR 702.4a) needs the cost to be payable — the cost is
  * part of casting, so with nothing to sacrifice / discard, too little life, or
- * (R49) not enough life to SURVIVE paying, the cast is ILLEGAL. A printed
+ * (CR 111.6b) not enough life to SURVIVE paying, the cast is ILLEGAL. A printed
  * "[Gain N debt]" line (Printed.gainDebt, Hyper Beam) is a real cast cost too,
  * and one that is always payable. */
 function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | 'cache' | 'bin' = 'hand'): boolean {
@@ -711,8 +711,8 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   const eff = c.spellEffect;
   if (!eff) return true;
   if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, reserve)) return false;
-  // an "up to N" spec (min 0) may legally be cast at nothing. R58/R64: each
-  // slot is judged by its own kind and restriction. R323: EVERY required slot
+  // an "up to N" spec (min 0) may legally be cast at nothing. CR 110.3: each
+  // slot is judged by its own kind and restriction. CR 110.7: EVERY required slot
   // (below `min`), not just the first — Fight with no second unit and Tidal
   // Reversion with one side empty are not castable (RAQ, Target requirements).
   if (eff.targets && (eff.targets.min ?? 1) > 0
@@ -720,8 +720,8 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   return true;
 }
 
-/** R301: the prophecy banner's cost — <mana> with <pips> affinity, exactly
- * like Ambush below. R42 said the banner was "plain mana, no affinity" and
+/** CR 803.7d: the prophecy banner's cost — <mana> with <pips> affinity, exactly
+ * like Ambush below. An old ruling said the banner was "plain mana, no affinity" and
  * that was simply false: every one of the ten printed banners carries pips,
  * and the claim had been read off a transcription that lost all ten of them.
  *
@@ -746,7 +746,7 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
   return true;
 }
 
-/** R311/R303: the Ambush line's bill out of a SOURCE — the hand pays it in
+/** CR 803.6i: the Ambush line's bill out of a SOURCE — the hand pays it in
  * full (`canPayAmbush`), a glimpsed cache entry pays its mana ignoring the
  * pips, a fulfilled prophecy pays nothing. Shared by `doAmbush` and the offer
  * (`pushSourcePlays`), so the two cannot disagree about a price. */
@@ -763,15 +763,15 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number,
   return {
     id: e.s.nextId++, kind: c.kind, card: c.name, label: c.name,
     controller: seat, region, negated: false, parts,
-    // R111: a FREE release (fulfilled prophecy) casts an X spell for X = 0 —
+    // CR 702.6c: a FREE release (fulfilled prophecy) casts an X spell for X = 0 —
     // "for free" waives the whole mana cost, X included, so there is no X
     // to choose and collectX has nothing to ask (Bena 2026-08-23, the Magic
     // rule). An X that is a bracketed additional cost is not this X.
     ...(fixedX !== undefined ? { x: fixedX } : {}),
-    // R49: the zone this card is being played out of, carried into the
+    // CR 410.6: the zone this card is being played out of, carried into the
     // 'spellPlayed' / 'spawned' events (Proph, Stalwart Sentinel)
     ...(from ? { from } : {}),
-    // R96: "If you do, they gain {p}unstable until regroup." A STAMP taken at
+    // CR 803.8c: "If you do, they gain {p}unstable until regroup." A STAMP taken at
     // the moment of playing, not a property of the zone — the card is Unstable
     // even after the permission that let it out of the bin has lapsed.
     ...(unstable ? { unstable: true } : {}),
@@ -781,9 +781,9 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number,
 /**
  * The phase/timing gate every "play this card" shares, whatever zone the card
  * comes from. `timing` is the timing the card is played AT — the card's
- * printed timing on every route, cache releases included (R42/R277: a
+ * printed timing on every route, cache releases included (CR 803.7i: a
  * fulfilled prophecy is played "as if it were in your hand", so it is free,
- * not early). It is still a parameter because an R97 haste GRANT and the R123
+ * not early). It is still a parameter because a CR 803.2b haste GRANT and the CR 504.7
  * erase-funded route widen the window without changing the printed timing.
  * `take` pulls the card out of its zone and `pay` pays for it; both run only
  * once the play is known to be legal.
@@ -792,14 +792,14 @@ function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
   take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
   unstable = false, fixedX?: number,
-  // R123: this play is funded by ERASING the grantor at `index` in seat's own
+  // CR 504.7: this play is funded by ERASING the grantor at `index` in seat's own
   // bin (Writhing Host). Only doPlayCard's haste-step route ever passes it —
   // it gates on the haste step being live — so the other branches never see
   // one; the erase is paid in the planning branch with the play's other costs.
   binErase?: { index: number },
 ): void {
   const canCast = (region: number) => castable(e, c, region, seat, from);
-  /** R49: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
+  /** CR 112.14c: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
    * additional CAST cost — taken here, with the rest of the payment, before
    * the item exists. A negated Hyper Beam therefore still cost its caster the
    * debt, which is the whole point of a cost. It applies on every route into
@@ -812,16 +812,17 @@ function playAtTiming(
       e.gainDebt(seat, c.gainDebt);
     }
   };
-  /** R122: an imposed "[Sacrifice a unit]" additional cost radiating from a
+  /** CR 111.10: an imposed "[Sacrifice a unit]" additional cost radiating from a
    * CostMod (Vengeance). Counted at the moment of playing, against the region
    * the card is played into — fixed then, like the rest of the bill — and
    * attached as a pendingCosts atom so the cast window collects it: the PAYER
    * picks the units, before the item reaches the stack, atomically with the
    * play's other costs (canPayCard already gated the play on the count).
    * Deliberately HERE and not in baseItem: a spell token never reaches this
-   * function (its cast is priced in `doCastSpellToken`, R305), and Vengeance
-   * prints "Cards", which a token is not (R133); an Ambush pays its own
-   * printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */
+   * function (its cast is priced in `doCastSpellToken`, CR 702.7a), and Vengeance
+   * prints "Cards", which a token is not (CR 304.2); an Ambush pays its own
+   * printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e
+   * taxes it as a card played (engine differs, CT-243). */
   const mkItem = (region: number): StackItem => {
     const item = baseItem(e, c, seat, region, from, unstable, fixedX);
     const sacs = e.unitsToPlay(seat, c.name, { region });
@@ -829,17 +830,17 @@ function playAtTiming(
     return item;
   };
   if (e.s.phase === 'planning') {
-    // haste step (R18): only haste cards, resolving immediately
+    // haste step (CR 504.2, 504.3): only haste cards, resolving immediately
     e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
     const region = e.homeRegion(seat);
-    // R97: the printed timing is the default, and a PlayPermission granted by
+    // CR 803.2b: the printed timing is the default, and a PlayPermission granted by
     // a unit in this region can widen it ("Each turn, you may play a unit
     // during the mana step as if it had [Haste]" — Dispatch Courier). Gate 3
     // of three; `E.mayPlayAtHaste` is the shared predicate all three call, and
     // it refuses a {Battle} card whatever the grant says (RAQ "[Solved]
     // Dispatch Courier vs Battle Timing").
-    // R123: an erase-funded play (Writhing Host) is its own route — it never
-    // draws on the R97 allowance, so a Courier's free budget is not consulted
+    // An erase-funded play (Writhing Host, CR 504.7) is its own route — it never
+    // draws on the CR 504.7a allowance, so a Courier's free budget is not consulted
     // and not charged for it.
     const granted = timing !== 'haste' && !binErase && e.mayPlayAtHaste({ seat, card: c, from, region });
     e.need(timing === 'haste' || granted || binErase !== undefined, 'only haste cards during the haste step');
@@ -853,14 +854,14 @@ function playAtTiming(
       e.ev('info', `${c.name} is played during the haste step as if it had [Haste].`,
         { seat, card: c.name });
     }
-    // R123: the grant's price — the grantor leaves the BIN for the ERASED
+    // CR 504.7: the grant's price — the grantor leaves the BIN for the ERASED
     // pile, paid here with the play's other costs (never before the play is
     // known to be legal, so a refused play cannot touch the bin). The
     // 'erased' event is what routes the card into the public erased pile
-    // (E.ev's R65 hook).
+    // (E.ev's CR 407.1 hook).
     if (binErase) {
-      // R124: the exit goes through THE choke point, so 'leftBin' fires for
-      // the grantor. The 'erased' ANNOUNCE below is still what feeds the R65
+      // CR 405.7: the exit goes through THE choke point, so 'leftBin' fires for
+      // the grantor. The 'erased' ANNOUNCE below is still what feeds the CR 407.1
       // public pile — once; removeFromBin itself never touches the pile.
       const grantor = e.removeFromBin(seat, binErase.index, 'erased')!;
       e.ev('erased',
@@ -876,7 +877,7 @@ function playAtTiming(
     take();
     payAll();
     /**
-     * R286: `'push'` — A DEPLOYMENT PLAY GOES ON A STACK, like any other play.
+     * CR 507.5: `'push'` — A DEPLOYMENT PLAY GOES ON A STACK, like any other play.
      *
      * The owner, 2026-09-01: *"It does get the stack. But it's an isolated
      * stack just for the person in that region … the two players are,
@@ -884,10 +885,10 @@ function playAtTiming(
      * rare to matter, which is why I've never noticed before that it's not
      * using the stack. But it does need to."*
      *
-     * ⚠ THIS LINE SAID `'resolve'` UNTIL R286, AND THE COMMENT THAT DEFENDED
+     * ⚠ THIS LINE SAID `'resolve'` UNTIL DEPLOYMENT GOT ITS STACK (CR 507.5), AND THE COMMENT THAT DEFENDED
      * IT WAS HALF RIGHT. Routing the play through the stack was tried for
      * CT-176 and reverted on a real measurement: `settle()` refused to drain
-     * while ANY decision was open (the R154 gate), and deployment is
+     * while ANY decision was open (the decision gate), and deployment is
      * SIMULTANEOUS, so one seat's pending question froze the other seat's play
      * — measured on saved game DQVZ, where Ben's Eldritch Dreamtender waited
      * behind Rashi's Floral Singularity X question and spawned in the wrong
@@ -927,9 +928,9 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
 }
 
 /**
- * R311: THE ONE PLAY PATH for a card out of the hand OR the cache — every mode
- * (the plain play, [Battle] Ambush, "Discard me", the R97 haste grant, the
- * R123 erase-funded play) for both zones. `doPlayCard` and `doPlayCached` are
+ * CR 403.3b: THE ONE PLAY PATH for a card out of the hand OR the cache — every mode
+ * (the plain play, [Battle] Ambush, "Discard me", the CR 702.2d haste grant, the
+ * CR 504.7 erase-funded play) for both zones. `doPlayCard` and `doPlayCached` are
  * the two action shapes' front doors and nothing more.
  *
  * Owner, report #195 (2026-10-04): *"The cache functions 100% like the hand
@@ -938,15 +939,15 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
  * every mode had its own hand-only copy of this function; one copy per mode
  * is how a mode got left behind each time a cache route was added.
  *
- * What the zone still decides, each derived from card data or from R303 and
+ * What the zone still decides, each derived from card data or from CR 403.3a, 403.3c and
  * never from a name list:
  *  - PERMISSION and PRICE: `sourcePrice`. A cache entry with no live
  *    permission (expired glimpse, unfulfilled prophecy) is no source at all;
  *    a fulfilled prophecy plays FREE, a glimpse pays the mana ignoring
- *    affinity (R42/R45/R303). The hand pays in full.
+ *    affinity (CR 803.7h, 403.3c). The hand pays in full.
  *  - "Discard me" is hand-only: discarding is a hand action, and a cached
- *    card is not in your hand (R311).
- *  - R100's "I can't be played from your hand" (Calming Force) is read
+ *    card is not in your hand (CR 403.4).
+ *  - "I can't be played from your hand" (Calming Force, CR 402.6) is read
  *    exactly as printed: it refuses the HAND, so it does not refuse the cache.
  */
 function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
@@ -954,7 +955,7 @@ function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
   const name = zonePeek(e, seat, from, index)!;
   const c = e.card(name);
   const cc = from === 'cache' ? e.cache(seat)[index]! : undefined;
-  // R303: permission first. Always granted for the hand; the cache's is the
+  // CR 403.3a: permission first. Always granted for the hand; the cache's is the
   // same predicate the mod path and every offer loop read.
   const price = sourcePrice(e, seat, from, index);
   e.need(price, 'you have no permission to play that cached card');
@@ -966,15 +967,15 @@ function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
   // a cache release names no other mode (the hand's shape keeps its old
   // leniency: a logged playCard is never reinterpreted)
   e.need(from === 'hand' || mode === undefined, 'no such play mode');
-  // R100: "I can't be played from your hand" (Calming Force). Checked here and
+  // CR 702.2b: "I can't be played from your hand" (Calming Force). Checked here and
   // nowhere near playAtTiming, because it is about the ZONE, not the timing —
   // and the two alternative play MODES above are deliberately upstream of it:
   // Ambush and "Discard me" are their own printed play modes with their own
   // cost lines, and no card yet prints both this restriction and one of them.
-  // R311: the zone it names is the HAND, so a cached copy is playable.
+  // CR 402.6: the zone it names is the HAND, so a cached copy is playable.
   if (from === 'hand') e.need(!c.noPlayFromHand, `${c.name} can't be played from your hand`);
   e.need(sourceAffordable(e, seat, name, price!), 'cannot pay for that');
-  // R123: a play funded by ERASING a bin grantor (Writhing Host). The haste
+  // CR 504.7: a play funded by ERASING a bin grantor (Writhing Host). The haste
   // step is the only window the grant opens, so anything else is refused up
   // front and playAtTiming's other branches never see a grantor. The action
   // carries no bin index — the grantor is re-found here, at apply time,
@@ -1002,21 +1003,20 @@ function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
       }
     },
     from, false,
-    // R111: free waives the mana cost entirely — X included (see baseItem)
+    // CR 702.6c: free waives the mana cost entirely — X included (see baseItem)
     free && c.mana === 'X' ? 0 : undefined,
     binErase);
 }
 
 /**
- * R42/R301: prophesy — cache a card with a printed prophecy banner, paying the
+ * CR 803.7: prophesy — cache a card with a printed prophecy banner, paying the
  * banner's cost. DEPLOYMENT ONLY (Caleb 2025-05-09: "Only during deployment").
- * The cost is mana PLUS affinity, like every other cost in the game: R42 said
- * otherwise for a year, on the strength of a transcription in which all ten
- * printed banners had lost their pips (Bena 2026-09-20, R301). The mana is
+ * The cost is mana PLUS affinity, like every other cost in the game: an earlier reading said otherwise for a year on the strength of a transcription in which all ten
+ * printed banners had lost their pips (Bena 2026-09-20). The mana is
  * spent and the affinity merely required, so this still pays through
  * payMana() — `canPayProphecy` is what gates the pips.
  *
- * R277: a banner whose condition prints a trailing [Haste] marker may ALSO be
+ * CR 504.9: a banner whose condition prints a trailing [Haste] marker may ALSO be
  * prophesied during the haste step — the printed exception, derived from the
  * condition text. Gate 2 of two; `E.mayProphesy` is the predicate this and
  * `pushProphesies` both call, so the offer and the refusal cannot drift.
@@ -1025,7 +1025,7 @@ function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
  * be prophesied from your bin" (Angel of Anguish, CardBehavior.prophesyFromBin).
  * No card may be prophesied from the bin without that text.
  *
- * R308: …or 'cache', for a cached card under a LIVE GLIMPSE permission. A
+ * CR 803.7c: …or 'cache', for a cached card under a LIVE GLIMPSE permission. A
  * glimpse lets you play the card "as if it was in your hand", and from the hand
  * it could be prophesied (Bena 2026-10-01, report on room FXAE: a glimpsed
  * Vengeance could not be). The card does not move: the prophecy is attached to
@@ -1045,9 +1045,9 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin' | 'cache', index: num
   e.need(e.mayProphesy(seat, c), 'prophesying is a deployment action');
   e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');
   e.need(canPayProphecy(e, seat, banner), 'cannot pay the prophecy cost');
-  if (from === 'bin') e.removeFromBin(seat, index, 'prophesied');   // R124
+  if (from === 'bin') e.removeFromBin(seat, index, 'prophesied');   // CR 405.7
   else zone.splice(index, 1);
-  // R301: the MANA is spent, the affinity is only required — the same shape
+  // CR 803.7d: the MANA is spent, the affinity is only required — the same shape
   // every other cost in the game has, and the reason this is still payMana().
   e.payMana(seat, banner.mana);
   const ev = e.ev('prophesied',
@@ -1058,7 +1058,7 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin' | 'cache', index: num
   e.settle();
 }
 
-/** R308: prophesy a GLIMPSED card where it stands in the cache. */
+/** CR 403.8: prophesy a GLIMPSED card where it stands in the cache. */
 function doProphesyFromCache(e: E, seat: Seat, index: number): void {
   const cc = e.cache(seat)[index];
   e.need(cc !== undefined, 'no such cached card');
@@ -1080,7 +1080,7 @@ function doProphesyFromCache(e: E, seat: Seat, index: number): void {
 }
 
 /**
- * R42/R45: play a card out of your cache. Permission is the whole point — a
+ * CR 803.7h, 403.3a, 403.3c: play a card out of your cache. Permission is the whole point — a
  * cached card with neither a fulfilled prophecy nor a live glimpse stamp
  * cannot be played at all (Caleb 2024-12-03).
  *
@@ -1090,11 +1090,11 @@ function doProphesyFromCache(e: E, seat: Seat, index: number): void {
  *
  * In both cases normal TIMING applies — the card is played "as if it were in
  * your hand", so a unit still needs deployment and a {Battle} spell still
- * needs battle (Caleb 2025-12-28). R277: a trailing [Haste] on the banner is
+ * needs battle (Caleb 2025-12-28). CR 504.9a: a trailing [Haste] on the banner is
  * NOT an exception to that; it widens the PROPHESY window (E.mayProphesy).
  * This paragraph used to say both things, two lines apart.
  *
- * R311: and every MODE the hand has, through `doPlayFrom` — the same function
+ * CR 403.3b: and every MODE the hand has, through `doPlayFrom` — the same function
  * `doPlayCard` calls. `mode: 'ambush'` and `eraseGrant` are the optional
  * fields that carry the hand's alternative modes onto this action shape.
  */
@@ -1103,7 +1103,7 @@ function doPlayCached(e: E, seat: Seat, index: number, mode?: 'ambush', eraseGra
   doPlayFrom(e, seat, 'cache', index, mode, eraseGrant);
 }
 
-/** R96: the cards a bin-play permission reaches. "You may play SPELLS from
+/** CR 405.9: the cards a bin-play permission reaches. "You may play SPELLS from
  * your bin" — a spell UNIT is one too: playing it casts the spell and then
  * spawns the body, which is why `isSpellCard` in batch-fire-a reads the same
  * way. Units, resources and anything else stay where they are. */
@@ -1112,7 +1112,7 @@ function binPlayable(c: CardDef): boolean {
 }
 
 /**
- * R96: play a spell out of your own BIN, under a permission granted this
+ * CR 405.9: play a spell out of your own BIN, under a permission granted this
  * battle ("In this battle, you may play spells from your bin. If you do, they
  * gain {p}unstable until regroup." — Abyssal Evocation).
  *
@@ -1124,47 +1124,47 @@ function binPlayable(c: CardDef): boolean {
  *
  * ⚠ TIMING IS RESTRICTIVE, and deliberately: `playAtTiming` applies the card's
  * PRINTED timing, so only {Battle} spells in your bin are playable and a bin
- * full of deploy-timing spells is inert under this card. That is R42/R45's
+ * full of deploy-timing spells is inert under this card. That is CR 403.3d's
  * answer to the analogous CACHE question — "normal TIMING applies — the card
  * is played 'as if it were in your hand' … (Caleb 2025-12-28)" — applied here
  * because nothing says otherwise. The permissive reading would need an
- * explicit override; flagged in R96 rather than assumed.
+ * explicit override; CR 702.2a gives none (a permission never waives timing).
  */
 function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   const name = e.player(seat).bin[binIndex];
   e.need(name !== undefined, 'no such card in your bin');
   const c = e.card(name);
-  // "IN THIS BATTLE": no battle, no R96 permission — which is also why the
+  // "IN THIS BATTLE": no battle, no blanket bin permission — which is also why the
   // grant's region comes from the battle rather than from the seat's home.
   const region = e.s.battle?.region;
   const viaBlanket = region !== undefined && e.mayPlaySpellsFromBin(seat, region) && binPlayable(c);
-  // R197: the SINGLE-CARD grant, "until regroup" (Spell Excavation). Same
+  // The SINGLE-CARD grant (CR 405.9), "until regroup" (Spell Excavation). Same
   // permission layer, same {Unstable} clause, same printed timing — it differs
-  // from R96's blanket grant only in naming one card and in outliving this
+  // from Abyssal Evocation's blanket grant only in naming one card and in outliving this
   // region's battle. See E.mayPlayCardFromBin.
   const viaCard = region !== undefined && !viaBlanket
     && e.mayPlayCardFromBin(seat, region, name) && binPlayable(c);
   const viaGrant = viaBlanket || viaCard;
-  // R123: `playsFromBin` is the card's OWN printed permission (Trench
+  // CR 405.9: `playsFromBin` is the card's OWN printed permission (Trench
   // Stalker) — no grant needed, and printed timing then does the gating
   // through playAtTiming (a {Battle} card still needs battle, exactly as it
-  // would from the cache, R42/R45).
+  // would from the cache, CR 403.3d).
   e.need(viaGrant || !!c.playsFromBin, 'you have no permission to play cards from your bin');
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
-    () => { e.removeFromBin(seat, binIndex, 'played'); },   // R124
+    () => { e.removeFromBin(seat, binIndex, 'played'); },   // CR 405.7
     () => {
       e.payCard(seat, name);
-      // R197: "target spell" is singular — spend the grant as the play
+      // "target spell" is singular — spend the grant as the play
       // commits, so a second copy of the same name still in the bin is not
       // carried along by a permission that named one card.
       if (viaCard) e.useBinCardPlay(seat, name);
-      // R96 vs R123 on {Unstable}: the stamp is the GRANTING card's own text
+      // {Unstable} on a bin play (CR 405.9a): the stamp is the GRANTING card's own text
       // ("If you do, they gain {p}unstable until regroup" — Abyssal
       // Evocation / Spell Excavation), NOT a fact about bins. The Manual's
       // blanket Unstable rule is about MODDED cards (p.35). A card playing
       // itself out under its own `playsFromBin` line prints no such clause,
-      // so it arrives stable — documented in R123.
+      // so it arrives stable — documented in CR 405.9a.
       e.ev('info', viaGrant
         ? `${name} is played from ${e.pname(seat)}'s bin — it is Unstable until regroup.`
         : `${name} is played from ${e.pname(seat)}'s bin — its own text allows it.`,
@@ -1175,9 +1175,9 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
 
 /** [Battle] Ambush (Manual p.40): play the unit during battle as an effect —
  * "Recall target ally, put me into their position in play." Pays the ambush
- * cost, uses the stack, negatable; fizzles → the ambusher is binned (R22).
+ * cost, uses the stack, negatable; fizzles → the ambusher is binned (CR 803.6f).
  *
- * R311: out of the hand OR the cache. From the cache it is priced by
+ * CR 403.3b: out of the hand OR the cache. From the cache it is priced by
  * `sourcePrice` exactly as every other cache play is: a fulfilled prophecy
  * ambushes FREE, a glimpse pays the ambush line's mana ignoring its affinity. */
 function doAmbush(e: E, seat: Seat, from: 'hand' | 'cache', index: number, c: CardDef, price: SourcePrice): void {
@@ -1190,17 +1190,17 @@ function doAmbush(e: E, seat: Seat, from: 'hand' | 'cache', index: number, c: Ca
     id: e.s.nextId++, kind: 'ambush', card: c.name,
     label: `${c.name} (Ambush)`, controller: seat, region,
     negated: false, parts: [{ effectKey: `ambush:${c.name}`, targets: [] }],
-    from,   // R49: an Ambush is the card being played, out of the zone it is in
+    from,   // CR 410.6: an Ambush is the card being played, out of the zone it is in
   };
-  // R265: ASK THE SPEC THE EFFECT WILL ACTUALLY USE. This used to hand-build
+  // ASK THE SPEC THE EFFECT WILL ACTUALLY USE. This used to hand-build
   // `{ what: 'allyUnit', prompt: '' }`, which agrees with `ambushEffect()`'s
-  // generated spec only because that spec has no `restrict` today. R64/R65's
-  // whole shape is that the candidate menu, `castable` and `canFillSlot` must
+  // generated spec only because that spec has no `restrict` today. The restriction seam's
+  // (CR 110.3) whole shape is that the candidate menu, `castable` and `canFillSlot` must
   // ask ONE predicate; a fourth copy of the question that happens to agree is
   // the seam, not the exception to it.
   e.need(e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
     region, undefined, seat).length > 0, 'no ally to ambush');
-  zoneTake(e, seat, from, index);   // R311: never a bare hand.splice
+  zoneTake(e, seat, from, index);   // never a bare hand.splice
   if (price.free) {
     e.ev('info', `${c.name} ambushes out of ${e.pname(seat)}'s cache for FREE — its prophecy is fulfilled.`,
       { seat, card: c.name });
@@ -1226,7 +1226,7 @@ function canPayDiscardMe(e: E, seat: Seat, c: CardDef): boolean {
 }
 
 /**
- * R40: the "Discard me" play mode (Dropslime's "1 Discard me", Nothyr's
+ * CR 111.12: the "Discard me" play mode (Dropslime's "1 Discard me", Nothyr's
  * "2 [d] Discard Me. {Battle}") — pay the printed cost line, discard the card
  * from your hand, and the resulting TRASH fires the card's own "when I am
  * trashed" trigger. Modelled on Ambush (doAmbush): an alternative cost and an
@@ -1236,7 +1236,7 @@ function canPayDiscardMe(e: E, seat: Seat, c: CardDef): boolean {
  * the stack (in battle) or resolves immediately (in deployment) is the trash
  * TRIGGER, through the ordinary trigger machinery.
  *
- * R65 — TIMING. Discarding is not playing (R37): the card never goes to the
+ * CR 111.12a — TIMING. Discarding is not playing: the card never goes to the
  * stack, never spawns, and the only thing that reaches anyone is its own
  * "when I am trashed" trigger. So the mode is available at INSTANT SPEED —
  * during battle, whenever you hold priority — as well as during your own
@@ -1247,7 +1247,7 @@ function canPayDiscardMe(e: E, seat: Seat, c: CardDef): boolean {
  * has to work like that, otherwise the alternate cost doesn't make sense
  * (since you don't have opponent's during deployment)." Exactly so — Sacrifice
  * Dude's payoff is "each opponent sacrifices a nontoken unit", and in
- * deployment the opponent is not in your region at all (R25), so the
+ * deployment the opponent is not in your region at all (CR 601.4d), so the
  * deployment-only reading made the mode unusable on its own card.
  */
 function doDiscardMe(e: E, seat: Seat, handIndex: number, c: CardDef): void {
@@ -1268,7 +1268,7 @@ function doDiscardMe(e: E, seat: Seat, handIndex: number, c: CardDef): void {
 }
 
 /**
- * R16/R81: Burst casts all your burst tokens OF THE SAME NAME in this region
+ * CR 803.5, 304.11g: Burst casts all your burst tokens OF THE SAME NAME in this region
  * at once, in deterministic id order. Playtest VEAV: "the game is trying to
  * force me to cast my Fireball here, but Burst only applies to spell tokens
  * with the same NAME — I should be allowed to play Poison, let it resolve,
@@ -1277,7 +1277,7 @@ function doDiscardMe(e: E, seat: Seat, handIndex: number, c: CardDef): void {
  * §spell tokens). This used to sweep every burst token you controlled here,
  * which fused a Poison and a Fireball into one uninterruptible group.
  *
- * Shared by the cast and its offer (R305), so the group that is priced is the
+ * Shared by the cast and its offer (CR 702.7a), so the group that is priced is the
  * group that is cast.
  */
 function spellTokenGroup(e: E, seat: Seat, tok: Entity): Entity[] {
@@ -1287,19 +1287,19 @@ function spellTokenGroup(e: E, seat: Seat, tok: Entity): Entity[] {
 }
 
 /**
- * R305 — what casting a spell-token group costs `seat` right now. The owner,
+ * CR 702.7a — what casting a spell-token group costs `seat` right now. The owner,
  * 2026-09-28, asked "Should casting a spell token count as playing a spell?":
  * *"Yes, taxed + counted."* So a token is priced by `E.manaToPlay` at
  * `purpose: 'play'`, exactly as a spell card is, and pays every modifier whose
  * printed noun is "spell(s)" (The Silent, Tranquility, Stasis Sentry) and none
  * whose noun is "card(s)" (Arbiter of Armistice, Vengeance, Deferral Drone —
- * a token is not a card, R133). The modifiers themselves decide which; this
+ * a token is not a card, CR 304.2). The modifiers themselves decide which; this
  * only asks.
  *
  * Every token of the group is priced HERE, before any of them commits — a
  * {Burst} group is one cast, and a per-token price read after the first commit
  * would see The Silent's counter already bumped by its own group. The mana is
- * the SUM; the life is one entry per token (R60, charged per play).
+ * the SUM; the life is one entry per token (CR 111.10d, charged per play).
  *
  * The token's X is its SIZE, not a cost: it is never passed as `opts.x`
  * (CostOpts.x is the chosen X of an X-COST card). A token's printed mana is 0,
@@ -1307,7 +1307,7 @@ function spellTokenGroup(e: E, seat: Seat, tok: Entity): Entity[] {
  * a token has no cost line to read pips off (its `cost` field is the colour of
  * its frame), and nothing here decided otherwise.
  *
- * The one thing NOT consulted is R122's sacrifice channel. Its only card,
+ * The one thing NOT consulted is CR 111.10's sacrifice channel. Its only card,
  * Vengeance, prints "Cards", so it asks nothing of a token; if a
  * "spells gain [Sacrifice …]" card ever appears, this is where it would be
  * gated and `collectItemCosts` where it would be paid.
@@ -1322,7 +1322,7 @@ function spellTokenBill(e: E, seat: Seat, group: Entity[], region: number): { ma
   return { mana, life };
 }
 
-/** R305: can `seat` pay for the cast `tok` would start in `region`? The offer
+/** CR 702.7a: can `seat` pay for the cast `tok` would start in `region`? The offer
  * side of `doCastSpellToken`'s refusal — the same group, the same bill — so an
  * unaffordable cast is never offered. */
 function canPaySpellToken(e: E, seat: Seat, tok: Entity, region: number): boolean {
@@ -1351,7 +1351,7 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false)
     e.illegal('spell tokens are cast during battle or deployment');
   }
   const group = spellTokenGroup(e, seat, tok);
-  // R305: casting a spell token IS playing a spell, so it pays what the cost
+  // CR 702.7a: casting a spell token IS playing a spell, so it pays what the cost
   // layer says a spell costs. Priced BEFORE anything moves — every token of a
   // {Burst} group at the same instant, so no commit below can bump a counter
   // (The Silent's) between one token's price and the next — and refused
@@ -1364,7 +1364,7 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false)
     e.ev('info', `${e.pname(seat)} pays [${bill.mana}] to cast ${group.length > 1 ? `${group.length} ${c.name} tokens` : c.name}.`,
       { seat, card: c.name, mana: bill.mana });
   }
-  // R60's life half, by the path `payCard` uses for a spell card: charged in
+  // CR 111.10d's life half, by the path `payCard` uses for a spell card: charged in
   // the same breath as the mana, before anything reaches the stack. One charge
   // per token, since each is its own play. (No card taxes a token in life
   // today: Arbiter of Armistice prints "Cards", and a token is not a card.)
@@ -1373,7 +1373,7 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false)
     e.ev('info', `${e.pname(seat)} pays ${life} life to cast ${c.name}.`);
     e.loseLife(seat, life, `${c.name} (added cost)`);
   }
-  // R309: the caster orders the burst — see burstStep
+  // CR 803.5d: the caster orders the burst — see burstStep
   if (ordered && group.length > 1) {
     burstStep(e, seat, region, then, [], group.map(t => t.id));
     e.settle();
@@ -1385,8 +1385,8 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false)
 
 /** one spell token, off the board and into a stack item */
 function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem {
-  // R89: an augment applied in DEPLOYMENT rides the token onto the stack, as
-  // the `item.augments` R79 already built for the battle-time version. Doing
+  // CR 721.4a: an augment applied in DEPLOYMENT rides the token onto the stack, as
+  // the `item.augments` already built for the battle-time version (CR 723.4). Doing
   // it this way rather than teaching resolution about the entity's `mods` is
   // what buys the whole rule for free: `EffectCtx.grantedAttrs`,
   // `E.itemAttrs` and `dischargeItem`'s Unstable erase all read `augments`
@@ -1401,10 +1401,10 @@ function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem 
   for (const m of riding) delete e.s.entities[m.id];
   const item = baseItem(e, e.card(t.card), seat, region);
   item.kind = 'spellToken';
-  // R342: cast from PLAY — not from the hand, so "when you play a unit or
+  // CR 410.6a: cast from PLAY — not from the hand, so "when you play a unit or
   // spell from anywhere other than your hand" (Stalwart Sentinel, Proph)
   // hears it (RAQ "[Solved] Spell Tokens vs Hand", point 1). It is still not a
-  // CARD (R133): 'cardPlayed' is not fired for a token at all.
+  // CARD (CR 304.2): 'cardPlayed' is not fired for a token at all.
   item.from = 'play';
   item.x = t.x;
   item.label = `${t.card} ${t.x ?? ''}`.trim();
@@ -1413,11 +1413,11 @@ function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem 
 }
 
 /**
- * R309 — THE CASTER ORDERS A {BURST}. Owner, 2026-10-01 (report FXAE a86):
+ * CR 803.5d — THE CASTER ORDERS A {BURST}. Owner, 2026-10-01 (report FXAE a86):
  * "it needs to do the same thing as stacking triggers where you click them in
  * the order you want them to resolve NOT in the order you want to put them on
  * the stack". The whole group still goes on at once, before anyone may respond
- * (R16/R81, "all or nothing") — only the order is the caster's now.
+ * (CR 803.5, 304.11g, "all or nothing") — only the order is the caster's now.
  *
  * One token at a time: which resolves next (a `burstPick` decision, answered
  * on the board — skipped when one is left), then that token's targets. Once
@@ -1460,17 +1460,17 @@ const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seven
  * Resolve which ability list an activateAbility action refers to (see
  * `ActivateVia`) — the ACCEPT side of `pushActivatedOptions`.
  *
- * R118: both sides read `E.facesWith(u, 'activated')` and both decide
+ * CR 710.1: both sides read `E.facesWith(u, 'activated')` and both decide
  * "is this the identity face?" with `E.faceName(u)`, so the offer and the
  * accept cannot drift. A face the unit is not wearing is REFUSED here rather
  * than silently resolved off the physical card, which is what would turn a
  * stale action log into a different game.
  *
- * `viaCard` is the card the R9 budget and the effect key are keyed on, and it
+ * `viaCard` is the card the budget and the effect key are keyed on, and it
  * is always a FACE (or a mod's own card) — never `Entity.card`. That is what
  * keeps two faces' [once] abilities in two budgets instead of one.
  */
-/** R328: when the activated text `via` addresses arrived on its unit — an
+/** CR 113.2: when the activated text `via` addresses arrived on its unit — an
  * augment mod's at the mod's arrival, everything else printed (the oldest) */
 function viaStamp(via?: ActivateVia): import('./types.ts').Stamp {
   return via && typeof via === 'object' && 'mod' in via ? E.entityStamp(via.mod) : E.PRINTED;
@@ -1490,8 +1490,8 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
       : { list: getCard(face).augmentText, prefix: 'augment', viaCard: face };
   }
   if ('face' in via) {
-    // R341: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
-    // too — its [Augment] text is the copy's own, keyed (R9) on the mod's card
+    // CR 710.2a: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
+    // too — its [Augment] text is the copy's own, keyed on the mod's card
     e.need(e.facesWith(u, 'activated').includes(via.face)
       || (via.text === 'augment' && e.copiedAugments(u, 'activated').includes(via.face)),
     'that unit does not have that ability');
@@ -1506,15 +1506,15 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
 }
 
 /**
- * R49: every non-mana activation cost an ability can carry, checked as a
+ * CR 111.6: every non-mana activation cost an ability can carry, checked as a
  * GATE — an ability whose cost cannot be paid is neither offered nor accepted.
  * `u` is the source, excluded from a "sacrifice another" count.
  */
 function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, region: number, taxCard: CardName): boolean {
-  // R121: the ability-cost tax (Crevice Lurker) is part of the mana gate —
+  // CR 111.6, 111.10f: the ability-cost tax (Crevice Lurker) is part of the mana gate —
   // an activation that cannot pay printed + tax is neither offered
   // (pushActivatedOptions) nor accepted (doActivateAbility), exactly like a
-  // card play that cannot pay a taxed cost (R59/R49). `taxCard` is the card
+  // card play that cannot pay a taxed cost (CR 111.10, 111.6). `taxCard` is the card
   // the ability is printed on (the face, or the donating mod's card) — the
   // same identity E.payActivationCost later taxes as `item.card`.
   if (e.openMana(seat) < (cost.mana ?? 0) + e.abilityTax(seat, taxCard, region, 'activate').total) return false;
@@ -1522,7 +1522,7 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
   if (cost.discard !== undefined && e.player(seat).hand.length < cost.discard) return false;
   if (cost.sacrificeOther !== undefined
     && e.unitsOf(seat, region)
-      .filter(o => o.id !== u.id && (!cost.sacrificeNontoken || !o.token))   // R196
+      .filter(o => o.id !== u.id && (!cost.sacrificeNontoken || !o.token))   // CR 111.2
       .length < cost.sacrificeOther) return false;
   if (cost.discardOrSacrifice !== undefined) {
     const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;
@@ -1532,13 +1532,13 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
 }
 
 /**
- * R64/R77: everything other than the activation cost that decides whether an
+ * CR 705.3a: everything other than the activation cost that decides whether an
  * ability can be used at all. Three gates, one predicate, called from both
  * `legalActions` (do not offer it) and `doActivateAbility` (refuse it):
  *
- *  - R77: a printed precondition — "Activate this ability only if …";
- *  - R64: a bracketed [cost] on the EFFECT that cannot be paid;
- *  - R64: a mandatory target with nothing legal to aim at.
+ *  - CR 111.7b: a printed precondition — "Activate this ability only if …";
+ *  - CR 705.3a: a bracketed [cost] on the EFFECT that cannot be paid;
+ *  - CR 705.3a: a mandatory target with nothing legal to aim at.
  *
  * All three used to be discovered halfway through: you paid the mana, the
  * ability went on the stack, and the part was silently skipped at resolution.
@@ -1550,13 +1550,13 @@ function abilityUnusable(
   ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen']; cost?: AbilityCost; graftCause?: boolean },
   u: Entity, region: number, taxCard: CardName,
 ): string | null {
-  // R77 first: the precondition is about the source, and a self-sacrificing
+  // CR 111.7b first: the precondition is about the source, and a self-sacrificing
   // ability's cost would otherwise remove the thing the condition asks about
   if (ab.usableWhen && !ab.usableWhen(e, u, seat)) {
     return 'that ability cannot be activated right now';
   }
   const eff = ab.effect;
-  // R196: the ability's OWN fixed mana + R121's activation tax are reserved,
+  // CR 111.6a: the ability's OWN fixed mana + CR 111.10f's activation tax are reserved,
   // because a variable "[x]" castCost is collected before either is charged —
   // so "can you pay [x]" must mean "…on top of what you already owe".
   const manaReserve = ab.cost
@@ -1568,14 +1568,14 @@ function abilityUnusable(
   const graft = graftCostUnpayable(e, seat, ab, u, region, manaReserve);
   if (graft) return graft;
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && !e.requiredSlotsFillable(eff.targets, region, seat, u.id)) {   // R323
+    && !e.requiredSlotsFillable(eff.targets, region, seat, u.id)) {   // CR 110.7
     return 'that ability has nothing it can be used on';
   }
   return null;
 }
 
 /**
- * R334 / CT-216 — Graft 101 point 11: a grafted "[cost]: effect" is not
+ * CR 111.15 / CT-216 — Graft 101 point 11: a grafted "[cost]: effect" is not
  * optional, and "if you can't pay it … the whole Graft Effect won't go on the
  * stack". For an ACTIVATED graft cause that is decided at the gate, before its
  * own activation cost is spent on an effect that cannot happen. A bounded
@@ -1605,11 +1605,11 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   const { list, prefix, viaCard } = activationSource(e, u, via);
   const ability = list?.[abilityIndex];
   e.need(ability && ability.type === 'activated', 'no such activated ability');
-  // R328: stripped text has no activated abilities to activate — and a
+  // CR 712.1a, 712.2: stripped text has no activated abilities to activate — and a
   // stripper takes only text that arrived before it (a mod attached after
   // Suppression Field still works)
   e.need(!E.strippedBy(viaStamp(via), e.strippersOf(u, 'abilities')), 'that unit has lost its abilities');
-  // R269: the offer above skips a NARROWLY suppressed ability, so the accept
+  // CR 712.4: the offer above skips a NARROWLY suppressed ability, so the accept
   // has to as well or `legalActions lied` fires the moment a card names one.
   e.need(!e.abilityIsSuppressed(u, ability!, viaStamp(via)), 'that ability has been switched off');
   let region: number;
@@ -1617,7 +1617,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(u.region === e.s.battle!.region, 'that unit is in another region');
-    // R49: a printed {Battle}/{Deployment} marker on the ABILITY (Grox,
+    // CR 705.2: a printed {Battle}/{Deployment} marker on the ABILITY (Grox,
     // Cadaverous Cultivator) — enforced here, at activation, not at resolution
     e.need(ability.timing !== 'deploy', 'that ability is a deployment ability');
     region = u.region; then = 'push';
@@ -1631,7 +1631,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   }
   const cost = ability.cost;
   e.need(canPayAbilityCost(e, seat, cost, u, region, viaCard ?? e.faceName(u)), 'cannot pay the activation cost');
-  // R334: a grafted [cost] that cannot be paid — asked before composeParts
+  // CR 722.6a: a grafted [cost] that cannot be paid — asked before composeParts
   // spends this activation's bounded graft budgets
   const graftGate = graftCostUnpayable(e, seat, ability, u, region,
     (cost.mana ?? 0) + e.abilityTax(seat, viaCard ?? e.faceName(u), region, 'activate').total);
@@ -1639,10 +1639,10 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
-  // R64: …and only then, whether the effect has anything to spend itself on
+  // CR 705.3a: …and only then, whether the effect has anything to spend itself on
   const unusable = abilityUnusable(e, seat, ability, u, region, viaCard ?? e.faceName(u));
   e.need(!unusable, unusable ?? '');
-  // R118: the log and the stack row name the FACE — the card this unit
+  // CR 710.1: the log and the stack row name the FACE — the card this unit
   // currently IS. For anything not wearing a copy that is `u.card` verbatim,
   // so every existing label is unchanged.
   const faceCard = e.faceName(u);
@@ -1653,7 +1653,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     controller: seat, region,
     negated: false, parts, sourceId: u.id, event: null,
   };
-  // R57: NOTHING is charged here. Every part of the cost rides on the item and
+  // CR 111.7: NOTHING is charged here. Every part of the cost rides on the item and
   // is paid inside the cast window, AFTER the ability's targets are chosen —
   // still before the item reaches the stack, so nobody may respond between
   // cost and effect. This used to pay mana/life/debt and run
@@ -1666,7 +1666,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   if (cost.sacrificeOther) {
     pending.push({
       kind: 'sacrificeOther', n: cost.sacrificeOther,
-      ...(cost.sacrificeNontoken ? { nontoken: true as const } : {}),   // R196
+      ...(cost.sacrificeNontoken ? { nontoken: true as const } : {}),   // CR 111.2
     });
   }
   if (cost.discardOrSacrifice) pending.push({ kind: 'discardOrSacrifice', n: cost.discardOrSacrifice });
@@ -1677,7 +1677,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
 
 // ── mods ──────────────────────────────────────────────────────────────
 
-/** R41: the three zones a mod can be applied from. The cache is one of them —
+/** CR 507.2: the three zones a mod can be applied from. The cache is one of them —
  * "you can augment or graft from cache" (Caleb 2024-12-02) — but it holds
  * CachedCard records rather than bare names, so the zone access goes through
  * these two helpers instead of indexing PlayerState directly. */
@@ -1689,7 +1689,7 @@ function zonePeek(e: E, seat: Seat, from: ModZone, index: number): CardName | un
 
 function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   if (from === 'cache') e.uncache(seat, index);
-  // R124: a bin exit goes through THE choke point so 'leftBin' fires — the
+  // CR 405.7: a bin exit goes through THE choke point so 'leftBin' fires — the
   // old direct `[from].splice` here bypassed it (CARD-TODO #26). This comment
   // used to add "which no reachable card noticed, because Rotling carries no
   // mod symbol". That was true of the CODE and false of the CARD: Rotling
@@ -1702,29 +1702,29 @@ function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   else e.player(seat).hand.splice(index, 1);
 }
 
-/** R303/R311: what using a card out of a source costs — `free` waives the
+/** CR 403.3c: what using a card out of a source costs — `free` waives the
  * mana entirely, `ignoreAffinity` waives the pips only. Hand and bin get
  * neither. It prices a PLAY (every mode) and a MOD alike. */
 interface SourcePrice { free: boolean; ignoreAffinity: boolean }
 
 /**
- * R303/R311: may `seat` use the card at `from`/`index` — play it in any mode,
+ * CR 403.3b, 403.3c: may `seat` use the card at `from`/`index` — play it in any mode,
  * or apply it as a mod — and at what price? `null` is the refusal — there is
  * no such thing as a play or a mod you may make but cannot price.
  *
- * It was `modPrice` until R311, when it became the one permission-and-price
+ * It was `modPrice` until the cache gained every hand mode (403.3b), when it became the one permission-and-price
  * predicate for the PLAY path too (`doPlayFrom`, `doAmbush`, every offer loop
  * via `sources`), so a cache entry's two verbs — play and mod — read one gate.
  *
  * ⚠ THE CACHE IS GATED ON THE SAME PERMISSION AS A PLAY. Being in the cache
- * is not permission to do ANYTHING with a card (R41); the permission is a
+ * is not permission to do ANYTHING with a card (CR 403.3); the permission is a
  * fulfilled prophecy or a live glimpse stamp, and it governs the mod exactly
  * as it governs the play:
  *
  *   prophecy  FREE, affinity ignored — "yes you can graft or augment for free
  *             if the prophecy is completed" (Caleb 2024-12-03). It was paid
  *             for once already, at the banner.
- *   glimpse   the card's own cost, affinity ignored — the same bill R45 sets
+ *   glimpse   the card's own cost, affinity ignored — the same bill CR 801.9e sets
  *             for the play, because the glimpse says "as if it were in your
  *             hand ignoring affinity" and says it about the card, not about
  *             one verb. Owner, 2026-09-20: *"You can graft with glimpsed
@@ -1763,11 +1763,11 @@ function sourcePrice(e: E, seat: Seat, from: ModZone, index: number): SourcePric
     : { free: false, ignoreAffinity: true };
 }
 
-/** R303/R311: can `seat` actually pay `price` for `name`'s own cost line?
+/** CR 403.3c: can `seat` actually pay `price` for `name`'s own cost line?
  * Through `canPayManaOnly` when the affinity is waived, `canPayCard`
  * otherwise, and nothing when it is free — ONE function for the play and the
  * mod, so the cache's two verbs can never disagree about what a card costs.
- * `opts` carries the mod's `purpose: 'mod'` (R37/R59). */
+ * `opts` carries the mod's `purpose: 'mod'` (CR 701.2b). */
 function sourceAffordable(e: E, seat: Seat, name: CardName, price: SourcePrice, opts: CostOpts = {}): boolean {
   if (price.free) return true;
   return price.ignoreAffinity
@@ -1775,20 +1775,20 @@ function sourceAffordable(e: E, seat: Seat, name: CardName, price: SourcePrice, 
     : e.canPayCard(seat, name, opts);
 }
 
-/** R303: `sourceAffordable` for a MOD — priced at `purpose: 'mod'`
- * throughout (R37/R59: applying a mod is not playing). */
+/** CR 720.4b: `sourceAffordable` for a MOD — priced at `purpose: 'mod'`
+ * throughout (CR 701.2b: applying a mod is not playing). */
 function modAffordable(e: E, seat: Seat, name: CardName, price: SourcePrice): boolean {
   return sourceAffordable(e, seat, name, price, { purpose: 'mod' });
 }
 
-/** R311: one card a seat could use out of a source zone, with its R303 price. */
+/** CR 403.3b: one card a seat could use out of a source zone, with its CR 403.3c price. */
 interface Source { from: ModZone; index: number; name: CardName; price: SourcePrice }
 
 /**
- * R311: THE SEAM. Every card `seat` may use out of `zones`, in zone order and
+ * CR 403.3b: THE SEAM. Every card `seat` may use out of `zones`, in zone order and
  * then index order, each with its `sourcePrice`. A cache entry with no live
  * permission (an expired glimpse, an unfulfilled prophecy) is simply not
- * yielded, so no offer loop can forget to ask (R303). Every offer loop that
+ * yielded, so no offer loop can forget to ask (CR 403.3a). Every offer loop that
  * walks the hand walks it through here — the plays (`pushSourcePlays`), the
  * battle augments, the deployment and haste mods — which is what makes "the
  * cache plays like the hand" one fact instead of one fact per mode.
@@ -1805,13 +1805,13 @@ function sources(e: E, seat: Seat, zones: readonly ModZone[]): Source[] {
   return out;
 }
 
-/** R311: the hand and the hand-like zone — the cache, under a live permission. */
+/** CR 403.3b: the hand and the hand-like zone — the cache, under a live permission. */
 function handLikeSources(e: E, seat: Seat, only?: 'hand' | 'cache'): (Source & { from: 'hand' | 'cache' })[] {
   return sources(e, seat, only ? [only] : ['hand', 'cache']) as (Source & { from: 'hand' | 'cache' })[];
 }
 
 /**
- * R95: may `seat` apply `c` as an augment during battle, out of `from`?
+ * CR 723.5: may `seat` apply `c` as an augment during battle, out of `from`?
  *
  * THE ONE PREDICATE. `doAugment` and `legalActions` both call it and neither
  * has its own copy — the fuzzer's "legalActions lied" check has already caught
@@ -1819,18 +1819,18 @@ function handLikeSources(e: E, seat: Seat, only?: 'hand' | 'cache'): (Source & {
  * faster than most things.
  *
  * The base rule is the printed one: a {Virus}, from hand — or from the cache
- * under a live permission, which plays like the hand (R311) — and nothing
+ * under a live permission, which plays like the hand (CR 723.2a) — and nothing
  * else. The permission itself is `sourcePrice`'s job and both callers ask it
  * first; this line only says which ZONES a printed Virus reaches.
- * On top of that sits R95's opt-in permission layer, which today is Rook
+ * On top of that sits CR 720.2b's opt-in permission layer, which today is Rook
  * ("[Augment] You may augment cards from hand and bin during battle as if they
  * were [Virus]") and which the designer is explicit must be opt-in — asked
  * whether an ordinary card grants it, calebgannon: "It shouldn't" … "If it
  * said 'as if it was in your hand' then it could work" → `$card rook` → "Does
  * do that". Rook still sees `from: 'cache'` and still says no: the card
- * prints "hand and bin", and R311 keeps a card's own zone words exactly.
+ * prints "hand and bin", and CR 723.5b keeps a card's own zone words exactly.
  *
- * R311 / report #195 (game KEMX, action 105): this line said
+ * CR 723.2a / report #195 (game KEMX, action 105): this line said
  * `from === 'hand'` alone, so a glimpsed Möbius's Corruption sat in the cache
  * through a whole battle window with its Virus unofferable — while the same
  * card in hand would have been offered. The owner: "The cache functions 100%
@@ -1842,21 +1842,21 @@ function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, regio
 }
 
 /**
- * R95's HASTE-timing sibling: may `seat` apply `c` as a mod (augment OR graft)
- * during the R18 haste step — "[Augment] You can apply other mods during
- * [Haste] as if it was deployment" (Slurpr)?
+ * The Rook rule's HASTE-timing sibling: may `seat` apply `c` as a mod (augment OR graft)
+ * during the haste step — "[Augment] You can apply other mods during
+ * [Haste] as if it was deployment" (Slurpr, CR 504.8a)?
  *
  * THE ONE PREDICATE, exactly as `battleAugmentAllowed` is for the battle
  * window: `doAugment`, `doGraft` and `pushHasteMods` (the legalActions offer)
  * all call this and none has its own copy.
  *
- * ⚠ R228 removed a FOURTH caller and, with it, this predicate's most
+ * ⚠ Making the haste step unconditional (504.5) removed a FOURTH caller and, with it, this predicate's most
  * dangerous job. `E.startHasteStep`'s `canHaste` used to ask it whether the
  * haste step should happen at all — via `E.hasHasteModAvailable`, a copy of
  * `pushMods` kept in step BY HAND — so a board with a Slurpr and a hand of
  * nothing but mods would, if that copy ever fell behind, skip the step
  * outright and make the other three gates unreachable: playtest report #74
- * (R97's `hastePlayAllowance`) in mod form. The step is now unconditional, so
+ * (the haste play allowance) in mod form. The step is now unconditional, so
  * the question is never asked and the hand-maintained copy is gone. Every
  * remaining caller is about the OFFER, where being wrong is visible.
  *
@@ -1869,15 +1869,15 @@ function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, regio
  */
 function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
   kind: 'augment' | 'graft'): boolean {
-  // the R18 haste step, and this seat has not already finished it
+  // the CR 504 haste step, and this seat has not already finished it
   if (e.s.phase !== 'planning' || e.s.hasteDone === null || e.s.hasteDone[seat]) return false;
-  // R12: the grantor has to be in the region the modding happens in, which
+  // CR 101.6: the grantor has to be in the region the modding happens in, which
   // during the haste step is always this seat's home region.
   return e.mayApplyModAtHaste({ seat, card: c, from, region: e.homeRegion(seat), kind });
 }
 
 /**
- * R79: the stack-item kinds a Virus may be augmented onto.
+ * CR 723.4a: the stack-item kinds a Virus may be augmented onto.
  *
  * SPELLS, and only spells. Caleb 2025-04-06 asks and answers exactly this
  * ("can you augment a spell with a virus, such as applying Chitin Shredder as
@@ -1887,30 +1887,31 @@ function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
  *
  * Deliberately NOT here, each for its own reason:
  *  - 'triggered' / 'activated' — an ability is an effect but not a spell, and
- *    it has no card of its own for a mod to sit under. R60 lets you NEGATE
+ *    it has no card of its own for a mod to sit under. CR 700.1 lets you NEGATE
  *    one; that is not the same permission.
  *  - 'virus' — a virus is itself a mod in flight, not a host.
  *  - 'unit' — a {Battle} unit mid-cast. A virus wants to be a mod on the body
  *    it lands on, which is the ordinary augment, available the moment it
- *    spawns; nothing in the rules asks for the mid-cast version. R128 does NOT
+ *    spawns; nothing in the rules asks for the mid-cast version. CR 700.1a does NOT
  *    reopen this: it made a unit on the stack an EFFECT (so it can be negated
  *    and it is a "nonspell effect"), and the same sentence says a unit is not
  *    a SPELL — which is what this set is a list of ("onto a giant fireball
  *    you're casting").
- *  - 'ambush' — an ambusher is a unit played face-down, not a spell, and R22
+ *  - 'ambush' — an ambusher is a unit played face-down, not a spell, and CR 803.6h
  *    only makes it negatable.
  * All four exclusions are ⚠ judgement calls, not sourced answers — see
- * docs/digital-rules.md R79.
+ * CR 723.4e.
  */
 const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);
 
 /**
- * R303/R311: pay for a battle-window Virus augment and say how, exactly as the
+ * CR 723.2a: pay for a battle-window Virus augment and say how, exactly as the
  * deployment branch says it. Both battle branches of `doAugment` (a unit host,
  * a spell on the stack) call this, so the cache's "ignoring affinity" line —
  * the one thing a player cannot read off the board — cannot be said in one
  * and forgotten in the other. Hand and bin pay in full and log nothing extra,
- * which is why a pre-R311 log replays byte for byte.
+ * which is why a log from before the cache gained this route replays byte for
+ * byte.
  */
 function payBattleAugment(e: E, seat: Seat, name: CardName, price: SourcePrice): void {
   if (price.free) {
@@ -1929,24 +1930,24 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   e.need(name !== undefined, `no such card in ${from}`);
   const c = e.card(name);
   e.need(isAugment(name), 'that card is not an augment');
-  // R303: the cache's permission gate, BEFORE the price — an expired glimpse
+  // CR 720.5a: the cache's permission gate, BEFORE the price — an expired glimpse
   // or an unfulfilled prophecy is not a cheaper augment, it is no augment.
   const price = sourcePrice(e, seat, from, index);
   e.need(price, 'you have no permission to use that cached card');
   const free = price!.free;
-  // R37/R59: applying a mod is not PLAYING, so a "spells cost more to play"
+  // CR 701.2b: applying a mod is not PLAYING, so a "spells cost more to play"
   // modifier must not tax it — the cost is looked up with purpose 'mod'.
   e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');
 
-  // R79: a Virus onto a SPELL ON THE STACK ("It's perfectly legal in the game
+  // CR 723.4: a Virus onto a SPELL ON THE STACK ("It's perfectly legal in the game
   // to put the powerful guy onto a giant fireball you're casting"; Caleb
   // 2025-04-06 confirms it, attributes only).
   if (hostStack !== undefined) {
     e.need(hostId === undefined, 'name one host, not two');
     e.need(e.s.phase === 'battle', 'a spell on the stack can only be augmented during battle');
-    // R95: the permission layer, and the ONE predicate legalActions also uses.
-    // R157 §26 / R161 CLOSED the ⚠ OPEN flag that stood here. It said: Rook
-    // says "as if they were [Virus]", and R79 is what a Virus may do to a
+    // CR 723.5: the permission layer, and the ONE predicate legalActions also uses.
+    // A later ruling CLOSED the ⚠ OPEN flag that stood here (CR 723.5a). It said: Rook
+    // says "as if they were [Virus]", and CR 723.4 is what a Virus may do to a
     // spell on the stack, so the permissive reading unlocks this branch too
     // and that is what ships — but if the owner ruled the permission was only
     // about hand-and-bin TIMING, this line would go back to
@@ -1958,18 +1959,18 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');
     const target = e.s.stack.find(it => it.id === hostStack);
-    // R78: `s.stack` and nothing else — an item that is RESOLVING has left the
+    // CR 703.6: `s.stack` and nothing else — an item that is RESOLVING has left the
     // stack and is past being responded to, exactly as it is past negation.
     e.need(target !== undefined && STACK_VIRUS_HOSTS.has(target.kind),
       'no such spell on the stack');
     e.need(target!.region === e.s.battle!.region, 'that spell is in another region');
-    // R95: zoneTake, NOT hand.splice. Once the battle window can be entered
+    // CR 723.5b: zoneTake, NOT hand.splice. Once the battle window can be entered
     // from the bin, a hardcoded `hand.splice(index)` deletes an unrelated card
     // out of the hand and leaves the bin card in place — the single most
     // dangerous line in this change, in both branches.
     zoneTake(e, seat, from, index);
-    // R37/R59: a Virus augment is a mod. R303: and a free one is free here too
-    // — a fulfilled prophecy's Virus out of the cache (R311) reaches this with
+    // CR 701.2, 701.2b: a Virus augment is a mod. CR 720.4b: and a free one is free here too
+    // — a fulfilled prophecy's Virus out of the cache (CR 403.3c) reaches this with
     // `free` set, and the price must not depend on which branch.
     payBattleAugment(e, seat, name, price!);
     const item: StackItem = {
@@ -1977,13 +1978,13 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       label: `${name} (Virus augment on ${target!.label})`, controller: seat,
       region: target!.region, negated: false, parts: [], hostStack,
     };
-    // R53's "when I become targeted" listeners all read `data.unit`; there is
+    // CR 110.11's "when I become targeted" listeners all read `data.unit`; there is
     // no unit here, so they correctly do not match. The event is still fired
     // and logged so the targeting is public and auditable.
     const ev = e.ev('targeted', `${name} targets ${target!.label} on the stack.`,
       { item: hostStack, region: target!.region });
     e.fireEvent('targeted', ev);
-    // R37: applying a mod is not playing, and this is a response — it goes on
+    // CR 723.3: applying a mod is not playing, and this is a response — it goes on
     // the stack ABOVE its host and therefore resolves first, with no
     // special-casing: pushItem hands priority to the other player.
     e.pushItem(item);
@@ -1992,14 +1993,14 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   }
 
   const host = e.entity(hostId!);
-  // R95 (haste sibling): "as if it was deployment" — Slurpr. Computed ONCE,
+  // CR 504.8a (haste sibling): "as if it was deployment" — Slurpr. Computed ONCE,
   // here, because it is read three times below: it opens the deploy branch,
   // it stands in for that branch's `deploying(seat)` test, and it carries the
-  // R89 spell-token host with it (the grant is "as if it was DEPLOYMENT", so
+  // CR 721.4a spell-token host with it (the grant is "as if it was DEPLOYMENT", so
   // the deployment branch runs verbatim and every other refusal in it still
   // refuses — paying at `purpose: 'mod'`, the host being in your own region).
   const hasteMod = hasteModAllowed(e, seat, c, from, 'augment');
-  // R89 — R79's missing half. Caleb, rules-questions 2025-03-06, answering
+  // CR 721.4a — the deployment half the stack-Virus ruling left out. Caleb, rules-questions 2025-03-06, answering
   // "can i augment my spells during deployment?":
   //
   //   "You can augment spells during deployment but currently that would only
@@ -2008,7 +2009,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   //    powerful are impacted by this. Especially deadly")
   //
   // A spell token in play is an `Entity` with `kind: 'spellToken'`, and this
-  // line has always demanded a unit, so R79 had to list the whole half as
+  // line has always demanded a unit, so the stack-Virus ruling first listed the whole half as
   // "⚠ Not in scope". It is in scope now, in DEPLOYMENT only: during battle a
   // token is a spell you cast, and the host you want is the stack item the
   // `hostStack` branch above already reaches.
@@ -2018,15 +2019,15 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     tokenHost ? 'no such spell token' : 'no such unit');
 
   if (e.s.phase === 'battle') {
-    // Virus: an augment playable from hand — or a live cache (R311) — during
-    // battle, on the stack, plus R95's opt-in permission layer (Rook), through
+    // Virus: an augment playable from hand — or a live cache (CR 723.2a) — during
+    // battle, on the stack, plus CR 723.5's opt-in permission layer (Rook), through
     // the one predicate.
     e.need(battleAugmentAllowed(e, seat, c, from, e.s.battle!.region),
       'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
     zoneTake(e, seat, from, index);
-    payBattleAugment(e, seat, name, price!);   // R37/R59/R303, as above
+    payBattleAugment(e, seat, name, price!);   // CR 701.2b, 723.2a, as above
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
@@ -2044,7 +2045,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     zoneTake(e, seat, from, index);
     if (free) e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
     else e.payCard(seat, name, { purpose: 'mod' });
-    // R303: the glimpse waiver is the one thing a player cannot read off the
+    // CR 801.9g: the glimpse waiver is the one thing a player cannot read off the
     // board, so it is said out loud the same way the play path says it.
     if (!free && price!.ignoreAffinity) {
       e.ev('info', `${name} augments out of ${e.pname(seat)}'s cache, ignoring affinity.`);
@@ -2052,7 +2053,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     e.fireEvent('targeted', ev);
     e.attachMod(host, name, seat, 'augment');
-    // R89: "you can only do this with attributes" — the same restriction R79
+    // CR 721.4a: "you can only do this with attributes" — the same restriction CR 721.4b
     // enforces on the stack, said out loud HERE because this is the moment the
     // player commits the card. A text-only augment (Graxxlid, Skybreaker) is
     // still a legal thing to do and still does nothing to a spell; the log
@@ -2074,15 +2075,15 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
 
 function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityId, position: number): void {
   // ⚠ THE TIMING GATE MOVED DOWN. It used to be this function's first line,
-  // and it cannot be any more: R95's haste sibling asks the granting card
+  // and it cannot be any more: the Slurpr grant (CR 504.8a) asks the granting card
   // about the CardDef being applied ("other mods" is a per-card question), so
   // the zone lookup has to happen first. The refusal is otherwise unchanged —
   // same test, same message, still before anything is taken or paid.
   const name = zonePeek(e, seat, from, index);
   e.need(name !== undefined, `no such card in ${from}`);
   e.need(isGraftable(name), 'that card has no graft symbol');
-  // R95 (haste sibling): "you can apply other MODS during [Haste] as if it was
-  // deployment" — R37's "mod" is an augment OR a graft, so Slurpr opens this
+  // CR 504.8a (haste sibling): "you can apply other MODS during [Haste] as if it was
+  // deployment" — a "mod" is an augment OR a graft (CR 701.2), so Slurpr opens this
   // door too. "As if it was deployment" means every line below still applies.
   e.need(e.deploying(seat) || hasteModAllowed(e, seat, e.card(name!), from, 'graft'),
     'grafting is a deployment action');
@@ -2090,20 +2091,20 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
   e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
   // both cards must carry the graft symbol: the host needs its own graft cause
-  e.need(graftCauseIndex(e.faceName(host)) >= 0, 'the target has no graft cause');   // R336: the face
-  // R303: permission first — see `sourcePrice`. The cache is gated on exactly
+  e.need(graftCauseIndex(e.faceName(host)) >= 0, 'the target has no graft cause');   // CR 710.1: the face
+  // CR 720.5a: permission first — see `sourcePrice`. The cache is gated on exactly
   // what a play from it is gated on, and this is the line whose absence let an
   // expired glimpse stay a live graft for the rest of the game.
   const price = sourcePrice(e, seat, from, index);
   e.need(price, 'you have no permission to use that cached card');
   const free = price!.free;
-  e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');  // R37/R59
+  e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');  // CR 701.2b
   // new grafts insert anywhere below the base card, never reorder the rest
   e.need(Number.isInteger(position) && position >= 0 && position <= host.mods.length, 'bad graft position');
   zoneTake(e, seat, from, index);
   if (free) e.ev('info', `${name} grafts for FREE — its prophecy is fulfilled.`);
   else e.payCard(seat, name, { purpose: 'mod' });
-  if (!free && price!.ignoreAffinity) {   // R303, as in doAugment
+  if (!free && price!.ignoreAffinity) {   // CR 801.9g, as in doAugment
     e.ev('info', `${name} grafts out of ${e.pname(seat)}'s cache, ignoring affinity.`);
   }
   const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
@@ -2124,7 +2125,7 @@ function validFormation(e: E, seat: Seat, columns: EntityId[][], fromRegion: num
       e.need(u.region === fromRegion, 'that unit is in another region');
       e.need(!used.has(id), 'a unit can only be in one column');
       e.need(!pool || pool.includes(id), 'only units sent at block time may counterattack');
-      // R84 {Alluring}: a lured unit cannot attack for the rest of this battle
+      // CR 802.15j {Alluring}: a lured unit cannot attack for the rest of this battle
       // phase — the half of the attribute that survives the allurer's death
       e.need(!u.allured, `Alluring: ${u.card} was lured and cannot attack this battle`);
       used.add(id);
@@ -2133,7 +2134,7 @@ function validFormation(e: E, seat: Seat, columns: EntityId[][], fromRegion: num
 }
 
 /**
- * R87 — may this spell token ride out with a formation leaving `fromRegion`?
+ * CR 604.2c — may this spell token ride out with a formation leaving `fromRegion`?
  *
  * "Yes, spell tokens can move into other regions on attack/counter-attack
  * step. But they always need a unit to take them with them" (lofavreel,
@@ -2182,7 +2183,7 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   if (!present.includes(seat)) present.push(seat);
   const ev = e.ev('attackDeclared', `${e.pname(seat)} attacks with ${columns.length} column(s).`, { seat, region: b.region });
   e.fireEvent('attackDeclared', ev);
-  // R84: {Alluring} is an on-attack trigger that targets — one per Alluring
+  // CR 802.15a, 802.15b: {Alluring} is an on-attack trigger that targets — one per Alluring
   // column, queued alongside the card triggers this same event just fired
   queueAlluringTriggers(e, seat, ev);
   for (const id of columns.flat()) {
@@ -2195,7 +2196,7 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   e.settle();
 }
 
-/* ── R84 {Alluring} — an on-attack triggered ability that TARGETS ──────────
+/* ── CR 802.15a {Alluring} — an on-attack triggered ability that TARGETS ──────────
  *
  * The attribute reads: when a column with {Alluring} attacks, it targets ONE
  * enemy unit; that unit cannot attack, and must block THIS column this combat
@@ -2241,7 +2242,7 @@ const ALLURING_KEY = `ability:${ALLURING_CARD}#0`;
  *
  * Asked at three moments — when the trigger is queued, when it resolves, and
  * when blocks are declared — because all three can disagree: the allurer can
- * die, be silenced (R62 switches the attribute layer off) or be blanked by a
+ * die, be silenced (CR 712.1 switches the attribute layer off) or be blanked by a
  * {Pure} column-mate in between, and each of those genuinely ends the duty. */
 function alluringColumn(e: E, ci: number): EntityId[] | null {
   const b = e.s.battle;
@@ -2250,7 +2251,7 @@ function alluringColumn(e: E, ci: number): EntityId[] | null {
   if (!col) return null;
   const live = col.filter(id => e.entity(id));
   if (!live.length) return null;
-  // R61 {Pure}: a column that is itself Pure ignores its own other attributes
+  // CR 802.15n {Pure}: a column that is itself Pure ignores its own other attributes
   // — Alluring included — so it compels nobody.
   if (e.pure(live)) return null;
   if (!e.colAttrs(live).has('Alluring')) return null;
@@ -2258,11 +2259,11 @@ function alluringColumn(e: E, ci: number): EntityId[] | null {
 }
 
 /**
- * R84 — could `u` discharge column `ci`'s Alluring duty **on its own**?
+ * CR 802.15g — could `u` discharge column `ci`'s Alluring duty **on its own**?
  *
  * This is the printed word "able", and it is a property of the UNIT and THAT
- * COLUMN only: region, controller, {Feeble}, {Flying}, R20's lone {Sneaky}
- * attacker, {Evasive}'s second blocker, and R61's {Pure} exceptions to all of
+ * COLUMN only: region, controller, {Feeble}, {Flying}, CR 802.14's lone {Sneaky}
+ * attacker, {Evasive}'s second blocker, and CR 802.25d's {Pure} exceptions to all of
  * them. It deliberately does NOT look at what the defender has done with `u`
  * elsewhere in the same declaration.
  *
@@ -2277,15 +2278,15 @@ function canBlockAlone(e: E, u: Entity, ci: number): boolean {
   const live = alluringColumn(e, ci);
   if (!b || !live) return false;
   if (u.kind !== 'unit' || u.absent || u.region !== b.region) return false;
-  // R61 {Pure}: one Pure card in either column switches the attribute layer
+  // CR 802.25d {Pure}: one Pure card in either column switches the attribute layer
   // off for that exchange — the blocker's own {Feeble} included.
   const pure = e.pure(live, [u.id]);
   const atkAttrs = pure ? new Set<string>() : e.colAttrs(live);
   const own = e.ownAttrs(u);
   if (own.has('Feeble') && !own.has('Pure')) return false;
   if (atkAttrs.has('Flying') && !own.has('Flying')) return false;
-  // R20: a LONE Sneaky attacker cannot be blocked at all, so nobody is able to
-  // block it — except a Pure blocker, which sees through Sneaky (R61).
+  // CR 802.14a: a LONE Sneaky attacker cannot be blocked at all, so nobody is able to
+  // block it — except a Pure blocker, which sees through Sneaky (CR 802.14e).
   const atkUnits = b.columns.flat().filter(id => e.entity(id));
   if (atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky') && !e.pure(atkUnits, [u.id])) return false;
   // {Evasive} wants two blockers, so one unit alone cannot satisfy the column
@@ -2308,7 +2309,7 @@ function alluredUnits(e: E, seat: Seat): { u: Entity; cols: number[] }[] {
 }
 
 /**
- * R84 — why a block declaration is illegal under {Alluring}, or null.
+ * CR 606.2e — why a block declaration is illegal under {Alluring}, or null.
  *
  * Two clauses per duty, and every case in the solved RAQ thread falls out of
  * them (A is the lured unit, the column is Alluring+Evasive so it needs two):
@@ -2336,7 +2337,7 @@ function alluredUnits(e: E, seat: Seat): { u: Entity; cols: number[] }[] {
  * That waiver is the ONLY place "able" is allowed to look at the rest of the
  * declaration, and it is bounded: only another ALLURING duty can excuse one.
  * Blocking a plain column, or being sent to counterattack, excuses nothing.
- * (Judgement call, 2026-08-22 — see docs/digital-rules.md R84.)
+ * (Judgement call, 2026-08-22 — see CR 802.15k.)
  */
 export function allureViolation(
   e: E, seat: Seat, blocks: Record<number, EntityId[]>,
@@ -2358,7 +2359,7 @@ export function allureViolation(
 }
 
 /**
- * R84 — the block assignment every Alluring duty on the board demands, and the
+ * CR 606.2f — the block assignment every Alluring duty on the board demands, and the
  * reason `legalActions` can always offer something at the block step.
  *
  * Alluring is compulsory and conjunctive across columns, so a declaration is
@@ -2367,7 +2368,7 @@ export function allureViolation(
  * cannot express that on its own: with two Alluring columns and two able
  * blockers, every single-column option left the other duty unmet, every option
  * was filtered out, and the game HUNG with no legal action for anyone (fuzz
- * seed 1993 — R76). Every option is therefore built on top of this core, and
+ * seed 1993 — CR 606.2f). Every option is therefore built on top of this core, and
  * the bare core is always offered.
  *
  * Under the new model this is no search at all: each duty NAMES its unit, and
@@ -2387,7 +2388,7 @@ export function compulsoryBlocks(e: E, seat: Seat): Record<number, EntityId[]> {
 }
 
 /**
- * R84 — the trigger, queued at the `attackDeclared` seam. One per Alluring
+ * CR 802.15a — the trigger, queued at the `attackDeclared` seam. One per Alluring
  * COLUMN (it does not stack), anchored on the unit in it that actually carries
  * the attribute so that killing THAT unit is what stops it.
  *
@@ -2450,7 +2451,7 @@ const ALLURING_EFFECT: EffectDef = {
 };
 
 /**
- * R315 — the {Resonant} rider's effect. It hangs on this same rules-owned
+ * CR 802.19a — the {Resonant} rider's effect. It hangs on this same rules-owned
  * card as ability #1, for the reason Alluring's does: a trigger on the real
  * stack needs an `effectKey` that resolves through `getCard`. One card for the
  * attribute triggers rather than a second synthetic, because a new card moves
@@ -2463,14 +2464,14 @@ const RESONANT_EFFECT: EffectDef = {
   run: (g, ctx) => {
     const d = ctx.event?.data?.['resonant'] as { player: Seat; n: number } | undefined;
     if (!d || !(d.n > 0)) {
-      // R266: on the source, so it is not a line only the log can show
+      // CR D7.4: on the source, so it is not a line only the log can show
       g.ev('info', `${ctx.sourceName}: {Resonant} — no damage was dealt, so there is nothing to pass on.`,
         { unit: ctx.sourceId });
       return;
     }
     // dealt BY THE SOURCE (ctx.sourceId / sourceName are the resonant unit's),
     // so its live attributes ({Powerful}) and allied modifiers (Conduit of
-    // Pain) price it — R316's order: add, then double
+    // Pain) price it — CR 802.19e's order: add, then double
     g.dealEffectDamageAll(ctx, [{ target: { player: d.player }, n: d.n }]);
   },
 };
@@ -2491,7 +2492,7 @@ registerSynthetic({
     when: () => false,
     effect: ALLURING_EFFECT,
   }, {
-    // R315: index 1 is {Resonant}'s rider — `RESONANT_KEY` in engine.ts names
+    // CR 802.19a: index 1 is {Resonant}'s rider — `RESONANT_KEY` in engine.ts names
     // it by index, so it must stay second. See RESONANT_EFFECT above.
     type: 'triggered', events: ['damage'], label: '{Resonant}',
     // never found by a scan: queued by hand from E.queueResonant
@@ -2501,7 +2502,7 @@ registerSynthetic({
 });
 
 /**
- * R84's judgement, widened to EVERY block-legality reason: WHY this block
+ * The Alluring judgement, widened to EVERY block-legality reason: WHY this block
  * declaration would be refused, or null.
  *
  * Playtest ledger #77 (WEHH, 2026-08-22): *"Trying to declare illegal blocks
@@ -2510,7 +2511,7 @@ registerSynthetic({
  * blockers?' button. That way, if there's a massive block, the player doesn't
  * have to entirely rebuild it for forgetting about a single thing."*
  *
- * R84 already built the shape that answers this: `allureViolation` is a pure
+ * The Alluring work already built the shape that answers this: `allureViolation` is a pure
  * predicate the CLIENT reads (ui/inspect.ts `blockPlanIssue`) so that a
  * compulsory block is NAMED up front instead of discovered by being refused.
  * The only reason that shape stopped at {Alluring} is that the rest of the
@@ -2533,10 +2534,10 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
   const b = e.s.battle;
   e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');
   const used = new Set<EntityId>();
-  // R20: a lone Sneaky attacker (the only attacking unit) cannot be blocked
+  // CR 802.14a: a lone Sneaky attacker (the only attacking unit) cannot be blocked
   const atkUnits = b.columns.flat().filter(id => e.entity(id));
   /**
-   * R321 — SIDE-BLOCKS. The Manual: *"Units may even be placed blocking in
+   * CR 606.4 — SIDE-BLOCKS. The Manual: *"Units may even be placed blocking in
    * slots where attackers aren't, which can be beneficial for adjacency
    * matters cards."* Caleb, on the RAQ ("What is blocked?"): a side-blocking
    * column counts as blocked for Roving Quillback, and a defender may block
@@ -2552,9 +2553,9 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
     e.need(Number.isInteger(ci) && ci >= -keys.length && ci < n + keys.length, 'no such blocking column');
   }
   if (atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky')) {
-    // R61 {Pure}: Sneaky is an attribute like any other, so a Pure blocker
+    // CR 802.14e {Pure}: Sneaky is an attribute like any other, so a Pure blocker
     // sees straight through it — the interaction blinds both sides.
-    // R321: a side-block blocks nothing, so it is not blocking the Sneaky unit
+    // CR 606.4e: a side-block blocks nothing, so it is not blocking the Sneaky unit
     const blockingWith = Object.entries(blocks)
       .filter(([k]) => Number(k) >= 0 && Number(k) < n).flatMap(([, col]) => col);
     e.need(blockingWith.length === 0 || e.pure(atkUnits, blockingWith),
@@ -2562,7 +2563,7 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
   }
   for (const [ciStr, col] of Object.entries(blocks)) {
     const ci = Number(ciStr);
-    const atkCol = b.columns[ci];   // R321: undefined for a side-block
+    const atkCol = b.columns[ci];   // CR 606.4: undefined for a side-block
     e.need(col.length >= 1 && col.length <= 2, 'blocking columns hold 1-2 units');
     for (const id of col) {
       const u = e.entity(id);
@@ -2570,14 +2571,14 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
       e.need(u.region === b.region, 'that unit is in another region');
       e.need(!used.has(id), 'a unit can only block in one column');
       // Feeble: can't block (own/augment attrs — a Feeble unit never joins a
-      // blocking column). R61: a Pure card ignores its OWN other attributes
+      // blocking column). CR 802.12b: a Pure card ignores its OWN other attributes
       // too, so Pure+Feeble blocks.
       e.need(!e.ownAttrs(u).has('Feeble') || e.ownAttrs(u).has('Pure'),
         'Feeble units cannot block');
       used.add(id);
     }
-    if (!atkCol) continue;   // R321: a side-block faces nobody — no evasion to answer
-    // R61 {Pure}: one Pure card in either column switches the attribute layer
+    if (!atkCol) continue;   // CR 606.4e: a side-block faces nobody — no evasion to answer
+    // CR 802.25d {Pure}: one Pure card in either column switches the attribute layer
     // off for this whole exchange, so neither evasion rule survives it.
     const pure = e.pure(atkCol, col);
     const atkAttrs = pure ? new Set<string>() : e.colAttrs(atkCol.filter(id => e.entity(id)));
@@ -2592,27 +2593,27 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
   for (const id of send) {
     const t = e.entity(id);
     e.need(t && (t.kind === 'unit' || t.kind === 'spellToken') && t.controller === seat && !t.absent, 'cannot send that');
-    // R87: a token riding a counterattack answers to exactly the question an
+    // CR 610.3: a token riding a counterattack answers to exactly the question an
     // attack asks of a rider, from the one helper both declarations use. (A
     // unit keeps its own line below — a counterattacker leaves from the region
     // it is DEFENDING, which is `b.region` for both kinds.)
     if (t.kind === 'spellToken') needRidingToken(e, seat, id, b.region);
     e.need(t.region === b.region, 'that is in another region');
     e.need(!used.has(id), 'blockers cannot also be sent to attack');
-    // R84 {Alluring}: "it won't be able to counter-attack into your region" —
+    // CR 802.15e {Alluring}: "it won't be able to counter-attack into your region" —
     // going out as a counterattacker IS attacking, so a lured unit may not
     e.need(!t.allured, `Alluring: ${t.card} was lured and cannot counterattack`);
     used.add(id);
     if (t.kind === 'unit') sentUnits++;
   }
-  // R87, and it is the oldest half of the rule: "they always need a unit to
+  // CR 610.3, and it is the oldest half of the rule: "they always need a unit to
   // take them with them" (lofavreel 2023-08-19) — "In order to move spell
   // tokens, you must have attacked opponent Region. In order to attack
   // opponent Region, you must send atleast 1 of your unit" (_passer
   // 2025-05-10). A counterattack of tokens alone is not a counterattack.
   e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');
 
-  // R84 {Alluring}: each lured unit must be among its column's blockers, and
+  // CR 802.15g {Alluring}: each lured unit must be among its column's blockers, and
   // may only leave that column unblocked when it could not have covered it
   // alone. Judged against the unit and the column ONLY — never against what
   // the defender did with it elsewhere (that was the UFAB bug).
@@ -2640,7 +2641,7 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   const b = e.s.battle!;
   const sentUnits = checkBlocks(e, seat, blocks, send);
 
-  // R321: open an empty attacking column opposite every side-block, then key
+  // CR 606.4: open an empty attacking column opposite every side-block, then key
   // the blocks into the widened line
   const keys = Object.keys(blocks).map(Number);
   const left = Math.max(0, -Math.min(0, ...keys));
@@ -2654,7 +2655,7 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   const ev = e.ev('blocksDeclared',
     `${e.pname(seat)} blocks ${Object.keys(blocks).length} column(s)`
     + (side ? ` (${side} of them to the side)` : '') +
-    // R87: the tokens are counted separately, because "3 counterattackers"
+    // CR 610.3: the tokens are counted separately, because "3 counterattackers"
     // when one of them is a Poison is exactly the confusion report #67 opened
     // with. Identical wording to before whenever no token rides along.
     (send.length ? ` and sends ${sentUnits} counterattacker(s)`
@@ -2692,7 +2693,7 @@ function doDoneDeploying(e: E, seat: Seat): void {
 // ── decisions ─────────────────────────────────────────────────────────
 
 /**
- * R197 — the VALUE a `decide` answer names, and the one place that decides
+ * CR D7.2a — the VALUE a `decide` answer names, and the one place that decides
  * whether `choice` is an index or the answer itself.
  *
  * For every DecisionKind but one, `choice` is an INDEX into `dec.options`.
@@ -2736,9 +2737,9 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
     const val = dec.options[choice]!.value;
     if (sus.stage === 'x') {
-      // cast-time X (R35): store it, pay it — fixed before anyone responds.
+      // cast-time X (CR 107.2a): store it, pay it — fixed before anyone responds.
       //
-      // R157 §1: what is paid is the WHOLE bill for this cast — "paying X
+      // CR 202.5: what is paid is the WHOLE bill for this cast — "paying X
       // replaces the letter X on the printed card temporarily", so the chosen
       // X is the base cost and the CostMod layer prices it here rather than
       // against the printed floor. E.payCard charged nothing for the play
@@ -2753,32 +2754,32 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
         + (bill === x ? 'it.' : `[${bill}] for it.`));
     } else if (sus.stage === 'mods') {
       // {Modular}: a mod applied as the card is played — an additional cast
-      // cost, paid now, riding on the stack with the spell (R35)
+      // cost, paid now, riding on the stack with the spell (CR 702.4)
       e.payModularMod(sus.item, val);
     } else if (sus.stage === 'cost') {
-      // cast-time bracketed cost (R35): paid now, before the stack push
+      // cast-time bracketed cost (CR 702.4): paid now, before the stack push
       e.payCastCost(sus.item, sus.partIndex, val);
     } else if (sus.stage === 'itemCost') {
-      // R49: an activation cost that carries a choice — same window, same rule
+      // CR 705.3: an activation cost that carries a choice — same window, same rule
       e.payItemCost(sus.item, val);
     } else if (sus.stage === 'formation') {
-      // R29: WHERE this card is being played. Part of the play, so it is fixed
+      // CR 602.7: WHERE this card is being played. Part of the play, so it is fixed
       // in the cast window with everything else; it is taken at resolution,
-      // and re-derived there because the line may have moved (R5/R56).
+      // and re-derived there because the line may have moved (CR 602.7a).
       sus.item.formationSpot = val as FormationSpot;
     } else if (sus.stage === 'mode') {
-      // R57: WHICH HALF of a modal effect. Declared here, in the cast window,
+      // CR 702.5: WHICH HALF of a modal effect. Declared here, in the cast window,
       // so it rides onto the stack with the item — the opponent responds to a
       // fully declared effect, not to a question that is still open.
       sus.item.parts[sus.partIndex]!.mode = val;
     } else if (sus.stage === 'subject') {
-      // R144: WHAT an untargeted effect is aimed at. Same window and same
+      // CR 706.12: WHAT an untargeted effect is aimed at. Same window and same
       // reason as a mode — the aim is part of declaring the effect — but it
       // can go STALE: several triggers may all name one unit, and the ones
       // that outlive it fizzle in resolveItem rather than being re-aimed.
       sus.item.parts[sus.partIndex]!.subject = val as EntityId;
     } else if (sus.stage === 'asYouPlay') {
-      // R178: a cost-shaped, NON-STACK option that ANOTHER card in play offers
+      // CR 705.6: a cost-shaped, NON-STACK option that ANOTHER card in play offers
       // as this one is played ("As you play a nonunit spell, you may sacrifice
       // me…" — Maelstrom Charger). Neither triggered nor activated, so it
       // reaches no stack and no ability gate; the answers land on
@@ -2792,7 +2793,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     let chain = sus.moreItems;
     e.collectTargets(sus.item, sus.then, chain);   // may suspend again
     if (sus.item.burstRest) {
-      // R309: this token is aimed — the burst goes on, it does not commit alone
+      // CR 803.5d: this token is aimed — the burst goes on, it does not commit alone
       const k = sus.item.burstRest;
       delete sus.item.burstRest;
       burstStep(e, seat, k.region, sus.then, [...k.aimed, sus.item], k.remaining);
@@ -2806,7 +2807,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   }
 
   if (sus.type === 'burstPick') {
-    // R309: the next token of an ordered burst — it goes after `aimed`
+    // CR 803.5d: the next token of an ordered burst — it goes after `aimed`
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
     const v = dec.options[choice]!.value as { unit: EntityId };
     e.need(sus.remaining.includes(v.unit), 'that token is not in this burst');
@@ -2818,7 +2819,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   if (sus.type === 'orderTriggers') {
     const mine = e.s.triggerQueue.filter(t => t.controller === sus.seat);
     /**
-     * R169 / CT-45 — THE ANSWER THAT CAN NEVER BE ACCEPTED.
+     * CT-45 (see 143-replay-divergence) — THE ANSWER THAT CAN NEVER BE ACCEPTED.
      *
      * `processTriggerQueue` only raises this question when `mine.length >= 2`
      * and the triggers are not all `sameTrigger`. So a permutation of ≥2
@@ -2867,7 +2868,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   }
 
   if (sus.type === 'combatAssign') {
-    // R120: one elected amount (or the default-split shortcut) for one strike
+    // CR 608.6a: one elected amount (or the default-split shortcut) for one strike
     // of the current damage sub-step. Recorded onto the battle state; settle()
     // re-runs the damage pump, whose collection pass either asks about the
     // next victim or, with every plan complete, lets the sub-step assign.
@@ -2887,7 +2888,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   }
 
   if (sus.type === 'payTrigger') {
-    // R121: the pay-to-trigger gate's answer. THE PLAYER decided — the
+    // CR 111.10g: the pay-to-trigger gate's answer. THE PLAYER decided — the
     // engine never does (the zero-mana prevention happens before any
     // question is raised, in E.gateTaxedTrigger).
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
@@ -2896,11 +2897,11 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   }
 
   // sus.type === 'resolve': fill the answer and replay the part.
-  // R85: the rollback to the part boundary happens HERE, not when the part
+  // The rollback to the part boundary happens HERE, not when the part
   // suspended — so the board everybody was looking at while this question was
   // open showed the resolution as far as it had actually got. `shown` is how
   // much of the part's log they were shown, which the replay must not repeat.
-  // R197: `decisionValue` — an index for every kind but 'number', where the
+  // CR D7.2a: `decisionValue` — an index for every kind but 'number', where the
   // answer IS the number and `options` is empty.
   sus.answers[sus.pendingKey] = decisionValue(e, dec, choice);
   const shown = e.resumeResolve(sus);
@@ -2911,7 +2912,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     ? { then: sus.then, moreItems: sus.moreItems } : undefined;
   e.resolveParts(sus.item, sus.partIndex, sus.answers, shown, chain);
   e.afterParts(sus.item);
-  // R78: it has ACTUALLY resolved now — clear the marker (resolveParts throws
+  // CR D6.3: it has ACTUALLY resolved now — clear the marker (resolveParts throws
   // straight past this if the item still owes another choice, which is exactly
   // how it stays marked across a chain of mid-resolution decisions).
   e.endResolving(null);
@@ -2938,7 +2939,7 @@ export function forcedAction(state: GameState): Action | null {
   if (b.step === 'declare') {
     const from = b.round === 1 || b.attackerPool === null ? e.homeRegion(b.attacker) : b.region;
     const eligible = e.unitsOf(b.attacker, from)
-      // R84: a lured unit cannot attack, so it is not eligible and cannot make
+      // CR 802.15e: a lured unit cannot attack, so it is not eligible and cannot make
       // the difference between "no attack is possible" and a real choice
       .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);
     if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };
@@ -3021,7 +3022,7 @@ function doSandboxSpawn(e: E, seat: Seat, card: CardName, to: 'hand' | 'play' | 
   if (!def) throw new IllegalAction(`there is no card called "${card}"`);
   e.need(to === 'hand' || to === 'play' || to === 'bin', `no such zone '${String(to)}'`);
   if (to === 'hand') {
-    // R179: `E.toHand`, never a bare push. Three cards print "whenever cards
+    // CR 402.4: `E.toHand`, never a bare push. Three cards print "whenever cards
     // enter a player's hand during battle", and a summon that bypassed the
     // primitive would be invisible to them — which is precisely the "and then
     // it behaves under normal rules" line failing quietly. `from: 'sandbox'`
@@ -3032,7 +3033,7 @@ function doSandboxSpawn(e: E, seat: Seat, card: CardName, to: 'hand' | 'play' | 
     return;
   }
   if (to === 'bin') {
-    // R145/R40: through `E.toBin`, never a bare push — those are the only
+    // CR 400.2a, 801.2: through `E.toBin`, never a bare push — those are the only
     // places that know which ZONE a card reached the bin FROM, and both
     // {Unstable} and trashing turn on that question. `from: 'sandbox'` is a
     // non-trashing entry (see E.toBin): this is a card being PLACED, and
@@ -3182,7 +3183,7 @@ function doSandboxAdvance(e: E, seat: Seat): void {
  * it is named here because the fuzzer holds this list to its word and would
  * otherwise report it as "legalActions lied" (test/fuzz.ts).
  *
- * R169 / CT-47, the exception in full: R154's disturbance check runs the action
+ * CT-47, the exception in full (see 143-replay-divergence): CR D2.1d's disturbance check runs the action
  * against a draft and, if the draft turns out to have moved something the OTHER
  * seat's pending decision will read, throws the whole draft away with
  * `IllegalAction.disturbs === true`. Whether a play suspends — and so whether
@@ -3214,15 +3215,15 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
   const e = new E(structuredClone(state));   // E for queries only
   const s = e.s;
   if (s.phase === 'gameover') return [];
-  // R154: a decision empties your list only while it BLOCKS you. When it is
+  // CR D2.1b: a decision empties your list only while it BLOCKS you. When it is
   // the other seat's question inside a hidden simultaneous segment, fall
   // through to your own options — offering an empty list is what drew the
   // client's "Waiting for X…" bar over a player who was free to keep
   // deploying (playtest #98). The branches below read neither `s.decision` nor
   // `s.suspension` on any path this reaches, which is why falling THROUGH and
-  // R150's shadow-clone-with-decision-nulled produce the same list.
+  // the server's shadow-clone-with-decision-nulled produce the same list.
   if (s.decision && decisionBlocks(s, seat)) return legalDecisionActions(e, seat);
-  if (s.phase === 'planning' && s.hasteDone) return legalHasteActions(e, seat);   // haste step (R18)
+  if (s.phase === 'planning' && s.hasteDone) return legalHasteActions(e, seat);   // haste step (CR 504)
   if (s.phase === 'planning' && !s.planningDone[seat]) return legalPlanningActions(e, seat);
   if (s.phase === 'battle' && s.battle) return legalBattleActions(e, seat);
   // simultaneous deployment: EVERY not-yet-done seat gets its options (the
@@ -3250,7 +3251,7 @@ function legalDecisionActions(e: E, seat: Seat): Action[] {
       out.push({ type: 'decide', seat, choice: [...identity].reverse() });
     }
   } else if (dec.kind === 'number') {
-    // R197: `choice` IS the value here, and the range can be unbounded — an
+    // CR D7.2a: `choice` IS the value here, and the range can be unbounded — an
     // enumeration is impossible in principle, not merely large. So this offers
     // REPRESENTATIVES and `apply` validates any value the client builds, which
     // is precisely what the `pickOrder` branch above already does for
@@ -3272,23 +3273,23 @@ function legalDecisionActions(e: E, seat: Seat): Action[] {
   return out;
 }
 
-/** the haste step (R18): done, or a haste-timed play from hand / cache */
+/** the haste step (CR 504): done, or a haste-timed play from hand / cache */
 function legalHasteActions(e: E, seat: Seat): Action[] {
   const out: Action[] = [];
   if (e.s.hasteDone![seat]) return out;
   out.push({ type: 'doneHaste', seat });
   const home = e.homeRegion(seat);
-  // R311: the hand's plays, then the cache's, through ONE per-source offer —
-  // the cache walk used to ask only `timing === 'haste'`, so an R97 grant
-  // (Dispatch Courier) or an R123 erase (Writhing Host) that `playAtTiming`
+  // CR 702.2d: the hand's plays, then the cache's, through ONE per-source offer —
+  // the cache walk used to ask only `timing === 'haste'`, so a haste grant
+  // (Dispatch Courier) or a CR 504.7 erase (Writhing Host) that `playAtTiming`
   // would have accepted for a cached card was never offered.
   pushPlays(e, seat, 'hand', 'haste', home, out);
   pushPlays(e, seat, 'cache', 'haste', home, out);
-  // R277: a prophecy banner printing a trailing [Haste] marker may be
+  // CR 504.9: a prophecy banner printing a trailing [Haste] marker may be
   // prophesied HERE as well as at deployment — the marker's whole meaning.
   // Pushed after the plays so no existing index into this list moves.
   pushProphesies(e, seat, out);
-  // R95 (haste sibling), gate 2 of three: a mod applied "as if it was
+  // CR 504.8a (haste sibling), gate 2 of three: a mod applied "as if it was
   // deployment" (Slurpr). Pushed AFTER the plays, so no existing index into
   // this list moves.
   pushHasteMods(e, seat, home, out);
@@ -3335,7 +3336,7 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
   }
   for (let i = 0; i < hand.length; i++) {
     for (const el of s.elements) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
-    // R299: last, after the elements — appending keeps every element option at
+    // last, after the elements — appending keeps every element option at
     // the index it has always had
     out.push({ type: 'recycleForResource', seat, handIndex: i, element: 'prismite' });
     out.push({ type: 'recycleForResource', seat, handIndex: i, element: 'shard' });
@@ -3371,7 +3372,7 @@ function legalDeclareAttackActions(e: E, seat: Seat): Action[] {
   out.push({ type: 'declareAttack', seat, columns: [] });
   const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
   const mine = e.unitsOf(seat, fromRegion)
-    .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);   // R84
+    .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);   // CR 604.2e
   for (const u of mine) out.push({ type: 'declareAttack', seat, columns: [[u.id]] });
   if (mine.length > 1) out.push({ type: 'declareAttack', seat, columns: mine.map(u => [u.id]) });
   return out;
@@ -3387,7 +3388,7 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
   // "legalActions lied" check is what caught them drifting)
   const legalBlock = (a: Action): boolean => a.type !== 'declareBlocks'
     || !allureViolation(e, seat, a.blocks);
-  // R84/R76: Alluring duties are compulsory and must ALL be discharged at
+  // CR 606.2f: Alluring duties are compulsory and must ALL be discharged at
   // once, which no single-column declaration can do once there are two
   // Alluring columns and two lured blockers. Every option below is
   // therefore built on top of the compulsory core, and the core alone is
@@ -3400,11 +3401,11 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
   out.push({ type: 'declareBlocks', seat, blocks: onCore({}) });
   const mine = e.unitsOf(seat, b.region);
   // Feeble can't block — unless it is also Pure, which ignores its own
-  // other attributes (R61)
+  // other attributes (CR 802.12b)
   // a unit the compulsory core already spent is not free to be offered again
   const blockers = mine.filter(u =>
     !spoken.has(u.id) && (!e.ownAttrs(u).has('Feeble') || e.pure([u.id])));
-  // R20: a lone Sneaky attacker cannot be blocked at all — R61: except by
+  // CR 802.14: a lone Sneaky attacker cannot be blocked at all — CR 802.14e: except by
   // a Pure blocker, which is blind to Sneaky like every other attribute
   const atkUnits = b.columns.flat().filter(id => e.entity(id));
   const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
@@ -3435,7 +3436,7 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
   // send options (round 1 only — no counter-counterattacks):
   // each single non-blocking unit, representative
   if (b.round === 1) {
-    // R87: the tokens standing where the counterattack leaves from. A
+    // CR 610.3: the tokens standing where the counterattack leaves from. A
     // token rides only WITH a unit ("they always need a unit to take them
     // with them"), so the rider is offered on top of each unit send rather
     // than on its own — which is also what makes every one of these legal
@@ -3444,7 +3445,7 @@ function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
     const riders = e.tokensOf(seat, b.region).map(t => t.id);
     for (const u of mine) {
       if (spoken.has(u.id)) continue;   // it is already blocking, compulsorily
-      // R84: a lured unit cannot counterattack — and sending anyone ELSE
+      // CR 604.2e: a lured unit cannot counterattack — and sending anyone ELSE
       // away cannot change who is "able", so the core is reused verbatim
       if (u.allured) continue;
       out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat), send: [u.id] });
@@ -3471,17 +3472,17 @@ function legalBattlePriorityActions(e: E, seat: Seat): Action[] {
   const out: Action[] = [];
   out.push({ type: 'passPriority', seat });
   pushPlays(e, seat, 'hand', 'battle', b.region, out);
-  // R95: the battle AUGMENT window, hand, bin and (R311) cache. It used to be
+  // CR 723.5: the battle AUGMENT window, hand, bin and (CR 723.2a) cache. It used to be
   // a `c.virus && from === 'hand'` clause inside the hand walk above; there
   // was no bin leg at all, which is why Rook's whole text was unreachable
   // even though bin-augmenting is fully plumbed for deployment.
   pushBattleAugments(e, seat, b.region, out);
-  // R311: the cache's plays — every mode the hand has, Ambush included —
+  // CR 403.3b: the cache's plays — every mode the hand has, Ambush included —
   // where the old cache-only walk stood, so no existing index moves.
   pushPlays(e, seat, 'cache', 'battle', b.region, out);
-  pushBinPlays(e, seat, b.region, out);   // R96
+  pushBinPlays(e, seat, b.region, out);   // CR 405.9
   for (const t of e.tokensOf(seat, b.region)) {
-    // R305: a token cast is a play and is priced; an unaffordable one is not offered
+    // CR 702.7a: a token cast is a play and is priced; an unaffordable one is not offered
     if (canPaySpellToken(e, seat, t, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
   }
   pushActivatedOptions(e, seat, b.region, out);
@@ -3495,13 +3496,13 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
   out.push({ type: 'doneDeploying', seat });
   pushPlays(e, seat, 'hand', 'deploy', region, out);
   pushProphesies(e, seat, out);
-  // R42/R45: releasing a permitted cached card at deployment timing — R311:
+  // CR 403.3d, 801.9e: releasing a permitted cached card at deployment timing — CR 403.3b:
   // through the same per-source offer as the hand
   pushPlays(e, seat, 'cache', 'deploy', region, out);
-  // R41: mods may come from the cache as well as hand and bin
+  // CR 507.2: mods may come from the cache as well as hand and bin
   pushMods(e, seat, region, out);
   for (const t of e.tokensOf(seat, region)) {
-    if (timingAllowsDeploy(getCard(t.card)) && canPaySpellToken(e, seat, t, region)) {   // R305
+    if (timingAllowsDeploy(getCard(t.card)) && canPaySpellToken(e, seat, t, region)) {   // CR 702.7a
       out.push({ type: 'castSpellToken', seat, entityId: t.id });
     }
   }
@@ -3512,7 +3513,7 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
 type PlayWindow = 'deploy' | 'battle' | 'haste';
 
 /**
- * R311: every play `seat` may make right now out of `from` ('hand' or
+ * CR 403.3b: every play `seat` may make right now out of `from` ('hand' or
  * 'cache'), in `window`. The hand and the cache go through the SAME
  * `pushSourcePlays`; the two calls are separate only so each window keeps
  * its push ORDER (the UI and the fuzzer index into this list).
@@ -3522,20 +3523,20 @@ function pushPlays(e: E, seat: Seat, from: 'hand' | 'cache', window: PlayWindow,
 }
 
 /**
- * R311: THE PER-SOURCE PLAY OFFER — every mode a card offers out of one
- * hand-like source, in one window. Before R311 the hand had a walk per window
+ * CR 403.3b: THE PER-SOURCE PLAY OFFER — every mode a card offers out of one
+ * hand-like source, in one window. Before the cache gained every hand mode, the hand had a walk per window
  * and the cache had `pushCachedPlays`, which knew one mode (the plain release
  * at printed timing); every other mode was a hand-only clause, which is how
  * the cache kept losing modes (report #195 and the four before it).
  *
  * Mirrors `doPlayFrom` gate for gate — the fuzzer's "legalActions lied" check
  * holds the two to one answer:
- *  - permission and price: `src.price` (`sourcePrice`, R303). A glimpse pays
+ *  - permission and price: `src.price` (`sourcePrice`, CR 403.3a, 403.3c). A glimpse pays
  *    mana ignoring affinity, a fulfilled prophecy is free, the hand pays all.
- *  - timing: the card's PRINTED timing on both routes (R42/R45 — a cached
- *    unit still needs deployment), widened in the haste step by an R97 grant
- *    or an R123 erase, asked with the real `from`.
- *  - R100 `noPlayFromHand` refuses the hand only; "Discard me" is hand-only.
+ *  - timing: the card's PRINTED timing on both routes (CR 403.3d — a cached
+ *    unit still needs deployment), widened in the haste step by a CR 702.2d grant
+ *    or a CR 504.7 erase, asked with the real `from`.
+ *  - CR 402.6 `noPlayFromHand` refuses the hand only; "Discard me" is hand-only.
  *  - `castable` with the real `from`: a hand card reserves itself against its
  *    own [Discard a card] cost, a cached one does not.
  */
@@ -3546,11 +3547,11 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
   const act = (extra: { mode?: 'ambush' | 'discardMe'; eraseGrant?: true } = {}): Action => hand
     ? { type: 'playCard', seat, handIndex: src.index, ...extra }
     : { type: 'playCached', seat, index: src.index, ...(extra as { mode?: 'ambush'; eraseGrant?: true }) };
-  const playable = (!hand || !c.noPlayFromHand)                    // R100
+  const playable = (!hand || !c.noPlayFromHand)                    // CR 402.6
     && sourceAffordable(e, seat, src.name, src.price)
     && castable(e, c, region, seat, src.from);
   if (window === 'haste') {
-    // R97, gate 2 of three: the printed [Haste] timing OR a live grant. The
+    // CR 803.2b, gate 2 of three: the printed [Haste] timing OR a live grant. The
     // client's play affordance is built from this list, and a refusal the UI
     // still offers as a legal click is its own playtest report — so this must
     // route through the same `E.mayPlayAtHaste` that `playAtTiming` enforces.
@@ -3559,10 +3560,10 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
     if (timed && playable) {
       out.push(act());
     } else if (playable
-      // R123, gate 2 of three for the BIN grantor (Writhing Host), routed
+      // CR 504.7, gate 2 of three for the BIN grantor (Writhing Host), routed
       // through the same E.binHasteGrantorIndex that doPlayFrom enforces —
       // the fuzzer's "legalActions lied" check exists for this class of
-      // split. Offered only when no free route exists: an R97 allowance
+      // split. Offered only when no free route exists: a CR 504.7a allowance
       // costs nothing, so erasing a grantor is never the default — but once
       // the free plays are spent, the erase-funded one appears.
       && e.binHasteGrantorIndex({ seat, card: c, from: src.from, region }) >= 0) {
@@ -3572,8 +3573,8 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
   }
   if (window === 'deploy') {
     if (timingAllowsDeploy(c) && playable) out.push(act());
-    // R40: the "Discard me" mode (Dropslime) — a deployment action unless
-    // its own cost line carries a {Battle} marker. Hand-only (R311).
+    // CR 207.8: the "Discard me" mode (Dropslime) — a deployment action unless
+    // its own cost line carries a {Battle} marker. Hand-only (CR 403.4).
     if (hand && c.discardMe && (c.discardMe.timing ?? c.timing) !== 'battle' && canPayDiscardMe(e, seat, c)) {
       out.push(act({ mode: 'discardMe' }));
     }
@@ -3581,31 +3582,31 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
   }
   // battle
   if (c.timing === 'battle' && playable) out.push(act());
-  if (c.ambush && ambushAffordable(e, seat, c, src.price)          // R265: as above
+  if (c.ambush && ambushAffordable(e, seat, c, src.price)          // as above
     && e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
       region, undefined, seat).length > 0) {
     out.push(act({ mode: 'ambush' }));
   }
-  // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
-  // R65: discarding is not playing — every "Discard me" line works at
-  // instant speed, whatever the card's own timing says. Hand-only (R311).
+  // CR 207.8: a "Discard me" line whose own marker makes it battle timing (Nothyr)
+  // CR 111.12a: discarding is not playing — every "Discard me" line works at
+  // instant speed, whatever the card's own timing says. Hand-only (CR 403.4).
   if (hand && c.discardMe && canPayDiscardMe(e, seat, c)) {
     out.push(act({ mode: 'discardMe' }));
   }
 }
 
 /**
- * R96: every legal bin play for `seat` right now. Shaped on the cache play offer (`pushSourcePlays`),
+ * CR 405.9: every legal bin play for `seat` right now. Shaped on the cache play offer (`pushSourcePlays`),
  * and routed through the SAME `E.mayPlaySpellsFromBin` predicate `doPlayFromBin`
  * enforces — the fuzzer asserts legalActions never offers what apply refuses,
  * and this class of split has already been caught once.
  */
 function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
-  const grant = e.mayPlaySpellsFromBin(seat, region);   // R96, battle-scoped
+  const grant = e.mayPlaySpellsFromBin(seat, region);   // CR 405.9, battle-scoped
   e.player(seat).bin.forEach((name, i) => {
     const c = getCard(name);
-    // R96's grant reaches SPELLS; R197's names ONE card and runs until
-    // regroup (Spell Excavation); R123's `playsFromBin` is the card's OWN
+    // The blanket grant reaches SPELLS (CR 405.9); the single-card grant names
+    // ONE card and runs until regroup (Spell Excavation); `playsFromBin` is the card's OWN
     // printed line ("…and played from your bin" — Trench Stalker) and needs
     // no grant. Same action, same doPlayFromBin gate — routed through the
     // SAME two predicates apply enforces, because a permission with two
@@ -3613,7 +3614,7 @@ function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
     // tripped.
     if (!(((grant || e.mayPlayCardFromBin(seat, region, name)) && binPlayable(c))
       || c.playsFromBin)) return;
-    // R42/R45: printed timing applies, so the battle window offers {Battle}
+    // CR 702.2a: printed timing applies, so the battle window offers {Battle}
     // cards only (see doPlayFromBin's note).
     if (c.timing !== 'battle') return;
     if (!e.canPayCard(seat, name)) return;
@@ -3623,12 +3624,12 @@ function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
 }
 
 /**
- * R95: every legal battle-window AUGMENT for `seat` — hand, bin and cache.
+ * CR 720.2b: every legal battle-window AUGMENT for `seat` — hand, bin and cache.
  *
  * Routes through `battleAugmentAllowed`, the SAME predicate `doAugment`
  * enforces — the fuzzer checks that `legalActions` never offers something
  * `apply` refuses, and a permission with two implementations is precisely how
- * that check gets tripped. The walk is `sources` (R311), so a cache entry is
+ * that check gets tripped. The walk is `sources` (CR 403.3c), so a cache entry is
  * reached only under a live permission and priced by `sourcePrice` +
  * `modAffordable` — mana ignoring affinity for a glimpse, free for a
  * fulfilled prophecy — exactly as `doAugment` charges it.
@@ -3651,7 +3652,7 @@ function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): vo
     for (const host of e.unitsIn(region)) {
       out.push({ type: 'augment', seat, from: src.from, index: src.index, hostId: host.id });
     }
-    // R79: and onto a spell on the stack — either player's
+    // CR 723.4: and onto a spell on the stack — either player's
     for (const it of e.s.stack) {
       if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== region) continue;
       out.push({ type: 'augment', seat, from: src.from, index: src.index, hostStack: it.id });
@@ -3660,10 +3661,10 @@ function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): vo
 }
 
 /**
- * R41: every mod `seat` may apply into `region` right now — augments and
+ * CR 507.2: every mod `seat` may apply into `region` right now — augments and
  * grafts, out of hand, bin and cache.
  *
- * ONE walk, shared by the deployment offer and (through `gate`) by the R18
+ * ONE walk, shared by the deployment offer and (through `gate`) by the CR 504.8a
  * haste-step offer, because "as if it was deployment" is exactly a claim that
  * the two lists are the same list. Extracted rather than copied for the reason
  * `battleAugmentAllowed` is one predicate: the fuzzer checks that legalActions
@@ -3672,14 +3673,14 @@ function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): vo
  * deployment-only version — the UI and the fuzzer index into this list.
  *
  * `gate` is the per-card permission question. Deployment asks nothing (a mod
- * is a deployment action by default); the haste step asks R95's haste sibling
+ * is a deployment action by default); the haste step asks the Slurpr grant (CR 504.8a)
  * about each card, since the grant is per-card by construction ("other mods").
  */
 function pushMods(e: E, seat: Seat, region: number, out: Action[],
   gate: (c: CardDef, from: ModZone, kind: 'augment' | 'graft') => boolean = () => true): void {
-  // R303: THE SAME two predicates `doAugment`/`doGraft` enforce, in the
+  // CR 720.5a, 720.4b: THE SAME two predicates `doAugment`/`doGraft` enforce, in the
   // same order — permission, then price. `sourcePrice` (inside `sources`, the
-  // R311 seam) is where a cache entry with no live permission is refused, so
+  // CR 403.3a seam) is where a cache entry with no live permission is refused, so
   // it is refused in the offer too and the fuzzer's "legalActions lied" check
   // has one answer to compare.
   for (const { from, index: i, name, price } of sources(e, seat, ['hand', 'bin', 'cache'])) {
@@ -3687,8 +3688,8 @@ function pushMods(e: E, seat: Seat, region: number, out: Action[],
     const c = getCard(name);
     if (isAugment(name) && gate(c, from, 'augment')) {
       for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-      // R89: and the spell tokens standing in the same region. This is the
-      // line whose absence made the ruling invisible — R79 shipped the
+      // CR 721.4a: and the spell tokens standing in the same region. This is the
+      // line whose absence made the ruling invisible — the stack-Virus ruling shipped the
       // stack half and `legalActions` never offered it either, which is
       // precisely how it stayed unreachable for a whole round.
       for (const host of e.tokensOf(seat, region)) {
@@ -3697,7 +3698,7 @@ function pushMods(e: E, seat: Seat, region: number, out: Action[],
     }
     if (isGraftable(name) && gate(c, from, 'graft')) {
       for (const host of e.unitsOf(seat, region)) {
-        if (graftCauseIndex(e.faceName(host)) < 0) continue;   // R336: the face, not the printed card
+        if (graftCauseIndex(e.faceName(host)) < 0) continue;   // CR 710.1: the face, not the printed card
         for (let p = 0; p <= host.mods.length; p++) {
           out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
         }
@@ -3707,12 +3708,12 @@ function pushMods(e: E, seat: Seat, region: number, out: Action[],
 }
 
 /**
- * R95 (haste sibling), offer gate 2 of the three: every mod `seat` may apply
- * during the R18 haste step. Shaped on `pushBattleAugments` and routed through
+ * CR 504.8a (haste sibling), offer gate 2 of the three: every mod `seat` may apply
+ * during the haste step. Shaped on `pushBattleAugments` and routed through
  * the SAME `hasteModAllowed` predicate `doAugment` and `doGraft` enforce.
  *
  * Hand, bin AND cache, for both kinds, because "as if it was deployment"
- * grants whatever deployment grants and deployment walks all three (R41).
+ * grants whatever deployment grants and deployment walks all three (CR 507.2).
  * Unlike Rook — which prints "from hand and bin" and so refuses the cache in
  * the CARD — Slurpr names no zone list at all.
  */
@@ -3722,7 +3723,7 @@ function pushHasteMods(e: E, seat: Seat, region: number, out: Action[]): void {
 }
 
 /**
- * R42/R277, gate 1 of two: every card `seat` may prophesy right now.
+ * CR 803.7b, gate 1 of two: every card `seat` may prophesy right now.
  *
  * The banner cost is plain mana — no affinity pips — so this checks openMana
  * rather than canPayCard. 'bin' only for a card that says it may be (Angel of
@@ -3736,12 +3737,12 @@ function pushProphesies(e: E, seat: Seat, out: Action[]): void {
       const c = getCard(name);
       if (!c.prophecy) return;
       if (from === 'bin' && !c.prophesyFromBin) return;
-      if (!canPayProphecy(e, seat, c.prophecy)) return;   // R301: pips too
+      if (!canPayProphecy(e, seat, c.prophecy)) return;   // CR 803.7d: pips too
       if (!e.mayProphesy(seat, c)) return;
       out.push({ type: 'prophesy', seat, from, index: i });
     });
   }
-  // R308: a glimpsed card is in your hand for this purpose too
+  // CR 801.9h: a glimpsed card is in your hand for this purpose too
   e.cache(seat).forEach((cc, i) => {
     const c = getCard(cc.card);
     if (!c.prophecy) return;
@@ -3755,30 +3756,30 @@ function pushProphesies(e: E, seat: Seat, out: Action[]): void {
 function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): void {
   const battle = e.s.phase === 'battle';
   for (const u of e.unitsOf(seat, region)) {
-    const strips = e.strippersOf(u, 'abilities');              // R328
+    const strips = e.strippersOf(u, 'abilities');              // CR 712.2
     const offer = (list: ReturnType<typeof getCard>['abilities'], prefix: 'ability' | 'augment',
       budgetCard: CardName, via?: ActivateVia) => {
       (list ?? []).forEach((ab, i) => {
         if (ab.type !== 'activated') return;
-        // R49: a per-ability {Battle}/{Deployment} marker, and the full
+        // CR 705.2, 111.6: a per-ability {Battle}/{Deployment} marker, and the full
         // activation cost (life, discard, sacrifice-another, debt) as a gate
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
-        if (strips.length && E.strippedBy(viaStamp(via), strips)) return;      // R328
-        if (e.abilityIsSuppressed(u, ab, viaStamp(via))) return;                 // R269
-        if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // R64/R77
+        if (strips.length && E.strippedBy(viaStamp(via), strips)) return;      // CR 712.2
+        if (e.abilityIsSuppressed(u, ab, viaStamp(via))) return;                 // CR 712.4
+        if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // CR 705.3a
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
     };
-    // R118 layer 0: the activated text comes off the FACES the unit is
+    // CR 710.1: the activated text comes off the FACES the unit is
     // wearing, not off `u.card`. `facesWith` puts the IDENTITY face first (the
     // copied card for Apex Prime / Borrower of Forms, the unit's own card
     // otherwise) and then whatever is being projected onto it right now
     // (Ancient One's adjacent allies, and the cards augmented onto them).
     //
     // The identity face keeps the two `via` shapes it has always had —
-    // undefined and 'augment' — so a pre-R118 action log replays unchanged;
+    // undefined and 'augment' — so a pre-copy-layer action log replays unchanged;
     // every other face is addressed by `{ face }`. `activationSource` resolves
     // the same list from the same call, and the two MUST agree action for
     // action: the fuzzer's "legalActions lied" invariant is the guard, and
@@ -3792,9 +3793,8 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
       offer(getCard(face).augmentText, 'augment', face,
         own ? 'augment' : { face, text: 'augment' });
     }
-    // R341: the [Augment] text of the mods a copy copied, addressed by the
-    // mod's card name. Once per name — two copied Graxxlids share one R9
-    // budget on this host, exactly as two real ones do — and never a name a
+    // CR 710.2a: the [Augment] text of the mods a copy copied, addressed by the
+    // mod's card name. Once per name — two copied Graxxlids share one budget on this host, as two real ones do in the engine (CR 109.9k gives each mod its own use; the engine keys the budget by card name — no ticket yet) — and never a name a
     // face above already offered, which would be the same action twice.
     const copied = e.copiedAugments(u, 'activated');
     for (let i = 0; i < copied.length; i++) {

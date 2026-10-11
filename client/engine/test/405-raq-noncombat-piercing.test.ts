@@ -1,5 +1,5 @@
 /**
- * R340 — {Piercing} is elective OUTSIDE combat too (2026-10-10).
+ * CR 802.16j — {Piercing} is elective OUTSIDE combat too (2026-10-10).
  *
  * RAQ "[Solved] Squish/Fight/Battle vs Source of damage & Interactions": seniek
  * asks about "Bubb and Good Whale in a column and played Squish/Fight/Battle on
@@ -56,10 +56,10 @@ function bubbSquish(seed: number): { h: Harness; A: Seat; D: Seat; victim: Entit
   return { h, A, D, victim };
 }
 
-test('R340 Squish: Bubb with Good Whale\'s Piercing — the excess is a question, and keeping it all sends nothing to the player', () => {
+test('CR 802.16j Squish: Bubb with Good Whale\'s Piercing — the excess is a question, and keeping it all sends nothing to the player', () => {
   const { h, A, D, victim } = bubbSquish(40501);
   const dec = h.state.decision!;
-  assert.equal(dec.kind, 'assignDamage', 'the elective split — R319\'s decision, so the client draws its dial');
+  assert.equal(dec.kind, 'assignDamage', 'the elective split — the combat decision (CR 802.16c), so the client draws its dial');
   assert.equal(dec.seat, A, 'the dealing player decides');
   assert.match(dec.prompt, /\{Piercing\}/, 'the prompt names Piercing (the client\'s "goes to the player" hint keys on it)');
   assert.deepEqual(dec.options.map(o => o.value), ['default', 1, 2, 3, 4, 5, 6],
@@ -71,7 +71,7 @@ test('R340 Squish: Bubb with Good Whale\'s Piercing — the excess is a question
   finishBattle(h);
 });
 
-test('R340 Squish: the default still lets the excess through — 1 to the 1/1, 5 to the player', () => {
+test('CR 802.16j Squish: the default still lets the excess through — 1 to the 1/1, 5 to the player', () => {
   const { h, D, victim } = bubbSquish(40502);
   const life = h.state.players[D]!.life;
   keep(h, 'default');
@@ -80,7 +80,7 @@ test('R340 Squish: the default still lets the excess through — 1 to the 1/1, 5
   finishBattle(h);
 });
 
-test('R340 Squish: a split in between — 4 kept on the unit, 2 to the player', () => {
+test('CR 802.16 Squish: a split in between — 4 kept on the unit, 2 to the player', () => {
   const { h, D, victim } = bubbSquish(40503);
   const life = h.state.players[D]!.life;
   keep(h, 4);
@@ -89,7 +89,7 @@ test('R340 Squish: a split in between — 4 kept on the unit, 2 to the player', 
   finishBattle(h);
 });
 
-test('R340 Fight: a Piercing ally\'s excess is elective — 5 of its 7 kept on a 1/3, 2 to the player', () => {
+test('CR 802.16j Fight: a Piercing ally\'s excess is elective — 5 of its 7 kept on a 1/3, 2 to the player', () => {
   const h = new Harness(40504);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -115,7 +115,7 @@ test('R340 Fight: a Piercing ally\'s excess is elective — 5 of its 7 kept on a
   finishBattle(h);
 });
 
-test('R340 Battle: the question belongs to the Piercing unit\'s controller, not the caster', () => {
+test('CR 802.16k Battle: the question belongs to the Piercing unit\'s controller, not the caster', () => {
   const h = new Harness(40505);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -138,7 +138,7 @@ test('R340 Battle: the question belongs to the Piercing unit\'s controller, not 
   finishBattle(h);
 });
 
-test('R340 control: no Piercing, no question — a plain ally\'s overkill stays on the unit', () => {
+test('CR 802.16j control: no Piercing, no question — a plain ally\'s overkill stays on the unit', () => {
   const h = new Harness(40506);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -158,7 +158,7 @@ test('R340 control: no Piercing, no question — a plain ally\'s overkill stays 
   finishBattle(h);
 });
 
-test('R340 control: exactly lethal, no question — Good Whale squishes a 1/5 and nothing is left to place', () => {
+test('CR 802.16 control: exactly lethal, no question — Good Whale squishes a 1/5 and nothing is left to place', () => {
   const h = new Harness(40507);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -178,7 +178,7 @@ test('R340 control: exactly lethal, no question — Good Whale squishes a 1/5 an
   finishBattle(h);
 });
 
-test('R340 Electric + Piercing: where the chain dead-ends, the Piercing half is elective too', () => {
+test('CR 802.16q Electric + Piercing: where the chain dead-ends, the Piercing half is elective too', () => {
   // a lone 1/2 has no neighbour, so a 6-point Electric + Piercing hit has
   // nowhere to jump: 2 is lethal, and the other 4 are the dealing player's to place
   const h = new Harness(40508);
@@ -205,7 +205,7 @@ test('R340 Electric + Piercing: where the chain dead-ends, the Piercing half is 
 });
 
 test('two Electric chains in one damage call ask two questions, not one answer twice', () => {
-  // Found beside R340: the path question was keyed `epath:<hop>` alone, and a
+  // Found while building this file's rule (CR 802.16j): the path question was keyed `epath:<hop>` alone, and a
   // part's answers are keyed by that tag, so a second hit's chain (a Fight
   // between two Electric units) silently reused the first chain's pick — a unit
   // beside the FIRST victim, not the second. Both hits here have a neighbour.

@@ -1,15 +1,15 @@
 /* The LITERAL-READING audit of the light + wood/metal-hybrid batches
- * (2026-08-24), in R125's shape: a qualifier in the code that the printed text
+ * (2026-08-24), in the Rotspore ruling's shape: a qualifier in the code that the printed text
  * does not carry, or a clause the code reads at a moment the card does not.
  *
  * "I think you're underestimating most cards. All the cards in Algomancy are
- * pretty literal." — the owner, R125.
+ * pretty literal." — the owner, on Rotspore Herald (CR 707.7).
  *
  * Four cards moved:
  *
  *  · VROOT — "When my column deals combat damage" was read off the aggregated
  *    per-seat combat `lifeLost` with no sub-step gate, so a Vroot in a NORMAL
- *    column paid the opponent for a {Swift} column's damage. R117 ruled that
+ *    column paid the opponent for a {Swift} column's damage. A ruling (now CR 608.9a) settled that
  *    clause ("it fires in the sub-step its own column strikes in") and shipped
  *    `E.strikesInCurrentSubStep`; batch-dark-b's copy of this very helper
  *    already carried the gate and batch-light-a's did not.
@@ -24,9 +24,9 @@
  *    not to; the line needed `privateTo`.
  *
  *  · HOOBA-GOD — "create a token that's a copy of ME" hardcoded the string
- *    'Hooba-God' instead of reading the R118 face. Latent today (no shipped
+ *    'Hooba-God' instead of reading the CR 710.5 face. Latent today (no shipped
  *    card puts Hooba-God's trigger on something else), so the test builds the
- *    reachable case with R63's `grantText`, the shipped primitive Reforge the
+ *    reachable case with CR 109.8's `grantText`, the shipped primitive Reforge the
  *    Dead uses.
  *
  * Seeds 11500-11599. */
@@ -59,18 +59,18 @@ function answerAll(h: Harness): void {
 
 /** how many times Vroot's "when my column deals combat damage" was ANNOUNCED.
  *
- * The trigger still fires inside the damage step under R261 (R1: the condition
+ * The trigger still fires inside the damage step under CR 608.9 (CR 109.3a: the condition
  * is evaluated at event time); what moved is when it RESOLVES. The count is
- * therefore the one reading of the sub-step rule that R261 could not disturb,
+ * therefore the one reading of the sub-step rule that holding triggers to after combat could not disturb,
  * and it is asserted alongside the life totals rather than instead of them.
  *
- * ⚠ WHAT IT ACTUALLY GUARDS IS THE RULE, NOT R117's GATE. Measured in a
+ * ⚠ WHAT IT ACTUALLY GUARDS IS THE RULE, NOT CR 608.9a's GATE. Measured in a
  * scratch copy: `strikesInCurrentSubStep` can be replaced by `return true` and
- * neither test below notices, because R195 gave the aggregated `lifeLost` a
+ * neither test below notices, because a later fix gave the aggregated `lifeLost` a
  * per-column breakdown and `columnDealtCombatDamage`'s face arm asks
  * `faceDamageDealtBy` — which already answers "is this my sub-step?" on the
  * way to answering "is this my damage?". Both gates have to go before a
- * number here moves; either one alone holds R117. */
+ * number here moves; either one alone holds CR 608.9a. */
 function vrootTriggers(h: Harness): number {
   return h.events.filter(ev => ev.type === 'triggered' && /Vroot/.test(ev.msg)).length;
 }
@@ -85,9 +85,9 @@ function toNaming(h: Harness, attacker: Seat): void {
   if (!h.state.decision) skipHasteStep(h);
 }
 
-// ── Vroot: R117's sub-step gate ──────────────────────────────────────────
+// ── Vroot: CR 608.9a's sub-step gate ──────────────────────────────────────────
 
-test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', () => {
+test('Vroot: a NORMAL column does not pay out for the Swift sub-step (CR 608.9a)', () => {
   const h = new Harness(11501);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -102,18 +102,17 @@ test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', ()
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
-  // R261 (owner, 2026-08-30): THE PAYOUT NO LONGER HAPPENS INSIDE THE DAMAGE
+  // CR 608.9b (owner, 2026-08-30): THE PAYOUT NO LONGER HAPPENS INSIDE THE DAMAGE
   // STEP. `answerAll` alone used to be enough here because `pumpCombatDamage`
   // drained the trigger queue between sub-steps and Vroot's life gain had
   // already landed by the time the pass returned. It goes on the stack in the
   // after-combat window now, respondable by both seats, so the board does not
   // carry the refund until somebody lets the stack resolve.
   //
-  // ⚠ R261 TOOK THE ORDERING CLAIM AND LEFT THE GATE, WHICH IS WHAT THIS TEST
+  // ⚠ Holding triggers to after combat took the ordering claim and left the gate, WHICH IS WHAT THIS TEST
   // IS ABOUT. `strikesInCurrentSubStep` is still asked from `when()`, at event
   // time, inside `combatSubStep`, so Vroot still hears ONLY its own column's
-  // sub-step and the number below is unchanged. R295 gave the ordering claim
-  // BACK for split steps (a Swift column's riders do land before normal damage
+  // sub-step and the number below is unchanged. The split-step ruling (CR 608.9c) gave the ordering claim back for split steps (a Swift column's riders do land before normal damage
   // again) — and the number here is still unchanged, because this test is
   // about what Vroot HEARS, which neither ruling touched.
   throughDamageWindows(h);
@@ -127,7 +126,7 @@ test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', ()
   assert.equal(h.state.players[D]!.life, life0 - 2,
     'the Drifter\'s 2 sticks; only Vroot\'s own 4 comes back');
   // THE POSITIVE CONTROL, and it is not decoration: with the gate gone the
-  // count is TWO, and under R261 both would resolve after combat and the life
+  // count is TWO, and under CR 608.9b both would resolve after combat and the life
   // total would come out at life0 — the same number a board where Vroot never
   // triggered at all would produce. The count is what tells those apart.
   assert.equal(vrootTriggers(h), 1,
@@ -136,7 +135,7 @@ test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', ()
   finishBattle(h);
 });
 
-test('Vroot: its OWN sub-step still pays out in full (R114 unchanged)', () => {
+test('Vroot: its OWN sub-step still pays out in full (CR 608.6d unchanged)', () => {
   const h = new Harness(11502);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -148,7 +147,7 @@ test('Vroot: its OWN sub-step still pays out in full (R114 unchanged)', () => {
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   answerAll(h);
-  resolveAfterCombat(h);   // R261: the payout is on the after-combat stack, not in the sub-step
+  resolveAfterCombat(h);   // CR 608.9b: the payout is on the after-combat stack, not in the sub-step
   assert.equal(h.state.players[D]!.life, life0,
     'lost 4, gained 4 — the gate narrows WHEN it fires, never whether');
   assert.equal(vrootTriggers(h), 1, 'one column, one sub-step, one trigger');
@@ -170,7 +169,7 @@ test('The Everywhere: a card NOT in play can be named, and the silence bites whe
     'the menu is the card pool, not the board');
   pick(h, 'Good Whale');
   assert.equal(ent(h, ev)!.named, 'Good Whale', 'a card nobody has played is a legal name');
-  // it arrives afterwards, in ITS OWN region: nothing is silenced yet (R12)
+  // it arrives afterwards, in ITS OWN region: nothing is silenced yet (CR 601.1d)
   const whale = spawn(h, D, 'Good Whale');                   // 7/5, trigger-free
   assert.ok(!h.q.abilitiesSuppressed(ent(h, whale)!),
     'still in their own region — the naming reaches nothing across regions');
@@ -222,14 +221,14 @@ test("Divine Foresight: the opponent's hand does not go into the shared log", ()
   finishBattle(h);
 });
 
-// ── Hooba-God: "a copy of ME" reads the R118 face ────────────────────────
+// ── Hooba-God: "a copy of ME" reads the CR 710.5 face ────────────────────────
 
-test('Hooba-God: granted to another unit, "a copy of me" copies THAT unit (R118)', () => {
+test('Hooba-God: granted to another unit, "a copy of me" copies THAT unit (CR 710.5)', () => {
   const h = new Harness(11506);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const host = spawn(h, A, 'Good Whale');                    // 7/5, trigger-free
-  // R63: an authored ability granted by reference, exactly as Reforge the Dead
+  // CR 109.8: an authored ability granted by reference, exactly as Reforge the Dead
   // grants "When I die, create a Robot 3." — fireEvent dispatches it off
   // `Entity.granted`, and "me" is the HOLDER, not the card the text came from.
   withE(h, e => {
@@ -243,7 +242,7 @@ test('Hooba-God: granted to another unit, "a copy of me" copies THAT unit (R118)
   const before = unitsOf(h, A).length;
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   pass(h); pass(h);                                          // the granted trigger resolves
-  answerAll(h);                                              // R75: which slot
+  answerAll(h);                                              // CR 602.6: which slot
   const made = unitsOf(h, A).filter(u => u.token);
   assert.equal(unitsOf(h, A).length, before + 1, 'exactly one token was created');
   assert.equal(made[0]!.card, 'Good Whale',

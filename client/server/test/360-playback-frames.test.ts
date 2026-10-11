@@ -210,7 +210,7 @@ test('§7 a haste step closes into frames the same way', () => {
   const room = createRoom('PB365', 36061, [...NAMES]);
   tick(room, { type: 'donePlanning', seat: 0 });
   tick(room, { type: 'donePlanning', seat: 1 });
-  assert.equal(room.segKey, 'haste', 'positive control: the haste step is open (R228)');
+  assert.equal(room.segKey, 'haste', 'positive control: the haste step is open (CR 504.5)');
   const A: Seat = 0, D: Seat = 1;
   giveEverything(room, A);
   tick(room, { type: 'playCard', seat: A, handIndex: give(room, A, 'Cinder Scuttler') });

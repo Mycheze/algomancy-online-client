@@ -65,7 +65,7 @@ import {
   CR_BUILD_DIR, CR_FINDINGS_DIR, CR_HARNESS_DIR, CR_LEDGER, CR_RULES_DIR, CR_VERDICTS_DIR,
   CR_VERIFY_INPUT_DIR, CR_VERIFY_OUTPUT_DIR, REPO_ROOT,
 } from '../paths.mjs';
-import { MAX_QUOTE, norm, parseRulingCite, recordHash } from './schema.mjs';
+import { MAX_QUOTE, norm, recordHash } from './schema.mjs';
 
 export class HarnessError extends Error {}
 const fail = (m) => { throw new HarnessError(m); };
@@ -569,14 +569,13 @@ export const roundsIn = (names) => [...new Set(names.map((n) => /^mutants-r(\d+)
 /* ── pure: stamp ───────────────────────────────────────────────────────── */
 
 /**
- * Fill each record's sourceHashes from the extract: every current ruling it
- * cites (`R114` → bodyHash) and every designer claim it quotes (`RAQ id#i` →
- * textHash). A hash already there is KEPT — it is what the drafter read, and
+ * Fill each record's sourceHashes from the extract: every designer claim it
+ * quotes (`RAQ id#i` → textHash). An owner call needs none: its quote is
+ * carried in the record itself (`sources.owner`), so nothing outside can drift. A hash already there is KEPT — it is what the drafter read, and
  * a mismatch is the checker's "changed since drafting" — unless `refresh`.
  * Hashes for sources no longer cited are dropped.
  */
 export function stamp(records, ex, { refresh = false } = {}) {
-  const rulings = new Map((ex.rulings ?? []).map((r) => [r.id, r.bodyHash]));
   const claims = new Map();
   for (const t of ex.raq ?? []) for (const c of t.claims ?? []) claims.set(c.id, c.textHash);
   let filled = 0, dropped = 0, refreshed = 0;
@@ -585,11 +584,6 @@ export function stamp(records, ex, { refresh = false } = {}) {
     const r = structuredClone(r0);
     if (!r || 'term' in r) return r;
     const want = new Map();
-    for (const x of r.sources?.rulings ?? []) {
-      const c = parseRulingCite(typeof x === 'string' ? x : x?.ref ?? '');
-      if (!c) continue;
-      if (rulings.has(c.id)) want.set(c.id, rulings.get(c.id)); else missing.push(`${r.key}: ${c.id}`);
-    }
     for (const x of r.sources?.designer ?? []) {
       const ref = String(x?.ref ?? '');
       const id = ref.replace(/^RAQ /, '');

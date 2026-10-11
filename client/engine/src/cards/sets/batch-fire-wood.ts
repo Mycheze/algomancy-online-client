@@ -4,8 +4,8 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R9 (bounded budgets per card), R12 (regions are exclusive — the engine
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 803.4 (bounded budgets per card), CR 601.1d (regions are exclusive — the engine
  * region-scopes trigger listeners, so "your/ally/enemy" conditions only see
  * same-region entities).
  *
@@ -24,7 +24,7 @@ import { selfOf, isEnt, isUnitCard } from './helpers.ts';
 card('Bumblecrab', {});
 
 // "[Augment] {Deadly} Bedlam Beast Unit" — type-line [Augment] grants {Deadly}
-// (R21); printed.augmentAttrs carries it. (Vanilla 3/3 Deadly played normally.)
+// (CR 802.3); printed.augmentAttrs carries it. (Vanilla 3/3 Deadly played normally.)
 card('Carapace Devourer', {});
 
 // ─────────────────────────────── FIRE ───────────────────────────────────
@@ -44,9 +44,9 @@ card('Channeled Boon', {
 });
 
 // "[Switch1] I deal damage to any target equal to the number of units that
-// died in this battle." — R1: the amount is computed at RESOLUTION from the
+// died in this battle." — CR 107.8: the amount is computed at RESOLUTION from the
 // battle counters. "units that died in this battle" = both seats' deaths in
-// this region-battle (R14: battle counters are per region-battle). Bounded
+// this region-battle (CR 505.6: battle counters are per region-battle). Bounded
 // graft ([Switch1]).
 const burningVengeance: EffectDef = {
   targets: { what: 'any', prompt: 'Burning Vengeance: damage = units that died this battle' },
@@ -57,7 +57,7 @@ const burningVengeance: EffectDef = {
       g.ev('info', 'Burning Vengeance: no unit has died this battle — it deals 0 damage.');
       return;
     }
-    // R227 ⚠ the empty-targets sweep CANNOT reach this line — the `deaths <= 0`
+    // CR D7.3a ⚠ the empty-targets sweep CANNOT reach this line — the `deaths <= 0`
     // return above fires on all three of its boards, so this site was found by
     // the SOURCE scan (65 §3's second guard), not by the drive. That is why
     // both guards exist.
@@ -76,8 +76,8 @@ card('Burning Vengeance', {
 
 // "[Augment] When I attack or block, create a Fireball X+1, where X is the
 // number of allies adjacent to me." — text-box [Augment] (text only, no attrs).
-// R1: X is measured at RESOLUTION from live formation adjacency.
-// R325 (RAQ "[Solved] Dead Unit Effect on Stack", _passer): "If Flamebreath
+// CR 603.2c: X is measured at RESOLUTION from live formation adjacency.
+// CR 714.5 (RAQ "[Solved] Dead Unit Effect on Stack", _passer): "If Flamebreath
 // Initiate is removed with his trigger on the stack, the X=0 so he will still
 // make Fireball 1." A unit that is not there has no allies beside it.
 const flamebreathInitiate: EffectDef = {
@@ -102,12 +102,12 @@ card('Flamebreath Initiate', {
 // self:true — the afterCombat event carries no source unit, so a self-guard
 // would never fire (cf. Wisp / Smouldering Inferno). X = the attacking units
 // on my side (units in the attacker columns I control), read at RESOLUTION
-// (R1): survivors of combat. If I wasn't an attacker (I blocked, or there was
+// (CR 107.8): survivors of combat. If I wasn't an attacker (I blocked, or there was
 // no attack) X = 0 and nothing is created.
 const embermawFledgling: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => {
-    // R325: "remember they were in formation and will work fine" (RAQ, Dead
+    // CR 714.4: "remember they were in formation and will work fine" (RAQ, Dead
     // Unit Effect on Stack) — a Fledgling gone before this resolves still
     // counts the attackers on the side it stood on
     const self = selfOf(g, ctx) ?? g.lastKnownOf(ctx.sourceId);
@@ -136,7 +136,7 @@ card('Embermaw Fledgling', {
 // ─────────────────────────────── WOOD ────────────────────────────────────
 
 // "When I attack or block, [Switch] Your units gain +0/+1 until regroup." —
-// R12: "your units" is region-scoped, so it buffs my units IN THIS REGION
+// CR 601.1b: "your units" is region-scoped, so it buffs my units IN THIS REGION
 // (the battle region where I'm attacking/blocking). Unbounded graft.
 const grottoBuff: EffectDef = {
   run: (g, ctx) => {
@@ -161,9 +161,9 @@ card('Guardian of the Grotto', {
 });
 
 // "When another nontoken ally spawns, [Switch1] Draw a card." — spawned event.
-// when() (R1, event-time): same controller (ally), not me (another), and the
-// spawned entity is not a token (nontoken). Region is auto-scoped (R12: only
-// same-region spawns reach this listener). Bounded graft ([Switch1], R9).
+// when() (CR 109.3a, event-time): same controller (ally), not me (another), and the
+// spawned entity is not a token (nontoken). Region is auto-scoped (CR 601.1d: only
+// same-region spawns reach this listener). Bounded graft ([Switch1], CR 722.5).
 const caudexDraw: EffectDef = { run: (g, ctx) => g.draw(ctx.controller, 1) };
 card('Engorged Caudex', {
   abilities: [{
@@ -179,8 +179,8 @@ card('Engorged Caudex', {
 });
 
 // "When an enemy dies, [Switch1] Create a 2/2 unit." — died event. when()
-// (R1, event-time): the dying unit's controller differs from mine (enemy).
-// Region auto-scoped (R12). Bounded graft ([Switch1], R9).
+// (CR 109.3a, event-time): the dying unit's controller differs from mine (enemy).
+// Region auto-scoped (CR 601.1d). Bounded graft ([Switch1], CR 722.5).
 const foragerSpawn: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [2, 2] }); },
@@ -198,10 +198,10 @@ card('Forager of the Fallen', {
 // "[Augment] Whenever you play a unit, create a 1/1 unit."
 //
 // It listens on 'cardPlayed', not on 'spawned'. The old note here said "there
-// is no 'unitPlayed' event" — that expired with R129, which fires
+// is no 'unitPlayed' event" — that expired when the engine began firing
 // 'cardPlayed' for exactly the four kinds that ARE plays (unit / spell /
 // spellUnit / ambush; a spell TOKEN is out — casting one is playing a SPELL,
-// R305, but a token is not a card, R133 — and a mod is not a play — R37).
+// CR 701.1c, but a token is not a card, CR 304.2 — and a mod is not a play — CR 701.2a).
 // Void Mandible already reads it. A token spell is not a unit either, so
 // "play a unit" could never count one whichever event this heard.
 //
@@ -220,7 +220,7 @@ card('Forager of the Fallen', {
 // The loop guard is structural now rather than a token check: a created token
 // never fires 'cardPlayed' at all. The text says "you play a unit" (NOT
 // "another"), so unlike Flourishing Flora it is NOT self-excluded. Region
-// auto-scoped (R12).
+// auto-scoped (CR 601.1d).
 const bloomcasterMake: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] }); },
@@ -240,7 +240,7 @@ card('Bloomcaster', {
 // "[Augment] Whenever another ally spawns, put a +1/+1 counter on me." —
 // spawned event. when(): same controller (ally), not me (another — "another"
 // excludes my own spawn). Tokens count as allies (no nontoken restriction).
-// Region auto-scoped (R12).
+// Region auto-scoped (CR 601.1d).
 const floraGrow: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);

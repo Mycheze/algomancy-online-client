@@ -1,11 +1,11 @@
-/* R175 — playtest report #15, refiled against its REAL cause.
+/* Playtest report #15, refiled against its REAL cause.
  *
  * WHAT THE REPORT SAID (BRDM, 2026-08-20, action 180):
  *
  *     "Why didn't Refuse Reclaimer get a counter from my Oracle dying?
  *      It should have activated again"
  *
- * WHAT THE LEDGER SAID FOR FIVE DAYS: `by-design`, R12 region scoping — *"a
+ * WHAT THE LEDGER SAID FOR FIVE DAYS: `by-design`, CR 601.1d region scoping — *"a
  * Reclaimer standing at home genuinely does not see an Oracle die in the battle
  * region"* — guarded by two region-scoping tests in `28-metal-c.test.ts`.
  *
@@ -28,7 +28,7 @@
  * reconstructed a scenario that would explain the complaint, verified the
  * engine handles THAT correctly, and closed it — and the two guards pin a rule
  * the report never touched. That is the same shape as the four blind guards
- * R173 repaired, in the one entry an audit had cleared, and only the replay
+ * the guard-shape audit repaired, in the one entry an audit had cleared, and only the replay
  * could show it.
  *
  * WHY IT IS NOT LIVE. The stack was not on the table when he filed: the stack
@@ -37,7 +37,7 @@
  *
  * WHAT THIS FILE HOLDS DOWN. A unit's own triggered ability, while it sits on
  * the stack, must be visible TO ITS CONTROLLER and must name the unit it came
- * from — read through `viewFor`, the way R173's guards do, because a field the
+ * from — read through `viewFor`, the way the 154-guard-shape guards do, because a field the
  * server redacts on the way out leaves every engine-side assertion green and
  * the screen exactly as blank as it was on 2026-08-20.
  */

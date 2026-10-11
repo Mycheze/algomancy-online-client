@@ -3,7 +3,7 @@
  * Every decision lives in admin.ts; this file is transport. What it DOES own
  * is the gate, and the gate has one rule:
  *
- * ⚠ 404, NEVER 403, AND BEFORE READING THE BODY. R216's argument, applied a
+ * ⚠ 404, NEVER 403, AND BEFORE READING THE BODY. The scenario-room's argument, applied a
  * third time (the scenario tester, then the bot routes, now this). A non-admin
  * — logged in, logged out, or holding a token that expired an hour ago — gets
  * exactly what they would get for a path this server does not serve. There is

@@ -35,7 +35,7 @@
  *     hope.
  */
 import type { GameMode, Seat } from '../engine/src/types.ts';
-// R290: a conceded game weighs by the turn it was conceded on. The amounts
+// CR D8.5: a conceded game weighs by the turn it was conceded on. The amounts
 // and thresholds are named in concession.ts and nowhere else.
 import {
   concessionWeight, EARLY_K_SCALE, WALKOVER_PENALTY, type Concession,
@@ -126,11 +126,11 @@ export interface RatableGame {
   users: [string | null, string | null];
   /** stamped by the room: this game was made by the matchmaker */
   rated?: boolean;
-  /** R290: stamped by the room when a concede decided it — who, which turn */
+  /** CR D8.5: stamped by the room when a concede decided it — who, which turn */
   concession?: Concession;
   /** BL-43: played with custom rules — never rated */
   custom?: unknown;
-  /** R298: a single card duel — rates the cards (cardladder.ts), never the players */
+  /** CR D8.2e: a single card duel — rates the cards (cardladder.ts), never the players */
   single?: unknown;
 }
 
@@ -147,7 +147,7 @@ export function isRated(game: RatableGame): boolean {
   // BL-43: nor a custom-rules game. The queue cannot make one; this is the
   // belt to that brace, so a hand-edited file cannot move a rating either.
   if (game.custom) return false;
-  // R298: nor a single card duel, which rates CARDS and has its own fold
+  // CR D8.2e: nor a single card duel, which rates CARDS and has its own fold
   if (game.single) return false;
   // (b) the format must be one that has a rating at all
   if (ratedMode(game.mode) === null) return false;
@@ -200,7 +200,7 @@ export function foldRatings(history: readonly RatableGame[]): RatingTable {
     const ra = a.rating, rb = b.rating;
     const weight = concessionWeight(game);
     if (weight === 'walkover') {
-      // R290 — A WALKOVER: conceded on turn 1. The owner: "The conceder
+      // CR D8.5 — A WALKOVER: conceded on turn 1. The owner: "The conceder
       // should take a few ELO points away, but the winner doesn't get
       // anything. They didn't do anything either."
       //
@@ -218,7 +218,7 @@ export function foldRatings(history: readonly RatableGame[]): RatingTable {
       conceder.rating -= WALKOVER_PENALTY;
       continue;
     }
-    // R290 — an EARLY concession (turn 2) is a game, at reduced weight:
+    // CR D8.5 — an EARLY concession (turn 2) is a game, at reduced weight:
     // "doesn't affect ELO as much as a 'full' game". The same exchange,
     // with K scaled, so it stays symmetric and stays a result. It DOES count
     // toward `games`: it is a decided game in the record.

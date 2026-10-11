@@ -1,7 +1,7 @@
-/* R185 — a blocked column stays blocked however the blocker leaves.
+/* CR 606.3a — a blocked column stays blocked however the blocker leaves.
  *
  * CARD-TODO #62. The engine has always done this, and until now it was an
- * ACCIDENT of R72's after-blocks lock rather than a decision: `exchangeAt`
+ * ACCIDENT of CR 602.5a's after-blocks lock rather than a decision: `exchangeAt`
  * reads `blockedEver = b.blocks[ci] !== undefined`, so once a column has been
  * blocked it is blocked for the rest of the sub-step, whatever happens to the
  * blocker. The Manual is explicit about the MIRROR case — a blocker whose
@@ -18,11 +18,10 @@
  * WHY THIS FILE EXISTS RATHER THAN A COMMENT. `02-combat.test.ts` already pins
  * the case where the blocker DIES. It does not pin any of the ways a blocker
  * can LEAVE without dying, and those are the ones that became reachable
- * recently: R172 pinned Download's mid-battle steal, and erase-from-play only
+ * recently: Download's mid-battle steal was pinned (CR 711.3), and erase-from-play only
  * started announcing itself as a despawn yesterday. A rule that holds for one
  * route out of play and was never tested on the other three is exactly the
- * shape this repo keeps finding half-implemented (R167 was the same shape one
- * verb over).
+ * shape this repo keeps finding half-implemented (the donated-despawn bug was the same shape one verb over).
  *
  * ⚠ The attacker here is deliberately a VANILLA unit. `02-combat`'s existing
  * test uses Good Whale, which is {Piercing}, and Piercing DOES carry through a
@@ -56,7 +55,7 @@ const runOut = (h: Harness): void => { pass(h); pass(h); pass(h); pass(h); };
 /* ── the negative control comes FIRST, because without it every assertion
  *    below passes on a board where nothing was ever going to connect ──── */
 
-test('R185 (control): an UNBLOCKED column really does connect, so the rest of this file means something', () => {
+test('CR 606.3a (control): an UNBLOCKED column really does connect, so the rest of this file means something', () => {
   const { h, D, life } = blockedColumn(7701, false);
   runOut(h);
   assert.ok(h.state.players[D]!.life < life,
@@ -64,7 +63,7 @@ test('R185 (control): an UNBLOCKED column really does connect, so the rest of th
     + 'is not delivering damage at all and every "no damage through" assertion below is vacuous.');
 });
 
-test('R185: a blocker that DIES leaves the column blocked', () => {
+test('CR 606.3a: a blocker that DIES leaves the column blocked', () => {
   const { h, D, blk, life } = blockedColumn(7702, true);
   whiteBox(h, e => e.destroy(e.entity(blk)!, 'is deleted'));
   assert.ok(!ent(h, blk), 'the blocker is gone before damage');
@@ -72,7 +71,7 @@ test('R185: a blocker that DIES leaves the column blocked', () => {
   assert.equal(h.state.players[D]!.life, life, 'no damage through the blocked column');
 });
 
-test('R185: a blocker that is RECALLED leaves the column blocked', () => {
+test('CR 606.3a: a blocker that is RECALLED leaves the column blocked', () => {
   const { h, D, blk, life } = blockedColumn(7703, true);
   whiteBox(h, e => (e as unknown as { recall(u: unknown): void }).recall(e.entity(blk)!));
   assert.ok(!ent(h, blk), 'the blocker left play without dying');
@@ -80,7 +79,7 @@ test('R185: a blocker that is RECALLED leaves the column blocked', () => {
   assert.equal(h.state.players[D]!.life, life, 'no damage through the blocked column');
 });
 
-test('R185: a blocker that is ERASED leaves the column blocked', () => {
+test('CR 606.3a: a blocker that is ERASED leaves the column blocked', () => {
   const { h, D, blk, life } = blockedColumn(7704, true);
   whiteBox(h, e => (e as unknown as { eraseFromPlay(u: unknown): void }).eraseFromPlay(e.entity(blk)!));
   assert.ok(!ent(h, blk), 'the blocker left play without dying');
@@ -88,8 +87,8 @@ test('R185: a blocker that is ERASED leaves the column blocked', () => {
   assert.equal(h.state.players[D]!.life, life, 'no damage through the blocked column');
 });
 
-test('R185: a blocker STOLEN mid-combat (Download) leaves the column blocked', () => {
-  // The route the ruling was actually asked about. R172 pinned the other half
+test('CR 606.3a: a blocker STOLEN mid-combat (Download) leaves the column blocked', () => {
+  // The route the ruling was actually asked about. The steal fix (CR 711.3) pinned the other half
   // of this — the stolen token sits out of the formation until regroup — but
   // said nothing about the column it was blocking.
   const { h, A, D, blk, life } = blockedColumn(7705, true);

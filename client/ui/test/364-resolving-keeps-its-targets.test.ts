@@ -3,7 +3,7 @@
  * while resolving shouldn't get that warning."
  *
  * Purge erases its unit and THEN its controller Glimpses 3 — a decision, so
- * the resolution stops part-way (R78) with the spell on the strip as the
+ * the resolution stops part-way (CR D6.3) with the spell on the strip as the
  * resolving row and its target already gone. Two things went wrong there:
  *
  *  1. the strip judged the resolving row like a waiting one (`lostTargets`
@@ -53,7 +53,7 @@ function midGlimpse(seed: number): {
   pass(h); pass(h);                                         // resolve → erase, then the Glimpse
   noteTable(mem, h.state);
   const purge = h.state.resolving!;
-  assert.ok(purge, 'the fixture is mid-resolution (R78)');
+  assert.ok(purge, 'the fixture is mid-resolution (CR D6.3)');
   assert.equal(purge.card, 'Celestial Purge');
   assert.equal(h.state.decision?.seat, D, 'the Glimpse is being asked of the erased unit controller');
   assert.equal(h.state.entities[slime], undefined, 'and the unit is gone from the table');

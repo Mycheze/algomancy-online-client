@@ -96,12 +96,12 @@ test('halfRows: never exceeds the game\'s own two-row limit', () => {
 
 // ── rekeyBuild ────────────────────────────────────────────────────────
 //
-// R72 (playtest BRDM, 2026-08-20, fixed round 13): "if the last unit in a
+// Formation gravity (playtest BRDM, 2026-08-20, fixed round 13; now CR 602.5): "if the last unit in a
 // column is removed from a formation, the columns on its sides will close in
 // to fill the gap. THIS ONLY HAPPENS BEFORE BLOCKS ARE DECLARED" — so the
 // attacking line's indices are still moving during the `blocks` step, which
 // is precisely when the defender is clicking to build a preview keyed by
-// those indices. R75's left-insert is the same shift the other way.
+// those indices. CR 603.5a's left-insert is the same shift the other way.
 //
 // The re-key follows the ATTACKERS, not the index, so every one of these is a
 // question about who a blocker is answering rather than where it is sitting.
@@ -148,7 +148,7 @@ test('rekeyBuild: the column I was blocking is the one that collapses', () => {
   assert.deepEqual(r.columns, [], 'and nothing is left keyed to a column that is gone');
 });
 
-test('rekeyBuild: a left-insert (R75) shifts the keys the other way', () => {
+test('rekeyBuild: a left-insert (CR 603.5a) shifts the keys the other way', () => {
   // "formations can scale infinitely in width" — a placement can open a new
   // column at the LEFT end, which renumbers every existing column upward
   const before = line([10], [20]);
@@ -162,7 +162,7 @@ test('rekeyBuild: a left-insert (R75) shifts the keys the other way', () => {
   assert.deepEqual(r.columns[2], [99], 'and so did attacker 20');
 });
 
-test('rekeyBuild: a RIGHT-end insert (R75) shifts nothing and must cost nothing', () => {
+test('rekeyBuild: a RIGHT-end insert (CR 603.5a) shifts nothing and must cost nothing', () => {
   // the case a `columns.length` trigger gets exactly backwards: the length
   // changed, and re-seeding here would throw the work away for free
   const before = line([10], [20]);
@@ -174,7 +174,7 @@ test('rekeyBuild: a RIGHT-end insert (R75) shifts nothing and must cost nothing'
 
 test('rekeyBuild: a collapse and a right-end insert in one action leave the length alone', () => {
   // one spell kills the unit holding column 0 and places a unit in formation
-  // (R75 resolves the placement on the same death). `columns.length` is 3
+  // (CR 602.6 resolves the placement on the same death). `columns.length` is 3
   // before and 3 after — a length-delta trigger sees NOTHING, and every
   // blocker is now under the wrong attacker.
   const before = line([10], [20], [30]);

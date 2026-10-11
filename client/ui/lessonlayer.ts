@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: THE LESSON WINDOW.
+/* CR D8.1 — LEARN TO PLAY: THE LESSON WINDOW.
  *
  * A layer beside #app, the ui/report.ts and ui/helplayer.ts pattern, with one
  * difference that matters: it is FOR the board, so it stays up when one comes

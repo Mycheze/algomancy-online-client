@@ -1,4 +1,4 @@
-/* R127 — Ancient One copies the WHOLE text box: every behaviour channel
+/* CR 710.7 — Ancient One copies the WHOLE text box: every behaviour channel
  * except attributes.
  *
  * The owner, 2026-08-24: *"Ancient One technically copies eeeeverything,
@@ -7,11 +7,11 @@
  * basically just copies the whole text box of adjacent allies (so only during
  * combat) right in its text box."*
  *
- * R118 shipped the copy layer with three ability facets (`statics`,
+ * The copy layer shipped with three ability facets (`statics`,
  * `activated`, `triggered`) and its own section said so out loud: the
  * radiating-permission families "read `this.card(holder.card)` in six
  * `anchored()` walks of their own and no card in the pool needs them copied
- * today". They do now. R127 adds the `behavior` facet — `costMods`,
+ * today". They do now. The `behavior` facet (CR 710.7) adds them — `costMods`,
  * `effectAttrs`, `amountMods`, `modPermissions`, `playPermissions`,
  * `mustBeTargeted` and the seven `replace*` hooks — and every one of those
  * walks reads it off `E.facesWith` instead.
@@ -44,7 +44,7 @@ import { ent, ownAttrs, spawn, toDeployment, toNextBattle } from './util.ts';
  * partner, plus the same row of the columns either side), so `[donor],
  * [ancient], [filler]` are neighbours and `[donor], [filler], [ancient]` are
  * not. Single-unit columns deliberately: a SHARED column would also share
- * attributes (R4's column rule), which is the one thing R127 must not be
+ * attributes (CR 712.8's column rule), which is the one thing CR 710.7 must not be
  * confused with.
  *
  * The Ancient One is spawned FIRST so it holds the lower entity id — the
@@ -71,9 +71,9 @@ function board(seed: number, donor: string, adjacent: boolean): {
 
 // ── channel 1: costMods (Tranquility) ────────────────────────────────────
 
-test('R127: an adjacent Tranquility\'s COST MODIFIER radiates from the Ancient One too', () => {
+test('CR 710.7: an adjacent Tranquility\'s COST MODIFIER radiates from the Ancient One too', () => {
   // "[Augment] Spells cost [one] more to play during battle." A CostMod SUMS
-  // (R59), so a second radiator is directly visible in the price.
+  // (CR 111.10a), so a second radiator is directly visible in the price.
   const near = board(12701, 'Tranquility', true);
   const far = board(12702, 'Tranquility', false);
   const base = new E(new Harness(12703).state).manaToPlay(0, 'Foretell');
@@ -94,9 +94,9 @@ test('R127: an adjacent Tranquility\'s COST MODIFIER radiates from the Ancient O
 
 // ── channel 2: amountMods (Flux Resonator) ───────────────────────────────
 
-test('R127: an adjacent Flux Resonator\'s AMOUNT MODIFIER radiates from the Ancient One too', () => {
+test('CR 710.7: an adjacent Flux Resonator\'s AMOUNT MODIFIER radiates from the Ancient One too', () => {
   // "[Augment] Counters placed on your units by an allied source are increased
-  // by one." AmountMods SUM (R104: "a replacement only happens once … the
+  // by one." AmountMods SUM (the owner, in the ruling now CR 708.5: "a replacement only happens once … the
   // replacement just takes what would be 1 and makes it 2"), so two radiators
   // turn one counter into three.
   const near = board(12711, 'Flux Resonator', true);
@@ -104,11 +104,11 @@ test('R127: an adjacent Flux Resonator\'s AMOUNT MODIFIER radiates from the Anci
 
   for (const b of [far, near]) {
     const g = new E(b.h.state);
-    // R130 (landed the same day, from another branch): the placement names
+    // The counter-attribution change (CR 708.8b; landed the same day, from another branch): the placement names
     // its ACTOR, because Flux Resonator's printed "by an allied source" is a
     // real gate now rather than an approximation. An unattributed white-box
     // call is deliberately NOT "allied" — "nobody in particular put this" is
-    // not "you did" — so this test has to say who, exactly as R130's own
+    // not "you did" — so this test has to say who, exactly as the counter-attribution change's own
     // updates to 87-replacement-layer / 27-metal-b / 29-hybrids-wm-a do.
     g.addCounters(g.entity(b.filler)!, 1, b.A);
     b.h.state = g.s;
@@ -121,7 +121,7 @@ test('R127: an adjacent Flux Resonator\'s AMOUNT MODIFIER radiates from the Anci
 
 // ── channel 3: mustBeTargeted (Gatekeeper of Souls) ──────────────────────
 
-test('R127: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted', () => {
+test('CR 710.7: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted', () => {
   // "[Augment] When a player selects targets for an effect during battle, I
   // must be targeted if able." The compulsion is anchored on the radiator, so
   // borrowing it puts the ANCIENT ONE on the must-target list — the clearest
@@ -146,7 +146,7 @@ test('R127: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-target
 
 // ── channel 4: a replace* hook (Counter Thief) ───────────────────────────
 
-test('R127: an adjacent Counter Thief\'s REPLACEMENT HOOK radiates from the Ancient One too', () => {
+test('CR 710.7: an adjacent Counter Thief\'s REPLACEMENT HOOK radiates from the Ancient One too', () => {
   // "[Augment] If one or more counters would be placed on one or more units
   // during battle, those counters are placed on me instead." A replacement is
   // consumed by the FIRST holder in entity-id order, and `board()` spawns the
@@ -174,7 +174,7 @@ test('R127: an adjacent Counter Thief\'s REPLACEMENT HOOK radiates from the Anci
 
 // ── the stated exclusion: ATTRIBUTES ─────────────────────────────────────
 
-test('R127: attributes are the ONE thing an adjacent ally does not donate', () => {
+test('CR 710.7: attributes are the ONE thing an adjacent ally does not donate', () => {
   // The owner: "the only thing it doesn't are attributes (like Piercing or
   // Unstable)". Good Whale prints {Piercing} and nothing this seam carries;
   // Tranquility prints a behaviour channel and no attribute. Both are adjacent
@@ -188,7 +188,7 @@ test('R127: attributes are the ONE thing an adjacent ally does not donate', () =
   const tranq = spawn(h, A, 'Tranquility');           // "[Augment] spells cost [1] more"
   spawn(h, D, 'Unit Token');
   toNextBattle(h, A);
-  // one unit per column: a SHARED column shares attributes (R4), which would
+  // one unit per column: a SHARED column shares attributes (CR 712.8), which would
   // hide the very thing this test is about
   h.do({ type: 'declareAttack', seat: A, columns: [[whale], [ancient], [tranq]] });
 
@@ -212,6 +212,6 @@ test('R127: attributes are the ONE thing an adjacent ally does not donate', () =
     'and the same exclusion covers {Unstable}, which the owner named beside it');
 
   // the ability facets are unaffected by any of this
-  assert.equal(e.nameOf(ent(h, ancient)!), 'Ancient One', 'still itself (R118)');
+  assert.equal(e.nameOf(ent(h, ancient)!), 'Ancient One', 'still itself (CR 710.7)');
   assert.deepEqual(e.effStats(ent(h, ancient)!), [1, 1], 'and still a 1/1');
 });

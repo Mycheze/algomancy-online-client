@@ -105,7 +105,7 @@ class Client {
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-/* R204/CT-85: the server picks its own port and tells us which — see
+/* CT-85: the server picks its own port and tells us which — see
  * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
  * in the child, which left the port held by nobody for as long as node took
  * to boot. This test restarts the server mid-run, so PORT is a `let`: the
@@ -123,7 +123,7 @@ function noopCommit(view: any, seat: Seat): Action {
   return { type: 'draftCommit', seat, packIndices } as Action;
 }
 
-/* R204 / CT-85 — THE FLAKE THIS FILE ACTUALLY HAD.
+/* CT-85 — THE FLAKE THIS FILE ACTUALLY HAD.
  *
  * `advanceUntil` below decides whether to drive a client by testing pred()
  * against `a.view` and `b.view`. Those are whatever the last message on each
@@ -222,7 +222,7 @@ try {
 
   await sleep(700);   // waiting alone must cost seat 0 nothing
 
-  /* R204/CT-85: seat 0's clock starts the instant seat 1 connects and stops
+  /* CT-85: seat 0's clock starts the instant seat 1 connects and stops
    * when the donePlanning below lands, so the "sliver" it loses is one real
    * round trip on a real box. The assertion further down used to compare that
    * sliver to a hardcoded 1000ms — a statement about an idle machine, not
@@ -258,7 +258,7 @@ try {
   const bu = await b.next(m => m.t === 'update' && !!m.clock, 5000, bm);
   const ms = bu.clock!.ms;
   ok(START - ms[1] >= 1200, `seat 1 was billed the thinking time (spent ${START - ms[1]}ms)`);
-  /* R204/CT-85: this gap is (the 1300ms seat 1 spent thinking) minus (the
+  /* CT-85: this gap is (the 1300ms seat 1 spent thinking) minus (the
    * sliver seat 0 lost before it said done). The constant used to be a flat
    * 1000, which silently assumed the sliver could never exceed 300ms — true
    * on an idle box, and a coin flip on a busy one, where a join round trip

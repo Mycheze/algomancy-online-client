@@ -1,4 +1,4 @@
-/* R236 (owner ruling, 2026-08-28) — READY AND PASS THROUGH THE HASTE STEP.
+/* CR D2.5 (owner ruling, 2026-08-28) — READY AND PASS THROUGH THE HASTE STEP.
  *
  * ── THE INSTRUCTION
  *
@@ -8,11 +8,11 @@
  *
  * ── WHAT IT IS PAYING OFF
  *
- * R224/R228 made the haste step UNCONDITIONAL: it opens every turn for both
+ * The always-offer ruling (now CR 504.5) made the haste step UNCONDITIONAL: it opens every turn for both
  * seats, `canHaste` was deleted, and nobody is pre-marked done — because a
  * step that only appeared when somebody COULD act published "I am holding
  * something haste-playable" out of a hand `viewFor` redacts to `__HIDDEN__`.
- * R224 recorded the debt that left behind, in as many words: **an always-open
+ * That ruling recorded the debt that left behind, in as many words: **an always-open
  * window is a tax on every turn unless passing through it is cheap.** This is
  * the client-side answer that makes it cheap. The ENGINE is untouched: the
  * step's presence still depends on nothing.
@@ -26,7 +26,7 @@
  * toggle would then protect only the player who found it and everybody else
  * would leak by default — which is the reverse of a default-safe design.
  *
- * So R236 stops serving the OTHER seat's haste readiness while the step is
+ * So CR D2.5d stops serving the OTHER seat's haste readiness while the step is
  * open (`server/view.ts`). The step's END stays public: it ends by `hasteDone`
  * going null, which no seat masks. §3 is that claim, read seat-aware off the
  * production redactor, with positive controls so a green cannot mean "the
@@ -35,7 +35,7 @@
  * ── WHAT IS HERE
  *
  *   §1  THE PREDICATE. `autoHasteDone` is a READ of `legalActions`, never a
- *       re-derivation of it — R228 deleted the last hand-maintained copy of
+ *       re-derivation of it — making the haste step unconditional (CR 504.5) deleted the last hand-maintained copy of
  *       "can this player act at haste" and this must not rebuild it. §1.5
  *       proves the read by measurement over the whole card pool.
  *   §2  THE CLIENT, end to end through test/ui-driver.ts: it really sends
@@ -88,7 +88,7 @@ function board(hand0: string[], hand1: string[] = ['Monke'], seed = 20500): Harn
   h.do({ type: 'donePlanning', seat: A });
   h.do({ type: 'donePlanning', seat: D });
   assert.deepEqual(h.state.hasteDone, [false, false],
-    'the fixture is INSIDE the haste step, and R228 says it opens for both seats regardless');
+    'the fixture is INSIDE the haste step, and CR 504.5 says it opens for both seats regardless');
   return h;
 }
 
@@ -96,7 +96,7 @@ const legal = (h: Harness, seat: Seat): Action[] => legalActions(h.state, seat);
 
 /* ═══ §1 — the predicate is a read of legalActions ═══════════════════ */
 
-test('R236 §1a: preference OFF and `doneHaste` is the only legal action → ready', () => {
+test('CR D2.5: preference OFF and `doneHaste` is the only legal action → ready', () => {
   const h = board(['Monke']);
   const mine = legal(h, A);
   assert.deepEqual(mine.map(a => a.type), ['doneHaste'],
@@ -104,13 +104,13 @@ test('R236 §1a: preference OFF and `doneHaste` is the only legal action → rea
   assert.equal(autoHasteDone(h.state, A, mine, false), true);
 });
 
-test('R236 §1b: preference ON → never, even with nothing to do', () => {
+test('CR D2.5b: preference ON → never, even with nothing to do', () => {
   const h = board(['Monke']);
   assert.equal(autoHasteDone(h.state, A, legal(h, A), true), false,
     'bluff haste is the player saying "I intend to sit in this step" — it outranks everything');
 });
 
-test('R236 §1c: one playable card anywhere in the list → never', () => {
+test('CR D2.5a: one playable card anywhere in the list → never', () => {
   const h = board(['Cinder Scuttler']);
   const mine = legal(h, A);
   assert.ok(mine.some(a => a.type === 'playCard'),
@@ -119,7 +119,7 @@ test('R236 §1c: one playable card anywhere in the list → never', () => {
     'a window that offers a real choice is never answered without the player');
 });
 
-test('R236 §1d: not the haste step, or already done, or an empty list → never', () => {
+test('CR D2.5: not the haste step, or already done, or an empty list → never', () => {
   const h = board(['Monke']);
   const mine = legal(h, A);
 
@@ -139,11 +139,11 @@ test('R236 §1d: not the haste step, or already done, or an empty list → never
   assert.equal(autoHasteDone(deploying, A, mine, false), false,
     'deployment offers plenty — this must not answer a step it is not about');
 
-  // an empty list is "nothing here is mine", not "pass for me": R197's rule
+  // an empty list is "nothing here is mine", not "pass for me"
   assert.equal(autoHasteDone(h.state, A, [], false), false);
 });
 
-test('R236 §1e: any other action alongside `doneHaste` switches it off — over the whole shape of the list', () => {
+test('CR D2.5a: any other action alongside `doneHaste` switches it off — over the whole shape of the list', () => {
   const h = board(['Monke']);
   const base = legal(h, A);
   // Derived, not typed: every action type legalHasteActions can push, planted
@@ -157,7 +157,7 @@ test('R236 §1e: any other action alongside `doneHaste` switches it off — over
   }
 });
 
-test('R236 §1.5: the ONLY thing that keeps a seat in the step is a legal action — measured over the pool', () => {
+test('CR D2.5a: the ONLY thing that keeps a seat in the step is a legal action — measured over the pool', () => {
   /* THE ANTI-DUPLICATION MEASUREMENT. `autoHasteDone` must agree with the
    * engine about every card in the game without knowing anything about cards.
    * So: for every printed timing in the pool, deal the card into a hand with
@@ -196,7 +196,7 @@ test('R236 §1.5: the ONLY thing that keeps a seat in the step is a legal action
 
 /* ═══ §2 — the client really sends it ════════════════════════════════ */
 
-test('R236 §2a: with the preference OFF and nothing hasteable, the client sends doneHaste by itself', () => {
+test('CR D2.5: with the preference OFF and nothing hasteable, the client sends doneHaste by itself', () => {
   setBluff(false);
   const h = board(['Monke']);
   ui.join(viewFor(h.state, A), A, legal(h, A));
@@ -204,7 +204,7 @@ test('R236 §2a: with the preference OFF and nothing hasteable, the client sends
     'exactly one intent, and it is the ready — this is the whole owner instruction');
 });
 
-test('R236 §2b: it is not sent twice for the same state, and a refusal cannot loop it', () => {
+test('CR D2.4: it is not sent twice for the same state, and a refusal cannot loop it', () => {
   setBluff(false);
   const h = board(['Monke']);
   ui.join(viewFor(h.state, A), A, legal(h, A));
@@ -225,7 +225,7 @@ test('R236 §2b: it is not sent twice for the same state, and a refusal cannot l
     'a refusal must not re-arm the automatic ready — that is a loop, not a retry');
 });
 
-test('R236 §2c: with the preference ON the client sits in the step and offers the button', () => {
+test('CR D2.5b: with the preference ON the client sits in the step and offers the button', () => {
   setBluff(true);
   try {
     const h = board(['Monke']);
@@ -237,7 +237,7 @@ test('R236 §2c: with the preference ON the client sits in the step and offers t
   } finally { setBluff(false); }
 });
 
-test('R236 §2d: with something playable the client never answers, preference or not', () => {
+test('CR D2.5a: with something playable the client never answers, preference or not', () => {
   setBluff(false);
   const h = board(['Cinder Scuttler']);
   ui.join(viewFor(h.state, A), A, legal(h, A));
@@ -246,7 +246,7 @@ test('R236 §2d: with something playable the client never answers, preference or
   assert.ok(ui.has({ btn: 'donehaste', p: A }), 'and they can still end the step by hand');
 });
 
-test('R236 §2e: the preference is persisted the way the client persists its others', () => {
+test('CR D2.5b: the preference is persisted the way the client persists its others', () => {
   setBluff(false);
   const h = board(['Monke']);
   ui.join(viewFor(h.state, A), A, legal(h, A));
@@ -267,7 +267,7 @@ test('R236 §2e: the preference is persisted the way the client persists its oth
  * ⚠ EVERY ASSERTION IN THIS SECTION IS SEAT-AWARE. Nothing reads `h.log`:
  * `Harness.absorb()` flattens every event into one seatless array, and two
  * real leaks survived 153 test files because secrecy assertions were written
- * against it (R203 / 174-secrecy-is-seat-aware). `viewFor` and `logFor` are
+ * against it (174-secrecy-is-seat-aware). `viewFor` and `logFor` are
  * the production redactor and the production log.
  */
 
@@ -282,7 +282,7 @@ function viewDiff(a: GameState, b: GameState, seat: Seat): string[] {
     .filter(k => JSON.stringify(va[k]) !== JSON.stringify(vb[k])).sort();
 }
 
-test('R236 §3a: the opponent is not served my haste readiness while the step is open', () => {
+test('CR D2.5d: the opponent is not served my haste readiness while the step is open', () => {
   const h = board(['Monke'], ['Cinder Scuttler']);
   const before = structuredClone(h.state);
   const logBefore = logFor(h, D);
@@ -307,7 +307,7 @@ test('R236 §3a: the opponent is not served my haste readiness while the step is
     'seat 0\'s own served view really did change, so the comparison is not a board against itself');
 });
 
-test('R236 §3b: the step\'s END is still public — that is what must never be hidden', () => {
+test('CR D2.5d: the step\'s END is still public — that is what must never be hidden', () => {
   const h = board(['Monke'], ['Monke']);
   h.do({ type: 'doneHaste', seat: A });
   assert.deepEqual(viewFor(h.state, D).hasteDone, [false, false], '…while it is open');
@@ -320,7 +320,7 @@ test('R236 §3b: the step\'s END is still public — that is what must never be 
   assert.equal(viewFor(h.state, D).phase, 'battle', 'the phase moved on, in public');
 });
 
-test('R236 §3c: and the opponent\'s SCREEN never paints my readiness during the step', () => {
+test('CR D2.5d: and the opponent\'s SCREEN never paints my readiness during the step', () => {
   setBluff(false);
   const h = board(['Monke'], ['Cinder Scuttler']);
   h.do({ type: 'doneHaste', seat: A });      // seat 0 readied instantly
@@ -343,8 +343,8 @@ test('R236 §3c: and the opponent\'s SCREEN never paints my readiness during the
     + 'not the markup');
 });
 
-test('R236 §3d: the residual, named and measured — actionCount, and nothing else', () => {
-  /* ⚠ WHAT R236 DOES **NOT** CLOSE, recorded as an executable fact rather than
+test('CR D2.5e: the residual, named and measured — actionCount, and nothing else', () => {
+  /* ⚠ WHAT CR D2.5d DOES **NOT** CLOSE, recorded as an executable fact rather than
    * a paragraph nobody re-checks.
    *
    * `GameState.actionCount` is served live to both seats (the client's "my
@@ -353,7 +353,7 @@ test('R236 §3d: the residual, named and measured — actionCount, and nothing e
    * SOMETHING, and when. That channel:
    *   · is not haste-specific — it is identical in the resource step and in
    *     deployment, every hidden simultaneous segment there is;
-   *   · predates R236 — a player who clicked "done" the instant the step
+   *   · predates the readiness hiding (CR D2.5d) — a player who clicked "done" the instant the step
    *     opened already produced it;
    *   · is invisible in the shipped client, which renders nothing from it.
    * Closing it needs a per-seat action counter in the engine or in

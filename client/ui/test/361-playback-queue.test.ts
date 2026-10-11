@@ -11,7 +11,7 @@
  *     than the step that just closed, so it is let out first, at once;
  *   · while a playback is still queued, a new arrival waits BEHIND it, even
  *     one the player could act on. In the next turn's planning the opponent's
- *     own clicks refresh this seat's view, and under R150's flush-on-actionable
+ *     own clicks refresh this seat's view, and under CR D5.4c's flush-on-actionable
  *     rule any one of them would have cut the playback off after a frame.
  */
 import { test } from 'node:test';

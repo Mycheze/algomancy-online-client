@@ -77,7 +77,7 @@ test('§2 every BATTLE_STEP is spelled as a literal in engine.ts or apply.ts', (
 
 test('§2 every runtime sub-step list in engine.ts is DAMAGE_SUBSTEPS, in the same order', () => {
   // The engine keeps its own `['Swift', 'normal', 'Sluggish'] as const` lists
-  // (subStepsWithStrikes, the R295 split check, the R320 strike filter). They
+  // (subStepsWithStrikes, the CR 608.3 split check, the CR 608.2e strike filter). They
   // were left in place — replacing them would be an engine change — so this
   // is what keeps them and the export from disagreeing about the order.
   const lists = [...ENGINE.matchAll(/\[\s*('(?:Swift|normal|Sluggish)'(?:\s*,\s*'[A-Za-z]+')*)\s*\]\s*as const/g)]

@@ -1,7 +1,7 @@
 [
   {
     "key": "concepts.ending.concede",
-    "textHash": "77fef9d41ae8a163",
+    "textHash": "4cefc26e3e30d030",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U01-r1",
@@ -43,7 +43,7 @@
   },
   {
     "key": "concepts.ending.concede.any-time",
-    "textHash": "ca8eee8c56c491df",
+    "textHash": "83bbbbe208a19b7e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
@@ -220,7 +220,7 @@
   },
   {
     "key": "concepts.ending.elimination.immediate",
-    "textHash": "d7205283386baac4",
+    "textHash": "a5504df63ad7f3a7",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U01-r2",
@@ -290,7 +290,7 @@
   },
   {
     "key": "concepts.ending.no-deck-out",
-    "textHash": "419b6a8474f4a422",
+    "textHash": "beeb62c1be71b649",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U01-r1",
@@ -639,7 +639,7 @@
   },
   {
     "key": "concepts.golden.as-much-as-possible.costs",
-    "textHash": "c7686a4915904f2b",
+    "textHash": "051fb1c1dcfbc409",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U01-r2",
@@ -801,7 +801,7 @@
   },
   {
     "key": "concepts.golden.printed-text-wins",
-    "textHash": "bf51076fe0290a4a",
+    "textHash": "3ef1a5bbdc29d782",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U01-r2",
@@ -880,7 +880,7 @@
   },
   {
     "key": "concepts.golden.regions",
-    "textHash": "79535f9413b92e92",
+    "textHash": "5b96fefaf5eedeb2",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U01-r3",
@@ -1033,7 +1033,7 @@
   },
   {
     "key": "concepts.players.ally",
-    "textHash": "dde2b2f59d8f4e18",
+    "textHash": "447f2743796a63d6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U01-r1",
@@ -1110,7 +1110,7 @@
   },
   {
     "key": "concepts.players.ally.self",
-    "textHash": "c85bd72f11f1a187",
+    "textHash": "ae162a9632668983",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U01-r1",
@@ -1437,7 +1437,7 @@
   },
   {
     "key": "concepts.players.owner",
-    "textHash": "472830813d83b1f2",
+    "textHash": "0d1d003a42d263ad",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U01-r2",
@@ -1672,7 +1672,7 @@
   },
   {
     "key": "concepts.players.you.pays",
-    "textHash": "71fca1eb2704ab4e",
+    "textHash": "c56df647a562f7c5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U01-r1",

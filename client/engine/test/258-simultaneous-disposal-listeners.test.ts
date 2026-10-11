@@ -1,5 +1,5 @@
 /**
- * R278 / CT-170 — A BODY THAT DIES IN A BATCH STILL HEARS THE REST OF THE BATCH.
+ * CR 706.8c / CT-170 — A BODY THAT DIES IN A BATCH STILL HEARS THE REST OF THE BATCH.
  *
  * Report #155, room ZSPG action 223, the owner as a question: *"Shouldn't Muck
  * Runner's trigger happened here? Her cards were trashed during combat,
@@ -25,7 +25,7 @@
  * the whole batch and then calls `destroy()` on each in turn, and `destroy()`s
  * SECOND LINE is `delete this.s.entities[u.id]` while `fireEvent()` scans
  * `s.entities`. So the first corpse out of a batch is not a listener for the
- * rest of it, and R189 — a batch that is simultaneous in the rules must LOOK
+ * rest of it, and CR D6.7 — a batch that is simultaneous in the rules must LOOK
  * simultaneous — stopped at the entity table.
  *
  * THE CLASS IS NOT MUCK RUMMAGER, AND IT IS NOT COMBAT. It is every board-scan
@@ -61,7 +61,7 @@ const firings = (h: Harness, name: string, label: string, from = 0): string[] =>
 // ── 1 & 2. the report itself, through real combat ─────────────────────
 
 /** answer whatever is pending with its first option — an ordering question
- * (R2) needs a permutation rather than an index, so it gets the identity one */
+ * (CR 706.5) needs a permutation rather than an index, so it gets the identity one */
 function answerAll(h: Harness): void {
   for (let guard = 60; guard-- > 0;) {
     const dec = h.state.decision;
@@ -102,7 +102,7 @@ function muckBoard(seed: number): {
 
 test('CONTROL: Muck Rummager hears an ally trashed by combat damage it survives', () => {
   const { h, A, D, mr, ally, w1 } = muckBoard(27801);
-  assert.equal(h.state.phase, 'battle', 'NON-VACUITY: the trash has to happen during battle (R40)');
+  assert.equal(h.state.phase, 'battle', 'NON-VACUITY: the trash has to happen during battle');
   // only the ally is blocked, so only the ally dies
   fight(h, A, D, [[mr], [ally]], { 1: [w1] });
   const trashed = h.events.filter(ev => ev.type === 'trashed');
@@ -115,12 +115,12 @@ test('CONTROL: Muck Rummager hears an ally trashed by combat damage it survives'
     + 'so the report premise as worded does not hold');
 });
 
-test('R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in', () => {
+test('CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in', () => {
   const { h, A, D, mr, ally, w1, w2 } = muckBoard(27802);
   assert.equal(h.state.phase, 'battle', 'NON-VACUITY: phase is battle, so the when clause can pass');
   assert.equal(ent(h, mr)!.controller, A, 'NON-VACUITY: Muck Rummager is in play and A controls it');
   assert.equal(new E(h.state).abilitiesSuppressed(ent(h, mr)!), false,
-    'NON-VACUITY: its abilities are live — nothing has silenced it (R62)');
+    'NON-VACUITY: its abilities are live — nothing has silenced it (CR 712.1)');
 
   // both columns blocked: the two attackers die in ONE damage step
   fight(h, A, D, [[mr], [ally]], { 0: [w1], 1: [w2] });
@@ -135,7 +135,7 @@ test('R278: Muck Rummager hears an ally trashed in the same combat-damage batch 
   assert.equal(ent(h, ally), undefined);
 
   assert.equal(firings(h, 'Muck Rummager', 'draw a card').length, 1,
-    'R278: dying alongside the card you were watching does not un-see it');
+    'CR 706.8c: dying alongside the card you were watching does not un-see it');
 });
 
 // ── 3. the CLASS, derived from the pool ───────────────────────────────
@@ -186,7 +186,7 @@ function batchFirings(name: string, label: string, killWatcher: boolean): number
   return firings(h, name, label, from).length;
 }
 
-test('R278 the class: no disposal listener in the pool goes deaf by dying in the same batch', () => {
+test('CR 706.8c the class: no disposal listener in the pool goes deaf by dying in the same batch', () => {
   const pop = disposalListeners();
   assert.ok(pop.length >= 10,
     `NON-VACUITY: the derivation found ${pop.length} board-scan disposal listeners; `
@@ -208,6 +208,6 @@ test('R278 the class: no disposal listener in the pool goes deaf by dying in the
 
   const deaf = rows.filter(r => r.dying < r.watching);
   assert.deepEqual(deaf.map(r => `${r.name} (${r.watching} -> ${r.dying})`), [],
-    'R278: a trigger that hears a disposal while it stands beside it must still hear it '
+    'CR 706.8c: a trigger that hears a disposal while it stands beside it must still hear it '
     + 'when it is disposed of in the same simultaneous batch');
 });

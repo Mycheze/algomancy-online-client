@@ -1,20 +1,19 @@
-/* R310 (owner ruling, 2026-10-04, report #192) — A GLIMPSE INSIDE A HIDDEN
- * SIMULTANEOUS STEP WAITS FOR THE REVEAL. It reverses R235.
+/* CR D6.2 (owner ruling, 2026-10-04, report #192) — A GLIMPSE INSIDE A HIDDEN
+ * SIMULTANEOUS STEP WAITS FOR THE REVEAL. It reverses the earlier live-reveal ruling.
  *
  * The owner: "Glimpse cards shouldn't be shown to an opponent *during*
  * Deployment. They should be a part of the recap only."
  *
  * ── WHAT THIS FILE USED TO PIN, AND WHY IT WAS RENAMED
  *
- * Until R310 this file was `203-reveal-escapes-the-hidden-hold.test.ts`, the
- * guard on R235: `server/rooms.ts` parks the opponent's copy of every event a
+ * Until 2026-10-04 this file was `203-reveal-escapes-the-hidden-hold.test.ts`, the
+ * guard on the earlier live-reveal ruling: `server/rooms.ts` parks the opponent's copy of every event a
  * hidden step (the resource step, the haste step, deployment) produces in
- * `heldEvents` until the barrier, and R235 gave that hold a one-entry
+ * `heldEvents` until the barrier, and an earlier ruling gave that hold a one-entry
  * exemption — `glimpsed`, "the card says REVEAL" — so an `Oracle of
  * Foretelling`'s Glimpse 5 reached the other seat on the tick it happened,
  * popped their glimpse notice mid-deployment, and for that very reason was
- * MISSING from the recap (the playback is built from the held queue). R310
- * deletes the exemption (`escapesHold` is gone from view.ts and from all three
+ * MISSING from the recap (the playback is built from the held queue). CR D6.2 leaves no exemption (`escapesHold` is gone from view.ts and from all three
  * hidden-step runners). The name said the opposite of the rule, so it moved.
  *
  * ── THE FOUR CLAIMS
@@ -36,7 +35,7 @@
  *
  * ── ⚠ WHY NOTHING HERE READS `h.log` OR HAND-BUILDS AN EVENT
  *
- * docs/13 §7.4 / R203: `Harness.absorb()` flattens every event into one
+ * docs/13 §7.4 / 174-secrecy-is-seat-aware: `Harness.absorb()` flattens every event into one
  * seatless log, so a secrecy assertion written against it reads the same
  * whether the information is shared or not. There is no Harness in this file.
  * Every claim is made against a real `Room` driven through `applyToRoom`, and
@@ -191,7 +190,7 @@ const reveals = (evs: readonly EngineEvent[]) => evs.filter(e => e.type === 'gli
 
 // ══ §1  HELD — nothing of the glimpse reaches the opponent mid-step ═══════
 
-test('R310 §1: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync', () => {
+test('CR D6.2: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync', () => {
   const { room, A, D, revealed, play, choose } = oracleInDeployment('R310A', 20301);
 
   assert.deepEqual(play.toOpp, [], 'the Oracle tick sends the opponent nothing at all — the reveal included');
@@ -211,7 +210,7 @@ test('R310 §1: inside deployment the opponent is sent nothing of a Glimpse — 
   assert.deepEqual(mine[0]!.data?.['cards'], revealed, '…carrying the revealed cards in order');
 });
 
-test('R310 §1: the haste step holds a Glimpse the same way (Seer of Empty Spaces)', () => {
+test('CR D6.2: the haste step holds a Glimpse the same way (Seer of Empty Spaces)', () => {
   const room = createRoom('R310B', 20302, [...NAMES]);
   tick(room, { type: 'donePlanning', seat: 0 });
   tick(room, { type: 'donePlanning', seat: 1 });
@@ -234,7 +233,7 @@ test('R310 §1: the haste step holds a Glimpse the same way (Seer of Empty Space
   assert.ok(reveals(frames[0]!.events)[0]!.msg.includes(top), 'naming the card it revealed');
 });
 
-test('R310 §1: the shared deck and recycle counts do not move under a hidden Glimpse', () => {
+test('CR D6.1b: the shared deck and recycle counts do not move under a hidden Glimpse', () => {
   // The count-only copy of the same leak: Glimpse 5 takes five off the shared
   // deck and recycles four. Served live, the opponent's deck counter ticks
   // down mid-deployment and says "they glimpsed" without the event.
@@ -262,7 +261,7 @@ test('R310 §1: the shared deck and recycle counts do not move under a hidden Gl
 
 // ══ §2  FLUSHED EXACTLY ONCE, AT THE BARRIER ═════════════════════════════
 
-test('R310 §2: the barrier delivers the reveal exactly once, and the finished log holds it once', () => {
+test('CR D6.2b: the barrier delivers the reveal exactly once, and the finished log holds it once', () => {
   const { room, A, D, revealed } = oracleInDeployment('R310D', 20304);
   const close = closeDeployment(room, A, D);
   const toD = close.reveal![D]!;
@@ -283,7 +282,7 @@ test('R310 §2: the barrier delivers the reveal exactly once, and the finished l
 
 // ══ §3  IN THE PLAYBACK FRAME OF THE ACTION THAT MADE IT ═════════════════
 
-test('R310 §3: the reveal plays in the recap, in the frame of the Oracle play, and nowhere else', () => {
+test('CR D5.2: the reveal plays in the recap, in the frame of the Oracle play, and nowhere else', () => {
   const { room, A, D, revealed } = oracleInDeployment('R310E', 20305);
   const close = closeDeployment(room, A, D);
   const pb = close.playback![D]!;
@@ -310,10 +309,10 @@ test('R310 §3: the reveal plays in the recap, in the frame of the Oracle play, 
 
 // ══ §4  NOTHING ESCAPES THE HOLD ═════════════════════════════════════════
 
-test('R310 §4: of everything a hidden step emits, nothing reaches the other seat before the barrier', () => {
+test('CR D6.1: of everything a hidden step emits, nothing reaches the other seat before the barrier', () => {
   // Derived, not enumerated: drive the hidden steps, collect every event type
   // the actor's ticks produced, and assert not one of them went to the
-  // opponent live. An exemption — R235's, or any other — reddens this.
+  // opponent live. An exemption — the reversed ruling's, or any other — reddens this.
   const seen = new Set<string>();
   const leaked: string[] = [];
   const room = createRoom('R310F', 20306, [...NAMES]);
@@ -345,7 +344,7 @@ test('R310 §4: of everything a hidden step emits, nothing reaches the other sea
   assert.deepEqual(leaked, [], 'not one event of a hidden step reached the other seat live');
 });
 
-test('R310 §4: a hidden step with no reveal in it leaks nothing either (the negative control)', () => {
+test('CR D6.1a: a hidden step with no reveal in it leaks nothing either (the negative control)', () => {
   const room = createRoom('R310G', 20307, [...NAMES]);
   toDeployment(room);
   const A = room.state.deployPlayer! as Seat, D = other(A);
@@ -357,7 +356,7 @@ test('R310 §4: a hidden step with no reveal in it leaks nothing either (the neg
   assert.equal(visibleLog(room, D).length, before, "the opponent's log did not move at all");
 });
 
-test('R310 §4: the seat channel can tell the two seats apart (the positive control)', () => {
+test('§4: the seat channel can tell the two seats apart (the positive control)', () => {
   // docs/13 §7.4: an observation channel needs a control proving it can SEE.
   // If `visibleLog`/`unheldFor` ever degraded to "nothing", §1 would pass for
   // the wrong reason; this is the assertion that would not.
@@ -368,7 +367,7 @@ test('R310 §4: the seat channel can tell the two seats apart (the positive cont
     'and the difference includes the reveal');
 });
 
-test('R310 §4: main.ts composes the wire the way this file re-builds it, and no runner filters the hold', () => {
+test('CR D6.2: main.ts composes the wire the way this file re-builds it, and no runner filters the hold', () => {
   // This file cannot import main.ts (it boots a server), so the compositions
   // it re-builds are read off its source: the one hop between rooms.ts and the
   // wire that no test can call.
@@ -379,7 +378,7 @@ test('R310 §4: main.ts composes the wire the way this file re-builds it, and no
     'visibleLog is still "the whole history minus what is held for you"');
   assert.match(src, /playbackFrames\(\{ seat, held: playback\.held, tail: tailEvents, close: playback\.close, redact \}\)/,
     'and sendReveal builds the recap with the same builder §3 calls');
-  // R310: the exemption is gone from every hidden-step runner — the room, Learn
+  // CR D6.2, D6.2d: the exemption is gone from every hidden-step runner — the room, Learn
   // to Play and the replay viewer — and from view.ts, where it lived. A new
   // spelling of it would be caught by §4's measurement for the room; this is
   // the cheap net for the two in-browser runners, which run no Room.
@@ -390,6 +389,6 @@ test('R310 §4: main.ts composes the wire the way this file re-builds it, and no
     ['ui/replayserver.ts', readFileSync(join(UI, 'replayserver.ts'), 'utf8')],
   ] as const) {
     assert.doesNotMatch(text, /escapesHold\s*\(|PUBLIC_INSIDE_HIDDEN_SEGMENT\s*[:=]/,
-      `${file} has no exemption from the hidden hold (R310 reversed R235)`);
+      `${file} has no exemption from the hidden hold (CR D6.2)`);
   }
 });

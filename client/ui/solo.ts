@@ -1,4 +1,4 @@
-/* R297 — SOLO PLAY IN THE BROWSER: A ROOM WITH NO SERVER.
+/* CR D8.1 — SOLO PLAY IN THE BROWSER: A ROOM WITH NO SERVER.
  *
  * Learn to Play is one learner against the Tutorial Bot, and the owner wants
  * the bot's hand hidden. The client already knows how to draw a game whose
@@ -41,7 +41,7 @@ import { forcedAction, hiddenSegment, IllegalAction } from '../engine/src/apply.
 import type { LessonDeal } from '../engine/src/lessondeal.ts';
 import { legalForSeat, playbackFrames, redactEvent, redactLog, viewFor, visibleToSeat } from '../server/view.ts';
 import type { HeldFrame, SegmentClose } from '../server/view.ts';
-// R312: the undo floor — the room's own measurement of "you saw hidden cards"
+// CR D4.4: the undo floor — the room's own measurement of "you saw hidden cards"
 import { lastSeen, SEEN_REFUSAL, seenBy, type Seen } from '../server/seen.ts';
 import { fallbackMove, type BotPolicy } from './bot.ts';
 // the socket half moved out when BL-38's replay viewer became its second user
@@ -83,7 +83,7 @@ export class SoloServer {
   private hooks: SoloHooks;
   private h!: Harness;
   private by: ActedBy[] = [];
-  /** R312: per action (parallel to `by`), what it showed each seat of the
+  /** CR D4.3e: per action (parallel to `by`), what it showed each seat of the
    * hidden cards — server/seen.ts, the measurement the room takes */
   private seen: Seen[] = [];
   private segKey: SegKey = null;
@@ -122,7 +122,7 @@ export class SoloServer {
   }
 
   /** Deal afresh and replay `actions`, then let the bot catch up. `seen` is
-   * the R312 record for a PREFIX of the log being replayed (an undo or a
+   * the CR D4.4 record for a PREFIX of the log being replayed (an undo or a
    * rewind keeps a prefix, which shows exactly what it showed before);
    * without it — a save loaded from storage — every action is measured. */
   private rebuild(actions: Action[], by: ActedBy[], seen?: readonly Seen[]): void {
@@ -154,14 +154,14 @@ export class SoloServer {
     this.by.push(who);
     this.fresh.push(...evs);
     const now = hiddenSegment(this.h.state);
-    // R312, measured against the step's own frozen board, before it reopens.
+    // CR D4.3e, measured against the step's own frozen board, before it reopens.
     // Every phase, not just the hidden steps: this undo has no phase gate.
     this.seen.push(known ?? seenBy(before, a, this.h.state, evs,
       { frozen: this.segSnapshot, holding: holding && now === this.segKey, names: this.deal.names }));
     // the action that CLOSES the step is public, after the barrier — as the
     // room has it (server/rooms.ts applyToRoom): not held, not a frame
     if (holding && a.seat === BOT && now === this.segKey) {
-      // R310: all of it, a glimpse included — it waits for the recap
+      // CR D6.2d: all of it, a glimpse included — it waits for the recap
       this.held.push(...evs);
       if (evs.length) this.heldFrames.push({ state: structuredClone(this.h.state), events: [...evs] });
     }
@@ -307,7 +307,7 @@ export class SoloServer {
   undo(): void {
     const i = this.by.lastIndexOf('L');
     if (i < 0) return this.push({ t: 'error', msg: 'nothing of yours to undo' });
-    // R312: the room's floor — an action that showed you hidden cards (a
+    // CR D4.4: the room's floor — an action that showed you hidden cards (a
     // draw, a glimpse, a look at the Bot's hand) stands, and so does
     // everything before it. Undo here truncates rather than splices, so the
     // floor is the whole of the check.
@@ -330,7 +330,7 @@ export class SoloServer {
       }
     }
     // (a rewind after a loss is a fresh attempt at the turn, not an undo, and
-    // is deliberately not bound by R312; the kept prefix keeps its record)
+    // is deliberately not bound by CR D4.4; the kept prefix keeps its record)
     this.rebuild(actions.slice(0, keep), by.slice(0, keep), this.seen.slice(0, keep));
     this.push({ t: 'update', view: this.view(), legal: this.legal(), log: this.log(), peers: [true, true] });
     this.hooks.onChange?.(this);

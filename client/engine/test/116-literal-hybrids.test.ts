@@ -2,15 +2,14 @@
  * ld-c (2026-08-24), pinning the two places where an implementation carried a
  * qualifier the printed card does not.
  *
- * Both are the R125 shape — "the shape of the mechanism that happened to exist
+ * Both are the invented-qualifier shape — "the shape of the mechanism that happened to exist
  * got promoted into a rule about the card" — and both are about the word ALL:
  *
  *  · Ominous Growth, "delete all tokens": the sweep knew two of the engine's
- *    THREE token shapes. A Wraith augmented onto a unit (R71, kind 'mod',
+ *    THREE token shapes. A Wraith augmented onto a unit (CR 721.6, kind 'mod',
  *    token:true) is a token in play and used to survive.
  *  · Brough, "Everything is balanced": the static was filtered to
- *    `kind === 'unit'`, the identical invented filter R125 took off Rotspore
- *    Herald. ⚠ Nothing arithmetical moves — the three spell tokens in the pool
+ *    `kind === 'unit'`, the identical invented filter the Rotspore ruling (CR 707.7) took off Rotspore Herald. ⚠ Nothing arithmetical moves — the three spell tokens in the pool
  *    all print 3/3 — so what is pinned here is the GRANT being literal.
  *
  * States are built explicitly (spawn/whiteBox) so parallel card registration
@@ -46,11 +45,11 @@ test('Ominous Growth: "delete all tokens" reaches a Wraith augment — the third
   const A = h.state.initiative, D = 1 - A;
   const growth = spawn(h, D, 'Ominous Growth');          // own [Augment] text live
   // the host sits in D's home, which is the region the battle happens in —
-  // "all tokens" is region-scoped (R12) and a mod carries its host's region
+  // "all tokens" is region-scoped (CR 601.1c) and a mod carries its host's region
   const host = spawn(h, D, 'Hammer of Justice');         // a NONTOKEN 10/3 body
   let wraith: EntityId = 0, unitTok: EntityId = 0;
   whiteBox(h, e => {
-    // R71: a Wraith applied rather than spawned — a token entity of kind 'mod'
+    // CR 721.6: a Wraith applied rather than spawned — a token entity of kind 'mod'
     // (A augmented it onto an enemy body, which is what Blight's End does)
     wraith = e.augmentWraith(e.entity(host)!, A).id;
     unitTok = e.spawnUnit(A, 'Unit Token', e.homeRegion(A), { token: true, tokenStats: [1, 1] }).id;
@@ -98,7 +97,7 @@ test('Brough: "Everything" is unowned — the ENEMY\'s units are balanced too', 
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const brough = spawn(h, D, 'Brough');                  // printed 0/4
-  // put an enemy body in the SAME region as the Brough (statics are R12-scoped)
+  // put an enemy body in the SAME region as the Brough (statics are CR 601.1d-scoped)
   let foe: EntityId = 0;
   whiteBox(h, e => {
     foe = e.spawnUnit(A, 'Hammer of Justice', e.entity(brough)!.region).id;

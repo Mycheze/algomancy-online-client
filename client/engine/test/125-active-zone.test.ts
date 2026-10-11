@@ -1,4 +1,4 @@
-/* R145 — THE ACTIVE ZONE: in play and the stack.
+/* CR 400.2 — THE ACTIVE ZONE: in play and the stack.
  *
  * Bena, 2026-08-25: "in play and the stack are active zones (which is relevant
  * for cards that have unstable). When Statweaver, which has Unstable
@@ -80,7 +80,7 @@ function nowhereBut(h: Harness, card: string, where: 'bin' | 'erased', seat: Sea
       `${card} was erased, and a card leaving an INACTIVE zone must not be`);
   }
   assert.equal(count(erasedOf(h, other), card) + count(binOf(h, other), card), 0,
-    'R65: it lands in its OWN owner\'s pile, not the opponent\'s');
+    'it lands in its OWN seat\'s pile, not the opponent\'s');
 }
 
 /** A live attack window in `A`'s battle with one vanilla attacker of A's, both
@@ -125,7 +125,7 @@ function negateWithHushMush(h: Harness, A: Seat, itemId: number): void {
 
 // ══ POSITIVE: leaving an ACTIVE zone (the stack) erases ═══════════════════
 
-test('R145: Aberrant Statweaver negated off the stack is ERASED, not binned', () => {
+test('CR 803.8k: Aberrant Statweaver negated off the stack is ERASED, not binned', () => {
   // The owner's own worked example. Caleb rules the general shape directly,
   // rules-questions 2025-09-13, answering "negated spells go to the bin, even
   // if they were played from the bin?" — "Yes, although most ways to play
@@ -138,10 +138,10 @@ test('R145: Aberrant Statweaver negated off the stack is ERASED, not binned', ()
   assert.ok(h.log.some(l => l.includes('Aberrant Statweaver') && l.includes('erased (Unstable)')),
     'and the negation log says where it actually went');
   assert.equal(trashesOf(h, 'Aberrant Statweaver').length, 0,
-    'R40: it came from the stack, so it was never trashed either');
+    'CR 801.2b: it came from the stack, so it was never trashed either');
 });
 
-test('R145: Oorblak — the other printed {Unstable} card — is erased the same way', () => {
+test('CR 803.8k: Oorblak — the other printed {Unstable} card — is erased the same way', () => {
   // Two cards print it; a fix that only reached one of them is a fix that
   // special-cased a name instead of reading the face.
   const { h, A, D, item } = virusOnStack(7451, 'Oorblak', 'earth');
@@ -149,7 +149,7 @@ test('R145: Oorblak — the other printed {Unstable} card — is erased the same
   nowhereBut(h, 'Oorblak', 'erased', D);
 });
 
-test('R145: a printed-Unstable virus whose HOST DIES fizzles to the erased pile', () => {
+test('CR 803.8k: a printed-Unstable virus whose HOST DIES fizzles to the erased pile', () => {
   // The second bypass, and the nastier one: `resolveItem`'s two virus-fizzle
   // branches called `toBin(item.controller, item.card!, 'stack')` RAW, so they
   // skipped `dischargeItem` — and therefore the Unstable check — entirely.
@@ -166,7 +166,7 @@ test('R145: a printed-Unstable virus whose HOST DIES fizzles to the erased pile'
   nowhereBut(h, 'Aberrant Statweaver', 'erased', D);
 });
 
-test('R145 keeps R79: a MODDED ordinary spell negated off the stack is still erased', () => {
+test('CR 803.8k keeps CR 723.4b: a MODDED ordinary spell negated off the stack is still erased', () => {
   // The regression pin. The old expression that missed the printed face got
   // this case RIGHT, and the whole change is a widening of it — if sharing the
   // predicate broke the derived case, the sharing is what is wrong.
@@ -190,44 +190,44 @@ test('R145 keeps R79: a MODDED ordinary spell negated off the stack is still era
 
 // ══ NEGATIVE: the guards against over-reach ══════════════════════════════
 
-test('R145 negative control: a NON-Unstable virus negated off the stack still BINS', () => {
+test('CR 406.4 negative control: a NON-Unstable virus negated off the stack still BINS', () => {
   // Caleb, rules-questions 2025-03-31: Q "Negating an augment puts it in the
   // bin or erase?" → A "Into the bin". This is the case that makes the printed
   // check a CHECK: if leaving the stack erased everything, this answer would
-  // be wrong and R79's Manual p.34 line would have no cases left at all.
+  // be wrong and the Manual p.34 line (CR 723.3a) would have no cases left at all.
   const { h, A, D, item } = virusOnStack(7454, 'Chitin Shredder', 'earth');
   assert.equal(getCard('Chitin Shredder').unstable ?? false, false, 'it prints no {Unstable}');
   negateWithHushMush(h, A, item);
   nowhereBut(h, 'Chitin Shredder', 'bin', D);
   assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,
-    'R40: still not a trash — the bin entry came from the stack');
+    'CR 406.4: still not a trash — the bin entry came from the stack');
 });
 
-test('R145: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive', () => {
+test('CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive', () => {
   // The question playtest-ledger #89 left explicitly open ("whether a
   // printed-Unstable card discarded from hand is also erased is unsourced and
   // deliberately unchanged"). "From an active zone" is the source, and it
   // settles it in the direction of "no": the hand is not an active zone, so
-  // nothing replaces the bin entry, and R40 trashes it like any other discard.
+  // nothing replaces the bin entry, and CR 801.3 trashes it like any other discard.
   const h = new Harness(7455);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const idx = give(h, P, 'Aberrant Statweaver');
   withEUnsettled(h, e => { e.discardFromHand(P, idx); });
   nowhereBut(h, 'Aberrant Statweaver', 'bin', P);
-  assert.equal(trashesOf(h, 'Aberrant Statweaver').length, 1, 'and it was trashed (R40)');
+  assert.equal(trashesOf(h, 'Aberrant Statweaver').length, 1, 'and it was trashed (CR 801.3)');
 });
 
-test('R145: a printed-Unstable card MILLED from the deck bins and trashes — deck is inactive', () => {
+test('CR 803.8a: a printed-Unstable card MILLED from the deck bins and trashes — deck is inactive', () => {
   const h = new Harness(7456);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   withEUnsettled(h, e => { e.deckOf(P).unshift('Oorblak'); e.mill(P, 1); });
   nowhereBut(h, 'Oorblak', 'bin', P);
-  assert.equal(trashesOf(h, 'Oorblak').length, 1, 'R40: from the deck, so trashed');
+  assert.equal(trashesOf(h, 'Oorblak').length, 1, 'CR 801.2: from the deck, so trashed');
 });
 
-test('R145: a printed-Unstable card binned from the CACHE bins and trashes (R41) — cache is inactive', () => {
+test('CR 803.8a: a printed-Unstable card binned from the CACHE bins and trashes (CR 801.2h) — cache is inactive', () => {
   const h = new Harness(7457);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -237,10 +237,10 @@ test('R145: a printed-Unstable card binned from the CACHE bins and trashes (R41)
     e.toBin(P, taken.card, 'cache');
   });
   nowhereBut(h, 'Aberrant Statweaver', 'bin', P);
-  assert.equal(trashesOf(h, 'Aberrant Statweaver').length, 1, 'R41/R40: from the cache, so trashed');
+  assert.equal(trashesOf(h, 'Aberrant Statweaver').length, 1, 'CR 801.2h, 801.2: from the cache, so trashed');
 });
 
-test('R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires', () => {
+test('CR 803.8j: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires', () => {
   // Caleb, 2025-04-16: "unstable doesn't stop recalling. So you could recall
   // aberrant statweaver for example if it was in play." Which follows from the
   // glossary without needing a second ruling: Unstable replaces a BIN entry,
@@ -258,7 +258,7 @@ test('R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never 
   assert.equal(count(erasedOf(h, P), 'Aberrant Statweaver'), 0, 'nothing was erased');
 });
 
-test('R145: Unstable is NOT shared in formation — a modded unit\'s column-mate still bins', () => {
+test('CR 803.1a: Unstable is NOT shared in formation — a modded unit\'s column-mate still bins', () => {
   // Printed rules, Algomancy-Manual.txt, the NON-COMBAT ATTRIBUTES sidebar:
   // "Some attributes, like burst and unstable, are written in a purple text.
   // These attributes are referred to as non-combat attributes… These
@@ -268,7 +268,7 @@ test('R145: Unstable is NOT shared in formation — a modded unit\'s column-mate
   // The engine gets this right STRUCTURALLY — Unstable is deliberately not an
   // `Attr`, so `colAttrs`/`effAttrs` have no way to carry it (test 11 pins
   // that end). This is the behavioural end: two units in one attacking column,
-  // one of them modded and therefore Unstable (R69), and the mate that dies
+  // one of them modded and therefore Unstable (CR 803.8e), and the mate that dies
   // does NOT inherit the erase.
   const h = new Harness(7459);
   toDeployment(h);
@@ -283,7 +283,7 @@ test('R145: Unstable is NOT shared in formation — a modded unit\'s column-mate
   toNextBattle(h, P);
   h.do({ type: 'declareAttack', seat: P, columns: [[modded, mate]] });
   const q = h.q;
-  assert.ok(q.isUnstable(ent(h, modded)!), 'the modded unit IS Unstable (R69)');
+  assert.ok(q.isUnstable(ent(h, modded)!), 'the modded unit IS Unstable (CR 803.8e)');
   assert.ok(!q.isUnstable(ent(h, mate)!), 'its column-mate is NOT');
   assert.deepEqual(q.columnOf(modded), q.columnOf(mate), 'and they really are column-mates');
   const shared = q.effAttrs(ent(h, mate)!);
@@ -293,16 +293,16 @@ test('R145: Unstable is NOT shared in formation — a modded unit\'s column-mate
   assert.ok(ent(h, modded), 'the modded unit is still standing — only the mate died');
   nowhereBut(h, 'The Foretold', 'bin', P);
   assert.equal(trashesOf(h, 'The Foretold').length, 1,
-    'R137: it binned and TRASHED from play like any non-Unstable death');
+    'CR 801.2: it binned and TRASHED from play like any non-Unstable death');
 });
 
 // ══ CONFORMANCE ══════════════════════════════════════════════════════════
 
-test('R145 census: printed {Unstable} is exactly two cards, and no non-combat attribute is an Attr', () => {
+test('CR 803.8b census: printed {Unstable} is exactly two cards, and no non-combat attribute is an Attr', () => {
   const printed = allCardNames().filter(n => getCard(n).unstable === true).sort();
   assert.deepEqual(printed, ['Aberrant Statweaver', 'Oorblak'],
     'the printed-{Unstable} population — if this changed, every stack/death path above '
-    + 'needs re-reading against the new card, and docs/digital-rules.md R145 needs updating');
+    + 'needs re-reading against the new card, and CR 803.8b needs updating');
   // The structural half of "not shared in formation" (Manual sidebar): the
   // column-sharing layer projects `Attr`s and nothing else, so keeping
   // Unstable and Burst OUT of `attrs` is what makes sharing impossible rather

@@ -1,4 +1,4 @@
-/* R310 (owner, 2026-10-04, report #192) — AN OPPONENT'S GLIMPSE IN A HIDDEN STEP
+/* CR D5.2 (owner, 2026-10-04, report #192) — AN OPPONENT'S GLIMPSE IN A HIDDEN STEP
  * POPS IN THE RECAP, AT THE MOMENT IT HAPPENED.
  *
  * The owner: "Glimpse cards shouldn't be shown to an opponent *during*
@@ -8,7 +8,7 @@
  * This is the client half, on the real client (test/ui-driver.ts):
  *
  *   §1 the card notice (CT-78's `.glimpsenotice`) appears when the frame
- *      carrying the glimpse PLAYS — not on the frame before it. Until R310 the
+ *      carrying the glimpse PLAYS — not on the frame before it. Until 2026-10-04 the
  *      playback branch of ui/main.ts applyUpdate returned before the glimpse
  *      absorb, so a glimpse held for the recap would have played with no notice
  *      at all: moving it out of the live path without this would have turned
@@ -74,7 +74,7 @@ function act(room: Room, a: Action, seat: Seat) {
   return playbackFrames({ seat, held: frames[seat]!, tail: events, close, redact: evs => onWire(evs, seat) });
 }
 
-test('R310 §1: the opponent\'s glimpse notice pops when its recap frame plays, not before', () => {
+test('CR D5.2: the opponent\'s glimpse notice pops when its recap frame plays, not before', () => {
   const room = createRoom('R371A', 37101, [...NAMES]);
   act(room, { type: 'donePlanning', seat: 0 }, 0);
   act(room, { type: 'donePlanning', seat: 1 }, 0);
@@ -144,7 +144,7 @@ const oracleBot: BotPolicy = {
 };
 interface Msg { t: string; view?: GameState; legal?: Action[]; events?: EngineEvent[]; step?: string; frames?: { view: GameState; events: EngineEvent[]; kind: string }[] }
 
-test('R310 §2: Learn to Play holds the bot\'s glimpse for the recap, and the recap pops it', () => {
+test('CR D6.2d: Learn to Play holds the bot\'s glimpse for the recap, and the recap pops it', () => {
   const s = new SoloServer(DEAL, oracleBot);
   const msgs: Msg[] = [];
   const sock = s.socket();

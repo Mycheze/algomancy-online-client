@@ -1,15 +1,15 @@
 /* Light & Dark engine wave A: the player-counter and trash primitives.
  *
- *  - R38 Rot: a player counter that deals damage equal to itself at the START
+ *  - CR 112.13 Rot: a player counter that deals damage equal to itself at the START
  *    OF DEPLOYMENT, in initiative order, from a source the victim controls,
  *    never decaying and never respondable (no priority during deployment).
  *    It runs through a replacement hook (Skittering Blight: "If rot would deal
  *    damage to you, instead put that many +1/+1 counters on me").
- *  - R39 Debt: a player counter paid off 1 mana each as the LAST thing in the
+ *  - CR 112.14 Debt: a player counter paid off 1 mana each as the LAST thing in the
  *    resource step — mandatory, automatic, partial payment allowed, remainder
  *    carried, no other penalty. The mana spent is expended, so it is gone for
  *    the rest of the turn: that IS the cost.
- *  - R40 Trash: a NONTOKEN card entering a bin from anywhere other than the
+ *  - CR 801.2, 801.2e Trash: a NONTOKEN card entering a bin from anywhere other than the
  *    STACK is trashed, by the owner of the bin it enters. Discard/sacrifice/
  *    mill/death trash; a resolved or negated spell does not (it comes from the
  *    stack); tokens never do. Counted per battle in battleCounters.
@@ -80,9 +80,9 @@ function intoDeployment(h: Harness): void {
   if (h.state.phase === 'battle') h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
 }
 
-// ── R38: rot ──────────────────────────────────────────────────────────
+// ── CR 112.13: rot ──────────────────────────────────────────────────────────
 
-test('R38: rot deals damage equal to itself at the start of deployment, in initiative order', () => {
+test('CR 112.13: rot deals damage equal to itself at the start of deployment, in initiative order', () => {
   const h = new Harness(3500);
   const I = h.state.initiative, N = (1 - I) as Seat;
   h.state.players[I]!.rot = 2;
@@ -98,7 +98,7 @@ test('R38: rot deals damage equal to itself at the start of deployment, in initi
   assert.deepEqual(hits.map(ev => ev.data!['n']), [2, 3]);
 });
 
-test('R38: the damage source is the damaged player themselves ("your rot is a source you control")', () => {
+test('CR 112.13b: the damage source is the damaged player themselves ("your rot is a source you control")', () => {
   const h = new Harness(3501);
   const I = h.state.initiative;
   h.state.players[I]!.rot = 1;
@@ -107,10 +107,10 @@ test('R38: the damage source is the damaged player themselves ("your rot is a so
   assert.equal(dmg.length, 1, 'rot damage emits a damage event, so triggers hear it');
   assert.equal(dmg[0]!.data!['player'], I, 'aimed at the player');
   assert.equal(dmg[0]!.data!['controller'], I,
-    'controlled BY the damaged player — Caleb 2024-08-20, the R33 controller field');
+    'controlled BY the damaged player — Caleb 2024-08-20, the controller field');
 });
 
-test('R38: rot never decays — it fires again, at full size, every turn', () => {
+test('CR 112.13a: rot never decays — it fires again, at full size, every turn', () => {
   const h = new Harness(3502);
   const I = h.state.initiative;
   h.state.players[I]!.rot = 2;
@@ -126,7 +126,7 @@ test('R38: rot never decays — it fires again, at full size, every turn', () =>
   assert.equal(h.state.players[I]!.rot, 2, 'still 2');
 });
 
-test('R38: rot damage cannot be responded to — deployment opens no priority window', () => {
+test('CR 112.13c: rot damage cannot be responded to — deployment opens no priority window', () => {
   const h = new Harness(3503);
   h.state.players[0]!.rot = 1;
   h.state.players[1]!.rot = 1;
@@ -136,7 +136,7 @@ test('R38: rot damage cannot be responded to — deployment opens no priority wi
   assert.equal(h.state.decision, null, 'and nobody was asked anything');
 });
 
-test('R38: a replacement hook can replace rot damage, and sees the full amount', () => {
+test('CR 112.13d: a replacement hook can replace rot damage, and sees the full amount', () => {
   const h = new Harness(3504);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -154,7 +154,7 @@ test('R38: a replacement hook can replace rot damage, and sees the full amount',
   assert.ok(h.log.some(l => l.includes('Test Rot Ward replaces the 3 damage')), 'logged for the player');
 });
 
-test('R38: a replacement that declines lets the damage through; only its controller is asked', () => {
+test('CR 112.13d: a replacement that declines lets the damage through; only its controller is asked', () => {
   const h = new Harness(3505);
   toDeployment(h);
   const P = h.state.deployPlayer!, O = (1 - P) as Seat;
@@ -171,9 +171,9 @@ test('R38: a replacement that declines lets the damage through; only its control
     "an opponent's replacement does not touch your rot damage (it is your source, not theirs)");
 });
 
-// ── R39: debt ─────────────────────────────────────────────────────────
+// ── CR 112.14: debt ─────────────────────────────────────────────────────────
 
-test('R39: debt is paid automatically when the resource step ends — 1 mana per debt', () => {
+test('CR 502.4: debt is paid automatically when the resource step ends — 1 mana per debt', () => {
   const h = new Harness(3510);
   const P = 0 as const;
   giveResources(h, P, 'fire', 5);
@@ -187,7 +187,7 @@ test('R39: debt is paid automatically when the resource step ends — 1 mana per
   assert.deepEqual(paid[0]!.data, { seat: P, paid: 3, owed: 3, remaining: 0 });
 });
 
-test('R39: partial payment is fine and the remainder carries to the next turn', () => {
+test('CR 112.14b: partial payment is fine and the remainder carries to the next turn', () => {
   const h = new Harness(3511);
   const P = 0 as const;
   giveResources(h, P, 'fire', 1);
@@ -209,19 +209,19 @@ test('R39: partial payment is fine and the remainder carries to the next turn', 
   assert.equal(h.state.players[P]!.debt, 2, 'the carried debt is charged again next turn');
 });
 
-test('R39: with no mana, debt costs nothing else — it just carries', () => {
+test('CR 112.14b: with no mana, debt costs nothing else — it just carries', () => {
   const h = new Harness(3512);
   const P = 0 as const;
   h.state.players[P]!.debt = 2;
   const life = h.state.players[P]!.life;
   h.do({ type: 'donePlanning', seat: P });
   assert.equal(h.state.players[P]!.debt, 2, 'nothing paid');
-  assert.equal(h.state.players[P]!.life, life, 'and NO other penalty (R39)');
+  assert.equal(h.state.players[P]!.life, life, 'and NO other penalty (CR 112.14b)');
   const paid = h.events.filter(ev => ev.type === 'debtPaid');
   assert.equal(paid[0]!.data!['paid'], 0, 'still logged, so the carry-over is visible');
 });
 
-test('R39: no debt, no event and no mana spent', () => {
+test('CR 502.4: no debt, no event and no mana spent', () => {
   const h = new Harness(3513);
   const P = 0 as const;
   giveResources(h, P, 'fire', 2);
@@ -230,7 +230,7 @@ test('R39: no debt, no event and no mana spent', () => {
   assert.equal(h.events.filter(ev => ev.type === 'debtPaid').length, 0, 'nothing to say');
 });
 
-test('R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable', () => {
+test('CR 502.4a: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable', () => {
   const h = new Harness(3514);
   const P = 0 as const;
   giveResources(h, P, 'fire', 3);
@@ -239,7 +239,7 @@ test('R39: debt-paid mana is genuinely gone — no more resources can be activat
   assert.ok(new E(h.state).canPayCard(P, 'Test Debt Unit'), 'affordable before the debt is paid');
   h.do({ type: 'donePlanning', seat: P });
   assert.equal(new E(h.state).openMana(P), 1, '2 of the 3 mana went to the debt');
-  // R39's whole point: nothing can be activated after paying
+  // CR 502.4a's whole point: nothing can be activated after paying
   assert.ok(!h.legal(P).some(a => a.type === 'activateResource' || a.type === 'recycleForResource'
     || a.type === 'exchangePrismite'),
     'the resource step is over — no way to make more mana this turn');
@@ -253,7 +253,7 @@ test('R39: debt-paid mana is genuinely gone — no more resources can be activat
   assert.throws(() => h.do({ type: 'playCard', seat: P, handIndex: idx }), IllegalAction);
 });
 
-test('R39: gainDebt / gainRot record the counter and announce it', () => {
+test('CR 112.14: gainDebt / gainRot record the counter and announce it', () => {
   const h = new Harness(3515);
   whiteBox(h, e => { e.gainDebt(0, 2); e.gainRot(1, 1); e.gainRot(1, 1); });
   assert.equal(h.state.players[0]!.debt, 2);
@@ -262,9 +262,9 @@ test('R39: gainDebt / gainRot record the counter and announce it', () => {
   assert.equal(h.events.filter(ev => ev.type === 'rotGained').length, 2);
 });
 
-// ── R40: trashing ─────────────────────────────────────────────────────
+// ── CR 801.2: trashing ─────────────────────────────────────────────────────
 
-test('R40: discarding from hand trashes, by the owner of the bin it enters', () => {
+test('discarding from hand trashes, by the owner of the bin it enters', () => {
   const h = new Harness(3520);
   const P = 1 as const;
   const idx = give(h, P, 'Test Grunt');
@@ -277,7 +277,7 @@ test('R40: discarding from hand trashes, by the owner of the bin it enters', () 
   assert.ok(!h.state.players[P]!.hand.includes('Test Grunt'));
 });
 
-test('R40: milling from the deck trashes one event per card', () => {
+test('CR 801.2a: milling from the deck trashes one event per card', () => {
   const h = new Harness(3521);
   const P = 0 as const;
   const top = h.state.sharedDeck.slice(0, 2);
@@ -289,7 +289,7 @@ test('R40: milling from the deck trashes one event per card', () => {
   assert.deepEqual(h.state.players[P]!.bin, top);
 });
 
-test('R40: sacrificing and dying both trash — the card enters a bin from PLAY', () => {
+test('CR 801.2a: sacrificing and dying both trash — the card enters a bin from PLAY', () => {
   const h = new Harness(3522);
   const P = 0 as const;
   const a = spawn(h, P, 'Test Grunt');
@@ -304,27 +304,26 @@ test('R40: sacrificing and dying both trash — the card enters a bin from PLAY'
   assert.ok(iDied !== -1 && iTrash > iDied, 'the death is announced before the trash');
 });
 
-// R69 (Bena 2026-08-21, reversing R40's old flat "tokens are never trashed"):
+// The owner's ruling (Bena 2026-08-21, reversing the old flat "tokens are never trashed"):
 // a dying token DOES enter the bin and is then erased by a state-based sweep.
 // This test used to go on "so it is trashed there … and the trash ledger
-// counted it" (R69 + R133's "Tokens are trashed, yes"). R306 (owner,
-// 2026-09-28) withdrew that half: a token is not a card, so it is never
+// counted it" (the token-zone ruling plus the owner's "Tokens are trashed, yes"). The owner withdrew that half on 2026-09-28 (CR 801.2d): a token is not a card, so it is never
 // trashed. The zone fact stands; the trash does not happen.
-test('R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased', () => {
+test('a TOKEN dying enters the bin, is NOT trashed, and is then erased', () => {
   const h = new Harness(3523);
   const P = 0 as const;
   whiteBox(h, e => {
     const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
     e.destroy(t, 'dies');
   });
-  assert.equal(trashes(h).length, 0, 'a token is not a card, so it is not trashed (R306)');
+  assert.equal(trashes(h).length, 0, 'a token is not a card, so it is not trashed (CR 801.2d)');
   const died = h.events.filter(ev => ev.type === 'died' && ev.data!['card'] === 'Test Grunt');
   assert.equal(died.length, 1, 'it still DIES — a token is still a unit');
-  assert.equal(died[0]!.data!['token'], true, 'and the death event says it was a token (R70)');
-  assert.equal(died[0]!.data!['to'], 'bin', 'into the bin, for the event window (R69)');
+  assert.equal(died[0]!.data!['token'], true, 'and the death event says it was a token (CR 714.9)');
+  assert.equal(died[0]!.data!['to'], 'bin', 'into the bin, for the event window (CR 410.5a)');
   assert.deepEqual(h.state.players[P]!.bin, [],
     'the state-based sweep erased it out of the bin again');
-  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');
+  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (CR 407.3)');
   // the order the log tells it in: died -> erased, with no trash line between
   const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
   assert.ok(i('Test Grunt dies') !== -1 && i('erased from the bin') > i('Test Grunt dies'),
@@ -332,33 +331,33 @@ test('R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then eras
   assert.equal(i('trashes Test Grunt'), -1, 'and no trash line at all');
 });
 
-// R69, EXTENDED TO THE HAND AND THE CACHE (Bena 2026-08-22). The designer's
+// TOKENS VISIT THE HAND AND THE CACHE TOO (CR 410.5b, 410.5c; Bena 2026-08-22). The designer's
 // ruling is literally about a hand — "Technically it does enter your hand and
 // then gets erased immediately. So it would trigger any 'enters hand' stuff"
 // (Caleb 2025-06-15) — which made the bin-only implementation the wrong half.
 // One mechanism (E.eraseFromZone) serves all three zones.
-test('R69: a recalled TOKEN enters the hand, is NOT trashed, and is then erased', () => {
+test('CR 410.5b: a recalled TOKEN enters the hand, is NOT trashed, and is then erased', () => {
   const h = new Harness(3540);
   const P = 0 as const;
   whiteBox(h, e => {
     const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
     e.recall(t);
   });
-  // a hand is not a bin, so R40 has nothing to say about it
+  // a hand is not a bin, so CR 801.2 has nothing to say about it
   assert.equal(trashes(h).length, 0, 'a recall is never a trash — a hand is not a bin');
   assert.deepEqual(h.state.players[P]!.hand.filter(c => c === 'Test Grunt'), [],
     'the sweep took it back out of the hand');
-  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');
+  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (CR 407.3)');
   const despawn = h.events.filter(ev => ev.type === 'despawned').at(-1)!;
   assert.equal(despawn.data!['to'], 'hand',
-    'the event says HAND — this is what "when a card enters a hand" reads (R70)');
+    'the event says HAND — this is what "when a card enters a hand" reads (CR 714.9)');
   assert.equal(despawn.data!['token'], true);
   const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
   assert.ok(i('recalled to') !== -1 && i('erased from the hand') > i('recalled to'),
     'recalled, then erased');
 });
 
-test('R69: a CACHED token visits the cache and is erased out of it (⚠ engine call)', () => {
+test('CR 410.5c: a CACHED token visits the cache and is erased out of it (⚠ engine call)', () => {
   const h = new Harness(3541);
   const P = 0 as const;
   whiteBox(h, e => {
@@ -373,10 +372,10 @@ test('R69: a CACHED token visits the cache and is erased out of it (⚠ engine c
     'the cached event fired with the token really sitting in the cache');
   const despawn = h.events.filter(ev => ev.type === 'despawned').at(-1)!;
   assert.equal(despawn.data!['to'], 'cache',
-    'and it says CACHE, not hand — a cache is still not a hand (R70)');
+    'and it says CACHE, not hand — a cache is still not a hand (CR 714.9)');
 });
 
-test('R69: the erase lands before anything the visit queued can RESOLVE', () => {
+test('CR 304.10: the erase lands before anything the visit queued can RESOLVE', () => {
   const h = new Harness(3542);
   const P = 0 as const;
   // the token is in the hand for the whole event window (fireEvent only
@@ -391,7 +390,7 @@ test('R69: the erase lands before anything the visit queued can RESOLVE', () => 
   });
 });
 
-// R137 (Bena 2026-08-24, playtest #93/room ANBB) INVERTS this test in place.
+// The owner's call of 2026-08-24 (playtest #93/room ANBB) INVERTS this test in place; CR 801.2h would invert it back (CT-246).
 // It used to read "a modded unit dying is ERASED, so nothing is trashed" and
 // assert `trashes(h).length === 0` — the reading the printed reminder text
 // ("If they would enter a bin, erase them instead.") and Caleb 2025-04-08
@@ -402,8 +401,8 @@ test('R69: the erase lands before anything the visit queued can RESOLVE', () => 
 // the one line that survives unchanged, and that is the point: the DESTINATION
 // never moved, only what happens on the way.
 //
-// ⚠ R244 (2026-08-29, report #129) then took the MOD back out of that list and
-// left the BODY exactly where R137 put it: *"When a mod goes onto a unit, it
+// ⚠ The mod ruling (now CR 801.2g; report #129, 2026-08-29) then took the MOD back out of that list and
+// left the BODY where the engine's Unstable-trash route put it (CT-246; CR 801.2h differs): *"When a mod goes onto a unit, it
 // becomes PART of that unit … 'Trashing' didn't happen here."* So the trash
 // list below is the body alone. If it ever loses the body too, report #93 is
 // open again — test/224-mod-trash.test.ts is the fence for that.
@@ -412,7 +411,7 @@ test('R69: the erase lands before anything the visit queued can RESOLVE', () => 
 // mod: playtest-ledger.ts names this test as report #93's guard, by name, and
 // 70-playtest-ledger.test.ts reddens if it stops matching. It is still exactly
 // true of the body, which is what #93 was about.
-test('R137: a modded unit dying is binned, TRASHED, and only then erased (R40 inverted)', () => {
+test('engine (CT-246; CR 801.2h differs): a modded unit dying is binned, TRASHED, and only then erased', () => {
   const h = new Harness(3524);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');
@@ -422,23 +421,23 @@ test('R137: a modded unit dying is binned, TRASHED, and only then erased (R40 in
   });
   const t = trashes(h);
   assert.deepEqual(t.map(ev => ev.data!['card']), ['Test Brute'],
-    'the BODY entered a bin from play and R40 trashed it there (R137) — and only the body, '
-    + 'because a mod erased with its host was never separately there (R244)');
+    'the BODY entered a bin from play and was trashed there (CR 801.2; the engine route, CT-246 — CR 801.2h says not trashed) — and only the body, '
+    + 'because a mod erased with its host was never separately there (CR 801.2g)');
   assert.ok(t.every(ev => ev.data!['from'] === 'play' && ev.data!['seat'] === P));
   assert.deepEqual(h.state.players[P]!.bin, [],
     'and the sweep took both back out again — the visible destination is unchanged');
   assert.deepEqual(h.q.erased(P), ['Test Brute', 'Test Grunt'],
-    'both reach the public erased pile (R65)');
+    'both reach the public erased pile (CR 410.4b)');
   const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
   assert.ok(i('Test Brute dies') !== -1 && i('trashes Test Brute') > i('Test Brute dies')
     && i('erased from the bin — Unstable') > i('trashes Test Brute'),
   'died, then trashed, then erased — the same order the token path logs');
 });
 
-// R137: a TOKEN mod has no card, so it has nothing to bin and nothing to trash
-// (R69). It still reaches the erased pile, which is the only public record a
+// CR 410.4c: a TOKEN mod has no card, so it has nothing to bin and nothing to trash.
+// It still reaches the erased pile, which is the only public record a
 // token mod ever had.
-test('R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed', () => {
+test('CR 410.4c: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed', () => {
   const h = new Harness(3525);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');
@@ -447,23 +446,23 @@ test('R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or t
     e.destroy(e.entity(u)!, 'dies');
   });
   assert.deepEqual(trashes(h).map(ev => ev.data!['card']), ['Test Brute'],
-    'only the body — a token mod has no card of its own (R69)');
+    'only the body — a token mod has no card of its own (CR 410.4c)');
   assert.deepEqual(h.state.players[P]!.bin, []);
   assert.deepEqual(h.q.erased(P), ['Test Brute', 'Test Grunt'],
-    'both still show in the erased pile (R65)');
+    'both still show in the erased pile (CR 407.3a)');
 });
 
-test('R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)', () => {
+test('CR 801.2b: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)', () => {
   const h = new Harness(3525);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const idx = give(h, P, 'Test Bin Spell');
   h.do({ type: 'playCard', seat: P, handIndex: idx });
   assert.ok(h.state.players[P]!.bin.includes('Test Bin Spell'), 'it did reach the bin');
-  assert.equal(trashes(h).length, 0, 'but from the stack — R40 excludes the stack explicitly');
+  assert.equal(trashes(h).length, 0, 'but from the stack — CR 801.2b excludes the stack explicitly');
 });
 
-test('R40: a NEGATED spell is not trashed either — countering is not trashing', () => {
+test('CR 801.2b: a NEGATED spell is not trashed either — countering is not trashing', () => {
   const h = new Harness(3526);
   const P = 0 as const;
   whiteBox(h, e => {
@@ -472,14 +471,14 @@ test('R40: a NEGATED spell is not trashed either — countering is not trashing'
       controller: P, region: e.homeRegion(P), negated: false, parts: [],
     };
     e.s.stack.push(item);
-    e.negate(item.id);   // R68: this IS the removal — and the bin push
-    assert.equal(e.s.stack.length, 0, 'R68: negating takes it off the stack there and then');
+    e.negate(item.id);   // CR 704.4, 704.4a: this IS the removal — and the bin push
+    assert.equal(e.s.stack.length, 0, 'CR 704.4: negating takes it off the stack there and then');
   });
   assert.ok(h.state.players[P]!.bin.includes('Test Bin Spell'), 'a negated spell is binned');
   assert.equal(trashes(h).length, 0, 'and that is still the stack, so no trash');
 });
 
-test('R40: recalling a modded unit trashes its MODS (bin, from play) but not the unit (hand)', () => {
+test('CR 801.2f: recalling a modded unit trashes its MODS (bin, from play) but not the unit (hand)', () => {
   const h = new Harness(3527);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');
@@ -494,9 +493,9 @@ test('R40: recalling a modded unit trashes its MODS (bin, from play) but not the
   assert.equal(t[0]!.data!['from'], 'play');
 });
 
-// ── R40: the per-battle trash counter ─────────────────────────────────
+// ── CR 505.6: the per-battle trash counter ─────────────────────────────────
 
-test('R40: battleCounters count trashes per battle and reset between battles', () => {
+test('CR 505.6: battleCounters count trashes per battle and reset between battles', () => {
   const h = new Harness(3530);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -530,7 +529,7 @@ test('R40: battleCounters count trashes per battle and reset between battles', (
   assert.equal(h.q.battleCounter(region, `trashed:${A}`), 0);
 });
 
-test('R40: a trash outside battle counts for nothing (battleCounters are battle-scoped)', () => {
+test('CR 505.6: a trash outside battle counts for nothing (battleCounters are battle-scoped)', () => {
   const h = new Harness(3531);
   toDeployment(h);
   const P = h.state.deployPlayer!;

@@ -1,21 +1,21 @@
-/* R165 — two halves of one question: WHAT arrives, and HOW it arrived.
+/* CR 301.8, 701.3 — two halves of one question: WHAT arrives, and HOW it arrived.
  *
  * (a) "I SPAWN WITH N COUNTERS" is a fact about the body, not a trigger.
  *     Powerforge Synergist ("two +1/+1 counters", printed 0/0) and Aethercap
  *     Siphoner ("three -1/-1 counters on me", printed 4/4) both used to bolt
  *     their counters on afterwards — Aethercap through a queued 'spawned'
- *     trigger, which cannot run before the event that raised it (R147), and
+ *     trigger, which cannot run before the event that raised it (CR 707.5), and
  *     Powerforge through a `when()` that wrote `self.counters` RAW and so
- *     walked past R104's amount layer. `CardBehavior.spawnsWithCounters` is
+ *     walked past CR 707.5a's amount layer. `CardBehavior.spawnsWithCounters` is
  *     the declaration; `E.spawnUnit` applies it, through `amountDelta`, before
  *     `fireEvent`.
  *
  * (b) "PLAY" IS NOT "PUT INTO PLAY". Four cards print "put into play" (Exhume,
  *     Resurrect, Rousing Spirit, Lurking Dread) and two print "play" — Wake
- *     the Dead and The Bonesculptor. All six were the same call, so R129's
+ *     the Dead and The Bonesculptor. All six were the same call, so CR 108.1a's
  *     'cardPlayed' never fired for the two that really were plays and every
  *     "whenever you play a card / a unit" watcher was deaf to them.
- *     `spawnUnit`'s `asPlay` (with R49's `from`) is that printed word.
+ *     `spawnUnit`'s `asPlay` (with CR 410.6's `from`) is that printed word.
  *
  * Seeds 13901-13999. Each test names its card; each has a positive control
  * next to its negative so a silently dead watcher cannot fake a pass.
@@ -96,7 +96,7 @@ test('Powerforge Synergist: the two +1/+1 counters are on the body at the moment
   drainTriggers(h);
 
   // the spawn EVENT itself — the one line every player at the table reads —
-  // says what arrived. Before R165 the counters were not part of the spawn at
+  // says what arrived. Before the spawn-counters ruling the counters were not part of the spawn at
   // all and this line named a bare Powerforge Synergist.
   const spawnLine = h.events.filter(e => e.type === 'spawned'
     && (e.data?.['card'] as string) === 'Powerforge Synergist').at(-1)!;
@@ -112,7 +112,7 @@ test('Powerforge Synergist: the two +1/+1 counters are on the body at the moment
 
 test('Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the printed 4/4', () => {
   // THE DEFECT: "I spawn with three -1/-1 counters on me" was an on-spawn self
-  // TRIGGER, and a trigger cannot run before the event that raised it (R147).
+  // TRIGGER, and a trigger cannot run before the event that raised it (CR 707.5).
   // So the card stood there as a 4/4 for the whole of its own spawn: Iyngstra
   // ("gain life equal to their defense") gained 4 for a card that prints 1 —
   // and the caster was stopped and asked to ORDER their own spawn against the
@@ -133,7 +133,7 @@ test('Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the 
 });
 
 test('Aethercap Siphoner: spawning with counters is not "you put counters on an ally" — the same silence a Robot\'s X keeps', () => {
-  // R130: nobody PUTS a spawn's own counters on it — it arrives holding them —
+  // CR 707.5a: nobody PUTS a spawn's own counters on it — it arrives holding them —
   // so no 'countersChanged' fires and no "when you put a counter" trigger
   // hears a spawn. That was already true of a Robot X and NOT true of this
   // card, whose counters came through addCounters like any other placement.
@@ -175,7 +175,7 @@ test('Wake the Dead: the units it plays out of a bin are PLAYED — Bloomcaster 
   h.state.players[D]!.bin.push('Curio Drifter');        // cost 1, the OPPONENT's bin
   giveResources(h, A, 'dark', 8);                       // ddd/8
   toNextBattle(h, A);
-  // R12: the raised units arrive in the BATTLE region (ctx.region), so the two
+  // CR 601.1d: the raised units arrive in the BATTLE region (ctx.region), so the two
   // watchers have to be there to hear anything — they attack alongside.
   h.do({ type: 'declareAttack', seat: A, columns: [[atk, bloom], [sent]] });
   const tokens0 = unitsOf(h, A).filter(u => u.card === 'Unit Token').length;
@@ -195,7 +195,7 @@ test('Wake the Dead: the units it plays out of a bin are PLAYED — Bloomcaster 
   // one, and before the errata the two were indistinguishable here at 4 and 2.
   assert.equal(h.state.entities[sent]!.counters, 2,
     'Stalwart Sentinel: [once] — two cards played from a bin, but only one payout of two counters');
-  // the R49 half, and the reason each watcher heard each unit exactly ONCE
+  // the CR 410.6 half, and the reason each watcher heard each unit exactly ONCE
   const played = h.events.filter(e => e.type === 'cardPlayed'
     && ['Good Whale', 'Curio Drifter'].includes(e.data?.['card'] as string));
   assert.equal(played.length, 2, 'one \'cardPlayed\' per raised unit');
@@ -261,7 +261,7 @@ test('The Bonesculptor: the unit it plays from your bin is PLAYED — Bloomcaste
     'Stalwart Sentinel: a card played from anywhere other than your hand is two +1/+1 counters');
   const played = h.events.filter(e => e.type === 'cardPlayed' && e.data?.['card'] === 'Curio Drifter');
   assert.equal(played.length, 1, 'exactly one \'cardPlayed\' — the bin play, not the put-into-play above it');
-  assert.equal(played[0]!.data?.['from'], 'bin', 'R49: out of the bin');
+  assert.equal(played[0]!.data?.['from'], 'bin', 'CR 410.6: out of the bin');
 });
 
 // ── the third defect the inventory row did not name ──────────────────────

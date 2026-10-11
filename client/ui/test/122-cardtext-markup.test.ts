@@ -1,5 +1,5 @@
 /**
- * R134 — the card-text markup formatter, and why it went unseen.
+ * The card-text markup formatter, and why it went unseen.
  *
  * Playtest report #91 (ANBB, 2026-08-24) said only "Beyond, Codex Incarnate has
  * a typo in its text". It was not a typo in the DATA — the transcription
@@ -43,7 +43,7 @@ import { ORACLE_JSON } from '../../engine/scripts/paths.mjs';
 const textOf = (n: string): string => getCard(n).text ?? '';
 const q = (h: Harness): E => new E(h.state);
 
-test('R134: {g} renders the keyword it marks, never a literal "g"', () => {
+test('{g} renders the keyword it marks, never a literal "g"', () => {
   const out = iconizeText(textOf('Beyond, Codex Incarnate'));
   assert.ok(out.includes('<span class="kw kw-g">inverted</span>'),
     'the marked keyword is styled, which is what the printed card does');
@@ -52,7 +52,7 @@ test('R134: {g} renders the keyword it marks, never a literal "g"', () => {
   assert.ok(!out.includes('{g}'), 'and the marker itself is consumed');
 });
 
-test('R134: no card in the pool renders a stray marker word', () => {
+test('no card in the pool renders a stray marker word', () => {
   // the general form of the bug, over the whole pool rather than the one card
   // that got reported. A new {token} nobody taught the formatter about shows up
   // here as its own bare body glued to the following word.
@@ -72,9 +72,9 @@ test('R134: no card in the pool renders a stray marker word', () => {
   assert.deepEqual(bad, [], 'every {token} must be consumed by the formatter');
 });
 
-test('R134: an unclosed {i} reminder does not italicise the rules text after it', () => {
+test('an unclosed {i} reminder does not italicise the rules text after it', () => {
   // Godray prints its reminder FIRST and its rules text second — the case that
-  // makes the missing {/i} visible. Before R134 the whole card was italic.
+  // makes the missing {/i} visible. Before the fix the whole card was italic.
   const out = iconizeText(textOf('Godray'));
   const close = out.indexOf('</i>');
   assert.ok(close > 0, 'the reminder closes its italic');
@@ -82,7 +82,7 @@ test('R134: an unclosed {i} reminder does not italicise the rules text after it'
     'and the rules text sits OUTSIDE it, upright like the printed card');
 });
 
-test('R134: every card emits balanced italics', () => {
+test('every card emits balanced italics', () => {
   const unbalanced: string[] = [];
   for (const name of allCardNames()) {
     const out = iconizeText(textOf(name));
@@ -92,10 +92,10 @@ test('R134: every card emits balanced italics', () => {
   }
   assert.deepEqual(unbalanced, [],
     'an unclosed <i> leaks out of the text box and italicises whatever the '
-    + 'client paints next — 76 cards printed one before R134');
+    + 'client paints next — 76 cards printed one before the fix');
 });
 
-test('R134: a card that closes its own italic is left alone', () => {
+test('a card that closes its own italic is left alone', () => {
   // the balancer must not double-close, or the extra </i> leaks the other way
   const out = iconizeText('Text {i}(a reminder){/i} and more text.');
   assert.equal((out.match(/<i>/g) ?? []).length, 1);
@@ -103,7 +103,7 @@ test('R134: a card that closes its own italic is left alone', () => {
   assert.ok(out.endsWith('and more text.'));
 });
 
-test('R134: the formatter still does its original job — icons, pips and breaks', () => {
+test('the formatter still does its original job — icons, pips and breaks', () => {
   // the regression guard for the lift out of main.ts: these are the cases that
   // were already working and must not have moved with the code.
   const aug = iconizeText('[Augment] Everything is {g}deadly.');
@@ -115,7 +115,7 @@ test('R134: the formatter still does its original job — icons, pips and breaks
   assert.ok(iconizeText('<script>').includes('&lt;script&gt;'), 'and it still escapes first');
 });
 
-/* ── R135: the three cosmetic bugs in the text BOX ────────────────────
+/* ── the three cosmetic bugs in the text BOX ────────────────────
  *
  * Reported verbatim (2026-08-24, Bena): "When looking at a cards text, it
  * duplicates icons. For example, an augmented thing will show the :augment:
@@ -125,13 +125,13 @@ test('R134: the formatter still does its original job — icons, pips and breaks
  * long and uses the wrong icon [Switch1] rather than [Once]."
  *
  * Two of the three are the box repeating something it has already said; the
- * third is the box failing to say the one thing only it can. R134 lifted the
+ * third is the box failing to say the one thing only it can. The `{g}` fix lifted the
  * FORMATTER out of main.ts so it could be tested; these reach one level up, at
  * the composed box, because that is where the repetition is decided. Seeds
  * 12200-12299.
  */
 
-test('R135: an augment line does not repeat the [Augment] icon its own tag shows', () => {
+test('an augment line does not repeat the [Augment] icon its own tag shows', () => {
   const h = new Harness(12200);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -153,7 +153,7 @@ test('R135: an augment line does not repeat the [Augment] icon its own tag shows
     'so the rendered line paints the augment icon zero times, not once more');
 });
 
-test('R135: no augment-donating card in the pool leads its clause with the marker', () => {
+test('no augment-donating card in the pool leads its clause with the marker', () => {
   // the general form: every text-box [Augment] in the pool is sliced by
   // augmentClause and then rendered under the augment tag
   const bad: string[] = [];
@@ -169,18 +169,18 @@ test('R135: no augment-donating card in the pool leads its clause with the marke
     'When I spawn, [Switch] Create a Fireball 1.');
 });
 
-/* ⚠ R271 MOVED WHERE THIS IS SAID, NOT WHETHER IT IS SAID.
+/* ⚠ REPORT #143 (NOW CR D6.10c) MOVED WHERE THIS IS SAID, NOT WHETHER IT IS SAID.
  *
- * R135 put {Unstable} in `box.state` — the footnote row — because the word is
+ * The text-box fix put {Unstable} in `box.state` — the footnote row — because the word is
  * not in the engine's `Attr` union. Report #143 (QJEY, 2026-08-30): *"Instead
  * of putting Unstable reminder text at the bottom of a card […] put it in it's
  * attribute line."* So the assertions below moved from `state` to `attrs`, and
  * the "says what that MEANS" half moved with it: an attribute row is looked up
  * in the glossary, whose {Unstable} sentence is the POOL's own printed
- * reminder (R267), and 251 §5c is what holds that end. R135's actual rule —
+ * reminder (CR D6.11), and 251 §5c is what holds that end. The text-box fix's actual rule —
  * SAY SO, AND SAY WHICH WAY IN — is unchanged and still asserted here.
  */
-test('R135 + R271: an Unstable card says so — the printed marker and the acquired kind', () => {
+test('CR D6.10c: an Unstable card says so — the printed marker and the acquired kind', () => {
   // (a) printed on the type line: report #89's two cards, off the table
   const printedBox = printedTextBox('Aberrant Statweaver');
   assert.ok(printedBox.attrs.some(a => a.attr === 'Unstable' && a.origin === 'printed'),
@@ -213,13 +213,13 @@ test('R135 + R271: an Unstable card says so — the printed marker and the acqui
   assert.equal(q(h).isUnstable(ent(h, host)!), true);
 });
 
-/* ⚠ R249 SUPERSEDED ONE HALF OF THIS TEST. R135 asserted two separate things
+/* ⚠ REPORT #120's SPENT-MARKER FIX (NOW CR D6.10b) SUPERSEDED ONE HALF OF THIS TEST. The text-box fix asserted two separate things
  * about the spent-budget note: it is SHORT (it does not restate the ability's
  * label), and it is tagged `[Once]` ALWAYS. The first still stands and is
  * asserted below. The second was overturned by the owner re-reporting the same
  * bug with the sides swapped — the marker now follows the ability's own
  * printed clause, and lives in test/228-spent-marker.test.ts. */
-test('R135: a spent once-per-turn ability is one short note, not its text again', () => {
+test('a spent once-per-turn ability is one short note, not its text again', () => {
   const h = new Harness(12202);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -236,7 +236,7 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
   assert.ok(note, 'the spent budget is still on the box');
   assert.equal(note.active, false, 'and still greys out — the owner asked to keep that');
 
-  // R249: the marker is whichever one THIS ability prints. Synaptic Energizer
+  // CR D6.10b: the marker is whichever one THIS ability prints. Synaptic Energizer
   // prints [Switch1], so its note wears [Switch1]. Which marker goes on which
   // card is test/228's whole subject; here we only pin that the note carries
   // exactly one budget marker and nothing else got attached to it.
@@ -250,7 +250,7 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
   assert.ok(note.text.length < 40, `and it is SHORT — "really long" was the report: ${note.text}`);
 
   // ⚠ and the printed line above it keeps its own [Switch1], which is a real
-  // token on 118 cards — untouched by R135 and by R249.
+  // token on 118 cards — untouched by the text-box fix and by CR D6.10b.
   const printed = box.lines.find(l => l.origin === 'printed')!;
   assert.ok(printed.text.includes('[Switch1]'), 'the printed card still reads as printed');
   assert.ok(iconizeText(printed.text).includes('data/icons/bounded_graft.webp'),
@@ -258,7 +258,7 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
   finishBattle(h);
 });
 
-// ── R141: a cost written as bare digits ─────────────────────────────────
+// ── a cost written as bare digits ─────────────────────────────────
 //
 // Owner, 2026-08-24: "an icon we're NOT using anywhere is the [1] or [2] icon
 // for paying costs on cards." Half right, and the half that was wrong is the
@@ -268,13 +268,13 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
 // failed COST_TOKEN_RE (which demands a pip letter) and fell through to
 // "unknown [token]: untouched", printing a literal "[2]".
 
-test('R141: a cost written as bare digits draws the cost icon, not a literal "[2]"', () => {
+test('a cost written as bare digits draws the cost icon, not a literal "[2]"', () => {
   const out = iconizeText('When I am trashed, you may pay [2].');
   assert.ok(out.includes('data/icons/cost_2.webp'), `the [2] is the cost icon: ${out}`);
   assert.ok(!/\[2\]/.test(out), 'the report: the player read a literal "[2]"');
 });
 
-test('R141: the two spellings of one amount render identically', () => {
+test('the two spellings of one amount render identically', () => {
   // [1] and [one] are the same cost; nothing about the card says which
   // spelling the transcriber happened to use, so the box must not care.
   for (const [digit, word] of [['[1]', '[one]'], ['[2]', '[two]'], ['[3]', '[three]']]) {
@@ -283,8 +283,8 @@ test('R141: the two spellings of one amount render identically', () => {
   }
 });
 
-test('R141: no card in the pool prints a bare-digit cost token as text', () => {
-  // the general form, over the whole pool — the same shape as R134's sweep.
+test('no card in the pool prints a bare-digit cost token as text', () => {
+  // the general form, over the whole pool — the same shape as the `{g}` sweep.
   // A new amount spelling nobody taught the formatter shows up here.
   const bad: string[] = [];
   for (const name of allCardNames()) {
@@ -299,7 +299,7 @@ test('R141: no card in the pool prints a bare-digit cost token as text', () => {
   assert.deepEqual(bad, [], `bare-digit costs left unrendered:\n${bad.join('\n')}`);
 });
 
-/* ── R142: none of Caleb's formatting markup may EVER reach a player ─────
+/* ── none of Caleb's formatting markup may EVER reach a player ─────
  *
  * Owner, room SMVJ 2026-08-24 (report #102): "UI thing: All the text on cards
  * still includes things that are only for the engine to see (like {i} or / or
@@ -309,7 +309,7 @@ test('R141: no card in the pool prints a bare-digit cost token as text', () => {
  * the / does, tho."
  *
  * The `/` is `/[…]`: a bracket the PRINTED card draws as its own boxed panel,
- * on 13 cards. R134 and R141 each closed one marker; this closes the last one
+ * on 13 cards. The `{g}` and bare-digit fixes each closed one marker; this closes the last one
  * and then nails the whole family shut with a sweep, because the lesson of both
  * earlier rulings is that a marker nobody taught the formatter about does not
  * announce itself — it renders as its own source text and waits for someone to
@@ -328,7 +328,7 @@ test('R141: no card in the pool prints a bare-digit cost token as text', () => {
 /** what a PLAYER actually reads: the rendered HTML with its tags taken off */
 const asPlayerReads = (html: string): string => html.replace(/<[^>]*>/g, '');
 
-test('R142: the /[…] box drops the slash and the brackets and keeps the words', () => {
+test('the /[…] box drops the slash and the brackets and keeps the words', () => {
   // a COST box — the printed card draws the cost panel, then the colon
   const cost = iconizeText('[Switch1] /[Sacrifice a unit]: Draw a card.');
   assert.ok(!cost.includes('/['), `the report: the player read a literal "/[": ${cost}`);
@@ -343,7 +343,7 @@ test('R142: the /[…] box drops the slash and the brackets and keeps the words'
   assert.equal(asPlayerReads(mode), 'Double the power or defense of target unit.');
 });
 
-test('R142: a stat slash is NOT markup — X/X and +1/+1 survive untouched', () => {
+test('a stat slash is NOT markup — X/X and +1/+1 survive untouched', () => {
   // THE TRAP. `/` is stat notation on far more cards than print `/[`, so the
   // markup rule is anchored to the slash being glued to a `[`.
   for (const raw of [
@@ -360,7 +360,7 @@ test('R142: a stat slash is NOT markup — X/X and +1/+1 survive untouched', () 
   assert.ok(!both.includes('/['), both);
 });
 
-test('R142: {i1} does not eat the space beside the word it italicises', () => {
+test('{i1} does not eat the space beside the word it italicises', () => {
   // Wither and Bloom prints "…on each enemy or{i1} put a{/n} +1/+1…" — the
   // marker's only separator from the NEXT word sits after it, and a bare `\s*`
   // swallowed it, so the box read "each enemy orput a".
@@ -374,7 +374,7 @@ test('R142: {i1} does not eat the space beside the word it italicises', () => {
   // rendered text still have these two words with a space between them" — not
   // by hunting for the jammed digraph, which false-positives the moment the
   // pair happens to occur elsewhere ("power {i1}or" looks for "ro", and
-  // "regroup" has one; the same trap R134's sweep hit with "{i}to" -> "it").
+  // "regroup" has one; the same trap the `{g}` sweep hit with "{i}to" -> "it").
   const jammed: string[] = [];
   for (const name of allCardNames()) {
     const raw = textOf(name);
@@ -389,8 +389,8 @@ test('R142: {i1} does not eat the space beside the word it italicises', () => {
   assert.deepEqual(jammed, [], 'a marker that vanishes but takes a space with it is still visible');
 });
 
-test('R142: {/n} inside an unrecognised bracket is still a line break', () => {
-  // R134 CLAIMED formatting is resolved globally, before the icon pass, so a
+test('{/n} inside an unrecognised bracket is still a line break', () => {
+  // The `{g}` fix CLAIMED formatting is resolved globally, before the icon pass, so a
   // marker nested inside a bracket the icon pass does not recognise is still
   // reached. Verified here rather than assumed: the claim held, and the /[…]
   // span must not become the thing that breaks it.
@@ -407,9 +407,9 @@ test('R142: {/n} inside an unrecognised bracket is still a line break', () => {
     'clean() has already consumed it before the box renders');
 });
 
-test('R142: no card in the pool renders engine markup to a player', () => {
+test('no card in the pool renders engine markup to a player', () => {
   // THE SWEEP, and the deliverable that makes this stay fixed. Over the WHOLE
-  // pool, for `text` AND the `type` line (R134's sweep covered only `text`),
+  // pool, for `text` AND the `type` line (the `{g}` sweep covered only `text`),
   // as the player reads it — tags off, because a marker hiding in an alt=""
   // is not what anyone is complaining about.
   const FORBIDDEN: [string, RegExp][] = [
@@ -434,7 +434,7 @@ test('R142: no card in the pool renders engine markup to a player', () => {
   assert.deepEqual(bad, [], `engine markup on the table:\n${bad.join('\n')}`);
 });
 
-test('R142: the sweep covers the composed box, not just the raw card text', () => {
+test('the sweep covers the composed box, not just the raw card text', () => {
   // ui/main.ts calls iconizeText from ~25 sites — ability labels, glossary and
   // help rows, decision hints, the log, ui/markdown.ts — plus the full and
   // compact text boxes. Every one of them funnels through this one function,
@@ -453,7 +453,7 @@ test('R142: the sweep covers the composed box, not just the raw card text', () =
   assert.deepEqual(bad, [], `markup in a rendered text box:\n${bad.join('\n')}`);
 });
 
-test('R142: the keyword family is NOT suppressed — it keeps showing', () => {
+test('the keyword family is NOT suppressed — it keeps showing', () => {
   // The other half of the rule, and the easy way to "pass" the sweep wrongly:
   // {Battle} (136 uses), {Virus} (63), {Haste} (21) and ~30 more are card
   // CONTENT, not markup. Six have icon assets; the rest correctly bare their
@@ -466,14 +466,14 @@ test('R142: the keyword family is NOT suppressed — it keeps showing', () => {
   }
 });
 
-/* ── R142 half two: the EXTRACTOR's layout artifacts ─────────────────────
+/* ── the no-markup rule, half two: the EXTRACTOR's layout artifacts ─────────────────────
  *
  * printed.json is GENERATED from Caleb's oracle file, so these are guarded on
  * the emitted data rather than fixed in it — a hand edit would be wiped by the
  * next regeneration, which is the quiet lie the card ledger exists to stop.
  */
 
-test('R142: no printed card carries a hyphenation artifact from its own art', () => {
+test('no printed card carries a hyphenation artifact from its own art', () => {
   // Four cards lost the {/n} that went with their soft hyphen in transcription
   // and were left reading "adja- cent" / "oppo- nent".
   const bad: string[] = [];
@@ -495,7 +495,7 @@ test('R142: no printed card carries a hyphenation artifact from its own art', ()
     'a soft hyphen that still has its line break stays for clean() to join');
 });
 
-test('R142: printed text and type lines carry no whitespace runs', () => {
+test('printed text and type lines carry no whitespace runs', () => {
   const bad: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -507,7 +507,7 @@ test('R142: printed text and type lines carry no whitespace runs', () => {
   assert.deepEqual(bad, [], `49 card texts and one type line had these:\n${bad.join('\n')}`);
 });
 
-test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
+test('the extractor changes LAYOUT, never a designer\'s words', () => {
   // Linked Extinction used to read "Sacrifce a unit". The owner corrected it
   // AT SOURCE on 2026-08-24 ("that's a typo in the backend"), so the old
   // single-card record of that decision is gone — but the invariant it stood
@@ -552,7 +552,7 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
     `the extractor altered words, not just layout:\n${drift.join('\n')}`);
 });
 
-/* ── R284: the printed bracket, drawn the way the printed card draws it ────
+/* ── CR D6.10a: the printed bracket, drawn the way the printed card draws it ────
  *
  * Owner, 2026-09-01, on seeing Void Memory's "[unit *or* spell]" rendered as
  * ONE panel: *"I think that the OR should be outside the box and it should be
@@ -584,7 +584,7 @@ function printedBrackets(name: string): string[] {
   return out;
 }
 
-test('R284: a MODAL bracket draws two boxes with the "or" outside them', () => {
+test('CR D6.10a: a MODAL bracket draws two boxes with the "or" outside them', () => {
   const html = iconizeText(textOf('Void Memory'));
   assert.match(html, /<span class="costbox">unit<\/span> <i>or<\/i> <span class="costbox">spell<\/span>/,
     `the owner's ask, on the card it was asked about: ${html}`);
@@ -593,8 +593,8 @@ test('R284: a MODAL bracket draws two boxes with the "or" outside them', () => {
   assert.match(asPlayerReads(html), /discards a unit or spell if/);
 });
 
-test('R284: a COST bracket still draws exactly one box', () => {
-  // the other half of R157 §21's taxonomy, and the thing two boxes must not
+test('CR D6.10a: a COST bracket still draws exactly one box', () => {
+  // the other half of CR 205.3's taxonomy, and the thing two boxes must not
   // happen to. No cost bracket in the pool contains the word "or".
   for (const name of ['Immolate', 'Discharge', 'Trench Stalker', 'Necromantic Rebuke']) {
     const html = iconizeText(textOf(name));
@@ -603,10 +603,10 @@ test('R284: a COST bracket still draws exactly one box', () => {
   }
 });
 
-test('R284: every printed bracket in the pool is a box — the `/` marker is not the gate', () => {
+test('every printed bracket in the pool is a box — the `/` marker is not the gate', () => {
   // Eight of the pool's printed brackets carry no `/` upstream (Arbiter of
   // Armistice, Darkblast, Flesh Tithe, Necromantic Rebuke, Retribution Thing,
-  // Siphon Life, Trench Stalker, Vengeance), and before R284 those eight — two
+  // Siphon Life, Trench Stalker, Vengeance), and before the fix those eight — two
   // of them MODAL — printed literal square brackets at the table while their
   // thirteen siblings printed boxes. The transcription marker is upstream
   // noise; whether the body is prose is the fact.
@@ -629,16 +629,16 @@ test('R284: every printed bracket in the pool is a box — the `/` marker is not
   assert.deepEqual(bare, [], `printed brackets still reaching the player as punctuation:\n${bare.join('\n')}`);
 });
 
-test('R284: an unrecognised ONE-WORD bracket still announces itself', () => {
-  // The safety valve R134 and R141 both cost us a shipped card to learn. The
+test('an unrecognised ONE-WORD bracket still announces itself', () => {
+  // The safety valve the `{g}` and bare-digit bugs both cost us a shipped card to learn. The
   // discriminator is whitespace, and it cannot be traded away for the boxes.
   assert.ok(iconizeText('[weird] thing').includes('[weird]'),
     'a marker nobody taught the formatter about must stay loud');
   assert.ok(!iconizeText('[weird] thing').includes('costbox'), 'and must not be dressed as prose');
 });
 
-test('R284: {i1} italicises the word it is GLUED to, on either side', () => {
-  // R142 kept the space and still italicised the word AFTER the marker, so
+test('{i1} italicises the word it is GLUED to, on either side', () => {
+  // The earlier fix kept the space and still italicised the word AFTER the marker, so
   // Wither and Bloom's "enemy or{i1} put" emphasised "put". All four {i1} in
   // the pool are a modal "or", and now all four render as one.
   for (const name of ['Burgeon', 'Transmutide Enigma', 'Void Memory', 'Wither and Bloom']) {
@@ -647,7 +647,7 @@ test('R284: {i1} italicises the word it is GLUED to, on either side', () => {
   }
 });
 
-test('R284: modalHalves splits a mode and refuses a cost', () => {
+test('CR 205.3: modalHalves splits a mode and refuses a cost', () => {
   // one regex reads the marker BEFORE formatting resolves it and the <i> tag
   // after, because narrowToMode runs on raw text and iconizeText on formatted.
   assert.deepEqual(modalHalves('unit {i1}or spell'), ['unit', 'spell']);
@@ -658,7 +658,7 @@ test('R284: modalHalves splits a mode and refuses a cost', () => {
   assert.equal(modalHalves('Erase X cards from your bin'), null);
 });
 
-test('R284: narrowToMode drops the half that was not chosen, and skips [Switch1]', () => {
+test('CR D6.10a: narrowToMode drops the half that was not chosen, and skips [Switch1]', () => {
   const t = textOf('Void Memory');
   assert.match(asPlayerReads(iconizeText(narrowToMode(t, 0))), /discards a unit if/);
   assert.match(asPlayerReads(iconizeText(narrowToMode(t, 1))), /discards a spell if/);

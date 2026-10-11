@@ -40,7 +40,7 @@ function ok(cond: unknown, label: string): void {
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
 // a stand-in for bot/app.py's /api/ask, so §5 can read what the judge proxy
-// actually forwards (R297: the Learn to Play lesson rides along as `context`)
+// actually forwards (the Learn to Play lesson rides along as `context`)
 const botBodies: Record<string, unknown>[] = [];
 const fakeBot = createServer((req, res) => {
   let body = '';
@@ -169,7 +169,7 @@ try {
   });
   const fwd = botBodies[1] as { context?: string } | undefined;
   ok(lesson.status === 200 && fwd?.context?.length === 4000,
-    `R297: a lesson context is forwarded, capped at the bot's 4000 (got ${lesson.status}, ${fwd?.context?.length})`);
+    `Learn to Play: a lesson context is forwarded, capped at the bot's 4000 (got ${lesson.status}, ${fwd?.context?.length})`);
 
   const sandbox: number[] = [];
   for (let i = 0; i < 12; i++) sandbox.push((await fetch(`http://localhost:${PORT}/api/sandbox/open?json=1`)).status);

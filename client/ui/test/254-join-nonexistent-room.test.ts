@@ -1,4 +1,4 @@
-/* R274 / CT-148 — A MISTYPED ROOM CODE MUST SAY SO, NOT "Connecting…".
+/* CR D7.5 / CT-148 — A MISTYPED ROOM CODE MUST SAY SO, NOT "Connecting…".
  *
  * THE REPORT (#135, room ERJZ, 2026-08-30), verbatim:
  *
@@ -17,7 +17,7 @@
  *     screen" button for exactly this message since it was written.
  *
  * What broke sits between them, and it is a THROWN EXCEPTION. Commit 2a715bf
- * (Round 32, R258/CT-123, 2026-08-29 — one day before the report) took the
+ * (Round 32, CT-123, 2026-08-29 — one day before the report) took the
  * share banner out of the board markup, where it was only ever evaluated with
  * a board on screen, and moved it into `paintLive()`:
  *
@@ -31,7 +31,7 @@
  * guard is INSIDE the callee — the argument is computed first. And
  * `shareBannerHtml()` dereferences `h.state.phase`, while `NetBackend.state`
  * is `null as unknown as GameState` until a `joined` arrives. Meanwhile
- * `paintLive()` is reached from `flushPace()`, which R150 made the FIRST line
+ * `paintLive()` is reached from `flushPace()`, which the pacing change (CR D5.4c) made the FIRST line
  * of the `t === 'error'` handler ("never say no about a board the player
  * cannot see yet — spend the queue first"). So:
  *
@@ -48,7 +48,7 @@
  * §1 is the SERVER half, and it is deliberately not a socket test. The
  * sentence the player reads used to exist only as a string literal inside
  * main.ts's `msg.t === 'join'` branch, reachable only by opening a WebSocket —
- * the same trap R204 named for the pacing. It is now `joinRefusal()` in
+ * the same trap the pacing had fallen into. It is now `joinRefusal()` in
  * rooms.ts, so it is a value.
  *
  * §2 is the REGRESSION, driven through the real client (test/ui-driver.ts):
@@ -77,7 +77,7 @@ const BOGUS = 'ZZQX';
 
 // ── §1 the server half: the refusal is a value, not a socket event ────
 
-test('R274 §1 a code the server never minted is refused, and the refusal names it', () => {
+test('CR D7.5 a code the server never minted is refused, and the refusal names it', () => {
   const why = joinRefusal(BOGUS);
   assert.notEqual(why, null, 'an unminted code must be refused — otherwise a typo silently creates an empty game');
   assert.match(why!, /No game with code ZZQX/,
@@ -86,7 +86,7 @@ test('R274 §1 a code the server never minted is refused, and the refusal names 
     'the refusal must say what to do next — a dead end is what the report is about');
 });
 
-test('R274 §1 an empty code and a minted code are the other two answers', () => {
+test('CR D7.5 an empty code and a minted code are the other two answers', () => {
   assert.equal(joinRefusal(''), 'a room code is required');
   reserveRoomCode('QXZZ');
   assert.equal(joinRefusal('QXZZ'), null,
@@ -95,7 +95,7 @@ test('R274 §1 an empty code and a minted code are the other two answers', () =>
 
 // ── §4 non-vacuity, asserted BEFORE the two guards that depend on it ──
 
-test('R274 §4 the connecting screen does not already carry the refusal', () => {
+test('CR D7.5 the connecting screen does not already carry the refusal', () => {
   const before = ui.html();
   assert.match(before, /Connecting to the server/,
     'the fixture is not on the connecting screen — §2 would be testing nothing');
@@ -105,7 +105,7 @@ test('R274 §4 the connecting screen does not already carry the refusal', () => 
 
 // ── §2 THE REGRESSION ────────────────────────────────────────────────
 
-test('R274 §2 a refused join reaches the connecting screen instead of Connecting forever', () => {
+test('CR D7.5 a refused join reaches the connecting screen instead of Connecting forever', () => {
   const html = ui.push({ t: 'error', msg: joinRefusal(BOGUS)! });
   assert.match(html, /No game with code ZZQX/,
     'the server said the room does not exist and the player was not told — playtest #135/CT-148');
@@ -117,7 +117,7 @@ test('R274 §2 a refused join reaches the connecting screen instead of Connectin
 
 // ── §3 the same crash one screen further in ──────────────────────────
 
-test('R274 §3 an error in the constructed waiting room lands too, where there is still no board', () => {
+test('CR D7.5 an error in the constructed waiting room lands too, where there is still no board', () => {
   // the server's waiting-room 'joined': joined === true, and state is STILL
   // null, which is exactly the case a fix guarded on NET.joined would miss
   const waiting = ui.push({

@@ -88,23 +88,26 @@ do nothing, is empty, and `test/71-card-ledger.test.ts` proves it both ways.
 A gap that cannot be built yet is a ticket in `../ledgers/card-todo.ts`, never
 a `todo` test, because a test that cannot fail tracks nothing.
 
-## The ruling register
+## The spec: the comprehensive rules
 
-`../docs/digital-rules.md` is this package's specification. Every place the
-paper rules were silent or ambiguous, the engine had to decide, and each
-decision is a numbered ruling with its source (the Manual, a designer answer
-on Discord, the owner) and the test that encodes it.
-`test/184-ruling-register.test.ts` checks the register against the code, and
-`test/238-question-sheets.test.ts` checks every answer the owner has given
-against it.
+`data/comprehensive-rules/` is this package's specification: every rule the
+engine enforces, numbered, each resting on a checked quote (the Manual, a
+designer answer on Discord, the owner's own words) or an executed test, and
+verified against the engine. Where the paper rules were silent or ambiguous
+the owner decided, and his call is recorded in the rule it settles. Code cites
+the rules as `CR 608.2b`; `test/184-ruling-register.test.ts` fails on a number
+that names no live rule, and `test/238-question-sheets.test.ts` checks every
+answer the owner has given against the sheets. (Until 2026-10 the spec was a
+register of numbered rulings, `docs/digital-rules.md`; it was retired, and its
+final state is at `refs/archive/r-register-final`.)
 
 Still approximated, on the record:
 
 - A true power/defense **switch** is done as a delta off the effective stats
-  at resolution (R66). Parked on a ruling, not a primitive: the Manual's six
+  at resolution (CR 709.8). Parked on a rule, not a primitive: the Manual's six
   stat layers have no switch in them.
 - Combat damage is auto-assigned lethal front to back; voluntary
-  over-assignment (R7) has no observable effect in this pool.
+  over-assignment (CR 608.6c) has no observable effect in this pool.
 - Burst tokens cast in deterministic id order rather than player-chosen order.
 
 ## What the suite is

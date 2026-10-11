@@ -4,32 +4,31 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R9 (bounded / [once] budgets per card), R12/R25 ("each player/opponent"
- * reads the event region's present seats), R21 (Deadly), R26 (own [Augment]
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 803.4 (bounded / [once] budgets per card), CR 601.4d ("each player/opponent"
+ * reads the event region's present seats), CR 802.3 (Deadly), CR 305.4 (own [Augment]
  * text live when played normally).
  *
  * PARKED (needs engine machinery that does not exist yet):
  *  - nothing in this batch.
  *
- * 2026-08-24, literal-reading sweep (R125's principle applied to every clause
- * in this file). Two sentences were narrower than their words and are fixed
+ * 2026-08-24, literal-reading sweep (the literal-reading principle applied to every clause in this file). Two sentences were narrower than their words and are fixed
  * below, with tests in 112-literal-wood:
  *  - OORBLAK's replacement hook was a THIRD unit-damage commit that bypassed
  *    `E.preventUnitDamage`, so Phytochemical Protection's "prevent ALL damage
  *    that would be dealt to target unit" did not cover the damage this card
  *    redirects. Replacement and prevention now compose in printed order.
  *  - RETURN TO NATURE's "Erase all mods" walked `unitsIn`, i.e. kind 'unit'
- *    only, and left an augment riding a SPELL TOKEN (R89) in play.
+ *    only, and left an augment riding a SPELL TOKEN (CR 721.4a) in play.
  * UN-PARKED (kept here so the history is readable; nothing below is waiting):
  *  - Oorblak: was PARTIAL — the REDIRECT worked from 2026-08-22, the PIERCING
  *    EXCESS half did not, because `replaceCombatDamageToPlayer`'s `info`
  *    carried only `{attacker, region}` (so the hook could not tell a Piercing
- *    hit from an ordinary one) and its boolean return was all-or-nothing. R98
- *    added `attrs`/`pure` to `info` and widened the return to `boolean |
+ *    hit from an ordinary one) and its boolean return was all-or-nothing. A later
+ *    change added `attrs`/`pure` to `info` and widened the return to `boolean |
  *    number` (a number being the damage LET THROUGH); the card was rewritten
  *    against both on 2026-08-23 and came off ledgers/card-ledger.ts.
- *  - Reality Bender: was PARTIAL, waiting on effStats layer 5. R93 shipped it
+ *  - Reality Bender: was PARTIAL, waiting on effStats layer 5. The layer (CR 802.8a) shipped
  *    (playtest report #73, 2026-08-22) and the card needed no change at all —
  *    its printed attrs and augmentAttrs were already right, so the layer alone
  *    unparked it. It came off ledgers/card-ledger.ts with Its Dark Bubb.
@@ -41,7 +40,7 @@
  *  - Mohruung: "when I become targeted" is heard on EVERY targeting path.
  *    It was partial — apply.ts dispatched 'targeted' for augment/virus/graft
  *    but engine.ts commitItem only LOGGED it for spell and ability targets,
- *    so no spell in the game could trigger it. Playtest 2026-08-19 (R53).
+ *    so no spell in the game could trigger it. Playtest 2026-08-19 (CR 110.11).
  */
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -51,7 +50,7 @@ import { selfOf, chooseUnit } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+/** CR 601.4c: `E.seatsHere` is the one answer for the whole pool. SIX files had
  * grown their own copy of this and they did NOT agree — most ordered it
  * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
@@ -59,14 +58,14 @@ const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 // ────────────────────────────── the cards ──────────────────────────────
 
 // "After combat, [Switch1][Switch1] {i}(Trigger two copies of this graft
-// ability as one single trigger.)" — e/4 0/3 Cosmic Guardian Unit. R110: the
+// ability as one single trigger.)" — e/4 0/3 Cosmic Guardian Unit. CR 722.7: the
 // card contributes no effect of its own — it is a graft MULTIPLIER.
 // composeParts reads `graftCopies: 2` and materializes every other attached
 // graft twice in the one composite (Graft 1 → Graft 2 → Graft 1 → Graft 2),
 // bounded grafts included, each copy with its own targets and its own
 // [cost] payment (paid twice or not at all). Grafted onto ANOTHER host, the
 // same declaration doubles the host's other grafts (never itself — no
-// doubling a doubler). Bounded ([Switch1], R9): once per turn as a cause
+// doubling a doubler). Bounded ([Switch1], CR 722.5): once per turn as a cause
 // and as a graft. Source: "Amphivore / Lost Guardian. Bounded Grafts and
 // Ralph explained." (moderator ruling, 2025-03-21).
 const doubleGrafts: EffectDef = {
@@ -75,7 +74,7 @@ const doubleGrafts: EffectDef = {
     const self = selfOf(g, ctx);
     const others = self ? self.mods.filter(id => {
       const m = g.entity(id);
-      // R131: NOT a card-name exclusion — the grafts this multiplier has
+      // CR 201.2: NOT a card-name exclusion — the grafts this multiplier has
       // nothing to do with are the OTHER MULTIPLIERS (composeParts never
       // multiplies a multiplier), whatever they are called. A second copy
       // of this very card grafted here is one of them; a different multiplier
@@ -96,7 +95,7 @@ card('Lost Guardian', {
 });
 
 // "[Augment] I gain -7/-7." — ee/3 10/9 Elemental Horror {Virus} Unit. Own
-// [Augment] text is live when played normally (R26 / Manual Q&A): the UNIT
+// [Augment] text is live when played normally (CR 305.4 / Manual Q&A): the UNIT
 // form is a true self-affecting static — the spawned 10/9 is a live 3/2 with
 // ZERO counters, so later +1/+1 counters no longer pairwise-cancel the
 // printed drawback.
@@ -104,7 +103,7 @@ card('Lost Guardian', {
 // the augment mod (un-parked 2026-08-18; the counters approximation is gone)
 card('Malformed Monstrosity', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{ affects: (g, self, t) => t.id === self.id, dp: -7, dt: -7 }],
@@ -128,10 +127,10 @@ card('Metamorphic Luminary', {
 
 // "Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of
 // their units. I deal 3 damage to each of the chosen units.)" — e/4 {Battle}
-// Cosmic Rock Spell. "Each player" = the region's present seats (R12/R25);
+// Cosmic Rock Spell. "Each player" = the region's present seats (CR 601.4d);
 // each player picks their own unit. Rockfalls are sequential: each one plans
 // all picks first, then commits the damage, so deaths from an earlier
-// rockfall shrink the later candidate pools (R1: live state at resolution).
+// rockfall shrink the later candidate pools (CR 801.12c: live state at resolution).
 card('Meteor Shower', {
   spellEffect: {
     run: (g, ctx) => {
@@ -142,7 +141,7 @@ card('Meteor Shower', {
             g.unitsOf(seat, ctx.region), `Meteor Shower (rockfall ${i + 1}): choose one of your units`);
           if (u) picks.push(u);
         }
-        g.dealEffectDamageAll(ctx, picks.map(u => ({ target: u, n: 3 })));   // R80: one rockfall, one batch
+        g.dealEffectDamageAll(ctx, picks.map(u => ({ target: u, n: 3 })));   // CR 112.8: one rockfall, one batch
       }
     },
   },
@@ -151,7 +150,7 @@ card('Meteor Shower', {
 // "[Augment] Whenever I survive damage, put that many +1/+1 counters on me."
 // — e/1 0/2 Sand Crab Unit. Text-box [Augment]. The 'damage' event fires
 // after the damage is marked but before deaths are processed, so "survive" is
-// checked at event time (R1): marked damage still below toughness. "That
+// checked at event time (CR 109.3a): marked damage still below toughness. "That
 // many" is the event's damage amount (a fact of the event), granted at
 // resolution if I'm still around.
 card('Mirage Scuttler', {
@@ -172,8 +171,8 @@ card('Mirage Scuttler', {
 
 // "When I become targeted, [Switch1] Create a Crystal 2." — e/4 1/5 Cosmic
 // Rock Unit. Every targeting path fires it: augment/virus/graft (apply.ts)
-// and spells/abilities off the stack (engine.ts commitItem — R53, the
-// playtest fix). Bounded ([Switch1], R9); the Crystal 2 is the bounded graft.
+// and spells/abilities off the stack (engine.ts commitItem — CR 110.11, the
+// playtest fix). Bounded ([Switch1], CR 722.5); the Crystal 2 is the bounded graft.
 const createCrystal2: EffectDef = {
   creates: ['Crystal'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 2, ctx.region); },
@@ -192,7 +191,7 @@ card('Mohruung', {
 // region (fireEvent falls back to all listeners), so when() scopes manually:
 // battle phase, an AUGMENT application (not a graft), applied by my
 // controller ("you" — the mod's owner is the applier), and in my region
-// (R12). Unbounded graft: on a host, the host gains the +2/+2.
+// (CR 101.6). Unbounded graft: on a host, the host gains the +2/+2.
 const mentorBuff: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
@@ -221,10 +220,10 @@ card('Morphic Mentor', {
 });
 
 // "[once] When another ally with greater defense than power spawns, draw a
-// card." — e/3 1/3 Bird Insect Oracle Unit. This is R1's own textbook
-// condition: defense > power is checked at EVENT time on the spawned unit.
+// card." — e/3 1/3 Bird Insect Oracle Unit. This is the textbook
+// condition of CR 109.3a: defense > power is checked at EVENT time on the spawned unit.
 // "Another ally": same controller, not me. [once] = once per turn, tracked
-// per card (R9) → bounded. Region auto-scoped (R12).
+// per card (CR 803.4) → bounded. Region auto-scoped (CR 101.6).
 card('Nectar Ridge Oracle', {
   abilities: [{
     type: 'triggered', events: ['spawned'], bounded: true,
@@ -243,7 +242,7 @@ card('Nectar Ridge Oracle', {
 // "[Augment] If combat damage would be dealt to you, that damage is dealt to
 // me instead." — eee/4 2/4 {Unstable} Luminary Strider {Virus} Unit.
 // UN-PARKED 2026-08-22. The old note claimed this wanted "damage replacement
-// hooks"; R38 had already shipped them as `replaceCombatDamageToPlayer`, which
+// hooks"; the rot work had already shipped them as `replaceCombatDamageToPlayer`, which
 // E.pumpCombatDamage consults for every player hit BEFORE loseLife, and
 // Blightsea Polyp (batch-hybrids-ld-c) has used the seam since. The residual
 // worry — "the hook has no EffectCtx and dealEffectDamage needs one" — was a
@@ -253,7 +252,7 @@ card('Nectar Ridge Oracle', {
 //
 // ANCHORING. E.anchored hands the hook `self` = the UNIT the text is radiating
 // from: the card itself while it is a unit in play, or the HOST when the text
-// arrives donated by a virus/augment mod. R26 says a card's own [Augment] text
+// arrives donated by a virus/augment mod. CR 305.4 says a card's own [Augment] text
 // is live when it is played normally, so both cases are real, and both readings
 // fall out of the one line below: "me" is always `self`.
 //
@@ -280,7 +279,7 @@ card('Nectar Ridge Oracle', {
 // the sub-step returns. Letting it do the killing keeps Oorblak dying on the
 // same game-state check as everything else the exchange killed.
 //
-// PIERCING EXCESS (was the parked half; implemented 2026-08-23 on R98's wider
+// PIERCING EXCESS (was the parked half; implemented 2026-08-23 on the wider
 // hook). RAQ "[Solved] Oorblak vs Piercing" (_passer, answered by Caleb): "10
 // damage is redirected to Oorblak, he takes 4 damage which is enough to kill
 // him and leftover 6 damage is still Piercing so it goes to players face", and
@@ -298,32 +297,31 @@ card('Nectar Ridge Oracle', {
 // that overkills Oorblak still spills nothing. Two halves fall out of that:
 //
 //  1. HOW MUCH IS ABSORBED. Exactly the pool that would kill this body — the
-//     same lethal-share arithmetic R103 fixed for effect damage
-//     (`poolToKill` in dealEffectDamageAll) and R114 restated for combat
-//     (`assignColumnDamage`). Written in the same order and out of the same
+//     same lethal-share arithmetic as effect damage (CR 802.16a;
+//     `poolToKill` in dealEffectDamageAll) and combat (CR 608.6e;
+//     `assignColumnDamage`). Written in the same order and out of the same
 //     three clauses so the three cannot drift:
 //       · {Powerful} has ALREADY doubled `amount` — the column doubles its
-//         whole output at the source, before assignment (R103 step 1), so a
+//         whole output at the source, before assignment (CR 802.16a), so a
 //         Powerful+Piercing column pierces the DOUBLED number and nothing has
 //         to be done here.
-//       · {Vulnerable} is priced on the RECEIVE side (R103 step 2): the pool
+//       · {Vulnerable} is priced on the RECEIVE side (CR 802.16a): the pool
 //         is counted in what the source deals, the toughness in what this body
 //         takes, and `mult` is the exchange rate — so a Vulnerable Oorblak
 //         needs half the pool to kill and the excess is what is left after
 //         BOTH doublings. `!pure` guards it exactly as combat's own commit
-//         does (R61: the exchange is attribute-blind).
+//         does (CR 802.25b: the exchange is attribute-blind).
 //       · damage already on the body counts, because the hit has to kill what
 //         is really there.
 //     {Deadly} is deliberately NOT read here — see the note below.
-//  2. WHAT IS HANDED BACK. R98 widened the return to `boolean | number`, a
+//  2. WHAT IS HANDED BACK. A later change widened the return to `boolean | number`, a
 //     number being the damage LET THROUGH, so the leftover is simply returned:
 //     the engine adds it to the life loss for this hit. It is NOT re-offered
 //     to this same Oorblak ("replacement effects only apply once in an
 //     effect") — the engine's own loop moves on to the next holder — which is
 //     the same answer as _passer's "cannot recursively go back".
 //
-// ⚠ {Deadly} WAS a known, deliberate divergence from R103 step 4, and R237
-// (owner, 2026-08-28) is the ruling it was parked waiting for: *"deadly works
+// ⚠ {Deadly} WAS a known, deliberate divergence from CR 802.16g, and the owner's ruling of 2026-08-28 is what it was parked waiting for: *"deadly works
 // on spell effects and everything. Just like powerful."* The park note read
 // "killing from inside the hook (`g.destroy`) would fix the arithmetic but
 // moves a death out of the state-based check, which is an ENGINE ordering
@@ -336,40 +334,40 @@ card('Nectar Ridge Oracle', {
 //    it is the SAME kind, at the only moment this site can deliver it.
 //    `sweepDeadly` has already run by the time `commitPlayerDamage` offers
 //    this hook, which is precisely why the sweep cannot cover it.
-//  · With the kill delivered, R103 step 4's 1-point floor becomes the right
+//  · With the kill delivered, the 1-point floor of CR 802.16g becomes the right
 //    arithmetic rather than the strictly-worse one: a Deadly+Piercing column
 //    redirected into Oorblak spends 1, kills it, and pierces the rest — the
-//    same sentence R103 writes for `poolToKill` and R114 for
+//    same sentence (CR 802.16g) the engine writes for `poolToKill` and for
 //    `assignColumnDamage`, so the three still do not drift.
 //
 // The kill is conditioned on damage actually being DEALT (`through > 0`), the
-// same R98 guard `sweepDeadly` uses for its `shielded` set: a Phytochemical
+// same CR 802.3h guard `sweepDeadly` uses for its `shielded` set: a Phytochemical
 // Protection on Oorblak unmakes the damage, and there is then nothing for
 // {Deadly} to kill through.
 card('Oorblak', {
   // the [Augment] text is a replacement hook, not augmentAttrs/augmentText, so
   // nothing else would mark this card as legal to apply as an augment.
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     replaceCombatDamageToPlayer: (g, self, seat, amount, info) => {
       if (seat !== self.controller) return false;
-      // R61 {Pure}: an attribute-blind exchange cannot see this body's
+      // CR 802.11e {Pure}: an attribute-blind exchange cannot see this body's
       // {Vulnerable} either — same guard combat's own commit loop uses.
       const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
       const [, t] = g.effStats(self);
-      const deadly = info.attrs.has('Deadly');                // R237, see the note above
+      const deadly = info.attrs.has('Deadly');                // CR 802.3a, see the note above
       const needed = Math.max(0, t - self.damage);            // still to RECEIVE to kill
-      // R103 step 4 / R21: a {Deadly} source's lethal share is ONE point.
+      // CR 802.16g, 802.16a: a {Deadly} source's lethal share is ONE point.
       const pool = deadly ? 1 : Math.ceil(needed / mult);     // …priced in what the source deals
-      // Only {Piercing} leaves the body (R114). Everything else is absorbed
+      // Only {Piercing} leaves the body (CR 608.6d). Everything else is absorbed
       // whole, however far past this toughness it goes — that is the half that
       // already worked and it must keep working.
       const absorbed = info.attrs.has('Piercing') ? Math.min(amount, pool) : amount;
       if (absorbed <= 0) return amount;                       // nothing left to soak: decline
       const received = absorbed * mult;
-      // R98 — the THIRD unit-damage commit (2026-08-24 literal-reading audit).
+      // the THIRD unit-damage commit (2026-08-24 literal-reading audit).
       // "the one choke point both unit-damage commits now pass through" was true
       // of the engine and false of the board: this hook is a unit-damage commit
       // living in a CARD, and it wrote `self.damage` directly. So Phytochemical
@@ -394,7 +392,7 @@ card('Oorblak', {
       });
       if (through > 0) {
         self.damage += through;
-        // R166: the same `lethal` fact the engine's two commits put on their
+        // CR 802.3a: the same `lethal` fact the engine's two commits put on their
         // 'damage' events — and here {Deadly} is the whole of it, because a
         // redirected hit that does not reach this body's defense still kills.
         const lethal = deadly || self.damage >= t;
@@ -403,7 +401,7 @@ card('Oorblak', {
         g.fireEvent('damage', ev);
       }
       g.settleDamagePrevention();
-      // R237: the {Deadly} kill, delivered here because `sweepDeadly` has
+      // CR 802.3a: the {Deadly} kill, delivered here because `sweepDeadly` has
       // already run for this sub-step (see the note above). Conditioned on
       // damage having been dealt, exactly as the sweep's `shielded` set is.
       if (deadly && through > 0 && g.entity(self.id)) {
@@ -421,7 +419,7 @@ card('Oorblak', {
 // "Whenever a mod is applied to me, create {/n}an X/X unit, where X is the
 // mod's cost." — e/1 1/3 Structure Unit. Condition at event time: the mod
 // landed on me. X = the mod card's total (corner) cost, read at RESOLUTION
-// from the live mod entity (R1); the cost is printed data, so it cannot have
+// from the live mod entity (CR 107.8); the cost is printed data, so it cannot have
 // changed — if the mod is somehow gone by resolution, nothing is created.
 // (No graft cause on this card, so mods arrive via augment/virus only.)
 card('Perpetual Construct', {
@@ -451,7 +449,7 @@ card('Perpetual Construct', {
 
 // "When I am dealt damage, [Switch1] Put a +1/+1 counter on me." — ee/2 0/4
 // {Sluggish} Rock Beast Unit. 'damage' event, self-scoped. Bounded
-// ([Switch1], R9); the counter is the bounded graft (on a host it grows the
+// ([Switch1], CR 722.5); the counter is the bounded graft (on a host it grows the
 // host).
 const pebbleGrow: EffectDef = {
   run: (g, ctx) => {
@@ -477,7 +475,7 @@ card('Plodding Pebble', {
 // "[Augment] {Inverted} Ancient Anima {Virus} Unit" — e/2 2/3. Type-line
 // [Augment] grants {Inverted}; printed.augmentAttrs carries it, and
 // printed.attrs keeps it live when played normally. Nothing else is needed:
-// R93 made {Inverted} stat layer 5 (it negates the net stat change from base,
+// {Inverted} is stat layer 5 (CR 802.8a: it negates the net stat change from base,
 // `2*base - current`, after layer 4), so the whole card is the attribute and
 // the layer does the work. Donating it onto a unit that has been pumped is
 // what makes this a Virus worth holding — see 17-earth-b's Morphic Mentor
@@ -488,7 +486,7 @@ card('Reality Bender', {});
 // opponent." — e/4 4/4 Occult Avatar Unit (printed typo "I am I" preserved
 // above). Text-box [Augment]. 'damage' event, self-scoped; the amount is the
 // event's damage figure; "each opponent" = the event region's present seats
-// other than my controller (R25), read at resolution.
+// other than my controller (CR 601.4d), read at resolution.
 card('Restitution', {
   augmentText: [{
     type: 'triggered', events: ['damage'], self: true,
@@ -499,7 +497,7 @@ card('Restitution', {
         if (n <= 0) { g.ev('info', 'Restitution: no damage was dealt to me — nothing is passed on.'); return; }
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         if (!opponents.length) { g.ev('info', 'Restitution: no opponent is present here — no damage.'); return; }
-        g.dealEffectDamageAll(ctx, opponents.map(s => ({ target: { player: s }, n })));   // R80
+        g.dealEffectDamageAll(ctx, opponents.map(s => ({ target: { player: s }, n })));   // CR 112.8
       },
     },
   }],
@@ -508,14 +506,14 @@ card('Restitution', {
 // "Negate all effects. Erase all mods." — eee/4 {Battle} Druid Spell. At
 // resolution this spell is already off the stack, so "all effects" = every
 // remaining stack item (spells, spell units, tokens, ambushes, triggered and
-// activated abilities alike). "All mods" is region-scoped (R12): every mod on
+// activated abilities alike). "All mods" is region-scoped (CR 101.6): every mod on
 // every MODDED THING in this region is ERASED — deleted outright, entering no
 // bin.
 //
 // ⚠ "all mods" is not "all mods on units" (2026-08-24 literal-reading audit).
 // This walked `g.unitsIn(region)`, which is `kind === 'unit'` and nothing else,
 // so an augment sitting on a SPELL TOKEN in play survived a spell whose whole
-// text is two unqualified sweeps. R89 makes that a real board state — Caleb,
+// text is two unqualified sweeps. CR 721.4a makes that a real board state — Caleb,
 // rules-questions 2025-03-06, asked "can i augment my spells during
 // deployment?": "You can augment spells during deployment but currently that
 // would only be possible with spell tokens. Also you can only do this with
@@ -529,15 +527,15 @@ card('Return to Nature', {
   spellEffect: {
     run: (g, ctx) => {
       let touched = g.s.stack.length;
-      // R128: "negate all effects" is the WHOLE stack, a {Battle} unit mid-cast
-      // included — the owner reversed R60 on 2026-08-24 ("ANYTHING on the stack
+      // CR 700.1: "negate all effects" is the WHOLE stack, a {Battle} unit mid-cast
+      // included — the owner reversed the earlier reading on 2026-08-24 ("ANYTHING on the stack
       // is an effect"). Confirmed as-is; do not narrow this by kind.
-      for (const it of [...g.s.stack]) g.negate(it.id);   // R68: negate() splices
+      for (const it of [...g.s.stack]) g.negate(it.id);   // CR 704.4: negate() splices
       const modded = Object.values(g.s.entities).filter(e =>
         (e.kind === 'unit' || e.kind === 'spellToken') && e.region === ctx.region
         && !e.absent && e.mods.length > 0);
       for (const u of modded) {
-        // R65/R156: an erase must reach the PUBLIC ERASED PILE, and each card
+        // CR 407.2, 407.1, 407.1a: an erase must reach the PUBLIC ERASED PILE, and each card
         // reaches its OWN owner's pile — a mod's owner is the player who
         // applied it, not the unit's controller. This used to be a bare
         // `delete` plus an 'info' line, so a nontoken mod card left the game
@@ -556,13 +554,13 @@ card('Return to Nature', {
             { seat: owner, cards });
         }
         const n = u.mods.length;
-        // R208 / CT-86: through `E.eraseMod`, the choke point. This site is the
-        // one that already got the R65 announcement RIGHT (the 'erased' event
+        // CR 720.9 / CT-86: through `E.eraseMod`, the choke point. This site is the
+        // one that already got the CR 407.1 announcement RIGHT (the 'erased' event
         // above), which is why it is the template the primitive was written
         // against — but it hand-rolled the delete like the other four. Nothing
         // it emits changed. `u.mods = []` stays as the belt for an id whose
         // entity was already gone, which eraseMod declines to touch.
-        // R219 — `alreadyFiled`: the grouped `erased` line above IS the pile
+        // CR 720.9 (the engine files by owner, CT-258) — `alreadyFiled`: the grouped `erased` line above IS the pile
         // entry, one per owner. eraseMod files the pile itself now, so without
         // this every card would be listed twice. This site also files TOKEN
         // mods (matching disposeToBin), which eraseMod deliberately does not —

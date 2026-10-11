@@ -28,14 +28,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "25-wood-c.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Manual p.40 NOTE gives both durations. 206.6 already says a stat change is temporary; this rule names the two kinds of continuous effect.",
     "sourceHashes": {}
@@ -71,14 +71,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -113,8 +113,7 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
@@ -122,6 +121,7 @@
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -136,7 +136,7 @@
     "examples": [
       {
         "text": "An effect that makes a unit base 4/4 applies over Apex Prime's copy effect whether the copy began before it or after it, because base stats are a later layer than the copy.",
-        "test": "44-hybrids-ld-a.test.ts::R118: a later setBase wins over a copy"
+        "test": "44-hybrids-ld-a.test.ts::CR 709.4: a later setBase wins over a copy"
       }
     ],
     "see": [
@@ -157,16 +157,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "Layer 2 rewrites whatever layer 1 currently says, so the order the two land in does not matter."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R118",
-          "relation": "its ruling-2 Unstable half reversed by R336 and its text half amended by R341; its layer order stands"
+          "quote": "Layer 2 rewrites whatever layer 1 currently says, so the order the two land in does not matter.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -175,10 +170,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9",
       "RAQ 1357965714807586897#0": "f1aec3fc6a5038698b3357bca87ce84977d7c321ef7ffe93d71dfe8dc9d1d092"
     }
   },
@@ -190,7 +185,7 @@
     "examples": [
       {
         "text": "a Unit Token that becomes a copy of Good Whale and is Unaware reads as a 7/5, Good Whale's printed stats.",
-        "test": "44-hybrids-ld-a.test.ts::R118: {Unaware} reads the COPIED face's printed stats"
+        "test": "44-hybrids-ld-a.test.ts::CR 709.4a: {Unaware} reads the COPIED face's printed stats"
       }
     ],
     "see": [
@@ -200,38 +195,38 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "below everything, because it redefines what *printed* MEANS"
+          "quote": "below everything, because it redefines what *printed* MEANS",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "{Unaware} reads the COPIED face's printed stats."
+          "quote": "{Unaware} reads the COPIED face's printed stats.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R118 calls the copy layer \"layer 0\"; the Manual's list has six layers and no copy layer.",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“the COPY LAYER: a face in…”) calls the copy layer \"layer 0\"; the Manual's list has six layers and no copy layer.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.continuous.layers.attribute-order",
     "parent": "effects.continuous.layers",
     "order": 2,
-    "text": "In layer 4, Tough and Balanced apply in the order the unit has them, from top to bottom. A Tough unit that attacks with a Balanced unit behind it has its defense doubled, then its stats balanced. Where a Balanced unit gets Tough from a mod, the Manual's answer gives both orders: Tough \"augmented onto\" a Balanced unit doubles, then balances; Tough \"applied to\" a Balanced unit balances, then doubles (D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (R19 calls this order its own; engine differs from the \"augmented onto\" reading, see F-U16-4).",
+    "text": "In layer 4, Tough and Balanced apply in the order the unit has them, from top to bottom. A Tough unit that attacks with a Balanced unit behind it has its defense doubled, then its stats balanced. Where a Balanced unit gets Tough from a mod, the Manual's answer gives both orders: Tough \"augmented onto\" a Balanced unit doubles, then balances; Tough \"applied to\" a Balanced unit balances, then doubles (D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (the owner ruling of 2026-08-18 calls this order the engine's own reading; engine differs from the \"augmented onto\" reading, see F-U16-4).",
     "examples": [
       {
         "text": null,
-        "test": "08-cards2.test.ts::R19: layer-4 application order"
+        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order"
       }
     ],
     "see": [
@@ -266,28 +261,29 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R19",
-          "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
+          "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R19",
-          "quote": "Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+          "quote": "Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (the owner ruling of 2026-08-18 calls this order the engine's own reading; engine differs from the \"augmented onto\" reading, see F-U16-4).",
     "confidence": "low",
-    "notes": "The top-to-bottom principle and the column case are printed (Manual p.42). The printed-then-mod-then-column order is R19's engine call. The Manual's two sentences on a Tough mod on a Balanced unit give opposite orders; the verifier's probe measured the engine balancing first (Child of Aether with a Tough augment reads 2/4, where the \"augmented onto\" sentence gives 2/2). See D-U16-1, F-U16-4.",
-    "sourceHashes": {
-      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3"
-    },
+    "notes": "The top-to-bottom principle and the column case are printed (Manual p.42). The printed-then-mod-then-column order is the owner ruling of 2026-08-18 (“Stat layer 4 application order”)’s engine call. The Manual's two sentences on a Tough mod on a Balanced unit give opposite orders; the verifier's probe measured the engine balancing first (Child of Aether with a Tough augment reads 2/4, where the \"augmented onto\" sentence gives 2/2). See D-U16-1, F-U16-4.",
+    "sourceHashes": {},
     "engineDiffers": [
       "F-U16-4"
     ]
@@ -300,7 +296,7 @@
     "examples": [
       {
         "text": "two Reality Benders on one unit make it Inverted once; they do not cancel out.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: {Inverted} applies ONCE however many sources grant it"
+        "test": "79-round17-layers.test.ts::CR 709.4c layer 5: {Inverted} applies ONCE however many sources grant it"
       }
     ],
     "see": [],
@@ -308,29 +304,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R19",
-          "quote": "Duplicates don't stack — an attribute is either present or not, and its first occurrence sets its position."
+          "quote": "Duplicates don't stack — an attribute is either present or not, and its first occurrence sets its position.",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R93",
-          "quote": "two Reality Benders on one host do not cancel"
+          "quote": "two Reality Benders on one host do not cancel",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3",
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.continuous.layers.inverted-last",
@@ -340,7 +335,7 @@
     "examples": [
       {
         "text": "a 1/4 that is Tough and Inverted is a 1/0, in either grant order.",
-        "test": "79-round17-layers.test.ts::R226: the TWO-attribute case, in either grant order"
+        "test": "79-round17-layers.test.ts::CR 709.4d: the TWO-attribute case, in either grant order"
       }
     ],
     "see": [
@@ -355,24 +350,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R226",
-          "quote": "Order-independence is the substantive claim"
+          "quote": "Order-independence is the substantive claim",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "A remark of Caleb's quoted in R93 (\"Tough inverted balanced would be different\") reads as if Inverted could fall in the middle of layer 4. See D-U16-2.",
-    "sourceHashes": {
-      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a"
-    }
+    "notes": "A remark of Caleb's quoted in the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (\"Tough inverted balanced would be different\") reads as if Inverted could fall in the middle of layer 4. See D-U16-2.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.continuous.one-calculation",
@@ -382,7 +376,7 @@
     "examples": [
       {
         "text": "a 1/1 with a -1/-1 counter that is Inverted is a 2/2, never a dead 0/0 on the way.",
-        "test": "79-round17-layers.test.ts::R93 layer 5: hitting 0 mid-calculation is not death"
+        "test": "79-round17-layers.test.ts::CR 802.1k layer 5: hitting 0 mid-calculation is not death"
       }
     ],
     "see": [
@@ -392,28 +386,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R93",
-          "quote": "does it die if it hits 0 partway through?"
+          "quote": "does it die if it hits 0 partway through?",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R93",
-          "quote": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0."
+          "quote": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R93 quotes calebgannon (\"Not if it hits 0 mid calculation\"); the words reach this document only through the ruling, so the basis is owner.",
-    "sourceHashes": {
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) quotes calebgannon (\"Not if it hits 0 mid calculation\"); the words reach this document only through the ruling, so the basis is owner.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.continuous.base-exchange",
@@ -444,14 +438,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "What happens when the Statweaver later leaves play is unruled in the thread: D-U16-3.",
     "sourceHashes": {
@@ -488,13 +482,13 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R166",
-          "quote": "SOLVES for the layer-3 delta that lands `effStats` on double what it read"
+          "quote": "SOLVES for the layer-3 delta that lands `effStats` on double what it read",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
@@ -502,10 +496,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R166": "e7769ee2095ba744eee715fd650e38a8d8392b72e244ff467d95b1d32b4f4756",
       "RAQ 1362832912579559664#1": "46cb7c6bd0a59a6d4fae28a4257aeaf05bea5d5d56d732e9e37de27dfd3d2f6e"
     }
   },
@@ -534,17 +528,18 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R66",
-          "quote": "the delta freezes the two numbers as they stood at resolution, so a later ASYMMETRIC change (a +2/+0 landing afterwards)"
+          "quote": "the delta freezes the two numbers as they stood at resolution, so a later ASYMMETRIC change (a +2/+0 landing afterwards)",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R66",
-          "quote": "Where a real switch belongs is an OPEN RULING, and this line previously guessed"
+          "quote": "Where a real switch belongs is an OPEN RULING, and this line previously guessed",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts",
@@ -552,11 +547,11 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "The engine applies it as a temporary stat change worked out from the unit's stats when it resolves, so a stat change that comes afterwards applies on top and is not switched.",
     "confidence": "low",
-    "notes": "Only the card text is printed, and it says nothing about later changes. R66 describes the engine's handling as \"the one remaining approximation in the stat layers\" and leaves the ruling open. The verifier's probe (build/probes/U16/u16-probes.test.ts) measured 8/3 -> 3/8, then +2/+0 -> 5/8. See D-U16-4. Basis mixed only because the card text states the switch itself; how it layers rests on the engine alone (b discrepancy D-U16-4).",
-    "sourceHashes": {
-      "R66": "effa2095307431ee86e4abe37d0832f0c6b05332d4f788c4c3024a8468ba8b9c"
-    }
+    "notes": "Only the card text is printed, and it says nothing about later changes. The owner ruling of 2026-08-21 (“Base stats are REPLACED, not adjusted…”) describes the engine's handling as \"the one remaining approximation in the stat layers\" and leaves the ruling open. The verifier's probe (build/probes/U16/u16-probes.test.ts) measured 8/3 -> 3/8, then +2/+0 -> 5/8. See D-U16-4. Basis mixed only because the card text states the switch itself; how it layers rests on the engine alone (b discrepancy D-U16-4).",
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.becoming",
@@ -566,11 +561,11 @@
     "examples": [
       {
         "text": "a Borrower of Forms that copies a unit takes its name, its attributes and its text.",
-        "test": "26-metal-a.test.ts::R118: Borrower of Forms takes the NAME, the attributes and the card TEXT"
+        "test": "26-metal-a.test.ts::CR 710.1: Borrower of Forms takes the NAME, the attributes and the card TEXT"
       },
       {
         "text": "a unit that is a copy dies and its own card goes to the bin, not the copied card.",
-        "test": "44-hybrids-ld-a.test.ts::R118: a copy DYING puts the PHYSICAL card in the bin"
+        "test": "44-hybrids-ld-a.test.ts::CR 710.1: a copy DYING puts the PHYSICAL card in the bin"
       }
     ],
     "see": [
@@ -590,13 +585,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "targeting by name, the text box — but the **physical card is unchanged**: it bins, it is"
+          "quote": "targeting by name, the text box — but the **physical card is unchanged**: it bins, it is",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -604,11 +599,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.becoming.cost-and-type",
@@ -642,14 +636,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -665,7 +659,7 @@
     "examples": [
       {
         "text": "a 1/1 that becomes a 7/5 until regroup and takes two -1/-1 counters dies when the copy ends at regroup.",
-        "test": "44-hybrids-ld-a.test.ts::R118: an until-regroup face lapses at regroup, and the revert can be lethal"
+        "test": "44-hybrids-ld-a.test.ts::CR 710.6: an until-regroup face lapses at regroup, and the revert can be lethal"
       }
     ],
     "see": [],
@@ -673,24 +667,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "They are facts about the *unit*, not"
+          "quote": "They are facts about the *unit*, not",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.exact",
@@ -718,23 +711,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "Borrower of Forms overrides layer 1."
+          "quote": "Borrower of Forms overrides layer 1.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9",
       "RAQ 1372468222158180424#0": "eaacf247eb5751c165cf21dee8c9f80dc6547783a8a1c9a73bd215b42ba85bbb"
     }
   },
@@ -746,7 +739,7 @@
     "examples": [
       {
         "text": "a Borrower of Forms that copied a unit carrying a Powerful virus is Powerful, and is not modded or Unstable.",
-        "test": "406-copied-augments.test.ts::R341: a Borrower that copied a unit carrying a Powerful virus is Powerful"
+        "test": "406-copied-augments.test.ts::CR 710.2a: a Borrower that copied a unit carrying a Powerful virus is Powerful"
       },
       {
         "text": "A Borrower of Forms that copied a Bellowing Boulder with Flame Juggle grafted has the Boulder's whole trigger, Flame Juggle's grafted part included.",
@@ -771,20 +764,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R336",
-          "quote": "A fresh copy of a modded unit is NOT Unstable."
+          "quote": "A fresh copy of a modded unit is NOT Unstable.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R341",
-          "quote": "a copy of a unit with an augment mod has that mod's `[Augment]` box as its own text."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R118",
-          "relation": "its ruling 2 said a copy of a modded unit counts as modded and is Unstable; reversed by R336"
+          "quote": "a copy of a unit with an augment mod has that mod's `[Augment]` box as its own text.",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -795,13 +784,12 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
-      "R341": "d58bb9dc5bb76f89d02be0d1b9af492c5c60f1086cc7bd19d7fbbd23e7202a45",
       "RAQ 1372468222158180424#1": "1ee9185cb6e4de844e78c588dea319496887cca41f5243d4a45f2fbc03591288",
-      "RAQ 1372468222158180424#4": "7df1d2347ae80bbe46d437f62c7841dd43e74c3ee3fb7eb1aeacdbcc7a628037"
+      "RAQ 1372468222158180424#4": "fa3423ed0c8af541951d9ce99db39a7441ac923ab8c699d224f2e358cbe17154"
     }
   },
   {
@@ -827,14 +815,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -849,7 +837,7 @@
     "examples": [
       {
         "text": "a Borrower of Forms that copied a unit with a virus dies, and only Borrower of Forms goes to the bin.",
-        "test": "406-copied-augments.test.ts::R341: when that copy dies, only Borrower of Forms goes to the bin"
+        "test": "406-copied-augments.test.ts::CR 710.2c: when that copy dies, only Borrower of Forms goes to the bin"
       }
     ],
     "see": [
@@ -860,17 +848,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R341",
-          "quote": "When it leaves play, only its own physical card goes anywhere (Borrower of Forms to the bin). Nothing is binned or erased a second time."
+          "quote": "When it leaves play, only its own physical card goes anywhere (Borrower of Forms to the bin). Nothing is binned or erased a second time.",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         },
         {
-          "ref": "R336",
-          "quote": "The copy becomes Unstable the ordinary way, when a real mod is applied to it."
+          "quote": "The copy becomes Unstable the ordinary way, when a real mod is applied to it.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "406-copied-augments.test.ts",
@@ -878,12 +867,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
-      "R341": "d58bb9dc5bb76f89d02be0d1b9af492c5c60f1086cc7bd19d7fbbd23e7202a45"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.exact.mods.once",
@@ -893,7 +880,7 @@
     "examples": [
       {
         "text": "a Borrower of Forms that copied a Graxxlid-augmented unit can use Graxxlid's ability once per turn.",
-        "test": "406-copied-augments.test.ts::R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid"
+        "test": "406-copied-augments.test.ts::CR 710.2d: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid"
       }
     ],
     "see": [
@@ -903,24 +890,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R341",
-          "quote": "**[once] is per card per host (R9).**"
+          "quote": "**[once] is per card per host (R9).**",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "406-copied-augments.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R341": "d58bb9dc5bb76f89d02be0d1b9af492c5c60f1086cc7bd19d7fbbd23e7202a45"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.latest",
@@ -930,7 +916,7 @@
     "examples": [
       {
         "text": "an Apex Prime copy made when attacking and another made when blocking leave the unit one copy, the later one.",
-        "test": "44-hybrids-ld-a.test.ts::R118: attacking and then blocking leaves ONE face, not two"
+        "test": "44-hybrids-ld-a.test.ts::CR 710.3: attacking and then blocking leaves ONE face, not two"
       }
     ],
     "see": [],
@@ -938,24 +924,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "so two copies resolve **last-wins** exactly"
+          "quote": "so two copies resolve **last-wins** exactly",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.of-a-copy",
@@ -965,11 +950,11 @@
     "examples": [
       {
         "text": null,
-        "test": "44-hybrids-ld-a.test.ts::R118: a copy of a COPY chains through the face"
+        "test": "44-hybrids-ld-a.test.ts::CR 710.4: a copy of a COPY chains through the face"
       },
       {
         "text": "a copy of a Borrower of Forms that copied a virused unit carries the copied virus's text too.",
-        "test": "406-copied-augments.test.ts::R341: a copy of the copy chains"
+        "test": "406-copied-augments.test.ts::CR 710.4: a copy of the copy chains"
       }
     ],
     "see": [],
@@ -977,17 +962,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "Copy of a copy chains via the FACE"
+          "quote": "Copy of a copy chains via the FACE",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R341",
-          "quote": "A copy of a copy chains."
+          "quote": "A copy of a copy chains.",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts",
@@ -995,12 +981,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9",
-      "R341": "d58bb9dc5bb76f89d02be0d1b9af492c5c60f1086cc7bd19d7fbbd23e7202a45"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.create-copy-of-me",
@@ -1010,7 +994,7 @@
     "examples": [
       {
         "text": "Hooba-God, killed under its own attack trigger, still creates a copy of what it was.",
-        "test": "108-formation-class.test.ts::R325 Hooba-God: killed under its own attack trigger"
+        "test": "108-formation-class.test.ts::Hooba-God: killed under its own attack trigger"
       }
     ],
     "see": [
@@ -1021,13 +1005,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "carries no counters and no mods."
+          "quote": "carries no counters and no mods.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "108-formation-class.test.ts",
@@ -1035,11 +1019,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R118 lists Echo of Despair, Hooba-God and Swarmling as the cards this covers.",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“the COPY LAYER: a face in…”) lists Echo of Despair, Hooba-God and Swarmling as the cards this covers.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.until-regroup",
@@ -1049,7 +1032,7 @@
     "examples": [
       {
         "text": null,
-        "test": "44-hybrids-ld-a.test.ts::R118: an until-regroup face lapses at regroup, and the revert can be lethal"
+        "test": "44-hybrids-ld-a.test.ts::CR 710.6: an until-regroup face lapses at regroup, and the revert can be lethal"
       }
     ],
     "see": [
@@ -1065,24 +1048,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "then reverts at regroup **dies**"
+          "quote": "then reverts at regroup **dies**",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.all-abilities",
@@ -1092,15 +1074,15 @@
     "examples": [
       {
         "text": "Ancient One has an adjacent ally's static ability, and loses it when the column breaks.",
-        "test": "26-metal-a.test.ts::R118: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks"
+        "test": "26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks"
       },
       {
         "text": "an adjacent ally's attributes are not given to Ancient One.",
-        "test": "117-copy-everything.test.ts::R127: attributes are the ONE thing an adjacent ally does not donate"
+        "test": "117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate"
       },
       {
         "text": "Ancient One keeps its own name and stats.",
-        "test": "26-metal-a.test.ts::R118: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body"
+        "test": "26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body"
       }
     ],
     "see": [],
@@ -1117,21 +1099,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R127",
-          "quote": "It basically just copies **the whole text box** of adjacent"
+          "quote": "It basically just copies **the whole text box** of adjacent",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R127",
-          "quote": "allies (so only during combat) right in its text box."
+          "quote": "allies (so only during combat) right in its text box.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         },
         {
-          "ref": "R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127)",
-          "quote": "A projected face never carries `name` or `stats`."
+          "quote": "A projected face never carries `name` or `stats`.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "26-metal-a.test.ts",
@@ -1139,12 +1123,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9",
-      "R127": "c6aacd798cc5c26418c44b4a8c10c8928e9b585927dd8b1e88a025bcbb718c4f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.all-abilities.i-is-me",
@@ -1154,7 +1136,7 @@
     "examples": [
       {
         "text": "next to Gatekeeper of Souls (\"I must be targeted if able\"), it is the Ancient One that must be targeted.",
-        "test": "117-copy-everything.test.ts::R127: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted"
+        "test": "117-copy-everything.test.ts::CR 710.7: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted"
       }
     ],
     "see": [],
@@ -1162,24 +1144,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R127",
-          "quote": "The clause reads \"I\" as the mimic."
+          "quote": "The clause reads \"I\" as the mimic.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "117-copy-everything.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R127": "c6aacd798cc5c26418c44b4a8c10c8928e9b585927dd8b1e88a025bcbb718c4f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.spells",
@@ -1189,7 +1170,7 @@
     "examples": [
       {
         "text": "Earthbound Replicator's copy goes on the stack above the original, so it resolves first.",
-        "test": "138-spell-copy.test.ts::R164 Earthbound Replicator: the copy is a real stack item, pushed ABOVE the original"
+        "test": "138-spell-copy.test.ts::CR 710.8 Earthbound Replicator: the copy is a real stack item, pushed ABOVE the original"
       },
       {
         "text": "the copy can be chosen as a \"target effect\" and negated by Dematerialize.",
@@ -1214,23 +1195,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R164",
-          "quote": "and pushes it **above** the original, so it resolves"
+          "quote": "and pushes it **above** the original, so it resolves",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "138-spell-copy.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514",
       "RAQ 1355613076506017894#4": "6428d54bd4282edd2d7997af4b4ea2bb97c2ddd6559a4e9188e19f4a721fdfd4",
       "RAQ 1379132904931594372#0": "2489487aa78cede9d246f72cbe06a1c3b09758133ee0236ea6286d0992027c07"
     }
@@ -1243,7 +1224,7 @@
     "examples": [
       {
         "text": "Maelstrom Charger's copy of Volatile Toxicity uses the original's sacrifice, which is not paid again.",
-        "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt"
+        "test": "138-spell-copy.test.ts::CR 710.8a Maelstrom Charger: the copy inherits the cast-cost receipt"
       },
       {
         "text": "A copy of Fight keeps both targets the original declared.",
@@ -1267,23 +1248,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R164",
-          "quote": "and R57's declared modal half (`part.mode`)"
+          "quote": "and R57's declared modal half (`part.mode`)",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "138-spell-copy.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514",
       "RAQ 1379132904931594372#2": "737643b32b015038bf15b0e5c585fead3244d1fd322f2fb0319ee0e167d0a7e7"
     }
   },
@@ -1305,28 +1286,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R164",
-          "quote": "Targeting is not playing: a copy"
+          "quote": "Targeting is not playing: a copy",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R164",
-          "quote": "pointing at your unit is targeting it, whoever put it there."
+          "quote": "pointing at your unit is targeting it, whoever put it there.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "427-cr-continuous-effects.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.spells.no-card",
@@ -1336,7 +1317,7 @@
     "examples": [
       {
         "text": "a resolved copy of Suspend puts nothing in a bin and its \"Erase me.\" erases nothing; the original Suspend is erased once.",
-        "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: a resolved copy bins nothing"
+        "test": "138-spell-copy.test.ts::CR 710.8c Maelstrom Charger: a resolved copy bins nothing"
       }
     ],
     "see": [
@@ -1346,28 +1327,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R164",
-          "quote": "\"Erase me.\" on a copy erases nothing."
+          "quote": "\"Erase me.\" on a copy erases nothing.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R164",
-          "quote": "One Burgeon played is one Burgeon in a bin,"
+          "quote": "One Burgeon played is one Burgeon in a bin,",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "138-spell-copy.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.copies.spells.modular",
@@ -1387,24 +1368,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R164",
-          "quote": "ride on the stack with the spell and a copy would copy them"
+          "quote": "ride on the stack with the spell and a copy would copy them",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "427-cr-continuous-effects.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R164 quotes Caleb 2025-02-07 for this. It also says a Virus applied to the original while it was on the stack is not copied, an engine approximation with no source: D-U16-10.",
-    "sourceHashes": {
-      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“a COPY of a spell is…”) quotes Caleb 2025-02-07 for this. It also says a Virus applied to the original while it was on the stack is not copied, an engine approximation with no source: D-U16-10.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.faces.face-up",
@@ -1414,7 +1394,7 @@
     "examples": [
       {
         "text": "Scholar of the Void transforms into Beyond, Codex Incarnate and is still the same unit.",
-        "test": "43-dark-c.test.ts::R101 — the transform is the SAME unit"
+        "test": "43-dark-c.test.ts::CR 108.3 — the transform is the SAME unit"
       }
     ],
     "see": [
@@ -1430,20 +1410,16 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R101 (a transform is the same unit with a different face up; its token half reversed by R157, its rot clause corrected by R102)",
-          "quote": "A transform is the SAME unit with a different face up."
+          "quote": "A transform is the SAME unit with a different face up.",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (sections 3, 10 and 14, which stand)",
-          "quote": "Turns back over. In all zones, other than play, it exists as the"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R101",
-          "relation": "its sentence that the transformed card becomes a TOKEN reversed by R157 section 10"
+          "quote": "Turns back over. In all zones, other than play, it exists as the",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1453,12 +1429,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R101": "b937ce970d76adefa8a8d4e7d281565beddb39e455ba1f6f91fddcbe49c6d2ee",
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.what",
@@ -1468,7 +1442,7 @@
     "examples": [
       {
         "text": "a stolen unit recalled goes to the hand of the player who controls it, and its owner is unchanged.",
-        "test": "246-zones-follow-control.test.ts::R262 §3: ownership does NOT move"
+        "test": "246-zones-follow-control.test.ts::CR 400.4a: ownership does NOT move"
       }
     ],
     "see": [
@@ -1480,20 +1454,16 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R8 (the swap of sides; its formation clause narrowed by R172)",
-          "quote": "The unit **swaps sides, straight up**"
+          "quote": "The unit **swaps sides, straight up**",
+          "adopted": "2026-08-18",
+          "from": "register@72de434"
         },
         {
-          "ref": "R112",
-          "quote": "the unit AND its mods change controller (owner never"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R8",
-          "relation": "its clause that the unit joins the new controller's formations was narrowed by R172 (rule 711.3)"
+          "quote": "the unit AND its mods change controller (owner never",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1502,12 +1472,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R112": "728a644cedd30998f520d22c619ac8d9ba14096de087aace58dff41ef917db12",
-      "R8": "774227b41b46444ff824b235063426d73784a9de492a945bdd87a4f1c9d72f01"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.mods",
@@ -1517,7 +1485,7 @@
     "examples": [
       {
         "text": null,
-        "test": "25-wood-c.test.ts::R112: a stolen unit takes its MODS with it"
+        "test": "25-wood-c.test.ts::CR 711.2: a stolen unit takes its MODS with it"
       },
       {
         "text": "Mindspore Fiend gives away a modded blocker, and its mods go with it.",
@@ -1541,13 +1509,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R112",
-          "quote": "A stolen unit's mods are part of"
+          "quote": "A stolen unit's mods are part of",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "25-wood-c.test.ts",
@@ -1555,11 +1523,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R112": "728a644cedd30998f520d22c619ac8d9ba14096de087aace58dff41ef917db12"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.formation",
@@ -1569,11 +1536,11 @@
     "examples": [
       {
         "text": "a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.",
-        "test": "145-erase-routes.test.ts::R172 (viii): Download"
+        "test": "145-erase-routes.test.ts::CR 711.3 (viii): Download"
       },
       {
         "text": "the stolen Robot joins its new controller's side at regroup.",
-        "test": "145-erase-routes.test.ts::R172 (ix): Download"
+        "test": "145-erase-routes.test.ts::CR 711.3 (ix): Download"
       }
     ],
     "see": [
@@ -1584,24 +1551,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R172 (sections 1 and 4: an erase is not a death, and the mid-battle steal; its erased-pile seat corrected by R262)",
-          "quote": "it sits out until regroup."
+          "quote": "it sits out until regroup.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R172 (sections 1 and 4: an erase is not a death, and the mid-battle steal; its erased-pile seat corrected by R262)",
-          "quote": "it attacks for nobody and blocks for nobody"
+          "quote": "it attacks for nobody and blocks for nobody",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R112",
-          "quote": "it leaves any formation through `removeFromFormation`, so the R72"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R8",
-          "relation": "said a stolen unit joins the new controller's formations; narrowed by R172"
+          "quote": "it leaves any formation through `removeFromFormation`, so the R72",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1610,12 +1574,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "Owner call (Bena 2026-08-25 on Download). No printed or designer source. See D-U16-11.",
-    "sourceHashes": {
-      "R112": "728a644cedd30998f520d22c619ac8d9ba14096de087aace58dff41ef917db12",
-      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.formation.block-stays",
@@ -1631,22 +1593,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R172 (sections 1 and 4: an erase is not a death, and the mid-battle steal; its erased-pile seat corrected by R262)",
-          "quote": "it does not un-declare the block."
+          "quote": "it does not un-declare the block.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R172 records this as the existing after-blocks lock, \"pinned in passing\".",
-    "sourceHashes": {
-      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d"
-    }
+    "notes": "The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) records this as the existing after-blocks lock, \"pinned in passing\".",
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.region",
@@ -1667,17 +1628,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R112",
-          "quote": "not present where it stands (a deployment-time steal) goes to that"
+          "quote": "not present where it stands (a deployment-time steal) goes to that",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R112",
-          "quote": "Mid-battle both seats are present and it"
+          "quote": "Mid-battle both seats are present and it",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts",
@@ -1685,11 +1647,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R112": "728a644cedd30998f520d22c619ac8d9ba14096de087aace58dff41ef917db12"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.exchange-positions",
@@ -1712,24 +1673,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R148",
-          "quote": "Organic Exchange must NOT be unslotted"
+          "quote": "Organic Exchange must NOT be unslotted",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "24-wood-b.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R148": "3e651a34bc4e9de9d3d72192531464bcd66075bd5eef10a28c55750be73ca389"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.no-change",
@@ -1754,23 +1714,23 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R148",
-          "quote": "The two \"nothing changes hands\" branches (the unit is gone; the seat already"
+          "quote": "The two \"nothing changes hands\" branches (the unit is gone; the seat already",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R148": "3e651a34bc4e9de9d3d72192531464bcd66075bd5eef10a28c55750be73ca389",
       "RAQ 1353859961855148103#3": "0f00309dc741ed7d3ff9c1a0dbfa514d90cf1c3320dd08e4d1f95e0225957f20"
     }
   },
@@ -1782,11 +1742,11 @@
     "examples": [
       {
         "text": "a stolen unit recalled goes to the thief's hand.",
-        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand"
+        "test": "246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand"
       },
       {
         "text": null,
-        "test": "246-zones-follow-control.test.ts::R262 §2: an explicit destination still wins"
+        "test": "246-zones-follow-control.test.ts::CR 400.4b: an explicit destination still wins"
       }
     ],
     "see": [
@@ -1797,24 +1757,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R262",
-          "quote": "All four follow control"
+          "quote": "All four follow control",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "246-zones-follow-control.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.control.mod-moved",
@@ -1824,7 +1783,7 @@
     "examples": [
       {
         "text": "an augment Rotbeast moves onto an enemy takes its Unstable and its static ability with it.",
-        "test": "151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable} and its static with it"
+        "test": "151-copy-and-moved-mods.test.ts::CR 720.7d Rotbeast: a moved augment takes {Unstable} and its static with it"
       }
     ],
     "see": [
@@ -1844,16 +1803,11 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R178 (section 4: what a moved mod carries; its budget claim corrected by R331)",
-          "quote": "follows the new host, exactly as `attachMod` sets it."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R178",
-          "relation": "its claim that every bounded budget rides with the moved mod was corrected by R331"
+          "quote": "follows the new host, exactly as `attachMod` sets it.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1862,11 +1816,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.what",
@@ -1876,7 +1829,7 @@
     "examples": [
       {
         "text": "Monke makes other units lose all attributes and abilities during battle.",
-        "test": "27-metal-b.test.ts::Monke: R62 — other units lose all attributes and abilities during battle"
+        "test": "27-metal-b.test.ts::Monke: CR 712.1 — other units lose all attributes and abilities during battle"
       }
     ],
     "see": [
@@ -1895,24 +1848,23 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328)",
-          "quote": "Five printed cards take something away — Suppression"
+          "quote": "Five printed cards take something away — Suppression",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R62": "b75f83a60c6ef0797b8507898c9e9bdf60b8e208f657c33b8ed95ab95a3da2e2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.what.abilities",
@@ -1922,7 +1874,7 @@
     "examples": [
       {
         "text": "a copy silenced by Suppression Field stops applying the static it copied.",
-        "test": "44-hybrids-ld-a.test.ts::R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates nothing"
+        "test": "44-hybrids-ld-a.test.ts::CR 712.1a, 710.1: suppression is a veto ABOVE copy — a silenced copy radiates nothing"
       },
       {
         "text": "With Transmogrifant and Sandstone Defender in play, Sandstone Defender has lost its abilities, so a 1/1 token gets only Transmogrifant's +2/+2 and is a 3/3.",
@@ -1946,20 +1898,16 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R62 (what losing abilities covers; its veto reversed by R328)",
-          "quote": "triggered abilities (own, its own `[Augment]` text, its mods' donated text,"
+          "quote": "triggered abilities (own, its own `[Augment]` text, its mods' donated text,",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R62 (what losing abilities covers; its veto reversed by R328)",
-          "quote": "radiates — a static *is* an ability — and both R38 replacement hooks."
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R62",
-          "relation": "its veto (nothing switches a stripped half back on) was reversed by R328: rule 712.2"
+          "quote": "radiates — a static *is* an ability — and both R38 replacement hooks.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1969,10 +1917,11 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
+    "digitalClause": "Engine differs, see F-U16-3: a unit that a continuous effect strips keeps applying its static abilities.",
     "confidence": "medium",
-    "notes": "Printed text (\"lose all attributes and abilities\") and R62's own coverage (\"a static is an ability\") put a unit's statics under a continuous strip. R62 is cited only for what losing abilities covers: its sentence that only a unit silenced by a spell 'stops radiating immediately', and R328's 'static-vs-static still resolves in one pass', side with the engine and are recorded as the other side of D-U16-14, not as support. The RAQ claim supports only that Transmogrifant's and Monke's strips are continuous and reach new units; it does not speak to the stripped unit's own statics. The verifier's probes measured a Sandstone Defender under Transmogrifant still giving +0/+2 (a 1/1 token at 3/5). Card text for Transmogrifant was read from printed.json, outside the pack. See D-U16-14.",
+    "notes": "Printed text (\"lose all attributes and abilities\") and the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”)’s own coverage (\"a static is an ability\") put a unit's statics under a continuous strip. The owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) is cited only for what losing abilities covers: its sentence that only a unit silenced by a spell 'stops radiating immediately', and the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”)’s 'static-vs-static still resolves in one pass', side with the engine and are recorded as the other side of D-U16-14, not as support. The RAQ claim supports only that Transmogrifant's and Monke's strips are continuous and reach new units; it does not speak to the stripped unit's own statics. The verifier's probes measured a Sandstone Defender under Transmogrifant still giving +0/+2 (a 1/1 token at 3/5). Card text for Transmogrifant was read from printed.json, outside the pack. See D-U16-14.",
     "sourceHashes": {
-      "R62": "b75f83a60c6ef0797b8507898c9e9bdf60b8e208f657c33b8ed95ab95a3da2e2",
       "RAQ 1355845893219287132#0": "37412e26f9f412386a6af7e6252564a6a7e1f53154977fe9f24c3e66b8378807"
     },
     "engineDiffers": [
@@ -1987,7 +1936,7 @@
     "examples": [
       {
         "text": null,
-        "test": "27-metal-b.test.ts::Formless: R62 — \"and loses all attributes\", abilities untouched"
+        "test": "27-metal-b.test.ts::Formless: CR 712.1 — \"and loses all attributes\", abilities untouched"
       }
     ],
     "see": [],
@@ -1995,17 +1944,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328)",
-          "quote": "Stats are not abilities: a silenced 7/5 is still a"
+          "quote": "Stats are not abilities: a silenced 7/5 is still a",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328)",
-          "quote": "targeted, blocking, dying, or being a legal graft host."
+          "quote": "targeted, blocking, dying, or being a legal graft host.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts",
@@ -2013,11 +1963,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R62": "b75f83a60c6ef0797b8507898c9e9bdf60b8e208f657c33b8ed95ab95a3da2e2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.what.erase-mods",
@@ -2035,22 +1984,21 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328)",
-          "quote": "suppression silences donated text, erasure removes it."
+          "quote": "suppression silences donated text, erasure removes it.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R62": "b75f83a60c6ef0797b8507898c9e9bdf60b8e208f657c33b8ed95ab95a3da2e2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.timestamp",
@@ -2089,16 +2037,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R328",
-          "quote": "A card that takes attributes or abilities away takes **what the unit has when the"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R62",
-          "relation": "made suppression a veto that nothing could switch back on; reversed by R328"
+          "quote": "A card that takes attributes or abilities away takes **what the unit has when the",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -2109,10 +2052,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde",
       "RAQ 1355685844467581081#0": "7603189480ff65543c413d7b2e1b1190d8e9bba83e57a4cf8ad8f66e963c8d98",
       "RAQ 1355845893219287132#1": "7528702d7112fbf2f7cc098512249783dc7f48aa85eb4e7499c2d3e8205a32e7"
     }
@@ -2125,7 +2068,7 @@
     "examples": [
       {
         "text": "Formless takes Blessed off the whole column, not just its target.",
-        "test": "299-formless-column.test.ts::R293 §1 the report"
+        "test": "299-formless-column.test.ts::CR 712.3 the report"
       },
       {
         "text": "Suppression Field aimed at either unit of a column takes both Unaware and Flying from both.",
@@ -2133,7 +2076,7 @@
       },
       {
         "text": "Formless's base 4/4 still hits the target alone.",
-        "test": "299-formless-column.test.ts::R293 §2 the base rewrite still hits the TARGET alone"
+        "test": "299-formless-column.test.ts::CR 712.3 the base rewrite still hits the TARGET alone"
       }
     ],
     "see": [
@@ -2153,17 +2096,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R329",
-          "quote": "Its abilities half, the mod erasure and the negation stay with the target."
+          "quote": "Its abilities half, the mod erasure and the negation stay with the target.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R293",
-          "quote": "rewrite is still the target's alone"
+          "quote": "rewrite is still the target's alone",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "299-formless-column.test.ts",
@@ -2172,11 +2116,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R293": "7f3b78f803b3a5031887ab3c5c5ffd2fba7b91dd23ff94fd0bb8d5ecedc9c6c5",
-      "R329": "d177fc0ef355db182659daf202e5fd89debb692d665991cffbf841869e75f007",
       "RAQ 1355845893219287132#3": "b895cfb988b23b513ce54b4f9e244924492782c4371ad3a1e0b2ce7e7054e472"
     }
   },
@@ -2188,7 +2131,7 @@
     "examples": [
       {
         "text": null,
-        "test": "299-formless-column.test.ts::R293 §5 a target with no column"
+        "test": "299-formless-column.test.ts::CR 712.3a a target with no column"
       }
     ],
     "see": [],
@@ -2196,24 +2139,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R293",
-          "quote": "reads as a column of one: itself."
+          "quote": "reads as a column of one: itself.",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "299-formless-column.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R293": "7f3b78f803b3a5031887ab3c5c5ffd2fba7b91dd23ff94fd0bb8d5ecedc9c6c5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.column.per-unit",
@@ -2223,11 +2165,11 @@
     "examples": [
       {
         "text": "Formless is aimed at a unit whose column-mate is Blessed. The column-mate loses Blessed, stays without it for the rest of the battle after combat damage is over, and gets it back at regroup.",
-        "test": "299-formless-column.test.ts::R293 §3 the stamp outlives the column"
+        "test": "299-formless-column.test.ts::CR 712.3b the stamp outlives the column"
       },
       {
         "text": null,
-        "test": "299-formless-column.test.ts::R293 §4 a unit that joins the column afterwards keeps its own attributes"
+        "test": "299-formless-column.test.ts::CR 712.3b a unit that joins the column afterwards keeps its own attributes"
       }
     ],
     "see": [
@@ -2237,24 +2179,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R293",
-          "quote": "So the stamp is **per unit**, and is that unit's own state until regroup."
+          "quote": "So the stamp is **per unit**, and is that unit's own state until regroup.",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "299-formless-column.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R293": "7f3b78f803b3a5031887ab3c5c5ffd2fba7b91dd23ff94fd0bb8d5ecedc9c6c5"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.column.regain",
@@ -2277,14 +2218,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "402-raq-fix-stripping.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2312,28 +2253,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R269",
-          "quote": "A card that names ONE behaviour suppresses that"
+          "quote": "A card that names ONE behaviour suppresses that",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R269",
-          "quote": "behaviour and leaves the rest of the layer alone."
+          "quote": "behaviour and leaves the rest of the layer alone.",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "249-suppression-scope.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R269": "07d6fe14e8704654d10c0ce285150b314c0eafacf15eef1f7760498c90be2b24"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.mutual",
@@ -2346,27 +2287,26 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328)",
-          "quote": "both keep radiating and both go quiet."
+          "quote": "both keep radiating and both go quiet.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R328",
-          "quote": "static-vs-static still resolves in one pass"
+          "quote": "static-vs-static still resolves in one pass",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "The only statement in the sources about one continuous effect depending on another. See D-U16-5.",
-    "sourceHashes": {
-      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde",
-      "R62": "b75f83a60c6ef0797b8507898c9e9bdf60b8e208f657c33b8ed95ab95a3da2e2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.named-card",
@@ -2397,28 +2337,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R91 (naming a card and the region rule; its duration note replaced by R118)",
-          "quote": "every copy of the named card in the naming unit's own region"
+          "quote": "every copy of the named card in the naming unit's own region",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         },
         {
-          "ref": "R91 (naming a card and the region rule; its duration note replaced by R118)",
-          "quote": "\"a card that is not in play\" (a no-op on the printed card too, and the only way"
+          "quote": "\"a card that is not in play\" (a no-op on the printed card too, and the only way",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "38-light-a.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R91": "56a9ed56119d29270ebb3a0b394209482176a22f7a55de8195e2defe7500b180"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.stripping.copied-text",
@@ -2428,7 +2368,7 @@
     "examples": [
       {
         "text": "Suppression Field strips the augment text a Borrower of Forms copied.",
-        "test": "406-copied-augments.test.ts::R341 / R328: the copied augment text is the copy's card text"
+        "test": "406-copied-augments.test.ts::CR 712.7: the copied augment text is the copy's card text"
       }
     ],
     "see": [
@@ -2438,28 +2378,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R341",
-          "quote": "The copied text is part of the card text the copy became"
+          "quote": "The copied text is part of the card text the copy became",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         },
         {
-          "ref": "R341",
-          "quote": "\"Erase all of its mods\" finds no mod to erase."
+          "quote": "\"Erase all of its mods\" finds no mod to erase.",
+          "adopted": "2026-10-10",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "406-copied-augments.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "See D-U16-6: whether a copy that begins after a strip is a \"later gain\".",
-    "sourceHashes": {
-      "R341": "d58bb9dc5bb76f89d02be0d1b9af492c5c60f1086cc7bd19d7fbbd23e7202a45"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.column-share",
@@ -2469,7 +2409,7 @@
     "examples": [
       {
         "text": null,
-        "test": "79-round17-layers.test.ts::R93 layer 5: {Inverted} is shared down the COLUMN"
+        "test": "79-round17-layers.test.ts::CR 802.1c layer 5: {Inverted} is shared down the COLUMN"
       }
     ],
     "see": [
@@ -2489,14 +2429,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2509,11 +2449,11 @@
     "examples": [
       {
         "text": "an ability fired by a unit in a Blessed column gains its controller life.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.22e the report"
       },
       {
         "text": "Powerful from the column doubles that damage too.",
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §2 every source-side attribute rides the same line"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 712.8a every source-side attribute rides the same line"
       }
     ],
     "see": [],
@@ -2521,29 +2461,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "The whole card gets the attributes while it's in the column. And so when it"
+          "quote": "The whole card gets the attributes while it's in the column. And so when it",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R93",
-          "quote": "Units in a column just share attributes in all situations"
+          "quote": "Units in a column just share attributes in all situations",
+          "adopted": "2026-08-23",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R93 quotes calebgannon for \"in all situations\".",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
-      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
-    }
+    "notes": "The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) quotes calebgannon for \"in all situations\".",
+    "sourceHashes": {}
   },
   {
     "key": "effects.column-share.battle-only",
@@ -2553,7 +2492,7 @@
     "examples": [
       {
         "text": null,
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 712.8b outside battle there are no columns at all"
       }
     ],
     "see": [],
@@ -2561,28 +2500,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "**This is narrower than it sounds, and the reason matters.** A column only exists"
+          "quote": "**This is narrower than it sounds, and the reason matters.** A column only exists",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "outside battle `effAttrs` *is* `ownAttrs` and nothing changes. R294 is not \"column"
+          "quote": "outside battle `effAttrs` *is* `ownAttrs` and nothing changes. R294 is not \"column",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.column-share.columns-only",
@@ -2609,14 +2548,14 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "427-cr-continuous-effects.test.ts"
       ]
     },
     "basis": "printed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
@@ -2651,14 +2590,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -2673,7 +2612,7 @@
     "examples": [
       {
         "text": null,
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 712.8e a modded (therefore Unstable) unit does not make its column-mate Unstable"
       }
     ],
     "see": [
@@ -2689,28 +2628,28 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "other things in the column. So a unit with Unstable from a mod doesn't \"give\""
+          "quote": "other things in the column. So a unit with Unstable from a mod doesn't \"give\"",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "Sluggish. They are special attributes."
+          "quote": "Sluggish. They are special attributes.",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.column-share.own-questions",
@@ -2720,11 +2659,11 @@
     "examples": [
       {
         "text": null,
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.12a {Feeble} block legality"
       },
       {
         "text": null,
-        "test": "298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it"
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.15d {Alluring} still originates from the unit that prints it"
       }
     ],
     "see": [
@@ -2734,28 +2673,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "It won't let the Feeble unit block, even if it has another unit in the"
+          "quote": "It won't let the Feeble unit block, even if it has another unit in the",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         },
         {
-          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
-          "quote": "it's a single trigger for the"
+          "quote": "it's a single trigger for the",
+          "adopted": "2026-09-16",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "298-column-attrs-outside-combat.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.what",
@@ -2776,17 +2715,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "safe point — the engine's state-based check. The end of every action is a safe"
+          "quote": "safe point — the engine's state-based check. The end of every action is a safe",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         },
         {
-          "ref": "R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306)",
-          "quote": "to exist in all zones other than in play/stack whenever SBAs are checked."
+          "quote": "to exist in all zones other than in play/stack whenever SBAs are checked.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts",
@@ -2794,12 +2734,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R152": "7acfd1f8cc66db708da47c2ea0ae4e1eebccd23e29ec475183a4ebaed7797bd9",
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.lethal",
@@ -2809,7 +2747,7 @@
     "examples": [
       {
         "text": "the turn's draw takes Dreadspawn Horror (\"I gain -1/-1 for each card in your hand\") to 0 defense, and it dies.",
-        "test": "380-no-action-ends-dead.test.ts::R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
       }
     ],
     "see": [
@@ -2829,13 +2767,13 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "A unit with 0 defense, or with damage equal to its defense, dies at the next"
+          "quote": "A unit with 0 defense, or with damage equal to its defense, dies at the next",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts",
@@ -2843,11 +2781,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "Deadly makes any damage from its source lethal (802); that is a property of the damage, not of the state check.",
-    "sourceHashes": {
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.when",
@@ -2857,15 +2794,15 @@
     "examples": [
       {
         "text": null,
-        "test": "380-no-action-ends-dead.test.ts::R313: a planning action that does not settle still ends with the dead unit gone"
+        "test": "380-no-action-ends-dead.test.ts::CR 713.3: a planning action that does not settle still ends with the dead unit gone"
       },
       {
         "text": "in Constructed, Dreadspawn Horror with 3 cards in hand is still in play after the draw of 4, and dies once its controller has put 2 back (5 cards in hand).",
-        "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5b constructed: 3 cards in hand nets to 5"
       },
       {
         "text": "in Constructed, Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase and lives.",
-        "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back"
+        "test": "380-no-action-ends-dead.test.ts::CR 503.5b constructed: drawing 4 does not kill before the 2 go back"
       }
     ],
     "see": [
@@ -2878,36 +2815,38 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R313",
-          "quote": "So no action — a draw, a draft, a recycle, a resource activation — may"
+          "quote": "So no action — a draw, a draft, a recycle, a resource activation — may",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         },
         {
-          "ref": "R313",
-          "quote": "An action that suspended is mid-resolution, not at a safe"
+          "quote": "An action that suspended is mid-resolution, not at a safe",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         },
         {
-          "ref": "R313",
-          "quote": "**Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+          "quote": "**Constructed's draw phase is one step.** Draw 4 and put 2 back are two",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         },
         {
-          "ref": "R313",
-          "quote": "actions, but a seat's units are not checked while that seat still owes its"
+          "quote": "actions, but a seat's units are not checked while that seat still owes its",
+          "adopted": "2026-10-06",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "380-no-action-ends-dead.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "The Constructed exception is the owner's call of 2026-10-06, recorded in R313. Round 2 removed the sentence 'A state check is not made while an effect is still resolving': R313 says only that a suspended action is not a safe point, and the verifier measured deaths checked inside a resolution (rule effects.state.when.mid-resolution, D-U16-16). See D-U16-15.",
-    "sourceHashes": {
-      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
-    }
+    "notes": "The Constructed exception is the owner's call of 2026-10-06, recorded in the owner ruling of 2026-10-06 (“No action ends with a dead…”). Round 2 removed the sentence 'A state check is not made while an effect is still resolving': The owner ruling of 2026-10-06 (“No action ends with a dead…”) says only that a suspended action is not a safe point, and the verifier measured deaths checked inside a resolution (rule effects.state.when.mid-resolution, D-U16-16). See D-U16-15.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.when.mid-resolution",
@@ -2928,13 +2867,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R237",
-          "quote": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
+          "quote": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise",
+          "adopted": "2026-08-28",
+          "from": "questions-round27 Q2; register@72de434"
         }
       ],
-      "history": [],
       "engine": [
         "engine.ts:addCounters",
         "engine.ts:checkDeaths"
@@ -2944,11 +2883,10 @@
       ]
     },
     "basis": "engine",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "No printed, designer or owner source rules on whether an effect's own changes are checked part-way through it. R237 records the encoding (a counter placement runs the death check), not a rules call. The verifier's round-2 probe (u16-r2-probes.test.ts, Pestilent Titan) measured a token's death before the last counter was placed, and quoted engine.ts: 'this.checkDeaths();   // sequential within the composite; triggers wait for settle()'. R237 was read from digital-rules.md, outside the pack. See D-U16-16.",
-    "sourceHashes": {
-      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
-    }
+    "notes": "No printed, designer or owner source rules on whether an effect's own changes are checked part-way through it. The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) records the encoding (a counter placement runs the death check), not a rules call. The verifier's round-2 probe (u16-r2-probes.test.ts, Pestilent Titan) measured a token's death before the last counter was placed, and quoted engine.ts: 'this.checkDeaths();   // sequential within the composite; triggers wait for settle()'. The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) was read from digital-rules.md, outside the pack. See D-U16-16.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.no-damage-needed",
@@ -2958,7 +2896,7 @@
     "examples": [
       {
         "text": "Rampart Guardian makes a unit Tough, then Reality Bender makes it Inverted, and it dies with no damage on it.",
-        "test": "79-round17-layers.test.ts::R226: report #114"
+        "test": "79-round17-layers.test.ts::CR 713.4: report #114"
       }
     ],
     "see": [
@@ -2969,34 +2907,33 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R66",
-          "quote": "drops defense to 0 kills at the next death check exactly as it should."
+          "quote": "drops defense to 0 kills at the next death check exactly as it should.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
         },
         {
-          "ref": "R178 (section 4: what a moved mod carries; its budget claim corrected by R331)",
-          "quote": "a host that loses a `+X/+X` mod can die of it."
+          "quote": "a host that loses a `+X/+X` mod can die of it.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R226",
-          "quote": "the unit dies, because"
+          "quote": "the unit dies, because",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
-      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a",
-      "R66": "effa2095307431ee86e4abe37d0832f0c6b05332d4f788c4c3024a8468ba8b9c"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.no-damage-needed.pure",
@@ -3016,24 +2953,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R226",
-          "quote": "`{Pure}` is NOT an escape."
+          "quote": "`{Pure}` is NOT an escape.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "427-cr-continuous-effects.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.tokens",
@@ -3043,7 +2979,7 @@
     "examples": [
       {
         "text": "A Hooba-Mon token is exchanged out of play by Skittering Blight. It goes to the bin, and the state check then erases it from there.",
-        "test": "129-disposal-tail.test.ts::R153 (iv): a TOKEN body with no mods takes the token sweep"
+        "test": "129-disposal-tail.test.ts::CR 410.7 (iv): a TOKEN body with no mods takes the token sweep"
       }
     ],
     "see": [
@@ -3054,24 +2990,21 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306)",
-          "quote": "For all intents and purposes a token is a normal thing that just ceases"
+          "quote": "For all intents and purposes a token is a normal thing that just ceases",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306)",
-          "quote": "to exist in all zones other than in play/stack whenever SBAs are checked."
+          "quote": "to exist in all zones other than in play/stack whenever SBAs are checked.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R69 (the token zone sweep and its timing; its Unstable order amended by R137, its token-trash part reversed by R306)",
-          "quote": "state based effects happen to erase it and then"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R69",
-          "relation": "its subsection that a dying token is trashed was reversed by R306"
+          "quote": "state based effects happen to erase it and then",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3080,12 +3013,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
-    "notes": "R69 quotes Caleb 2023-09-12 for the timing.",
-    "sourceHashes": {
-      "R152": "7acfd1f8cc66db708da47c2ea0ae4e1eebccd23e29ec475183a4ebaed7797bd9",
-      "R69": "4765548d7e5280fe64527ba6b02f2f307ddb47cce7eb72a9ff53142ae02ff9b4"
-    }
+    "notes": "The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) quotes Caleb 2023-09-12 for the timing.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.together",
@@ -3095,7 +3026,7 @@
     "examples": [
       {
         "text": "Muck Rummager dies from combat damage in the same batch as an ally, and still triggers on that ally being trashed.",
-        "test": "258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
+        "test": "258-simultaneous-disposal-listeners.test.ts::CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
       }
     ],
     "see": [
@@ -3106,24 +3037,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R278",
-          "quote": "A unit destroyed as part of one death batch still hears"
+          "quote": "A unit destroyed as part of one death batch still hears",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "258-simultaneous-disposal-listeners.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R278": "7600281fcd0d850ecc6a90e36891616608e829fab1907b6f897508b47bcd230d"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.together.limits",
@@ -3145,28 +3075,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R278",
-          "quote": "A dead body is still not a legal target,"
+          "quote": "A dead body is still not a legal target,",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         },
         {
-          "ref": "R278",
-          "quote": "It does not hear its OWN departure through that"
+          "quote": "It does not hear its OWN departure through that",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "427-cr-continuous-effects.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
-    "notes": "R278 states this as the current answer and says it does not settle it. See D-U16-12.",
-    "sourceHashes": {
-      "R278": "7600281fcd0d850ecc6a90e36891616608e829fab1907b6f897508b47bcd230d"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“a body that dies in a…”) states this as the current answer and says it does not settle it. See D-U16-12.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.absent",
@@ -3191,24 +3121,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R270",
-          "quote": "The sweep is deferred to the moment"
+          "quote": "The sweep is deferred to the moment",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "250-ally-count-and-absence.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.absent.home",
@@ -3228,24 +3157,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R270",
-          "quote": "so an \"ally\" is a unit that is *here*, and a counterattacker is not here. The"
+          "quote": "so an \"ally\" is a unit that is *here*, and a counterattacker is not here. The",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "250-ally-count-and-absence.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "low",
-    "notes": "R270 calls this the current answer and asks the owner to rule on it: D-U16-7.",
-    "sourceHashes": {
-      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a"
-    }
+    "notes": "The owner ruling of 2026-08-30 (“A sent counterattacker is not death-checked”) calls this the current answer and asks the owner to rule on it: D-U16-7.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.state.dying",
@@ -3255,7 +3183,7 @@
     "examples": [
       {
         "text": "Banishment erases a unit, and no death is recorded.",
-        "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no"
+        "test": "145-erase-routes.test.ts::(vii): Banishment still fires no"
       }
     ],
     "see": [
@@ -3266,25 +3194,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R302",
-          "quote": "sacrifices and Unstable erasures included"
+          "quote": "sacrifices and Unstable erasures included",
+          "adopted": "2026-09-20",
+          "from": "register@72de434"
         },
         {
-          "ref": "R157 (sections 3, 10 and 14, which stand)",
-          "quote": "It's not a death, but it is a despawn and trashing."
+          "quote": "It's not a death, but it is a despawn and trashing.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R172 (sections 1 and 4: an erase is not a death, and the mid-battle steal; its erased-pile seat corrected by R262)",
-          "quote": "An erase is still not a death and still not a trash."
+          "quote": "An erase is still not a death and still not a trash.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
         },
         {
-          "ref": "R348",
-          "quote": "A deleted unit dies."
+          "quote": "A deleted unit dies.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "145-erase-routes.test.ts",
@@ -3292,14 +3223,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
-      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d",
-      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6",
-      "R348": "03f8588ee647163ef0a44600f19ad5b068177c844a0fe274b076213f16cd688f"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.last-known.what",
@@ -3324,17 +3251,18 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R325",
-          "quote": "unit was the instant it left play."
+          "quote": "unit was the instant it left play.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R325",
-          "quote": "controller, region, its live attributes (column-shared included, R294), power,"
+          "quote": "controller, region, its live attributes (column-shared included, R294), power,",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
@@ -3342,10 +3270,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
       "RAQ 1353895783266516992#4": "071f627f653444ea80a505039229d2a4f9edad4b696e005b47a90ad3890e490f"
     }
   },
@@ -3372,14 +3300,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3402,11 +3330,11 @@
       },
       {
         "text": null,
-        "test": "401-raq-fix-stack.test.ts::R325 Deathglow Strider"
+        "test": "401-raq-fix-stack.test.ts::CR 714.3 Deathglow Strider"
       },
       {
         "text": null,
-        "test": "401-raq-fix-stack.test.ts::R325 Spewing Mushroom"
+        "test": "401-raq-fix-stack.test.ts::CR 714.3 Spewing Mushroom"
       }
     ],
     "see": [],
@@ -3414,21 +3342,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R325",
-          "quote": "Where the effect reads its source (its attributes, its stats, the"
+          "quote": "Where the effect reads its source (its attributes, its stats, the",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R325",
-          "quote": "Deathglow Strider (last-known defense), Slag Spewer, Spewing Mushroom"
+          "quote": "Deathglow Strider (last-known defense), Slag Spewer, Spewing Mushroom",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R325",
-          "quote": "(last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God"
+          "quote": "(last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "401-raq-fix-stack.test.ts",
@@ -3436,11 +3366,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "The bound tests use unmodified sources, so they show the trigger still works with its source gone but cannot tell last-known stats from printed ones. The verifier's round-2 probes (data/comprehensive-rules/build/probes/U16/u16-r2-probes.test.ts) measured the two illustrative examples with modified stats: Deathglow Strider dealt 4, Spewing Mushroom made Poison 3. Card text read from printed.json, outside the pack.",
-    "sourceHashes": {
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.last-known.formation",
@@ -3450,11 +3379,11 @@
     "examples": [
       {
         "text": "Hooba-Lin, killed under its own attack trigger, remembers its formation and the 1/1 joins it.",
-        "test": "108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger"
+        "test": "108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger"
       },
       {
         "text": "Embermaw Fledgling, gone before its trigger resolves, still counts the attackers it stood with.",
-        "test": "401-raq-fix-stack.test.ts::R325 Embermaw Fledgling"
+        "test": "401-raq-fix-stack.test.ts::CR 714.4 Embermaw Fledgling"
       }
     ],
     "see": [
@@ -3470,16 +3399,11 @@
         }
       ],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R325",
-          "quote": "`formationSeatOf` uses it while the battle the unit stood in is still on"
-        }
-      ],
-      "history": [
-        {
-          "ruling": "R225",
-          "relation": "its first grade (a source that died names no formation, so the Hoobas placed nothing) was reversed by R325"
+          "quote": "`formationSeatOf` uses it while the battle the unit stood in is still on",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -3489,10 +3413,10 @@
       ]
     },
     "basis": "mixed",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
       "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
     }
   },
@@ -3517,14 +3441,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "medium",
     "notes": "See D-U16-8: the same thread has a gone source remember its formation but not its neighbours.",
     "sourceHashes": {
@@ -3539,7 +3463,7 @@
     "examples": [
       {
         "text": "Echo of Despair, gone before its after-combat trigger resolves, still makes its copy.",
-        "test": "401-raq-fix-stack.test.ts::R325 Echo of Despair"
+        "test": "401-raq-fix-stack.test.ts::CR 714.6 Echo of Despair"
       }
     ],
     "see": [
@@ -3549,17 +3473,18 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R325",
-          "quote": "(last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God"
+          "quote": "(last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         },
         {
-          "ref": "R325",
-          "quote": "(copy of its last-known face) and Lumengrove Lurker."
+          "quote": "(copy of its last-known face) and Lumengrove Lurker.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "401-raq-fix-stack.test.ts",
@@ -3568,11 +3493,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "medium",
     "notes": "",
-    "sourceHashes": {
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.last-known.live-source",
@@ -3602,14 +3526,14 @@
         }
       ],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts"
       ]
     },
     "basis": "designer",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
     "sourceHashes": {
@@ -3624,7 +3548,7 @@
     "examples": [
       {
         "text": "a Hooba-Lin alive but out of the formation makes no token.",
-        "test": "108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation"
+        "test": "108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation"
       }
     ],
     "see": [
@@ -3634,29 +3558,28 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R225 (its second grade: a source alive and out of formation; its dead-source half reversed by R325)",
-          "quote": "predicate for this phrase; IN A FORMATION is the right one."
+          "quote": "predicate for this phrase; IN A FORMATION is the right one.",
+          "adopted": "2026-08-28",
+          "from": "register@72de434"
         },
         {
-          "ref": "R325",
-          "quote": "names no formation."
+          "quote": "names no formation.",
+          "adopted": "2026-10-09",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "108-formation-class.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R225": "1f75c14d516cb37d2dcc1b90fd62e8f808ad5d3fb1fdf808e54c380667a3e1c1",
-      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.last-known.departure-facts",
@@ -3666,7 +3589,7 @@
     "examples": [
       {
         "text": null,
-        "test": "62-death-facts.test.ts::R70: the death event carries token, verb, owner, region and destination"
+        "test": "62-death-facts.test.ts::CR 714.9: the death event carries token, verb, owner, region and destination"
       }
     ],
     "see": [],
@@ -3674,13 +3597,13 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R70",
-          "quote": "Facts about a leaving unit ride the EVENT"
+          "quote": "Facts about a leaving unit ride the EVENT",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "62-death-facts.test.ts",
@@ -3688,11 +3611,10 @@
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R70": "312b8e32266c89e279f69cda34416803de7c707afb44468168fb6b8bc9678f2b"
-    }
+    "sourceHashes": {}
   },
   {
     "key": "effects.last-known.departure-facts.region",
@@ -3702,7 +3624,7 @@
     "examples": [
       {
         "text": null,
-        "test": "62-death-facts.test.ts::R70: a \"when I die\" trigger resolves in the region the unit DIED in"
+        "test": "62-death-facts.test.ts::CR 714.9a: a \"when I die\" trigger resolves in the region the unit DIED in"
       }
     ],
     "see": [
@@ -3712,27 +3634,27 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "rulings": [
+      "owner": [
         {
-          "ref": "R70",
-          "quote": "The fix is the general one: `PendingTrigger` carries the **region its source"
+          "quote": "The fix is the general one: `PendingTrigger` carries the **region its source",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         },
         {
-          "ref": "R70",
-          "quote": "source still uses its CURRENT region, because it may legitimately have moved"
+          "quote": "source still uses its CURRENT region, because it may legitimately have moved",
+          "adopted": "2026-08-22",
+          "from": "register@72de434"
         }
       ],
-      "history": [],
       "engine": [],
       "tests": [
         "62-death-facts.test.ts"
       ]
     },
     "basis": "owner",
+    "scope": "game",
     "confidence": "high",
     "notes": "",
-    "sourceHashes": {
-      "R70": "312b8e32266c89e279f69cda34416803de7c707afb44468168fb6b8bc9678f2b"
-    }
+    "sourceHashes": {}
   }
 ]

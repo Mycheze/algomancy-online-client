@@ -1,4 +1,4 @@
-/* R194 / CARD-TODO #55 — THE ONE TOKEN LOSS NOBODY WAS TOLD ABOUT.
+/* CR D2.6 / CARD-TODO #55 — THE ONE TOKEN LOSS NOBODY WAS TOLD ABOUT.
  *
  * ── THE REPORT, AND THE HOLE LEFT IN IT
  *
@@ -31,9 +31,9 @@
  *    windows and in no round-1 window at all — which makes a round-2 decline
  *    the difference between a live Fireball and nothing.
  *
- * §2 THE GAP, closed. R194 announces the loss inside `startRegroup`, per seat,
+ * §2 THE GAP, closed. The announcement (CR D2.6a) is made inside `startRegroup`, per seat,
  *    before the erase. Route (1) — opening the window the decline skips — was
- *    rejected on measurement, not taste; see docs/digital-rules.md ## R194.
+ *    rejected on measurement, not taste (the token-loss ruling, now CR D2.6a).
  *
  * §3 THE CONTROLS, which are the ORIGINAL REPORT: the pass confirm still fires
  *    on the pass that reaches Regroup, and on no other window of the same
@@ -79,7 +79,7 @@ function tokensAtHome(seed: number, cards: [string, number][] = [['Fireball', 2]
   return { h, A, D, atk, def, toks };
 }
 
-/** every line R194 wrote into this batch of events */
+/** every token-loss announcement line (CR D2.6a) in this batch of events */
 const lossLines = (evs: readonly EngineEvent[]): EngineEvent[] =>
   evs.filter(e => /unused spell token\(s\) to regroup/.test(e.msg));
 
@@ -265,7 +265,7 @@ test('[CT-55] the client puts the announcement in front of the player who lost t
   // only surface it was ever put on was the game log, which report #131 has
   // just hidden by default. The line still reaches the screen and this guard
   // still holds it down; what it no longer holds down is the word IN FRONT OF.
-  // Flagged for the owner in R253 rather than papered over here: a second
+  // Flagged for the owner in the game-log ruling (now CR D6.15a) rather than papered over here: a second
   // surface for it (a toast, the way CT-78's glimpse got its own notice) is a
   // product call, not a refactor.
   ui.update(h.state, legalActions(h.state, A), { events: evs });
@@ -276,24 +276,24 @@ test('[CT-55] the client puts the announcement in front of the player who lost t
   closeLog(ui);
 });
 
-/* ── §2b. THE REGRESSION R194 ALMOST SHIPPED ───────────────────────────
+/* ── §2b. THE REGRESSION THE TOKEN-LOSS ANNOUNCEMENT ALMOST SHIPPED ───────────────────────────
  *
- * `ev()` keeps the R65 erased pile centrally: ANY `'erased'` event carrying a
+ * `ev()` keeps the CR 407.1 erased pile centrally: ANY `'erased'` event carrying a
  * numeric `seat` has its `cards` (or `card`) pushed onto that seat's public
- * erased list. R194's announcement is an `'erased'` event with a `seat`, so
+ * erased list. CR D2.6a's announcement is an `'erased'` event with a `seat`, so
  * passing `cards` put every unused spell token into the pile.
  *
- * That reverses a rule stated TEN LINES BELOW the announcement, in the R89
+ * That reverses a rule stated TEN LINES BELOW the announcement, in the spell-token regroup
  * block: *"The augment reaches the public erased pile (R65) exactly as it
  * would if the token had been cast and discharged; the TOKEN itself does not,
  * because a spell token is not a card and has never been recorded there."*
  *
  * The log line already names the tokens as text and `ids` carries them for the
  * client, so the payload key was pure leakage into a zone query. Found by the
- * round-27 class-widening audit, hours after R194 landed — the announcement
+ * round-27 class-widening audit, hours after the token-loss announcement (CR D2.6a) landed — the announcement
  * was correct and its PAYLOAD was not.
  */
-test('[CT-55] the announcement does not put spell tokens into the public erased pile (R65)', () => {
+test('[CT-55] the announcement does not put spell tokens into the public erased pile', () => {
   const { h, A, D, toks } = tokensAtHome(1661);
   assert.equal(h.state.entities[toks[0]!]!.kind, 'spellToken', 'fixture: a token to lose');
   const before = [...(h.state.players[A]!.erased ?? [])];
@@ -302,7 +302,7 @@ test('[CT-55] the announcement does not put spell tokens into the public erased 
   assert.equal(h.state.entities[toks[0]!], undefined, 'fixture: the token really was erased');
   assert.deepEqual(h.state.players[A]!.erased ?? [], before,
     'a spell token is not a card and has never been recorded in the erased pile — '
-    + 'the R89 block ten lines below startRegroup says so');
+    + 'the spell-token regroup block ten lines below startRegroup says so');
 });
 
 /* ── §3. the controls: report #66 itself, still fixed ─────────────────── */
@@ -350,7 +350,7 @@ test('[66] control: …and on no other window of the same battle', () => {
       continue;
     }
     if (s.battle!.step === 'blocks') {
-      // R87: only round 1 has a counterattack to send anybody out with
+      // CR 606.5: only round 1 has a counterattack to send anybody out with
       h.do({ type: 'declareBlocks', seat: s.battle!.defender, blocks: {},
         send: s.battle!.round === 1 ? [def] : [] });
       continue;

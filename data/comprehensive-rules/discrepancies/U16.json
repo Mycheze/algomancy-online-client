@@ -4,7 +4,7 @@
     "kind": "a-sources-disagree",
     "rule": "effects.continuous.layers.attribute-order",
     "tier": 1,
-    "summary": "The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough \"augmented onto\" a Balanced unit is doubled, then balanced; its last sentence says Tough \"applied to\" a Balanced unit is balanced, then doubled. R19 says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.",
+    "summary": "The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough \"augmented onto\" a Balanced unit is doubled, then balanced; its last sentence says Tough \"applied to\" a Balanced unit is balanced, then doubled. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.",
     "seeAlso": [
       {
         "id": "D-U19-1",
@@ -33,11 +33,11 @@
         "quote": "A: Attributes apply in order from top to bottom. So if"
       },
       {
-        "source": "R19",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
       },
       {
-        "source": "R19",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
       }
     ],
@@ -53,7 +53,7 @@
         },
         {
           "label": "B",
-          "text": "The Manual's two sentences describe the same case and contradict each other, so the engine's order (R19: printed attributes first) stands: balanced, then doubled.",
+          "text": "The Manual's two sentences describe the same case and contradict each other, so the engine's order (the owner ruling of 2026-08-18 (“Stat layer 4 application order”): printed attributes first) stands: balanced, then doubled.",
           "table": "As today: the same unit is a 2/4."
         }
       ],
@@ -66,7 +66,7 @@
     "kind": "a-sources-disagree",
     "rule": "effects.continuous.layers.inverted-last",
     "tier": 4,
-    "summary": "The Manual lists Inverted as its own layer after the attribute layer, and R226 makes the result independent of grant order. Caleb, quoted in R93, said \"Tough inverted balanced would be different\" from Tough balanced inverted, which reads as Inverted taking a place inside layer 4.",
+    "summary": "The Manual lists Inverted as its own layer after the attribute layer, and the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”) makes the result independent of grant order. Caleb, quoted in the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”), said \"Tough inverted balanced would be different\" from Tough balanced inverted, which reads as Inverted taking a place inside layer 4.",
     "seeAlso": [
       {
         "id": "D-U19-4",
@@ -79,33 +79,33 @@
         "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
       },
       {
-        "source": "R226",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "Order-independence is the substantive claim"
       },
       {
-        "source": "R93",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> **calebgannon:** \"Tough inverted balanced would be different\" … \"It would survive as a 1/1\""
       },
       {
-        "source": "R93",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "The engine ships the clean layer — it is the reading his own worked example uses, it is"
       },
       {
-        "source": "R93",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "\"Tough inverted balanced is basically impossible to make happen."
       }
     ],
-    "resolution": "Not a question: the two readings differ only for a unit that gains Tough, then Inverted, then Balanced, and Caleb himself says that order is \"basically impossible to make happen\", because Tough and Inverted together kill the unit first (R93; R226: they leave defense 0). The rules follow the Manual's layer list (Inverted after all of layer 4), which every reachable board agrees with. Caleb's \"Tough inverted balanced would be different\" is recorded; if a card ever grants the three in that order at once, his interleaved reading applies, and R93 names the engine change."
+    "resolution": "Not a question: the two readings differ only for a unit that gains Tough, then Inverted, then Balanced, and Caleb himself says that order is \"basically impossible to make happen\", because Tough and Inverted together kill the unit first (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”); the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”): they leave defense 0). The rules follow the Manual's layer list (Inverted after all of layer 4), which every reachable board agrees with. Caleb's \"Tough inverted balanced would be different\" is recorded; if a card ever grants the three in that order at once, his interleaved reading applies, and the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) names the engine change."
   },
   {
     "id": "D-U16-4",
     "kind": "b-engine-only",
     "rule": "effects.continuous.switch",
     "tier": 3,
-    "summary": "The sources are silent on where an effect that switches power and defense applies in the stat layers. The Manual's six layers include no switch, and R66 calls the engine's handling an approximation and the question an open ruling.",
+    "summary": "The sources are silent on where an effect that switches power and defense applies in the stat layers. The Manual's six layers include no switch, and the owner ruling of 2026-08-21 (“Base stats are REPLACED, not adjusted…”) calls the engine's handling an approximation and the question an open ruling.",
     "sides": [
       {
-        "source": "R66",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "Where a real switch belongs is an OPEN RULING, and this line previously guessed"
       },
       {
@@ -123,7 +123,7 @@
     "summary": "The sources are silent on a general dependency rule: how one continuous effect that changes whether another applies is ordered against it. They give only the layer order, timestamps within a layer, and one case (two static strippers whose sources strip each other).",
     "sides": [
       {
-        "source": "R328",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "static-vs-static still resolves in one pass"
       },
       {
@@ -138,10 +138,10 @@
     "kind": "a-sources-disagree",
     "rule": "effects.stripping.copied-text",
     "tier": 4,
-    "summary": "R341 says text a copy inherits is as old as the copy's printed text, so any strip takes it. The RAQ says an attribute or ability a unit gains after a strip is not taken. The two part only for a copy that begins on a unit already stripped.",
+    "summary": "The owner ruling of 2026-10-10 (“A copy's copied augments work: it…”) says text a copy inherits is as old as the copy's printed text, so any strip takes it. The RAQ says an attribute or ability a unit gains after a strip is not taken. The two part only for a copy that begins on a unit already stripped.",
     "sides": [
       {
-        "source": "R341",
+        "source": "owner ruling, adopted 2026-10-10",
         "quote": "so it is exactly as old as the copy's printed text (R328)"
       },
       {
@@ -149,7 +149,7 @@
         "quote": "if any unit in play later gains Attribute or Ability, then timestamps takes precedence"
       }
     ],
-    "resolution": "Not a question today. R341 and the RAQ agree for Borrower of Forms, which enters play already a copy. They part only for an until-regroup copy (Apex Prime) made on a unit already stripped by Suppression Field or Formless: the RAQ's \"later gains\" (designer authority) would let the copied text survive the earlier strip if becoming a copy is gaining abilities, and R341 says it is not. The rule states R341. A question for the owner only if that board arises."
+    "resolution": "Not a question today. The owner ruling of 2026-10-10 (“A copy's copied augments work: it…”) and the RAQ agree for Borrower of Forms, which enters play already a copy. They part only for an until-regroup copy (Apex Prime) made on a unit already stripped by Suppression Field or Formless: the RAQ's \"later gains\" (designer authority) would let the copied text survive the earlier strip if becoming a copy is gaining abilities, and the owner ruling of 2026-10-10 (“A copy's copied augments work: it…”) says it is not. The rule states the owner ruling of 2026-10-10 (“A copy's copied augments work: it…”). A question for the owner only if that board arises."
   },
   {
     "id": "D-U16-8",
@@ -174,10 +174,10 @@
     "kind": "g-other",
     "rule": "effects.last-known.what",
     "tier": 4,
-    "summary": "The sources are silent on what an ability that triggers on its own source leaving play (\"when I die\") reads when it reads the source itself (its power, its attributes). R325 says such a trigger gets no last-known snapshot in the engine, and that no card in the pool needs one.",
+    "summary": "The sources are silent on what an ability that triggers on its own source leaving play (\"when I die\") reads when it reads the source itself (its power, its attributes). The owner ruling of 2026-10-09 (“An effect whose source has left…”) says such a trigger gets no last-known snapshot in the engine, and that no card in the pool needs one.",
     "sides": [
       {
-        "source": "R325",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "A trigger queued *after* its source left play (\"when I die\") gets no"
       }
     ],
@@ -188,10 +188,10 @@
     "kind": "b-engine-only",
     "rule": "effects.copies.spells.modular",
     "tier": 3,
-    "summary": "R164 says a Virus applied to the original spell while it was on the stack is not copied, so its attributes do not reach the copy. This is named as an engine approximation; no printed or designer source covers it. Caleb is quoted only for {Modular} mods, which are copied.",
+    "summary": "The owner ruling of 2026-08-25 (“a COPY of a spell is…”) says a Virus applied to the original spell while it was on the stack is not copied, so its attributes do not reach the copy. This is named as an engine approximation; no printed or designer source covers it. Caleb is quoted only for {Modular} mods, which are copied.",
     "sides": [
       {
-        "source": "R164",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "onto the ORIGINAL while it sat on the stack are **not** copied, so their"
       }
     ],
@@ -202,28 +202,28 @@
     "kind": "c-owner-call-only",
     "rule": "effects.control.formation",
     "tier": 3,
-    "summary": "That a unit stolen during a battle stays out of formation until regroup, attacking and blocking for nobody, is the owner's call on Download. No printed or designer source covers it, and R8 had said the stolen unit joins its new controller's formations.",
+    "summary": "That a unit stolen during a battle stays out of formation until regroup, attacking and blocking for nobody, is the owner's call on Download. No printed or designer source covers it, and the owner ruling of 2026-08-18 (“Control change […]”) had said the stolen unit joins its new controller's formations.",
     "sides": [
       {
-        "source": "R8",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "including joining the new controller's formations"
       },
       {
-        "source": "R172",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "it sits out until regroup."
       }
     ],
-    "resolution": "Owner call. The rule states R172; R8's formation clause is cited as history."
+    "resolution": "Owner call. The rule states the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”); the owner ruling of 2026-08-18 (“Control change […]”)’s formation clause is cited as history."
   },
   {
     "id": "D-U16-12",
     "kind": "g-other",
     "rule": "effects.state.together.limits",
     "tier": 4,
-    "summary": "R278 settles only that units dying in one batch hear each other's departures. It explicitly leaves open whether a batch-mate is visible to targeting or to a count made during the batch, while stating that today it is not.",
+    "summary": "The owner ruling of 2026-08-30 (“a body that dies in a…”) settles only that units dying in one batch hear each other's departures. It explicitly leaves open whether a batch-mate is visible to targeting or to a count made during the batch, while stating that today it is not.",
     "sides": [
       {
-        "source": "R278",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "Whether a batch-mate should also be visible to **targeting** or to a"
       }
     ],
@@ -234,62 +234,62 @@
     "kind": "g-other",
     "rule": "effects.state.tokens",
     "tier": 4,
-    "summary": "The owner's words in R152 (\"a token ... ceases to exist in all zones other than in play/stack whenever SBAs are checked\"), read literally, would send a token mod through a bin before it ceases to exist. R69 says a token mod has no card of its own and never enters a bin. R152 records this as \"reported, not resolved\".",
+    "summary": "The owner's words in the owner ruling of 2026-08-25 (“the other three ways an exchange…”) (\"a token ... ceases to exist in all zones other than in play/stack whenever SBAs are checked\"), read literally, would send a token mod through a bin before it ceases to exist. The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) says a token mod has no card of its own and never enters a bin. The owner ruling of 2026-08-25 (“the other three ways an exchange…”) records this as \"reported, not resolved\".",
     "sides": [
       {
-        "source": "R152",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "The one place this ruling and R69 do not meet — reported, not resolved"
       },
       {
-        "source": "R152",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "R69 says the opposite for mods"
       }
     ],
-    "resolution": "The rule states the token sweep for token bodies; a token mod ceasing to exist is 410.4c (R69). Question for the owner only if the judge's CR sends a token mod through a bin."
+    "resolution": "The rule states the token sweep for token bodies; a token mod ceasing to exist is 410.4c (owner ruling of 2026-08-22, “A token entering a ZONE is…”). Question for the owner only if the judge's CR sends a token mod through a bin."
   },
   {
     "id": "D-U16-14",
     "kind": "a-sources-disagree",
     "rule": "effects.stripping.what.abilities",
     "tier": 2,
-    "summary": "Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops applying its own static abilities. Printed text strips all abilities and R62 says a static is an ability; R62 and R328 encode static-vs-static in one pass that reads only the one-time stamp, so such a unit keeps applying its statics. R62 justifies the one pass only by the mutual case.",
+    "summary": "Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops applying its own static abilities. Printed text strips all abilities and the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) says a static is an ability; the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) and the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”) encode static-vs-static in one pass that reads only the one-time stamp, so such a unit keeps applying its statics. The owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) justifies the one pass only by the mutual case.",
     "sides": [
       {
         "source": "card: Transmogrifant",
         "quote": "Your other units gain +2/+2 and lose all attributes and abilities."
       },
       {
-        "source": "R62",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "radiates — a static *is* an ability — and both R38 replacement hooks."
       },
       {
-        "source": "R62",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "*entity flag* is set, not one silenced by another static. So a unit silenced by"
       },
       {
-        "source": "R62",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "a spell stops radiating immediately, while two Monkes — each the other's"
       },
       {
-        "source": "R328",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
       }
     ],
-    "resolution": "Settled by printed text: Transmogrifant's \"lose all attributes and abilities\" takes every ability, and a static is an ability (R62). R62's one-pass sentence is reasoned only from the mutual case, which effects.stripping.mutual keeps. effects.stripping.what.abilities states print; the engine keeps a one-sided stripped unit's statics on: F-U16-3 (CT-256)."
+    "resolution": "Settled by printed text: Transmogrifant's \"lose all attributes and abilities\" takes every ability, and a static is an ability (owner ruling of 2026-08-21, “The suppression layer: \"loses all attributes…”). The owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”)’s one-pass sentence is reasoned only from the mutual case, which effects.stripping.mutual keeps. effects.stripping.what.abilities states print; the engine keeps a one-sided stripped unit's statics on: F-U16-3 (CT-256)."
   },
   {
     "id": "D-U16-16",
     "kind": "b-engine-only",
     "rule": "effects.state.when.mid-resolution",
     "tier": 3,
-    "summary": "The sources are silent on whether deaths are checked part-way through an effect's resolution. R313 makes the end of every action a safe point and says a suspended action is not at one; it does not say whether the effect's own changes are checked as they happen. The engine checks after each counter placement and after each part of a composite effect, so units an 'each unit' effect kills (Pestilent Titan) die one at a time, not together.",
+    "summary": "The sources are silent on whether deaths are checked part-way through an effect's resolution. The owner ruling of 2026-10-06 (“No action ends with a dead…”) makes the end of every action a safe point and says a suspended action is not at one; it does not say whether the effect's own changes are checked as they happen. The engine checks after each counter placement and after each part of a composite effect, so units an 'each unit' effect kills (Pestilent Titan) die one at a time, not together.",
     "sides": [
       {
-        "source": "R313",
+        "source": "owner ruling, adopted 2026-10-06",
         "quote": "safe point — the engine's state-based check. The end of every action is a safe"
       },
       {
-        "source": "R237",
+        "source": "owner ruling, adopted 2026-08-28",
         "quote": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
       },
       {

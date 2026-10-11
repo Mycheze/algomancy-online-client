@@ -1,4 +1,4 @@
-/* R75 — joining a formation, and what "adjacent" means.
+/* CR 602.6, 603.2a — joining a formation, and what "adjacent" means.
  *
  * Two rulings from Bena, 2026-08-21, and one engine primitive each.
  *
@@ -12,7 +12,7 @@
  *    formation) it's referring to its sides and above/below. Nothing diagonal."
  *
  * `E.formationSlots` / `E.placeInFormation` answer the first; `E.adjacentSlots`
- * answers the second (with R304, 2026-09-25, opening the ends of the attacking
+ * answers the second (with the edge ruling of 2026-09-25, now CR 603.3, opening the ends of the attacking
  * line to it). Five cards were each doing their own version of the
  * first, and one card its own version of the second.
  *
@@ -66,7 +66,7 @@ function board(seed: number, n = 2): { h: Harness; A: Seat; D: Seat; atk: Entity
 
 /* ── the legal placement set ───────────────────────────────────────────── */
 
-test('R75: both ENDS and the back slot of every one-unit column are offered', () => {
+test('CR 602.6a: both ENDS and the back slot of every one-unit column are offered', () => {
   const { h, A } = board(6600, 2);
   assert.deepEqual(h.q.formationSlots(A).map(s => s.label), [
     'a new column on the left',
@@ -76,7 +76,7 @@ test('R75: both ENDS and the back slot of every one-unit column are offered', ()
   ]);
 });
 
-test('R75: a two-unit column offers no back slot', () => {
+test('CR 602.6a: a two-unit column offers no back slot', () => {
   const h = new Harness(6601);
   toDeployment(h);
   const A = h.state.initiative;
@@ -92,7 +92,7 @@ test('R75: a two-unit column offers no back slot', () => {
   ]);
 });
 
-test('R75: "either side" means the two ENDS — no insertion between two columns', () => {
+test('CR 602.6b: "either side" means the two ENDS — no insertion between two columns', () => {
   // stated as a reading in the rules entry: the ruling says "to either side of
   // the existing units", and the engine reads "the existing units" as the line
   // as a whole rather than as any one column
@@ -102,7 +102,7 @@ test('R75: "either side" means the two ENDS — no insertion between two columns
   assert.deepEqual(newColumns.map(s => s.end), ['left', 'right']);
 });
 
-test('R75: a formation you are not standing in cannot be joined at all', () => {
+test('CR 602.6k: a formation you are not standing in cannot be joined at all', () => {
   const h = new Harness(6603);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -114,10 +114,10 @@ test('R75: a formation you are not standing in cannot be joined at all', () => {
     'the defender has declared no blocks — there is no formation of theirs to widen');
 });
 
-test('R75: a full BLOCKING formation offers nothing, and the effect says why', () => {
+test('CR 602.6c: a full BLOCKING formation offers nothing, and the effect says why', () => {
   // the attacker's line can always widen at an end, so "no open position" is a
   // defender's problem: a blocking column is keyed to an attacking column
-  // (R72), so a new one has no index to exist at
+  // (CR 602.6c), so a new one has no index to exist at
   const h = new Harness(6604);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -140,7 +140,7 @@ test('R75: a full BLOCKING formation offers nothing, and the effect says why', (
 
 /* ── the choice itself ─────────────────────────────────────────────────── */
 
-test('R75: exactly one legal placement is auto-picked, with no decision raised', () => {
+test('CR 602.6d: exactly one legal placement is auto-picked, with no decision raised', () => {
   const h = new Harness(6605);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -160,7 +160,7 @@ test('R75: exactly one legal placement is auto-picked, with no decision raised',
   finishBattle(h);
 });
 
-test('R75: the chooser is the EFFECT\'s controller, and declining is only offered when optional', () => {
+test('CR 602.6: the chooser is the EFFECT\'s controller, and declining is only offered when optional', () => {
   const { h, A, atk } = board(6606, 1);
   const e = new E(h.state);
   const tok = e.spawnUnit(A, 'Unit Token', h.state.battle!.region, { token: true });
@@ -182,7 +182,7 @@ test('R75: the chooser is the EFFECT\'s controller, and declining is only offere
 
 /* ── the dangerous one: a column opened at index 0 ─────────────────────── */
 
-test('R75: opening a column on the LEFT re-keys every block and every column counter', () => {
+test('CR 603.5a: opening a column on the LEFT re-keys every block and every column counter', () => {
   const { h, A, D, atk } = board(6607, 2);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   // give column 1 a block and a column-scoped ledger, then push a column in
@@ -209,7 +209,7 @@ test('R75: opening a column on the LEFT re-keys every block and every column cou
   assert.equal(h.q.battleCounter(region, h.q.colCounterKey(1, 'connected')), 0);
 });
 
-test('R75: opening a column on the RIGHT disturbs nothing', () => {
+test('CR 603.5a: opening a column on the RIGHT disturbs nothing', () => {
   const { h, A, D, atk } = board(6608, 2);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   const e0 = new E(h.state);
@@ -223,13 +223,13 @@ test('R75: opening a column on the RIGHT disturbs nothing', () => {
   assert.deepEqual(h.state.battle!.blocks[1], [blk.id], 'the key is where it was');
 });
 
-/* ── R72 × R75: the same data model from opposite ends ─────────────────── */
+/* ── CR 602.5 × CR 602.6: the same data model from opposite ends ─────────────────── */
 
-test('R75: a placement right after a collapse offers the ends of the COLLAPSED line', () => {
+test('CR 602.6a: a placement right after a collapse offers the ends of the COLLAPSED line', () => {
   const { h, A, atk } = board(6609, 3);
   new E(h.state).destroy(ent(h, atk[1]!)!, 'is deleted');   // middle column, unblocked → collapses
   new E(h.state).settle();
-  assert.deepEqual(cols(h), [[atk[0]!], [atk[2]!]], 'R72 closed the gap');
+  assert.deepEqual(cols(h), [[atk[0]!], [atk[2]!]], 'CR 602.5 closed the gap');
 
   assert.deepEqual(h.q.formationSlots(A).map(s => s.label), [
     'a new column on the left',
@@ -245,14 +245,14 @@ test('R75: a placement right after a collapse offers the ends of the COLLAPSED l
   finishBattle(h);
 });
 
-test('R75: a placement can FILL an R72 hole, and can never create one', () => {
+test('CR 602.6a: a placement can FILL a CR 602.5a hole, and can never create one', () => {
   const { h, A, D, atk } = board(6610, 3);
   const e0 = new E(h.state);
   const big = e0.spawnUnit(D, 'The Foretold', h.state.battle!.region);
   e0.setBase(big, 9, 9);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [big.id] } });
   pass(h); pass(h);                                          // combat: the middle attacker dies
-  assert.deepEqual(cols(h), [[atk[0]!], [], [atk[2]!]], 'a hole, held open by its blocker (R72)');
+  assert.deepEqual(cols(h), [[atk[0]!], [], [atk[2]!]], 'a hole, held open by its blocker (CR 602.5a)');
 
   const e = new E(h.state);
   const tok = e.spawnUnit(A, 'Unit Token', h.state.battle!.region, { token: true });
@@ -270,7 +270,7 @@ test('R75: a placement can FILL an R72 hole, and can never create one', () => {
 
 /* ── adjacency: sides and above/below, nothing diagonal ────────────────── */
 
-test('R75 adjacency: my own back slot, and the same ROW of each neighbour', () => {
+test('CR 603.2a adjacency: my own back slot, and the same ROW of each neighbour', () => {
   const h = new Harness(6611);
   toDeployment(h);
   const A = h.state.initiative;
@@ -283,12 +283,12 @@ test('R75 adjacency: my own back slot, and the same ROW of each neighbour', () =
   // every neighbour's front row is taken, so only my own back slot is empty
   assert.deepEqual(h.q.adjacentSlots(me).map(s => s.label), ['column 2, behind The Foretold']);
   // …and the neighbours' empty BACK slots are diagonal to me, so they are not
-  // mine. (The leftmost unit also has the new column past the end — R304.)
+  // mine. (The leftmost unit also has the new column past the end — CR 603.3.)
   assert.deepEqual(h.q.adjacentSlots(l).map(s => s.label), ['a new column on the left', 'column 1, behind The Foretold']);
 });
 
-test('R75 adjacency: the same row of a neighbour IS adjacent when it is empty', () => {
-  // a hole (R72) is an existing column with an empty front row: my left-hand
+test('CR 603.2a adjacency: the same row of a neighbour IS adjacent when it is empty', () => {
+  // a hole (CR 602.5a) is an existing column with an empty front row: my left-hand
   // neighbour's front slot, at my row
   const { h, D, atk } = board(6612, 3);
   const e0 = new E(h.state);
@@ -298,15 +298,15 @@ test('R75 adjacency: the same row of a neighbour IS adjacent when it is empty', 
   pass(h); pass(h);
   assert.deepEqual(cols(h), [[atk[0]!], [], [atk[2]!]]);
   // atk[2] sits at (column 3, front). Adjacent: (2, front) — the hole — its
-  // own back slot, and (R304) the front of a new column past the right end.
+  // own back slot, and (CR 603.3) the front of a new column past the right end.
   assert.deepEqual(h.q.adjacentSlots(atk[2]!).map(s => s.label),
     ['column 2, front row', 'column 3, behind The Foretold', 'a new column on the right']);
   finishBattle(h);
 });
 
-test('R304 adjacency: past the edge of the ATTACKING line is a slot — the front of a new column', () => {
-  // R304 (Bena 2026-09-25): "The columns to the left and right, even when
-  // empty, DO technically exist." R75 read the edge the other way and this
+test('CR 603.3 adjacency: past the edge of the ATTACKING line is a slot — the front of a new column', () => {
+  // The edge ruling (Bena 2026-09-25, now CR 603.3): "The columns to the left and right, even when
+  // empty, DO technically exist." The earlier reading closed the edge the other way and this
   // test asserted it; a front-row unit at either end now has the new column
   // beyond it, the same end formationSlots offers.
   const { h, atk } = board(6613, 2);
@@ -318,7 +318,7 @@ test('R304 adjacency: past the edge of the ATTACKING line is a slot — the fron
   assert.deepEqual(right.filter(s => s.col === null).map(s => s.end), ['right']);
 });
 
-test('R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge', () => {
+test('CR 603.3 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge', () => {
   const h = new Harness(6617);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -332,20 +332,20 @@ test('R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the 
   // with no front — unreachable, the front row fills first
   assert.deepEqual(h.q.adjacentSlots(back), [], 'a full column, and no reachable slot past either end');
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
-  // a blocking column is keyed to an attacking one (R72), so the blocking
+  // a blocking column is keyed to an attacking one (CR 602.6c), so the blocking
   // line cannot open a column of its own at either end
   assert.deepEqual(h.q.adjacentSlots(blocker).map(s => s.label), ['column 1, behind The Foretold'],
     'the blocker has its own back slot and nothing past the edges');
   finishBattle(h);
 });
 
-test('R75 adjacency: a unit out of formation has no adjacent slots', () => {
+test('CR 603.2b adjacency: a unit out of formation has no adjacent slots', () => {
   const { h, A } = board(6614, 2);
   const bystander = spawn(h, A, 'The Foretold');   // spawned at home, never declared
   assert.deepEqual(h.q.adjacentSlots(bystander), []);
 });
 
-test('R75 adjacency: the front row always fills first, so no slot is ever stranded', () => {
+test('CR 602.3 adjacency: the front row always fills first, so no slot is ever stranded', () => {
   // the invariant the "empty back slot above an empty front slot" case rests
   // on: removeFromFormation promotes the back row, repairFormation splices dead
   // ids out, and every placement appends — so a column is [], [front] or
@@ -369,7 +369,7 @@ test('R75 adjacency: the front row always fills first, so no slot is ever strand
 
 /* ── the Manual's other formation rules, guarded ───────────────────────── */
 
-test('R75: formations scale infinitely in width — repeated LEFT inserts keep every key straight', () => {
+test('CR 603.5: formations scale infinitely in width — repeated LEFT inserts keep every key straight', () => {
   // Manual: "Formations have a front and back row but can scale infinitely in
   // width", and the human: "there can be column 0 or -1". The engine keeps
   // integer keys and NORMALISES on every left-insert instead of going negative:
@@ -400,7 +400,7 @@ test('R75: formations scale infinitely in width — repeated LEFT inserts keep e
   assert.equal(h.q.battleCounter(region, h.q.colCounterKey(5, 'tag')), 4, 'and so did its ledger');
 });
 
-test('R75: a blocking formation may legitimately have EMPTY columns, and they are never "repaired"', () => {
+test('CR 602.5d: a blocking formation may legitimately have EMPTY columns, and they are never "repaired"', () => {
   // Manual: "a blocking formation is allowed to be assigned with empty
   // columns." The collapse only ever looks at the ATTACKING line, and only
   // before blocks are declared, so a deliberately sparse block map is safe.

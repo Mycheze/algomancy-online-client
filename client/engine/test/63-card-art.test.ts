@@ -12,7 +12,7 @@
  * problem here — `node --test` runs each test file in its own process, so
  * this one sees only what this file's imports register.
  *
- * ── R214: WHICH SYNTHETICS, AND THE ONE THAT HAS NO ART ────────────────
+ * ── WHICH SYNTHETICS, AND THE ONE THAT HAS NO ART ──────────────── (see 180-pool-sight)
  *
  * The line above used to read "the two genuine synthetics in the pool (the
  * generic Unit Token)" — a count of two with one name after it, written when
@@ -42,7 +42,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
-// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight). registry.ts registers
 // only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
@@ -54,14 +54,14 @@ import { CARDS_DIR } from '../scripts/paths.mjs';
  * ART_DIR do — relative to this file, never to the process's cwd */
 const ART_DIR = CARDS_DIR;
 
-/** R214 — cards with no art because NOTHING CAN RENDER THEM. The reason is a
+/** cards with no art because NOTHING CAN RENDER THEM (see 180-pool-sight). The reason is a
  * predicate, not a sentence: the staleness test below runs it, so an entry
  * whose card becomes renderable fails here instead of quietly waiving art for
  * a card a player can now see. */
 const ART_EXEMPT: { name: string; why: string; unrenderable: (name: string) => string | null }[] = [
   {
     name: 'Alluring Attribute',
-    why: 'R84/R214. Not a card: the {Alluring} attribute registered as one so that '
+    why: 'CR 802.15. Not a card: the {Alluring} attribute registered as one so that '
        + '`effectByKey` can resolve `ability:Alluring Attribute#0` — a rules-owned effect '
        + 'has to BE a registered card or Divine Intervention / Gravitational Correction / '
        + 'Hexbane Shiitake throw when they retarget an {Alluring} trigger. The queued '
@@ -106,7 +106,7 @@ test('every registered card names an image that exists under data/cards/', () =>
     + 'code and not just of the comment.');
 });
 
-test('R214: every ART_EXEMPT entry still names an unrenderable card', () => {
+test('every ART_EXEMPT entry still names an unrenderable card', () => {
   // The CT-83 shape: an exemption is a claim about the code as of the day it
   // was written, and unchecked it outlives the code. This one is re-derived
   // from the registry on every run rather than re-read from its own prose.
@@ -132,7 +132,7 @@ test('the Wraith token uses its own printed art, not the generic-unit card', () 
   assert.ok(existsSync(join(ART_DIR, img)), 'and the scan is on disk');
 });
 
-// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+// ── POOL SIGHT ─────────────────────────────────────────────────── (see 180-pool-sight)
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
 // card entry point and it registers 494 of the 495 cards: two of the three
@@ -144,7 +144,7 @@ test('the Wraith token uses its own printed art, not the generic-unit card', () 
 // The floor is what stops that being reintroduced by an import change nobody
 // reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
 // floor for the whole suite and the guard that catches a ninth sweep.
-test('R214: this sweep sees the whole card pool', () => {
+test('this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
   assert.ok(n >= 496,
     `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `

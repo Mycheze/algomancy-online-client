@@ -1,4 +1,4 @@
-/* R272 — WHAT A REPAINT IS ALLOWED TO DO TO THE HOVER.
+/* WHAT A REPAINT IS ALLOWED TO DO TO THE HOVER.
  *
  * Report [142] (CT-155), room QJEY: *"the page resets/scrolls to the top on
  * any change … and also resets the hover effects. It even happens when the
@@ -15,17 +15,17 @@
  *
  * ── WHY THIS IS A MODULE AND NOT A LINE IN main.ts ──────────────────────
  *
- * R230 answered the same shape of question — "may a scroll hide the tip?" —
+ * The scroll rule (CR D6.17) answers the same shape of question — "may a scroll hide the tip?" —
  * and test/199-hover-scroll.test.ts says at length why the answer cannot be
  * asserted through test/ui-driver.ts: the driver dispatches no mouseover (so
  * nothing ever creates `#hovertip` there), and answers `classList.contains` with a flat
  * false, so "the tip is showing" and "the tip is not showing" are the same
- * answer. R230's fix was to move the DECISION out of the listener and into a
+ * answer. The scroll fix was to move the DECISION out of the listener and into a
  * pure function a test can reach. This is that, for the paint.
  *
  * ── THE RULE ────────────────────────────────────────────────────────────
  *
- * It is R230's question asked of a repaint instead of a scroll: could this
+ * It is CR D6.17's question asked of a repaint instead of a scroll: could this
  * have moved the card out from under the cursor?
  *
  *   · the card is GONE from the new board — it died, it was played, it left

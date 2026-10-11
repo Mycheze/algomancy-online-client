@@ -1,4 +1,4 @@
-/* R195 — PER-COLUMN FACE DAMAGE: "a unit deals combat damage to a player" is
+/* CR 608.9a — PER-COLUMN FACE DAMAGE: "a unit deals combat damage to a player" is
  * answerable now.
  *
  * THE DIVERGENCE (docs/16-divergence-inventory.md §2a, row PER-COLUMN FACE
@@ -25,7 +25,7 @@
  *    Amphivore and Rippleback Skulker (which took a card off the damaged
  *    player's bin), and for Bloodwind Revenant.
  *  · Sarcophage stripped the counters off a passenger poisoned to 0 power —
- *    a unit that, by R157 §4, "does no damage".
+ *    a unit that, by the owner's reading (CR 608.5a), "does no damage".
  *  · Blightmound, whose column's every point was prevented by a shield and
  *    which therefore dealt nothing to anything, rotted the opponent off the
  *    other column's hit.
@@ -33,7 +33,7 @@
  * THE OWNER'S STEER, 2026-08-24: *"All the cards in Algomancy are pretty
  * literal."* Sarcophage prints "a unit", with no "your", so both sides' units
  * are in scope; it prints "a unit", not "a column", so a passenger that dealt
- * nothing is not one. R157 §4 (owner, 2026-08-25) is the power reading:
+ * nothing is not one. The owner's power reading (2026-08-25; now CR 608.5a):
  * *"0 power units do no damage. But the other thing in the column can still
  * contribute to the shared column power."* — the COLUMN is the dealer of a
  * column-scoped clause, its positive-power members are the dealers of a
@@ -71,7 +71,7 @@ function settleCombat(h: Harness): void {
       continue;
     }
     if (h.state.phase !== 'battle') break;
-    // R295: pass through the priority window a SPLIT damage step opens at each
+    // CR 608.3b: pass through the priority window a SPLIT damage step opens at each
     // sub-step boundary, or the later sub-steps never run at all
     if (h.state.battle!.step === 'damageWindow' && !h.state.battle!.damageStep) { pass(h); continue; }
     if (h.state.battle!.step !== 'afterWindow') break;
@@ -139,13 +139,13 @@ function absorbedBoard(seed: number, subject: string, block = true) {
  * ("when my column deals combat damage") hear UNIT damage as well as face
  * damage, so on the absorbed board above their column genuinely dealt combat
  * damage — to the blockers — and firing is correct. To isolate the FACE
- * attribution their column has to deal nothing whatsoever, which is R98's
- * shield: `preventUnitDamage` returns 0, the commit loop `continue`s, and no
+ * attribution their column has to deal nothing whatsoever, which is a
+ * prevention shield (CR 112.11): `preventUnitDamage` returns 0, the commit loop `continue`s, and no
  * 'damage' and no 'countersChanged' is emitted at all. The pool is fully
  * assigned to the shielded wall, so {Piercing} overflows nothing either.
  *
  * `swift` makes the OTHER column {Swift} as well, for a {Swift} subject
- * (Flowstone Arcanite) — R117 wants both hits in the same sub-step or the
+ * (Flowstone Arcanite) — CR 608.9a wants both hits in the same sub-step or the
  * sub-step gate, not the attribution, is what is being measured.
  */
 function preventedBoard(seed: number, subject: string, opts: { swift?: boolean } = {}) {
@@ -178,14 +178,14 @@ const fired = (h: Harness, card: string): boolean =>
 
 /* ── the seam itself ────────────────────────────────────────────────────── */
 
-test("R195 — a combat 'lifeLost' names the columns that dealt it, and only the units that dealt damage", () => {
+test("CR 608.9a — a combat 'lifeLost' names the columns that dealt it, and only the units that dealt damage", () => {
   const h = new Harness(6600);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const passenger = tok(h, A, 2, 5);
   const hitter = tok(h, A, 2, 2);
   const solo = tok(h, A, 1, 1);
-  // R157 §4: poisoned to 0 power. It is still IN the column and the column
+  // CR 608.5a: poisoned to 0 power. It is still IN the column and the column
   // still has power — "the other thing in the column can still contribute".
   new E(h.state).addCounters(ent(h, passenger)!, -2);
   toNextBattle(h, A);
@@ -205,7 +205,7 @@ test("R195 — a combat 'lifeLost' names the columns that dealt it, and only the
   assert.ok(mine, 'the poisoned passenger is in its COLUMN — column-scoped text still fires');
   assert.equal(mine.amount, 2, "and that column's share is its own 2, not the table's 3");
   assert.deepEqual(mine.units, [hitter],
-    'but only the hitter DEALT damage: R157 §4, "0 power units do no damage"');
+    'but only the hitter DEALT damage: the owner, "0 power units do no damage" (CR 608.5a)');
   assert.deepEqual(g.unitsDealingFaceDamage(ev).map(u => u.id).sort(), [hitter, solo].sort(),
     'across the whole event, exactly the units that dealt combat damage to a player');
   finishBattle(h);
@@ -213,7 +213,7 @@ test("R195 — a combat 'lifeLost' names the columns that dealt it, and only the
 
 /* ── inventory consequence #1: the 0-power passenger ─────────────────────── */
 
-test('R195 — Sarcophage: "Whenever a unit deals combat damage to a player, remove all counters from it" — a 0-power passenger is not one', () => {
+test('CR 608.5a — Sarcophage: "Whenever a unit deals combat damage to a player, remove all counters from it" — a 0-power passenger is not one', () => {
   const h = new Harness(6601);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -224,7 +224,7 @@ test('R195 — Sarcophage: "Whenever a unit deals combat damage to a player, rem
   g.addCounters(ent(h, passenger)!, -2);        // poisoned to 0/3 — deals nothing
   g.addCounters(ent(h, hitter)!, 1);            // 3/3, and it does deal
   toNextBattle(h, A);
-  // Sarcophage rides in its own column so it is IN the battle region (R12) and
+  // Sarcophage rides in its own column so it is IN the battle region (CR 601.1d) and
   // is not itself a passenger of the column under test
   h.do({ type: 'declareAttack', seat: A, columns: [[passenger, hitter], [sarc]] });
   pass(h); pass(h);
@@ -239,7 +239,7 @@ test('R195 — Sarcophage: "Whenever a unit deals combat damage to a player, rem
   finishBattle(h);
 });
 
-test('R195 — Sarcophage strips BOTH sides: the clause prints "a unit", not "your unit"', () => {
+test('Sarcophage strips BOTH sides: the clause prints "a unit", not "your unit"', () => {
   const h = new Harness(6602);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -260,7 +260,7 @@ test('R195 — Sarcophage strips BOTH sides: the clause prints "a unit", not "yo
 
 /* ── inventory consequence #2: the fully absorbed {Piercing} column ──────── */
 
-test('R195 — Zephyrzoa: "When my column deals combat damage to an opponent, recall your bin and erase me" — a {Piercing} column absorbed whole does not claim another column\'s hit', () => {
+test('CR 608.9a — Zephyrzoa: "When my column deals combat damage to an opponent, recall your bin and erase me" — a {Piercing} column absorbed whole does not claim another column\'s hit', () => {
   const b = absorbedBoard(6603, 'Zephyrzoa');
   const { h, A, D } = b;
   for (const p of h.state.players) { p.bin.length = 0; p.hand.length = 0; }
@@ -275,7 +275,7 @@ test('R195 — Zephyrzoa: "When my column deals combat damage to an opponent, re
   assert.ok(!h.state.players[A]!.hand.includes('Gublin'), 'and nothing of it reached my hand');
 });
 
-test('R195 — Zephyrzoa still fires when its own column really connects (control)', () => {
+test('CR 608.9a — Zephyrzoa still fires when its own column really connects (control)', () => {
   const b = absorbedBoard(6604, 'Zephyrzoa', false);
   const { h, A, D } = b;
   for (const p of h.state.players) { p.bin.length = 0; p.hand.length = 0; }
@@ -292,7 +292,7 @@ test('R195 — Zephyrzoa still fires when its own column really connects (contro
 
 /* ── one named assertion per card ───────────────────────────────────────── */
 
-test('R195 — Amphivore: "When my column deals combat damage to an opponent, [Switch1][Switch1][Switch1]" — absorbed whole, it triples nothing', () => {
+test('CR 608.9a — Amphivore: "When my column deals combat damage to an opponent, [Switch1][Switch1][Switch1]" — absorbed whole, it triples nothing', () => {
   const b = absorbedBoard(6605, 'Amphivore');
   b.go();
   settleCombat(b.h);
@@ -300,14 +300,14 @@ test('R195 — Amphivore: "When my column deals combat damage to an opponent, [S
     'this copy hand-rolled the connect test and had NO sub-step gate and NO power gate either');
 });
 
-test('R195 — Amphivore triples on a column that really connects (control)', () => {
+test('CR 608.9a — Amphivore triples on a column that really connects (control)', () => {
   const b = absorbedBoard(6606, 'Amphivore', false);
   b.go();
   settleCombat(b.h);
   assert.ok(fired(b.h, 'Amphivore'), 'the graft cause still fires');
 });
 
-test('R195 — Rippleback Skulker: "[Augment] Whenever my column deals combat damage to a player, put target card from that player\'s bin into your hand" — absorbed whole, it takes nothing', () => {
+test('CR 608.9a — Rippleback Skulker: "[Augment] Whenever my column deals combat damage to a player, put target card from that player\'s bin into your hand" — absorbed whole, it takes nothing', () => {
   const b = absorbedBoard(6607, 'Rippleback Skulker');
   b.h.state.players[b.D]!.bin.push('Good Whale', 'Jelly');
   b.go();
@@ -318,16 +318,16 @@ test('R195 — Rippleback Skulker: "[Augment] Whenever my column deals combat da
   assert.deepEqual(b.h.state.players[b.D]!.bin, ['Good Whale', 'Jelly'], 'their bin is untouched');
 });
 
-test('R195 — Rippleback Skulker still takes a card when its column connects (control)', () => {
+test('CR 608.9a — Rippleback Skulker still takes a card when its column connects (control)', () => {
   const b = absorbedBoard(6608, 'Rippleback Skulker', false);
   b.h.state.players[b.D]!.bin.push('Good Whale', 'Jelly');
   b.go();
-  assert.equal(b.h.state.decision?.kind, 'targets', "R67: the bin card is a declared target");
+  assert.equal(b.h.state.decision?.kind, 'targets', "CR 110.1a: the bin card is a declared target");
   settleCombat(b.h);
   assert.equal(b.h.state.players[b.D]!.bin.length, 1, 'one card left that bin');
 });
 
-test('R195 — Vroot: "[Augment] When my column deals combat damage, each opponent gains that much life" — "that much" is MY column\'s, not the table\'s', () => {
+test('CR 608.9a — Vroot: "[Augment] When my column deals combat damage, each opponent gains that much life" — "that much" is MY column\'s, not the table\'s', () => {
   const h = new Harness(6609);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -350,7 +350,7 @@ test('R195 — Vroot: "[Augment] When my column deals combat damage, each oppone
   finishBattle(h);
 });
 
-test('R195 — Vroot: a column whose every point a shield prevented dealt nothing, and pays out nothing', () => {
+test('Vroot: a column whose every point a shield prevented dealt nothing, and pays out nothing', () => {
   const b = preventedBoard(6610, 'Vroot');
   const life0 = b.h.state.players[b.D]!.life;
   b.go();
@@ -359,7 +359,7 @@ test('R195 — Vroot: a column whose every point a shield prevented dealt nothin
   assert.ok(!fired(b.h, 'Vroot'));
 });
 
-test('R195 — Blightmound: "When I deal combat damage or die, [Switch1] Each opponent gains 1 rot" — a column the shield emptied deals none', () => {
+test('Blightmound: "When I deal combat damage or die, [Switch1] Each opponent gains 1 rot" — a column the shield emptied deals none', () => {
   const b = preventedBoard(6611, 'Blightmound');
   b.go();
   assert.equal(b.h.state.players[b.D]!.rot, 0,
@@ -367,13 +367,13 @@ test('R195 — Blightmound: "When I deal combat damage or die, [Switch1] Each op
   assert.ok(!fired(b.h, 'Blightmound'));
 });
 
-test('R195 — Blightmound rots when its column really deals damage (control)', () => {
+test('CR 608.9a — Blightmound rots when its column really deals damage (control)', () => {
   const b = preventedBoard(6612, 'Blightmound');
   b.go(false);   // no shield: the 4 lands on the wall as -1/-1 counters
   assert.equal(b.h.state.players[b.D]!.rot, 1, 'the {Poisonous} channel still reaches it');
 });
 
-test('R195 — Blightmound is NOT a face-attribution card on an ordinary board: its clause is unqualified, and a blocked column dealt real combat damage (control)', () => {
+test('CR 608.9a — Blightmound is NOT a face-attribution card on an ordinary board: its clause is unqualified, and a blocked column dealt real combat damage (control)', () => {
   const b = absorbedBoard(6613, 'Blightmound');
   b.go();
   settleCombat(b.h);
@@ -382,7 +382,7 @@ test('R195 — Blightmound is NOT a face-attribution card on an ordinary board: 
     + '"to an opponent" in it: this column dealt 5 to the blockers and the card is owed its rot');
 });
 
-test('R195 — Bloodwind Revenant: "When my column deals combat damage to an opponent, [Switch1] You may sacrifice a unit" — absorbed whole, no offer', () => {
+test('CR 608.9a — Bloodwind Revenant: "When my column deals combat damage to an opponent, [Switch1] You may sacrifice a unit" — absorbed whole, no offer', () => {
   const b = absorbedBoard(6614, 'Bloodwind Revenant');
   b.go();
   settleCombat(b.h);
@@ -390,14 +390,14 @@ test('R195 — Bloodwind Revenant: "When my column deals combat damage to an opp
     'NOT in the inventory row, and carried the identical reconstruction');
 });
 
-test('R195 — Bloodwind Revenant still offers the sacrifice when its column connects (control)', () => {
+test('CR 608.9a — Bloodwind Revenant still offers the sacrifice when its column connects (control)', () => {
   const b = absorbedBoard(6615, 'Bloodwind Revenant', false);
   b.go();
   settleCombat(b.h);
   assert.ok(fired(b.h, 'Bloodwind Revenant'));
 });
 
-test('R195 — Flowstone Arcanite: "When my column deals combat damage, [Switch1] Put a +1/+1 counter on each of your units" — a prevented column puts none', () => {
+test('Flowstone Arcanite: "When my column deals combat damage, [Switch1] Put a +1/+1 counter on each of your units" — a prevented column puts none', () => {
   const b = preventedBoard(6616, 'Flowstone Arcanite', { swift: true });
   b.go();
   assert.equal(ent(b.h, b.solo)!.counters, 0,
@@ -406,7 +406,7 @@ test('R195 — Flowstone Arcanite: "When my column deals combat damage, [Switch1
   assert.ok(!fired(b.h, 'Flowstone Arcanite'));
 });
 
-test('R195 — Flowstone Arcanite still pays out when its column deals damage (control)', () => {
+test('CR 608.9a — Flowstone Arcanite still pays out when its column deals damage (control)', () => {
   const b = preventedBoard(6617, 'Flowstone Arcanite', { swift: true });
   b.go(false);
   assert.ok(fired(b.h, 'Flowstone Arcanite'), 'the 1 power lands on the wall — real combat damage');

@@ -1,7 +1,7 @@
 /*
  * 153 · THE TYPECHECKER'S REACH
  *
- * R181 / CARD-TODO #59, #60.
+ * CARD-TODO #59, #60 (see CLAUDE.md § The gates).
  *
  * `client/server/` had no `tsconfig.json`. Not a lax one — none at
  * all. `npm run check` at the client root read
@@ -62,7 +62,7 @@ const TSC = path.join(ENGINE, 'node_modules', '.bin', 'tsc');
 /** Directories that hold no source: dependencies, VCS, and the server's
  * runtime data (`games/`, `accounts/` — both .gitignored, neither .ts).
  *
- * ── R210 (CT-83): WHY A WALKER CONFIG IS ON AN EXEMPTION-LIST TICKET ────
+ * ── CT-83: WHY A WALKER CONFIG IS ON AN EXEMPTION-LIST TICKET ────
  *
  * CT-83 listed this among the tables with no staleness assertion and flagged
  * it as "walker config, not a waiver — argue whether it belongs at all".
@@ -74,7 +74,7 @@ const TSC = path.join(ENGINE, 'node_modules', '.bin', 'tsc');
  * output mentions it, and §1's verdict ("every .ts file in the client is
  * covered by some tsconfig project") is quantified over a corpus this set
  * defines. Add one wrong name here and §1 goes on passing while meaning
- * strictly less, which is R181's failure — THE REACH OF THE CHECK SHRANK AND
+ * strictly less, which is the failure CARD-TODO #59/#60 found — THE REACH OF THE CHECK SHRANK AND
  * NOTHING SAID SO — reproduced inside the file written to prevent it.
  *
  * So each name is treated as the claim it is: "no source we own lives under
@@ -145,7 +145,7 @@ function resolveConfig(config: string): Resolved {
 
 // ─────────────── §0 · the corpus every section below is quantified over ────
 
-test('§0 R210: every SKIP_DIRS name still hides no source we own', () => {
+test('§0 (see 147-comment-conformance): every SKIP_DIRS name still hides no source we own', () => {
   // The staleness assertion CT-83 asked for, in the only form that means
   // anything for a corpus definition: ask GIT what source the repo tracks, and
   // require that none of it is behind a name this walk refuses to enter.
@@ -297,7 +297,7 @@ const REQUIRED_FLAGS: { flag: string; why: string }[] = [
     flag: 'strict',
     why: 'the baseline. Without it `null`/`undefined` are assignable everywhere and '
        + 'every parameter without an annotation is silently `any` — the server\'s '
-       + 'socket callbacks were exactly that until R181 gave them a config.',
+       + 'socket callbacks were exactly that until the tooling round (CT-59/60) gave them a config.',
   },
   {
     flag: 'noUnusedLocals',
@@ -336,7 +336,7 @@ test('§3 every tsconfig has the load-bearing compiler flags on', () => {
         + 'purpose: a flag that is on in one config and off in another means code\n'
         + 'moved between them changes meaning, and "it typechecks" stops being one\n'
         + 'claim. Turn it back on and fix what it finds, or make the case in\n'
-        + 'docs/digital-rules.md and change this list — but do not let the two\n'
+        + 'the header of this file and change this list — but do not let the two\n'
         + 'drift silently.');
     }
   }

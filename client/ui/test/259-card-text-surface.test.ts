@@ -1,4 +1,4 @@
-/* ROUND 35 / R279 — WHAT A CARD SAYS ABOUT ITSELF.
+/* ROUND 35 / CR D6.9, D6.10d — WHAT A CARD SAYS ABOUT ITSELF.
  *
  * Four owner reports from room ZSPG, 2026-08-30, all landing on one surface:
  * the card-text box (ui/cardtext.ts) and the two glossary consumers that read
@@ -33,7 +33,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
-import '../../engine/src/index.ts';                 // R214: the WHOLE pool, not registry.ts alone
+import '../../engine/src/index.ts';                 // the WHOLE pool, not registry.ts alone (see 180-pool-sight)
 import {
   NAMED_CARD_RE, entityTextBox, namedCardOf, printedTextBox, prophecyBanner,
 } from '../cardtext.ts';
@@ -47,7 +47,7 @@ const q = (h: Harness): E => new E(h.state);
 
 /** deployment → the next turn's END-OF-HASTE decision, where the naming
  * happens. Lifted from 38-light-a.test.ts's `toNaming`, for the same reason it
- * exists there: R50 fires 'endOfHaste' inside a settle() window that may
+ * exists there: 'endOfHaste' (CR 504.6) fires inside a settle() window that may
  * suspend, so the usual toNextBattle() plumbing walks past the decision. */
 function toNaming(h: Harness, attacker?: Seat): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -125,7 +125,7 @@ test('CT-163: the box of the card that named says WHICH card it named', () => {
   assert.ok(box.lines.some(l => l.text.includes('Triskaidekaphage')),
     `#148: the named card is readable nowhere in the box:\n${
       box.lines.map(l => `  [${l.origin}] ${l.text}`).join('\n')}`);
-  // and it did not become a SECOND line pretending to be printed text (R252):
+  // and it did not become a SECOND line pretending to be printed text (CR D6.9):
   // the value is substituted into the clause the pool already prints
   assert.ok(!box.lines.some(l => /^named/i.test(l.text)),
     'the named card is substituted into the printed clause, not authored as a new sentence');
@@ -167,7 +167,7 @@ test('CT-168: the host wearing it as an augment says the named card too', () => 
   pick(h, 'Triskaidekaphage');
 
   // ── non-vacuity: the mod is really on, the memory is really on the HOST
-  //    (E.queueTrigger stamps sourceId: host.id), and R268's donated box is
+  //    (E.queueTrigger stamps sourceId: host.id), and CR 721.1's donated box is
   //    really being rendered on the host
   const u = ent(h, host)!;
   assert.equal(u.mods.length, 1, 'the augment really is applied');
@@ -175,7 +175,7 @@ test('CT-168: the host wearing it as an augment says the named card too', () => 
     'the memory lives on the HOST for donated text — that is the anchor');
   const box = entityTextBox(q(h), u);
   assert.ok(box.lines.some(l => l.origin === 'augment' && /loses all abilities/i.test(l.text)),
-    'R268: the donated [Augment] box is on the host, which is where the clause is');
+    'CR 721.1: the donated [Augment] box is on the host, which is where the clause is');
 
   // ── the report
   assert.ok(box.lines.some(l => l.text.includes('Triskaidekaphage')),
@@ -276,7 +276,7 @@ test('CT-165: the printed prophecy banner is IN the box, on every card that prin
   assert.ok(cards.some(n => !(getCard(n).text ?? '').trim()),
     'no banner card has an empty text box — the extractor no longer strips the banner, '
     + 'and this guard is measuring the wrong thing');
-  // ...and non-vacuity for R301: at least one banner actually has pips to show,
+  // ...and non-vacuity for CR 203.1: at least one banner actually has pips to show,
   // or the cost assertion below passes on `[2]` and proves nothing.
   assert.ok(cards.some(n => getCard(n).prophecy!.cost),
     'no banner carries affinity — the pips fell out of the transcription again '
@@ -288,7 +288,7 @@ test('CT-165: the printed prophecy banner is IN the box, on every card that prin
     assert.ok(banner, `${n}: no banner reconstructed`);
     assert.ok(banner.includes(p.condition),
       `${n}: the banner must carry the pool's own condition verbatim, not a paraphrase`);
-    // R301: the WHOLE cost, affinity included. The banner charged only mana
+    // CR 203.2: the WHOLE cost, affinity included. The banner charged only mana
     // until 2026-09-20 and this line asked only for `[mana]`; the pips are a
     // real requirement now (canPayProphecy), so a banner that showed the
     // number alone would misprice the card on screen.
@@ -305,8 +305,8 @@ test('CT-165: a prophecy card reaches the {Prophecy} reminder in the in-game ins
   // ui/main.ts's inspector builds its reminder rows two ways: `box.attrs` gets
   // a glossary row each, and `glossaryHits([type, text])` covers the rest with
   // the attributes SKIPPED. The banner is not in `text` and never was, so the
-  // scan cannot see it — the marker has to arrive on the box the way R271
-  // brought {Unstable} there.
+  // scan cannot see it — the marker has to arrive on the box the way {Unstable}
+  // arrives there (CR D6.10c).
   const row = GLOSSARY.find(g => g.term === 'Prophecy');
   assert.ok(row, 'the glossary has a {Prophecy} row to reach');
   assert.ok(row.text.length > 40, 'and it is a real reminder, not a stub');
@@ -329,7 +329,7 @@ test('CT-165: a card WITHOUT a banner never claims the marker', () => {
 
 test('CT-164 + CT-165: the browser panel does not state prophecy twice', () => {
   // The card browser already draws the {Prophecy} glossary row for these seven
-  // cards, off `CardRow.keywords` (R257). The panel ALSO printed an authored
+  // cards, off `CardRow.keywords` (CR D6.11c). The panel ALSO printed an authored
   // one-liner directly above it — the same redundancy class as #149, in the
   // same round's other report.
   const n = bannerCards()[0]!;

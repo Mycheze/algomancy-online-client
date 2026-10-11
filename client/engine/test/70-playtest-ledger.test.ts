@@ -42,7 +42,7 @@
  * is the whole point: the reports and the repo can no longer drift silently,
  * they can only drift for as long as it takes someone to run one command.
  *
- * ⚠ THAT IS THE WHOLE INTAKE LOOP, AND IT HAS ALREADY FAILED ONCE. Until R275
+ * ⚠ THAT IS THE WHOLE INTAKE LOOP, AND IT HAS ALREADY FAILED ONCE. Until the 30 August fix
  * the command above said `client/server/issues.jsonl` — where the file lived
  * before the 2026-08-30 reorg moved all runtime state to `var/`. scp fetched
  * nothing, the snapshot stayed at 135 rows for three rounds, and twelve owner
@@ -278,7 +278,7 @@ test('anything not fixed explains itself, and a by-design divergence cites its s
   // only acceptable with a citation he can check.
   const uncited = LEDGER
     .filter(e => e.status === 'by-design')
-    .filter(e => !/\bR\d+|Manual|ruling|oracle|printed/i.test(e.note ?? ''))
+    .filter(e => !/\bCR (?:\d{3}|D\d)|Manual|ruling|oracle|printed/i.test(e.note ?? ''))
     .map(e => `#${e.id}`);
   assert.deepEqual(uncited, [],
     'a by-design entry overrides a playtest report, so it must cite the rule, Manual page or '

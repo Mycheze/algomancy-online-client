@@ -1,4 +1,4 @@
-/* R243 — REGIONS SCOPE "ALL", AND THEY DO NOT SCOPE INFORMATION.
+/* CR 601.1c, 601.8 — REGIONS SCOPE "ALL", AND THEY DO NOT SCOPE INFORMATION.
  *
  * Two owner rulings given together, 2026-08-29, answering CARD-TODO #107 and
  * #108 in one sentence:
@@ -32,7 +32,7 @@
  *
  * ── §2  INFORMATION IS NOT SCOPED (CT-107) ────────────────────────────
  *
- * CT-107 was filed as a possible leak: R239 scoped what an effect may reach,
+ * CT-107 was filed as a possible leak: regions scope what an effect may reach (CR 601.1b),
  * `E.ev` stamps no region, and `server/view.ts::visibleToSeat` gates only on
  * `data.privateTo` — so a player outside a region reads every line of what
  * happened there. **The owner has ruled that this is correct**, so the entry
@@ -96,7 +96,7 @@ test('§1a no card reads the whole table — it asks the region', () => {
     }
   }
   assert.deepEqual(offenders, [],
-    'R243: "every card that says \'all\' is actually \'all in this region\'". A card reading '
+    'The owner (CR 601.1c): "every card that says \'all\' is actually \'all in this region\'". A card reading '
     + 'g.s.players asserts that a player who is not here counts. Use E.seatsHere(region).\n  '
     + offenders.join('\n  '));
 });
@@ -141,7 +141,7 @@ test('§1d a seat that is not in the region is not counted', () => {
 
 test('§1e ONE helper for the pool — the local copies are gone', () => {
   // two batch files had grown their own `presentSeats`, with DIFFERENT orders.
-  // That is the same "one concept, several spellings" shape R242 removed from
+  // That is the same "one concept, several spellings" shape already removed from
   // the tempo, and it is how two cards come to disagree about who is present.
   const bodies: string[] = [];
   for (const file of walk(CARDS)) {
@@ -164,7 +164,7 @@ test('§2a the log redactor gates on privateTo, and on nothing else', () => {
   const body = src.slice(from, src.indexOf('\n}', from));
   assert.match(body, /privateTo/, 'positive control: it does gate on that');
   assert.equal(/region/i.test(body), false,
-    'R243: "Regions do NOT scope information." CT-107 was filed as a possible leak and the '
+    'The owner (CR 601.8): "Regions do NOT scope information." CT-107 was filed as a possible leak and the '
     + 'owner ruled the current behaviour correct — a region test appearing here would be '
     + 'somebody fixing what was ruled not to be broken.');
 });

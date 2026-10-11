@@ -1,4 +1,4 @@
-/* R105 — {Modular} takes ANY mod you can pay for, and a modded card is Unstable.
+/* CR 724.2, 724.5 — {Modular} takes ANY mod you can pay for, and a modded card is Unstable.
  *
  * Owner ruling, 2026-08-23, on CARD-TODO #19:
  *
@@ -19,7 +19,7 @@
  *  1. the OFFER is every card in hand and bin whose cost you can pay — no
  *     graft gate, no augment-capability gate, viruses included;
  *  2. a mod's type-line [Augment] attribute is DONATED to the resolving effect
- *     (R79's channel, a different timing) — without this the widened offer
+ *     (CR 721.4b's channel, a different timing) — without this the widened offer
  *     donates nothing and the fix looks done while changing nothing. Graftable
  *     cards and attribute-granting cards are DISJOINT in the pool (137 and 22,
  *     overlap zero), so before this, donation through {Modular} was impossible;
@@ -108,7 +108,7 @@ const damageTo = (h: Harness, id: number): number[] =>
  * Any filter reintroduced above `canPayCard` drops at least one of these, so
  * this test fails the moment the menu is narrowed again.
  */
-test('R105: the {Modular} menu offers every card you can pay for — graft, virus, non-virus augment, [Augment] text, and a card that can do nothing at all', () => {
+test('CR 724.2: the {Modular} menu offers every card you can pay for — graft, virus, non-virus augment, [Augment] text, and a card that can do nothing at all', () => {
   const { h, A } = window(9101);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'earth', 2);
@@ -120,7 +120,7 @@ test('R105: the {Modular} menu offers every card you can pay for — graft, viru
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Spellbind') });
   const dec = h.state.decision;
-  assert.ok(dec, '{Modular} asks as the card is played (R35 cast-time cost)');
+  assert.ok(dec, '{Modular} asks as the card is played (CR 724.3 cast-time cost)');
   const offered = dec!.options.filter(o => o.card).map(o => o.card!).sort();
 
   assert.deepEqual(offered, [...MENU].sort(),
@@ -135,7 +135,7 @@ test('R105: the {Modular} menu offers every card you can pay for — graft, viru
   assert.ok(dec!.options.some(o => o.label === 'No more mods'), 'and declining is always on the menu');
 });
 
-test('R105: a card in the BIN is offered beside the hand, and an unaffordable one is not', () => {
+test('CR 724.2: a card in the BIN is offered beside the hand, and an unaffordable one is not', () => {
   const { h, A } = window(9102);
   giveResources(h, A, 'dark', 4);                    // Spellbind 1, then 3 left
   bin(h, A).push('Primordial Coalescence');          // d/3 — affordable from the bin
@@ -148,7 +148,7 @@ test('R105: a card in the BIN is offered beside the hand, and an unaffordable on
 
 // ── 2. what a mod contributes ─────────────────────────────────────────
 
-test('R105: a GRAFT mod still contributes its [Switch] effect as an extra part', () => {
+test('CR 724.4: a GRAFT mod still contributes its [Switch] effect as an extra part', () => {
   const { h, A } = window(9103);
   giveResources(h, A, 'dark', 4);
   give(h, A, 'Primordial Coalescence');              // "[Switch1] Create three Wraiths and gain 2 Rot."
@@ -158,14 +158,14 @@ test('R105: a GRAFT mod still contributes its [Switch] effect as an extra part',
   const it = item(h, 'Spellbind');
   assert.deepEqual(it.parts.map(p => p.effectKey),
     ['spell:Spellbind', 'graft:Primordial Coalescence'],
-    'the graft joins the composite as an extra part (Manual p.33) — unchanged by R105');
+    'the graft joins the composite as an extra part (Manual p.33; CR 724.4)');
   assert.deepEqual(it.mods, [{ card: 'Primordial Coalescence', from: 'hand' }]);
   drain(h);
   assert.equal(h.state.players[A]!.rot ?? 0, 3, "Spellbind's own rot plus the rider's two");
   assert.equal(unitsNamed(h, 'Wraith').length, 3, "and the rider's three Wraiths");
 });
 
-test('R105: a mod with NO graft effect adds no part, and the spell resolves rather than throwing', () => {
+test('CR 724.4: a mod with NO graft effect adds no part, and the spell resolves rather than throwing', () => {
   const { h, A } = window(9104);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'earth', 2);
@@ -188,13 +188,13 @@ test('R105: a mod with NO graft effect adds no part, and the spell resolves rath
  * The half that makes the ruling mean something, proved on the damage number
  * rather than on a flag. Spellbind carries Twin Flame's [Switch] half ("I deal
  * 2 damage to each of up to two target units") and Chitin Shredder's type-line
- * [Augment] {Powerful}; {Powerful} doubles what the source deals (R79/R103),
+ * [Augment] {Powerful}; {Powerful} doubles what the source deals (CR 802.10d, 112.9),
  * and the source of a grafted rider is the carrier.
  *
  * Two runs, identical but for the one mod, so the doubling is a DIFF: 2 → 4,
  * which is also the difference between a 3/3 attacker living and dying.
  */
-test('R105: a type-line [Augment] mod really donates — {Powerful} turns a Spellbind-carried Twin Flame from 2 damage into 4', () => {
+test('CR 724.4a: a type-line [Augment] mod really donates — {Powerful} turns a Spellbind-carried Twin Flame from 2 damage into 4', () => {
   // control: the graft alone
   {
     const { h, A, atk } = window(9105);
@@ -221,14 +221,14 @@ test('R105: a type-line [Augment] mod really donates — {Powerful} turns a Spel
     pickBy(h, o => String(o.label).includes('The Foretold'));
     const it = item(h, 'Spellbind');
     assert.deepEqual(new E(h.state).stackModAttrs(it), ['Powerful'],
-      'the mod donates its type-line attribute to the item, exactly as R79 does for a virus');
+      'the mod donates its type-line attribute to the item, exactly as CR 721.4b does for a virus');
     drain(h);
     assert.deepEqual(damageTo(h, atk), [4], '{Powerful} doubled what the source dealt');
     assert.equal(ent(h, atk), undefined, 'and 4 is lethal to a 3/3 — the consequence, not the flag');
   }
 });
 
-test('R105: a donated attribute reaches EffectCtx.grantedAttrs, the one field everything downstream reads', () => {
+test('CR 724.4a: a donated attribute reaches EffectCtx.grantedAttrs, the one field everything downstream reads', () => {
   const { h, A } = window(9107);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'water', 1);
@@ -241,7 +241,7 @@ test('R105: a donated attribute reaches EffectCtx.grantedAttrs, the one field ev
   assert.ok(e.itemAttrs(it).has('Alluring'),
     'and the resolution-time attribute check sees it too ({Afflicting} reads this set)');
   assert.deepEqual(e.stackAugmentAttrs(it), [],
-    'R79\'s virus channel is untouched — {Modular} donates through its own, so neither can be mistaken for the other');
+    'CR 723.4\'s virus channel is untouched — {Modular} donates through its own, so neither can be mistaken for the other');
 });
 
 // ── 4. [Augment] TEXT on a spell: a deliberate no-op ──────────────────
@@ -258,7 +258,7 @@ test('R105: a donated attribute reaches EffectCtx.grantedAttrs, the one field ev
  * test plays a spell while it rides the stack and proves the trigger stays
  * dead, on a card that demonstrably HAS the text.
  */
-test('R105: an [Augment]-TEXT mod is accepted and does nothing — a spell has no body for a triggered ability, and that is correct', () => {
+test('CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing — a spell has no body for a triggered ability, and that is correct', () => {
   const { h, A } = window(9108);
   giveResources(h, A, 'dark', 2);
   giveResources(h, A, 'fire', 1);
@@ -289,7 +289,7 @@ test('R105: an [Augment]-TEXT mod is accepted and does nothing — a spell has n
 
 // ── 5. the cost ───────────────────────────────────────────────────────
 
-test('R105: "you still pay their costs" — the mod is charged at cast, and applying it is not PLAYING it', () => {
+test('CR 724.3: "you still pay their costs" — the mod is charged at cast, and applying it is not PLAYING it', () => {
   const { h, A } = window(9109);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'water', 2);
@@ -301,7 +301,7 @@ test('R105: "you still pay their costs" — the mod is charged at cast, and appl
   assert.equal(h.q.openMana(A), before - 2, "and the mod's [1] on top of it, before the item reaches the stack");
   assert.ok(!h.state.players[A]!.hand.includes('Tempest Wrangler'), 'the mod left the hand');
   assert.deepEqual(h.events.filter(e => e.type === 'spawned' && e.data?.['card'] === 'Tempest Wrangler'), [],
-    'R37: applying a mod is not playing a card — no body spawns');
+    'CR 802.26c: applying a mod is not playing a card — no body spawns');
   drain(h);
 });
 
@@ -324,7 +324,7 @@ test('R105: "you still pay their costs" — the mod is charged at cast, and appl
  * If someone later "tidies" the erase back into a bin, this test is what says
  * no: the graft becomes infinitely reusable and the drawback disappears.
  */
-test('R105: the flashback line — a graft card in the BIN is replayed by Spellbind, happens, and is ERASED so it can never be flashed back twice', () => {
+test('CR 724.5: the flashback line — a graft card in the BIN is replayed by Spellbind, happens, and is ERASED so it can never be flashed back twice', () => {
   const { h, A } = window(9110);
   giveResources(h, A, 'dark', 4);
   bin(h, A).push('Primordial Coalescence');          // "[Switch1] Create three Wraiths and gain 2 Rot."
@@ -345,14 +345,14 @@ test('R105: the flashback line — a graft card in the BIN is replayed by Spellb
   assert.equal(count(bin(h, A), 'Primordial Coalescence'), 0,
     'it never returns to the bin — otherwise the flashback is infinite');
   // (d) it is in the public erased pile, and so is the carrier
-  assert.equal(count(erased(h, A), 'Primordial Coalescence'), 1, 'R65: the mod is erased, publicly');
-  assert.equal(count(erased(h, A), 'Spellbind'), 1, 'and the carrier with it (R69: Unstable is a BIN replacement)');
+  assert.equal(count(erased(h, A), 'Primordial Coalescence'), 1, 'CR 724.5: the mod is erased, publicly');
+  assert.equal(count(erased(h, A), 'Spellbind'), 1, 'and the carrier with it (CR 803.8: Unstable is a BIN replacement)');
   assert.equal(count(bin(h, A), 'Spellbind'), 0, 'the carrier reaches no bin either');
   assert.ok(!trashed(h).includes('Spellbind'),
-    'nothing was TRASHED: R40 — it came from the stack, and it never entered a bin to be trashed out of');
+    'nothing was TRASHED: CR 801.2b — it came from the stack, and it never entered a bin to be trashed out of');
 });
 
-test('R105: an UNMODDED {Modular} spell is not Unstable — it is binned like any other spell (R40)', () => {
+test('CR 724.5a: an UNMODDED {Modular} spell is not Unstable — it is binned like any other spell (CR 704.2)', () => {
   const { h, A } = window(9111);
   giveResources(h, A, 'dark', 2);
   giveResources(h, A, 'water', 1);
@@ -369,13 +369,13 @@ test('R105: an UNMODDED {Modular} spell is not Unstable — it is binned like an
  * The asymmetry that raised the question in the first place, closed.
  *
  * A mod applied through the {Modular} window and a virus applied through
- * R79's window are the same act — something is applied to a spell — and they
+ * CR 723.4's window are the same act — something is applied to a spell — and they
  * used to have opposite outcomes: the virus erased the pile, the {Modular}
  * mod binned it and left it reusable. One card (Chitin Shredder), one carrier
  * (Spellbind), two routes, one assertion: if the two paths ever diverge again,
  * this fails.
  */
-test('R105 = R79: the {Modular} window and the virus window agree — either way the carrier and the mod are erased, never binned', () => {
+test('CR 803.8f: the {Modular} window and the virus window agree — either way the carrier and the mod are erased, never binned', () => {
   /** cast a Spellbind with Chitin Shredder attached by `route`, and report where everything ended up */
   const run = (seed: number, route: 'modular' | 'virus'): Record<string, number> => {
     const { h, A } = window(seed);
@@ -408,10 +408,10 @@ test('R105 = R79: the {Modular} window and the virus window agree — either way
   assert.deepEqual(modular, { spellBinned: 0, spellErased: 1, modBinned: 0, modErased: 1 },
     'a {Modular} mod makes its carrier Unstable: both cards are erased, neither is binned');
   assert.deepEqual(modular, virus,
-    'and R79\'s virus window agrees exactly — the same act cannot have two disposals');
+    'and the virus window (CR 723.4) agrees exactly — the same act cannot have two disposals');
 });
 
-test('R105: a NEGATED modded Spellbind is erased too — Unstable is a bin replacement, so no exit reaches a bin', () => {
+test('CR 724.5: a NEGATED modded Spellbind is erased too — Unstable is a bin replacement, so no exit reaches a bin', () => {
   const { h, A, D } = window(9114);
   giveResources(h, A, 'dark', 4);
   giveResources(h, D, 'fire', 2);
@@ -425,7 +425,7 @@ test('R105: a NEGATED modded Spellbind is erased too — Unstable is a bin repla
   pickBy(h, o => /^Don't pay/.test(o.label));        // A has no mana left: the ransom goes unpaid
   drain(h);
   assert.equal(unitsNamed(h, 'Wraith').length, 0, 'the negation landed — no Wraiths');
-  assert.equal(count(bin(h, A), 'Spellbind'), 0, 'a negated Unstable carrier still cannot reach a bin (R68 + R69)');
+  assert.equal(count(bin(h, A), 'Spellbind'), 0, 'a negated Unstable carrier still cannot reach a bin (CR 704.2c, 724.5)');
   assert.equal(count(erased(h, A), 'Spellbind'), 1);
   assert.equal(count(erased(h, A), 'Primordial Coalescence'), 1, 'and the mod goes with it');
   assert.equal(count(bin(h, A), 'Primordial Coalescence'), 0);

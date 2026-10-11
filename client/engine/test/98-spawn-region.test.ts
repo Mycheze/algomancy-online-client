@@ -1,4 +1,4 @@
-/* R115 — A CREATED UNIT ARRIVES WHERE ITS SOURCE IS.
+/* CR 601.5 — A CREATED UNIT ARRIVES WHERE ITS SOURCE IS.
  *
  * THE RULING, in the designer's own words (playtest report #83, 2026-08-23):
  *
@@ -13,27 +13,27 @@
  * `ctx.region`", and 25 cards were passing `g.homeRegion(ctx.controller)`
  * instead.
  *
- * THIS IS A REVERSAL, NOT A CLARIFICATION. It WITHDRAWS R28 and R52 and
- * ABSORBS R33:
+ * THIS IS A REVERSAL, NOT A CLARIFICATION. It WITHDRAWS two earlier
+ * home-region rulings and ABSORBS the carrier reading:
  *
- *  - R28 said created units go HOME, and its stated reason was "Tidelurker's
+ *  - The first home-region ruling said created units go HOME, and its stated reason was "Tidelurker's
  *    2/2 minted mid-attack must be home to block the counterattack". The
  *    designer was asked that exact consequence and answered the other way, so
- *    the third test in this file is R28's rationale INVERTED: the 2/2 is
+ *    the third test in this file is the withdrawn home-region rule's rationale INVERTED: the 2/2 is
  *    minted in the enemy region, stands there in no column, and the engine
  *    refuses it as a blocker when the counterattack comes back the other way.
  *    The power cut to Tidelurker, Life Plant, Legion of the Depths and Pack
  *    Leader is intended.
- *  - R52 confirmed R28 as the global default and moved six Light & Dark cards
- *    to home. They are all moved back. R52's "unfinished migration" list — the
+ *  - The second confirmed the home default and moved six Light & Dark cards
+ *    to home. They are all moved back. Its "unfinished migration" list — the
  *    base-set cards it said still needed moving — is cancelled: those cards
  *    were already right.
- *  - R33 (Ember of Life's 1/1s arrive where the carrier is) stops being a
+ *  - The Ember of Life carrier reading (1/1s arrive where the carrier is) stops being a
  *    per-card exception and becomes a statement of the general rule.
  *
  * WHY THERE IS A SOURCE SCAN IN A CARD TEST FILE
  *
- * Nothing about R115 is hard. What was hard is that the wrong answer was
+ * Nothing about CR 601.5 is hard. What was hard is that the wrong answer was
  * INVISIBLE: three shared helpers (`makeOneOne`, `makeRobot`, `create1s`) took
  * `region?: number` and fell back to `?? g.homeRegion(seat)`, so four cards
  * created units in a region no line of their code named. Those defaults are
@@ -82,7 +82,7 @@ const homeOf = (h: Harness, seat: number): number => new E(h.state).homeRegion(s
 
 // ═══════════════════════ (i) the report, verbatim ═══════════════════════
 
-test('R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE, not at home', () => {
+test('CR 601.5: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE, not at home', () => {
   const h = new Harness(9801);
   toDeployment(h);
   const A = h.state.initiative;
@@ -104,7 +104,7 @@ test('R115: report #83 — Life Plant attacking in the enemy region creates its 
   assert.ok(made.every(u => u.region === battle),
     '"anything made by anything needs to spawn in that region" — the region the SOURCE is in');
   assert.equal(made.filter(u => u.region === home).length, 0,
-    'R52 is WITHDRAWN: not one of them went home');
+    'the home-region reading is withdrawn: not one of them went home');
 
   // …and they are in the region but in NO column — the invader's-zone state
   const inColumns = h.state.battle!.columns.flat();
@@ -115,7 +115,7 @@ test('R115: report #83 — Life Plant attacking in the enemy region creates its 
 
 // ═══════════════════ (ii) "then can return during regroup" ═══════════════
 
-test('R115: the stranded 1/1s walk home at regroup — the second half of the ruling', () => {
+test('the stranded 1/1s walk home at regroup — the second half of the ruling', () => {
   const h = new Harness(9802);
   toDeployment(h);
   const A = h.state.initiative;
@@ -137,9 +137,9 @@ test('R115: the stranded 1/1s walk home at regroup — the second half of the ru
   assert.equal(ent(h, plant)!.region, home, 'and the carrier came home with them');
 });
 
-// ══════════ (iii) R28's rationale, inverted and pinned ══════════
+// ══════════ (iii) the withdrawn home-region rule's rationale, inverted and pinned ══════════
 
-test("R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack", () => {
+test("CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack", () => {
   const h = new Harness(9803);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -152,12 +152,12 @@ test("R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region an
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [counter] });
   pass(h); pass(h);                                           // combat: D is hit → the trigger fires
-  resolveAfterCombat(h);   // R261: it is stacked in the after-combat window
+  resolveAfterCombat(h);   // CR 608.9b: it is stacked in the after-combat window
 
   const tok = unitsOf(h, A).find(u => u.token && u.tokenStats?.[0] === 2)!;
   assert.ok(tok, 'the 2/2 was created');
-  assert.equal(tok.region, invaded, 'R115: minted where Tidelurker is — the enemy region');
-  assert.notEqual(tok.region, home, 'R28 is WITHDRAWN: it was NOT sent home');
+  assert.equal(tok.region, invaded, 'CR 601.5: minted where Tidelurker is — the enemy region');
+  assert.notEqual(tok.region, home, 'The home-region reading is WITHDRAWN: it was NOT sent home');
 
   pass(h); pass(h);                                           // after-combat window → round 2
   assert.equal(h.state.battle!.round, 2);
@@ -179,7 +179,7 @@ test("R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region an
 
 // ═══════════════ (v) the two battle-timing spells ═══════════════
 
-test('R115: Galactic Germination cast in the enemy region creates its 1/1s in the enemy region', () => {
+test('CR 601.5: Galactic Germination cast in the enemy region creates its 1/1s in the enemy region', () => {
   const h = new Harness(9804);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -194,7 +194,7 @@ test('R115: Galactic Germination cast in the enemy region creates its 1/1s in th
   const home = homeOf(h, A);
   assert.notEqual(battle, home, 'the spell is cast in the enemy region');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Galactic Germination') });
-  // R184 gave "target formation" a real TargetRef arm, so the menu offers
+  // "Target formation" has a real TargetRef arm (CR 110.3d), so the menu offers
   // formations and no longer offers the units in them. This test is about
   // REGION, not about targeting — picking A's own formation keeps the count
   // (two attackers) and the assertion (they arrive where the spell resolved)
@@ -204,12 +204,12 @@ test('R115: Galactic Germination cast in the enemy region creates its 1/1s in th
 
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.id !== u1 && u.id !== u2);
   assert.equal(made.length, 2, 'two 1/1s — one per unit in the attacking formation');
-  assert.ok(made.every(u => u.region === battle), 'R115: they arrive where the spell resolved');
+  assert.ok(made.every(u => u.region === battle), 'CR 601.5: they arrive where the spell resolved');
   assert.equal(made.filter(u => u.region === home).length, 0, 'none of them went home');
   finishBattle(h);
 });
 
-test('R115: Arcane Echo cast in the enemy region copies a token INTO the enemy region', () => {
+test('CR 601.5: Arcane Echo cast in the enemy region copies a token INTO the enemy region', () => {
   const h = new Harness(9805);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -223,20 +223,20 @@ test('R115: Arcane Echo cast in the enemy region copies a token INTO the enemy r
   const home = homeOf(h, A);
   assert.notEqual(battle, home, 'the spell is cast in the enemy region');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arcane Echo') });
-  pick(h, { unit: robot });                                   // R64: the target is a cast-time choice
+  pick(h, { unit: robot });                                   // CR 110.1a: the target is a cast-time choice
   pass(h); pass(h);
 
   const copy = unitsOf(h, A).find(u => u.card === 'Robot')!;
   assert.ok(copy, 'a Robot copy was created for the caster');
   assert.equal(copy.counters, 2, 'with the same X');
-  assert.equal(copy.region, battle, 'R115: the unit copy arrives where the spell resolved');
+  assert.equal(copy.region, battle, 'CR 601.5: the unit copy arrives where the spell resolved');
   assert.notEqual(copy.region, home, 'not in the caster\'s home region');
   finishBattle(h);
 });
 
 // ═══════════ (vi) the negative control ═══════════
 
-test('R115 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then', () => {
+test('CR 601.5 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then', () => {
   const h = new Harness(9806);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -319,7 +319,7 @@ const lineOf = (src: string, idx: number): number => src.slice(0, idx).split('\n
 
 /* ── PASS 1: no card may reach for `homeRegion` at all ──────────────────────
  *
- * The withdrawn R28/R52 rule is spelled exactly one way in card code —
+ * The withdrawn home-region rule is spelled exactly one way in card code —
  * `g.homeRegion(ctx.controller)` — and that spelling is now always wrong: an
  * effect knows where its source is, and that is `ctx.region`. The allow-list
  * is deliberately EMPTY. A card that genuinely needs a home region (there is
@@ -329,7 +329,7 @@ const HOME_REGION_ALLOWED: { where: string; why: string }[] = [
   // (empty on purpose — see above. Format: { where: 'sets/batch-x.ts', why: '…' })
 ];
 
-test('R115 conformance: no card effect reaches for homeRegion() — the source scan', () => {
+test('CR 601.5 conformance: no card effect reaches for homeRegion() — the source scan', () => {
   const offenders: string[] = [];
   const allowedHit = new Set<string>();
   for (const { rel, src } of cardSources()) {
@@ -341,8 +341,8 @@ test('R115 conformance: no card effect reaches for homeRegion() — the source s
     }
   }
   assert.deepEqual(offenders, [],
-    'R115: a created thing arrives at ctx.region. These sites substitute the controller\'s home '
-    + 'region for the source\'s region, which is exactly the withdrawn R28/R52 rule:\n  '
+    'CR 601.5: a created thing arrives at ctx.region. These sites substitute the controller\'s home '
+    + 'region for the source\'s region, which is exactly the withdrawn home-region rule:\n  '
     + offenders.join('\n  '));
   for (const a of HOME_REGION_ALLOWED) {
     assert.ok(allowedHit.has(a.where),
@@ -364,7 +364,7 @@ const BESPOKE_REGIONS: Bespoke[] = [
   {
     where: 'sets/batch-light-a.ts', expr: 'self?.region ?? ctx.region', card: 'Hooba-God',
     why: '"create a token that\'s a copy of me IN MY FORMATION" — the copy goes where the '
-      + 'carrier is standing, and placeInFormation then puts it in a slot. R325: a carrier '
+      + 'carrier is standing, and placeInFormation then puts it in a slot. CR 714.1: a carrier '
       + 'that has left play stood where its trigger fired, which is ctx.region',
   },
   {
@@ -372,11 +372,11 @@ const BESPOKE_REGIONS: Bespoke[] = [
     why: '"its controller creates a 3/3 unit IN ITS POSITION IN PLAY" — the 3/3 takes the '
       + 'erased unit\'s region and its exact formation slot (local `region` = the target\'s)',
   },
-  // ⚠ TWO ENTRIES DELETED, R157 §3 (2026-08-25) — and their absence is now the
+  // ⚠ TWO ENTRIES DELETED once an exchange became a despawn and not a death (2026-08-25) — and their absence is now the
   // stronger guarantee. `sets/batch-dark-b.ts | self.region` (Hooba-Mon's
   // exchange) and `sets/batch-dark-c.ts | victim.region` (Necromorph) were the
   // pool's two EXCHANGES, both hand-placing a replacement body into the
-  // outgoing unit's region and slot. R157 §3 ruled an exchange a despawn and a
+  // outgoing unit's region and slot. The 2026-08-25 ruling (now CR 410.2a) made an exchange a despawn and a
   // trashing but NOT a death, which Necromorph's `destroy()` could not express,
   // so both moved onto one engine primitive — `E.exchangeInPlace`, which does
   // the spawn. There is no card-code creation left to exempt: this sweep walks
@@ -385,7 +385,7 @@ const BESPOKE_REGIONS: Bespoke[] = [
   // to E.exchangeInPlace and to test/129-disposal-tail.ts, which guards it.
   {
     where: 'sets/batch-wood-a.ts', expr: 'region', card: 'makeOneOne (shared helper)',
-    why: 'the helper\'s own REQUIRED parameter. R115 deleted its `?? homeRegion(seat)` default; '
+    why: 'the helper\'s own REQUIRED parameter. The source-region fix deleted its `?? homeRegion(seat)` default; '
       + 'every caller now passes ctx.region and the compiler enforces that one is passed',
   },
   {
@@ -415,7 +415,7 @@ function callArgs(code: string, open: number): string[] {
   return out;
 }
 
-test('R115 conformance: every card creation names ctx.region, or is an allow-listed bespoke placer', () => {
+test('CR 601.5 conformance: every card creation names ctx.region, or is an allow-listed bespoke placer', () => {
   const offenders: string[] = [];
   const used = new Set<string>();
   const CALLS: Record<string, number> = { spawnUnit: 2, createWraith: 1, createSpellToken: 3 };
@@ -438,7 +438,7 @@ test('R115 conformance: every card creation names ctx.region, or is an allow-lis
     }
   }
   assert.deepEqual(offenders, [],
-    'R115: a created thing arrives where its SOURCE is. Every one of these either substitutes '
+    'CR 601.5: a created thing arrives where its SOURCE is. Every one of these either substitutes '
     + 'another region or lets one default:\n  ' + offenders.join('\n  '));
   for (const b of BESPOKE_REGIONS) {
     assert.ok(used.has(`${b.where}|${b.expr}`),
@@ -447,7 +447,7 @@ test('R115 conformance: every card creation names ctx.region, or is an allow-lis
   }
 });
 
-test('R115: the three shared token helpers take a REQUIRED region — the deleted silent defaults', () => {
+test('CR 601.5: the three shared token helpers take a REQUIRED region — the deleted silent defaults', () => {
   const wanted: { rel: string; helper: string }[] = [
     { rel: 'sets/batch-wood-a.ts', helper: 'makeOneOne' },
     { rel: 'sets/batch-metal-b.ts', helper: 'makeRobot' },
@@ -462,7 +462,7 @@ test('R115: the three shared token helpers take a REQUIRED region — the delete
     assert.ok(/\bregion: number\b/.test(sig[1]!),
       `${helper} must take a REQUIRED \`region: number\`; it declares \`${sig[1]!.trim()}\``);
     assert.ok(!/region\?/.test(sig[1]!),
-      `${helper}'s region is optional again — that optionality IS the R115 bug: four cards `
+      `${helper}'s region is optional again — that optionality IS the bug the source-region fix removed: four cards `
       + 'inherited the wrong region from a `?? homeRegion(seat)` default that no card named');
   }
 });

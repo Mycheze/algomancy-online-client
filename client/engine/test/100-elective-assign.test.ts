@@ -1,4 +1,4 @@
-/* R120 — ELECTIVE combat-damage assignment (playtest ledger #84, the half the
+/* CR 608.6a, 608.6c — ELECTIVE combat-damage assignment (playtest ledger #84, the half the
  * owner deferred): "Each player is allowed to split the damage however they
  * want … It's actually legal to do ALL the damage to the front unit and none
  * to the back one, even if there is enough to kill them both. The only rule is
@@ -9,9 +9,9 @@
  * victims and more pool than the front unit's pass-along share, the side
  * DEALING the damage is asked — one victim at a time, front-to-back, with the
  * one-click default split leading the first question. Trivial combats (one
- * victim, pool ≤ the front's share, {Piercing}) keep the silent pre-R120 path.
+ * victim, pool ≤ the front's share, {Piercing}) keep the silent pre-election path.
  *
- * Every "default" number below was PINNED against the pre-R120 engine at
+ * Every "default" number below was PINNED against the pre-election engine at
  * d5e8def before the feature landed (scratch run, 2026-08-24): a 4-power
  * column onto 1/1+1/1 dealt 1/3; a 7-power blocker onto 1/2+1/2 dealt 2/5; a
  * Piercing 4 onto 1/1+1/1 dealt 1/1 with 2 to the face; a Deadly 2 onto
@@ -66,7 +66,7 @@ function overkillBoard(seed: number) {
   return { h, A, D, big, b1, b2, mark };
 }
 
-test('R120 (a): the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched', () => {
+test('CR 608.6c: the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched', () => {
   const { h, A, D, big, b1, b2, mark } = overkillBoard(12001);
   const dec = h.state.decision!;
   assert.ok(dec, 'a real split raises a decision');
@@ -78,7 +78,7 @@ test('R120 (a): the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the b
   assert.equal(h.state.decision, null, 'one question settles a two-victim column');
   const hits = dmgSince(h, mark);
   assert.deepEqual(hits.filter(([u]) => u === b1).map(([, n]) => n), [4],
-    'the front 1/1 was DEALT the whole 4 (R114: nothing is trimmed)');
+    'the front 1/1 was DEALT the whole 4 (CR 608.6c: nothing is trimmed)');
   assert.deepEqual(hits.filter(([u]) => u === b2), [], 'the back 1/1 was assigned NOTHING');
   assert.ok(!ent(h, b1), 'front blocker died');
   assert.ok(ent(h, b2), 'back blocker survives untouched');
@@ -87,7 +87,7 @@ test('R120 (a): the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the b
     'the block-side strike (1+1 onto one victim) stayed silent and landed as before');
 });
 
-test('R120 (b): the FIRST option is the default split, and one click reproduces the pre-R120 numbers exactly', () => {
+test('CR D1.2g: the FIRST option is the default split, and one click reproduces the pre-election numbers exactly', () => {
   const { h, D, big, b1, b2, mark } = overkillBoard(12002);
   const dec = h.state.decision!;
   assert.equal(dec.options[0]!.value, 'default', 'the one-click default leads the menu');
@@ -95,15 +95,15 @@ test('R120 (b): the FIRST option is the default split, and one click reproduces 
   h.do({ type: 'decide', seat: dec.seat, choice: 0 });
   assert.equal(h.state.decision, null, 'the default skips the per-unit walk entirely');
   const hits = dmgSince(h, mark);
-  // pinned pre-R120 at d5e8def: front 1, back 1+2 leftover = 3, striker takes 2
+  // pinned pre-election at d5e8def: front 1, back 1+2 leftover = 3, striker takes 2
   assert.deepEqual(hits.filter(([u]) => u === b1).map(([, n]) => n), [1], 'front: its share, 1');
-  assert.deepEqual(hits.filter(([u]) => u === b2).map(([, n]) => n), [3], 'back: share + R114 leftover = 3');
+  assert.deepEqual(hits.filter(([u]) => u === b2).map(([, n]) => n), [3], 'back: share + CR 608.6d leftover = 3');
   assert.deepEqual(hits.filter(([u]) => u === big).map(([, n]) => n), [2]);
   assert.ok(!ent(h, b1) && !ent(h, b2), 'both blockers die, as before');
   assert.equal(h.state.players[D]!.life, 30);
 });
 
-test('R120 (c): amounts below the front unit\'s lethal are never OFFERED while anything could go behind', () => {
+test('CR 608.6b: amounts below the front unit\'s lethal are never OFFERED while anything could go behind', () => {
   // 4-power attacker; front blocker 2/3 (share 3), back 1/1. Legal fronts: 3 or 4.
   const h = new Harness(12003);
   toDeployment(h);
@@ -119,12 +119,12 @@ test('R120 (c): amounts below the front unit\'s lethal are never OFFERED while a
   assert.equal(dec.kind, 'assignDamage');
   const nums = dec.options.map(o => o.value).filter((v): v is number => typeof v === 'number');
   assert.deepEqual(nums, [3, 4],
-    'the menu IS the rule: lethal-to-everything, nothing below lethal (R64 doctrine — illegal is unshown, not refused)');
+    'the menu IS the rule: lethal-to-everything, nothing below lethal (CR D1.2a doctrine — illegal is unshown, not refused)');
   assert.ok(dec.options.some(o => o.value === 3 && /lethal/.test(o.label)), 'the floor is labeled lethal');
 });
 
-test('R120 (d): trivial combats stay SILENT — one victim, or pool within the front unit\'s share', () => {
-  // one blocker, huge overkill: no decision, the full 4 lands (pre-R120 path)
+test('CR 608.6f: trivial combats stay SILENT — one victim, or pool within the front unit\'s share', () => {
+  // one blocker, huge overkill: no decision, the full 4 lands (pre-election path)
   const h1 = new Harness(12004);
   toDeployment(h1);
   const A1 = h1.state.initiative as Seat, D1 = (1 - A1) as Seat;
@@ -156,7 +156,7 @@ test('R120 (d): trivial combats stay SILENT — one victim, or pool within the f
   assert.deepEqual(dmgSince(h2, m2).filter(([u]) => u === bk), [], 'back untouched');
 });
 
-test('R120 (e): {Deadly} floors are 1 — the election prices them, and an elected overkill spares the back unit the sweep', () => {
+test('CR 608.6e: {Deadly} floors are 1 — the election prices them, and an elected overkill spares the back unit the sweep', () => {
   const h = new Harness(12006);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -179,7 +179,7 @@ test('R120 (e): {Deadly} floors are 1 — the election prices them, and an elect
   // second question: the DEFENDER's 6-power block-side strike over 1/2 + 1/2
   const dec2 = h.state.decision!;
   assert.equal(dec2.seat, D, 'both directions elect — now the defender over the attacking column');
-  h.do({ type: 'decide', seat: D, choice: 0 });   // default (pinned pre-R120: 2 then 4)
+  h.do({ type: 'decide', seat: D, choice: 0 });   // default (pinned pre-election: 2 then 4)
   const hits = dmgSince(h, mark);
   assert.deepEqual(hits.filter(([u]) => u === b1).map(([, n]) => n), [2], 'front took the whole elected 2');
   assert.deepEqual(hits.filter(([u]) => u === b2), [], 'back was never hit');
@@ -189,10 +189,10 @@ test('R120 (e): {Deadly} floors are 1 — the election prices them, and an elect
   assert.deepEqual(hits.filter(([u]) => u === d2).map(([, n]) => n), [4], 'default block-side split, back + leftover');
 });
 
-test('R120 (f) / R319: a {Piercing} strike elects too, and its default keeps the pinned numbers', () => {
-  // Pinned pre-R120 at d5e8def: Bumblecrab+Bumblecrab (4, Piercing) onto
+test('CR 608.6a, 802.16c: a {Piercing} strike elects too, and its default keeps the pinned numbers', () => {
+  // Pinned pre-election at d5e8def: Bumblecrab+Bumblecrab (4, Piercing) onto
   // 1/1+1/1 dealt 1/1 with 2 to the face. This test used to assert that NO
-  // decision existed — R7 made Piercing's overflow automatic. R319 reverses
+  // decision existed — the old split ruling made Piercing's overflow automatic. The elective-Piercing rule (CR 802.16c) reverses
   // that on the RAQ's word ("You may still overkill front or back units,
   // however with Piercing any excess damage you won't assign to front or back
   // unit will be assigned to Opponent Health"), so the strike asks now; the
@@ -209,7 +209,7 @@ test('R120 (f) / R319: a {Piercing} strike elects too, and its default keeps the
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   const mark = h.events.length;
   pass(h); pass(h);
-  assert.equal(h.state.decision?.kind, 'assignDamage', 'R319: a {Piercing} strike raises an election');
+  assert.equal(h.state.decision?.kind, 'assignDamage', 'CR 802.16c: a {Piercing} strike raises an election');
   assert.equal(h.state.decision!.seat, A, 'the attacker\'s');
   elect(h, 'default');
   assert.equal(h.state.decision, null, 'and the default answers it whole');
@@ -219,7 +219,7 @@ test('R120 (f) / R319: a {Piercing} strike elects too, and its default keeps the
   assert.equal(h.state.players[D]!.life, 28, 'the 2 excess pierced to the face, exactly as pinned');
 });
 
-test('R120 (f2): an elective overkill on ONE side leaves the other side\'s {Piercing} overflow unchanged', () => {
+test('CR 608.6a: an elective overkill on ONE side leaves the other side\'s {Piercing} overflow unchanged', () => {
   // Piercing attackers (4, overflow 2) meet 4/1+4/1 blockers whose 8-power
   // return strike DOES elect (shares 3+3 < 8). The defender's overkill
   // election must not move a single point of the attacker's pierce.
@@ -235,7 +235,7 @@ test('R120 (f2): an elective overkill on ONE side leaves the other side\'s {Pier
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   const mark = h.events.length;
   pass(h); pass(h);
-  // R319: the Piercing attack-side strike elects too (asked first); its
+  // CR 802.16c: the Piercing attack-side strike elects too (asked first); its
   // default is the pinned overflow, which is the thing under test here
   assert.equal(h.state.decision!.seat, A, 'the Piercing strike is asked first');
   elect(h, 'default');
@@ -252,7 +252,7 @@ test('R120 (f2): an elective overkill on ONE side leaves the other side\'s {Pier
   assert.equal(h.state.players[D]!.life, 28, 'the Piercing overflow is still exactly 2 — untouched by the election');
 });
 
-test('R120 (g): a JSON round-trip mid-election drives — before the first answer and between the two strikes', () => {
+test('a JSON round-trip mid-election drives — before the first answer and between the two strikes', () => {
   const h = new Harness(12009);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -266,7 +266,7 @@ test('R120 (g): a JSON round-trip mid-election drives — before the first answe
   const mark = h.events.length;
   pass(h); pass(h);
   // suspended on the first strike, nothing recorded yet: assignPlans may be
-  // entirely absent, which is also the shape of every pre-R120 saved state —
+  // entirely absent, which is also the shape of every pre-election saved state —
   // loading it and answering must work identically
   h.state = JSON.parse(JSON.stringify(h.state)) as GameState;   // save + load
   assert.equal(h.state.decision!.kind, 'assignDamage');
@@ -288,7 +288,7 @@ test('R120 (g): a JSON round-trip mid-election drives — before the first answe
   assert.equal(h.state.battle?.assignPlans, undefined, 'plans do not outlive their sub-step');
 });
 
-test('R120 (h): the BLOCK-side strike multi-assigns too — the defender may pile everything on the front attacker', () => {
+test('CR 608.6a: the BLOCK-side strike multi-assigns too — the defender may pile everything on the front attacker', () => {
   const h = new Harness(12010);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

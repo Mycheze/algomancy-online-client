@@ -1,14 +1,14 @@
-/* R277 — what a trailing [Haste] on a prophecy banner does, and what it does NOT.
+/* CR 203.5b — what a trailing [Haste] on a prophecy banner does, and what it does NOT.
  *
- * R42 has said since it was written that a card released from cache on a
+ * The prophecy ruling has said since it was written (now CR 803.7i) that a card released from cache on a
  * fulfilled prophecy is played "as if it were in your hand", so NORMAL TIMING
  * STILL APPLIES. The engine disagreed with it: `E.cachedTiming` read a trailing
  * [Haste] on the banner as an override of the printed timing, under a comment
- * citing R42 as its authority. Divine Intervention is a {Battle} spell, so the
+ * citing the prophecy ruling as its authority. Divine Intervention is a {Battle} spell, so the
  * override made its fulfilled, FREE release unplayable at every battle window
  * in the game — the owner lost a game to exactly that (report #152, room ZSPG).
  *
- * The marker is a PROPHESY-window widener instead (report #151): R42 allows
+ * The marker is a PROPHESY-window widener instead (report #151): CR 803.7b allows
  * prophesying only during deployment, and the marker is the printed exception
  * that lets the card be cached during the haste step too. It says when you may
  * CACHE the card; it says nothing about when you may play it.
@@ -35,7 +35,7 @@ const MARKED = /\[\s*haste\s*\]\s*$/i;
 
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
-/** R301: fund a seat for one card's banner — affinity as well as mana.
+/** CR 803.7d: fund a seat for one card's banner — affinity as well as mana.
  *
  * These tests sweep the pool, so they cannot hand out five of one element any
  * more: Divine Intervention wants `ll` and Air Plant `lg`. One resource per
@@ -104,7 +104,7 @@ function sterile(seed: number): Harness {
 
 // ── CT-166: the release obeys the PRINTED timing ──────────────────────
 
-test('R277: the marker does not move a fulfilled release out of battle and into the haste step', () => {
+test('CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step', () => {
   const h = sterile(425701);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -122,7 +122,7 @@ test('R277: the marker does not move a fulfilled release out of battle and into 
   assert.equal(getCard(T_BATTLE).timing, 'battle', 'and the card is printed {Battle}');
 
   // the haste step of the next turn: a {Battle} card is NOT playable there,
-  // marker or no marker — R42 plays it "as if it were in your hand"
+  // marker or no marker — the prophecy ruling plays it "as if it were in your hand" (CR 803.7i)
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'donePlanning', seat: 0 });
@@ -134,7 +134,7 @@ test('R277: the marker does not move a fulfilled release out of battle and into 
   assert.throws(() => h.do({ type: 'playCached', seat: P, index: 0 }), IllegalAction);
 });
 
-test('R277: a fulfilled prophecy on a battle card is offered at a BATTLE window', () => {
+test('CR 803.7i: a fulfilled prophecy on a battle card is offered at a BATTLE window', () => {
   const h = sterile(425702);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -154,7 +154,7 @@ test('R277: a fulfilled prophecy on a battle card is offered at a BATTLE window'
   assert.equal(h.state.phase, 'battle', 'a battle window, with priority');
   assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'still fulfilled here');
   assert.ok(h.legal(P).some(a => a.type === 'playCached' && a.index === 0),
-    'the free {Battle} release is offered at battle timing (R42)');
+    'the free {Battle} release is offered at battle timing (CR 803.7i)');
 
   const mana = h.q.openMana(P);
   h.do({ type: 'playCached', seat: P, index: 0 });
@@ -164,7 +164,7 @@ test('R277: a fulfilled prophecy on a battle card is offered at a BATTLE window'
 
 // ── CT-166, the report: the owner's actual loss, with the actual card ──
 
-test('R277: Divine Intervention can be released from cache in the battle it was prophesied for', () => {
+test('CR 203.5b: Divine Intervention can be released from cache in the battle it was prophesied for', () => {
   const h = new Harness(425703);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -213,7 +213,7 @@ test('R277: Divine Intervention can be released from cache in the battle it was 
 
 // ── CT-167: the marker widens the PROPHESY window ─────────────────────
 
-test('R277: a banner marked [Haste] may be prophesied during the haste step', () => {
+test('CR 504.9: a banner marked [Haste] may be prophesied during the haste step', () => {
   const marked = markedBannerCards();
   assert.ok(marked.length > 0, 'the pool prints at least one marked banner');
 
@@ -229,7 +229,7 @@ test('R277: a banner marked [Haste] may be prophesied during the haste step', ()
     // cost is affordable — nothing but the window can be refusing it
     assert.ok(h.state.hasteDone && !h.state.hasteDone[P], `${name}: the haste step is open`);
     assert.equal(h.state.players[P]!.hand[idx], name, `${name}: it is in hand`);
-    // R301: affordable now means the pips too, so the non-vacuity check says so
+    // CR 803.7d: affordable now means the pips too, so the non-vacuity check says so
     const banner = getCard(name).prophecy!;
     assert.ok(h.q.openMana(P) >= banner.mana, `${name}: the banner's mana is affordable`);
     for (const [el, n] of Object.entries(affinityPips(banner.cost))) {
@@ -243,7 +243,7 @@ test('R277: a banner marked [Haste] may be prophesied during the haste step', ()
   }
 });
 
-test('R277: an UNMARKED banner is still deployment-only — the haste step refuses it', () => {
+test('CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it', () => {
   const unmarked = unmarkedBannerCards();
   assert.ok(unmarked.length > 0, 'the pool prints unmarked banners too');
 
@@ -254,13 +254,13 @@ test('R277: an UNMARKED banner is still deployment-only — the haste step refus
   assert.ok(h.state.hasteDone && !h.state.hasteDone[P], 'the haste step is open');
 
   for (const name of unmarked) {
-    // R301: fund THIS card's banner before refusing it, or the refusal below
+    // CR 803.7d: fund THIS card's banner before refusing it, or the refusal below
     // would be the affinity talking and the test would prove nothing about
     // the window. Resources accumulate across the sweep, which is harmless.
     fundBanner(h, P, name);
     const idx = give(h, P, name);
     assert.equal(h.state.players[P]!.hand[idx], name, `${name}: it is in hand`);
-    // R301: affordable now means the pips too, so the non-vacuity check says so
+    // CR 803.7d: affordable now means the pips too, so the non-vacuity check says so
     const banner = getCard(name).prophecy!;
     assert.ok(h.q.openMana(P) >= banner.mana, `${name}: the banner's mana is affordable`);
     for (const [el, n] of Object.entries(affinityPips(banner.cost))) {
@@ -274,14 +274,14 @@ test('R277: an UNMARKED banner is still deployment-only — the haste step refus
   }
 });
 
-test('R277: the marker never widens the window outside the haste step', () => {
+test('CR 803.7b: the marker never widens the window outside the haste step', () => {
   const marked = markedBannerCards();
   assert.ok(marked.length > 0, 'the pool prints at least one marked banner');
   const name = marked[0]!;
 
   const h = sterile(425706);
   const P = 0 as Seat;
-  fundBanner(h, P, name);   // R301: so only the window can be refusing it
+  fundBanner(h, P, name);   // CR 803.7d: so only the window can be refusing it
   const idx = give(h, P, name);
   // the resource step, BEFORE the haste step opens
   assert.equal(h.state.phase, 'planning');

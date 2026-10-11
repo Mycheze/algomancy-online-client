@@ -1,4 +1,4 @@
-/* R270 — A SENT COUNTERATTACKER IS NOT ON THE BOARD, SO IT CANNOT DIE ON IT.
+/* CR 610.2e — A SENT COUNTERATTACKER IS NOT ON THE BOARD, SO IT CANNOT DIE ON IT.
  *
  * Report #144 (room QJEY, 2026-08-30): *"Why did the Prickly Protector die
  * here? It should have always been in a region with at least 1 other ally,
@@ -69,7 +69,7 @@ function intoRound2(h: Harness): void {
 // action 149 sent 35 and 31. Nothing has touched the Protector: no damage, no
 // second counter, no spell. It is declared as a counterattacker and dies.
 
-test('Prickly Protector survives being declared as a counterattacker (R270, report 144)', () => {
+test('Prickly Protector survives being declared as a counterattacker (CR 610.2e, report 144)', () => {
   const h = new Harness(25000);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -115,7 +115,7 @@ test('Prickly Protector survives being declared as a counterattacker (R270, repo
 // the donated text the moment it is sent — the identical failure, one channel
 // over, and it is the shape the report was actually filed against.
 
-test('a host wearing a donated Prickly Protector survives being sent out (R270)', () => {
+test('a host wearing a donated Prickly Protector survives being sent out (CR 610.2e)', () => {
   const h = new Harness(25001);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -144,11 +144,11 @@ test('a host wearing a donated Prickly Protector survives being sent out (R270)'
 // exist. `endBattleRound` puts it back, in the INITIATIVE seat's region, and
 // that is the first moment its stats can be read again — so one sent out on
 // its own, with its allies left at home, materialises with nothing to count
-// and dies there. Both halves matter: alive at the send (red before R270),
+// and dies there. Both halves matter: alive at the send (red before this fix),
 // dead on the arrival (which is what stops the fix from being "counter-
 // attackers cannot die").
 
-test('a counterattacker sent out alone survives the send and dies on arrival (R270)', () => {
+test('a counterattacker sent out alone survives the send and dies on arrival (CR 610.2e)', () => {
   const h = new Harness(25002);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -170,7 +170,7 @@ test('a counterattacker sent out alone survives the send and dies on arrival (R2
   assert.ok(h.log.some(l => l.includes('Prickly Protector dies')), 'and the death is logged');
 });
 
-// ── 4. SCOPE. What R270 does NOT change ───────────────────────────────────
+// ── 4. SCOPE. What the no-death-check rule does NOT change ───────────────────────────────────
 //
 // The fix is about the absent unit ITSELF, not about the region count. A unit
 // that stays home while its only ally counterattacks is present, is death-
@@ -178,7 +178,7 @@ test('a counterattacker sent out alone survives the send and dies on arrival (R2
 // absent units since the flag existed, 32 pool cards print "ally"/"allies" and
 // 59 card-code sites are region-scoped, so widening that would be a pool-wide
 // rules change and not a bug fix. This pins the current answer so the fix
-// cannot quietly grow into it. It is the question R270 puts to the owner.
+// cannot quietly grow into it. It is the question put to the owner.
 
 test('scope: a unit left at home still loses the ally that counterattacked away', () => {
   const h = new Harness(25003);

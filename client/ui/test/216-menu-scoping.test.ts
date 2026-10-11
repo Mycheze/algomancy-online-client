@@ -1,4 +1,4 @@
-/* R241 (BL-20) — A CARD MENU CARRIES CARD THINGS. And BL-32, the hand dock.
+/* CR D6.15 (BL-20) — A CARD MENU CARRIES CARD THINGS. And BL-32, the hand dock.
  *
  * Two owner-filed QoL asks about the same thing: the client putting something
  * in front of you that is not what you are looking at.
@@ -11,7 +11,7 @@
  *    ONLY when right clicking the field. Righclicking a card should only show
  *    things related to that card"
  *
- * R65 put them on every card menu ON PURPOSE — *"so you never have to hunt for
+ * An earlier ruling put them on every card menu ON PURPOSE — *"so you never have to hunt for
  * bare table"* — because the original playtest asks were that neither was
  * reachable AT ALL ("We need a way to right click -> concede match :(", "I
  * dont think there's currently a way to view erased cards"). So this file has
@@ -90,7 +90,7 @@ test('§1 right-clicking a CARD shows card things, and nothing about the field',
   assert.ok(field.length, 'positive control: there ARE field entries to have leaked');
   const leaked = labels.filter(l => field.includes(l));
   assert.deepEqual(leaked, [],
-    'R241: "Righclicking a card should only show things related to that card"');
+    'the owner, now CR D6.15: "Righclicking a card should only show things related to that card"');
 });
 
 /* ── §2 the ORIGINAL complaint, which must not come back ────────────────── */
@@ -104,7 +104,7 @@ test('§2 both field entries are still reachable — from bare table', () => {
   const field = fieldLabels(h.state as GameState, A);
   for (const want of field) {
     assert.ok(labels.includes(want),
-      `"${want}" must stay reachable — R65 exists because it was reachable from NOWHERE, and `
+      `"${want}" must stay reachable — CR D6.6c exists because it was reachable from NOWHERE, and `
       + 'narrowing the card menu must not re-create that');
   }
   assert.ok(field.some(l => /Concede/.test(l)), 'and concede is one of them');

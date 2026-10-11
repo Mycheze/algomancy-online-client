@@ -248,7 +248,7 @@ test('is: covers every declared flag and nothing else', () => {
   // three synthetics. So `is:colorless` is genuinely empty among cards, and the
   // count line's "class:all to include them" is the whole explanation.
   assert.equal(count('is:colorless'), 0);
-  assert.equal(allCount('is:colorless'), 44);   // R297: + Training Construct, a marker
+  assert.equal(allCount('is:colorless'), 44);   // CR D8.1b: + Training Construct, a marker
   assert.equal(count('is:notathing'), 0);
   // the three the client scripts but the oracle file does not carry are the
   // check that `is:scripted` is not just "is in the catalogue"

@@ -1,6 +1,6 @@
-/* R177 — card REGISTRATION ORDER is part of the game's determinism.
+/* Card REGISTRATION ORDER is part of the game's determinism.
  *
- * WHAT HAPPENED (2026-08-25). R166 factored `doubleStats` out of
+ * WHAT HAPPENED (2026-08-25). The doubling fix factored `doubleStats` out of
  * `batch-wood-a.ts` so Burgeon and Surly Stalker could share it — the right
  * call, they print the same verb — and `batch-water-b.ts` imported it from
  * there. `sets/index.ts` loads water-b tenth and wood-a much later, so the
@@ -29,7 +29,7 @@
  * These tests fail on the CAUSE (a batch importing a later batch) and on the
  * EFFECT (the order itself moving), because either alone is escapable.
  *
- * ── R214 (2026-08-26): THIS FILE WAS PINNING THE WRONG POOL. ───────────
+ * ── 2026-08-26: THIS FILE WAS PINNING THE WRONG POOL. ───────────
  *
  * It imported `src/cards/registry.ts` alone and asserted `names.length ===
  * 494`. There are THREE `registerSynthetic` calls in the engine and only two
@@ -48,7 +48,7 @@
  * BEFORE apply's module body runs: `Alluring Attribute` is APPENDED at index
  * 494 and nothing reorders. Measured, not assumed — sha256 over the first 494
  * names is still `96e1ffbb40fdc926`, byte-for-byte the hash this file pinned
- * before R214, and the test below re-asserts that on every run. So NO SEEDED
+ * before the pool-sight fix, and the test below re-asserts that on every run. So NO SEEDED
  * DEAL CHANGED and the saved-game corpus is untouched; only the pinned total
  * and the whole-pool hash move.
  *
@@ -64,7 +64,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-// R214: the PUBLIC entry point, not `cards/registry.ts` — registry alone is
+// the PUBLIC entry point, not `cards/registry.ts` (see 180-pool-sight) — registry alone is
 // 494 of 495 cards. See the header above and test/180-pool-sight.test.ts.
 import '../src/index.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
@@ -80,7 +80,7 @@ const loadOrder = (): string[] => {
 };
 
 test('no card batch imports a batch that index.ts loads LATER', () => {
-  // The exact shape of the R177 bug. An import of an EARLIER batch is
+  // The exact shape of the 2026-08-25 bug. An import of an EARLIER batch is
   // harmless today (its cards are already registered by then) but is listed
   // with its reason so the coupling stays visible; an import of a LATER batch
   // reorders the registry and is always wrong.
@@ -123,9 +123,9 @@ test('the registration order of the whole pool is unchanged', () => {
     `the pool is ${names.length} cards, not 496 (492 printed + 4 synthetics: Unit Token, `
     + 'Beyond, Codex Incarnate and Training Construct from cards/registry.ts, Alluring Attribute from apply.ts). '
     + 'If this reads 494 the import at the top of this file has been narrowed back to '
-    + 'cards/registry.ts and the pool has gone half-visible — see R214.');
+    + 'cards/registry.ts and the pool has gone half-visible (see 180-pool-sight).');
 
-  // R214 — the APPEND-NOT-REORDER invariant, asserted rather than remembered.
+  // the APPEND-NOT-REORDER invariant, asserted rather than remembered (see 180-pool-sight).
   // apply.ts imports registry.ts, so every registry card is registered before
   // apply's synthetic is. If that ever stops holding, the 495-hash below moves
   // AND this fails, which is what tells the two apart: a hash change with this
@@ -133,13 +133,13 @@ test('the registration order of the whole pool is unchanged', () => {
   // with this red is a genuine reorder (every deal changes).
   const first494 = createHash('sha256').update(names.slice(0, 494).join('\n')).digest('hex').slice(0, 16);
   assert.equal(first494, '96e1ffbb40fdc926',
-    'THE FIRST 494 REGISTRATIONS HAVE MOVED. This hash predates R214 and is the one this file '
+    'THE FIRST 494 REGISTRATIONS HAVE MOVED. This hash predates the 2026-08-26 pool fix and is the one this file '
     + 'pinned when it could only see cards/registry.ts, so it is the direct evidence that '
-    + 'widening the import in R214 appended a card rather than reordering the pool. It failing '
+    + 'widening the import appended a card rather than reordering the pool. It failing '
     + 'means a REAL reorder, not a synthetic arriving late.');
 
   const fingerprint = createHash('sha256').update(names.join('\n')).digest('hex').slice(0, 16);
-  // R297: Training Construct appended at the end of cards/registry.ts — the first 494 did not
+  // Training Construct (CR D8.1b) appended at the end of cards/registry.ts — the first 494 did not
   // move and DECK_LIST (below) did not change, so no deal did either.
   assert.equal(fingerprint, '3dd322098254ed10',
     'THE CARD REGISTRATION ORDER HAS CHANGED, and that is an input to every seeded game exactly '
@@ -153,11 +153,11 @@ test('the registration order of the whole pool is unchanged', () => {
     + 'is void.');
 });
 
-test('R214: the DEAL LIST — what createGame actually shuffles — is unchanged', () => {
+test('the DEAL LIST — what createGame actually shuffles — is unchanged', () => {
   // The pool hash above was always a PROXY. `createGame` deals off `DECK_LIST`
   // and `draftDeckList`, never off `allCardNames()`, and DECK_LIST filters out
   // every Token and Resource face — so all three synthetics are absent from it
-  // by construction. That is why R214 could add a card to the pool without
+  // by construction. That is why the 2026-08-26 fix could add a card to the pool without
   // moving a single deal, and pinning the proxy alone could not have said so.
   //
   // Pin the thing itself. A change HERE is a genuine deal change; a change to

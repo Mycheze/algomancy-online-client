@@ -106,7 +106,7 @@ test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Ti
   // "Any additional [cost] of the card must be paid. That means you CANNOT use
   // Volatile Toxicity on Towering Colossus from same Tides of the Cosmos (he
   // cannot be sacrificed, since he is not yet in play)."
-  // R338 (CT-221): pushInlinePlay collects the cast window's own [cost] now;
+  // CR 702.4e, 702.4d (CT-221): pushInlinePlay collects the cast window's own [cost] now;
   // until then no sacrifice was asked and the free Volatile Toxicity resolved
   // into nothing.
   const { h, D } = tides(39605, ['Towering Colossus', 'Volatile Toxicity'], (g, _A, d) => {
@@ -115,7 +115,7 @@ test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Ti
   const curio = unitsOf(h, D).find(u => u.card === 'Curio Drifter')!.id;
   decide(h, l => l.startsWith('Towering Colossus'));         // [5]
   decide(h, l => l.startsWith('Volatile Toxicity'));         // [2]
-  // R337: the Colossus is itself a Virus card, so Tides asks how it is played
+  // CR 701.2c: the Colossus is itself a Virus card, so Tides asks how it is played
   decide(h, l => l === 'Play Towering Colossus');
   const asked = (h.state.decision?.options ?? []).map(o => JSON.stringify(o.value));
   assert.ok(asked.includes(JSON.stringify({ unit: curio })),
@@ -126,7 +126,7 @@ test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Ti
 
 test('RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0', () => {
   // "Any spells with X cost can only be played with X=0 making most of them useless"
-  // (and R157 §1: the X card is choosable at [0]).
+  // (and CR 107.3a: the X card is choosable at [0]).
   const { h, A } = tides(39608, ['Wildfire']);
   assert.ok(labels(h).some(l => l === 'Wildfire [0]'), `Wildfire is offered at [0]; menu [${labels(h).join(' | ')}]`);
   decide(h, l => l.startsWith('Wildfire'));
@@ -396,7 +396,7 @@ test('RAQ Dispatch Courier: a Battle spell unit is not playable in the haste ste
 
 test('RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines', () => {
   // _passer: "Counter-attacks ARE allowed even if IT players decides to Pass
-  // his attack opportunity." — R15: NIT then attacks round 2 with any unit.
+  // his attack opportunity." — CR 610.4d: NIT then attacks round 2 with any unit.
   const h = new Harness(39640);
   toDeployment(h);
   const IT = h.state.initiative, NIT = (1 - IT) as Seat;

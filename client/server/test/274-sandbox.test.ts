@@ -233,8 +233,8 @@ test('§3 a card from the WHOLE registry reaches hand, board or bin', () => {
 });
 
 test('§3 ⚠ a card PLACED in a bin is not TRASHED', () => {
-  /* R40 defines trashing by the destination, so routing a sandbox bin summon
-   * through `E.toBin` (which R145's census requires — it is the only place that
+  /* CR 801.2 defines trashing by the destination, so routing a sandbox bin summon
+   * through `E.toBin` (which the bin-entry census requires — it is the only place that
    * knows which zone a card came from) would have trashed it by default, and
    * fired "when I am trashed" for a card that had never been anywhere. That is
    * the sandbox inventing an event, which is the wrong side of BL-06's ⚠ line.

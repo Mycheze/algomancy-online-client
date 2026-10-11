@@ -12,7 +12,7 @@
  *   A: "Yes, the spell part happens and if it resolves, the unit will spawn
  *       into formation"
  *   Q: "Does that count as 'playing a spell' for some triggers?"  A: "Yes."
- * (Recorded in docs/digital-rules.md, and already honoured by Dispatch Courier
+ * (Recorded in the retired ruling register, and already honoured by Dispatch Courier
  * and Writhing Host, which both read `kind === 'unit' || kind === 'spellUnit'`.)
  *
  * Seeds 11000-11099.
@@ -43,8 +43,8 @@ test('Hooba-Pon: a SPELL UNIT is a unit — it is offered, its spell part happen
     `the spell unit in hand is offered as "a unit"; menu was [${offered(h)}]`);
   pick(h, 0);
 
-  // R198 reordered the two questions, and the order is the ruling: the spot is
-  // part of the PLAY (R29), so it is declared before the spell part resolves —
+  // A later fix reordered the two questions, and the order is the ruling: the spot is
+  // part of the PLAY (CR 702.3e), so it is declared before the spell part resolves —
   // the card then goes on the stack and the opponent gets their window.
   pick(h, { kind: 'behind', unit: hooba });            // the open back slot
   assert.ok(h.state.stack.some(i => i.card === 'Spawntender'),
@@ -84,7 +84,7 @@ test('Insidious Invitation: "play a unit from hand" lets each player play a SPEL
   const mine = h.state.players[A]!.hand.indexOf('Spawntender');
   assert.ok(offered(h).includes(String(mine)), 'A is offered their spell unit');
   pick(h, mine);
-  // R198: the play is on the stack now, so the body has not arrived yet — what
+  // CR 703.5: the play is on the stack now, so the body has not arrived yet — what
   // the opponent is looking at while THEY are asked is the declared play.
   assert.ok(h.state.stack.some(i => i.card === 'Spawntender'), "A's play is on the stack");
 
@@ -112,7 +112,7 @@ test('Hooba-Pon: a plain unit still plays into the formation exactly as before',
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
   pass(h); pass(h);
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));
-  pick(h, { kind: 'behind', unit: hooba });            // R198: declared with the play
+  pick(h, { kind: 'behind', unit: hooba });            // CR 702.3e: declared with the play
   pass(h); pass(h);                                    // …and answered on the stack
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2);

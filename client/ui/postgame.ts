@@ -54,12 +54,12 @@ export interface GameOver {
   rematchRoom: string | null;
   /** it went into somebody's profile */
   recorded: boolean;
-  /** R298: a single card duel — the card per seat. Counted toward nothing of
+  /** CR D8.2e: a single card duel — the card per seat. Counted toward nothing of
    * either player's; it moves the two cards on the card ladder. */
   single?: [string, string];
   unlocked?: { id: string; name: string; desc: string; icon: string }[];
   /**
-   * R290 — present only when a concede decided the game: who conceded, on
+   * CR D8.5 — present only when a concede decided the game: who conceded, on
    * which game turn, and how much the server says it weighed. The WEIGHT is
    * the server's word, not something this screen works out from the turn —
    * the thresholds are named once, in server/concession.ts, and the client
@@ -72,7 +72,7 @@ export interface GameOver {
 }
 
 /**
- * R290 — the one line the post-game screen adds for a concession that did
+ * CR D8.5 — the one line the post-game screen adds for a concession that did
  * not weigh as a full game. Empty for a normal concession (turn 3+): the
  * owner's ruling is that such a player "is dead and just concedes to save
  * time", and the screen should not say anything a lethal blow would not.

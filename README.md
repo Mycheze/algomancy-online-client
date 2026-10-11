@@ -38,10 +38,12 @@ Three consequences for anyone reading it:
   comment saying why, usually with the date and the playtest that forced it.
   Those comments are the design record; there is no separate one. Read them
   before changing what they guard.
-- **Every ruling is a test.** The paper rules leave gaps an engine has to
-  fill. Each adjudication is a numbered ruling in
-  [`client/docs/digital-rules.md`](client/docs/digital-rules.md), R1–R300
-  and counting, and a test that encodes it. That file is the engine's spec.
+- **Every rule is a test.** The paper rules leave gaps an engine has to
+  fill. The [comprehensive rules](data/comprehensive-rules/README.md) number
+  every rule the client enforces — printed, the designer's answers, and the
+  owner's own calls where neither speaks — each resting on a checked quote or
+  an executed test. That document is the engine's spec; code cites it as
+  `CR 608.2b`.
 - **The work queues are in the repo.** [`client/ledgers/`](client/ledgers/README.md)
   holds every ticket, bug report and verdict, open and closed. The closed
   halves are long and are kept on purpose: each closed entry names the test
@@ -169,7 +171,7 @@ client/engine/   src/ (the rules reducer) · test/ · scripts/         the engin
 client/ui/       the browser client, one esbuild bundle; imports the engine
 client/server/   the WebSocket game server · test/ (unit) · e2e/ (spawns the real server)
 client/ledgers/  every work queue, open and closed, and the snapshots of live reports
-client/docs/     the specs: digital-rules.md (the ruling register), deck-format.md, the design docs
+client/docs/     deck-format.md, the design docs, the question sheets (test fixtures)
 deploy/          Caddyfile, the systemd units, the backup, the install recipe
 var/             ALL mutable runtime state. Gitignored whole. Never commit it; back it up.
 ```
@@ -186,8 +188,8 @@ var/             ALL mutable runtime state. Gitignored whole. Never commit it; b
   the commit, then `npm --prefix client/engine run extract`. A change to a
   card's behaviour goes in its set file, and its test is the definition of
   done.
-- A rule the engine has to decide gets a ruling in `digital-rules.md` and a
-  test. A bug from a playtest gets a ledger entry that names the test that
+- A rule the engine has to decide goes into the comprehensive rules (the
+  owner's call, in his words, in the record it settles) and gets a test. A bug from a playtest gets a ledger entry that names the test that
   would catch it again.
 - `client/engine/src/cards/sets/index.ts` is append-only. Import order is
   deck order, and every saved game depends on it.

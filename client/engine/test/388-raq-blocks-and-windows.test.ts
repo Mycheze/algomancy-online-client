@@ -274,7 +274,7 @@ test('RAQ Squish: the unit is the source — a Powerful ally deals double its de
 
 test('RAQ Squish: a Powerful Squish does not double — the spell is not the source', () => {
   // "It doesn't matter if Squish is Powerful". Chitin Shredder is a {Powerful}
-  // Virus, and R79 lets a Virus go onto a spell on the stack.
+  // Virus, and CR 723.4 lets a Virus go onto a spell on the stack.
   const h = new Harness(38817);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -303,7 +303,7 @@ test('RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does no
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   const ally = tok(h, A, 1, 3);
-  const ember = spawn(h, A, 'Ember of Life');        // attacks too, so it stands in the battle region (R12)
+  const ember = spawn(h, A, 'Ember of Life');        // attacks too, so it stands in the battle region (CR 601.2)
   const wall = tok(h, D, 0, 20);
   giveResources(h, A, 'earth', 2);
   toNextBattle(h, A);
@@ -357,7 +357,7 @@ test('RAQ Squish: a Robot 10 squishing Unaware Bubb deals its printed defense, 0
 
 test('RAQ Squish: Bubb in a column with Good Whale squishes with Piercing — the excess reaches the player', () => {
   // _passer, answering a player: "Since Bubb will be the source of damage and he
-  // has Piercing, then any excess damage can be dealt to enemy player." (R294:
+  // has Piercing, then any excess damage can be dealt to enemy player." (CR 802.16n:
   // a unit has its column's attributes for everything it does.)
   const h = new Harness(38815);
   toDeployment(h);
@@ -373,7 +373,7 @@ test('RAQ Squish: Bubb in a column with Good Whale squishes with Piercing — th
   pick(h, { unit: victim });
   const life = h.state.players[D]!.life;
   pass(h); pass(h);
-  assignDefault(h);   // R340: "can be dealt" is elective — the default lets the 5 through
+  assignDefault(h);   // CR 802.16j: "can be dealt" is elective — the default lets the 5 through
   assert.ok(!ent(h, victim));
   assert.equal(life - h.state.players[D]!.life, 5, 'Bubb deals 6; 1 kills the 1/1 and 5 pierce');
   finishBattle(h);

@@ -1,4 +1,4 @@
-/* R298 — SINGLE CARD DUEL, end to end.
+/* CR D8.2 — SINGLE CARD DUEL, end to end.
  *
  *   1. the engine: thirty of one deck card is a deck; nothing else new is
  *   2. the room: the flag, the rematch, the file
@@ -45,7 +45,7 @@ const thirty = (n: string): string[] => Array.from({ length: SINGLE_CARD_COPIES 
 
 // ── 1. the engine ─────────────────────────────────────────────────────
 
-console.log('\n[R298: thirty of one deck card is a deck]');
+console.log('\n[CR D8.2: thirty of one deck card is a deck]');
 {
   eq(SINGLE_CARD_COPIES, 30, 'thirty copies');
   const c = checkSingleCard(X);
@@ -95,7 +95,7 @@ const SPELL2 = DECK_LIST.find(n => n !== SPELL && getCard(n).kind === 'spell' &&
 const MAKER = DECK_LIST.find(n => getCard(n).kind === 'spell' && createsOf(n).some(t => getCard(t).kind === 'unit'))!;
 const UNIT = DECK_LIST.find(n => getCard(n).kind === 'unit')!;
 
-console.log('\n[R298: two cards that make no units are a draw]');
+console.log('\n[CR D8.2c: two cards that make no units are a draw]');
 {
   ok(SPELL && SPELL2 && MAKER && UNIT, `non-vacuous: ${SPELL}, ${SPELL2}, ${MAKER}, ${UNIT}`);
   ok(!makesUnits(SPELL) && !makesUnits(SPELL2), 'a spell that creates nothing makes no units');
@@ -123,7 +123,7 @@ console.log('\n[R298: two cards that make no units are a draw]');
 
 // ── 2. the room ───────────────────────────────────────────────────────
 
-console.log('\n[R298: the room keeps the flag, and so do its rematch and its file]');
+console.log('\n[Single Card Duel: the room keeps the flag, and so do its rematch and its file]');
 const duel = (() => {
   const room = createRoom('SCDA', 3, ['Ann', 'Bob'], 'constructed', undefined, thirty(X), undefined, null, undefined, true);
   ok(room.single === true, 'a single-card room is flagged');
@@ -144,7 +144,7 @@ const duel = (() => {
 
 // ── 3. the card ladder ────────────────────────────────────────────────
 
-console.log('\n[R298: the card ladder fold]');
+console.log('\n[CR D8.2f: the card ladder fold]');
 {
   const game = (code: string, a: string, b: string, winner: 0 | 1, extra: object = {}) => ({
     code, playedAt: `2026-09-18T10:00:${code.slice(-2)}Z`, finished: true, winner, single: [a, b] as [string, string], ...extra,
@@ -173,7 +173,7 @@ console.log('\n[R298: the card ladder fold]');
 
 // ── 4. the stats ──────────────────────────────────────────────────────
 
-console.log('\n[R298: recorded and tagged, counted in no player fold]');
+console.log('\n[CR D8.2e: recorded and tagged, counted in no player fold]');
 {
   const reg = register('singletester', 'a long enough password 42');
   ok(reg.ok, 'an account to record against');
@@ -197,7 +197,7 @@ console.log('\n[R298: recorded and tagged, counted in no player fold]');
 
 // ── 5. the real server ────────────────────────────────────────────────
 
-console.log('\n[R298: the server end to end]');
+console.log('\n[CR D8.2: the server end to end]');
 
 interface Msg { t: string; view?: any; waiting?: any; single?: unknown; msg?: string; winner?: number }
 

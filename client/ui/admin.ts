@@ -281,7 +281,7 @@ function gamesHtml(): string {
       ? esc(g.players[i])
       : `${esc(g.players[i])}<i class="unk" title="not a current account — the name recorded at the time">*</i>`);
     // ⚠ THE RESULT WORD IS PREFIXED, AND THAT IS NOT A STYLE CHOICE.
-    // ui/test/244's R266 census walks every ui/*.ts for single-quoted
+    // ui/test/244's CR D7.4 census walks every ui/*.ts for single-quoted
     // EventType names and counts a match as "this module consumes that event".
     // A results column printing the word for a tied game is not a consumer of
     // the event of the same name, and counting it makes the client's coverage

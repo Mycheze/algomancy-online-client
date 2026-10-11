@@ -192,7 +192,7 @@ The rules:
 - **The first decided game settles the match.** After that the link shows the
   result, not a new room.
 - **A turn-1 walkover counts for the league** (the opponent wins), even though
-  R290 keeps it out of stats. A league no-show-by-concession is still a result.
+  CR D8.5 keeps it out of stats. A league no-show-by-concession is still a result.
 - A **rematch** from the post-game screen is an ordinary friendly.
   `createRematch` must **not** copy `league`.
 - `game.finished` is finally emitted here too, carrying `users` and the league

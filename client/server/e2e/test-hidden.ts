@@ -22,7 +22,7 @@ const ok = (cond: unknown, label: string): void => {
 const codes: string[] = [];
 const room$ = (code: string, seed: number): Room => { codes.push(code); return createRoom(code, seed); };
 /** did action `k` allocate an entity id? (read off the id floors — the room's
- * old `segTouched` flag, removed in R312, was this plus the RNG) */
+ * old `segTouched` flag, removed in the undo-lock work (CR D4.3), was this plus the RNG) */
 const movedIds = (room: Room, k: number): boolean =>
   (room.segIdFloor[k + 1] ?? room.state.nextId) > room.segIdFloor[k]!;
 /** did action `k` draw from the RNG stream? (its reference key says so) */
@@ -33,11 +33,11 @@ interface Reveal { step: SegKey; to: Seat; reveal: EngineEvent[] }
 const reveals: Reveal[] = [];
 
 /**
- * R228: the haste step is ALWAYS offered now, so `donePlanning` from both
+ * CR 504.5: the haste step is ALWAYS offered now, so `donePlanning` from both
  * seats lands in it rather than sailing past it into the battle drain. It is
  * NOT auto-closed anywhere — `forcedAction` is deliberately battle-only, and
  * teaching it to close a step because a seat has nothing to do would rebuild
- * the exact side channel R224 deleted (an auto-`doneHaste` is a broadcast that
+ * the exact side channel the always-offer-the-step ruling deleted (an auto-`doneHaste` is a broadcast that
  * the seat's hand is empty of haste plays). So a test that wants to be past
  * the step says so, in both seats' names, the same shape
  * `engine/test/util.ts::skipHasteStep` uses.
@@ -154,7 +154,7 @@ function actOn(room: Room, a: Action): void {
   console.log('\n[into deployment]');
   act({ type: 'donePlanning', seat: 0 });
   act({ type: 'donePlanning', seat: 1 });
-  ok(room.segKey === 'haste', 'R228: the haste step is between planning and the battle, always');
+  ok(room.segKey === 'haste', 'CR 504.5: the haste step is between planning and the battle, always');
   passHaste(room, act);
   // empty boards: the forced drain walks the whole battle by itself
   ok(room.state.phase === 'deploy', 'forced actions drained the empty battle into deploy');
@@ -256,7 +256,7 @@ function actOn(room: Room, a: Action): void {
   reveals.length = 0;
   act({ type: 'doneHaste', seat: 1 });
   ok(reveals.length === 0,
-    'R228: seat 1 finishing does not close the step — seat 0 is in it too, and used to be '
+    'CR 504.5a: seat 1 finishing does not close the step — seat 0 is in it too, and used to be '
     + 'marked done for them, which told seat 1 what seat 0 was holding');
   act({ type: 'doneHaste', seat: 0 });
   ok(reveals.length === 2 && reveals.every(r => r.step === 'haste'),
@@ -292,7 +292,7 @@ function actOn(room: Room, a: Action): void {
   console.log('\n[the splice gate, and how little is left of it]');
   act({ type: 'donePlanning', seat: 0 });
   act({ type: 'donePlanning', seat: 1 });
-  passHaste(room, act);                 // R228 — this section is about DEPLOYMENT
+  passHaste(room, act);                 // CR 504.5 — this section is about DEPLOYMENT
   for (const s of [0, 1] as Seat[]) {
     for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
     room.state.players[s]!.hand.push('Ignis Sprite');
@@ -364,7 +364,7 @@ function actOn(room: Room, a: Action): void {
   // observe that short of exhausting the deck, which cannot happen inside a
   // segment. Everything else must be identical.
   //
-  // R296 MOVED WHICH ZONE THAT IS. Recycles used to land on the bottom of
+  // THE RECYCLE MARK (CR 408.2) MOVED WHICH ZONE THAT IS. Recycles used to land on the bottom of
   // `sharedDeck` and this normaliser sorted that; they land in
   // `sharedRecycled` now, so sorting the deck alone left the interleaving
   // visible in a field nothing normalised. The exception is also WEAKER than

@@ -2,12 +2,12 @@
   {
     "id": "F-U09-1",
     "rule": "turn.deploy.stack",
-    "title": "35-rot test title asserts that deployment has no priority, which R286 amended",
-    "summary": "The test is named 'deployment opens no priority window' and asserts priority === null, which is R38's clause. R286 gives each seat priority over its own deployment stack, so the test pins the unbuilt state (CT-185) under a title that reads as current law. The rot half (rot cannot be responded to) is still right. Retitle it to the rot claim, or tie it to CT-185 so it flips when the deployment stop is built.",
+    "title": "35-rot test title asserts that deployment has no priority, which the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) amended",
+    "summary": "The test is named 'deployment opens no priority window' and asserts priority === null, which is the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)’s clause. The owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) gives each seat priority over its own deployment stack, so the test pins the unbuilt state (CT-185) under a title that reads as current law. The rot half (rot cannot be responded to) is still right. Retitle it to the rot claim, or tie it to CT-185 so it flips when the deployment stop is built.",
     "evidence": [
       {
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
-        "quote": "test('R38: rot damage cannot be responded to — deployment opens no priority window', () => {"
+        "quote": "test('CR 112.13c: rot damage cannot be responded to — deployment opens no priority window', () => {"
       },
       {
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
@@ -23,12 +23,12 @@
   {
     "id": "F-U09-2",
     "rule": "turn.regroup.sequence",
-    "title": "The R11 regroup test claims an exact sequence but asserts only the end state",
-    "summary": "05-rulings 'R11: regroup runs its exact sequence' checks that each of the five regroup effects happened, after regroup. It never observes their order, so a reordering of startRegroup would stay green. Either drop 'exact sequence' from the title, or add an observation that can tell the orders apart, such as a trigger that reads damage or formation membership mid-regroup.",
+    "title": "The owner ruling of 2026-08-18 (“Regroup order”) regroup test claims an exact sequence but asserts only the end state",
+    "summary": "05-rulings 'the owner ruling of 2026-08-18 (“Regroup order”): regroup runs its exact sequence' checks that each of the five regroup effects happened, after regroup. It never observes their order, so a reordering of startRegroup would stay green. Either drop 'exact sequence' from the title, or add an observation that can tell the orders apart, such as a trigger that reads damage or formation membership mid-regroup.",
     "evidence": [
       {
         "file": "client/engine/test/05-rulings.test.ts",
-        "quote": "test('R11: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {"
+        "quote": "test('CR 506.2: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {"
       },
       {
         "file": "client/engine/test/05-rulings.test.ts",

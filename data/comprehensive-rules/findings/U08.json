@@ -26,12 +26,12 @@
   {
     "id": "F-U08-2",
     "rule": "turn.haste.prophesy",
-    "title": "Prophecy timing test title says prophesying is illegal in the haste step without the R277 exception",
-    "summary": "36-cache-prophecy's title states that prophesying is illegal in planning, the haste step and battle, unqualified. R277 later made a banner whose condition ends in [Haste] prophesiable in the haste step. The test uses an unmarked banner, so its assertions still hold, but the title states the pre-R277 law. Retitle it \"an UNMARKED banner…\" and point at 257.",
+    "title": "Prophecy timing test title says prophesying is illegal in the haste step without the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”) exception",
+    "summary": "36-cache-prophecy's title states that prophesying is illegal in planning, the haste step and battle, unqualified. The owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”) later made a banner whose condition ends in [Haste] prophesiable in the haste step. The test uses an unmarked banner, so its assertions still hold, but the title states the law from before the owner ruling of 2026-08-30 (“the [Haste] on a prophecy banner…”). Retitle it \"an UNMARKED banner…\" and point at 257.",
     "evidence": [
       {
         "file": "client/engine/test/36-cache-prophecy.test.ts",
-        "quote": "test('R42: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {"
+        "quote": "test('CR 803.7b: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {"
       }
     ],
     "ct": "CT-235"
@@ -40,11 +40,11 @@
     "id": "F-U08-3",
     "rule": "turn.haste.always",
     "title": "Test comments and assertion messages still say the haste step opens only when someone holds a haste card",
-    "summary": "R224/R228 made the haste step open every turn and deleted the predicate that skipped it. Several test comments and assertion messages still say the step opens because a seat holds a payable haste card, and util.ts documents skipHasteStep with the reversed R18 rule. The assertions pass either way (the step is always open), so the messages mislead readers about current law. Reword them.",
+    "summary": "The owner rulings of 2026-08-28 (“the haste step is ALWAYS offered…”) and 2026-08-28 (“the haste step opens unconditionally, and…”) made the haste step open every turn and deleted the predicate that skipped it. Several test comments and assertion messages still say the step opens because a seat holds a payable haste card, and util.ts documents skipHasteStep with the reversed the owner ruling of 2026-08-18 (“Haste step engine model […]”) rule. The assertions pass either way (the step is always open), so the messages mislead readers about current law. Reword them.",
     "evidence": [
       {
         "file": "client/engine/test/util.ts",
-        "quote": "appears when someone holds a payable haste card) */"
+        "quote": " */"
       },
       {
         "file": "client/engine/test/08-cards2.test.ts",
@@ -56,7 +56,7 @@
       },
       {
         "file": "client/engine/test/33-trigger-fixes.test.ts",
-        "quote": "assert.ok(h.state.hasteDone, 'the payable haste card engaged the haste step (R18)');"
+        "quote": "assert.ok(h.state.hasteDone, 'the payable haste card engaged the haste step');"
       },
       {
         "file": "client/engine/test/36-cache-prophecy.test.ts",

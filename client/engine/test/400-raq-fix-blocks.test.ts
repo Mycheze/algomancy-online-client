@@ -4,14 +4,14 @@
  * are 388's (their {todo}s are gone); this file pins the parts of the
  * mechanism those claims do not reach.
  *
- *  - R320 (CT-202): a column that struck in the Swift sub-step deals no
+ *  - CR 608.2e (CT-202): a column that struck in the Swift sub-step deals no
  *    normal damage, and one that struck in the normal sub-step deals no
  *    Sluggish damage — "Swift/Normal/Sluggish" thread.
- *  - R321 (CT-203): side-blocks — blockers where no attacker is, any number,
+ *  - CR 606.4b (CT-203): side-blocks — blockers where no attacker is, any number,
  *    each its own column; they count as blocked and deal no combat damage —
  *    "What is blocked?" and "Piercing, side block and combat damage from
  *    defending formation".
- *  - R322 (CT-203): a unit put into the defending formation after blocks may
+ *  - CR 607.2 (CT-203): a unit put into the defending formation after blocks may
  *    stand in front of an unblocked attacker, and it blocks it.
  */
 import { test } from 'node:test';
@@ -43,9 +43,9 @@ function place(h: Harness, re: RegExp): void {
   h.do({ type: 'decide', seat: dec.seat, choice: i });
 }
 
-// ── R321: side-blocks ──
+// ── CR 606.4: side-blocks ──
 
-test('R321 side-blocks: two units block where no attacker is, each its own column, and Roving Quillback counts both', () => {
+test('side-blocks: two units block where no attacker is, each its own column, and Roving Quillback counts both', () => {
   const h = new Harness(40001);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -67,7 +67,7 @@ test('R321 side-blocks: two units block where no attacker is, each its own colum
   assert.equal(ent(h, s1)!.damage, 0, 'and take none');
 });
 
-test('R321 a Piercing side-blocker deals no combat damage to the attacking player', () => {
+test('CR 606.4f a Piercing side-blocker deals no combat damage to the attacking player', () => {
   // _passer: "Does my side-blocking units deal combat damage to enemy face?
   // No. … They wouldn't attack at all since they don't have any attacking
   // enemy units in front of them."
@@ -86,7 +86,7 @@ test('R321 a Piercing side-blocker deals no combat damage to the attacking playe
   assert.equal(h.state.players[D]!.life, 30 - 1, 'the unblocked attacker still connects');
 });
 
-test('R321 a side-block on the left opens a column before column 1, and the attack moves right', () => {
+test('CR 606.4a a side-block on the left opens a column before column 1, and the attack moves right', () => {
   const h = new Harness(40003);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -103,7 +103,7 @@ test('R321 a side-block on the left opens a column before column 1, and the atta
   assert.equal(h.state.players[D]!.life, 30 - 2, 'the attack column is unblocked and connects');
 });
 
-test('R321 side-blocks reach no further out than the declaration is wide', () => {
+test('CR 606.4c side-blocks reach no further out than the declaration is wide', () => {
   const h = new Harness(40004);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -119,9 +119,9 @@ test('R321 side-blocks reach no further out than the declaration is wide', () =>
   assert.match(issue({ 3: [side] }) ?? '', /no such blocking column/, 'one unit cannot stand three columns out');
 });
 
-// ── R322: a blocker put in after blocks ──
+// ── CR 607.2: a blocker put in after blocks ──
 
-test('R322 a Tiderunner put in front of an unblocked attacker fights it — the attacker deals its damage to the Tiderunner', () => {
+test('CR 608.4d a Tiderunner put in front of an unblocked attacker fights it — the attacker deals its damage to the Tiderunner', () => {
   const h = new Harness(40005);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -145,7 +145,7 @@ test('R322 a Tiderunner put in front of an unblocked attacker fights it — the 
   finishBattle(h);
 });
 
-test('R322 the attacker is never offered a blocking spot', () => {
+test('CR 607.2c the attacker is never offered a blocking spot', () => {
   const h = new Harness(40006);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -160,9 +160,9 @@ test('R322 the attacker is never offered a blocking spot', () => {
   assert.deepEqual(g.formationSlots(D).map(s => s.spot), [{ kind: 'block', column: 0 }], 'the defender gets one, for column 1');
 });
 
-// ── R320: the mark is the column's, through a re-key ──
+// ── CR 608.2e: the mark is the column's, through a re-key ──
 
-test('R320 a struck mark moves with its column when a new column opens on the left', () => {
+test('CR 608.2e a struck mark moves with its column when a new column opens on the left', () => {
   const h = new Harness(40007);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -195,7 +195,7 @@ test('R320 a struck mark moves with its column when a new column opens on the le
 
 // ── the placement bar numbers columns the way the board does ──
 
-test('R321/R322 a defender\'s "behind" spot is labelled by the column it stands opposite, not its count of blocks', () => {
+test('CR 606.4 a defender\'s "behind" spot is labelled by the column it stands opposite, not its count of blocks', () => {
   // The browser check (2026-10-10): with side-blocks on the left, the bar said
   // "column 3, behind Bubb" for the spot the board drew as column 5.
   const h = new Harness(40008);

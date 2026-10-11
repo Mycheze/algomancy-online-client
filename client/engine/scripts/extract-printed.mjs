@@ -67,7 +67,7 @@ function parseAmbush(text) {
 }
 
 /**
- * R142 — LAYOUT ARTIFACTS from the card art, scrubbed once, here.
+ * LAYOUT ARTIFACTS from the card art, scrubbed once, here.
  *
  * Report #102 was about markup reaching the player. Two of the things that
  * reach the player are not markup at all: they are accidents of the printed
@@ -128,7 +128,7 @@ const PROPHECY_RE = new RegExp(
 /** A printed "[Gain N debt]" bracketed additional cast cost on its own line. */
 const GAIN_DEBT_RE = /^\s*\[\s*Gain\s+(\d+)\s+debt\s*\]\s*$/i;
 
-/** R40 — the "Discard me" cost line: an alternative play mode (like Ambush)
+/** CR 111.12 — the "Discard me" cost line: an alternative play mode (like Ambush)
  * meaning "pay this, discard me from hand, which TRASHES me and so fires my
  * own 'when I am trashed' trigger". The pool prints three of them, all on the
  * FIRST line of the text box and all in the same shape:
@@ -336,7 +336,7 @@ function textTopOf(name) {
  * per-card shape, factored out so the catalogue pass below builds on exactly
  * the same parse rather than a lookalike. */
 function printedOf(name, e) {
-  // R142: layout artifacts out before anything reads the strings — the banner,
+  // layout artifacts out before anything reads the strings — the banner,
   // ambush and attribute parsers all see the normalised form, so there is one
   // spelling of the printed text in the whole pipeline
   // layout normalised first, so every parser below (markers, attrs, timing,

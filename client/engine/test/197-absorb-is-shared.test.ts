@@ -1,4 +1,4 @@
-/* R231 / CT-88 — THE ABSORB RULE LIVES IN ONE PLACE.
+/* CT-88 — THE ABSORB RULE LIVES IN ONE PLACE.
  *
  * ── THE GAP
  *
@@ -113,7 +113,7 @@ function sourceFiles(): string[] {
 
 /* ── §1 · the instrument, and proof it can see ───────────────────────────── */
 
-test('R231 §1: the lint is not blind — it convicts a local absorb under any name, and acquits every near miss', () => {
+test('§1: the lint is not blind — it convicts a local absorb under any name, and acquits every near miss', () => {
   // ⚠ 149-strip-code's question, asked of this checker: what would a BLIND
   // version of this file do? It would return [] for everything and §2 would
   // read clean — which is the state the whole suite was in before this round.
@@ -181,7 +181,7 @@ test('R231 §1: the lint is not blind — it convicts a local absorb under any n
 
 /* ── §2 · the lint ───────────────────────────────────────────────────────── */
 
-test('R231 §2: no test source hand-rolls Harness.absorb — the rule lives in test/util.ts alone', () => {
+test('§2: no test source hand-rolls Harness.absorb — the rule lives in test/util.ts alone', () => {
   const offences: Offence[] = [];
   for (const f of sourceFiles()) offences.push(...offencesIn(fs.readFileSync(path.join(HERE, f), 'utf8'), f));
   assert.deepEqual(offences.map(o => `${o.where}  ${o.why}`), [],
@@ -192,7 +192,7 @@ test('R231 §2: no test source hand-rolls Harness.absorb — the rule lives in t
 
 /* ── §3 · the reach measurement ──────────────────────────────────────────── */
 
-test('R231 §3: the lint has reach — the corpus, the receiver resolver and the routed files', () => {
+test('§3: the lint has reach — the corpus, the receiver resolver and the routed files', () => {
   // Every number is asserted because a checker that quietly loses its reach
   // reports clean forever. docs/13 §5 is the catalogue of the ones that did.
   const files = sourceFiles();
@@ -227,7 +227,7 @@ test('R231 §3: the lint has reach — the corpus, the receiver resolver and the
 
 /* ── §4 · the rule itself, against its source of truth ───────────────────── */
 
-test('R231 §4: the shared absorb does what Harness.absorb does — the guard, and logTypes alignment', () => {
+test('§4: the shared absorb does what Harness.absorb does — the guard, and logTypes alignment', () => {
   // The lint above only proves there is ONE copy. This proves the one copy is
   // right, by behaviour rather than by reading it: a signal-only event must
   // not become a log line, and logTypes must stay index-aligned with log.

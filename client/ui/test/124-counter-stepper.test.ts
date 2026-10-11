@@ -1,4 +1,4 @@
-/* BL-25 / R139 — the counter-removal prompt says what to click, and carries a
+/* BL-25 / CR D7.2 — the counter-removal prompt says what to click, and carries a
  * quantity.
  *
  * The owner, verbatim: "It's actually okay, it's just not clear that it wants
@@ -24,9 +24,9 @@
  *     never from the UI counting pips. `counterPool` is the whole ALLY pool
  *     while a pick names ONE unit, so a client tallying board state would offer
  *     to strip four counters off a unit holding two — and would have had to
- *     re-decide R130's "all counters count as counters" to do even that.
+ *     re-decide "all counters count as counters" (CR 206.6b) to do even that.
  *
- * main.ts runs DOM code on import and no test can reach it (R134, R136), so
+ * main.ts runs DOM code on import and no test can reach it, so
  * the stepper's clamp/max/All judgement lives in ui/inspect.ts and is tested
  * there. Both engine paths that ask about a quantity of counters are exercised
  * with real games: the `removeCounters` CAST COST (Discharge, from allies;
@@ -173,7 +173,7 @@ test('clampCounterCount is total — every out-of-range input lands in range', (
 /** the pending decision, as the client sees it */
 const dec = (h: Harness): Decision => h.state.decision!;
 
-test('R139: the Discharge cost prompt tells you to click a unit', () => {
+test('CR D7.2: the Discharge cost prompt tells you to click a unit', () => {
   const h = new Harness(13901);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -191,7 +191,7 @@ test('R139: the Discharge cost prompt tells you to click a unit', () => {
     'and the cost is still named — the instruction is added, not swapped in');
 });
 
-test('R139: the stepper max is counterPool(), asked of the engine', () => {
+test('CR D7.2: the stepper max is counterPool(), asked of the engine', () => {
   const h = new Harness(13902);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -215,7 +215,7 @@ test('R139: the stepper max is counterPool(), asked of the engine', () => {
   assert.deepEqual(counterPickUnits(dec(h)), [ally], 'still one scan for the one ally');
 });
 
-test('R139: one click pays several counters, and X is what was taken', () => {
+test('CR D7.2: one click pays several counters, and X is what was taken', () => {
   const h = new Harness(13903);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -240,7 +240,7 @@ test('R139: one click pays several counters, and X is what was taken', () => {
   finishBattle(h);
 });
 
-test('R139: "All" is reachable — the whole pool in one click closes the cost', () => {
+test('CR D7.2: "All" is reachable — the whole pool in one click closes the cost', () => {
   const h = new Harness(13904);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -262,8 +262,8 @@ test('R139: "All" is reachable — the whole pool in one click closes the cost',
   finishBattle(h);
 });
 
-test('R139: the pick max is the biggest SINGLE stack, not the whole ally pool', () => {
-  // R130 says all counters count as counters; that is not licence to pretend a
+test('CR D7.2: the pick max is the biggest SINGLE stack, not the whole ally pool', () => {
+  // CR 206.6b says all counters count as counters; that is not licence to pretend a
   // pool spread over two allies can be taken in one pick. It cannot — a pick
   // names one unit.
   const h = new Harness(13905);
@@ -290,7 +290,7 @@ test('R139: the pick max is the biggest SINGLE stack, not the whole ally pool', 
 
 /* ── the cost path from an ACTIVATED ABILITY (Soul Reaver — from me) ───── */
 
-test('R139: an activated ability\'s counter cost gets the same prompt and max', () => {
+test('CR D7.2: an activated ability\'s counter cost gets the same prompt and max', () => {
   const h = new Harness(13906);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -319,7 +319,7 @@ test('R139: an activated ability\'s counter cost gets the same prompt and max', 
 
 /* ── the EFFECT path (Chombot — "move up to two counters") ─────────────── */
 
-test('R139: an effect that removes counters carries its own ceiling', () => {
+test('CR D7.2: an effect that removes counters carries its own ceiling', () => {
   const h = new Harness(13907);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

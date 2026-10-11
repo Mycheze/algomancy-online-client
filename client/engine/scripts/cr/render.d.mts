@@ -15,11 +15,9 @@ export interface CrInputs {
   verdicts: Verdict[];
   discrepancies: Discrepancy[];
   findings: Finding[];
-  classification: Record<string, { scope: string; sections?: string[]; reason?: string }> | null;
-  supersession: { edges: { from: string; to: string; relation: string; scope?: string | null; decision: string; note?: string }[] } | null;
 }
 export type RenderedFiles = { doc: string; html: string; txt: string; annexD: string; discrepanciesMd: string; ownerQuestions: string; changelog: string; json: string };
-export type CrInputPaths = Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdictsDir' | 'discrepanciesDir' | 'findingsDir' | 'classification' | 'supersession', string>>;
+export type CrInputPaths = Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdictsDir' | 'discrepanciesDir' | 'findingsDir', string>>;
 export function loadInputs(paths?: CrInputPaths): CrInputs;
 /** the drafting unit a loaded row came from (`U12`), by its file; null for a fixture row */
 export function unitOfRow(inputs: CrInputs, row: object): string | null;
@@ -31,7 +29,8 @@ export interface ProseRef { ref: string; kind: 'key' | 'num'; num: string | unde
 /** cross-references inside prose: keys → live numbers; refsIn lists each one (num undefined = dangling) */
 export function refResolver(ledger: Ledger, I?: any): { refsIn: (s: string) => ProseRef[]; refText: (s: string) => string };
 export function verdictOf(M: any, rec: RuleRecord): (Verdict & { stale: boolean }) | null;
-export function citedRulings(rec: RuleRecord): string[];
+export function ownerDates(rec: RuleRecord): string[];
+export function isDigitalTagged(rec: RuleRecord): boolean;
 /** the test files bound to a rule through its examples and sources, which the gate runs */
 export function gateTestFiles(rec: RuleRecord): string[];
 export function provenance(M: any): any;

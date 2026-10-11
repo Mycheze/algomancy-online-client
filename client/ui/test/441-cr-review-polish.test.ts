@@ -171,7 +171,7 @@ test('§4 Annex P lists each divergence once; a folded-in dupe\'s id lands on it
   const groups = [...annexP.matchAll(/<div class="fgroup"><p class="fgh"><span class="num">(CT-\d+)<\/span>/g)].map(m => m[1]!);
   assert.ok(groups.length >= 5, `only ${groups.length} shared tickets`);
   assert.equal(new Set(groups).size, groups.length, 'a ticket heads two groups');
-  for (const m of annexP.matchAll(/<p class="dh">([\s\S]*?)<\/p>/g)) assert.match(m[1]!, /rules? <a href="#r|ruling register/);
+  for (const m of annexP.matchAll(/<p class="dh">([\s\S]*?)<\/p>/g)) assert.match(m[1]!, /rules? <a href="#r|no rule of its own/);
   // one line each: the long summary is behind the entry's fold
   for (const m of annexP.matchAll(/<article class="fnd"[^>]*>([\s\S]*?)<\/article>/g)) {
     assert.match(m[1]!, /^(?:<span id="[^"]+"><\/span>)*<p class="dh">[\s\S]*?<\/p><details><summary>/);

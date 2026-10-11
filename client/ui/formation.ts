@@ -279,15 +279,15 @@ export interface Rekeyed {
 }
 
 /**
- * Carry an in-progress block preview across an R72 collapse or an R75
- * left-insert.
+ * Carry an in-progress block preview across a CR 602.5 collapse or a
+ * left-insert (CR 603.5a).
  *
- * THE INDEX IS THE MEANING (see `publishCols`) — and R72 made that a hazard
+ * THE INDEX IS THE MEANING (see `publishCols`) — and the close-up rule (CR 602.5) makes that a hazard
  * rather than a convention, because the attacking line's indices are still
  * MOVING during the `blocks` step. When the last unit in a column dies the
  * columns beside it close in ("HOLD THE LINE": *only* before blocks are
  * declared, which is exactly this window), and every key at or right of the
- * hole shifts left by one. R75's left-insert shifts them the other way. The
+ * hole shifts left by one. A left-insert (CR 603.5a) shifts them the other way. The
  * defender is mid-click through both.
  *
  * **The keys are re-keyed by WHO IS STANDING IN THE COLUMN, never by index
@@ -295,7 +295,7 @@ export interface Rekeyed {
  * decided it:
  *
  * - A length delta is not a reliable signal. One action can collapse a column
- *   AND place a unit at the right-hand end (R75 resolves placements on the
+ *   AND place a unit at the right-hand end (CR 602.6 resolves placements on the
  *   same death that empties a column), so the line can shift a full lane with
  *   `columns.length` unchanged between two paints. And the converse: a
  *   plain right-hand append changes the length while shifting NOTHING, so a
@@ -345,7 +345,7 @@ export function rekeyBuild(
     // exist here, since an emptied column collapses in this very window. Left
     // where it is rather than dropped, so the unreachable case fails quiet.
     if (to === -1 && !was.length && ci < after.length) to = ci;
-    // R321: a side-block (built past the attack's end) has no attacker to
+    // CR 606.4: a side-block (built past the attack's end) has no attacker to
     // follow; it keeps its distance from the right end of the line
     if (to === -1 && ci >= before.length) to = after.length + (ci - before.length);
     // two old columns landing on one new one is likewise impossible (a unit
@@ -361,7 +361,7 @@ export function rekeyBuild(
   return { columns, dropped, changed };
 }
 
-/* R321 — LEFT SIDE-BLOCKS IN THE BUILD.
+/* CR 606.4a — LEFT SIDE-BLOCKS IN THE BUILD.
  *
  * A block build is keyed by the attacker's column, and a side-block to the
  * LEFT of the attack has a negative key: `-1` just left of column 1, `-2`

@@ -24,7 +24,7 @@
  * so splitting on "binds a port" would leave `npm test` running two files and
  * reintroduce exactly the problem this fixes. The whole suite is ~30s.
  *
- * R204 / CT-85 — WHY THIS FILE IS NOT WHERE THE FLAKE LIVED. The suite went
+ * CT-85 (see test-clock.ts) — WHY THIS FILE IS NOT WHERE THE FLAKE LIVED. The suite went
  * red about one run in three and named a different test each time, and the
  * obvious suspicion was this runner. It was not: node:test gives a single
  * file's top-level tests concurrency 1, and the proof is in any run's TAP
@@ -61,9 +61,9 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-new-features.ts',
     covers: 'join / rename / seat takeover / undo — and THE UZRG REPORT: the resource step is hidden and your undo survives the opponent acting' },
   { file: 'test-concede.ts',
-    covers: 'R65 concede: a real Action, reaches the opponent, decides the game, is stamped into the saved room, refused when not yours; R290: the turn is stamped beside it and the post-game payload says the weight' },
+    covers: 'CR 104.4 concede: a real Action, reaches the opponent, decides the game, is stamped into the saved room, refused when not yours; CR D8.5: the turn is stamped beside it and the post-game payload says the weight' },
   { file: 'test-concession.ts',
-    covers: 'R290 concession weight: walkover / early / normal by turn; conceder −5 winner +0 on a walkover, half K on an early one; the profile fold skips a walkover whole and withholds the fast-game feats from an early game; un-stamped rows fold unchanged' },
+    covers: 'CR D8.5 concession weight: walkover / early / normal by turn; conceder −5 winner +0 on a walkover, half K on an early one; the profile fold skips a walkover whole and withholds the fast-game feats from an early game; un-stamped rows fold unchanged' },
   { file: 'test-bot.ts',
     covers: 'BL-40/BL-41 the /api/bot/* gate: ⭐ it 404s unconfigured, 404s on a wrong '
       + 'token, and REFUSES the ?token= query fallback testerAllowed() allows — plus '
@@ -80,7 +80,7 @@ const SUITE: { file: string; covers: string }[] = [
       + 'append-only triage journal, the report/ledger join, and the gate — every /api/admin '
       + 'route answering a bare 404 to signed-out, ordinary and junk-token callers alike' },
   { file: 'test-lobby.ts', covers: 'the draft lobby: trio methods, and a draft room dealing no cards until both players lock in' },
-  { file: 'test-single-card.ts', covers: 'R298 Single Card Duel: thirty of one deck card is a deck and nothing else new is, the room flag through rematch/file/replay, the card ladder fold (mirrors, walkovers, early concessions, order), no player fold counts a duel, and the server end to end — a deck ignored, the pick blind, thirty of each dealt, recorded with nobody signed in, across a restart' },
+  { file: 'test-single-card.ts', covers: 'CR D8.2 Single Card Duel: thirty of one deck card is a deck and nothing else new is, the room flag through rematch/file/replay, the card ladder fold (mirrors, walkovers, early concessions, order), no player fold counts a duel, and the server end to end — a deck ignored, the pick blind, thirty of each dealt, recorded with nobody signed in, across a restart' },
   { file: 'test-custom-rules.ts', covers: 'BL-43 custom rules on a live draft: every re-deal passes the deal, the reservation carries the rules and a join cannot, rematch/matchmaker, replay-room and replay-probe, the stats folds skip a custom game, and the server end to end across a restart' },
   { file: 'test-clock.ts',
     covers: 'the chess clock end to end: who is billed and who is not, BL-26 the bank as a '
@@ -135,13 +135,13 @@ const SUITE: { file: string; covers: string }[] = [
       + 'Then through the real store: a new account already has a rating, rebuilding is a fold '
       + 'and never an increment, and the ladder hides you until your 5th rated game' },
   { file: 'test-view-snapshot.ts',
-    covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
+    covers: "the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
   { file: 'test-concurrency.ts',
-    covers: "R150+R154/CT-32+CT-44 (playtest #98): one seat's pending decision inside a hidden simultaneous segment must not freeze the other seat's deployment — the two engine lines that used to block (now apply.ts's seat-aware decisionBlocks), the one case the deferral queue still exists for (an R85 snapshot-carrying mid-resolution suspension, whose answer would rewind the other seat's work away), the cast-time case that no longer waits at all, the after-the-fact clobber refusal, the queue's bounds and escapes, and the privacy properties none of it may break" },
+    covers: "CR D2.1b/CT-32+CT-44 (playtest #98): one seat's pending decision inside a hidden simultaneous segment must not freeze the other seat's deployment — the two engine lines that used to block (now apply.ts's seat-aware decisionBlocks), the one case the deferral queue still exists for (a snapshot-carrying mid-resolution suspension, whose answer would rewind the other seat's work away), the cast-time case that no longer waits at all, the after-the-fact clobber refusal, the queue's bounds and escapes, and the privacy properties none of it may break" },
   { file: 'test-scenario.ts',
-    covers: "R216 / docs/14 — the scenario tester's vertical slice: the admin route 404s without ALGO_TESTER_TOKEN (this is a PUBLIC deploy), a scenario room puts the DECLARED board in the seat's redacted view, the scripted opponent moves the game with one human at the table, ⭐ the room still rebuilds BYTE-IDENTICALLY across a server restart (the property the whole design rests on — docs/14 §8.1), and a verdict lands in ALGO_VERDICTS_FILE stamped with the scenario id, the engine SHA (R200), the room code and the action index" },
+    covers: "CR D8.4 / docs/14 — the scenario tester's vertical slice: the admin route 404s without ALGO_TESTER_TOKEN (this is a PUBLIC deploy), a scenario room puts the DECLARED board in the seat's redacted view, the scripted opponent moves the game with one human at the table, ⭐ the room still rebuilds BYTE-IDENTICALLY across a server restart (the property the whole design rests on — docs/14 §8.1), and a verdict lands in ALGO_VERDICTS_FILE stamped with the scenario id, the engine SHA, the room code and the action index (see replay-room.ts)" },
   { file: 'test-pending-ask.ts',
-    covers: "R247 / playtest #117 — the redacted \"somebody owes an answer\" stub, written as a LEAK TEST: on the report's own {Alluring} board every value in the stub is checked for membership in the rest of the SAME seat's view (not against a remembered field list), the stub is proved invariant under the prompt / kind / options / counter cap / numeric range / item label / declared targets, a card cast out of a hand is never named, and the hidden-segment freeze suppresses the stub entirely" },
+    covers: "CR D6.4 / playtest #117 — the redacted \"somebody owes an answer\" stub, written as a LEAK TEST: on the report's own {Alluring} board every value in the stub is checked for membership in the rest of the SAME seat's view (not against a remembered field list), the stub is proved invariant under the prompt / kind / options / counter cap / numeric range / item label / declared targets, a card cast out of a hand is never named, and the hidden-segment freeze suppresses the stub entirely" },
   { file: 'test-full-control.ts',
     covers: "BL-18's fourth row — the SERVER stepping an empty board along on a player's "
       + 'behalf. The negative control first (with the switch off the drain runs exactly as it '
@@ -163,7 +163,7 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-sandbox.ts',
     covers: "BL-06 / test mode — the sandbox as a real room: /api/sandbox/open is OPEN (no token — the owner's call, and the deliberate opposite of the scenario tester's 404), the seat's redacted view carries `sandbox` + 1000 life, all four cheats land over the socket, ⚠ all four are REFUSED in an ordinary room, ⭐ a played sandbox room rebuilds byte-identically across a server restart and replays clean through replay-room.ts and stats.ts, the history fold skips it at the source, and the second seat is a real seat another tab can stock" },
   { file: 'test-formation-decision.ts',
-    covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
+    covers: "BL-24: both formation asks (CR 602.6 resolve-time, CR 702.3e cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
   { file: 'test-malformed.ts',
     covers: "hostile input from an anonymous connection: a null/array/scalar WebSocket frame, an oversize frame, GET /%, a Host header with a space, a traversal path, a foreign Origin — the process is still there afterwards" },
   { file: 'test-proxy-addr.ts',
@@ -203,7 +203,7 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         ALGO_GAMES_DIR: join(scratch, 'games'),
         ALGO_ACCOUNTS_FILE: join(scratch, 'accounts.json'),
         ALGO_ISSUES_FILE: join(scratch, 'issues.jsonl'),
-        // R216: and the scenario tester's verdict store, for the same reason —
+        // And the scenario tester's verdict store, for the same reason —
         // on the deploy box var/verdicts.jsonl is the only copy of the
         // owner's judgements about the cards.
         ALGO_VERDICTS_FILE: join(scratch, 'verdicts.jsonl'),

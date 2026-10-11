@@ -6,8 +6,8 @@
  * live here, named, with the reason — not as a loosened check.
  *
  * WHY NOT JUST LOOSEN THE CHECK: because the checks that matter are the ones
- * that fire on a single card. R162 found `AI Cosmic Spell` precisely because
- * `AI` was the pool's ONLY single-card subtype on a Cosmic spell, and R240
+ * that fire on a single card. An earlier repair found `AI Cosmic Spell` precisely because
+ * `AI` was the pool's ONLY single-card subtype on a Cosmic spell, and the owner
  * later confirmed it was an OCR artifact rather than a subtype. A rule broad
  * enough to make `Whale` silent is broad enough to make the next `AI` silent
  * too. So the singleton check stays sharp and the 27 real singletons are

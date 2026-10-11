@@ -2,9 +2,9 @@
  *
  * ── THE CLASS, AND WHY ONE MEMBER OF IT WAS NOT ENOUGH
  *
- * R258/CT-123 made `paintLive()` a SECOND writer of the board nodes: render()
+ * CT-123 (CR D5.5a) made `paintLive()` a SECOND writer of the board nodes: render()
  * emits a handful of `class="liveslot"` hosts empty and paintLive fills them
- * afterwards, so the ⏭ chip and the presence dot stay true while R150's
+ * afterwards, so the ⏭ chip and the presence dot stay true while the CR D5.4b
  * throttle is holding and a render would be unsafe (it ends in runAutoPass —
  * it SENDS). paintLive is reached from `flushPace()` and from `pumpPace()`,
  * and `flushPace()` is the FIRST line of the `t === 'error'` handler.
@@ -127,7 +127,7 @@ test('CT-161 §1 the live-slot helpers are derived from paintLive, and the deriv
     'the census is EMPTY — a guard over an empty derived set passes forever '
     + '(docs/13-assessment.md §5). Either paintLive stopped calling setLiveSlot, or the '
     + 'shape of the call changed and the parse above no longer reads it.');
-  // R258 shipped three (pace, presence, share); the pace chip was retired on
+  // The live-slot work shipped three (pace, presence, share); the pace chip was retired on
   // 2026-09-28 (the owner cut the catching-up chip), so the floor is two
   assert.ok(SLOTS.length >= 2,
     `only ${SLOTS.length} live slot(s) found; there are two (presence, share). `
@@ -244,7 +244,7 @@ test('CT-161 §3 every live-slot helper returns on the connecting screen, where 
 /* ══ §4 — the waiting room: joined, and still no state ═════════════════ */
 
 test('CT-161 §4 every live-slot helper returns in the waiting room, which is joined and stateless', () => {
-  // R274 said why this screen is not a copy of §3: it is JOINED, so a helper
+  // The ruling behind CR D7.5 said why this screen is not a copy of §3: it is JOINED, so a helper
   // guarded on `NET.joined` instead of on `h.state` passes §3 and crashes here.
   const waiting = ui.push({
     t: 'joined', seat: SEAT, room: 'QXZZ', waiting: { have: [true, false] },
@@ -260,7 +260,7 @@ test('CT-161 §4 every live-slot helper returns in the waiting room, which is jo
     `${why(got, 'the waiting room', "flushPace(), off the `t === 'error'` handler")} And note `
     + 'WHICH question the survivors ask: `NET.joined` '
     + 'is true here and `h.state` is still null, so the guard has to be on the state, not on '
-    + 'the join (R274 found that one the hard way).');
+    + 'the join (an earlier refusal bug found that one the hard way; CR D7.5).');
   assert.match(html, /that deck is not playable/, 'and the refusal reached the player');
 });
 

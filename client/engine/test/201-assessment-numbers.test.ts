@@ -1,4 +1,4 @@
-/* R233 / CT-102 — docs/13-assessment.md QUOTES NUMBERS. NOTHING RE-READ THEM.
+/* CT-102 — docs/13-assessment.md QUOTES NUMBERS. NOTHING RE-READ THEM.
  *
  * ── WHAT HAPPENED ─────────────────────────────────────────────────────
  *
@@ -8,7 +8,7 @@
  *     "38 claims across 37 cards"
  *
  * On 2026-08-28 the suite printed `37 across 36`, with no EVENTLESS bucket at
- * all. The document had been wrong for two days. R219 (7864bb8) moved a claim
+ * all. The document had been wrong for two days. A later fix (7864bb8) moved a claim
  * underneath it and nothing said a word.
  *
  * ── WHY THIS ONE IS DIFFERENT FROM EVERY OTHER §5 ENTRY ───────────────

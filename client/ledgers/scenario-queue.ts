@@ -1,4 +1,4 @@
-/* R217 — THE SCENARIO QUEUE: which cards a human should test by hand, in order.
+/* THE SCENARIO QUEUE (see 187-scenario-queue): which cards a human should test by hand, in order.
  *
  * `docs/14-scenario-tester.md` §7. The owner can judge roughly 40 cards an hour
  * and there are 495, so the order is the whole design: twelve hours of clicking
@@ -19,11 +19,11 @@
  *               `BOARD` — "implemented, but the drill cannot build the
  *               precondition" — which is exactly what a human placing cards
  *               solves in seconds and a fixture cannot solve at all.
- *   AUGMENT     the card has an `[Augment]` box. R212 named the DONATED host
+ *   AUGMENT     the card has an `[Augment]` box. The correctness sample named the DONATED host
  *               path its single biggest hole: ten of the eleven augment cards
  *               in its sample are only ever checked on their own body, and
- *               "me"/"you" resolve differently on a host (R131).
- *   ruled×N     a ruling in digital-rules.md names the card N times. Cards that
+ *               "me"/"you" resolve differently on a host (CR 720.6c, 720.6b).
+ *   ruled×N     N comprehensive rules name the card. Cards that
  *               needed a ruling are weird by construction — that is why
  *               somebody had to rule on them.
  *   shapes      printed-text patterns that keep producing bugs: "that effect",
@@ -49,6 +49,21 @@
  */
 import { allCardNames, getCard } from '../engine/src/cards/dsl.ts';
 import { UNREACHED_CARDS, UNWITNESSED_CARDS, unreachedOpener } from './unreached.ts';
+import { loadInputs } from '../engine/scripts/cr/render.mjs';
+
+/**
+ * The comprehensive rules, one string per numbered rule: its text, its
+ * examples' words, the cards it quotes and the owner's words it rests on.
+ * The queue weighs a card by how many RULES name it.
+ */
+export function crRecordTexts(): string[] {
+  return loadInputs().records.map(r => [
+    r.text,
+    ...(r.examples ?? []).map(x => x.text ?? ''),
+    ...(r.sources?.printed ?? []).map(p => p.ref),
+    ...(r.sources?.owner ?? []).map(o => o.quote),
+  ].join(' \n '));
+}
 
 export interface QueueEntry {
   card: string;
@@ -82,7 +97,7 @@ const SHAPES: readonly (readonly [string, RegExp])[] = [
 ] as const;
 
 /**
- * How many times the rules register names this card.
+ * How many comprehensive rules name this card (a rule that names it twice counts once).
  *
  * ⚠ Word-boundary matched, and names shorter than five characters score ZERO.
  * "Rook", "Jelly", "Proph" and friends appear inside ordinary prose constantly,
@@ -90,14 +105,14 @@ const SHAPES: readonly (readonly [string, RegExp])[] = [
  * no reason at all. A signal that fires on the wrong thing is worse than a
  * missing one, because it looks like evidence.
  */
-export function rulingWeight(card: string, register: string): number {
+export function rulingWeight(card: string, rules: readonly string[]): number {
   if (card.length < 5) return 0;
-  const re = new RegExp(`\\b${card.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
-  return (register.match(re) ?? []).length;
+  const re = new RegExp(`\\b${card.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+  return rules.filter(t => re.test(t)).length;
 }
 
-/** Score every card in the pool. `register` is docs/digital-rules.md's text. */
-export function rankCards(register: string): QueueEntry[] {
+/** Score every card in the pool. `rules` is crRecordTexts(). */
+export function rankCards(rules: readonly string[]): QueueEntry[] {
   const unreached = new Map(UNREACHED_CARDS.map(c => [c, unreachedOpener(c)]));
   // DERIVED from the witness record, never a second hand-kept list — the
   // header of unreached.ts is a post-mortem of exactly that mistake.
@@ -114,7 +129,7 @@ export function rankCards(register: string): QueueEntry[] {
     const witnessed = opener !== null && !unwitnessed.has(card);
     if (witnessed) why.push('WITNESSED');
 
-    const ruled = rulingWeight(card, register);
+    const ruled = rulingWeight(card, rules);
     if (ruled >= 2) { score += Math.min(ruled, 8) * 2; why.push(`ruled×${ruled}`); }
 
     const augment = /\[Augment\]/i.test(text);
@@ -133,14 +148,14 @@ export function rankCards(register: string): QueueEntry[] {
  * The queue the runner deals from.
  *
  * ⚠ INTERLEAVED, AND THAT IS NOT COSMETIC. Ranked purely by score the top is
- * almost solid `[Augment]` cards — the ranking agreeing with R212's independent
+ * almost solid `[Augment]` cards — the ranking agreeing with the correctness sample's independent
  * finding, not a coincidence. But a session that proves one mechanism deeply
  * and touches no others is a worse use of an hour than one that spreads: the
  * owner is looking for the cards that "only come up in game", and those are
  * distributed across mechanics. So never more than two augment cards in a row.
  */
-export function buildQueue(register: string, limit = 120): QueueEntry[] {
-  const ranked = rankCards(register);
+export function buildQueue(rules: readonly string[], limit = 120): QueueEntry[] {
+  const ranked = rankCards(rules);
   const aug = ranked.filter(r => r.augment);
   const non = ranked.filter(r => !r.augment);
   const queue: QueueEntry[] = [];

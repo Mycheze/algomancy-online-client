@@ -47,7 +47,7 @@ export interface Printed {
    * prophecy GRANTED by rules text (e.g. "It gains 'Prophecy — One Turn
    * Passes'") is not a printed banner.
    *
-   * `cost` arrived on 2026-09-20 with R301, which overturned R42's claim that
+   * `cost` arrived on 2026-09-20, when the banner's affinity was found to be required, overturning the claim that
    * a banner was "plain mana, no affinity" — a claim that had been read off a
    * transcription in which all ten printed banners had silently lost their
    * pips. It IS enforced: `canPayProphecy` in apply.ts, shared by the offer
@@ -57,7 +57,7 @@ export interface Printed {
   /** Light & Dark: a printed "[Gain 4 debt]" bracketed additional cast cost
    * (its own line in the text box). Stripped out of `text`. */
   gainDebt?: number;
-  /** R40: the printed "Discard me" cost line — an alternative play mode like
+  /** CR 111.12: the printed "Discard me" cost line — an alternative play mode like
    * Ambush ("1 Discard me" on Dropslime, "2 [d] Discard Me. {Battle}" on
    * Nothyr): pay this cost, discard the card from hand, and the resulting
    * TRASH fires the card's own "when I am trashed" trigger. `timing` is the
@@ -67,7 +67,7 @@ export interface Printed {
   discardMe?: { cost: string; mana: number; timing?: 'battle' };
   text: string;
   image: string;
-  /** R297: a card that exists only for Learn to Play (the Tutorial Bot's
+  /** CR D8.1: a card that exists only for Learn to Play (the Tutorial Bot's
    * Training Construct). Never in DECK_LIST — so never in a constructed,
    * draft or shared deal — and dealt only by a lesson deal. */
   lessonOnly?: true;
@@ -80,14 +80,14 @@ export interface ResolvedCached { cached: { seat: Seat; uid: number; card: CardN
 
 /** Resolved target passed to effect run(): an entity, a player, a stack item
  * id, or a cached card. */
-/** R64: a resolved 'binCard' target. `index` is where it sits in that bin at
+/** CR 405.6: a resolved 'binCard' target. `index` is where it sits in that bin at
  * the moment of resolution — looked up then, never carried from cast. */
 export interface ResolvedBin { binCard: { seat: Seat; index: number; card: CardName } }
 
-/** R184: a resolved 'formation' target — one player's whole side of the
+/** CR 110.3d: a resolved 'formation' target — one player's whole side of the
  * battle grid, named by the seat that owns it (see `TargetRef` in types.ts;
  * the owner ruled "target formation" is THE WHOLE SIDE). Read live through
- * `E.formationUnits(seat)`, never carried as a grid snapshot: R72 moves
+ * `E.formationUnits(seat)`, never carried as a grid snapshot: CR 602.5 moves
  * columns between cast and resolution. */
 export interface ResolvedFormation { formation: Seat }
 
@@ -99,7 +99,7 @@ export interface EffectCtx {
   sourceName: string;
   sourceId?: number;
   /**
-   * R131: when this effect is a MOD's donated [Augment] text, the mod's own
+   * CR 720.6d: when this effect is a MOD's donated [Augment] text, the mod's own
    * EntityId. `sourceId` is the HOST (that is what "my" means on donated
    * text), so this is the only handle the text has on the one entity that is
    * ITSELF — which is exactly what "my OTHER Augments" (Rotbeast) has to
@@ -110,16 +110,16 @@ export interface EffectCtx {
   region: number;
   targets: ResolvedTarget[];
   x?: number;
-  /** receipt of this part's cast-time [cost] payment (R35) — e.g. the unit
+  /** receipt of this part's cast-time [cost] payment (CR 111.4) — e.g. the unit
    * sacrificed to cast, with its stats snapshotted at payment time */
   costPaid?: EffectPart['costPaid'];
   /** {Modular}: the mods applied to this card as it was played (Spellbind).
    * A GRAFTABLE mod's effect already rides as an extra part; any mod's
-   * type-line [Augment] attributes reach `grantedAttrs` below (R105). This is
+   * type-line [Augment] attributes reach `grantedAttrs` below (CR 724.4a). This is
    * the readable list, for text that wants to know what is attached — and
-   * under R105 it may hold a card that contributes neither. */
+   * under CR 724.2a it may hold a card that contributes neither. */
   mods?: CardName[];
-  /** R79/R105: attributes something applied to this effect donates to it — a
+  /** CR 721.4b, 724.4a: attributes something applied to this effect donates to it — a
    * VIRUS augmented onto it while it sat on the stack (Chitin Shredder's
    * {Powerful} on a Fireball), or a {Modular} mod applied to it as it was
    * played. Only type-line `[Augment]` attributes ever appear here — a spell
@@ -135,14 +135,14 @@ export interface EffectCtx {
    * its card is already off the stack and on its way to a bin — `resolveTop`
    * popped it, and `E.dischargeItem` will place it once every part has run. So
    * this does not erase anything itself: it raises `StackItem.eraseSelf`, and
-   * the disposal reads it and sends the card to the erased pile (R65) instead
+   * the disposal reads it and sends the card to the erased pile (CR 407.1) instead
    * of the bin. Calling it twice is the same as calling it once.
    *
    * CONSEQUENCES OF LIVING IN THE EFFECT, all of them deliberate (see
    * `StackItem.eraseSelf`): a NEGATED spell never runs its parts, so it never
-   * asks, so it is binned — R68 says the effect does nothing, and this clause
-   * is part of the effect. A part that FIZZLES for want of a target (R5) is
-   * the same. Contrast R79's {Unstable}, which is a stamp on the card and
+   * asks, so it is binned — CR 406.4b says the effect does nothing, and this clause
+   * is part of the effect. A part that FIZZLES for want of a target (CR 704.6) is
+   * the same. Contrast CR 723.4b's {Unstable}, which is a stamp on the card and
    * outlives both.
    *
    * Only a kind that HAS a card to place responds to it — a spell. A trigger
@@ -153,12 +153,12 @@ export interface EffectCtx {
    */
   eraseSelf: () => void;
   /**
-   * R143 — "Its controller gains control of me." on a SPELL UNIT (Hush Mush).
+   * CR 303.10 — "Its controller gains control of me." on a SPELL UNIT (Hush Mush).
    *
    * A spell unit's body is spawned by `E.afterParts`, AFTER every effect part
    * has run, so an effect cannot reach it directly. This is the seam: it
    * raises `StackItem.spawnUnder`, and `afterParts` spawns the body as that
-   * seat's unit — with the caster still its OWNER (R107), because the card is
+   * seat's unit — with the caster still its OWNER (CR 400.4a), because the card is
    * still yours and still goes to your bin when it dies.
    *
    * IT IS NOT A HANDOVER, and that is the whole point. The old
@@ -175,22 +175,22 @@ export interface EffectCtx {
    */
   spawnUnder?: (seat: Seat) => void;
   /**
-   * R147 — "I become an exact copy of that unit." on a SPELL UNIT (Borrower of
+   * CR 303.11 — "I become an exact copy of that unit." on a SPELL UNIT (Borrower of
    * Forms): the BODY the spell unit's own body ENTERS play wearing.
    *
    * `spawnUnder` directly above is the same seam one question over — that one
    * says WHOSE the body is as it arrives, this one says WHAT it is — and it is
    * here for the same reason: `E.afterParts` spawns the body after every part
    * has run, so an effect has no handle on it, and the answer therefore has to
-   * be left ON THE ITEM (R85: a part can suspend and be replayed out of the
+   * be left ON THE ITEM (a part can suspend and be replayed out of the
    * serialised suspension, and `item` is what the suspension carries).
    *
    * IT IS NOT A "BECOME" AFTERWARDS. The card used to park the face on a
    * region ledger and claim it from the body's own `spawned` trigger, so the
    * body entered as a plain Borrower of Forms and turned into the copy one
    * resolution later. Every spawn watcher in the region read the wrong body —
-   * Nectar Ridge Oracle's "an ally with greater defense than power" is R1's own
-   * worked example — and the caster was asked to order a trigger that should
+   * Nectar Ridge Oracle's "an ally with greater defense than power" is the very
+   * condition CR 109.3a judges at event time — and the caster was asked to order a trigger that should
    * not exist (CARD-TODO #37).
    *
    * Optional for `spawnUnder`'s reason: an EffectCtx with no stack item behind
@@ -201,11 +201,11 @@ export interface EffectCtx {
   /**
    * CARD-TODO #18 — "I did nothing; do not spend the [once]."
    *
-   * A `bounded` ability ([once] / [Switch1], R9) reserves its budget when the
+   * A `bounded` ability ([once] / [Switch1], CR 109.9a) reserves its budget when the
    * trigger is COMPOSED, before the run exists. The reservation stays there —
    * it is the re-entrancy guard — and this is the way back out.
    *
-   * SUPERSEDED BY R113 — read that first. The sentence below is the owner's
+   * SUPERSEDED BY CR 109.9b — read that first. The sentence below is the owner's
    * first pass; the designer later narrowed it to "declined, or no offer was
    * possible", which is NOT the same as "did nothing". Calling this from a
    * branch that merely whiffed is now a bug (94-bounded-uses guards it).
@@ -231,11 +231,11 @@ export interface EffectCtx {
    * Calling it twice is the same as calling it once.
    */
   refundBudget?: () => void;
-  /** R1: the event snapshot for triggered abilities (conditions were checked at
+  /** CR 109.3a: the event snapshot for triggered abilities (conditions were checked at
    * event time; amounts must be computed here, at resolution, from live state) */
   event: EngineEvent | null;
   /**
-   * R57: the half of a MODAL effect the caster declared in the cast window
+   * CR 702.5: the half of a MODAL effect the caster declared in the cast window
    * (see `EffectDef.modes` and `EffectPart.mode`). Card code reads it and
    * branches — it never asks, because by the time `run` is entered the answer
    * has been on the stack for the whole response window.
@@ -245,7 +245,7 @@ export interface EffectCtx {
    */
   mode?: unknown;
   /**
-   * R144: the entity this effect was AIMED at, declared in the stack window
+   * CR 706.12: the entity this effect was AIMED at, declared in the stack window
    * (see `EffectDef.subject` and `EffectPart.subject`). Card code reads it and
    * acts — it never asks, because the aim has been fixed since before the item
    * reached the stack.
@@ -257,24 +257,24 @@ export interface EffectCtx {
    * left play fizzles the part before `run` is entered.
    */
   subject?: Entity | null;
-  /** mid-resolution choice (R4 electric path, R6 payments). Returns the stored
+  /** mid-resolution choice (CR 802.17 electric path, CR 704.1a payments). Returns the stored
    * answer or suspends the engine with a decision. Parts that use this must
    * request all choices before mutating state, or use plan-then-commit —
    * the engine rolls back to the part boundary on suspension. */
   choose: (key: string, dec: {
-    /** `'targets'` is the cast window's own cost question (R338): a card
+    /** `'targets'` is the cast window's own cost question (CR 702.4e): a card
      * played mid-resolution asks its [cost] through this chooser, unchanged */
     kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'
-      /** R340: noncombat {Piercing}'s elective split — the same decision kind
-       * (and so the same client dial) as R120/R319's combat split */
+      /** CR 802.16j: noncombat {Piercing}'s elective split — the same decision kind
+       * (and so the same client dial) as CR 608.6a, 802.16c's combat split */
       | 'assignDamage';
     seat: Seat; prompt: string;
     options: { label: string; value: unknown; card?: CardName }[];
-    /** BL-25/R139: set this when the menu is "HOW MANY counters?" — it is the
+    /** BL-25/CR D7.2: set this when the menu is "HOW MANY counters?" — it is the
      * biggest amount offered, and a client draws a −/+ stepper and an "All"
      * button over the menu instead of one button per amount. */
     counterMax?: number;
-    /** R197: set this — and pass `options: []` — when the question is "TYPE A
+    /** CR D7.2a: set this — and pass `options: []` — when the question is "TYPE A
      * NUMBER" rather than "pick one of these". The answer arrives as the
      * NUMBER ITSELF, not as an index. See `NumericEntry` in types.ts. */
     numeric?: NumericEntry;
@@ -285,10 +285,11 @@ export interface EffectCtx {
 }
 
 export interface TargetSpec {
-  /** 'cachedCard' (R41): a card in EITHER player's cache — the zone is public
-   * information, so both are legal targets, and it is not region-scoped.
+  /** 'cachedCard' (CR 403.6): a card in EITHER player's cache — the zone is public
+   * information, so either is a legal target while its owner is present in the
+   * effect's region.
    * (Prismatic Observer: "Recall up to one target cached card".) */
-  /** R60 — "target effect" vs "target SPELL effect". The card set draws the
+  /** CR 700.1, 700.1a — "target effect" vs "target SPELL effect". The card set draws the
    * line itself: three cards say "target spell effect" (Dreadwave Devourer,
    * Null Drone, Dream Lapse) and one says "target NONSPELL effect" (Nothyr).
    * Both qualifiers would be dead words if plain "effect" meant only spells,
@@ -297,14 +298,14 @@ export interface TargetSpec {
    *                   that spell out "spell effect".
    *   'stackEffect' — LITERALLY EVERY ITEM ON THE STACK. The cards that just
    *                   say "effect".
-   * R128 (owner, 2026-08-24): "ANYTHING on the stack is an effect, including
+   * CR 700.1, 700.1a (owner, 2026-08-24): "ANYTHING on the stack is an effect, including
    * units and spell units. Units aren't spells, so if they say 'spell effect'
-   * a unit would be unaffected." That REVERSES R60's carve-out — a {Battle}
+   * a unit would be unaffected." That reverses the earlier carve-out — a {Battle}
    * unit mid-cast is an effect, and negating it means the unit never arrives.
    * The spell/nonspell line is unmoved: a plain unit is a NONSPELL effect. */
-  /** R64 — the OWNERSHIP kinds. 'allyUnit'/'enemyUnit' are relative to the
+  /** CR 110.4c — the OWNERSHIP kinds. 'allyUnit'/'enemyUnit' are relative to the
    * effect's controller, never to the chooser: a redirect that drops a unit
-   * into someone else's "target ally" slot is what R58 already refuses.
+   * into someone else's "target ally" slot is what CR 110.4c, 110.9 already refuses.
    * 'opponent' is a PLAYER-only kind ("target opponent" — Ralph, Interdiction
    * Rift, Divine Foresight); 'player' is the same kind WITHOUT the ownership
    * clause — plain "target player" (Soul Siphon), which may legally be
@@ -315,17 +316,17 @@ export interface TargetSpec {
    * "gain control of" narrows to the enemy half with `restrict`. */
   what: 'unit' | 'allyUnit' | 'enemyUnit' | 'token' | 'any' | 'opponent' | 'player'
     | 'stackSpell' | 'stackEffect' | 'cachedCard'
-    /** R64: a card in YOUR bin ("target unit … from your bin"); 'anyBinCard'
+    /** CR 110.3a: a card in YOUR bin ("target unit … from your bin"); 'anyBinCard'
      * reaches either player's, which is what "target card in a bin" prints. */
     | 'binCard' | 'anyBinCard'
-    /** R184: "target formation" (Galactic Germination) — a player's WHOLE
+    /** CR 110.3d: "target formation" (Galactic Germination) — a player's WHOLE
      * SIDE of the battle grid, per the owner's 2026-08-25 ruling. One
      * candidate per side of the current battle in the effect's region. */
     | 'formation';
   prompt: string;
   /** maximum number of targets chosen AT CAST TIME (default 1). Distinct
    * targets; the chooser gets a "done" option once `min` are picked.
-   * R64: `'X'` means the spell's X — the mana X it was cast for, or the
+   * CR 702.6b: `'X'` means the spell's X — the mana X it was cast for, or the
    * amount a variable bracketed cost was paid at ("Negate up to X target
    * effects", "Recall X target nontoken allies"). X is fixed before targets
    * are asked for, so by the time this is read it is a number. */
@@ -333,7 +334,7 @@ export interface TargetSpec {
   /** minimum targets before "done" is offered (default 1) */
   min?: number;
   /**
-   * R83: fixed slots asked for IN ADDITION to `count`, so a spec can mix a
+   * CR 110.2b: fixed slots asked for IN ADDITION to `count`, so a spec can mix a
    * variable-count slot with a fixed one. Channel Through prints "I deal 2
    * damage to each of X target allies. For each ally damaged this way,
    * distribute 2 damage among target opponent's units" — X allies AND one
@@ -347,17 +348,17 @@ export interface TargetSpec {
    * behind that gate could never be reached.
    */
   extraSlots?: number;
-  /** R58: per-SLOT restriction for a multi-target spec — `slots[i]` governs
+  /** CR 110.3: per-SLOT restriction for a multi-target spec — `slots[i]` governs
    * target i and falls back to `what`. Fight prints "target ally and ANOTHER
    * target unit": two cast-time targets whose legality differs by slot
    * (['allyUnit', 'unit']). Without this a two-target spec could only ask one
    * question twice, which is how Fight ended up choosing its second target
    * mid-resolution instead. */
   slots?: TargetSpec['what'][];
-  /** R58: per-slot prompt, same indexing as `slots`; falls back to `prompt`. */
+  /** CR 110.1b: per-slot prompt, same indexing as `slots`; falls back to `prompt`. */
   slotPrompts?: string[];
   /**
-   * R64 — the RESTRICTION seam. "Delete target unit with base power 2 or
+   * CR 110.3a — the RESTRICTION seam. "Delete target unit with base power 2 or
    * less", "recall target unit with 5 or less defense", "target unit with no
    * stat changes": the printed restriction is part of what makes a target
    * LEGAL, not a condition checked once the spell resolves. Without a seam
@@ -368,12 +369,12 @@ export interface TargetSpec {
    * counters, controller and card data. It is asked in three places and they
    * must agree: the candidate list you choose from, `castable` (no legal
    * target ⇒ the cast is illegal), and `canFillSlot` (a redirect may not drop
-   * an illegal target into the slot). It is NOT re-asked at resolution — R5
-   * and R56 govern that, and a card whose restriction can change between cast
+   * an illegal target into the slot). It is NOT re-asked at resolution — CR 704.6b
+   * and CR 704.5 govern that, and a card whose restriction can change between cast
    * and resolution re-checks it in `run` (Unmake, Reconfigure).
    */
   restrict?: TargetRestrict;
-  /** R64: per-slot restriction, same indexing as `slots`; falls back to
+  /** CR 110.3a: per-slot restriction, same indexing as `slots`; falls back to
    * `restrict`. Use `null` in a slot to mean "this slot has none". */
   slotRestricts?: (TargetRestrict | null)[];
   /**
@@ -397,7 +398,7 @@ export interface TargetSpec {
   symmetric?: true;
 }
 
-/** R64: the context a TargetSpec.restrict is judged in — whose effect this is,
+/** CR 110.4c: the context a TargetSpec.restrict is judged in — whose effect this is,
  * where it is being cast, and (for "another target …") which entity is its
  * source. `ally` is the effect's controller: the seat "ally"/"enemy" is
  * measured from. */
@@ -405,15 +406,15 @@ export interface TargetCtx {
   ally?: Seat;
   region: number;
   sourceId?: number;
-  /** the item's X, already fixed by the time targets are asked for (R64) —
+  /** the item's X, already fixed by the time targets are asked for (CR 702.3a) —
    * "target unit with cost [x] or less" (Abduct) has nowhere else to read it */
   x?: number;
-  /** R64: the targets ALREADY chosen for this part, resolved. A later slot
+  /** CR 110.3a: the targets ALREADY chosen for this part, resolved. A later slot
    * whose legality depends on an earlier one reads them here — Necromorph's
    * second target is "with cost less than or equal to IT". */
   chosen?: ResolvedTarget[];
   /**
-   * R67: the event that FIRED this ability, for a triggered ability whose
+   * CR 110.1a: the event that FIRED this ability, for a triggered ability whose
    * printed target is phrased relative to it — Rippleback Skulker's "put
    * target card from THAT PLAYER's bin into your hand" cannot say which bin
    * without knowing who was just dealt combat damage.
@@ -425,25 +426,25 @@ export interface TargetCtx {
   event?: EngineEvent | null;
 }
 
-/** R64: a printed targeting restriction, as a predicate over the resolved
+/** CR 110.3a: a printed targeting restriction, as a predicate over the resolved
  * target. Returns true if `t` may legally be chosen. */
 export type TargetRestrict = (g: E, t: ResolvedTarget, ctx: TargetCtx) => boolean;
 
-/** R58: the restriction governing target slot `i` of a spec. */
+/** CR 110.3: the restriction governing target slot `i` of a spec. */
 export function slotWhat(spec: TargetSpec, i: number): TargetSpec['what'] {
   return spec.slots?.[i] ?? spec.what;
 }
 
 /**
- * R288 / BL-30 — DOES THIS SPEC PRINT "ONE ALLY AND ONE OTHER TARGET"?
+ * CR D2.8a / BL-30 — DOES THIS SPEC PRINT "ONE ALLY AND ONE OTHER TARGET"?
  *
  * The owner, asked how the family should be DERIVED rather than listed
  * (2026-09-01): *"Anything that says target ally AND target unit on the same
  * card … if a card calls out 'one ally, one other target', it is almost
  * always going to be one ally and one enemy."*
  *
- * That is exactly what a spec already says, because R58 gave every slot its
- * own kind: a slot fixed to `allyUnit` beside a slot that is not fixed at all
+ * That is exactly what a spec already says, because every slot has its own kind
+ * (CR 110.3): a slot fixed to `allyUnit` beside a slot that is not fixed at all
  * (`unit` or `any`). Fight is `slots: ['allyUnit', 'unit']` and is the shape.
  *
  * ⚠ THE FALSE POSITIVE IS THE WHOLE POINT, and it is what makes this a
@@ -455,7 +456,7 @@ export function slotWhat(spec: TargetSpec, i: number): TargetSpec['what'] {
  *
  * `max` is the number of slots actually being collected, which is not
  * knowable from the spec alone: `count: 'X'` is the spell's X and
- * `extraSlots` sits on top of it (R83). The caller has it.
+ * `extraSlots` sits on top of it (CR 110.2b). The caller has it.
  */
 export function mixedAllegiance(spec: TargetSpec, max: number): boolean {
   let ally = false;
@@ -472,7 +473,7 @@ export function mixedAllegiance(spec: TargetSpec, max: number): boolean {
   return ally && open;
 }
 
-/** R64: is this resolved target an ENTITY (a unit, a token, a mod)? The other
+/** is this resolved target an ENTITY (a unit, a token, a mod)? The other
  * resolved shapes — a player, a stack item, a cached card, a bin card — carry
  * no id. */
 export function isEntityTarget(t: ResolvedTarget): t is Entity {
@@ -480,17 +481,17 @@ export function isEntityTarget(t: ResolvedTarget): t is Entity {
 }
 
 /**
- * R227 / R223 — THE FIRST DECLARED TARGET, OR A LOGGED FIZZLE.
+ * CR D7.3a — THE FIRST DECLARED TARGET, OR A LOGGED FIZZLE.
  *
  * The owner, asked what a spell should do when it resolves with no legal
- * target (R223, 2026-08-28): **"Fizzle, and say so in the log."** Not
+ * target (2026-08-28): **"Fizzle, and say so in the log."** Not
  * silently, and — this is the half the card pool got wrong — not by throwing.
  *
  * `ctx.targets[0]!` was the pool's idiom for "the one thing I was aimed at",
  * and the `!` is a TypeScript token, not a guarantee: the list is EMPTY
  * whenever the effect is entered with nothing left to point at, and the
  * dereference is then a TypeError with no card name in it. `E.resolveItem`
- * hides that in the ordinary case — R86 fizzles an item that lost every
+ * hides that in the ordinary case — CR 704.6 fizzles an item that lost every
  * declared target BEFORE `run` is entered — but that is a property of ONE
  * CALLER, not of the effect, and CT-89 / report #46 have now had the class
  * re-filed three times because each round fixed the cards it happened to see.
@@ -531,7 +532,7 @@ export function firstTarget(g: E, ctx: EffectCtx, i = 0): ResolvedTarget | undef
 }
 
 /**
- * R64: the common shape of a printed targeting restriction — a clause about
+ * CR 110.3a: the common shape of a printed targeting restriction — a clause about
  * the UNIT ("with base power 2 or less", "with no stat changes", "with 5 or
  * less defense"). Non-unit targets pass through untouched, so a spec that
  * offers units and players alike still offers the players.
@@ -540,19 +541,19 @@ export function unitRestrict(ok: (g: E, u: Entity, ctx: TargetCtx) => boolean): 
   return (g, t, ctx) => !isEntityTarget(t) || ok(g, t, ctx);
 }
 
-/* R210 (CT-83) — `export function printedCost(name)` WAS HERE, AND IS GONE.
+/* CT-83 — `export function printedCost(name)` WAS HERE, AND IS GONE.
  *
  * It read `getCard(name).mana`, returning 0 for 'X', and it had ZERO call
  * sites anywhere in client — engine, ui and server alike. Being
  * EXPORTED is precisely why `noUnusedLocals` could not see it, which is what
- * `147-comment-conformance.test.ts` §4 exists to catch; R193 caught it, wrote
+ * `147-comment-conformance.test.ts` §4 exists to catch; the CT-68 sweep caught it, wrote
  * a DEAD_EXEMPT waiver saying "not deleted here because dsl.ts is a shared
  * file and seven agents were editing this tree", and that waiver is deleted
  * with the function.
  *
  * ⚠ THE COST OF LEAVING IT WAS NOT THE NINE DEAD LINES, IT WAS THE NINE-LINE
- * DOC COMMENT ABOVE THEM. It described R64's "with cost N or less" reading and
- * R157 §1's X rule as though this were the code that implemented them. It is
+ * DOC COMMENT ABOVE THEM. It described the targeting ruling's "with cost N or less" reading and
+ * the X rule as though this were the code that implemented them. It is
  * not, and never was — every live reading of a card's cost goes through
  * `sets/helpers.ts::castCostOf` / `eventCardCost` (which read `StackItem.x` or
  * the `x` on the 'spellPlayed' / 'cardPlayed' event) and through the
@@ -560,12 +561,12 @@ export function unitRestrict(ok: (g: E, u: Entity, ctx: TargetCtx) => boolean): 
  * description of the rules is the most confident wrong statement a file can
  * make, and it reads exactly like documentation.
  *
- * R157 §1's actual ruling, which outlives the function: an X card counts as 0,
+ * The actual rule (CR 107.3a), which outlives the function: an X card counts as 0,
  * as a decision rather than a floor — "paying X replaces the letter X on the
  * printed card temporarily", so a card nobody has paid an X for has no cost
  * at all. Where the card WAS cast, the paid X is the cost. */
 
-/* ── R131: "other" / "another" is a DIFFERENT ENTITY ───────────────────
+/* ── CR 201.2: "other" / "another" is a DIFFERENT ENTITY ───────────────────
  *
  * Owner, 2026-08-24: "All other/another cards should work based on 'game
  * state tracking UUID' (or whatever we use). It only cares about the other
@@ -585,28 +586,28 @@ export function unitRestrict(ok: (g: E, u: Entity, ctx: TargetCtx) => boolean): 
  *    the HOST ("my" on donated text means the host). `ctx.selfModId` names the
  *    mod carrying the text that is running; `isSelfMod` compares against it.
  *  · A BIN — a bin holds bare card NAMES, so there is no uid to compare.
- *    R64/R124 already settled identity there: a `BinRef` is (name, nth
+ *    CR 405.6 already settled identity there: a `BinRef` is (name, nth
  *    occurrence), because "copies of one card there are genuinely
  *    indistinguishable". `notSelfBinCard` excludes exactly the ONE slot the
  *    trashed card itself occupies, read off the 'trashed' event's `binNth`.
  */
 
-/** R64: "another target …" — a slot that may not be the effect's own source.
+/** CR 110.4d: "another target …" — a slot that may not be the effect's own source.
  * Distinctness BETWEEN slots is already enforced by the collector; this is the
  * separate clause that excludes the unit the ability is printed on.
  *
- * R131: an ENTITY comparison, which is the whole point — a second copy of the
+ * CR 201.2: an ENTITY comparison, which is the whole point — a second copy of the
  * source's card is a different entity and stays targetable. */
 export const notSelf: TargetRestrict = (_g, t, ctx) =>
   !isEntityTarget(t) || ctx.sourceId === undefined || t.id !== ctx.sourceId;
 
-/** R131: is `e` the very mod whose donated [Augment] text is running? The
+/** CR 720.6d: is `e` the very mod whose donated [Augment] text is running? The
  * "other" in "my other Augments" — one entity excluded, by id, never a name. */
 export function isSelfMod(ctx: EffectCtx, e: { id: number }): boolean {
   return ctx.selfModId !== undefined && e.id === ctx.selfModId;
 }
 
-/** R131: which occurrence of its own name a bin slot is — the `nth` half of a
+/** CR 405.6: which occurrence of its own name a bin slot is — the `nth` half of a
  * BinRef, recovered from a resolved `binCard` target's live index. */
 export function binNthAt(g: E, seat: Seat, index: number): number {
   const bin = g.player(seat).bin;
@@ -617,15 +618,15 @@ export function binNthAt(g: E, seat: Seat, index: number): number {
 }
 
 /**
- * R131: "another target … from your bin", on a card's own "when I am trashed"
+ * CR 405.6a: "another target … from your bin", on a card's own "when I am trashed"
  * text (Blightwalker). The card that fired is sitting in that same bin, and
  * exactly ONE slot there is it — not every slot holding its name.
  *
  * Identity comes off the firing event: `noteTrashed` stamps `binNth` (which
  * occurrence of its name the trashed copy is) alongside `seat` and `card`,
- * and R67 already established that a triggered ability's restriction may read
+ * and a triggered ability's restriction may already read
  * the event that fired it. If a copy leaves the bin in between, the ref simply
- * slides — the same interchangeability BinRef is built on (R64).
+ * slides — the same interchangeability BinRef is built on (CR 405.6).
  */
 export const notSelfBinCard: TargetRestrict = (g, t, ctx) => {
   if (!('binCard' in t)) return true;
@@ -636,10 +637,10 @@ export const notSelfBinCard: TargetRestrict = (g, t, ctx) => {
   return binNthAt(g, t.binCard.seat, t.binCard.index) !== nth;
 };
 
-/** R140: the live index of the bin ref (name, nth) — the exact INVERSE of
+/** CR 405.6: the live index of the bin ref (name, nth) — the exact INVERSE of
  * `binNthAt`. -1 when that occurrence is not there any more, and -1 is the
  * whole answer: there is deliberately no "…so take some other copy instead"
- * fallback, because a fallback by name is the bug R140 removes. */
+ * fallback, because a fallback by name is the bug CR 405.6 rules out. */
 export function binIndexOfNth(g: E, seat: Seat, name: CardName, nth: number): number {
   if (nth < 0) return -1;
   const bin = g.player(seat).bin;
@@ -652,18 +653,19 @@ export function binIndexOfNth(g: E, seat: Seat, name: CardName, nth: number): nu
   return -1;
 }
 
-/** R140: WHERE the card an event is about is sitting in a bin RIGHT NOW —
+/** CR 405.6: WHERE the card an event is about is sitting in a bin RIGHT NOW —
  * `{ seat, card, index }`, with `index === -1` meaning "that copy is gone".
  *
- * This is the reader for the stamp `E.noteTrashed` (R131) and `E.destroy`
- * (R140) put on their events: `card`, the bin's seat (`binSeat` when the event
+ * This is the reader for the stamp `E.noteTrashed` and `E.destroy`
+ * put on their events (CR 405.6): `card`, the bin's seat (`binSeat` when the event
  * names one — a death bins to the OWNER's bin while `seat` is the controller —
  * else `seat`), and `binNth`, which occurrence of that name in that bin the
  * event's copy is. Resolving (name, nth) against the live bin is the ONLY
  * honest way for a responder to find it again: a bin holds bare card names, so
  * `lastIndexOf(name)` answers "the last copy of that name there NOW", which is
  * a different card the moment the event's copy has left (a token sweep, an
- * {Unstable} sweep — R69/R137) and an older, innocent copy of the same name is
+ * {Unstable} sweep, which the engine runs though CR 801.2h never bins that card — CT-246)
+ * and an older, innocent copy of the same name is
  * still resting there.
  *
  * `null` only when the event names no card at all — nothing to look for. A
@@ -686,7 +688,7 @@ export function eventBinSlot(
   return { seat, card, index: binIndexOfNth(g, seat, card, nth) };
 }
 
-/** R64: the restriction governing target slot `i` — `slotRestricts[i]` when
+/** CR 110.3a: the restriction governing target slot `i` — `slotRestricts[i]` when
  * the spec names one (including an explicit `null` for "no restriction here"),
  * otherwise the spec-wide `restrict`. */
 export function slotRestrict(spec: TargetSpec, i: number): TargetRestrict | undefined {
@@ -695,7 +697,7 @@ export function slotRestrict(spec: TargetSpec, i: number): TargetRestrict | unde
   return spec.restrict;
 }
 
-/** R58: the spec as it applies to slot `i` — what targetCandidates should be
+/** CR 110.3: the spec as it applies to slot `i` — what targetCandidates should be
  * asked for when filling that one slot. */
 export function specForSlot(spec: TargetSpec, i: number): TargetSpec {
   const r = slotRestrict(spec, i);
@@ -705,18 +707,18 @@ export function specForSlot(spec: TargetSpec, i: number): TargetSpec {
 /**
  * A bracketed additional cost ("[Sacrifice a unit]: …", "[Pay 3 life]",
  * "[Discard a card]", "[Gain 4 debt]", "[Remove X +1/+1 counters from
- * allies]") chosen and PAID AT CAST, before the item reaches the stack (R35).
+ * allies]") chosen and PAID AT CAST, before the item reaches the stack (CR 702.4).
  * An unpayable cost makes the cast ILLEGAL; on a grafted rider it is optional
  * and declining skips that part.
  *
- * `n` is the amount. `'X'` (R64) is a VARIABLE cost: the payer keeps paying
+ * `n` is the amount. `'X'` (CR 702.6b) is a VARIABLE cost: the payer keeps paying
  * one unit at a time until they stop, and the number they paid IS the spell's
  * X — Discharge's "[Remove X +1/+1 counters from allies]: I deal X damage"
  * has no other source for X. A variable cost is offered down to `xMin`
  * (default 0, i.e. "you may decline outright and the spell does nothing");
  * the amount paid lands in `costPaid.x` and reaches the effect as `ctx.x`.
  *
- * 'payLife' is governed by R49: you may pay N life only while you have MORE
+ * 'payLife' is governed by CR 111.6b: you may pay N life only while you have MORE
  * than N — a cost you cannot survive is not payable.
  */
 export type CastCost =
@@ -729,7 +731,7 @@ export type CastCost =
    * is. It carries NO choice — there is nothing to pick — so it is charged
    * outright in the cast window with no decision and no suspension, which is
    * what keeps it unrespondable. `n` must be 1. A source that is already dead
-   * makes it UNPAYABLE, so R5 partial resolution skips the part: a trigger
+   * makes it UNPAYABLE, so CR 704.6b partial resolution skips the part: a trigger
    * whose source died between firing and settling does nothing at all.
    *
    * `includeSelf` is "sacrifice ME AND another ally" (Deformant) — the source
@@ -751,7 +753,7 @@ export type CastCost =
   /** "[Erase X cards from your bin]" (Necromantic Rebuke) */
   | { kind: 'eraseBin'; n: number | 'X'; xMin?: number }
   /**
-   * R196 — THE PRINTED BRACKETED MANA COST OF AN ACTIVATED ABILITY: "[x]"
+   * CR 705.3b — THE PRINTED BRACKETED MANA COST OF AN ACTIVATED ABILITY: "[x]"
    * (Celestial Shifter's "[x]: I become base X/X until regroup", Instrument of
    * Reassignment's "[x], Sacrifice another nontoken unit: Create a Robot X").
    *
@@ -760,13 +762,13 @@ export type CastCost =
    * when the card prints the LETTER, so the variable half lives here, in the
    * one collector that already knows how to size a cost: it is paid a point at
    * a time (exactly as `payLife` is), the number paid IS the ability's X, and
-   * `ctx.x` reads it back at resolution. R157 §1 — *"paying X replaces the
+   * `ctx.x` reads it back at resolution. The X ruling (CR 705.3b) — *"paying X replaces the
    * letter X on the printed card temporarily"* — so what the ability COSTS is
    * the number actually paid, and it is settled before the item is respondable.
    *
    * ⚠ IT NEVER EATS THE ABILITY'S OWN FIXED MANA. `E.activationManaReserve`
    * holds back whatever `payActivationCost` still owes — the printed fixed
-   * `AbilityCost.mana` plus R121's activation tax (Crevice Lurker) — because
+   * `AbilityCost.mana` plus CR 111.10f's activation tax (Crevice Lurker) — because
    * this collector runs BEFORE that one. Without the reserve a Celestial
    * Shifter under a Crevice Lurker could spend the tax money on X and then
    * under-pay the tax.
@@ -776,19 +778,19 @@ export type CastCost =
    */
   | { kind: 'payMana'; n: number | 'X'; xMin?: number }
   /**
-   * R196 — "[Recall another ally]" (Auric Ascendant's "[once] [one], Recall
+   * CR 111.2 — "[Recall another ally]" (Auric Ascendant's "[once] [one], Recall
    * another ally: I gain {g}flying and +2/+0 until regroup").
    *
    * A COST, so it is paid on the way to the stack and the opponent sees which
    * ally went back to a hand before deciding whether to answer. The source is
    * excluded — "another" — and its unpayability is what GATES the ability:
    * with no other ally it is not offered at all, so the [once] is never spent
-   * and the [one] is never paid. That is R49's reading, the same one
+   * and the [one] is never paid. That is CR 705.4's reading, the same one
    * `canPayCastCost` already gives Deformant's "me and another ally".
    */
   | { kind: 'recallUnit' }
   /**
-   * R196 — "[Erase one of my mods]" (Slag Spewer's "[Augment][once] [one],
+   * CR 111.2 — "[Erase one of my mods]" (Slag Spewer's "[Augment][once] [one],
    * Erase one of my mods: I deal 2 damage to any target").
    *
    * "My" is the SOURCE — the carrier the ability is anchored on, which is the
@@ -799,21 +801,21 @@ export type CastCost =
    */
   | { kind: 'eraseMod' };
 
-/** R64: the fixed amount a cost demands, or null when it is variable ('X'). */
+/** CR 702.6b: the fixed amount a cost demands, or null when it is variable ('X'). */
 export function costAmount(cost: CastCost): number | null {
-  // R196: the kinds that name ONE thing and carry no `n` at all
+  // CR 111.2: the kinds that name ONE thing and carry no `n` at all
   if (cost.kind === 'sacrificeUnit' || cost.kind === 'recallUnit' || cost.kind === 'eraseMod') return 1;
   if (cost.kind === 'gainDebt') return cost.n;
   return cost.n === 'X' ? null : cost.n;
 }
 
-/** R64: the floor a variable cost may be paid down to (default 0). */
+/** the floor a variable cost may be paid down to (default 0). */
 export function costXMin(cost: CastCost): number {
   return ('xMin' in cost ? cost.xMin : undefined) ?? 0;
 }
 
 /**
- * R57 — a printed MODAL clause: "[Put a -1/-1 counter on each enemy or put a
+ * CR 702.5 — a printed MODAL clause: "[Put a -1/-1 counter on each enemy or put a
  * +1/+1 counter on each of your units]", "[gains or loses] X life", "double
  * target unit's power or defense". The caster picks a half, and the pick is a
  * CAST-TIME declaration, collected by `E.collectModes` alongside X, mods,
@@ -837,7 +839,7 @@ export interface ModeOption {
   label: string;
   value: unknown;
   /**
-   * R284 — WHICH HALF OF THE PRINTED BRACKET this option is: 0 for the one
+   * CR D6.10a — WHICH HALF OF THE PRINTED BRACKET this option is: 0 for the one
    * before the "or", 1 for the one after. The UI narrows a declared item's
    * printed text down to the half that was picked ("Each opponent discards a
    * [unit] if able"), so it has to know which words the answer stands for, and
@@ -864,7 +866,7 @@ export interface ModeSpec {
 }
 
 /**
- * R144 — a SUBJECT: the entity an untargeted effect is AIMED AT, declared in
+ * CR 706.12 — a SUBJECT: the entity an untargeted effect is AIMED AT, declared in
  * the stack window and read back at resolution as `ctx.subject`.
  *
  * THE PROBLEM IT SOLVES, in the owner's own words (report #101, room SMVJ):
@@ -877,25 +879,25 @@ export interface ModeSpec {
  * forced onto your other units instead of doing nothing.
  *
  * ⚠ WHY THIS IS NOT JUST A `TargetSpec`. It would have been three lines
- * instead of a seam, and it was the wrong answer. R71 rules that the Wraith's
+ * instead of a seam, and it was the wrong answer. CR 110.2c rules that the Wraith's
  * "an ally" is not a target, on the ground that the word *target* is not
  * printed — and being a target is not one property, it is four:
  *
  *   1. it is chosen when the effect is declared, not when it resolves;
- *   2. it can go stale, and losing every one of them fizzles the effect (R86);
+ *   2. it can go stale, and losing every one of them fizzles the effect (CR 704.6);
  *   3. it fires the `'targeted'` event — Mohruung creates a Crystal when it
  *      "becomes targeted", and a Wraith counter is aimed at an ALLY, so every
  *      deployment would have handed its controller a free Crystal;
- *   4. it can be REDIRECTED into a slot (R58/`canFillSlot`) and is subject to
+ *   4. it can be REDIRECTED into a slot (CR 110.9/`canFillSlot`) and is subject to
  *      "must be targeted if able" compulsion.
  *
- * R144 grants **1 and 2**, which is exactly what the owner asked for, and
+ * CR 706.12 grants **1 and 2**, which is exactly what the owner asked for, and
  * withholds **3 and 4**, which he did not. A subject fires no event, cannot be
  * redirected, compels nothing, and is invisible to every targeting
  * restriction in the pool.
  *
  * `candidates` is asked ONCE, in the stack window, and is never re-asked at
- * resolution — R5/R56, the same rule a `TargetSpec.restrict` obeys. Fewer than
+ * resolution — CR 704.6b, 704.5, the same rule a `TargetSpec.restrict` obeys. Fewer than
  * two candidates is not a question: `E.collectSubjects` records the single
  * entity (or `null` for none) without asking, which is what keeps
  * `EffectPart.subject`'s presence a sound idempotence guard, and what keeps a
@@ -911,21 +913,21 @@ export interface SubjectSpec {
 
 export interface EffectDef {
   targets?: TargetSpec;
-  /** R57: this effect is MODAL — the caster declares which half in the cast
+  /** CR 702.5: this effect is MODAL — the caster declares which half in the cast
    * window, and `run` reads the answer back as `ctx.mode` (see ModeSpec). */
   modes?: ModeSpec;
-  /** R144: this effect is AIMED at one entity without targeting it — declared
+  /** CR 706.12a: this effect is AIMED at one entity without targeting it — declared
    * in the stack window, read back as `ctx.subject`, and FIZZLES if what it
    * was aimed at has left play by the time it resolves (see SubjectSpec). */
   subject?: SubjectSpec;
-  /** cast-time additional cost (R35). On a spell: paying is part of casting —
+  /** cast-time additional cost (CR 702.4). On a spell: paying is part of casting —
    * with nothing to pay the cast is illegal. On a graft part joining a
    * composite: the carrier's controller pays (or declines — the rider is then
    * skipped) when the composite collects its cast-time decisions, exactly
    * where graft targeting happens. The receipt lands in ctx.costPaid. */
   castCost?: CastCost;
   /**
-   * R74 — a VARIABLE cast cost ('X') whose **X = 0 makes this effect a
+   * CR D7.1a — a VARIABLE cast cost ('X') whose **X = 0 makes this effect a
    * guaranteed no-op**, said in one line and DECLARED rather than discovered.
    * The engine shows it on the "That's enough — X = 0" option at the moment
    * the payer can stop at zero, and logs it if the cost closes at zero on its
@@ -937,7 +939,7 @@ export interface EffectDef {
    * zero" — Instrument of Reassignment), and this where paying zero is merely
    * a bad idea you are allowed to have.
    *
-   * ⚠ R157 §22 / R161 narrowed that. This used to say "use `xMin` where paying
+   * ⚠ The X = 0 ruling narrowed that. This used to say "use `xMin` where paying
    * zero would burn something the payer cannot get back (No Hand Killer's
    * `[once]` budget)". The owner ruled the opposite, verbatim: *"You can
    * legally activate it and discard no cards."* Burning a budget for nothing
@@ -952,7 +954,7 @@ export interface EffectDef {
    * RESOLUTION, which is far too late to be of use.
    */
   xZeroWarning?: string;
-  /** R5: if true, all targets invalid at resolution fizzles the whole effect.
+  /** CR 704.6b: if true, all targets invalid at resolution fizzles the whole effect.
    * Default: resolve partially against remaining legal targets. */
   allOrNothing?: boolean;
   /** Every token this effect can put onto the board, DECLARED rather than
@@ -960,13 +962,13 @@ export interface EffectDef {
    * PRINTED text for a registered token name, which is wrong three ways: it
    * misses plurals ("Create three Wraiths"), it cannot see a token whose card
    * is also in DECK_LIST (Echo of Despair, Hooba-God), and printed text is the
-   * card's history, not its rules (R63 granting, donated mod text and graft
+   * card's history, not its rules (CR 109.8 granting, donated mod text and graft
    * composites are all invisible to it). A declaration is checked against what
    * the effect actually does by the conformance test, so a card that starts
    * making a token and forgets to say so fails `npm test`. */
   creates?: string[];
   /**
-   * R69, the honest escape hatch: this effect's token NAME is COMPUTED, not
+   * The honest escape hatch: this effect's token NAME is COMPUTED, not
    * printed — it copies whatever token it is pointed at (Arcane Echo's "create
    * a copy of target token", Automaton of Abundance's duplication of any unit
    * token you create). No fixed `creates` list can be true for those, and the
@@ -982,7 +984,7 @@ export interface EffectDef {
    */
   createsAny?: boolean;
   /**
-   * R110 — "[Switch1][Switch1] (Trigger two copies of this graft ability as
+   * CR 722.7 — "[Switch1][Switch1] (Trigger two copies of this graft ability as
    * one single trigger)": this effect is a graft MULTIPLIER. Lost Guardian
    * (2), Witness of the Crossing (3) and Amphivore (3) declare it; they do
    * nothing themselves. composeParts materializes every OTHER graft part of
@@ -1009,12 +1011,12 @@ export interface TriggeredAbility {
   /** only fire when the event's source is this entity */
   self?: boolean;
   /**
-   * R51: the trigger listens while the CARD SITS IN THIS ZONE rather than
+   * CR 400.5: the trigger listens while the CARD SITS IN THIS ZONE rather than
    * while it is a unit in play ("If I am in your bin, after combat …" —
    * Lurking Dread, Inexorable Miasma, Cinder Scuttler). fireEvent() scans
    * entities in play and a card in a bin is not one, so these are dispatched
    * separately, anchored on a DETACHED stand-in entity with id -1 (exactly
-   * like R40's fireOwnTrashTrigger): `self` is not a real unit, it cannot be
+   * like the fireOwnTrashTrigger): `self` is not a real unit, it cannot be
    * targeted, it radiates no statics and its bounded budget lives only for
    * the one firing. `when` receives that stand-in with `owner`/`controller`
    * set to the zone's seat, so "if I am in YOUR bin" is ctx.controller.
@@ -1024,15 +1026,15 @@ export interface TriggeredAbility {
    * standing permission, not a per-copy trigger.
    */
   zone?: 'bin' | 'cache';
-  /** R1: condition — evaluated once, at event time */
+  /** CR 109.3a: condition — evaluated once, at event time */
   when?: (g: E, self: Entity, ev: EngineEvent) => boolean;
   label: string;
-  /** [Switch1]: once per turn, tracked per card (R9) */
+  /** [Switch1]: once per turn, tracked per card (CR 722.5) */
   bounded?: boolean;
   /** carries a graft symbol => is a graft cause (grafts can attach to it) */
   graftCause?: boolean;
   /**
-   * R269: resolving this ability SACRIFICES its own carrier — "After combat,
+   * CR 712.4: resolving this ability SACRIFICES its own carrier — "After combat,
    * sacrifice me" (Wisp, Smouldering Inferno's [Augment] line). A declarative
    * property of the printed clause, like `graftCause`, and the seam a card
    * that says "…do not sacrifice themselves" matches on: Infernal Wispweaver
@@ -1044,7 +1046,7 @@ export interface TriggeredAbility {
 }
 
 /**
- * R49: what activating an ability costs. Every one of these GATES the
+ * CR 111.6, 705.3: what activating an ability costs. Every one of these GATES the
  * activation — an ability whose cost cannot be paid is not offered by
  * legalActions and is refused by apply() — instead of fizzling at resolution.
  *
@@ -1054,7 +1056,7 @@ export interface TriggeredAbility {
  *    `pendingCosts` and are chosen in the cast window, still before the item
  *    reaches the stack: no one may respond between cost and effect.
  *
- * `life` obeys R49: payable only while you have MORE life than it costs.
+ * `life` obeys CR 111.6b: payable only while you have MORE life than it costs.
  */
 export interface AbilityCost {
   mana?: number;
@@ -1065,7 +1067,7 @@ export interface AbilityCost {
    *
    * Distinct from `sacrificeSelf`, and the difference is the whole reason it
    * exists: a sacrifice is a DEATH (the unit dies, its card reaches a bin,
-   * every "when a unit dies" trigger fires and R40 can trash it out of the bin
+   * every "when a unit dies" trigger fires and CR 801.2a can trash it out of the bin
    * afterwards), while an erase removes the unit from the game outright — no
    * bin, no death, no despawn, so nothing triggers off it at all. Skybreaker
    * was `sacrificeSelf` as a stand-in and was therefore recurrable out of its
@@ -1086,7 +1088,7 @@ export interface AbilityCost {
   /** "Sacrifice a unit:" — N units you control OTHER than the source */
   sacrificeOther?: number;
   /**
-   * R196: "Sacrifice another NONTOKEN unit:" (Instrument of Reassignment) —
+   * CR 111.2: "Sacrifice another NONTOKEN unit:" (Instrument of Reassignment) —
    * narrows `sacrificeOther`'s menu and its payability gate the same way
    * `discardOrSacrifice` already narrows its own. A flag rather than a fourth
    * atom kind, because it changes WHICH units the one atom may name and
@@ -1103,7 +1105,7 @@ export interface AbilityCost {
 export interface ActivatedAbility {
   type: 'activated';
   cost: AbilityCost;
-  /** R49: a printed "{Battle}" / "{Deployment}" marker ON THE ABILITY (Grox,
+  /** CR 705.2: a printed "{Battle}" / "{Deployment}" marker ON THE ABILITY (Grox,
    * Cadaverous Cultivator). doActivateAbility gates by PHASE, so without this
    * a battle-only ability was activatable during deployment too. Absent = the
    * ability may be activated in either window, the standing behaviour. */
@@ -1112,9 +1114,9 @@ export interface ActivatedAbility {
   bounded?: boolean;
   graftCause?: boolean;
   /**
-   * R77 — a printed PRECONDITION on activating: "Activate this ability only
+   * CR 111.7b — a printed PRECONDITION on activating: "Activate this ability only
    * if …". A gate, not a fizzle: an ability whose condition is false is not
-   * offered by legalActions and is refused by apply(), exactly the way R64
+   * offered by legalActions and is refused by apply(), exactly the way CR 705.3a
    * treats an unpayable [cost] or a target with nothing legal to aim at.
    *
    * `self` is the SOURCE unit — the host when the ability was donated by an
@@ -1123,7 +1125,7 @@ export interface ActivatedAbility {
    * `cost.sacrificeSelf`: the check has already happened by the time the
    * sacrifice removes its own subject.
    *
-   * R1: this is a condition, so it is checked once, at activation. It is not
+   * CR 111.7b: this is a condition, so it is checked once, at activation. It is not
    * re-checked at resolution — for a self-sacrificing ability it could not be.
    */
   usableWhen?: (g: E, self: Entity, seat: Seat) => boolean;
@@ -1133,23 +1135,23 @@ export interface ActivatedAbility {
 export type Ability = TriggeredAbility | ActivatedAbility;
 
 /**
- * R118, the CONTINUOUS half of the copy layer: a card that radiates other
+ * CR 710.7, the CONTINUOUS half of the copy layer: a card that radiates other
  * cards' FACES onto a unit — "[Augment] I have all abilities of adjacent
  * allies. (This includes modded abilities.)" (Ancient One).
  *
  * The additive twin of `Entity.copies`, and it has to be continuous rather
  * than a stamp for the reason the ledger entry gave: adjacency changes inside
- * a single combat (R72 column collapse, a neighbour dying, blockers being
+ * a single combat (CR 602.5 column collapse, a neighbour dying, blockers being
  * declared), so the answer must be recomputed every time it is asked, exactly
  * as `StaticMod` is.
  *
  * Radiation rules are `StaticMod`'s, line for line: the `E.anchored()` walk
  * (units in play plus augment mods reading from their HOST — so the [Augment]
- * form projects onto the host and "I" is the host), the R12 region scope, and
- * the shallow R62 guard (a silenced projector radiates nothing).
+ * form projects onto the host and "I" is the host), the CR 101.6 region scope, and
+ * the shallow CR 712.1a guard (a silenced projector radiates nothing).
  *
  * ⚠ A projected face contributes STATICS / ACTIVATED / TRIGGERED / BEHAVIOR
- * and nothing else — never `name`, never `stats` and (R127) never `attrs`. "I
+ * and nothing else — never `name`, never `stats` and (CR 710.7) never `attrs`. "I
  * have all abilities of adjacent allies" does not rename the Ancient One, does
  * not make it a 7/5 and does not lend it the neighbour's {Piercing}. The
  * engine enforces this: `facesOf()[0]` is always the identity face.
@@ -1171,14 +1173,14 @@ export interface FaceProjection {
   faces: (g: E, self: Entity) => CardName[];
   /** which facets each projected face contributes. Defaults to statics +
    * activated + triggered + behavior; `name` and `stats` are refused by the
-   * engine, and `attrs` is R127's one stated exclusion for Ancient One. */
+   * engine, and `attrs` is CR 710.7's one stated exclusion for Ancient One. */
   facets?: import('../types.ts').CopyFacet[];
 }
 
 /** A continuous ("static") modification a card projects while it is a unit in
  * play: "+X/+Y to matching units", granted attributes, or both. Evaluated live
  * inside effStats/ownAttrs (engine stat layer 3). affects() runs for units in
- * the SAME REGION as the holder (R12) — return true to include the holder
+ * the SAME REGION as the holder (CR 101.6) — return true to include the holder
  * itself. IMPORTANT: affects/dp/dt must not call effStats (reentrancy guard
  * makes nested statics vanish); read raw fields (counters, hand sizes, card
  * data) instead. */
@@ -1206,7 +1208,7 @@ export interface StaticMod {
   baseT?: number | ((g: E, self: Entity, target: Entity) => number);
   attrs?: Attr[];
   /**
-   * R62, the CONTINUOUS half of the suppression layer: while this static
+   * CR 712.1a, the CONTINUOUS half of the suppression layer: while this static
    * applies, the target's attribute layer (`suppressAttrs`) and/or its ability
    * layer (`suppressAbilities`) is switched off — "other units lose all
    * attributes and abilities during battle" (Monke), "[Augment] Your other
@@ -1219,7 +1221,7 @@ export interface StaticMod {
   suppressAttrs?: boolean;
   suppressAbilities?: boolean;
   /**
-   * R269, the NARROW half of the suppression layer: while this static applies,
+   * CR 712.4, the NARROW half of the suppression layer: while this static applies,
    * the ONE named ability it matches is switched off, and the rest of the
    * target's ability layer is untouched — "your wisps … do not sacrifice
    * themselves after combat" (Infernal Wispweaver).
@@ -1240,12 +1242,12 @@ export interface StaticMod {
    */
   suppressAbility?: (g: E, self: Entity, target: Entity, ability: Ability) => boolean;
   /**
-   * R11, the CONTINUOUS half of the regroup cleanup: while this static
+   * CR 506.2, the CONTINUOUS half of the regroup cleanup: while this static
    * applies to a SPELL TOKEN, regroup does not erase it — "[Augment] Your
    * spell tokens stay through regroup" (Harbinger of Immolation).
    *
    * A static and not a trigger, and not a replacement hook either. The erase
-   * is not an event: it is a step of the R11 cleanup sequence, so there is
+   * is not an event: it is a step of the CR 506.2 cleanup sequence, so there is
    * nothing to put on the stack, nothing to respond to and nothing to negate,
    * and a trigger that "re-created" the tokens afterwards would be a
    * different card (new entities, new ids, the X re-derived). What the text
@@ -1272,23 +1274,23 @@ export interface StaticMod {
 }
 
 /** What a cost modifier is being asked about. `purpose` separates PLAYING a
- * card from APPLYING it as a mod — applying a mod is not playing (R37, Bena's
+ * card from APPLYING it as a mod — applying a mod is not playing (CR 701.2b, Bena's
  * ruling), so "spells cost [one] more to PLAY" must not tax an augment. */
 export interface CostCtx {
   seat: Seat;
-  /** the card being played or applied — or, for R121's 'activate'/'trigger'
+  /** the card being played or applied — or, for CR 111.10f's 'activate'/'trigger'
    * purposes, the card whose ability is being activated or triggered */
   card: CardDef;
   region: number;
-  /** 'play'/'mod' is R59/R37's original split (applying a mod is not
-   * playing). R121 widens the union with the ability-cost purposes:
+  /** 'play'/'mod' is the original split (CR 701.2b: applying a mod is not
+   * playing). The ability-cost tax (CR 111.10f) widens the union with these purposes:
    * 'activate' — a player is activating an ability; 'trigger' — a triggered
-   * ability is about to go on the stack (Crevice Lurker). Every pre-R121
+   * ability is about to go on the stack (Crevice Lurker). Every older
    * CostMod gates on === 'play' (or !== 'play'), so the widening changes
    * nothing for them. */
   purpose: 'play' | 'mod' | 'activate' | 'trigger';
   /**
-   * R157 §1 — THE CHOSEN X, on an X-cost card only. *"Pips aren't a relevant
+   * CR 202.5 — THE CHOSEN X, on an X-cost card only. *"Pips aren't a relevant
    * part of looking at the cost of a card in Algomancy. And paying X replaces
    * the letter X on the printed card temporarily."* So an X spell's base cost
    * is not `xMin` and not the pips: it is the number the caster picked, and a
@@ -1305,9 +1307,9 @@ export interface CostCtx {
 }
 
 /**
- * R59: a continuous COST modifier, radiating from a unit in play or from an
+ * CR 111.10: a continuous COST modifier, radiating from a unit in play or from an
  * augment mod exactly like a StaticMod, and scoped to the holder's region
- * (R12). `delta` returns extra mana — negative to discount. The total is
+ * (CR 101.6). `delta` returns extra mana — negative to discount. The total is
  * clamped at zero: no card ever costs less than nothing.
  *
  * Like StaticMod, `delta` must not call anything that re-enters cost
@@ -1316,7 +1318,7 @@ export interface CostCtx {
 export interface CostMod {
   delta?: (g: E, self: Entity, ctx: CostCtx) => number;
   /**
-   * R326 (CT-224): a raised FLOOR for an X spell's X — the smallest X the
+   * CR 111.10i (CT-224): a raised FLOOR for an X spell's X — the smallest X the
    * caster may choose. Not a price: Stasis Sentry's RAQ (_passer) "forces the
    * Spells with mana cost of X value to be at a minimum 3, but it's not an
    * additional cost". Several mods take the HIGHEST floor, never a sum: a
@@ -1324,16 +1326,16 @@ export interface CostMod {
    */
   xMin?: (g: E, self: Entity, ctx: CostCtx) => number;
   /**
-   * R60: extra LIFE the play costs — "Cards played during battle gain
+   * CR 111.10d: extra LIFE the play costs — "Cards played during battle gain
    * [Pay 2 life]" (Arbiter of Armistice). A separate channel from `delta`
    * because life and mana are not interchangeable: the mana half gates on
-   * open resources, the life half on R49's canPayLife (you may pay N life
+   * open resources, the life half on CR 111.6b's canPayLife (you may pay N life
    * only while you have MORE than N), and an unpayable life tax makes the
    * card uncastable exactly as unpayable mana does.
    */
   life?: (g: E, self: Entity, ctx: CostCtx) => number;
   /**
-   * R122: an IMPOSED bracketed additional cost — "Cards your opponents play
+   * CR 111.10: an IMPOSED bracketed additional cost — "Cards your opponents play
    * during battle gain '[Sacrifice a unit]'" (Vengeance). Returns how many
    * units the play additionally costs. Contributions from several mods ADD
    * (two Vengeances demand two sacrifices): each bracketed cost is its own
@@ -1356,7 +1358,7 @@ export interface CostMod {
 }
 
 /**
- * R94: what an `EffectAttrMod` is being asked about — ONE PART of ONE
+ * what an `EffectAttrMod` is being asked about — ONE PART of ONE
  * resolving stack item.
  *
  * Per-part rather than per-item, because the only two cards that read this
@@ -1385,7 +1387,7 @@ export interface CostMod {
 export interface EffectAttrCtx {
   /** the resolving item's controller — "YOUR spells" */
   seat: Seat;
-  /** the region the item is resolving in (R12) */
+  /** the region the item is resolving in (CR 101.6) */
   region: number;
   /** what kind of stack item this is; see `isSpellEffect` */
   kind: 'unit' | 'spell' | 'spellUnit' | 'spellToken' | 'virus' | 'triggered' | 'activated' | 'ambush';
@@ -1397,15 +1399,15 @@ export interface EffectAttrCtx {
 }
 
 /**
- * R94: a continuous ATTRIBUTE modifier on a resolving EFFECT — the write side
- * of the channel R79 built the read side of ("[Augment] Your units and spells
+ * CR 707.7: a continuous ATTRIBUTE modifier on a resolving EFFECT — the write side
+ * of the channel the stack-Virus ruling (CR 721.4b) built the read side of ("[Augment] Your units and spells
  * gain {g}powerful", Emberflame Enlightener; "[Augment] Your spell effects
  * with a single target are {g}Electric", Envoy of Lightning).
  *
  * A sibling of `CostMod`, deliberately NOT an extension of `StaticMod`:
  * `StaticMod.affects` is typed over an `Entity` and a `StackItem` is not one.
  * It radiates by the same rules as both — from a unit in play or from an
- * augment mod anchored on its HOST, scoped to the holder's region (R12) — and
+ * augment mod anchored on its HOST, scoped to the holder's region (CR 101.6) — and
  * ownership lives in the card's own `affects`, not in the gatherer, which is
  * the division `StaticMod` already uses.
  *
@@ -1413,7 +1415,7 @@ export interface EffectAttrCtx {
  * (RAQ "[Solved] Resonant, Combat Damage, Conduit and Powerful": "2/4 Resonant
  * Powerful would deal 4 combat damage to enemy unit and then put effect on
  * stack to deal 8 damage to enemy face"), which is exactly the Emberflame
- * case, so the grants land in `EffectCtx.grantedAttrs` beside R79's virus
+ * case, so the grants land in `EffectCtx.grantedAttrs` beside CR 723.4's virus
  * grants and everything downstream reads one unioned set.
  *
  * Like `CostMod`, `affects` must not re-enter effect-attribute evaluation;
@@ -1425,22 +1427,22 @@ export interface EffectAttrMod {
 }
 
 /**
- * R305 — THE PRINTED NOUN "SPELL", in one place: a spell, a spell unit, and a
+ * CR 300.5a — THE PRINTED NOUN "SPELL", in one place: a spell, a spell unit, and a
  * spell TOKEN. Every card whose text says "spell(s)" reads it through this —
  * "your spells" (Emberflame, Envoy of Lightning), "Spells cost … more to
  * play" (Tranquility, The Silent, Stasis Sentry) — so the two questions it
  * answers cannot drift apart.
  *
  * Both halves are the owner's:
- *  · R157 §13, *"Yes. Tokens are spells."* — a Burst Fireball under Emberflame
+ *  · CR 302.3, *"Yes. Tokens are spells."* — a Burst Fireball under Emberflame
  *    deals double.
- *  · R305 (2026-09-28), asked "Should casting a spell token count as playing a
+ *  · 2026-09-28 (CR 702.7a), asked "Should casting a spell token count as playing a
  *    spell?": *"Yes, taxed + counted."* Casting a spell token IS playing a
- *    spell. R59's old carve-out — "a spell token is cast from play, not
+ *    spell. The old carve-out — "a spell token is cast from play, not
  *    played" — is dead: a token pays every "spells cost more to play" tax and
  *    counts toward "spells played this battle".
  *
- * What it does NOT cover: a token is still not a CARD (R133's first half), so a
+ * What it does NOT cover: a token is still not a CARD (CR 304.2), so a
  * text whose noun is "card(s)" — Arbiter of Armistice, Vengeance, Deferral
  * Drone's "the next card you play" — reads `CARD_PLAY_KINDS` instead and
  * leaves the token out. And a text that prints "nontoken spell" (Animated
@@ -1450,20 +1452,20 @@ export function isPlayedSpellKind(kind: StackItem['kind']): boolean {
   return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';
 }
 
-/** R94: "your SPELLS" on the effect-attribute channel (Emberflame, Envoy of
+/** CR 707.7a: "your SPELLS" on the effect-attribute channel (Emberflame, Envoy of
  * Lightning). The same noun as `isPlayedSpellKind`, and deliberately the same
  * predicate — see there for why a spell token is in. */
 export function isSpellEffect(kind: EffectAttrCtx['kind']): boolean {
   return isPlayedSpellKind(kind);
 }
 
-/** R95: what a `ModPermission` is being asked about — one attempt to apply one
+/** CR 720.2b: what a `ModPermission` is being asked about — one attempt to apply one
  * card as a mod. `from` is in the signature ON PURPOSE rather than being
  * hardcoded at the call site: Rook prints "from hand and bin", so it is the
  * CARD that refuses the cache, and the next card to want this can widen or
  * narrow the zone list without touching apply.ts.
  *
- * "MOD" HERE MEANS AUGMENT *AND* GRAFT (R37's word for both), which is why
+ * "MOD" HERE MEANS AUGMENT *AND* GRAFT (CR 701.2's word for both), which is why
  * `kind` is on the ctx: `augmentInBattle` is only ever asked about an augment
  * (a graft during battle is a separate rules question nobody has asked), but
  * `applyAtHaste` is asked about both, because Slurpr prints "other MODS". A
@@ -1475,16 +1477,16 @@ export interface ModCtx {
   card: CardDef;
   /** the zone it would leave */
   from: 'hand' | 'bin' | 'cache';
-  /** the region the application happens in (R12) */
+  /** the region the application happens in (CR 101.6) */
   region: number;
-  /** which application this is (R37: a "mod" is an augment or a graft).
-   * Optional so the R95 battle-augment call sites, which are augments by
+  /** which application this is (CR 701.2: a "mod" is an augment or a graft).
+   * Optional so the CR 723.5 battle-augment call sites, which are augments by
    * construction, need not restate it. */
   kind?: 'augment' | 'graft';
 }
 
 /**
- * R95: a continuous PERMISSION to apply a mod where the rules would otherwise
+ * CR 723.5: a continuous PERMISSION to apply a mod where the rules would otherwise
  * refuse — "[Augment] You may augment cards from hand and bin during battle as
  * if they were [Virus]" (Rook).
  *
@@ -1502,7 +1504,7 @@ export interface ModCtx {
  * the wording.
  *
  * Structurally a `CostMod` — same ctx shape, same `anchored()` radiation from
- * a unit in play or an augment mod reading from its HOST, same R12 region
+ * a unit in play or an augment mod reading from its HOST, same CR 101.6 region
  * scoping, same purity rule — but folded as an OR rather than summed, which is
  * exactly why it cannot BE a CostMod: one grantor is enough, and two Rooks are
  * not twice as permissive. `self` is the ANCHOR, which makes Rook's own
@@ -1519,12 +1521,12 @@ export interface ModPermission {
   /** may `ctx.seat` apply this card as an AUGMENT during battle? */
   augmentInBattle?: (g: E, self: Entity, ctx: ModCtx) => boolean;
   /**
-   * May `ctx.seat` apply this card as a MOD during the R18 haste step —
+   * May `ctx.seat` apply this card as a MOD during the CR 504.8a haste step —
    * "[Augment] You can apply other mods during [Haste] as if it was
    * deployment" (Slurpr)?
    *
-   * The MOD-timing twin of R97's `playAtHaste`, and deliberately R95's shape
-   * rather than R97's: an OR-FOLD with no per-turn budget, because Slurpr
+   * The MOD-timing twin of Dispatch Courier's `playAtHaste` (CR 504.7a), and deliberately
+   * Rook's shape rather than Courier's: an OR-FOLD with no per-turn budget, because Slurpr
    * prints no "each turn" the way Dispatch Courier does. Two Slurprs are not
    * two mods' worth of permission, so nothing has to be counted and no
    * GameState field is needed — `hastePlaysUsed` has no sibling here.
@@ -1532,24 +1534,24 @@ export interface ModPermission {
    * "As if it was deployment" is the whole grant: the answer is a boolean, and
    * the deployment branch of `doAugment` / `doGraft` then runs UNCHANGED with
    * only its phase test replaced. Everything deployment already refuses —
-   * paying for the mod (R37/R59's `purpose: 'mod'`), the host being in your
+   * paying for the mod (CR 701.2b's `purpose: 'mod'`), the host being in your
    * own region, a graft needing a graft cause on the host — still refuses.
    *
    * ⚠ Asked about AUGMENTS AND GRAFTS alike (`ctx.kind`), because "mod" is
-   * R37's word for both. Slurpr checks neither: it grants both halves.
+   * CR 701.2's word for both. Slurpr checks neither: it grants both halves.
    */
   applyAtHaste?: (g: E, self: Entity, ctx: ModCtx) => boolean;
 }
 
 /**
- * R97: what a `PlayPermission` is being asked about — one attempt to PLAY one
+ * CR 803.2b: what a `PlayPermission` is being asked about — one attempt to PLAY one
  * card at a timing its printed line does not allow.
  *
- * Deliberately the twin of R95's `ModCtx`, field for field, because the two
+ * Deliberately the twin of the `ModCtx`, field for field, because the two
  * questions are the same question about different verbs: applying a mod is not
- * playing a card (R37), so they must stay two seams, but a card that wants to
+ * playing a card (CR 701.2), so they must stay two seams, but a card that wants to
  * widen one usually wants to phrase it the same way as a card that widens the
- * other. `from` is in the signature for exactly R95's reason — the printed zone
+ * other. `from` is in the signature for exactly CR 723.5b's reason — the printed zone
  * list belongs to the granting CARD, not to the rules.
  */
 export interface PlayCtx {
@@ -1559,9 +1561,9 @@ export interface PlayCtx {
   card: CardDef;
   /** the zone it would leave */
   from: 'hand' | 'bin' | 'cache';
-  /** the region the play happens in (R12) */
+  /** the region the play happens in (CR 101.6) */
   region: number;
-  /** R97: how many grant-funded haste-step plays `seat` has ALREADY made this
+  /** CR 504.7a: how many grant-funded haste-step plays `seat` has ALREADY made this
    * turn. The printed budget is per-card prose ("Each turn, you may play a
    * unit…"), so the card spends it, not the engine: Dispatch Courier returns
    * an allowance of 1 and the engine compares the sum of allowances with this.
@@ -1570,7 +1572,7 @@ export interface PlayCtx {
 }
 
 /**
- * R97: a continuous PERMISSION to PLAY a card at a timing the printed line
+ * CR 803.2b: a continuous PERMISSION to PLAY a card at a timing the printed line
  * refuses — "[Augment] Each turn, you may play a unit during the mana step as
  * if it had [Haste]" (Dispatch Courier).
  *
@@ -1579,12 +1581,12 @@ export interface PlayCtx {
  * mana step" and "There is no priority during the mana step, but you can play
  * haste cards and resources as special actions"; asked what the mana step IS,
  * nyarlathotep8457: "Yes the Mana step is the resources step of the planning
- * phase." So the printed "mana step" is this engine's R18 haste step, and
+ * phase." So the printed "mana step" is this engine's CR 803.2a haste step, and
  * Courier is asking for exactly one thing: a seat-level play-timing grant.
  *
- * Radiation is R95's, unchanged: the `anchored()` walk (a unit in play, or an
- * augment mod read from its HOST), R12 region scope, the shallow R62 guard,
- * a reentrancy latch. What is NOT R95's is the FOLD — this one SUMS, because
+ * Radiation is `ModPermission`'s, unchanged: the `anchored()` walk (a unit in play, or an
+ * augment mod read from its HOST), CR 101.6 region scope, the shallow CR 712.1a guard,
+ * a reentrancy latch. What is NOT `ModPermission`'s is the FOLD — this one SUMS, because
  * the printed text carries a per-turn quantity. Two Rooks are not twice as
  * permissive (a boolean OR); two Couriers each print "Each turn, you may play
  * a unit", and two of them are two plays. `Infinity` is the OR-fold's
@@ -1604,8 +1606,8 @@ export interface PlayCtx {
  * card's predicate.
  */
 export interface PlayPermission {
-  /** R97: how many times per turn may `ctx.seat` play this card during the
-   * HASTE step (R18) despite its printed timing? Return 0 for no (the
+  /** CR 504.7a: how many times per turn may `ctx.seat` play this card during the
+   * HASTE step despite its printed timing? Return 0 for no (the
    * default), a finite count for a printed "each turn" budget, or `Infinity`
    * for an unbudgeted grant. The engine sums every grantor's answer and
    * compares the total with `ctx.usedThisTurn`. */
@@ -1613,7 +1615,7 @@ export interface PlayPermission {
 }
 
 /**
- * R178 — AN AS-YOU-PLAY OPTION: a cost-shaped, NON-STACK, optional decision
+ * CR 109.6 — AN AS-YOU-PLAY OPTION: a cost-shaped, NON-STACK, optional decision
  * offered to this card's controller while they play ANOTHER card.
  *
  * ONE card prints it, and the designer describes it as its own kind of thing.
@@ -1634,7 +1636,7 @@ export interface PlayPermission {
  * The engine built it as an ordinary `triggered` ability, which answered "no"
  * to three of those four: the trigger reached the stack (so it could be
  * negated BEFORE the copy was ever made — the enemy interacting with the
- * copying, not the copy), R121's pay-to-trigger gate taxed it, and anything
+ * copying, not the copy), CR 111.10g's pay-to-trigger gate taxed it, and anything
  * else keying on the two ability KINDS reached it too.
  *
  * SO IT IS NOT AN ABILITY, IT IS A STAGE OF THE CAST WINDOW. `E.collectTargets`
@@ -1643,9 +1645,9 @@ export interface PlayPermission {
  * option is the final thing asked before the item is committed. Nothing about
  * it is ever on the stack; only what it BUYS is.
  *
- * ⚠ WHY IT IS NOT `pendingCosts` / `CostMod.sacrifice` (R122), which is the
+ * ⚠ WHY IT IS NOT `pendingCosts` / `CostMod.sacrifice` (CR 111.10), which is the
  * near neighbour and the first thing to reach for: a cost is MANDATORY once
- * the play is declared. `playAtTiming` attaches R122's imposed
+ * the play is declared. `playAtTiming` attaches CR 111.10's imposed
  * "[Sacrifice a unit]" precisely because castability was already gated on it
  * being payable, and `collectItemCosts` then makes the player pick WHICH unit,
  * never WHETHER. This is a *may* — declining is always legal and always free —
@@ -1653,8 +1655,8 @@ export interface PlayPermission {
  * real cost has. Hence its own stage. It is cost-SHAPED (paid as you play,
  * off the stack, uninteractable) without being a cost.
  *
- * RADIATED like every other `CardBehavior` channel: `anchored()`, R12 region
- * scope, the shallow R62 guard — and it is a member of `BEHAVIOR_CHANNELS`, so
+ * RADIATED like every other `CardBehavior` channel: `anchored()`, CR 101.6 region
+ * scope, the shallow CR 712.1a guard — and it is a member of `BEHAVIOR_CHANNELS`, so
  * an Ancient One standing next to a Maelstrom Charger offers the option off
  * the PROJECTED FACE and sacrifices ITSELF for it, which is the RAQ's last
  * line. That is also why the engine keys its "already asked" ledger on
@@ -1675,16 +1677,16 @@ export interface AsYouPlayOption {
    * original once the original is on the stack (so the copy resolves first).
    * `reaim` additionally offers the printed "you may choose new targets for
    * the copy", collected in this same window so the opponent's first response
-   * window sees a fully declared copy (R57). */
+   * window sees a fully declared copy (CR 710.8a). */
   copySpell?: { reaim?: boolean };
 }
 
 /**
- * R123: a play permission whose GRANTOR IS A CARD SITTING IN A BIN — "If I am
+ * CR 504.7: a play permission whose GRANTOR IS A CARD SITTING IN A BIN — "If I am
  * in your bin, you may play a unit as if it had [Haste] by erasing me as an
  * additional cost to play that unit." (Writhing Host).
  *
- * Deliberately NOT a `PlayPermission`: R97's family radiates through
+ * Deliberately NOT a `PlayPermission`: the family radiates through
  * `E.anchored()`, which walks units in play and augment mods, and a card in a
  * bin is a NAME in an array with no Entity to anchor on. So the predicate
  * takes no `self`, and the gatherer (`E.binHasteGrantorIndex`) walks
@@ -1699,19 +1701,19 @@ export interface AsYouPlayOption {
  * budget, and erasing it spends it.
  *
  * "As if it had [Haste]" is TIMING ONLY — the played unit never carries the
- * Haste attribute (R97's reading, unchanged). R97's two general refusals
+ * Haste attribute (CR 803.2b's reading, unchanged). The grant's two general refusals (CR 207.4a, 803.2b)
  * stand above this grantor too, in the gatherer: a {Battle} card stays a
  * battle card (RAQ "[Solved] Dispatch Courier vs Battle Timing"), and a
  * printed [Haste] card needs no grant, so it must not cost anyone a grantor.
  */
 export interface BinPlayPermission {
-  /** may `ctx.seat` play `ctx.card` during the HASTE step (R18), at the
+  /** may `ctx.seat` play `ctx.card` during the HASTE step (CR 504.7), at the
    * price of this card being erased from their bin? */
   playAtHaste?: (g: E, ctx: Omit<PlayCtx, 'usedThisTurn'>) => boolean;
 }
 
 /**
- * R104: what an `AmountMod` is being asked about — ONE quantity, on its way
+ * CR 708.5: what an `AmountMod` is being asked about — ONE quantity, on its way
  * through the engine, before anything has committed it.
  *
  * The seven cards ledger #60 lists split cleanly into two families, and this
@@ -1730,7 +1732,7 @@ export interface AmountCtx {
   /**
    * which quantity is passing through
    *
-   * R162 adds the two LIFE quantities. They are asked of both amount families
+   * The two LIFE quantities came later (CR 112.1a). They are asked of both amount families
    * — `AmountMod` (additive) and `AmountMultiplier` (multiplicative) — from
    * `E.gainLife` / `E.loseLife`, which are the only two ways a life total ever
    * moves. Damage to a player is a `lifeLoss` (Arbiter of Vitality's own
@@ -1739,7 +1741,7 @@ export interface AmountCtx {
    */
   kind: 'counters' | 'effectDamage' | 'rot' | 'debt' | 'lifeGain' | 'lifeLoss';
   /**
-   * the region it happens in (R12) — a mod only sees its own region.
+   * the region it happens in (CR 101.6) — a mod only sees its own region.
    *
    * UNDEFINED means the change is not tied to a region and every holder is
    * asked, which is not a loophole but `E.fireEvent`'s own rule reused: it
@@ -1753,7 +1755,7 @@ export interface AmountCtx {
   /**
    * the amount as it stands, SIGNED. Counters are signed (+1/+1 vs -1/-1), so
    * "one more of the same thing" is `amount > 0 ? +1 : -1` and not `+1`.
-   * For `effectDamage` this is asked BEFORE {Powerful} doubles: R316 (RAQ
+   * For `effectDamage` this is asked BEFORE {Powerful} doubles: CR 112.9 (RAQ
    * "[Solved] Resonant, Combat Damage, Conduit and Powerful") adds first and
    * doubles after — "(1+1)x2". Every other kind is already past any engine
    * scaling that happens earlier.
@@ -1775,7 +1777,7 @@ export interface AmountCtx {
 }
 
 /**
- * R104: a continuous AMOUNT modifier. `delta` returns how much to ADD.
+ * CR 708.5: a continuous AMOUNT modifier. `delta` returns how much to ADD.
  *
  * SUMMED, not first-true-consumes, and that is a ruling rather than a
  * convenience. Caleb, on how replacements of this shape compose:
@@ -1792,7 +1794,7 @@ export interface AmountCtx {
  * purely to paper over this").
  *
  * Modelled on `CostMod` line for line — the same `anchored()` walk, the same
- * R12 region scope, the same shallow R62 suppression guard, the same
+ * CR 101.6 region scope, the same shallow CR 712.1a suppression guard, the same
  * reentrancy latch, the same "ownership lives in the card's own predicate, not
  * in the gatherer". Like `CostMod`, `delta` must not call anything that
  * re-enters amount evaluation; read raw state instead.
@@ -1802,8 +1804,8 @@ export interface AmountMod {
 }
 
 /**
- * R162: a continuous MULTIPLICATIVE amount modifier — the second amount family,
- * and the one R104 explicitly left unbuilt ("Giving it a hook would need a
+ * CR 708.6: a continuous MULTIPLICATIVE amount modifier — the second amount family,
+ * and the one the replacement layer first left unbuilt ("Giving it a hook would need a
  * multiplicative amount family, and how that composes with the additive one is
  * a ruling nobody has made").
  *
@@ -1811,7 +1813,8 @@ export interface AmountMod {
  * "no opinion" and takes the mod out of the composition entirely — that is the
  * whole opt-out, and it matters because of how these compose:
  *
- *   THE COMPOSITION RULE IS THE OWNER'S FORMULA, VERBATIM (R157 §23):
+ *   THE COMPOSITION RULE IS THE OWNER'S FORMULA, VERBATIM (as first stated for two Arbiters;
+ *   CR 708.6 since makes it exponential):
  *     "quadruple it!! So always n*2*v (n is num of arbiters, v is original
  *      damage/life gain value)"
  *
@@ -1827,12 +1830,12 @@ export interface AmountMod {
  * one line to change.
  *
  * ⚠ AND HOW A MULTIPLIER COMPOSES WITH AN ADDITIVE `AmountMod` IS *NOT*
- * ANSWERED. R157 §23 records the interim decision — apply the multiplier AFTER
+ * ANSWERED. The interim decision, now CR 708.6a, is to apply the multiplier AFTER
  * the additive mods, i.e. `(v + Σdelta) × factor` — and `E.lifeAmount` is where
  * that order is written down. A future ruling changes it there.
  *
- * Shaped exactly like `AmountMod`: the same `anchored()` walk, the same R12
- * region scope, the same shallow R62 guard, the same reentrancy latch, and the
+ * Shaped exactly like `AmountMod`: the same `anchored()` walk, the same CR 101.6
+ * region scope, the same shallow CR 712.1a guard, the same reentrancy latch, and the
  * same rule that `factor` must not call anything that re-enters amount
  * evaluation.
  *
@@ -1850,7 +1853,7 @@ export interface AmountMultiplier {
 }
 
 /**
- * R104: ONE token about to be created, as a request the replacement layer can
+ * CR 708.3: ONE token about to be created, as a request the replacement layer can
  * substitute before anything exists.
  *
  * `form` is the physical difference between the two creation primitives —
@@ -1880,7 +1883,7 @@ export interface CardBehavior {
   xMin?: number;
   abilities?: Ability[];
   /**
-   * R268: the continuous clauses printed INSIDE the `[Augment]` box.
+   * CR 721.1: the continuous clauses printed INSIDE the `[Augment]` box.
    *
    * Every channel below this line — `statics`, `costMods`, the seven
    * `replace*` hooks, the permissions — is BODY text: printed outside the box,
@@ -1900,7 +1903,7 @@ export interface CardBehavior {
    * 2026-08-30: *"the augmented effect of infernal wispweaver should ONLY be
    * the 'At end of turn, make a wisp'"*). A card PLAYED reads its whole text
    * box, its own `[Augment]` line included — that is the Manual Q&A already
-   * quoted at `E.fireEvent` and in the R127 write-up, and it is why this is
+   * quoted at `E.fireEvent` and in the retired Ancient One ruling, and it is why this is
    * not simply the mirror of `abilities` vs `augmentText`.
    *
    * Which side a clause belongs on is decided by WHERE IT IS PRINTED, never by
@@ -1910,110 +1913,110 @@ export interface CardBehavior {
    */
   augmentBox?: AugmentBox;
   /** continuous stat/attr projections while this card is a unit in play. Text
-   * printed inside the [Augment] box goes in `augmentBox.statics` (R268). */
+   * printed inside the [Augment] box goes in `augmentBox.statics` (CR 721.1). */
   statics?: StaticMod[];
-  /** R118: continuous FACE projections — "I have all abilities of adjacent
+  /** CR 710.7: continuous FACE projections — "I have all abilities of adjacent
    * allies" (Ancient One). Same radiation rules as `statics` again. */
   projects?: FaceProjection[];
-  /** R59: continuous COST modifiers, same radiation rules as `statics`
+  /** CR 111.10: continuous COST modifiers, same radiation rules as `statics`
    * ("Spells cost [one] more to play during battle" — Tranquility) */
   costMods?: CostMod[];
-  /** R94: continuous ATTRIBUTE grants onto resolving EFFECTS, same radiation
+  /** CR 707.7: continuous ATTRIBUTE grants onto resolving EFFECTS, same radiation
    * rules as `statics` and `costMods` ("[Augment] Your units and spells gain
    * {g}powerful" — Emberflame Enlightener) */
   effectAttrs?: EffectAttrMod[];
-  /** R95: continuous PERMISSIONS to apply a mod where the rules otherwise
+  /** CR 723.5c: continuous PERMISSIONS to apply a mod where the rules otherwise
    * refuse, same radiation rules again ("[Augment] You may augment cards from
    * hand and bin during battle as if they were [Virus]" — Rook) */
   modPermissions?: ModPermission[];
-  /** R97: continuous PERMISSIONS to PLAY a card at a timing its printed line
+  /** CR 504.7a: continuous PERMISSIONS to PLAY a card at a timing its printed line
    * refuses, same radiation rules again — but SUMMED rather than OR-folded,
    * because the printed text carries a per-turn count ("[Augment] Each turn,
    * you may play a unit during the mana step as if it had [Haste]" — Dispatch
    * Courier) */
   playPermissions?: PlayPermission[];
-  /** R178: cost-shaped, NON-STACK, optional decisions offered to this card's
+  /** CR 109.6: cost-shaped, NON-STACK, optional decisions offered to this card's
    * controller as they play another card ("As you play a nonunit spell, you
    * may sacrifice me…" — Maelstrom Charger). Neither triggered nor activated;
    * see `AsYouPlayOption`. Same radiation rules as `costMods`. */
   asYouPlay?: AsYouPlayOption[];
-  /** R123: PERMISSIONS to play a card at haste timing granted by a card
+  /** CR 504.7: PERMISSIONS to play a card at haste timing granted by a card
    * SITTING IN ITS OWNER'S BIN, paid for by erasing the grantor ("If I am in
    * your bin, you may play a unit as if it had [Haste] by erasing me as an
-   * additional cost to play that unit" — Writhing Host). Not R97's family:
+   * additional cost to play that unit" — Writhing Host). Not the `playPermissions` family:
    * those radiate through `anchored()`, and a bin card has no anchor. See
    * `BinPlayPermission` for the shape and the cost. */
   binPlayPermissions?: BinPlayPermission[];
   /** the card can be applied as an augment even without augmentAttrs or
    * augmentText — its [Augment] text is implemented via `statics` */
   augmentable?: boolean;
-  /** R64: "I must be targeted if able" (Gatekeeper of Souls) — a targeting
+  /** CR 110.12: "I must be targeted if able" (Gatekeeper of Souls) — a targeting
    * restriction that narrows OTHER effects' candidate lists rather than its
    * own. Radiates like a static: live while the card is a unit in play, and
    * donated while it is an augment mod. */
   mustBeTargeted?: boolean;
-  /** R42: this card may be prophesied out of its owner's BIN as well as their
+  /** CR 803.7c: this card may be prophesied out of its owner's BIN as well as their
    * hand ("I can be prophesied from your bin" — Angel of Anguish). No card may
    * be prophesied from the bin unless it says so, so this defaults to false
    * and the `prophesy` action's `from: 'bin'` is refused without it. */
   prophesyFromBin?: boolean;
   /**
-   * R123: "…and played from your bin." (Trench Stalker) — this card may be
+   * CR 405.9: "…and played from your bin." (Trench Stalker) — this card may be
    * PLAYED out of its owner's own bin under its own printed text. Distinct
-   * from R96, which is a battle-scoped GRANT by another card ("In this
+   * from the blanket bin grant, which is a battle-scoped GRANT by another card ("In this
    * battle, you may play spells from your bin" — Abyssal Evocation) and
    * reaches SPELLS only; this flag is the played card's own line and needs no
-   * grant. PRINTED TIMING still applies — the R42/R45 cache reading R96 also
-   * follows — so a {Battle} card is offered in battle priority windows.
+   * grant. PRINTED TIMING still applies, by CR 702.2a, exactly as it does from the
+   * cache (CR 403.3d) — so a {Battle} card is offered in battle priority windows.
    *
-   * ⚠ NO {Unstable} stamp rides on this route. The R96 stamp is the GRANTING
+   * ⚠ NO {Unstable} stamp rides on this route. The grant's stamp (CR 405.9a) is the GRANTING
    * card's own text ("If you do, they gain {p}unstable until regroup"), not a
    * fact about bins — the Manual's blanket Unstable rule is about MODDED
    * cards (p.35). A card playing itself out under this flag prints no such
-   * line and arrives stable. Documented in R123.
+   * line and arrives stable. Documented in CR 405.9a.
    */
   playsFromBin?: boolean;
   /**
-   * R100: "I can't be played from your hand." (Calming Force) — the mirror of
+   * CR 702.2b: "I can't be played from your hand." (Calming Force) — the mirror of
    * `prophesyFromBin` and defaulting the other way: every card may be played
    * from hand unless it says it may not, so this is opt-in and permissive by
    * default.
    *
-   * A NEW flag rather than a reuse, because nothing existing means this. R64's
-   * `restrict` narrows what an EFFECT may TARGET; `prophesyFromBin` is about a
+   * A NEW flag rather than a reuse, because nothing existing means this. The
+   * targeting `restrict` (CR 110.3a) narrows what an EFFECT may TARGET; `prophesyFromBin` is about a
    * different zone and a different verb; `timing` is about WHEN, not WHERE FROM.
    * The engine was strictly more permissive than the printed card, and this is
    * the whole of the difference.
    *
    * ⚠ It restricts PLAYING FROM HAND and nothing else. The card is still
-   * reachable — cached and released (R42/R45), played from a bin under a
-   * permission (R96), applied as a mod, discarded, recycled — because the
+   * reachable — cached and released (CR 403.3a, 801.9e), played from a bin under a
+   * permission (CR 405.9), applied as a mod, discarded, recycled — because the
    * printed line names one zone and one verb. Enforced in `doPlayCard` and
    * refused by all three `legalActions` sites that push a hand `playCard`: a
    * refusal the UI still offers as a legal click is its own playtest report.
    */
   noPlayFromHand?: boolean;
-  /** R29: "You may play me into an open spot in your formation" (Tiderunner
+  /** CR 602.7: "You may play me into an open spot in your formation" (Tiderunner
    * Initiate; Trench Stalker's first clause). The card is PLAYED into the
    * line — the spot is chosen in the cast window like any other part of how a
    * card is played, and the unit is written into the column atomically with
    * its own spawn, so it is never observable standing outside the formation.
-   * Distinct from R75's `E.placeInFormation`, which is for an EFFECT that
+   * Distinct from `E.placeInFormation` (CR 602.6), which is for an EFFECT that
    * creates a unit in a formation and rightly places at resolution. */
   playsIntoFormation?: boolean;
   /**
-   * R165: "I spawn with N counters" printed on the card's own body —
+   * CR 301.8: "I spawn with N counters" printed on the card's own body —
    * Powerforge Synergist ("two +1/+1 counters"), Aethercap Siphoner ("three
    * -1/-1 counters on me"). DECLARATIVE, and read by `E.spawnUnit`, because
    * the counters are part of the body that ARRIVES: they go on before the
    * `'spawned'` event fires, so no watcher and no player ever sees the printed
-   * 0/0 or 4/4 standing there. This is R147's shape one field over — a fact
+   * 0/0 or 4/4 standing there. This is the spell-unit copy body's shape (CR 303.11) one field over — a fact
    * about the body applied ahead of `fireEvent`, the single door every
    * listener goes through — and it is exactly why this cannot be a triggered
    * ability: a trigger cannot run before the event that raised it.
    *
-   * SIGNED, like every counter total in the engine (R130): positive is +1/+1,
-   * negative is -1/-1. It reaches R104's AMOUNT layer exactly as a Robot X's
+   * SIGNED, like every counter total in the engine (CR 206.6a, 206.6b): positive is +1/+1,
+   * negative is -1/-1. It reaches the AMOUNT layer (CR 708.5) exactly as a Robot X's
    * spawn counters do, so an allied Flux Resonator scales both — two cards
    * printing the same kind of sentence must not disagree about whether a
    * replacement effect touches them.
@@ -2025,7 +2028,7 @@ export interface CardBehavior {
   graftEffect?: { bounded: boolean; effect: EffectDef };
   /** text-box [Augment] abilities that transfer when this card augments */
   augmentText?: Ability[];
-  /** R38 replacement effect: rot is about to deal `amount` damage to `seat`.
+  /** CR 112.13d replacement effect: rot is about to deal `amount` damage to `seat`.
    * Return true to REPLACE the damage (do whatever the card does instead —
    * Skittering Blight: "instead put that many +1/+1 counters on me"), false to
    * let it through. Called from E.rotDamage() at the start of deployment,
@@ -2036,7 +2039,7 @@ export interface CardBehavior {
    * replacement framework: rot damage is the only replaceable event in the
    * engine (see E.replaceRotDamage). */
   replaceRotDamage?: (g: E, self: Entity, seat: Seat, amount: number) => boolean;
-  /** R38 replacement effect, the second and last one: a COLUMN is about to
+  /** CR 608.8 replacement effect, the second and last one: a COLUMN is about to
    * deal `amount` combat damage to `seat`. Return true to REPLACE the damage
    * (Blightsea Polyp: "[Augment] Columns deal combat damage to players as 1
    * rot" — the card gains the victim 1 rot and returns true), false to let it
@@ -2056,18 +2059,18 @@ export interface CardBehavior {
   replaceCombatDamageToPlayer?: (g: E, self: Entity, seat: Seat, amount: number,
     info: {
       attacker: Seat; region: number;
-      /** R98: the striking COLUMN's live attributes — {Piercing}, {Lethal},
+      /** the striking COLUMN's live attributes — {Piercing}, {Lethal},
        * {Thieving}, {Powerful}, … Added because a hook that has to tell a
        * Piercing hit from a plain unblocked one could not: Oorblak's parked
        * half turns entirely on that distinction (RAQ "[Solved] Oorblak vs
        * Piercing"). */
       attrs: Set<string>;
-      /** R98/R61 {Pure}: the exchange was attribute-blind, so `attrs` is empty
+      /** CR 802.25b {Pure}: the exchange was attribute-blind, so `attrs` is empty
        * and the card should behave as if the column printed nothing. */
       pure: boolean;
     }) => boolean | number;
   /**
-   * R104: continuous AMOUNT modifiers — "it deals that much damage plus 1
+   * CR 708.5: continuous AMOUNT modifiers — "it deals that much damage plus 1
    * instead", "put that many counters plus one instead". Same radiation rules
    * as `statics`/`costMods` (a unit in play, or an augment mod reading from
    * its HOST, scoped to the anchor's region), and SUMMED like `costMods`
@@ -2076,7 +2079,7 @@ export interface CardBehavior {
    */
   amountMods?: AmountMod[];
   /**
-   * R162: continuous MULTIPLICATIVE amount modifiers — "double all life gain
+   * CR 708.6: continuous MULTIPLICATIVE amount modifiers — "double all life gain
    * and life loss" (Arbiter of Vitality). Same radiation rules as `amountMods`,
    * but the claiming factors are SUMMED into one multiplier (the owner's
    * `n*2*v`) and applied AFTER them. See `AmountMultiplier`.
@@ -2108,7 +2111,7 @@ export interface CardBehavior {
    */
   replaceCardStep?: (g: E, self: Entity, seat: Seat) => boolean;
   /**
-   * R104 replacement: `seat` is about to gain `amount` life. Return true to
+   * CR 708.3 replacement: `seat` is about to gain `amount` life. Return true to
    * REPLACE the gain — the hook does whatever the card does instead
    * (Nullbringer: "they lose that much life instead" → `g.loseLife(seat, n)`)
    * — false to let it through. First true consumes; the gain never happens, so
@@ -2122,7 +2125,7 @@ export interface CardBehavior {
    */
   replaceLifeGain?: (g: E, self: Entity, seat: Seat, amount: number, why: string) => boolean;
   /**
-   * R104 replacement: `n` counters are about to be put on `target`. Return the
+   * CR 708.4a replacement: `n` counters are about to be put on `target`. Return the
    * entity they should be put on INSTEAD (Counter Thief: "those counters are
    * placed on me instead" → the anchor), or null to decline. First non-null
    * consumes; the counters land on exactly one unit either way, so this is a
@@ -2133,7 +2136,7 @@ export interface CardBehavior {
    */
   replaceCounters?: (g: E, self: Entity, target: Entity, n: number) => Entity | null;
   /**
-   * R104 replacement: one token is about to be created. Return a substituted
+   * CR 708.3 replacement: one token is about to be created. Return a substituted
    * request (Cosmic Conspirator: "you may instead create a token of any of
    * these types"), or null to decline. First non-null consumes.
    *
@@ -2148,7 +2151,7 @@ export interface CardBehavior {
    */
   replaceTokenCreation?: (g: E, self: Entity, req: TokenRequest) => TokenRequest | null;
   /**
-   * R104 replacement, the BATCH form: one effect has finished creating tokens
+   * CR 708.9 replacement, the BATCH form: one effect has finished creating tokens
    * and `batch` is everything it created, in creation order. Return extra
    * tokens to create alongside them (Automaton of Abundance: "instead create
    * those tokens plus an additional copy of each unique token you created"),
@@ -2158,7 +2161,7 @@ export interface CardBehavior {
    * token", and uniqueness is a property of the whole creation, not of one
    * spawn — report #60: "Automaton of Abundance fires per spawn so N identical
    * tokens yield N copies instead of one per unique". The batch is one
-   * resolution of one effect part, the same unit R80 gave effect damage.
+   * resolution of one effect part, the same unit effect damage uses (CR 112.8).
    */
   replaceTokenBatch?: (g: E, self: Entity, batch: readonly TokenRequest[]) => TokenRequest[] | null;
   /** UI-only PURE query (playtest #5): the amount a state-derived X spell
@@ -2196,7 +2199,7 @@ export interface CardBehavior {
    * WHAT THIS CARD WILL BE WORTH SOMEWHERE IT IS NOT YET — a short note the
    * client may show on the unit. Return null when there is nothing to say.
    *
-   * R243 made "all" mean "all in this region", which is right and which cost
+   * "All" means "all in this region" (CR 601.1c), which is right and which costs
    * the player something real: a static that reads the opposition is worth
    * nothing in your home region, where no opponent is standing, and comes
    * alive in battle. The owner, 2026-08-29, on The Mighty Doot:
@@ -2208,7 +2211,7 @@ export interface CardBehavior {
    * ⚠ THE CARD IS HANDED THE SEATS; IT MUST NOT GO LOOKING FOR THEM. `seats`
    * is who WOULD be present once this unit is in a battle, computed by the
    * engine (`E.seatsInBattleWith`). That is the whole reason this hook takes a
-   * parameter it could otherwise derive: R243 forbids a card reading
+   * parameter it could otherwise derive: CR 101.6 forbids a card reading
    * `g.s.players`, and a preview that reached around that rule to peek at the
    * table would be the exact hole the guard exists to keep shut. The engine
    * answers the "who is out there" question once, in one place, for everyone.
@@ -2223,7 +2226,7 @@ export interface CardBehavior {
 }
 
 /**
- * R268: the channels an `[Augment]` box can carry — every CONTINUOUS channel
+ * CR 721.1: the channels an `[Augment]` box can carry — every CONTINUOUS channel
  * that radiates through `E.anchored()`, and only those.
  *
  * `Pick` rather than a hand-written interface so the two lists cannot drift:
@@ -2268,7 +2271,7 @@ export function card(name: string, behavior: CardBehavior): void {
   // (registerSynthetic stays permissive: test files redefine test cards.)
   if (REGISTRY.has(name)) throw new Error(`"${name}" is already registered — duplicate card() call`);
   REGISTRY.set(name, { ...printed, ...behavior });
-  ZONE_INDEX = null;   // R51: a new registration may add a zone trigger
+  ZONE_INDEX = null;   // CR 400.5: a new registration may add a zone trigger
 }
 
 /** Register a card that is not in the oracle pool (unit tokens, test cards). */
@@ -2278,7 +2281,7 @@ export function registerSynthetic(printed: Printed, behavior: CardBehavior): voi
 }
 
 /**
- * R71: a second printed NAME for one registered card. The Wraith token is the
+ * a second printed NAME for one registered card. The Wraith token is the
  * only case: the token was renamed FROM "Wight" TO "Wraith", and the printed
  * data is mid-transition in the other direction — six cards already read
  * "Wraith" while `Blight's End` still carries the OLD name ("Augment a Wight
@@ -2359,15 +2362,15 @@ export function ambushEffect(name: CardName): EffectDef {
 
 /** affinity pips of a cost string, e.g. "rr" -> { fire: 2 } */
 /**
- * R129: the StackItem kinds that ARE a card being PLAYED, and therefore fire
+ * CR 108.1a, 300.5d: the StackItem kinds that ARE a card being PLAYED, and therefore fire
  * the 'cardPlayed' event. The owner, 2026-08-24: *"Everything is a card,
  * including units. Tokens are NOT cards, however."*
  *
  * So: a spell, a spell unit, a {Battle}-timing UNIT and an AMBUSH are in.
- * A spell TOKEN is out: casting one IS playing a spell (R305), but a token is
- * not a CARD (R133's first half), and this is the set for the noun "card".
+ * A spell TOKEN is out: casting one IS playing a spell (CR 701.1c), but a token is
+ * not a CARD (CR 304.2), and this is the set for the noun "card".
  * The cost-modifier cards that print "Cards" (Arbiter of Armistice,
- * Vengeance) read it for exactly that reason. A VIRUS is out (applying a mod is not playing, R37), and 'triggered' /
+ * Vengeance) read it for exactly that reason. A VIRUS is out (applying a mod is not playing, CR 701.2), and 'triggered' /
  * 'activated' are not plays at all.
  *
  * It lives here rather than in engine.ts so the card files that need it
@@ -2390,7 +2393,7 @@ export function affinityPips(cost: string): Record<string, number> {
 }
 
 /**
- * R51: index of the zone-resident triggers in the pool, keyed by event type.
+ * CR 400.5: index of the zone-resident triggers in the pool, keyed by event type.
  * fireEvent() consults it on EVERY event, so it must be a map lookup and not
  * a scan: built once, lazily (the registry fills as the batch modules import),
  * and invalidated by card()/registerSynthetic() so a late registration is
@@ -2424,11 +2427,11 @@ export function isGraftable(name: string): boolean {
   return !!getCard(name).graftEffect;
 }
 
-/** R110: is this card's graft a MULTIPLIER ("trigger N copies of this graft
+/** CR 722.7: is this card's graft a MULTIPLIER ("trigger N copies of this graft
  * ability")? `E.composeParts` never multiplies a multiplier, so these are the
  * grafts a multiplier has nothing to do with.
  *
- * R131: the three multipliers used to find "the other grafts" by excluding
+ * CR 201.2: the three multipliers used to find "the other grafts" by excluding
  * their own card NAME, which both over-excluded (a second copy of the same
  * multiplier) and under-excluded (a DIFFERENT multiplier, which the engine
  * skips anyway). Neither is about names — it is about which parts get
@@ -2444,14 +2447,14 @@ export function graftCauseIndex(name: string): number {
 }
 
 /**
- * R268: every clause a card declares for a radiating channel, BOTH halves of
+ * CR 721.1: every clause a card declares for a radiating channel, BOTH halves of
  * its text box — its body text and its `[Augment]` box.
  *
  * The split is the ENGINE's business: `E.behaviorBlocks` decides which half a
  * radiator may read in which mode. Everything that merely asks *what does this
  * card declare* — the conformance sweeps, the card ledger, the white-box tests
  * that poke a clause directly — wants both, and reading only `def.statics`
- * would make it blind to the 44 cards R268 moved. One place to read it, so the
+ * would make it blind to the 44 cards the augment-box change moved. One place to read it, so the
  * next sweep cannot get it wrong.
  */
 type RadiantListKey = 'statics' | 'projects' | 'costMods' | 'effectAttrs' | 'amountMods'
@@ -2473,7 +2476,7 @@ export function radiantHook<K extends RadiantHookKey>(name: string, key: K): Car
 }
 
 /** A card can augment iff it grants type-line attrs or has [Augment] text.
- * R268: a box that carries only CONTINUOUS text is [Augment] text too, so an
+ * CR 721.1: a box that carries only CONTINUOUS text is [Augment] text too, so an
  * `augmentBox` counts on its own — that is what `augmentable` used to have to
  * be written by hand for (Prickly Protector, Transmogrifant, and 38 more). */
 export function isAugment(name: string): boolean {

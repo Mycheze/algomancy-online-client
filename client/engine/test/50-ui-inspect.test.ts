@@ -156,7 +156,7 @@ test('the same ability does NOT ask once there is something to target', () => {
   const act: Extract<Action, { type: 'activateAbility' }> =
     { type: 'activateAbility', seat: A, entityId: obs, abilityIndex: 0 };
   assert.equal(activationNeedsConfirm(new E(h.state), ent(h, obs)!, act), false,
-    'the target decision is itself the moment to notice — and R57 puts it before the cost');
+    'the target decision is itself the moment to notice — and CR 111.7 puts it before the cost');
 });
 
 test('a mana-only ability never asks', () => {
@@ -219,7 +219,7 @@ test('an empty cache warns about nothing', () => {
 });
 
 test('a permitted card that misses its TIMING is not reported as playable', () => {
-  // R42: "for free, as if it were in your hand" still obeys normal timing, so
+  // CR 803.7i: "for free, as if it were in your hand" still obeys normal timing, so
   // a {Battle} card released into deployment must NOT show up in the reminder
   const h = new Harness(5009, ['Ben', 'Rashi']);
   toDeployment(h);
@@ -250,7 +250,7 @@ test('duplicate offers of one entry collapse to a single name', () => {
  * render sites blamed the whole permitted/playable gap on timing without ever
  * asking whether the timing already matched.
  *
- * cacheBlockReason asks the cache offer loops' questions in their order (R311),
+ * cacheBlockReason asks the cache offer loops' questions in their order (CR 403.3b),
  * so the tests below pin each answer — including the one the bug destroyed AND
  * the one it must not now destroy in the other direction.
  */
@@ -306,7 +306,7 @@ test('a cache entry with no permission at all blames permission, not the step', 
   const e = new E(h.state);
   assert.equal(e.cachePermission(A, 0), null);
   assert.equal(cacheBlockReason(e, A, 0, legalActions(h.state, A)), 'no-permission',
-    'being cached is not permission (R41) — and that is not a timing problem');
+    'being cached is not permission (CR 403.3) — and that is not a timing problem');
 });
 
 test('a permitted, timely, affordable cached spell with nothing to aim at blames the target', () => {
@@ -371,7 +371,7 @@ test('…and drops out the moment the cost is unpayable', () => {
   assert.ok(activatableUnits(legalActions(h.state, seat)).has(id), 'the third mana turns it on');
 });
 
-test('…and drops out when R62 switches its abilities off', () => {
+test('…and drops out when its abilities are switched off (CR 712.1a)', () => {
   // THE test: highlight and legalActions can never diverge, because the
   // highlight does not know what suppression is — it only knows the list.
   const { h, seat, id } = evokerBoard(5902);
@@ -452,7 +452,7 @@ test('Primordial Coalescence shows the Wraiths it creates', () => {
 });
 
 test('a DECLARED creates list is always included, whatever the text says', () => {
-  // R69: the declaration is the rules answer and the scan is only a safety
+  // the declaration is the rules answer and the scan is only a safety
   // net, so the declared list can never be dropped. (Vacuous while the
   // per-card `creates` declarations are still being written — it becomes real
   // as they land, which is exactly what it is here for.)
@@ -566,7 +566,7 @@ test('the back face is NOT listed as a token Scholar of the Void creates', () =>
     'and the scan itself must not see it, or every reader inherits the claim');
 });
 
-/* ── the erased pile, as it is SHOWN (R69) ──────────────────────────────── */
+/* ── the erased pile, as it is SHOWN ──────────────────────────────── */
 
 test('the erased viewer lists the real cards that are out of the game', () => {
   const v = erasedPileView(['Rotling', 'Good Whale', 'Luminous Arc']);
@@ -575,7 +575,7 @@ test('the erased viewer lists the real cards that are out of the game', () => {
   assert.equal(v.tokensOmitted, 0);
 });
 
-test('R69: dead tokens are omitted — that is the whole point', () => {
+test('dead tokens are omitted — that is the whole point', () => {
   // every dying token now passes through a bin and is erased by the sweep, so
   // a token-heavy board buries the real cards the viewer exists to show.
   const pile = ['Wisp', 'Rotling', 'Wraith', 'Wisp', 'Fireball', 'Unit Token'];
@@ -656,7 +656,7 @@ test('stackItemX keeps the two X\'s apart', () => {
   const rows = stackItemX(it);
   assert.equal(rows.length, 2);
   assert.deepEqual({ kind: rows[0]!.kind, x: rows[0]!.x }, { kind: 'cast', x: 3 });
-  // R64: a grafted rider's variable cost is its OWN X and is attributed to the
+  // a grafted rider's variable cost is its OWN X and is attributed to the
   // part that paid it — one number could not say both things
   assert.equal(rows[1]!.kind, 'cost');
   assert.equal(rows[1]!.x, 7);
@@ -665,7 +665,7 @@ test('stackItemX keeps the two X\'s apart', () => {
 });
 
 test('a declared mode is readable off the stack, so a responder is not blind', () => {
-  // R57 / report #81 (EGCW). Choosing the half at cast time is only half the
+  // CR 702.5 / report #81 (EGCW). Choosing the half at cast time is only half the
   // fix — if the opponent cannot READ it while the item sits there, they are
   // still paying for a response without knowing what they are responding to,
   // which is the harm the report described.
@@ -703,7 +703,7 @@ test('the stack card\'s X tag folds duplicates and stays out of the way', () => 
   })), 'X=4/9');
 });
 
-/* R80 — the THIRD X: a triggered ability's amount comes off its event.
+/* the THIRD X: a triggered ability's amount comes off its event.
  * Playtest VEAV: "Awoken Tomb's trigger, while on the stack, doesn't say what
  * X is equal to." */
 
@@ -818,14 +818,14 @@ test('Necromantic Rebuke carries its paid X onto the real stack', () => {
   assert.deepEqual(
     { kind: rows[0]!.kind, x: rows[0]!.x, receipt: rows[0]!.receipt },
     { kind: 'cost', x: 2, receipt: 'erased 2 cards' },
-    'X — and the receipt R65 makes public — survive all the way to the board',
+    'X — and the receipt CR 407.1a makes public — survive all the way to the board',
   );
   assert.equal(stackXMark(item), 'X=2');
 });
 
 /* GETD — the X that is not a COUNT. "There's still no way to see the X value
  * for Volatile Toxicity on the stack. All spells with X should be clear what X
- * is when they're cast." Its cost is one sacrifice, a fixed amount, so R64's
+ * is when they're cast." Its cost is one sacrifice, a fixed amount, so its
  * `costPaid.x` is never written; the X is a stat the receipt snapshotted. */
 
 test('Volatile Toxicity: the X read off its cost RECEIPT reaches the stack', () => {
@@ -916,11 +916,11 @@ test('every shape of decline lands in the decline bucket', () => {
 
 /* ── BL-24: which option values ping a board unit ────────────────────────── */
 
-test('optionPingId: only R4 electric-path numbers are entity ids — a formation-slot index pings NOTHING', () => {
-  // R4's electric path really does put raw entity ids in its option values —
+test('optionPingId: only CR 802.17 electric-path numbers are entity ids — a formation-slot index pings NOTHING', () => {
+  // CR 802.17's electric path really does put raw entity ids in its option values —
   // that contract keeps its ping
   assert.equal(optionPingId(7, 'electricPath'), 7);
-  // BL-24: R75's slot options are slot INDEXES 0..n-1. While the ask rode
+  // BL-24: CR 602.6's slot options are slot INDEXES 0..n-1. While the ask rode
   // kind 'electricPath', "column 1, behind Hooba-Bot" (value 1) pinged and
   // previewed whichever unit happened to own entity id 1. Under its own kind
   // a bare number names no entity.
@@ -930,8 +930,8 @@ test('optionPingId: only R4 electric-path numbers are entity ids — a formation
   assert.equal(optionPingId(3, undefined), null);
 });
 
-test("optionPingId: a ref value carrying `unit` pings that unit, whatever the kind — R29's behind-slot included", () => {
-  // R29 (Tiderunner / Trench Stalker) values are FormationSpot descriptors;
+test("optionPingId: a ref value carrying `unit` pings that unit, whatever the kind — CR 602.7's behind-slot included", () => {
+  // CR 602.7 (Tiderunner / Trench Stalker) values are FormationSpot descriptors;
   // the 'behind' one names the unit you would stand behind, which is exactly
   // the right thing to light up on the board
   assert.equal(optionPingId({ kind: 'behind', unit: 5 }, 'formationSlot'), 5);
@@ -1129,9 +1129,9 @@ test('findCardName is untouched by the cast list — a different question', () =
   assert.equal(findCardName('Battle: Ben may attack.'), 'Battle');
 });
 
-/* ── R68: nothing on the rules stack is negated any more ────────────────── */
+/* ── CR 704.4: nothing on the rules stack is negated any more ────────────────── */
 
-test('R68: a negated trigger is GONE from the stack, not sitting on it greyed', () => {
+test('CR 704.4: a negated trigger is GONE from the stack, not sitting on it greyed', () => {
   // `shouldAutoYield` guards against a negated top item. That guard is now
   // unreachable from the engine — this is the evidence — but it is kept
   // deliberately (see ui/inspect.ts, and test/53), because ui/flash.ts stamps
@@ -1154,7 +1154,7 @@ test('R68: a negated trigger is GONE from the stack, not sitting on it greyed', 
   pass(h); pass(h);                                      // the Protocol resolves
 
   assert.deepEqual(h.state.stack.filter(i => i.negated), [],
-    'R68: nothing on the stack is ever flagged negated');
+    'CR 704.4: nothing on the stack is ever flagged negated');
   assert.equal(h.state.stack.some(i => heralds.includes(i.sourceId!)), false,
     'the negated triggers are gone, not greyed');
   assert.equal(shouldAutoYield(h.state, A, yielded), false, 'and there is nothing to yield to');
@@ -1304,12 +1304,12 @@ test('the aid is layered over live engine state, whatever revealHandTo wrote', (
   assert.equal(seenHandView(seen, d).cards.length, seen.cards.length - 1);
 });
 
-/* ── R78: telling the waiting player WHY nothing is happening ────────────
+/* ── CR D6.3: telling the waiting player WHY nothing is happening ────────────
  *
  * Two holes, one complaint. The engine closed the later one: GameState.resolving
  * names the item that is mid-resolution, so "Opponent is resolving X" is a
  * field read. The EARLIER one has no field at all — a cast-time suspension
- * (R35's X, {Modular} mods, an R49 bracketed cost, R67's targets) happens after
+ * (CR 107.2a's X, {Modular} mods, a CR 702.4 bracketed cost, CR 702.3c's targets) happens after
  * the card has left the hand and before the item reaches state.stack, so it
  * lives only in state.suspension, which view.ts nulls for the other seat along
  * with their decision. The opponent gets a frozen board and no explanation.
@@ -1362,7 +1362,7 @@ test('a cast-time suspension is seen as a card out of the hand with nothing to s
   assert.equal(view.decision, null, 'the caster\'s decision is redacted…');
   assert.equal(view.suspension, null, '…and so is the item they are holding');
   assert.equal(view.stack.length, 0, 'and it has not reached the stack');
-  assert.equal(view.resolving ?? null, null, 'R78 cannot help this far back');
+  assert.equal(view.resolving ?? null, null, 'CR D6.3 cannot help this far back');
   const quiet = !events.some(e => e.msg);
   assert.equal(quiet, true, 'a cast-time suspension is silent — that is the honesty gate');
 
@@ -1431,7 +1431,7 @@ test('the shortfall is held until it is EXPLAINED, not until the next update', (
 });
 
 test('a cancelled cast puts the card back, and the hint goes with it', () => {
-  // R67 gave the cast window a Cancel button. The card returns to the hand, so
+  // The cast window has a Cancel button (CR D4.2). The card returns to the hand, so
   // the shortfall simply stops being one — no special case needed.
   const { h, me, opp } = battleReady(5096);
   const view = (): GameState => viewFor(h.state, opp);
@@ -1468,13 +1468,13 @@ test('waitingNote prefers the fact it can prove over the one it inferred', () =>
     region: 0, negated: false, parts: [],
   });
   assert.equal(waitingNote(s, false), 'Waiting for opponent to respond');
-  // R78's marker is a real field and names the effect, so it wins over both
+  // CR D6.3's marker is a real field and names the effect, so it wins over both
   s.resolving = { ...s.stack[0]!, id: 2, label: 'Recall' };
   assert.equal(waitingNote(s, true, 'Rashi'), 'Waiting for Rashi to resolve Recall',
     'one short line (the owner, 2026-09-28), and never a response window that closed');
 });
 
-/* ── R247: the waiting bar names the effect, from the SERVER's stub ──────
+/* ── CR D6.4: the waiting bar names the effect, from the SERVER's stub ──────
  *
  * Playtest #117: *"opponent's should see the same effect like thing on the
  * stack that's lightly flashing to indicate when an opponent is choosing
@@ -1495,7 +1495,7 @@ test('waitingNote prefers the fact it can prove over the one it inferred', () =>
  * into the client function, with nothing hand-built in between. The leak half
  * — that the stub carries nothing new — lives in server/e2e/test-pending-ask.ts.
  */
-test('R247: the pause bar names the effect an opponent is answering, off the server stub', () => {
+test('CR D6.4: the pause bar names the effect an opponent is answering, off the server stub', () => {
   const h = new Harness(5095);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1507,7 +1507,7 @@ test('R247: the pause bar names the effect an opponent is answering, off the ser
   const asker = h.state.decision!.seat;
   const watcher = (1 - asker) as Seat;
   assert.equal(h.state.stack.length, 0, 'the report measured this: nothing on the stack');
-  assert.equal(h.state.resolving, null, 'and nothing resolving, so R78 has no answer here');
+  assert.equal(h.state.resolving, null, 'and nothing resolving, so CR D6.3 has no answer here');
 
   const view = viewFor(h.state, watcher, null) as GameState;
   assert.equal(view.decision, null, 'the watcher still gets no decision');
@@ -1603,7 +1603,7 @@ test('a mono element deck still gets a prismite MENU rather than a silent auto e
 
 test('outside constructed the resource menu falls back to every element the game offers', () => {
   // deckElements is absent in shared and draft, and absent on every game saved
-  // before R99. An empty menu would read as "you may not do this", which is a
+  // before the field existed. An empty menu would read as "you may not do this", which is a
   // rules claim and a false one.
   const shared = new Harness(5083).state;
   assert.equal(shared.deckElements, undefined);
@@ -1623,20 +1623,20 @@ test('outside constructed the resource menu falls back to every element the game
     'and neither is a deck that shares nothing with what is on offer');
 });
 
-/* ── R284: a declared mode reads as the half it declared ───────────────────
+/* ── CR D6.10a: a declared mode reads as the half it declared ───────────────────
  *
  * Owner, 2026-09-01: *"when it's put onto the stack, the non chosen mode
  * vanishes, making the card read how it will function. (This part is purely
  * visual, to help the player.)"*
  *
- * The choice happened in the cast window (R57) and the stack is where the
+ * The choice happened in the cast window (CR 702.5) and the stack is where the
  * OPPONENT prices their response, so a card still printing both halves there
  * is asking them to hold two readings of an effect that only has one. The
  * `Mode: …` badge already named the answer; this makes the sentence agree
  * with it.
  */
 
-test('R284: a modal stack item reads as the half it declared, and both halves without the engine', () => {
+test('CR D6.10a: a modal stack item reads as the half it declared, and both halves without the engine', () => {
   const h = new Harness(5040, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1661,7 +1661,7 @@ test('R284: a modal stack item reads as the half it declared, and both halves wi
     'no engine, no narrowing — and no wrong half either');
 });
 
-test('R284: Siphon Life narrows to the printed half, not to the option order', () => {
+test('CR D6.10a: Siphon Life narrows to the printed half, not to the option order', () => {
   // THE CASE THAT MAKES `half` A DECLARATION. The card prints "[gains {i1}or
   // loses]" and offers Lose FIRST, so an index-based mapping would have shown
   // every burn as a heal and nobody would have noticed until a game.

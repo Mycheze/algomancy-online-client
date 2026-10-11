@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { artVersions } from './art-versions.ts';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
-// R181: `legalActions` was imported here and never called — the seat-legality
+// `legalActions` was imported here and never called — the seat-legality
 // question goes through rooms.ts's `legalForSeat`. Removed; `noUnusedLocals`
 // on server/tsconfig.json now catches the next one.
 import { checkDeck, checkSingleCard, forcedAction, IllegalAction } from '../engine/src/apply.ts';
@@ -50,7 +50,7 @@ import {
   notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
   closedNotice, codeTaken, sweepIdleRooms,
 } from './rooms.ts';
-// R216 — the scenario tester (docs/14). Everything about it is gated on
+// CR D8.4a — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
 import {
   OPPONENT, SANDBOX_ID, SCENARIOS, VERDICTS, isScenarioId, passiveMove, scenarioBrief, scenarioIds,
@@ -110,7 +110,7 @@ const ART_DIR = join(HERE, '..', '..', 'data', 'cards');
 const artVersionsOnDisk = artVersions(ART_DIR);
 const PORT = Number(process.env['PORT'] ?? 8080);
 
-// ── R216: the scenario tester's gate ──────────────────────────────────
+// ── CR D8.4: the scenario tester's gate ──────────────────────────────────
 //
 // THIS CLIENT IS HEADING FOR A PUBLIC DEPLOY (docs/05, backlog BL-28). A route
 // that mints a room with a hand-picked board, hand-picked resources and a
@@ -160,7 +160,7 @@ function testerAllowed(req: import('node:http').IncomingMessage, url: URL): bool
 
 // ── the Discord bot's gate ────────────────────────────────────────────
 //
-// R216's argument, applied again. /api/queue is unauthenticated and answers
+// The scenario tester's argument, applied again. /api/queue is unauthenticated and answers
 // with numbers only, on purpose — see the paragraph above it. /api/bot/queue
 // answers with NAMES, and /api/bot/profile reads a player's whole standing. So
 // the same two-stage fail-closed applies: no ALGO_BOT_TOKEN and the routes do
@@ -628,7 +628,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     }
   }
 
-  // ── R216: the scenario tester (docs/14) ──────────────────────────
+  // ── CR D8.4a: the scenario tester (docs/14) ──────────────────────────
   //
   // Both routes 404 unless ALGO_TESTER_TOKEN is set AND matched — see
   // testerAllowed(). The 404 is the point: an unconfigured deploy does not
@@ -694,7 +694,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   }
 
   /**
-   * R216 — the verdict, one JSON line per judgement (docs/14 §5).
+   * CR D8.4 — the verdict, one JSON line per judgement (docs/14 §5).
    *
    * Same shape and the same reasons as /api/report above: append-only JSONL,
    * an env-overridable path, and every fact the SERVER can know is stamped by
@@ -734,7 +734,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
         scenario: r.scenario,
         card: SCENARIOS[r.scenario]?.card ?? null,
         verdict,
-        // R200: WHICH ENGINE this judgement was made against. Without it a
+        // WHICH ENGINE this judgement was made against (see replay-room.ts). Without it a
         // verdict is a claim about a game nobody can find again — the whole
         // reason the saved-game corpus is only ~39% usable.
         engine: engineVersion(),
@@ -793,7 +793,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     }));
   }
 
-  // R298: the card ladder — Elo for cards, folded out of every finished single
+  // CR D8.2f: the card ladder — Elo for cards, folded out of every finished single
   // card duel in the history (cardladder.ts). Public, like the metagame list.
   if (path === '/api/cardladder') {
     const games = gameHistory().filter(g => g.single);
@@ -878,7 +878,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     // at once, and a switch (ALGO_JUDGE_OFF) that turns the feature off
     // without a deploy when the bill says so.
     //
-    // Deliberately NOT the R216 fail-closed shape (404 unless configured):
+    // Deliberately NOT the CR D8.4a fail-closed shape (404 unless configured):
     // the scenario tester is a cheating vector no player should have, whereas
     // the judge is a feature every tester wants. Copying the 404 here would
     // read as consistency and be the wrong trade — a judge that is off says
@@ -905,7 +905,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     judgeInFlight++;
     try {
       const { question, context } = await readBody(req, 64 * 1024, true) as { question?: string; context?: string };
-      // R297: a Learn to Play lesson rides along as context — capped here at the
+      // CR D8.1: a Learn to Play lesson rides along as context — capped here at the
       // bot's own limit, and only when there is one
       const lesson = typeof context === 'string' ? context.trim().slice(0, 4000) : '';
       const upstream = await fetch(`${BOT_URL}/api/ask`, {
@@ -1087,7 +1087,7 @@ function sendToSeat(room: Room, seat: Seat, obj: unknown): void {
 
 /* ── BL-29: KEEPING THE AUDIENCE IN STEP ──────────────────────────────────
  *
- * Hooked to `sendToSeat` and nowhere else, for the same reason R288's confirm
+ * Hooked to `sendToSeat` and nowhere else, for the same reason the ally-misclick confirm (CR D2.8)
  * hooks `act()`: it is the ONE function every push to a player goes through —
  * updates, reveals, resyncs, game-over, the lobby — so a watcher cannot fall
  * behind through a path somebody adds later. Enumerating the push sites is the
@@ -1131,7 +1131,7 @@ function pushWatchers(room: Room): void {
 const forEachSeat = (fn: (seat: Seat) => void): void => { fn(0); fn(1); };
 
 /**
- * R216 — what the runner screen is told about the room it is in.
+ * CR D8.4 — what the runner screen is told about the room it is in.
  *
  * The static half comes from scenarios.ts (`expect`, the derived clause list);
  * the moving half is the action index and the engine SHA, so the verdict bar
@@ -1154,7 +1154,7 @@ function scenarioInfo(room: Room): unknown {
 }
 
 /**
- * R216 — THE SCRIPTED OPPONENT (docs/14 §4).
+ * CR D8.4 — THE SCRIPTED OPPONENT (docs/14 §4).
  *
  * Most scenarios must not need a second tab. This drives seat 1 with the most
  * PASSIVE legal action available, so the owner drives one seat and the game
@@ -1239,7 +1239,7 @@ function baseView(room: Room, seat: Seat) {
   const clock = clockSnapshot(room);
   return {
     view: viewFor(room.state, seat, room.segSnapshot),
-    // R216: the runner screen's payload, on every push. `undefined` for every
+    // CR D8.4: the runner screen's payload, on every push. `undefined` for every
     // ordinary room — which is what keeps the tester out of normal play: a
     // client only ever draws the verdict bar when the SERVER says this room is
     // a scenario, and no client-side flag can make it appear.
@@ -1247,9 +1247,9 @@ function baseView(room: Room, seat: Seat) {
     // BL-43: the custom rules, on every push of a custom room — the in-game
     // chip reads them. Absent on every standard room.
     ...(room.custom ? { custom: customInfo(room.custom) } : {}),
-    // R298: a single card duel says so on every push (the in-game chip)
+    // a single card duel says so on every push (the in-game chip)
     ...(room.single ? { single: true } : {}),
-    // R150/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
+    // CR D2.1b/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
     // simultaneous segment the OTHER seat's open decision must not empty this
     // seat's list. See rooms.ts for why the engine's global gate is right in
     // battle and wrong here.
@@ -1325,7 +1325,7 @@ function landAction(room: Room, seat: Seat, action: Action): void {
   setWatchHold(room, seat, null);
   // which hidden segment (if any) this action was taken INSIDE
   const wasKey = room.segKey;
-  // R150/CT-32: an opponent's open decision inside a hidden simultaneous
+  // CR D2.1c/CT-32: an opponent's open decision inside a hidden simultaneous
   // segment PARKS this action instead of getting it refused by the
   // engine's global decision gate. Nothing goes back on the wire: the
   // client's own send-latch already paints "Sent — waiting for the
@@ -1338,7 +1338,7 @@ function landAction(room: Room, seat: Seat, action: Action): void {
   const hadWinner = room.state.winner !== null;
   // the committed declaration supersedes every in-progress one
   room.building = [null, null];
-  // R154: the engine now takes most of what arrives during an opponent's
+  // CR D2.1d: the engine now takes most of what arrives during an opponent's
   // question, and refuses (atomically, draft discarded) only what would
   // have disturbed it — which cannot be known until it has run. That
   // refusal is a "not yet", so it goes in the same queue rather than
@@ -1371,7 +1371,7 @@ function landAction(room: Room, seat: Seat, action: Action): void {
       into.push(...applyToRoom(room, parked));
       drainForced(room, into);
     } catch (err) {
-      // R154: a released action can hit a question the action ahead of
+      // CR D2.1c: a released action can hit a question the action ahead of
       // it in this same drain has just opened — re-park it rather than
       // refuse it, exactly as on arrival
       if (deferrableRefusal(room, parked, err)) { deferAction(room, parked); continue; }
@@ -1381,7 +1381,7 @@ function landAction(room: Room, seat: Seat, action: Action): void {
       sendToSeat(room, parked.seat, { t: 'error', msg: err.message });
     }
   }
-  // R216 — the scripted opponent takes its turn INSIDE this tick, before
+  // the scripted opponent takes its turn INSIDE this tick, before
   // the segment bookkeeping below. Its events belong to the other seat,
   // so they ride in `oppEvents` exactly as a released deferred action of
   // theirs would; nothing here needs to know that a bot rather than a
@@ -1404,9 +1404,7 @@ function landAction(room: Room, seat: Seat, action: Action): void {
       //
       // …PLUS whatever of this tick was NOT parked for them, asked as a
       // question about the QUEUE (rooms.ts unheldFor) so no rule about
-      // which events those are lives here. Since R310 nothing of the
-      // actor's escapes the hold — a glimpse included, which R235 had sent
-      // out live and R310 holds for the recap — so what this adds is only
+      // which events those are lives here. Since glimpses are held too (CR D6.2), nothing of the actor's escapes the hold — a glimpse included, once sent out live and now held for the recap — so what this adds is only
       // the opponent's OWN events that rode in on this tick (a forced step
       // of theirs drained after the actor's action).
       sendUpdate(room, seat, events);
@@ -1477,9 +1475,9 @@ function waitingInfo(room: Room, seat: Seat): {
   clockStart: number | null;
   /** BL-43: the room's custom rules, for the panel both seats see before the deal */
   custom?: CustomInfo;
-  /** R298: a single card duel — the waiting room asks for a card */
+  /** CR D8.2: a single card duel — the waiting room asks for a card */
   single?: true;
-  /** R298: the last pair this duel was drawn on, from THIS seat's side —
+  /** CR D8.2c: the last pair this duel was drawn on, from THIS seat's side —
    * shown until a game is dealt, and the only time the opponent's card is named */
   drawn?: { mine: CardName; theirs: CardName };
   trio?: {
@@ -1499,10 +1497,10 @@ function waitingInfo(room: Room, seat: Seat): {
   return {
     have: [!!room.decks[0], !!room.decks[1]],
     clockStart: room.clockStart,
-    // R298: the waiting room asks for a CARD, not a deck. Blind: `have` says
+    // CR D8.2b: the waiting room asks for a CARD, not a deck. Blind: `have` says
     // that the opponent's card is in, never which — you find out on the table.
     ...(room.single ? { single: true } : {}),
-    // R298: …except after a DRAW, when both cards are named to both seats
+    // CR D8.2c: …except after a DRAW, when both cards are named to both seats
     ...(room.single && room.singleDraw
       ? { drawn: { mine: room.singleDraw[seat]!, theirs: room.singleDraw[other(seat)]! } } : {}),
     ...(room.custom ? { custom: customInfo(room.custom) } : {}),
@@ -1614,7 +1612,7 @@ function pushView(room: Room, seat: Seat): void {
  * sync over var/games/ — see history.ts.
  */
 function recordFinishedGame(room: Room): void {
-  // R216: a scenario room is a test fixture, not a game — see history.ts's
+  // CR D8.4: a scenario room is a test fixture, not a game — see history.ts's
   // matching guard in syncGamesDir(). Folding one into somebody's win/loss
   // record would let the instrument quietly rewrite the numbers it exists to
   // check. The post-game screen still works; only the RECORD is skipped.
@@ -1703,7 +1701,7 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     // whether THIS call did the recording. A rejoin into a game recorded an
     // hour ago must not tell you it went uncounted.
     recorded: gameHistory().some(g => g.code === room.code && g.users.some(u => !!u)),
-    // R290: a conceded game says how much it weighed. The weight is decided
+    // CR D8.5: a conceded game says how much it weighed. The weight is decided
     // HERE (the thresholds live in concession.ts), so the screen only has to
     // read a word and a turn — the room's stamp beats the row's because a
     // room nobody was signed in on has no row.
@@ -1713,7 +1711,7 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     })(),
     ...(extra.unlocked.length ? { unlocked: extra.unlocked } : {}),
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
-    // R298: a single card duel names both cards — the table has shown them by now
+    // a single card duel names both cards — the table has shown them by now
     ...(singleCards(room) ? { single: singleCards(room)! } : {}),
   });
 }
@@ -1725,7 +1723,7 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     code: room.code, seed: room.seed, mode: room.mode, els: room.els,
     names: room.names, actions: room.actions, winner: room.winner,
     decks: room.mode === 'constructed' ? room.decks : undefined,
-    // R216: without this the post-game screen would replay a scenario room on
+    // CR D8.4: without this the post-game screen would replay a scenario room on
     // the plain opening board and print numbers from a game nobody played
     scenario: room.scenario,
     // BL-43: and without this, a custom room on the standard deal
@@ -1736,11 +1734,11 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     els: s.els, finished: s.finished, winner: s.winner, turns: s.turns,
     diverged: s.skipped > 0, users: [...room.users], names: [...room.names],
     seats: s.seats,
-    // R290: the stamp rides along even when nobody was signed in
+    // CR D8.5: the stamp rides along even when nobody was signed in
     ...(room.concession ? { concession: room.concession } : {}),
     // BL-43: and the custom tag, so the post-game screen can say "not counted"
     ...(room.custom ? { custom: room.custom.rules } : {}),
-    // R298: …and the single-card tag, for the same reason
+    // …and the single-card tag, for the same reason
     ...(singleCards(room) ? { single: singleCards(room)! } : {}),
   };
 }
@@ -2052,7 +2050,7 @@ wss.on('connection', ws => {
 
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
-      // R274/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
+      // CR D7.5/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
       // a value a test can read rather than something only a real socket can
       // provoke. Nothing about the decision changed when it moved.
       const refusal = joinRefusal(code);
@@ -2064,7 +2062,7 @@ wss.on('connection', ws => {
       // client sends its selected deck with every join and the server uses it
       // only where it matters (creating a constructed room / a waiting seat)
       //
-      // R298: a SINGLE CARD DUEL takes a card name (`single`) instead, and the
+      // CR D8.2: a SINGLE CARD DUEL takes a card name (`single`) instead, and the
       // server builds the thirty. Which one applies is the ROOM's call once it
       // exists — a joiner's saved deck riding along is ignored in a single
       // room, and a stray `single` is ignored in an ordinary one. Only the
@@ -2175,7 +2173,7 @@ wss.on('connection', ws => {
       // collection. Re-read server-side from the account rather than trusted
       // off the wire: the id is what a deck's win/loss record is folded on,
       // and a client that could name any id could credit any deck.
-      // R298: thirty copies of one card is nobody's saved deck
+      // CR D8.2e: thirty copies of one card is nobody's saved deck
       const claimed = typeof msg.deckId === 'string' && !room.single ? msg.deckId : null;
       const owned = deckForPlay(account?.id ?? null, claimed);
       const gameJustStarted = roomWaiting(room) && deckCards
@@ -2217,7 +2215,7 @@ wss.on('connection', ws => {
         else pushView(room, otherSeat);
       }
       console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
-      // R216: a scenario room may open with the table already waiting on seat
+      // CR D8.4: a scenario room may open with the table already waiting on seat
       // 1 (a scenario whose prologue ends on the opponent's window). Without
       // this the owner would join a board that never moves — which docs/14 §4
       // says reads as a hung game, and a hung game reads as a bug.
@@ -2339,7 +2337,7 @@ wss.on('connection', ws => {
       const ids = (v: unknown, max: number): number[] => (Array.isArray(v) ? v : [])
         .filter((n): n is number => Number.isInteger(n)).slice(0, max);
       const cols = (Array.isArray(raw.cols) ? raw.cols : []).slice(0, 12).map(c => ids(c, 2));
-      // R321: the left side-blocks, nearest column 1 first — only when any
+      // CR 606.4a: the left side-blocks, nearest column 1 first — only when any
       const left = (Array.isArray(raw.left) ? raw.left : []).slice(0, 12).map(c => ids(c, 2));
       const built = { cols, send: ids(raw.send, 12), ...(left.some(c => c.length) ? { left } : {}) };
       const empty = !built.cols.some(c => c.length) && !built.send.length && !built.left;
@@ -2847,7 +2845,7 @@ restoreRooms();
     } catch (err) { console.error('[cardstats] could not fold:', err); }
   });
 }
-/* R204 / CT-85: print the port we ACTUALLY bound, not the one we asked for.
+/* CT-85 (see test-clock.ts): print the port we ACTUALLY bound, not the one we asked for.
  *
  * The two are the same for `PORT=9000` and for the default, and different for
  * exactly one caller that matters: `PORT=0`, where the OS picks. That is how

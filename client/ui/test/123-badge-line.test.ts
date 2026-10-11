@@ -1,4 +1,4 @@
-/* BL-23 / R136 — the corner-chip strip on a card scan is ONE line.
+/* BL-23 — the corner-chip strip on a card scan is ONE line.
  *
  * Bena's ask was two words: "single line badges". The chips (attributes, the
  * ±N/±N counter, mod chips, "sent", "⏩ auto-yield", 📜 prophesy, the live X
@@ -9,7 +9,7 @@
  * The complaint is the WRAPPING, not the count: nothing may be dropped. The
  * fold decision therefore lives in the container (ui/inspect.ts packBadgeLine),
  * and this pins it — main.ts itself runs DOM code on import and no test can
- * reach it, which is exactly the lesson R134 learned about iconizeText.
+ * reach it, which is exactly the lesson the `{g}` fix learned about iconizeText.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

@@ -68,12 +68,12 @@ test('a sent spell token is not enumerable (castSpellToken) while absent', () =>
 
 // ── Tidelurker ────────────────────────────────────────────────────────
 
-// R115 (2026-08-23) REVERSED this test. It used to assert R28's rationale —
+// The 2026-08-23 ruling (now CR 601.5) REVERSED this test. It used to assert the withdrawn home-region rule's rationale —
 // "the 2/2 minted mid-attack must be home to block the counterattack" — and the
 // designer answered the other way: anything made by anything spawns where its
 // source is. The 2/2 is stranded in the enemy region, in no column, and walks
 // home at regroup.
-test("Tidelurker's 2/2 is created in the BATTLE region when it triggers while attacking (R115)", () => {
+test("Tidelurker's 2/2 is created in the BATTLE region when it triggers while attacking (CR 304.8a)", () => {
   const h = new Harness(2202);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -83,14 +83,14 @@ test("Tidelurker's 2/2 is created in the BATTLE region when it triggers while at
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                      // combat: D takes 1
-  resolveAfterCombat(h);   // R261: the combat-damage trigger is stacked after combat
+  resolveAfterCombat(h);   // CR 608.9b: the combat-damage trigger is stacked after combat
   const e = new E(h.state);
   const tokens = unitsOf(h, A).filter(u => u.token && u.tokenStats?.[0] === 2);
   assert.equal(tokens.length, 1, 'the 2/2 was created');
   assert.equal(tokens[0]!.region, h.state.battle!.region,
-    '…where Tidelurker is: the battle region (R115)');
+    '…where Tidelurker is: the battle region (CR 601.5)');
   assert.notEqual(tokens[0]!.region, e.homeRegion(A),
-    'R28 is WITHDRAWN — the 2/2 is NOT sent home, so it cannot block the counterattack');
+    'the home-region rule is withdrawn — the 2/2 is NOT sent home, so it cannot block the counterattack');
   finishBattle(h);
 });
 
@@ -98,7 +98,7 @@ test("Tidelurker's 2/2 is created in the BATTLE region when it triggers while at
 
 /** drive: attacker declares, then plays Tiderunner in the attack window.
  *
- * R29 (retimed 2026-08-22, playtest UFAB): the four passes are gone. The spot
+ * Retimed 2026-08-22 (playtest UFAB; CR 602.7): the four passes are gone. The spot
  * is part of PLAYING the card, so `playCard` raises the question itself —
  * there is no window in which the unit stands outside the formation waiting
  * for a trigger to resolve, which is exactly the window the report was about. */
@@ -118,7 +118,7 @@ test('Tiderunner (attacker): offered behind-survivor, a NEW column, or stay out'
   const dec = h.state.decision!;
   assert.equal(dec.seat, A);
   assert.ok(dec.options.some(o => o.label.includes('behind Bubb')), 'behind the survivor');
-  // R75: BOTH ends of the line, not just the right-hand one
+  // CR 602.6a: BOTH ends of the line, not just the right-hand one
   assert.ok(dec.options.some(o => o.label === 'a new column on the left'), 'the left end');
   assert.ok(dec.options.some(o => o.label === 'a new column on the right'), 'the right end');
   assert.ok(dec.options.some(o => o.label === 'stay out of formation'), 'joining is optional');

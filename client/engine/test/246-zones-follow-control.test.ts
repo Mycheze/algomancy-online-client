@@ -1,7 +1,7 @@
 /**
- * R262 — A STOLEN CARD GOES TO THE THIEF'S ZONES, IN ALL FOUR OF THEM.
+ * CR 400.4 — A STOLEN CARD GOES TO THE THIEF'S ZONES, IN ALL FOUR OF THEM.
  *
- * Round-32 Q2. R250 answered the BIN — *"The controller trashes it and it goes
+ * Round-32 Q2. The owner's 2026-08-29 ruling (CR 405.3) answered the BIN — *"The controller trashes it and it goes
  * to their graveyard. In Algomancy, there's no issue with taking opponent's
  * cards and putting them into your zones in the way that's not possible in
  * other card games. The primary format (live draft) is a fully shared card
@@ -21,7 +21,7 @@
  * So every test here builds a real theft with `E.giveControl` — the engine's
  * own primitive, the one the seven card files use — and then asserts the
  * destination. §4 is the other half: ownership does NOT move, which is the
- * distinction R262 §3 keeps for constructed.
+ * distinction CR 400.4c keeps for constructed.
  */
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -48,24 +48,24 @@ function stolen(seed: number): { h: Harness; owner: Seat; thief: Seat; id: numbe
   const u = ent(h, id)!;
   // THE CONTROL FOR EVERY TEST BELOW. If these two ever agree, this whole file
   // is asserting the behaviour that never changed and would pass against the
-  // engine as it was before R262.
+  // engine as it was before zones followed control.
   assert.equal(u.owner, owner, 'the fixture must leave ownership with the original owner');
   assert.equal(u.controller, thief, 'the fixture must leave control with the thief');
   assert.notEqual(u.owner, u.controller, 'owner and controller must DIFFER, or nothing is tested');
   return { h, owner, thief, id };
 }
 
-test('R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner', () => {
+test('CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner', () => {
   const { h, owner, thief, id } = stolen(24601);
   withE(h, e => e.recall(ent(h, id)!));
   assert.deepEqual(h.state.players[thief]!.hand.filter(c => c === VANILLA), [VANILLA],
     'the recalled card is in the hand of the player who controlled it');
   assert.deepEqual(h.state.players[owner]!.hand.filter(c => c === VANILLA), [],
-    'and NOT in its owner hand — this is the line R262 changed, and the Manual '
+    'and NOT in its owner hand — this is the line the zones ruling changed, and the Manual '
     + 'sentence it overrules is quoted in the ruling');
 });
 
-test('R262 §1: a stolen unit cached goes to the THIEF cache', () => {
+test('CR 801.8: a stolen unit cached goes to the THIEF cache', () => {
   const { h, owner, thief, id } = stolen(24602);
   withE(h, e => e.cacheUnit(ent(h, id)!));
   const cacheOf = (seat: Seat): number =>
@@ -74,10 +74,10 @@ test('R262 §1: a stolen unit cached goes to the THIEF cache', () => {
   assert.equal(cacheOf(owner), 0);
 });
 
-test('R262 §2: an explicit destination still wins over the control default', () => {
+test('CR 400.4b: an explicit destination still wins over the control default', () => {
   // `opts.to` is how a card whose PRINTED TEXT names a destination says so —
   // Cosmic Reversal passes `to: controller` because it prints "put them into
-  // their controller's hands". R262 changed the DEFAULT and must not have
+  // their controller's hands". The zones ruling (CR 400.4) changed the DEFAULT and must not have
   // taken the override away, or a printed-text argument stops working.
   const { h, owner, thief, id } = stolen(24603);
   withE(h, e => e.recall(ent(h, id)!, { to: owner }));
@@ -86,7 +86,7 @@ test('R262 §2: an explicit destination still wins over the control default', ()
   assert.deepEqual(h.state.players[thief]!.hand.filter(c => c === VANILLA), []);
 });
 
-test('R262 §3: ownership does NOT move — only the destination does', () => {
+test('CR 400.4a: ownership does NOT move — only the destination does', () => {
   // The distinction the owner kept: *"owner in constructed is always the
   // person who brought the card to the game."* A zone change is not a change
   // of ownership, and anything reading `owner` to answer "whose card is this"
@@ -103,10 +103,10 @@ test('R262 §3: ownership does NOT move — only the destination does', () => {
   const despawn = h.events.slice(mark).find(ev => ev.data?.['owner'] !== undefined);
   assert.ok(despawn, 'the recall announced no owner at all, so nothing here is being tested');
   assert.equal(despawn!.data!['owner'], owner,
-    'the facts riding the event still report the OWNER. R262 moved zones, not ownership.');
+    'the facts riding the event still report the OWNER. The zones ruling moved zones, not ownership (CR 400.4a).');
 });
 
-test('R262 §4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite', () => {
+test('CR 400.4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite', () => {
   // The other side. If this ever disagreed with §1 the change would have moved
   // every card in the game, not just the stolen ones.
   const h = new Harness(24605);
@@ -119,9 +119,9 @@ test('R262 §4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-
   assert.deepEqual(h.state.players[seat]!.hand.filter(c => c === VANILLA), [VANILLA]);
 });
 
-test('R262 §5: the erased pile files a stolen mod under the THIEF', () => {
-  // R65's public erased pile is a per-seat zone like the other three, and it
-  // was the one R244 left behind when it moved the mod BIN this way.
+test('CR 720.9: the erased pile files a stolen mod under the THIEF', () => {
+  // The public erased pile (CR 407.1) is a per-seat zone like the other three, and it
+  // was the one left behind when the mod BIN was moved this way.
   const h = new Harness(24606);
   toDeployment(h);
   const owner = h.state.deployPlayer!;
@@ -147,5 +147,5 @@ test('R262 §5: the erased pile files a stolen mod under the THIEF', () => {
   assert.ok(seen.length > 0,
     'no erased event was emitted at all, so this test proves nothing about which seat it names');
   assert.deepEqual(seen.map(x => x.seat), seen.map(() => thief),
-    'the erased pile files the mod under the player who CONTROLLED it (R262), not its owner');
+    'the erased pile files the mod under the player who CONTROLLED it (CR 720.9), not its owner');
 });

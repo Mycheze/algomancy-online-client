@@ -44,12 +44,11 @@ be curated after the fact).
 
 Both failures were **one sentence on one card** (Torrential Reclamation, CT-91),
 raised as ruling questions rather than assumed to be bugs. **That was the right
-call, because the owner's answer (R221) split them:**
+call, because the owner's answer (CR 107.2b) split them:**
 
 - the **amount** clause was **correct all along** — the "for each" does
   distribute over the sacrifice. This file was wrong about the card, and had
-  said so in a `wrong()` row for two days. It had also **already been ruled**, by
-  R157 §17, four days earlier.
+  said so in a `wrong()` row for two days. It had also already been ruled by the owner, four days earlier.
 - the **timing** clause was genuinely broken and is fixed.
 
 > ⚠ **So `182` now prints 127/127, and that is NOT a 100% correctness claim.**
@@ -65,10 +64,10 @@ call, because the owner's answer (R221) split them:**
 1. **It is a sample, not the pool.** 30 of 495. It says the happy path is
    solid; it does not say the pool is 98.4% correct.
 2. **It covers the happy path and little else.** The file's own header names
-   what it does not reach: fizzle and target-loss (R86), trigger order, R118
+   what it does not reach: fizzle and target-loss (CR 704.6), trigger order, CR 710
    copies, and — the biggest hole — **the donated `[Augment]` path for ten of
    the eleven augment cards in the sample.** Only one is checked on a host, and
-   "me"/"you" resolve differently there under R131. That is where the last three
+   "me"/"you" resolve differently there under CR 720.6c, 720.6b. That is where the last three
    rounds' real bugs actually came from.
 3. **A high number is the suspicious outcome, and §7.1 said so in advance.** It
    was hardened against itself: three assertions that turned out to be
@@ -108,14 +107,14 @@ Gated promises — the hard 316 — across the last four rounds:
 | 25 | 98 / 316  | 218 | +98  | teaching the drill to pay for and fire an activation |
 | 26 | 264 / 316 | 52  | +166 | building a graft host and firing trigger events |
 | 27 | 278 / 316 | 38  | +14  | a whole round, eighteen agents |
-| 29 | 279 / 316 | 37  | +1   | nothing aimed at it — R219 moved one in passing |
+| 29 | 279 / 316 | 37  | +1   | nothing aimed at it — the erased-pile fix moved one in passing |
 
 The remaining **36 claims across 35 cards** are named individually in
 `84-card-semantics`'s `UNREACHED` with the precondition each lacks:
 **BOARD 25 · CHOICE 5 · VOCAB 2 · EXTRACT 2 · REGION 1.**
 
 > ⚠ **VOCAB went 3 → 2 on 2026-08-30, and not because anybody wrote a
-> scenario.** R261 gave combat-damage triggers a real resolution window, so
+> scenario.** The after-combat trigger ruling (now CR 608.9b) gave combat-damage triggers a real resolution window, so
 > `ownResolution` can finally attribute their payload, and **Cinder Scuttler is
 > now observed delivering** — its entry blamed the vocabulary of `recall`, which
 > was true and was never the reason. The list only ever grew by hand, so every
@@ -135,7 +134,7 @@ The remaining **36 claims across 35 cards** are named individually in
 > `EVENTLESS 1` bucket that no longer exists — while the suite printed
 > `279 / 316`, `37 across 36`, and no EVENTLESS. Nobody re-derived anything;
 > the numbers were simply **copied once and never re-read**, and the drift came
-> from R219 (`7864bb8`) moving a claim in passing.
+> from commit 7864bb8 moving a claim in passing.
 >
 > That is a fifth mode for §5, and the most uncomfortable one, because it needs
 > no faulty instrument at all: **a correct instrument, printing correctly, into
@@ -241,7 +240,7 @@ Not bugs in the game — bugs in the things that tell us whether the game works.
   each time.
 
 **Round 28 added four more, and closed six of the ten above** (CT-84, CT-85,
-CT-87, CT-75, and `stripCode`/`$` via R201's late register entry):
+CT-87, CT-75, and `stripCode`/`$` via the stripCode ruling's late register entry; see `164-sweep-sight`):
 
 - **Eight pool-wide conformance sweeps could only see 494 of 495 cards**, and
   nothing said so. `allCardNames()` is complete only if `src/apply.ts` has been
@@ -261,8 +260,8 @@ CT-87, CT-75, and `stripCode`/`$` via R201's late register entry):
   any outcome satisfies. The §5 pattern reaching the **closure conditions**, not
   just the checkers.
 - **Twelve ruling numbers were cited in code with no entry in the register.**
-  R142 forty times, R134 thirty-two. Rulings made, implemented, cited — and the
-  reasoning never written down anywhere (R215).
+  The markup ruling forty times, the `{g}` fix thirty-two. Rulings made, implemented, cited — and the
+  reasoning never written down anywhere.
 
 **Round 29 added seven more, and the first two are a NEW KIND.** Everything in
 §5 until now was *an instrument that went blind*. These two are not:
@@ -270,21 +269,20 @@ CT-87, CT-75, and `stripCode`/`$` via R201's late register entry):
 - **⚠ A CORRECT INSTRUMENT, PRINTING CORRECTLY, INTO A DOCUMENT NOBODY RE-READ.**
   §3 of *this file* quoted `278 / 316`, `38 claims across 37 cards` and an
   `EVENTLESS` bucket for two days after the suite began printing `279 / 316`,
-  `37 across 36`, and no EVENTLESS. R219 moved a claim underneath it. **The
+  `37 across 36`, and no EVENTLESS. A later fix (7864bb8) moved a claim underneath it. **The
   stale paragraph sits directly beneath a warning box which says this exact line
   was got wrong three times in one day and ends *"Quote it; do not re-derive
   it."*** Nobody re-derived it — it was copied once and never read again.
-  **A warning box is not a control.** Now asserted (R233, `201`).
-- **⚠ A SETTLED RULING WAS RE-ASKED WITH A RECOMMENDATION TO REVERSE IT.** R157
-  §17 ruled Torrential Reclamation *"Already correct"* on 2026-08-25. Four days
+  **A warning box is not a control.** Now asserted (`201-assessment-numbers`).
+- **⚠ A SETTLED RULING WAS RE-ASKED WITH A RECOMMENDATION TO REVERSE IT.** The owner ruled Torrential Reclamation "Already correct" on 2026-08-25. Four days
   later CT-91 carried it as a major open bug, `182` recorded the engine as
   **wrong** on it, and `questions-round28.md` Q1 put the settled question back to
   the owner **arguing for the opposite answer**. He happened to answer
   consistently with himself. Nothing anywhere would have objected if he hadn't.
-  `184` checks that a *cited* number resolves and R215 that a *used* ruling is
+  `184` checks that a *cited* number resolves and the register scan that a *used* ruling is
   registered — **both run from the code toward the register; neither runs back
   toward the open work**, which is the direction a decision gets undone in. Now
-  closed (R234, `202`).
+  closed (`202`).
 
 And five of the older kind:
 
@@ -462,6 +460,6 @@ kind of work with a different metric — one we do not currently collect.
 
 *Sources, all printed by the suite on every run: `84-card-semantics`,
 `81-card-drill`, `90-coverage-census`, `card-todo.ts` (85 filed / 70 closed /
-15 open), `playtest-ledger.ts` (107 reports), `digital-rules.md` (190 rulings),
+15 open), `playtest-ledger.ts` (107 reports), the retired ruling register (190 rulings),
 `docs/16-divergence-inventory.md`. Engine suite at time of writing: 169 files,
 2,719 assertions, 0 failures.*

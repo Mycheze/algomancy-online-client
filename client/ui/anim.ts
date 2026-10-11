@@ -142,9 +142,9 @@ function rectOf(f: Frame, key: string | null, anchor: string | null): { r: DOMRe
 const flightRank = (m: Move): number => (m.kind === 'move' ? 0 : m.kind === 'leave' ? 1 : 2);
 
 /**
- * CT-82(d)/R205 — R189's rule, one layer down.
+ * CT-82(d)/CR D6.7b — CR D6.7's rule, one layer down.
  *
- * R189 fixed `queueFlashes`: **a batch that is simultaneous in the rules must
+ * The first fix for CR D6.7 was in `queueFlashes`: **a batch that is simultaneous in the rules must
  * look simultaneous, and a sequence must look sequential.** It fixed the beat
  * queue and nothing else, and a SECOND serialiser was still live here and
  * named nowhere: every flight of a render was stamped `i * STAGGER_MS` where
@@ -159,7 +159,7 @@ const flightRank = (m: Move): number => (m.kind === 'move' ? 0 : m.kind === 'lea
  * place for the same place in one render are one thing happening and share a
  * beat; groups are `STAGGER_MS` apart, exactly as items used to be.
  *
- * **POSITIVE EVIDENCE ONLY**, R189's third consequence held to literally: a
+ * **POSITIVE EVIDENCE ONLY**, CR D6.7b's last sentence held to literally: a
  * flight joins its neighbours only when BOTH ends of its journey are named
  * anchors. A move with an unnamed end (`leave` — erased, trashed; `enter` — a
  * token out of nowhere) is a batch the client can read nothing about, so it
@@ -287,7 +287,7 @@ export function playMotion(prev: Frame, m: Motion): void {
       g.remove();
     }
   }
-  // CT-82(d)/R205: one delay per flight, spaced by JOURNEY rather than by
+  // CT-82(d)/CR D6.7b: one delay per flight, spaced by JOURNEY rather than by
   // array index — see `flightDelays`. Cards that made the same trip in this
   // render leave together.
   const delays = flightDelays(flights);
@@ -408,7 +408,7 @@ function pop(key: string, delay: number): void {
 }
 
 /**
- * R80: pulse things the motion diff cannot see.
+ * Pulse things the motion diff cannot see.
  *
  * `playMotion` pulses whatever CHANGED between two renders — which is exactly
  * once per batch, and a whole combat is one batch. The narrative beats
@@ -433,8 +433,8 @@ export function pulseKeys(keys: readonly string[], kind: 'hurt' | 'buff' = 'hurt
  * The life meter's own flash, and the number that says by how much.
  *
  * Owner, three reports over: *"it's too hard to see the life totals — it's
- * small and you can't tell when it changes"*. The motion layer has pulsed the
- * identity row since R80, but it pulses it with `.animhurt`, the same
+ * small and you can't tell when it changes"*. The motion layer has long pulsed the
+ * identity row, but it pulses it with `.animhurt`, the same
  * box-shadow a unit wears when it takes two damage — and it folds life, rot
  * and debt into one `vitality` number, so a turn that cost you 3 life and
  * cleared 3 rot pulsed nothing at all. Life is the WIN CONDITION. It gets its
@@ -593,7 +593,7 @@ function targetOf(sels: string[]): { els: HTMLElement[]; box: ArrowBox } | null 
  * middle, and no further. The arrow layer paints above the board with a drop
  * shadow, so a head over art stays readable.
  *
- * R255 (#133, "the arrow lands on top of the text it is pointing at"): art
+ * CR D6.18 (#133, "the arrow lands on top of the text it is pointing at"): art
  * stays readable under a head; TEXT does not. A card's middle is art, so this
  * inset is right for a card — but three destinations put their only label
  * dead centre (the life pill's total, a no-art card's NAME in `.artfallback`,
@@ -612,7 +612,7 @@ export const HEAD_INSET = 7;
  * occupy, so the guard cannot drift from what is actually painted. */
 export const HEAD_SIZE = 10;
 export const HEAD_HALFWIDTH = 5.5;
-/** R255: how far the tip may stop OUTSIDE the destination's border rather than
+/** CR D6.18: how far the tip may stop OUTSIDE the destination's border rather than
  * cover its label. A head that halts a few px short of a 24px-tall life pill
  * still unmistakably points at it; one that halts further away has stopped
  * pointing at anything. Nothing card-shaped ever reaches this — a card has no
@@ -636,7 +636,7 @@ export interface ArrowGeometry {
   ux: number; uy: number;
   /** how far short of the destination centre the tip stopped: HEAD_INSET,
    * unless the destination centres a label the head would otherwise sit on
-   * (R255 — see headStop) */
+   * (CR D6.18 — see headStop) */
   inset: number;
   dist: number;
 }
@@ -678,7 +678,7 @@ function rayCrossing(
 }
 
 /**
- * R255 — where the head STOPS: HEAD_INSET short of the destination's centre,
+ * CR D6.18 — where the head STOPS: HEAD_INSET short of the destination's centre,
  * pushed further back only as far as it takes to clear the text `dest`
  * actually shows, and no further than HEAD_SLACK past that element's border.
  *
@@ -740,7 +740,7 @@ export function arrowGeometry(
   // stub of stroke pokes out ahead of the head
   const hx = x2 - cx, hy = y2 - cy, hl = Math.hypot(hx, hy) || 1;
   const ux = hx / hl, uy = hy / hl;
-  // R255: HEAD_INSET, unless the destination shows a label at its middle that
+  // CR D6.18: HEAD_INSET, unless the destination shows a label at its middle that
   // the triangle would otherwise land on — then it stops at that label's edge
   const inset = headStop(b, destText, ux, uy);
   return { x1, y1, x2, y2, cx, cy, tx: x2 - ux * inset, ty: y2 - uy * inset, ux, uy, inset, dist };
@@ -748,7 +748,7 @@ export function arrowGeometry(
 
 /**
  * The boxes of the text a destination element actually SHOWS, in viewport
- * coordinates — what R255's head must not land on.
+ * coordinates — what CR D6.18's head must not land on.
  *
  * "Actually shows" is a hit test, not a stylesheet read, and it is the whole
  * difference between the two stack items: `.stackface` carries the item's

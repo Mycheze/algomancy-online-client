@@ -1,4 +1,4 @@
-/* R290 — how much a CONCEDED game weighs.
+/* CR D8.5 — how much a CONCEDED game weighs.
  *
  * The owner, 2026-09-05:
  *

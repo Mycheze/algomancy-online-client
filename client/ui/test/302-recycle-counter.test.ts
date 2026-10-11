@@ -1,5 +1,5 @@
 /**
- * R296 — WHAT A PLAYER ACTUALLY SEES OF THE MARK.
+ * CR 408.2c — WHAT A PLAYER ACTUALLY SEES OF THE MARK.
  *
  * The engine half of the recycle mark has ten guards (engine/test/300) and the
  * server half has two more (the redaction, and the resource-step freeze). None
@@ -39,7 +39,7 @@ function withPile(seed: number, n: number): GameState {
   return g.s;
 }
 
-test('R296 §1 with nothing recycled the line is just the deck — no "recycled 0" noise', () => {
+test('§1 with nothing recycled the line is just the deck — no "recycled 0" noise', () => {
   const s = withPile(3020, 0);
   const line = deckLine(ui.show(s));
   assert.match(line, /^deck \d+/, 'it leads with the deck count');
@@ -48,14 +48,14 @@ test('R296 §1 with nothing recycled the line is just the deck — no "recycled 
     + 'noise on a line that is already dense');
 });
 
-test('R296 §2 once cards are recycled the player sees BOTH numbers', () => {
+test('CR 408.2c once cards are recycled the player sees BOTH numbers', () => {
   const s = withPile(3021, 3);
   const line = deckLine(ui.show(s));
   assert.match(line, /deck \d+ · recycled 3/,
     'THE OWNER\'S ASK: "you see how many cards are actually left in the deck, plus recycled"');
 });
 
-test('R296 §3 recycling does NOT inflate the deck count — that is the whole point of the mark', () => {
+test('CR 408.2 recycling does NOT inflate the deck count — that is the whole point of the mark', () => {
   // the failure this pins is the one the old rule produced: a recycled card
   // landed on the bottom of the live deck, so the deck number went UP and a
   // player counting cards left was told a number that included cards they
@@ -68,7 +68,7 @@ test('R296 §3 recycling does NOT inflate the deck count — that is the whole p
   assert.match(after, /recycled 5/, 'they are all accounted for in the other number');
 });
 
-test('R296 §4 the line explains the mark on hover, in words, where an operator-free player is', () => {
+test('§4 the line explains the mark on hover, in words, where an operator-free player is', () => {
   const html = ui.show(withPile(3023, 2));
   const m = html.match(/<span class="binline"[^>]*title="([^"]*)"/);
   assert.ok(m, 'the deck line carries a title');
@@ -79,7 +79,7 @@ test('R296 §4 the line explains the mark on hover, in words, where an operator-
     'and that nobody may look at them — the half of the ask that is a RULE, not a number');
 });
 
-test('R296 §5 the pile the client is handed is card BACKS — the count is public, the cards are not', () => {
+test('CR 408.2c the pile the client is handed is card BACKS — the count is public, the cards are not', () => {
   // server/view.ts redacts it; this is the client end of the same claim. A
   // client that could name the cards would be one leak away from the mark
   // being pointless, because remembering what you recycled is exactly what it

@@ -78,13 +78,13 @@ export interface MatchRow {
   life: [number, number];
   unitsPlayed: number; spellsPlayed: number; damageDealt: number;
   favoriteElement: string | null;
-  /** R290: only on a game a concede decided — the turn, the server's weight
+  /** CR D8.5: only on a game a concede decided — the turn, the server's weight
    * (the thresholds live in server/concession.ts, not here), and whether it
    * was this account that conceded. A `walkover` row is counted nowhere. */
   concession?: { turn: number; weight: 'walkover' | 'early' | 'normal'; mine: boolean };
   /** BL-43: only on a custom-rules game — its rules as summary lines. Counted nowhere. */
   custom?: string[];
-  /** R298: only on a single card duel — [your card, theirs]. Counted nowhere of yours. */
+  /** CR D8.2e: only on a single card duel — [your card, theirs]. Counted nowhere of yours. */
   single?: [string, string];
 }
 
@@ -759,7 +759,7 @@ function friendsTab(): string {
 }
 
 /**
- * R290 — the label a conceded row carries beside its result, or '' for a
+ * CR D8.5 — the label a conceded row carries beside its result, or '' for a
  * normal one. The weight is the server's word (see MatchRow.concession); this
  * only puts it into English. Exported so the tab's rows can be tested without
  * a signed-in `me`.
@@ -776,7 +776,7 @@ export function concessionTag(g: MatchRow): string {
 
 /** BL-43 — the label a custom-rules row carries: kept in the history, counted toward nothing. */
 export function customTag(g: MatchRow): string {
-  // R298: a single card duel is tagged the same way, for the same reason
+  // CR D8.2e: a single card duel is tagged the same way, for the same reason
   if (g.single) {
     return `<span class="constag custom" title="Single Card Duel: ${esc(g.single[0])} vs ${esc(g.single[1])}">single card · not counted</span>`;
   }

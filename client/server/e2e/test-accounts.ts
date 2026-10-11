@@ -346,7 +346,7 @@ console.log('\n[achievements: one-game feats]');
     'the peak resource count is at least the final one');
 
   /**
-   * ⚠ SELF-DAMAGE MUST NOT COUNT. R38 rot emits a `damage` event whose
+   * ⚠ SELF-DAMAGE MUST NOT COUNT. Rot (CR 112.13b) emits a `damage` event whose
    * `controller` is its own VICTIM (engine.ts's rot step), and so do cards
    * that hurt their own side. Without a guard, "deal 30 damage with a single
    * non-combat effect" is earnable by standing still and letting your own
@@ -360,7 +360,7 @@ console.log('\n[achievements: one-game feats]');
     const { createGame, apply: applyOne, IllegalAction: Illegal } =
       await import('../../engine/src/apply.ts');
     // The first seed whose fuzz game really contains self-inflicted damage —
-    // FOUND, not fixed: it was seed 2 until R299's Shard option (2026-09-19)
+    // FOUND, not fixed: it was seed 2 until the recycle-for-Shard option (2026-09-19)
     // shifted every fuzz walk and seed 2 stopped rolling rot.
     const replay = (seed: number) => {
       const rf = fuzzGame(seed, 3000);
@@ -543,7 +543,7 @@ console.log('\n[seeding: import saved games, claim by name]');
 // ── 7. the live server: a seat bound to an account ────────────────────
 
 console.log('\n[server: joining while logged in]');
-// R204/CT-85: the server picks its own port and tells us which — see
+// CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
 // test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
 // port unheld for as long as node took to boot.
 const server = await spawnServer({ ALGO_ACCOUNTS_FILE: STORE, ALGO_GAMES_DIR: GAMES });

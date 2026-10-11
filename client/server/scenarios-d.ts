@@ -1,4 +1,4 @@
-/* R218 — scenario batch D. See scenarios.ts for the type and the worked
+/* scenario batch D (see 14-scenario-tester.md). See scenarios.ts for the type and the worked
  * example (`lithoghul-donated`), and docs/14-scenario-tester.md for why any of
  * this exists. Authored as a batch so parallel authors never share a file.
  *
@@ -16,13 +16,13 @@
  *
  * ⚠ ONE ENGINE BEHAVIOUR SHAPED THREE OF THESE BOARDS, and it is worth having
  * written down where the next author will trip over it. `E.fireEvent` scopes
- * its listeners to the REGION the event happened in (R12). A card standing at
+ * its listeners to the REGION the event happened in (CR 601.1d). A card standing at
  * home therefore DOES NOT HEAR a spell played in the other seat's region — so
  * `Stalwart Sentinel`, sitting at home while a battle is fought away, never
  * fires however many cards you play from your bin. Measured, not assumed:
  * the same board with Sentinel ATTACKING (and so standing in the battle's
  * region) fires it every time. Nothing in Sentinel's printed text says
- * "region", so this is R12's blanket rule doing it, and it is why Sentinel
+ * "region", so this is CR 601.1d's blanket rule doing it, and it is why Sentinel
  * attacks in scenario 20 and why Proph's from-elsewhere play happens in
  * DEPLOYMENT (which resolves at home) in scenario 25.
  *
@@ -31,7 +31,7 @@
  * ⚠ THE HASTE STEP. `Scenario.prologue`'s own comment says `dealScenario`
  * "skips it if it is open anyway" — `runPrologue` does no such thing, and a
  * prologue that walks into a battle with the haste step still open is refused.
- * It engages (R18) whenever EITHER seat holds a payable {Haste} card, so it is
+ * It engages whenever EITHER seat holds a payable {Haste} card, so it is
  * a function of the hands THESE scenarios declare and of nothing else. Two of
  * them (23, 24) stop inside it on purpose — that step is the window the clause
  * fires at the end of, so the owner plays the haste card and closes the step
@@ -77,7 +77,7 @@ const OPPONENT: Seat = 1;
 
 export const BATCH_D: Record<string, Scenario> = {
   /**
-   * WHY THIS CARD (R218, queue #20).
+   * WHY THIS CARD (queue #20) (see 14-scenario-tester.md).
    *
    * Printed: "[Augment][once] When you play a unit or spell from anywhere
    * other than your hand, put two +1/+1 counters on me." (The `[once]` and the
@@ -91,7 +91,7 @@ export const BATCH_D: Record<string, Scenario> = {
    *
    * WHAT THE SUITE DOES AND DOES NOT COVER. Three tests exercise it from a
    * hand-built state — `38-light-a` (cache), `105-semantics-playwatch` (bin,
-   * plus R37's "a mod applied from the bin is not a play"), `139-spawn-and-play`
+   * plus CR 701.2a's "a mod applied from the bin is not a play"), `139-spawn-and-play`
    * (Wake the Dead). All three `spawn()` the Sentinel and `h.do()` the play.
    * None of them is a game: no priority, no battle window, no real cost, and —
    * see the header — none of them can notice that a Sentinel at home hears
@@ -134,7 +134,7 @@ export const BATCH_D: Record<string, Scenario> = {
     initiative: YOU,
     you: {
       // the Sentinel itself is the attacker, and that is load-bearing rather
-      // than flavour: see the file header on R12. A 1/1 attacking into a 5/6
+      // than flavour: see the file header on CR 601.1d. A 1/1 attacking into a 5/6
       // is safe here because the scripted bot declines every block.
       hand: ['Abyssal Evocation'],
       play: [{ card: 'Stalwart Sentinel' }],
@@ -166,7 +166,7 @@ export const BATCH_D: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218, queue #21). ⚠ THIS ONE IS A QUESTION, NOT AN ACCUSATION.
+   * WHY THIS CARD (queue #21) (see 14-scenario-tester.md). ⚠ THIS ONE IS A QUESTION, NOT AN ACCUSATION.
    *
    * Printed: "[Augment] When I attack or block, create a Shard. (It will spawn
    * dormant.)"
@@ -248,7 +248,7 @@ export const BATCH_D: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218, queue #22).
+   * WHY THIS CARD (queue #22) (see 14-scenario-tester.md).
    *
    * Printed: "Negate target spell effect if its cost is less than or equal to
    * the greatest amount of life lost by a player in this battle."
@@ -260,7 +260,7 @@ export const BATCH_D: Record<string, Scenario> = {
    * THE NEGATE ACTUALLY HAPPENS, and that is the entire content of this board.
    *
    * WHAT THE SUITE COVERS: `14-water-a` negates a cost-1 spell under 2 life
-   * lost; `133-x-cost-semantics` confirms R157 §1 (an X spell's cost is the
+   * lost; `133-x-cost-semantics` confirms CR 111.11 (an X spell's cost is the
    * paid X); `96-x-preview` checks the three preview rows. All hand-built.
    * Nothing has ever set the threshold by ACTUALLY LOSING LIFE in a battle a
    * player was playing.
@@ -328,7 +328,7 @@ export const BATCH_D: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218, queue #23).
+   * WHY THIS CARD (queue #23) (see 14-scenario-tester.md).
    *
    * Printed: "[Augment] At the end of [Haste], if X is not 0, create an X/X
    * unit, where X is the number of expended resources you have."
@@ -384,9 +384,9 @@ export const BATCH_D: Record<string, Scenario> = {
       play: [{ card: 'Bubb' }],
       resources: { earth: 2 },
     },
-    // R18: the haste step only engages when somebody holds a payable haste
-    // card. Tidal Menace in hand is what opens it — the opponent holds none,
-    // so seat 1 is marked done the moment the step opens and the bot has
+    // The haste step opens every turn (CR 504.5); Tidal Menace in hand gives
+    // you a play in it, while the opponent holds none, so seat 1 has nothing to
+    // play there and the bot has
     // nothing to do here at all.
     prologue: (_ids, _s) => [
       { type: 'donePlanning', seat: YOU },
@@ -401,7 +401,7 @@ export const BATCH_D: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218, queue #24).
+   * WHY THIS CARD (queue #24) (see 14-scenario-tester.md).
    *
    * Printed: "[Augment] At the end of [Haste], your units gain +1/+1 until
    * regroup for every 2 expended resources you have."
@@ -472,7 +472,7 @@ export const BATCH_D: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (R218, queue #25).
+   * WHY THIS CARD (queue #25) (see 14-scenario-tester.md).
    *
    * Printed: "When you play a unit or spell from anywhere other than your
    * hand, [Switch1] Draw a card." ("a card" narrowed to "a unit or spell" in
@@ -495,7 +495,7 @@ export const BATCH_D: Record<string, Scenario> = {
    * 'hand') return false`). Whether that is right is an unanswered question to
    * the owner, not something a scenario should quietly decide for him. So this
    * board uses the CACHE, where the marker is stamped and the ruling is settled
-   * (R42/R45), and the `expect` line raises Q4 separately at the end — because
+   * (CR 803.7h, 403.3a), and the `expect` line raises Q4 separately at the end — because
    * ninety seconds in front of the person who can answer it is the cheapest it
    * will ever be to ask.
    *
@@ -552,8 +552,8 @@ export const BATCH_D: Record<string, Scenario> = {
         { card: 'Resonant Form' },    // r/4
       ],
       // Air Plant's banner is [2lg] and The Foretold is l/3, so the seat needs
-      // a wood pip as well as light: R301 charges a banner's affinity, and
-      // before it this was ten flat light and the prophesy in step 1 would
+      // a wood pip as well as light: a banner's affinity is charged (CR 803.7d), and
+      // before that ruling this was ten flat light and the prophesy in step 1 would
       // now be refused outright. Ten against a bill of five, as before.
       resources: { light: 9, wood: 1 },
     },

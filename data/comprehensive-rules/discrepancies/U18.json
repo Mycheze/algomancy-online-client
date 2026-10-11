@@ -4,14 +4,14 @@
     "kind": "g-other",
     "rule": "keywords.actions.trash",
     "tier": 4,
-    "summary": "No printed text in the current pool defines trashing, and no designer words are quoted for it. R40 credits its definition to Void Scavenger's reminder text (a card cut from the set) and to a Caleb ruling of 2025-02-01 that it does not quote.",
+    "summary": "No printed text in the current pool defines trashing, and no designer words are quoted for it. The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) credits its definition to Void Scavenger's reminder text (a card cut from the set) and to a Caleb ruling of 2025-02-01 that it does not quote.",
     "sides": [
       {
-        "source": "R40 (its bin-entry definition, for cards)",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "per-battle trash count is required (Dropslime, Muck Rummager). (Printed: Void"
       },
       {
-        "source": "R40 (its bin-entry definition, for cards)",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "Scavenger reminder text; Caleb 2025-02-01; broadened by Bena 2026-08-19.)"
       },
       {
@@ -26,14 +26,14 @@
     "kind": "g-other",
     "rule": "keywords.actions.trash.ways",
     "tier": 4,
-    "summary": "R40 lists \"milling\" as a way of trashing, but no card prints \"mill\" and no printed or designer source defines it. In this client a card goes from the deck to a bin through rot and debt.",
+    "summary": "The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) lists \"milling\" as a way of trashing, but no card prints \"mill\" and no printed or designer source defines it. In this client a card goes from the deck to a bin through rot and debt.",
     "sides": [
       {
-        "source": "R40 (its bin-entry definition, for cards)",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
       },
       {
-        "source": "R306",
+        "source": "owner ruling, adopted 2026-09-28",
         "quote": "An Unstable CARD still is (R137). Rot and debt trash cards from a deck or hand,"
       }
     ],
@@ -59,29 +59,29 @@
         "quote": "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
       },
       {
-        "source": "R80",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "three batches for the same reason."
       }
     ],
-    "resolution": "Answered by the owner on 2026-10-11, reading B (R349): Meteor Shower is one spell now, so abilities that trigger during its rockfalls wait until it has resolved. keywords.actions.rockfall.repeated states it. The engine already does B."
+    "resolution": "Answered by the owner on 2026-10-11, reading B (owner ruling of 2026-10-11, “Abilities that trigger during \"Rockfall N…”): Meteor Shower is one spell now, so abilities that trigger during its rockfalls wait until it has resolved. keywords.actions.rockfall.repeated states it. The engine already does B."
   },
   {
     "id": "D-U18-6",
     "kind": "g-other",
     "rule": "keywords.actions.fight",
     "tier": 4,
-    "summary": "Sources silent on whether the two hits of a fight are simultaneous, so that a unit killed by its opponent's damage still deals its own. Print says only \"They deal damage to each other\". R80 makes a fight two damage batches, one per fighter, and checks deaths once per batch.",
+    "summary": "Sources silent on whether the two hits of a fight are simultaneous, so that a unit killed by its opponent's damage still deals its own. Print says only \"They deal damage to each other\". The owner ruling of 2026-08-22 (“ALL of one effect's damage is…”) makes a fight two damage batches, one per fighter, and checks deaths once per batch.",
     "sides": [
       {
         "source": "card: Fight",
         "quote": "(They deal damage to each other equal to their power.)"
       },
       {
-        "source": "R80",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "**different sources** (each unit deals its own damage), and a batch is per"
       },
       {
-        "source": "R80",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "- **deaths are checked once**, after all of it is marked, which is what"
       }
     ],
@@ -95,7 +95,7 @@
     "summary": "Sources silent on a glimpse of more cards than the deck can supply. The engine's test glimpses nothing from an empty deck; 408.2b says the recycle pile becomes the new deck when more cards are needed.",
     "sides": [
       {
-        "source": "R45",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "Glimpse N reveals the top N cards of the deck, caches exactly **one** of the"
       },
       {
@@ -110,10 +110,10 @@
     "kind": "g-other",
     "rule": "keywords.actions.cache.no-permission",
     "tier": 2,
-    "summary": "403.3a and R303 name only two permissions that make a cached card usable: a fulfilled prophecy and a live glimpse. Murkdrop Distiller and Big Glimpse Card grant a play of the cards they cache in their own text.",
+    "summary": "403.3a and the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) name only two permissions that make a cached card usable: a fulfilled prophecy and a live glimpse. Murkdrop Distiller and Big Glimpse Card grant a play of the cards they cache in their own text.",
     "sides": [
       {
-        "source": "R303",
+        "source": "owner ruling, adopted 2026-09-20",
         "quote": "may be played only while a prophecy on it is fulfilled or a glimpse stamp is live — and"
       },
       {
@@ -125,7 +125,7 @@
         "quote": "You may play those cards until end of turn, ignoring affinity."
       }
     ],
-    "resolution": "keywords.actions.cache.no-permission adds \"the text of the effect that cached it\" as a third permission, because printed text wins. Widen 403.3a (U07) the same way. Whether such a card-text permission also covers mods (R303's table) is not stated; question for the owner only if a judge's CR rules on it."
+    "resolution": "keywords.actions.cache.no-permission adds \"the text of the effect that cached it\" as a third permission, because printed text wins. Widen 403.3a (U07) the same way. Whether such a card-text permission also covers mods (the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”)’s table) is not stated; question for the owner only if a judge's CR rules on it."
   },
   {
     "id": "D-U18-9",
@@ -139,7 +139,7 @@
         "quote": "a unit dies or is deleted, it is placed in the bin (discard"
       },
       {
-        "source": "R70",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
       },
       {
@@ -147,29 +147,29 @@
         "quote": "When I die, [Switch1] Delete target unit."
       }
     ],
-    "resolution": "Answered by the owner on 2026-10-11, reading A (R348): a deleted unit dies, so \"When I die\" and \"whenever a unit dies\" trigger. keywords.actions.delete states it, and effects.state.dying already did. The engine already fires the death event for a deletion."
+    "resolution": "Answered by the owner on 2026-10-11, reading A (owner ruling of 2026-10-11, “A deleted unit dies: deletion is…”): a deleted unit dies, so \"When I die\" and \"whenever a unit dies\" trigger. keywords.actions.delete states it, and effects.state.dying already did. The engine already fires the death event for a deletion."
   },
   {
     "id": "D-U18-11",
     "kind": "c-owner-call-only",
     "rule": "keywords.actions.trash.trasher",
     "tier": 3,
-    "summary": "Every rule about who trashes and what is trashed rests on owner calls with no designer source: the trasher is the player whose bin the card enters (R40, R250), a mod's trash belongs to the host's controller (R244), a token is never trashed (R306), and an exchange trashes the unit that leaves (R157 §3).",
+    "summary": "Every rule about who trashes and what is trashed rests on owner calls with no designer source: the trasher is the player whose bin the card enters (the owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”), the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”)), a mod's trash belongs to the host's controller (owner ruling of 2026-08-29, “a mod is PART of the…”), a token is never trashed (owner ruling of 2026-09-28, “Tokens are NOT trashed: the owner…”), and an exchange trashes the unit that leaves (owner ruling of 2026-08-25, “the owner's answers to the 27…”).",
     "sides": [
       {
-        "source": "R250 (its §4, zones follow control)",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "| who trashed it? | its CONTROLLER (R244, unchanged) |"
       },
       {
-        "source": "R244 (its attribution and mod-erase halves)",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
       },
       {
-        "source": "R306",
+        "source": "owner ruling, adopted 2026-09-28",
         "quote": "trashed.* A token is not a card (R133's first half, which stands), so a token"
       },
       {
-        "source": "R157 (§3)",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
       }
     ],
@@ -180,10 +180,10 @@
     "kind": "a-sources-disagree",
     "rule": "keywords.actions.glimpse.whose-deck",
     "tier": 4,
-    "summary": "Whose deck does a glimpse read when an effect makes another player glimpse? Caleb's words quoted in R157 §18 say \"the deck\" is the effect controller's; the reminder on Celestial Purge and Dematerialize says the glimpser reveals from \"their deck\". The engine reads the glimpser's deck. It only matters in constructed, where each seat has its own deck.",
+    "summary": "Whose deck does a glimpse read when an effect makes another player glimpse? Caleb's words quoted in the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) say \"the deck\" is the effect controller's; the reminder on Celestial Purge and Dematerialize says the glimpser reveals from \"their deck\". The engine reads the glimpser's deck. It only matters in constructed, where each seat has its own deck.",
     "sides": [
       {
-        "source": "R157 (§18)",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> 'The deck' always refers to the deck of the effect's controller. The targeted"
       },
       {

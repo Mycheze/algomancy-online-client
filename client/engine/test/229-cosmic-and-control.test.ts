@@ -1,4 +1,4 @@
-/* R250 — COSMIC REVERSAL REACHES THE BOARD, AND A STOLEN UNIT DIES INTO THE
+/* CR 405.3 — COSMIC REVERSAL REACHES THE BOARD, AND A STOLEN UNIT DIES INTO THE
  * BIN OF WHOEVER CONTROLS IT.
  *
  * Two owner answers from the round-31 sheet, plus one measurement that turned a
@@ -29,12 +29,12 @@
  * dealt damage…"* — fired inside the **COMBAT DAMAGE STEP**, and the engine
  * gave nobody a window there.
  *
- * ⚠ AND THAT SECOND HALF WAS THE ENGINE'S FAULT, NOT THE REPORT'S. R250 §3
+ * ⚠ AND THAT SECOND HALF WAS THE ENGINE'S FAULT, NOT THE REPORT'S. The 2026-08-29 ruling
  * concluded from this board that *"all triggers are respondable" is true
  * everywhere the game hands out priority, and false in the two places it does
- * not: the combat damage step (R3) and deployment (R144)*. The deployment half
- * stands. **[R261] (owner, 2026-08-30, round-32 Q1) supersedes the combat
- * half:** the owner's sentence was right as written, and it is the engine that
+ * not: the combat damage step […] and deployment […]* (now CR 608.3a and 703.7).
+ * The deployment half stands. **The owner's 2026-08-30 ruling (now CR 608.9b)
+ * supersedes the combat half:** the owner's sentence was right as written, and it is the engine that
  * has changed —
  *
  *   > "all triggers that are caused by damage get moved to 'After combat',
@@ -42,15 +42,14 @@
  *   > and non-initiative player have their triggers put onto the stack during
  *   > after combat and can respond to them there."
  *
- * R3 is not overruled; it is narrowed to what it was always about. There is
- * still no priority window BETWEEN DAMAGE SUB-STEPS, deaths and promotion are
+ * The sub-step ruling's board half stands (CR 608.3e): deaths and promotion are
  * still immediate, and a unit killed in the Swift sub-step still deals no
- * normal damage. R3 governs the board, not the trigger queue.
+ * normal damage. CR 608.3e governs the board, not the trigger queue.
  *
  * §3 therefore pins the SAME trigger of the SAME card off TWO damage sources —
- * and, since R261, gets the SAME answer from both. That the answer converged
+ * and, since the 2026-08-30 ruling (CR 608.9b), gets the SAME answer from both. That the answer converged
  * is the finding, not a reason to delete either half: the two sources are what
- * show the difference was never about the card. The full R261 guard set lives
+ * show the difference was never about the card. The full CR 608.9b guard set lives
  * in `test/239-damage-triggers-after-combat.test.ts`; what §3 keeps is the
  * report's own board.
  *
@@ -65,24 +64,23 @@
  *   > "Zones ALWAYS follow control. One rule, no split. Whoever CONTROLLED the
  *   > card at the moment it left play gets it in their bin."
  *
- * §4. **This REVERSES [R244] §1's "⚠ THE DESTINATION DOES NOT MOVE" outright,
- * for the mod as well as the body.** R244's ATTRIBUTION half stands entirely —
+ * §4. **This REVERSES the mod ruling's "⚠ THE DESTINATION DOES NOT MOVE" outright,
+ * for the mod as well as the body.** The attribution half (CR 720.8) stands entirely —
  * a mod is trashed by the host's controller, because a mod is part of the unit
- * it sits on — and only its destination half is superseded. R244 wrote that
- * paragraph knowing the question was open: it recorded that the engine "could
+ * it sits on — and only its destination half is superseded. That ruling was written knowing the question was open: it recorded that the engine "could
  * get away with" conflating attribution and destination "only because no
  * caller had ever made them differ". This is that seam being decided.
  *
  * The measured consequence, and the reason §4 tests the stamp as hard as it
- * tests the bin: R244 ruled that **no R131 bin ref is stamped when trasher and
+ * tests the bin: the mod ruling held that **no CR 405.6 bin ref is stamped when trasher and
  * bin-owner differ**, because a bin ref naming a copy that is not in that bin
- * is R140's bug (Cthyrian Rector recalling an innocent older copy). Under R250
+ * is the wrong-copy bug (Cthyrian Rector recalling an innocent older copy). Under CR 801.2e
  * they never differ, so 0-of-200 stamped becomes 200-of-200 stamped, and every
  * one of those stamps has to be right.
  *
- * ⚠ WHAT R250 DOES NOT DECIDE. The ruling as given is about BINS. Three other
+ * ⚠ WHAT THE BIN RULING DOES NOT DECIDE. The ruling as given is about BINS. Three other
  * per-seat destinations still read `owner`: `recall`'s hand, `cacheUnit`'s
- * cache, and `eraseMod`'s R65 erased pile. They are left alone deliberately —
+ * cache, and `eraseMod`'s CR 720.9 erased pile. They are left alone deliberately —
  * "zones follow control" plainly reaches them, but a stolen unit BOUNCED into
  * the thief's hand is a power change nobody has asked for yet, and the Manual
  * says a recall goes to its owner's hand. Cosmic Reversal above passes an
@@ -140,12 +138,12 @@ const settleDecisions = (h: Harness): void => {
  * battle is fought in `D`'s home region, and `D` casts Cosmic Reversal into
  * the block window with the stack empty.
  *
- * ⚠ THE REGION IS LOAD-BEARING AND IT IS NOT A DETAIL OF THE FIXTURE. R243:
- * *"every card that says 'all' is actually 'all in this region'"*, so the
+ * ⚠ THE REGION IS LOAD-BEARING AND IT IS NOT A DETAIL OF THE FIXTURE. The owner
+ * (2026-08-29; CR 601.1c): *"every card that says 'all' is actually 'all in this region'"*, so the
  * board half is `unitsIn(ctx.region)`. The battle region is the DEFENDER's
  * home (`startBattleRound`), so the defender's whole board is in reach and the
  * attacker's is in reach exactly to the extent that it attacked. A spell unit
- * left at home by the attacker is NOT recalled, and that is R243 rather than
+ * left at home by the attacker is NOT recalled, and that is CR 601.1c rather than
  * an oversight — see §1e.
  */
 function castReversal(h: Harness, A: Seat, D: Seat, attackers: number[]): void {
@@ -161,9 +159,9 @@ function castReversal(h: Harness, A: Seat, D: Seat, attackers: number[]): void {
 
 // ══ §1 — THE BOARD HALF ══════════════════════════════════════════════
 
-test('R250: Cosmic Reversal recalls a spell unit in play to its controller hand', () => {
+test('CR 801.7a: Cosmic Reversal recalls a spell unit in play to its controller hand', () => {
   // The plainest shape: the CASTER has a Jelly (a printed Spell Unit) standing
-  // in the battle region, and gets it back. Before R250 the card iterated
+  // in the battle region, and gets it back. Before the owner's 2026-08-29 ruling the card iterated
   // `g.s.stack` and nothing else, so this Jelly was never even looked at.
   const h = new Harness(9400);
   toDeployment(h);
@@ -180,7 +178,7 @@ test('R250: Cosmic Reversal recalls a spell unit in play to its controller hand'
   assert.ok(!binOf(h, D).includes('Jelly'), 'a recall is not a trash — it never touched a bin');
 });
 
-test('R250: it recalls the CASTER own attacking spell unit — the room YFUE case', () => {
+test('it recalls the CASTER own attacking spell unit — the room YFUE case', () => {
   // What Rashi was actually trying to do: bounce her own Leaping Lillik (a
   // printed Spell Unit) out of a fight it was about to lose. An attacking unit
   // stands in the DEFENDER's home region, which is the battle region, so it is
@@ -199,7 +197,7 @@ test('R250: it recalls the CASTER own attacking spell unit — the room YFUE cas
   assert.ok(!handOf(h, D).includes('Leaping Lillik'), 'the caster did not steal it');
 });
 
-test('R250 whole pool: every printed Spell Unit is recalled off the board', () => {
+test('whole pool: every printed Spell Unit is recalled off the board', () => {
   // DERIVE, NEVER ENUMERATE. The card asks the live registry
   // (`E.card(name).kind === 'spellUnit'`); this asks printed.json. Two
   // channels, one population — that is the different-mechanism check, and it
@@ -231,7 +229,7 @@ test('R250 whole pool: every printed Spell Unit is recalled off the board', () =
   assert.deepEqual(missed, [], 'every one of them was recalled to its controller hand');
 });
 
-test('R250: an ordinary unit in the same region is left alone', () => {
+test('an ordinary unit in the same region is left alone', () => {
   // The complement, and the reason the sweep must ask the CARD rather than the
   // entity: in play a Spell Unit and a plain unit are the same `kind: 'unit'`,
   // so a board sweep that read the entity would take the whole table.
@@ -249,13 +247,13 @@ test('R250: an ordinary unit in the same region is left alone', () => {
   assert.equal(ent(h, su), undefined, 'while the spell unit beside it went home');
 });
 
-test('R250 + R243: the board half is scoped to the region, like every other all', () => {
-  // ⚠ THIS IS THE RULING, NOT A LIMITATION. R243 (owner, 2026-08-29): *"every
+test('CR 601.1c: the board half is scoped to the region, like every other all', () => {
+  // ⚠ THIS IS THE RULING, NOT A LIMITATION. The owner, 2026-08-29 (CR 601.1c): *"every
   // card that says 'all' is actually 'all in this region'"*. The attacker's
   // spell unit that stayed HOME is not in the battle region, so a {Battle}
   // spell cast in that battle cannot reach it — exactly as every other "all"
   // card in the pool already behaves. Written down here because a reader who
-  // knows only R250 would call this a missed case.
+  // knows only the Cosmic Reversal ruling would call this a missed case.
   const h = new Harness(9404);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -270,7 +268,7 @@ test('R250 + R243: the board half is scoped to the region, like every other all'
   assert.ok(!handOf(h, A).includes('Jelly'), 'and it did not go to a hand');
 });
 
-test('R250: a STOLEN spell unit is recalled to the seat that CONTROLS it', () => {
+test('CR 801.7a: a STOLEN spell unit is recalled to the seat that CONTROLS it', () => {
   // The two rulings meeting. Printed: "put them into their controller's
   // hands", and Q5 says the same thing about a bin. `recall` defaults to the
   // OWNER, so this only comes out right because the card says so explicitly.
@@ -289,7 +287,7 @@ test('R250: a STOLEN spell unit is recalled to the seat that CONTROLS it', () =>
   assert.ok(!handOf(h, A).includes('Jelly'), 'not to the owner one');
 });
 
-test('R250: the log names both halves of the sweep, whether or not it found anything', () => {
+test('the log names both halves of the sweep, whether or not it found anything', () => {
   // card-todo #114's second, separable finding: even a player who knew the
   // rule could not audit the sweep. With an empty stack the card used to say
   // only "there is no other spell effect on the stack", which named neither
@@ -311,7 +309,7 @@ test('R250: the log names both halves of the sweep, whether or not it found anyt
 
 // ══ §2 — THERE IS NO CASTABILITY RESTRICTION ═════════════════════════
 
-test('R250: Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement', () => {
+test('Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement', () => {
   // Report #119's diagnosis: *"it assumed the spell needed to be cast while
   // there was a spell effect on the stack"*. Measured on the legality channel
   // the client reads, that is simply not so, and it never was — the card
@@ -349,7 +347,7 @@ test('R250: Cosmic Reversal is offered with an EMPTY stack — there is no spell
  * colon. A test that knew only one of them would silently assert nothing. */
 const EMINENCE = /Eminence of the Barrens\s*[:\u2014]\s*you may pay/;
 
-test('R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable', () => {
+test('CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable', () => {
   // Half one of the owner's "all triggers are respondable", and it is true.
   // A takes non-combat damage on its attacking Eminence from D's Flame of
   // History; the resulting trigger is pushed with `pushItem`, which resets
@@ -399,20 +397,20 @@ test('R250: a trigger fired OUTSIDE the damage step reaches the stack and IS res
  *       'the other seat cannot act at all — no window, rather than a refused spell');
  *     …
  *     assert.ok(!named('stackPushed'),
- *       'but it NEVER reached the stack — R3, a special action between damage sub-steps');
+ *       'but it NEVER reached the stack — […], a special action between damage sub-steps');
  *     assert.ok(named('resolved'), 'it resolved anyway, in the same breath');
  *
- * The window appeared. R261 put it there, deliberately, because the owner
- * believed it existed and was RIGHT: R250 §3 read R3 one step too far. So the
- * instruction that comment left has been carried out — R250 §3 was re-read,
+ * The window appeared. The owner's 2026-08-30 ruling put it there deliberately, because the owner
+ * believed it existed and was RIGHT: the earlier reading took the no-priority rule one step too far. So the
+ * instruction that comment left has been carried out — the earlier reading was re-read,
  * and the ruling rather than the test was what moved. What follows is the same
  * board, the same trigger and the same card, inverted.
  *
  * The one thing that did NOT move is the announcement: `fireEvent` writes
  * 'triggered' at QUEUE time, inside the sub-step, because the condition is
- * evaluated at event time (R1). So the shape is 'triggered' BEFORE
+ * evaluated at event time (CR 109.3a). So the shape is 'triggered' BEFORE
  * 'afterCombat' and 'stackPushed' AFTER it, and that pair is asserted below. */
-test('R261: the SAME trigger fired by COMBAT DAMAGE also reaches the stack, in the after-combat window', () => {
+test('CR 608.9b: the SAME trigger fired by COMBAT DAMAGE also reaches the stack, in the after-combat window', () => {
   const h = new Harness(9421);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -455,30 +453,30 @@ test('R261: the SAME trigger fired by COMBAT DAMAGE also reaches the stack, in t
   const idx = give(h, D, 'Flame of History');
   assert.ok(legalActions(h.state, D).some(
     a => a.type === 'playCard' && (a as { handIndex: number }).handIndex === idx),
-  'so D may answer a COMBAT-DAMAGE trigger — this is the half R250 §3 got wrong');
+  'so D may answer a COMBAT-DAMAGE trigger — this is the half the earlier reading got wrong');
 
   const after = h.events.slice(mark);
   const named = (t: string) => after.some(ev => ev.type === t && EMINENCE.test(ev.msg));
   const at = (t: string) => after.findIndex(ev => ev.type === t && EMINENCE.test(ev.msg));
   assert.ok(after.some(ev => ev.type === 'combatDamage'), 'combat damage happened');
   assert.ok(named('triggered'), 'and the Eminence trigger fired');
-  assert.ok(named('stackPushed'), 'and this time it DID reach the stack (R261)');
+  assert.ok(named('stackPushed'), 'and this time it DID reach the stack (CR 608.9b)');
   assert.ok(!named('resolved'),
     'and it has NOT resolved — the stack is still holding it, which is what respondable means');
-  // R261's log shape, and the reason R1 is untouched: the announcement is
+  // The after-combat hold's log shape (CR 608.9), and the reason CR 109.3a is untouched: the announcement is
   // inside the damage step, the push is after it. Both halves, in order.
   const ac = after.findIndex(ev => ev.type === 'afterCombat');
   assert.ok(ac > 0, 'the damage step ran to its after-combat step');
   assert.ok(at('triggered') < ac,
-    'ANNOUNCED inside the damage step — the condition is evaluated at event time (R1) and the '
+    'ANNOUNCED inside the damage step — the condition is evaluated at event time (CR 109.3a) and the '
     + 'trigger really did trigger there');
   assert.ok(at('stackPushed') > ac,
-    'PUSHED after it — what R261 moved is the build and the resolution, never the firing');
+    'PUSHED after it — what the after-combat hold (CR 608.9) moved is the build and the resolution, never the firing');
 });
 
 // ══ §4 — A STOLEN UNIT THAT DIES ═════════════════════════════════════
 
-test('R250: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin', () => {
+test('CR 801.2e: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin', () => {
   const h = new Harness(9430);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -495,10 +493,10 @@ test('R250: a stolen unit that dies is trashed by its CONTROLLER, into the contr
   assert.ok(!binOf(h, A).includes('Ignis Sprite'), 'not in the owner one');
 });
 
-test('R250 whole pool: every unit-shaped card dies into the bin of whoever controls it', () => {
+test('CR 405.3 whole pool: every unit-shaped card dies into the bin of whoever controls it', () => {
   // The blast radius, measured rather than argued: the OLD code sent every one
   // of these to `u.owner`, so this whole population moved. It is asserted over
-  // the derived pool for the same reason R244's sweep was — a fix proved on
+  // the derived pool for the same reason the mod-trash sweep was — a fix proved on
   // one card is a fix for one card.
   const wrongSeat: string[] = [], wrongBin: string[] = [];
   let checked = 0;
@@ -527,17 +525,17 @@ test('R250 whole pool: every unit-shaped card dies into the bin of whoever contr
   assert.deepEqual(wrongBin, [], 'and lands in the controller bin (or the controller erased pile)');
 });
 
-test('R250: a MOD goes to the HOST CONTROLLER bin, superseding R244 destination half', () => {
-  // ⚠ THIS REVERSES [R244] §1's *"⚠ THE DESTINATION DOES NOT MOVE. A card
+test('CR 410.4a: a MOD goes to the HOST CONTROLLER bin, superseding the destination half of the earlier owner\'s-bin reading', () => {
+  // ⚠ THIS REVERSES the mod ruling's *"⚠ THE DESTINATION DOES NOT MOVE. A card
   // still goes to its own OWNER's bin — Rashi's Virus lands in Rashi's bin —
   // because ownership is not control."* The owner has ruled the other way:
-  // **zones always follow control, one rule, no split.** R244's ATTRIBUTION
+  // **zones always follow control, one rule, no split.** The mod ruling's ATTRIBUTION (CR 720.8)
   // half is untouched and is asserted here beside the new destination, because
   // the two are now the same seat and a test that checked only one of them
   // could not tell a correct engine from one that had collapsed the pair back
   // into a single number for the wrong reason.
   //
-  // R244 itself flagged this seam: it recorded that the engine "could get away
+  // The mod ruling itself flagged this seam: it recorded that the engine "could get away
   // with" conflating attribution and destination "only because no caller had
   // ever made them differ".
   const h = new Harness(9432);
@@ -551,24 +549,24 @@ test('R250: a MOD goes to the HOST CONTROLLER bin, superseding R244 destination 
   assert.equal(mod!.controller, A, 'but A controls it — a mod is part of the unit it sits on');
   const mark = h.events.length;
   // the RECALL route: a mod left behind in a bin really stays there, so it is
-  // trashed (R137/R70) and its destination is observable. On a DEATH the mod
-  // is swept out with its Unstable host and is not trashed at all (R244 §2).
+  // trashed (CR 801.2f) and its destination is observable. On a DEATH the mod
+  // is swept out with its Unstable host and is not trashed at all (CR 720.8a).
   withE(h, e => { e.recall(e.entity(host)!); });
 
   const tr = trashEvents(h, mark).filter(t => t.card === 'Bumblecrab');
   assert.equal(tr.length, 1, 'the mod was trashed');
-  assert.equal(tr[0]!.seat, A, 'R244 stands: attributed to the HOST controller');
-  assert.ok(binOf(h, A).includes('Bumblecrab'), 'R250: and it lands in that same seat bin');
+  assert.equal(tr[0]!.seat, A, 'CR 720.8 stands: attributed to the HOST controller');
+  assert.ok(binOf(h, A).includes('Bumblecrab'), 'CR 410.4a: and it lands in that same seat bin');
   assert.ok(!binOf(h, D).includes('Bumblecrab'), 'the mod owner bin does not get it back');
   assert.equal(tr[0]!.binNth, 0,
-    'so the R131 bin ref is STAMPED now — under R244 this case was deliberately absent');
+    'so the CR 405.6 bin ref is STAMPED now — under the earlier split this case was deliberately absent');
 });
 
-test('R250 whole pool: every card that can become a mod bins to the host controller, stamped', () => {
+test('CR 410.4a whole pool: every card that can become a mod bins to the host controller, stamped', () => {
   // The blast radius of the destination half, derived from printed data the
-  // same way R244 derived its own: a {Virus} is augmented onto a unit by
-  // casting it, and [Switch]/[Switch1] is the graft marker. R244 measured 203
-  // such cards and moved ATTRIBUTION for 200 of them on this route; R250 moves
+  // same way the mod-attribution change derived its own: a {Virus} is augmented onto a unit by
+  // casting it, and [Switch]/[Switch1] is the graft marker. That change measured 203
+  // such cards and moved ATTRIBUTION for 200 of them on this route; the destination change (CR 410.4a) moves
   // DESTINATION for the same 200, and turns 0-of-200 stamped bin refs into
   // 200-of-200.
   const moddable = Object.values(P)
@@ -596,16 +594,16 @@ test('R250 whole pool: every card that can become a mod bins to the host control
   assert.ok(checked > 150, `only ${checked} cards reached the recall route`);
   assert.deepEqual(wrongBin, [], 'every one lands in the host controller bin');
   assert.deepEqual(unstamped, [],
-    'and every one carries an R131 bin ref, because trasher and bin now agree');
+    'and every one carries a CR 405.6 bin ref, because trasher and bin now agree');
 });
 
-test('R250: no live caller can make the trasher and the bin owner differ any more', () => {
+test('CR 801.2e: no live caller can make the trasher and the bin owner differ any more', () => {
   // The consequence the ruling has for `noteTrashed`'s `binSeat`, established
   // rather than assumed. Both routes that pass the parameter are swept above
   // and below; this asserts the INVARIANT the parameter now rests on — a mod
   // controller is its host controller — over the whole moddable pool, on the
   // route where a mod is minted and on the route where a control change moves
-  // it. If this ever goes red, `binSeat` has a live case again and R244's -1
+  // it. If this ever goes red, `binSeat` has a live case again and the -1
   // rule is back in play; do not "simplify" it away on the strength of the
   // sweeps alone.
   const moddable = Object.values(P)
@@ -622,7 +620,7 @@ test('R250: no live caller can make the trasher and the bin owner differ any mor
     withE(h, e => { e.attachMod(e.entity(host)!, name, D, 'augment'); });
     const u = ent(h, host);
     if (!u) continue;
-    withE(h, e => { e.giveControl(e.entity(host)!, D); });   // R8 walks u.mods
+    withE(h, e => { e.giveControl(e.entity(host)!, D); });   // walks u.mods (CR 711.2)
     const after = ent(h, host);
     if (!after) continue;
     checked++;
@@ -635,10 +633,10 @@ test('R250: no live caller can make the trasher and the bin owner differ any mor
   assert.deepEqual(split, [], 'a mod controller is always its host controller');
 });
 
-test('R140 GUARD: the body bin ref is stamped, and it counts in the bin the card really reached', () => {
-  // R244 drops the R131 bin ref when the trasher and the bin owner differ,
+test('CR 405.6 GUARD: the body bin ref is stamped, and it counts in the bin the card really reached', () => {
+  // The mod ruling dropped the CR 405.6 bin ref when the trasher and the bin owner differ,
   // because a "recall that card from YOUR bin" reaching into the wrong bin is
-  // how an innocent older copy of the same name gets taken (R140). Moving the
+  // how an innocent older copy of the same name gets taken (CR 405.6). Moving the
   // BODY's destination onto the controller does not reopen that: it moves
   // BOTH numbers together, so they never differ and the stamp is always
   // computed. The older copy planted below is what makes the nth mean
@@ -659,26 +657,26 @@ test('R140 GUARD: the body bin ref is stamped, and it counts in the bin the card
     'which is where the two copies really are');
 });
 
-test('R137 GUARD: a stolen Unstable body is still trashed before it is swept', () => {
-  // R244's opening worry, one ruling later. An implementation that moves the
+test('CT-246 GUARD (engine, not CR 801.2h): a stolen Unstable body is still trashed before it is swept', () => {
+  // The worry the mod ruling (CR 801.2g) opened with, one ruling later. An implementation that moves the
   // body's bin must not quietly stop the body TRASHING on the way through it —
   // that is playtest report #93 (Dropslime trashed from a hand fired, the same
   // Dropslime dying under a grafted Wraith fired nothing), and it is the one
-  // thing R137 exists to prevent.
+  // thing the engine's Unstable-trash route exists to prevent (CT-246; CR 801.2h differs).
   const h = new Harness(9434);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const host = spawn(h, A, 'Good Whale');
   withE(h, e => { e.attachMod(e.entity(host)!, 'Bumblecrab', A, 'augment'); });
   withE(h, e => { e.giveControl(e.entity(host)!, D); });
-  assert.ok(withE_isUnstable(h, host), 'a modded unit is Unstable (R69)');
+  assert.ok(withE_isUnstable(h, host), 'a modded unit is Unstable (CR 803.8e)');
   const mark = h.events.length;
   withE(h, e => { e.destroy(e.entity(host)!, 'dies'); });
 
   const tr = trashEvents(h, mark).filter(t => t.card === 'Good Whale');
   assert.equal(tr.length, 1, 'the body was trashed on its way through the bin');
-  assert.equal(tr[0]!.seat, D, 'by the controller — R250');
-  assert.ok(!binOf(h, D).includes('Good Whale'), 'and then swept back out — R137');
+  assert.equal(tr[0]!.seat, D, 'by the controller — CR 801.2e');
+  assert.ok(!binOf(h, D).includes('Good Whale'), 'and then swept back out — engine route (CR 405.5 erases instead, CT-246)');
   assert.ok((h.state.players[D]!.erased ?? []).includes('Good Whale'),
     'onto the CONTROLLER erased pile, the same seat the bin belonged to');
 });
@@ -692,7 +690,7 @@ function withE_isUnstable(h: Harness, id: number): boolean {
 
 // ══ §5 — the units the board sweep sees ══════════════════════════════
 
-test('R250: unitsOf still reports a recalled spell unit as gone from both boards', () => {
+test('unitsOf still reports a recalled spell unit as gone from both boards', () => {
   // A small consistency read: after the sweep neither seat has the card in
   // play, which is the fact every other query in the client is built on.
   const h = new Harness(9440);

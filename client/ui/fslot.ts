@@ -15,7 +15,7 @@
  * placement is still answered by the option's INTEGER INDEX; `spot` is a
  * second, redundant spelling of the same option that exists so a client can
  * point at it. `FormationSlotOffer.targets[].i` is that index, carried
- * through untouched, and `server/rooms.ts` `referenceKey` and the R200
+ * through untouched, and `server/rooms.ts` `referenceKey` and the replay
  * forensic stack keep working because they never see this file.
  *
  * ── WHY THIS IS A SEPARATE MODULE, AND WHY IT DERIVES ─────────────────
@@ -36,7 +36,7 @@ import type { Decision, EntityId, FormationSpot, GameState, Seat } from '../engi
 /**
  * A place on the committed battle panel, in the coordinates `battleHtml`
  * actually draws in — which are ATTACK COLUMN INDEXES for both seats, because
- * a blocking column is keyed to the attacking column it blocks (R72) and the
+ * a blocking column is keyed to the attacking column it blocks (CR 603.1) and the
  * panel stacks the two halves of one `ci` in one `.col`.
  *
  * ⚠ `ci` is therefore NOT the grid index the engine's `hole` spot carries for
@@ -68,7 +68,7 @@ export interface FormationSlotOffer {
 /**
  * WHOSE GRID a formation question is about, derived from the question itself.
  *
- * The engine does not send this, and it is NOT `Decision.seat`: under R225 the
+ * The engine does not send this, and it is NOT `Decision.seat`: under CR 602.6e the
  * slots come from the grid the SOURCE ENTITY is standing in, which control
  * theft can make somebody else's. But `E.formationSlots` offers "a new column
  * on the left/right" if and ONLY if the grid is the attacker's — a blocking
@@ -112,7 +112,7 @@ function columnHolding(s: GameState, gridSeat: Seat, unit: EntityId): number | n
 /**
  * One spot, as a place on screen — or null when it names nothing the panel is
  * drawing. Null is a real answer and not a failure: a spot is deliberately
- * something that SURVIVES the board moving (R29), so it can outlive the thing
+ * something that SURVIVES the board moving (CR 602.7a), so it can outlive the thing
  * it was measured against, and the engine's own `slotForSpot` returns null in
  * the same cases. A target we cannot draw is simply not drawn, and the
  * decision bar's button still answers it.
@@ -120,7 +120,7 @@ function columnHolding(s: GameState, gridSeat: Seat, unit: EntityId): number | n
 export function spotAnchor(s: GameState, gridSeat: Seat, spot: FormationSpot): SpotAnchor | null {
   if (spot.kind === 'out') return { kind: 'out' };
   if (spot.kind === 'end') return { kind: 'end', end: spot.end };
-  // R322: in front of an unblocked attacker — the spot already names the
+  // CR 607.2: in front of an unblocked attacker — the spot already names the
   // ATTACK column, which is what the panel indexes by
   if (spot.kind === 'block') return { kind: 'col', ci: spot.column };
   const ci = spot.kind === 'behind'

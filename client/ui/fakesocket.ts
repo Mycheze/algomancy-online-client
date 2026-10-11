@@ -6,8 +6,8 @@
  *
  * Swap it and `NetBackend` — the redaction, the pacing, the reveal at each
  * hidden-segment barrier, the whole board renderer behind it — runs against
- * something else entirely without knowing. R297 did that first, for Learn to
- * Play: `ui/solo.ts` is a real room with a real engine in it, and the client
+ * something else entirely without knowing. Learn to Play (CR D8.1) did that
+ * first: `ui/solo.ts` is a real room with a real engine in it, and the client
  * cannot tell it from the VPS. BL-38's replay viewer is the second, and there
  * will be more, so the socket half lives here rather than inside either.
  *

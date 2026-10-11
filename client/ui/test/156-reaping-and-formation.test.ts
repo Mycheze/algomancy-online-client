@@ -1,5 +1,5 @@
 /**
- * R184 — TWO PRIMITIVES THE POOL'S PRINTED TEXT WAS ALREADY ASKING FOR.
+ * CR 802.21b, 110.3d — TWO PRIMITIVES THE POOL'S PRINTED TEXT WAS ALREADY ASKING FOR.
  *
  * ── 1. {Reaping} IS A KILL RIDER, NOT A DAMAGE RIDER ────────────────────
  *
@@ -14,7 +14,7 @@
  * Both hand-rolled the rider in card code to compensate — which worked, and
  * is exactly the shape this repo keeps paying for: a printed attribute
  * honoured by two cards individually means the THIRD card to want it silently
- * does without. R184 moved the attribute onto the engine's kill diff and
+ * does without. The Reaping ruling (now CR 802.21b) moved the attribute onto the engine's kill diff and
  * deleted both hand-rolls.
  *
  * ⚠ THE SCOPE IS A PRINTED-TEXT QUESTION, and this header GOT THE ANSWER WRONG
@@ -28,9 +28,9 @@
  *
  * It is absent from `printed.json` because {Reaping} is a TYPE-LINE ATTRIBUTE
  * and the oracle's `text` field carries ABILITY text (owner, 2026-08-30). So
- * R184 built the attribute from the repository's paraphrase of itself, and the
- * draw was paid per BODY where the card says one card per kill — fixed as R283,
- * guarded in `263-reaping-counts-the-kill.test.ts`. The paraphrase R184 read:
+ * the Reaping ruling built the attribute from the repository's paraphrase of itself, and the
+ * draw was paid per BODY where the card says one card per kill — fixed by a later ruling (now CR 802.21a),
+ * guarded in `263-reaping-counts-the-kill.test.ts`. The paraphrase the Reaping ruling read:
  *
  *   {Reaping}     "When it KILLS a unit, its controller draws a card."
  *   {Afflicting}  "When an afflicting source KILLS one or more units, those
@@ -51,10 +51,10 @@
  *
  * RULED 2026-08-25 (owner): "target formation" is THE WHOLE SIDE — a player's
  * entire formation in that region, every unit arrayed there. So the proxy's
- * COUNT was right and R184 does not change it; what it changes is that the
+ * COUNT was right and the formation ruling does not change it; what it changes is that the
  * card no longer lies about what it targets. The arm is real, and the tests
  * below check each consumer that was wired: the candidate list, the label,
- * `targetStillLegal`, the `'targeted'` event (R163's `seat` + `kind`), and
+ * `targetStillLegal`, the `'targeted'` event (its `seat` + `kind`), and
  * retargeting through Gravitational Correction.
  *
  * Seeds 15600-15699.
@@ -179,7 +179,7 @@ test('Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once — the di
 test('{Blessed} does not fire on a non-damage kill — Noxious Demise carrying a Blessed Thing virus', () => {
   // The sharpest control available in the pool: ONE source, ONE kill, two
   // attributes whose reminders are one word apart. Blessed Thing is a
-  // {Virus} [Augment] {Blessed}, so R79 lets it donate {Blessed} to a spell
+  // {Virus} [Augment] {Blessed}, so CR 723.4 lets it donate {Blessed} to a spell
   // sitting on the stack — and the spell kills with a counter, not damage.
   const { h, A, D } = battle(15604);
   const atk = spawn(h, A, 'Unit Token');                      // 1/1
@@ -197,7 +197,7 @@ test('{Blessed} does not fire on a non-damage kill — Noxious Demise carrying a
   // the control is only worth anything if the attribute really is ON the item
   const live = new E(h.state);
   const attrs = live.itemAttrs(live.s.stack.find(i => i.card === 'Noxious Demise')!);
-  assert.ok(attrs.has('Blessed'), 'R79: the virus donated {Blessed} to the spell');
+  assert.ok(attrs.has('Blessed'), 'CR 723.4: the virus donated {Blessed} to the spell');
   assert.ok(attrs.has('Reaping'), 'and the spell still prints {Reaping}');
   const hand = h.state.players[D]!.hand.length;
   const life = h.state.players[D]!.life;
@@ -223,7 +223,7 @@ test('Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING — the 
   const hand = h.state.players[A]!.hand.length;
   pass(h); pass(h);
   assert.ok(!ent(h, victim), 'killed purely by counters');
-  assert.equal(rotOf(h, D), 1, 'R48: {Afflicting} rides the same diff and still fires');
+  assert.equal(rotOf(h, D), 1, 'CR 802.23c: {Afflicting} rides the same diff and still fires');
   assert.equal(h.state.players[A]!.hand.length, hand,
     'Umbral Decay is not {Reaping} — the hook pays only the riders the SOURCE carries');
   assert.equal(reapDraws(h), 0);
@@ -247,7 +247,7 @@ test('Noxious Demise: {Reaping} without {Afflicting} draws and rots NOBODY — t
   finishBattle(h);
 });
 
-test('the KILL-scoped attribute set is DERIVED from the pool wording, not hardcoded (R184)', () => {
+test('the KILL-scoped attribute set is DERIVED from the pool wording, not hardcoded (CR 802.21b, 802.23c)', () => {
   // The same derivation 109-attr-channel-conformance does for the source/unit
   // split, one question over: does the reminder say the attribute fires when
   // its source KILLS ("kills"), or when it DAMAGES?
@@ -278,9 +278,9 @@ test('the KILL-scoped attribute set is DERIVED from the pool wording, not hardco
   // This used to read ui/glossary.ts as text and pull `term: 'X' … text: '…'`
   // back out with a pattern, which made a comment in that file's own header
   // ("do not reword without reading 156") the only thing standing between a
-  // tidy-up and a silent behaviour change here. R248 then split every row in
+  // tidy-up and a silent behaviour change here. The reminder ruling (CR D6.11) then split every row in
   // two, and the regex survived purely because the authored literals happened
-  // not to move; R252 added a second displacing channel and it survived again
+  // not to move; a later ruling added a second displacing channel and it survived again
   // for the same accidental reason. `AUTHORED_GLOSSARY` is exported precisely
   // so this can ask for the thing it wants — the COMPLETE rule, before any
   // printed or manual reminder displaces it, which is what E.KILL_RIDERS has
@@ -382,7 +382,7 @@ test('Galactic Germination: the OTHER formation is the blocking side, counted th
 });
 
 test('Galactic Germination: the formation is read LIVE at resolution — a mid-battle JOIN is counted', () => {
-  // R27/R72: the ref names the SEAT, never a grid snapshot, precisely because
+  // CR 602.1c, 107.8, 602.5: the ref names the SEAT, never a grid snapshot, precisely because
   // the grid moves between cast and resolution. Both directions in one board:
   // one attacker dies (the second column empties and closes up) and two more
   // join in new columns, the way card code that splices `b.columns` does it.
@@ -425,14 +425,14 @@ test('Galactic Germination: the target IS a formation — the menu offers format
   finishBattle(h);
 });
 
-test("Galactic Germination: the 'targeted' event names the formation, carrying R163's seat and kind", () => {
+test("Galactic Germination: the 'targeted' event names the formation, carrying its seat and kind", () => {
   const { h, A } = formations(15614);
   germ(h, A);
   pick(h, { formation: A });
   const evs = h.events.filter(e => e.type === 'targeted');
   assert.equal(evs.length, 1, 'one target, one dispatch — a formation target IS dispatched');
   assert.equal(evs[0]!.data!['formation'], A, 'the event says WHICH formation');
-  assert.equal(evs[0]!.data!['seat'], A, "R163: and whose item did it…");
+  assert.equal(evs[0]!.data!['seat'], A, "and whose item did it…");
   assert.equal(evs[0]!.data!['kind'], 'spell', '…and what kind of item it was');
   assert.equal(evs[0]!.data!['unit'], undefined,
     'DELIBERATELY no `unit`: what was targeted is the formation, not each unit standing in '

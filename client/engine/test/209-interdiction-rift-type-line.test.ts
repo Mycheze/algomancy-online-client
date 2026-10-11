@@ -1,8 +1,8 @@
 /**
- * R240 — Interdiction Rift's type line, and the exemption that is gone rather
+ * CR 200.2 — Interdiction Rift's type line, and the exemption that is gone rather
  * than rewritten.
  *
- * The oracle file transcribed the card as `{Battle}AI Cosmic Spell`. R162 saw
+ * The oracle file transcribed the card as `{Battle}AI Cosmic Spell`. The first repair saw
  * only half of that: it read the missing space, proposed a whitespace-only
  * repair to `{Battle} AI Cosmic Spell`, and recorded it in the override table
  * the extractor used to carry, marked "⚠ STILL UNRULED" — because it was a
@@ -44,7 +44,7 @@ import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import type { CardName } from '../src/types.ts';
 // side-effecting: apply.ts is what brings the THIRD synthetic (registry.ts
 // registers two, apply.ts the last), so allCardNames() is the full 495 here
-// rather than the 494 a registry-only import sees. R209 — an agent got this
+// rather than the 494 a registry-only import sees. An agent got this
 // wrong the same day, so the number is asserted below rather than assumed.
 import '../src/apply.ts';
 import { ORACLE_JSON } from '../scripts/paths.mjs';
@@ -60,7 +60,7 @@ const PRINTED = JSON.parse(readFileSync(
 ) as Record<string, { type: string; kind: string; timing: string }>;
 
 /** the extractor's `normalisePrinted`, which runs before anything else reads a
- * printed string (scripts/extract-printed.mjs, R142) */
+ * printed string (scripts/extract-printed.mjs) */
 const normalisePrinted = (s: string): string =>
   s.replace(/([A-Za-z])-[ \t]+([a-z])/g, '$1$2').replace(/[ \t]+/g, ' ').trim();
 
@@ -75,7 +75,7 @@ test('§1 Interdiction Rift is "{Battle} Cosmic Spell" — the owner\'s ruling, 
   assert.doesNotMatch(getCard(RIFT).type, /\bAI\b/,
     'the owner: "AI shouldn\'t be there." It is not a subtype of this card.');
   assert.doesNotMatch(getCard(RIFT).type, /\}[A-Za-z]/,
-    'and the brace is not glued to the next word — the half R162 did see');
+    'and the brace is not glued to the next word — the half the first repair did see');
 });
 
 test('§1 the parsed consequences of the line are unchanged by the correction', () => {
@@ -111,7 +111,7 @@ test('§2 printed.json agrees with upstream, i.e. the extractor changed nothing 
 
 /* ── §3 · the two signatures, swept over the whole pool ────────────────── */
 
-/** R209/CT-81(a): the pool is 495 — 492 printed + 3 synthetics — and ONLY when
+/** CT-81(a): the pool is 495 — 492 printed + 3 synthetics — and ONLY when
  * apply.ts is in the import graph. Pinned so a sweep below cannot quietly run
  * against a smaller pool than it believes it has. */
 test('§3 the sweeps below run against the whole registered pool, all 496', () => {
@@ -125,7 +125,7 @@ test('§3 the sweeps below run against the whole registered pool, all 496', () =
 });
 
 test('§3 signature one: no type line in the pool glues a marker to the next word', () => {
-  // the defect R162 DID see, generalised. This sweeps `getCard`, the value the
+  // the defect the first repair DID see, generalised. This sweeps `getCard`, the value the
   // client resolves; the next test sweeps the oracle file itself.
   const glued = allCardNames()
     .map(n => ({ n, t: getCard(n).type ?? '' }))

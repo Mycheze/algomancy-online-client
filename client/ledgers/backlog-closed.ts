@@ -259,12 +259,12 @@ export const CLOSED: Entry[] = [
       + 'its choke point too, and it rides on `Room.scenario`, so the four deal sites, the '
       + 'restore path, `replay-probe.ts`\'s refusal and the history/stats exclusion are all '
       + 'inherited rather than answered a second time — the exclusion is at the SOURCE for the '
-      + 'same reason R216 put it there. It is deliberately NOT in `SCENARIOS`: every member of '
+      + 'same reason a scenario room\'s is (CR D8.4). It is deliberately NOT in `SCENARIOS`: every member of '
       + 'that record is a card under test with an `expect` line and a verdict bar, and a '
       + 'sandbox has none of those. `isDealId` is the one-line seam.\n\n'
       + '`sandboxAdvance` does not assign `phase` — `Scenario.prologue` already records why — '
       + 'it takes the real step-closing actions for both seats out of `legalActions`, and stops '
-      + 'on a decision rather than answering it for the human. Seat 1 is driven by R216\'s '
+      + 'on a decision rather than answering it for the human. Seat 1 is driven by the '
       + 'scripted opponent while nobody is sitting in it, which is what makes the room solo, '
       + 'and it goes quiet the moment the second tab opens.\n\n'
       + 'The UI is TWO LINES in main.ts: `ui/sandbox.ts` paints outside #app, injects its own '
@@ -274,8 +274,8 @@ export const CLOSED: Entry[] = [
       + '`ui/cardsearch.ts` over an unfiltered pool (BL-25\'s note asked for exactly that) '
       + 'intersected with `allCardNames()`, which is what `sandboxSpawn` will actually accept.\n\n'
       + 'THE TWO CLASS GUARDS THAT CAUGHT THE FIRST DRAFT, both worth knowing about before '
-      + 'writing any zone-entry code: `152-hand-entry` (R179) refuses a bare `hand.push` outside '
-      + '`E.toHand`, and `90-coverage-census` (R145/R40) refuses a bare `bin.push` outside '
+      + 'writing any zone-entry code: `152-hand-entry` (CR 402.4) refuses a bare `hand.push` outside '
+      + '`E.toHand`, and `90-coverage-census` (CR 400.2a, 801.2) refuses a bare `bin.push` outside '
       + '`E.toBin`. Both were right. So a summon into a hand fires `handEntered` — the three '
       + '"whenever cards enter a player\'s hand during battle" cards see it, which is the "and '
       + 'then it behaves under normal rules" line working. Both methods gained a `from: '
@@ -450,7 +450,7 @@ export const CLOSED: Entry[] = [
       + 'something already stopped). The affordances go too: no Pass-all / Pass-stack button, '
       + 'no auto-yield menu entry, no auto-yield badge — full control does not offer what it '
       + 'would not honour. Guards: 272 (8) + 273 (3).\n\n'
-      + '⚠ A FIFTH THING ACTS FOR YOU and the entry does not name it: the R236 automatic '
+      + '⚠ A FIFTH THING ACTS FOR YOU and the entry does not name it: the CR D2.5 automatic '
       + 'haste-step ready. `bluffHasteOn()` is its narrow opt-out; full control is the wide '
       + 'one, and it goes off with the rest.\n\n'
       + '⚠ ROW FOUR IS ONLY HALF THE SERVER\'S, and this note above already said so without '
@@ -590,7 +590,7 @@ export const CLOSED: Entry[] = [
       'Right-clicking a card BACK (opponent hand) is still not a dead click — decide what it shows and make it deliberate',
     ],
     decided: [
-      'This REVERSES an earlier deliberate decision. main.ts says the board entries ride on every card menu "so you never have to hunt for bare table" (R65, from the playtest asks "We need a way to right click -> concede match :(" and "I dont think there\'s currently a way to view erased cards"). The owner has now decided the opposite. Keep the entries reachable from bare table — the original complaint was that they were unreachable at all, and that must not come back.',
+      'This REVERSES an earlier deliberate decision. main.ts says the board entries ride on every card menu "so you never have to hunt for bare table" (from the playtest asks "We need a way to right click -> concede match :(" and "I dont think there\'s currently a way to view erased cards"). The owner has now decided the opposite. Keep the entries reachable from bare table — the original complaint was that they were unreachable at all, and that must not come back.',
     ],
     asks: [],
     deps: [],
@@ -599,13 +599,13 @@ export const CLOSED: Entry[] = [
       'client/ui/inspect.ts',
     ],
     notes:
-      '✔ DONE 2026-08-29 as R241 — read that register entry before touching this again, because '
+      '✔ DONE 2026-08-29 as the card-menu ruling (now CR D6.15) — read that register entry before touching this again, because '
       + 'it records a REVERSAL and the thing it reverses is still a live hazard. '
       + 'The composition changed at ONE call site (main.ts\'s contextmenu handler); '
       + 'ui/inspect.ts boardMenuEntries still owns WHICH entries exist and what they are called, '
       + 'and needed no change — the two were already separate, which is why this was three lines '
       + 'and a test rather than a rewrite. '
-      + '⚠ §2 IS THE LOAD-BEARING TEST, NOT §1. R65 put these entries on every card menu because '
+      + '⚠ §2 IS THE LOAD-BEARING TEST, NOT §1. The earlier ruling put these entries on every card menu because '
       + 'the original playtest asks were that neither was reachable AT ALL. A future change that '
       + 'satisfies this entry by making them unreachable again would be filing that report a '
       + 'third time, and §2 is the only thing standing in the way. '
@@ -824,14 +824,14 @@ export const CLOSED: Entry[] = [
     means:
       'Not a feature request — a reported defect. Effects that create or play a unit "in my '
       + 'formation" / "into formation" are supposed to place it into a slot in the '
-      + 'controller\'s existing formation (R75: the controller chooses the slot at '
+      + 'controller\'s existing formation (CR 602.6: the controller chooses the slot at '
       + 'resolution). The owner reports this is not working. Affects at least: the [Augment] '
       + '"create a 1/1 unit in my formation" card, "create a Robot 2 in my formation", the '
       + 'copy-of-me-in-my-formation card, Hooba-Pon\'s play-a-unit-into-an-open-position, and '
       + 'the "can be played directly into formation" card.',
     doneWhen: [
       'Each "in my formation" / "into formation" card is reproduced failing, then fixed',
-      'The controller is actually offered the slot choice at resolution (R75)',
+      'The controller is actually offered the slot choice at resolution (CR 602.6)',
       'A regression test per affected card, in the engine suite',
       'If it turns out to be a UI-side failure to present the choice, the entry says so and the fix lands there',
     ],
@@ -855,7 +855,7 @@ export const CLOSED: Entry[] = [
       + 'playtest-ledger.ts records a fix that introduced TWO distinct mechanisms: '
       + 'CardBehavior.playsIntoFormation with a \'formation\' cast (play-time placement, for '
       + 'Tiderunner, which was wrongly folded into the create-in-formation class), and '
-      + 'placeInFormation kept for the genuine create-in-formation class (R75). '
+      + 'placeInFormation kept for the genuine create-in-formation class (CR 602.6). '
       + '73-play-into-formation.test.ts guards the first. A regression in one of the two, or '
       + 'a card wired to the wrong one, is the most likely cause. '
       + 'CROSS-REFERENCE: this probably also belongs in ledgers/card-todo.ts with a proof '
@@ -869,7 +869,7 @@ export const CLOSED: Entry[] = [
       + 'path, and the server relays the ask to the right seat. What WAS broken is the '
       + 'PRESENTATION, and it reads exactly like the report: both formation asks were '
       + "raised as DecisionKind 'electricPath', whose numeric option values are RAW ENTITY "
-      + 'IDS by contract (R4) — but R75/R29 slot options carry slot INDEXES 0..n-1, so the '
+      + 'IDS by contract — but the slot options (CR 602.6, 602.7) carry slot INDEXES 0..n-1, so the '
       + 'client pinged whichever units happened to own entity ids 0..n-1 and the wrong '
       + "units lit up. It is its own kind 'formationSlot' now, and the ping judgement moved "
       + 'out of main.ts into ui/inspect.ts `optionPingId`, where it is testable. '
@@ -1217,15 +1217,15 @@ export const CLOSED: Entry[] = [
     evidence: {
       commit: 'b1f2158',
       guards: [
-        '278-ally-misclick.test.ts::R288 \u00a70 the family is derived from printed specs',
-        '278-ally-misclick.test.ts::R288 \u00a70 CONTROL: the predicate rejects both single-allegiance shapes',
-        '278-ally-misclick.test.ts::R288 \u00a71 Fight aimed at a second unit of your own',
-        '278-ally-misclick.test.ts::R288 \u00a72 the ALLY slot never asks',
-        '278-ally-misclick.test.ts::R288 \u00a72 picking the ENEMY in the open slot is silent',
-        '278-ally-misclick.test.ts::R288 \u00a73 no single-allegiance spell in the pool can reach the question',
-        '278-ally-misclick.test.ts::R288 \u00a74 the question changes no legality',
-        '278-ally-misclick.test.ts::R288 \u00a75 the client asks before sending',
-        '278-ally-misclick.test.ts::R288 \u00a75 "no" sends nothing and leaves the same pick open',
+        '278-ally-misclick.test.ts::CR D2.8a the family is derived from printed specs',
+        '278-ally-misclick.test.ts::CR D2.8 CONTROL: the predicate rejects both single-allegiance shapes',
+        '278-ally-misclick.test.ts::CR D2.8 Fight aimed at a second unit of your own',
+        '278-ally-misclick.test.ts::CR D2.8 the ALLY slot never asks',
+        '278-ally-misclick.test.ts::CR D2.8 picking the ENEMY in the open slot is silent',
+        '278-ally-misclick.test.ts::CR D2.8 no single-allegiance spell in the pool can reach the question',
+        '278-ally-misclick.test.ts::CR D2.8 the question changes no legality',
+        '278-ally-misclick.test.ts::CR D2.8 the client asks before sending',
+        '278-ally-misclick.test.ts::CR D7.1b "no" sends nothing and leaves the same pick open',
       ],
     },
     track: 'qol',
@@ -1239,7 +1239,7 @@ export const CLOSED: Entry[] = [
     means:
       'A non-blocking confirm on the LAST target pick, never a legality change. The owner is '
       + 'explicit twice over — "we shouldn\'t stop that from happening" and "they\'re legal '
-      + 'targets" — and R157\'s standing steer ("printed text always wins"; take the reading that '
+      + 'targets" — and the owner\'s standing steer ("printed text always wins"; take the reading that '
       + 'lets more things happen) forbids narrowing the target set. So this is a misclick guard '
       + 'and nothing else: the player answers Yes and the spell resolves exactly as it does '
       + 'today. Trigger condition: every chosen target shares a controller with the caster, on a '
@@ -1254,7 +1254,7 @@ export const CLOSED: Entry[] = [
     decided: [
       'Warn, never block. Owner, 2026-08-26: "We shouldn\'t stop that from happening, they\'re legal targets."',
       'Scope is mixed-allegiance spells only, and the owner named the shape himself: "spells where one target is \'supposed\' to be an ally and the other is an enemy". A spell that legitimately hits two allies must never warn.',
-      'There is precedent for warned-but-legal in this engine (R74, guarded in engine/test/42-dark-b.test.ts) — reuse that shape rather than inventing a second one.',
+      'There is precedent for warned-but-legal in this engine (CR D7.1, guarded in engine/test/42-dark-b.test.ts) — reuse that shape rather than inventing a second one.',
     ],
     asks: [],
     deps: [],
@@ -1265,29 +1265,29 @@ export const CLOSED: Entry[] = [
     ],
     notes:
       'Seams found 2026-08-28: a display-only `warning?` on the decision option (types.ts), the '
-      + 'R74 warned-but-legal precedent, and R194 for why a warning needs a window to hang on. '
+      + 'CR D7.1 warned-but-legal precedent, and CR D2.6a for why a warning needs a window to hang on. '
       + '⚠ The false-positive case is the whole risk. A warning that fires on spells the owner '
       + 'aims at his own units ON PURPOSE is worse than no warning — he will learn to click '
       + 'through it, and then it protects nothing.\n\n'
-      + 'DONE 2026-09-01. R288. THE ASK WAS ANSWERED and the answer was the derivation itself: '
+      + 'DONE 2026-09-01 (the misclick ruling, now CR D2.8). THE ASK WAS ANSWERED and the answer was the derivation itself: '
       + '"Anything that says target ally AND target unit on the same card … if a card calls out '
       + '\'one ally, one OTHER target\', it is almost always going to be one ally and one enemy." '
-      + 'That is already written down - R58 gave every target slot its own kind - so '
+      + 'That is already written down - every target slot has its own kind (CR 110.3) - so '
       + '`mixedAllegiance` in dsl.ts is a two-line read over `slots` and needs no new printed '
       + 'facet and no hand list. Derived family today: Fight and Squish.\n\n'
       + '⚠ ORGANIC EXCHANGE IS NOT IN IT, and the owner named it in the original ask. His later '
       + 'rule excludes it: it prints "two target units" with no ally slot, so "target ally AND '
       + 'target unit on the same card" does not describe it. It is a different shape - '
-      + 'exchanging control of two units you already control is a KNOWN NO-OP, which is R74\'s '
-      + '`warning`, not a guess about what the player meant. 278 §0 pins the family so the '
+      + 'exchanging control of two units you already control is a KNOWN NO-OP, which is the X = 0 '
+      + '`warning` (CR D7.1), not a guess about what the player meant. 278 §0 pins the family so the '
       + 'disagreement is on the record rather than argued again.\n\n'
-      + 'TWO FIELDS, NOT ONE. `DecisionOption.confirm` is new beside R74\'s `warning`: R74 says '
-      + '"this will do nothing" (a fact about the effect, fine as prose) and R288 says "you may '
+      + 'TWO FIELDS, NOT ONE. `DecisionOption.confirm` is new beside the X = 0 `warning` (CR D7.1): the warning says '
+      + '"this will do nothing" (a fact about the effect, fine as prose) and the confirm (CR D2.8) says "you may '
       + 'have clicked the wrong thing" (a guess about the player, worth an interruption). '
-      + 'Folding them together would have put a dialogue in front of every R74 option. And '
-      + '`confirm` is NOT appended to the label, breaking R74\'s convention deliberately: '
+      + 'Folding them together would have put a dialogue in front of every warned option. And '
+      + '`confirm` is NOT appended to the label, breaking the warning\'s label convention deliberately: '
       + 'referenceKey records a decide by its options\' labels, so label text re-keys saved '
-      + 'games and R200 reads the cosmetic change as divergence.\n\n'
+      + 'games and replay-room.ts reads the cosmetic change as divergence.\n\n'
       + 'THE CLIENT ASKS AT `act()`\'S DOOR and nowhere else - a target is answerable from '
       + 'seven places in main.ts and CT-135\'s lesson is that a hand-kept list of sites loses '
       + 'one. ⚠ The first shape of the confirm handler cleared the flag before re-sending, '
@@ -1904,7 +1904,7 @@ export const CLOSED: Entry[] = [
     notes:
       'Shipped 2026-09-14 (master 7e14c85, deployed to algomancy.online the same evening). The '
       + 'server resolves the rules once at POST /api/new into a DraftDeal and every re-deal reads '
-      + 'that; no deal and an untouched deal are the same game. Ruling R292. Verified live: a '
+      + 'that; no deal and an untouched deal are the same game. Ruled as the custom-rules ruling (now CR D8.3). Verified live: a '
       + 'Beginner room over wss dealt packs of 5 of fire + wood, and all 27 restored rooms came back.',
     evidence: {
       commit: '83a6ba3',
@@ -2058,7 +2058,7 @@ export const CLOSED: Entry[] = [
       'Spun out of BL-29 on 2026-09-01. BL-29\'s old `decided` line said spectate and replay were one entry "because they are the same viewer over two sources", which was true while both were unbuilt and stopped being true the moment one shipped. The live viewer reuses `spectatorView` and a socket; this one reuses a replay and a scrubber, and they share only the word "watch".',
       'THE VERDICT IS NOT OPTIONAL. replay-room.ts distinguishes ENGINE DRIFT from a FORK and CT-160 now FREEZES a forked live room rather than continuing it. A replay viewer that showed the rebuilt board without the verdict would undo that work at the one moment somebody is looking for evidence.',
       '\u2b50 THE ASK BELOW IS ANSWERED: BOTH, WITH A TOGGLE. Owner, 2026-09-23, asked whose information a replay shows: "Your seat, with a reveal toggle." A replay opens on the seat you PLAYED \u2014 their hand as backs, and the hidden simultaneous steps still frozen as they were while you were inside them \u2014 and \ud83d\udc41 flips to `spectatorView`, both hands, the opponent along the top. An admin opens omniscient, because the seat they did not play is usually where the thing being complained about is. Reach, same day: a \u25b6 on your own game history, and the admin room can reach any game; no share links.',
-      'THE FILE NOW CARRIES ITS OWN EVIDENCE. `doneWhen`\'s third line \u2014 the board AS IT WAS \u2014 could not be met by any amount of replaying, because a saved game was seed plus actions and nothing else. Room KAWJ (R295) replayed 253 of 253 actions, refused nothing, and arrived at a different life total: a rules change that adds a PRIORITY WINDOW re-aims a log\'s old passes instead of refusing them, and nothing derived from the log can see that. So rooms.ts now records `digest(signature(state))` after each action, as it is applied, and persists it. A replay compares fingerprints and names the index at which it stopped being the game. 0.043 ms per action, ~5 KB on a 300-action game.',
+      'THE FILE NOW CARRIES ITS OWN EVIDENCE. `doneWhen`\'s third line \u2014 the board AS IT WAS \u2014 could not be met by any amount of replaying, because a saved game was seed plus actions and nothing else. Room KAWJ (report #165) replayed 253 of 253 actions, refused nothing, and arrived at a different life total: a rules change that adds a PRIORITY WINDOW re-aims a log\'s old passes instead of refusing them, and nothing derived from the log can see that. So rooms.ts now records `digest(signature(state))` after each action, as it is applied, and persists it. A replay compares fingerprints and names the index at which it stopped being the game. 0.043 ms per action, ~5 KB on a 300-action game.',
       'A GAME PLAYED BEFORE THAT IS `unverified`, NEVER `as-recorded`. Every one of the 61 files in the corpus predates the fingerprints and has nothing to check against. Calling them faithful is the comfortable answer and a false one; 318 \u00a77 fails if anybody makes it. `replay-room.ts --as-recorded` remains the only thing that can settle one, and it stays a CLI: it checks the recorded commit out into a detached git worktree and costs seconds to minutes, which is a deliberate click and not part of opening a replay.',
       'THE FRAMES ARE `watching`, NOT `update`. An update goes through pace.ts\'s PACE_MS hold, so a replay asking for three actions a second would be served one and the speed control would silently do nothing. 319 \u00a76 pins it.',
     ],
@@ -2076,7 +2076,7 @@ export const CLOSED: Entry[] = [
     ],
     notes:
       'The forensic half was already built and tested: replay-room.ts, `driftedAgainst`, the '
-      + '`forks` record, R200\'s version stamps and CT-160\'s freeze. What this round added is a '
+      + '`forks` record, the version stamps and CT-160\'s freeze. What this round added is a '
       + 'viewer over what they say, plus the one thing they could not say \u2014 see the fingerprint '
       + 'line above.\n\n'
       + '\u26a0 FOUR OF THE SIX REAL DEFECTS WERE FOUND BY A BROWSER, NOT BY A TEST, and all six '

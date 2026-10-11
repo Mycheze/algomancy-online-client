@@ -5,18 +5,18 @@
  *
  * Covers: death-fed counters (Refuse Reclaimer — unit form and augment-
  * donated), formation-array position swapping (Riftwalker, bounded [once]),
- * a real sacrifice ACTIVATION cost (Scavenging Sentry, R49 sacrificeOther —
+ * a real sacrifice ACTIVATION cost (Scavenging Sentry, CR 111.7 sacrificeOther —
  * it used to be a mid-resolution pick), moving net
  * counters between two cast-time targets (Scrap For Parts), affinity-sized
- * Robot tokens arriving at the source's region (Self-Assembly, R115 — a deploy
+ * Robot tokens arriving at the source's region (Self-Assembly, CR 601.5 — a deploy
  * spell, so that is home), counter-fueled damage
- * (Soul Reaver), the R62 suppression layer + mod erasure + effect negation
+ * (Soul Reaver), the CR 712.1a, 712.1c suppression layer + mod erasure + effect negation
  * (Suppression Field, all three clauses), region-scoped mass counters with a
- * bounded budget (Synaptic Energizer, R9/R12), net-counter duplication
+ * bounded budget (Synaptic Energizer, CR 109.9, 601.1b), net-counter duplication
  * (Technological Superiority), a +2/+2-and-silence static in both forms
- * (Transmogrifant, R62), a type-line Virus augment (Trashling),
- * base-stat gates (Unmake, R66), a layer-2 re-base (Unstable Refactor), an
- * immediate mid-combat death trigger (Unstable Singularity, R31), forced
+ * (Transmogrifant, CR 712.1a), a type-line Virus augment (Trashling),
+ * base-stat gates (Unmake, CR 206.5), a layer-2 re-base (Unstable Refactor), an
+ * mid-combat death trigger (Unstable Singularity, CR 608.9), forced
  * discards (Void Memory), and the card-step replacement that makes a draft
  * step or a constructed draw phase not happen at all (Worldbender, report #87).
  */
@@ -99,7 +99,7 @@ test('Refuse Reclaimer: the donated [Augment] text feeds the HOST counters', () 
  * only shape that could have produced the report.
  */
 
-test('Refuse Reclaimer: a death in the battle region it attacked into feeds it — no blocking required (R12)', () => {
+test('Refuse Reclaimer: a death in the battle region it attacked into feeds it — no blocking required (CR 601.1d)', () => {
   const h = new Harness(2811);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -126,7 +126,7 @@ test('Refuse Reclaimer: a death in the battle region it attacked into feeds it �
   finishBattle(h);
 });
 
-test('Refuse Reclaimer: a death in a region it is not in leaves it cold (R12) — the BRDM report shape', () => {
+test('Refuse Reclaimer: a death in a region it is not in leaves it cold (CR 601.1d) — the BRDM report shape', () => {
   const h = new Harness(2812);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -174,14 +174,14 @@ test('Riftwalker: [one] switches my position with a target ally in my formation;
   assert.equal(b.columns[1]![0], rift, 'I took the ally\'s slot');
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: A, entityId: rift, abilityIndex: 0, via: 'augment' }),
-    /already used/, '[once]: bounded to one activation per turn (R9)');
+    /already used/, '[once]: bounded to one activation per turn (CR 109.9)');
   finishBattle(h);
 });
 
 // ── Scavenging Sentry ────────────────────────────────────────────────────
 
 test('Scavenging Sentry: sacrifice another unit → +1/+1 counter; no fodder → not offered', () => {
-  // R49 UN-PARKED: the bracketed sacrifice is a real AbilityCost, paid in the
+  // UN-PARKED (CR 111.6, 111.7): the bracketed sacrifice is a real AbilityCost, paid in the
   // cast window, and it GATES the activation.
   const h = new Harness(2804);
   toDeployment(h);
@@ -231,14 +231,14 @@ test('Self-Assembly: creates a Robot X at the source\'s region, X = metal affini
   const h = new Harness(2806);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  giveResources(h, A, 'metal', 3);                          // m/2 — pays 2, affinity stays 3 (R17)
+  giveResources(h, A, 'metal', 3);                          // m/2 — pays 2, affinity stays 3 (CR 105.4a)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Self-Assembly') });
   const robot = unitsOf(h, A).find(u => u.card === 'Robot')!;
   assert.ok(robot, 'a Robot was created');
   assert.ok(robot.token, 'created = a token');
   assert.equal(robot.counters, 3, 'X = 3 metal affinity (expended resources count)');
   assert.deepEqual(effStats(h, robot.id), [3, 3], 'a 0/0 living on its counters');
-  assert.equal(robot.region, h.q.homeRegion(A), 'created units arrive at ctx.region — home for a deploy cast (R115)');
+  assert.equal(robot.region, h.q.homeRegion(A), 'created units arrive at ctx.region — home for a deploy cast (CR 601.5)');
 });
 
 // ── Soul Reaver ──────────────────────────────────────────────────────────
@@ -253,7 +253,7 @@ test('Soul Reaver: [one] + remove X counters → X damage to target unit', () =>
   giveResources(h, A, 'metal', 1);                          // the [one]
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[sr]] });
-  // R64: "Remove X +1/+1 counters from me" is before the colon — a COST, paid
+  // CR 111.7: "Remove X +1/+1 counters from me" is before the colon — a COST, paid
   // as the ability is activated, so X is fixed before anyone can respond.
   h.do({ type: 'activateAbility', seat: A, entityId: sr, abilityIndex: 0, via: 'augment' });
   assert.equal(h.state.decision!.seat, A, 'the controller pays');
@@ -295,7 +295,7 @@ test('Suppression Field: erases all of the target\'s mods (donated attrs vanish)
   finishBattle(h);
 });
 
-test('Suppression Field: R62 — the target loses its printed attributes and its triggers', () => {
+test('Suppression Field: CR 712.1 — the target loses its printed attributes and its triggers', () => {
   const h = new Harness(2820);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -356,11 +356,11 @@ test('Synaptic Energizer: after combat, a +1/+1 counter on each of your units (o
   pass(h); pass(h);                                         // combat → afterCombat trigger
   pass(h); pass(h);                                         // resolve the trigger
   assert.equal(ent(h, se)!.counters, 1, 'the Energizer counts itself');
-  assert.equal(ent(h, tok)!.counters, 1, 'each of your units in the battle (R12)');
+  assert.equal(ent(h, tok)!.counters, 1, 'each of your units in the battle (CR 601.1b)');
   assert.deepEqual(effStats(h, se), [1, 2]);
   assert.deepEqual(effStats(h, tok), [2, 2]);
   finishBattle(h);                                          // round 2's afterCombat fires too…
-  assert.equal(ent(h, se)!.counters, 1, '…but [Switch1] spent its budget (R9): still 1');
+  assert.equal(ent(h, se)!.counters, 1, '…but [Switch1] spent its budget (CR 722.5): still 1');
   assert.equal(ent(h, tok)!.counters, 1);
 });
 
@@ -411,7 +411,7 @@ test('Transmogrifant: the augment-donated static anchors on the host', () => {
   assert.deepEqual(effStats(h, host), [1, 1], 'the host itself ("other") does not');
 });
 
-test('Transmogrifant: R62 — the same static that gives +2/+2 takes the attributes away', () => {
+test('Transmogrifant: CR 712.1 — the same static that gives +2/+2 takes the attributes away', () => {
   const h = new Harness(2822);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -429,13 +429,13 @@ test('Transmogrifant: R62 — the same static that gives +2/+2 takes the attribu
   assert.ok(ownAttrs(h, sprite).has('Flying'), 'the projector left — everything is back');
 });
 
-test('Transmogrifant: a silenced unit radiates nothing of its own (R62)', () => {
+test('Transmogrifant: a silenced unit radiates nothing of its own (CR 712.1a)', () => {
   const h = new Harness(2823);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const other = spawn(h, A, 'Unit Token');
   // two Transmogrifants: each is the OTHER's "other unit", so each silences
-  // the other. Static-vs-static suppression resolves in ONE pass (R62), so
+  // the other. Static-vs-static suppression resolves in ONE pass (CR 712.5), so
   // both keep radiating and the token gets +2/+2 twice.
   spawn(h, A, 'Transmogrifant');
   spawn(h, A, 'Transmogrifant');
@@ -476,7 +476,7 @@ test('Unmake: deletes only units with BASE power 2 or less (counters don\'t coun
   pass(h); pass(h);                                         // resolve
   assert.ok(!ent(h, small), 'base power 2 → deleted despite 7/7 live stats');
   assert.ok(h.state.players[D]!.bin.includes('Trashling'), 'deleted → owner\'s bin');
-  // R64: a base-8 unit is not a legal target at all — it is never offered
+  // CR 110.3a: a base-8 unit is not a legal target at all — it is never offered
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unmake') });
   notOffered(h, { unit: big }, 'base power 8 > 2');
   pick(h, { unit: atk });                                   // the only one left
@@ -512,7 +512,7 @@ test('Unstable Refactor: target becomes base 5/0 until regroup (counters still a
 
 // ── Unstable Singularity ─────────────────────────────────────────────────
 
-test('R261: Unstable Singularity dies in combat and deletes target unit AFTER combat', () => {
+test('CR 608.9b: Unstable Singularity dies in combat and deletes target unit AFTER combat', () => {
   const h = new Harness(2816);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -522,16 +522,16 @@ test('R261: Unstable Singularity dies in combat and deletes target unit AFTER co
   h.do({ type: 'declareAttack', seat: A, columns: [[us]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk] } });
-  // ⚠ CONVERTED BY R261. The old title said "immediately" and the old assertion
+  // ⚠ Converted when combat-death triggers moved to after combat. The old title said "immediately" and the old assertion
   // said why:
   //
-  //     'Unstable Singularity: dies in combat → immediately deletes target unit (R31)'
+  //     'Unstable Singularity: dies in combat → immediately deletes target unit ([…])'
   //     assert.equal(h.state.decision!.kind, 'targets',
-  //       'the trigger resolves immediately (R31)');
+  //       'the trigger resolves immediately ([…])');
   //
   // A combat DEATH trigger no longer resolves inside the damage sub-step — the
   // owner's RAQ names "When I die" in the list of things that go on the stack
-  // in the after-combat window. R31 itself is untouched: the deletion is still
+  // in the after-combat window. The rest is untouched: the deletion is still
   // a deletion and still not a death. What moved is WHEN the question is asked.
   pass(h); pass(h);                                         // → combat damage
   assert.ok(!ent(h, us), 'the Singularity died to the blocker');
@@ -542,8 +542,8 @@ test('R261: Unstable Singularity dies in combat and deletes target unit AFTER co
   assert.equal(h.state.decision!.kind, 'targets',
     'the trigger is BUILT and aimed inside the damage step, as it always was');
   pick(h, { unit: blk });                                   // delete target unit
-  // …and now it waits, which is the half R261 changed.
-  assert.ok(ent(h, blk), 'R261: the blocker is still standing — the trigger has not resolved yet');
+  // …and now it waits, which is the half the after-combat hold changed.
+  assert.ok(ent(h, blk), 'CR 608.9b: the blocker is still standing — the trigger has not resolved yet');
   resolveAfterCombat(h);
   assert.ok(!ent(h, blk), 'the blocker is deleted, after combat');
   assert.ok(h.state.players[A]!.bin.includes('Unstable Singularity'), 'I went to the bin');
@@ -553,13 +553,13 @@ test('R261: Unstable Singularity dies in combat and deletes target unit AFTER co
 
 // ── Void Memory ──────────────────────────────────────────────────────────
 
-// R284: the printed "[unit {i1}or spell]" is a MODE, and the CASTER declares
+// CR 702.3d: the printed "[unit {i1}or spell]" is a MODE, and the CASTER declares
 // it in the cast window like every other one — this test used to have no
 // `pick` before the discard at all, because the half was being decided by the
 // discarding player's own free choice of card. The discard itself is still
 // theirs; what the caster's guess does is narrow the menu it comes off, and
 // missing the guess entirely is a real outcome now.
-test('Void Memory: the caster declares the half; each opponent then discards one of THOSE (a TRASH by them, R40)', () => {
+test('Void Memory: the caster declares the half; each opponent then discards one of THOSE (a TRASH by them, CR 801.2e)', () => {
   const h = new Harness(2817);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -581,15 +581,15 @@ test('Void Memory: the caster declares the half; each opponent then discards one
   pick(h, 1);                                               // hand index 1 = Self-Assembly
   assert.deepEqual(h.state.players[D]!.hand, ['Trashling', 'Void Memory'], 'one card gone');
   assert.ok(h.state.players[D]!.bin.includes('Self-Assembly'), 'discarded → bin');
-  // R40: the discard is routed through E.discardFromHand, so it TRASHES —
+  // CR 801.2e: the discard is routed through E.discardFromHand, so it TRASHES —
   // attributed to D (whose bin it enters), never to Void Memory's caster
   const discard = h.events.filter(ev => ev.type === 'trashed')
     .find(ev => ev.data?.['card'] === 'Self-Assembly');
-  assert.ok(discard, 'discarding from hand fires trashed (R40)');
+  assert.ok(discard, 'discarding from hand fires trashed (CR 801.3)');
   assert.equal(discard!.data!['seat'], D, 'trashed BY the discarding player, not the caster');
   assert.equal(discard!.data!['from'], 'hand');
 
-  // R284: a guess that MISSES reveals off a hand that is not empty — the
+  // CR 205.3a: a guess that MISSES reveals off a hand that is not empty — the
   // branch the old reading could never reach, because it let the victim pick
   // the half.
   h.state.players[D]!.hand = ['Trashling'];                 // a unit, and nothing else

@@ -1,9 +1,9 @@
-/* R276 / CT-142 — THE COST TOAST: one shared channel for "you paid for that
+/* CR D7.4 / CT-142 — THE COST TOAST: one shared channel for "you paid for that
  * and it did not happen".
  *
  * ── WHERE THIS COMES FROM
  *
- * R266 (the owner, round 32): *"NOTHING should only exist in the log. The log
+ * The owner, round 32 (now CR D7.4): *"NOTHING should only exist in the log. The log
  * is for checking past things."* `test/244-log-is-not-the-only-surface` turned
  * that into a MEASUREMENT rather than a slogan: every `ev()` announcement in
  * `engine.ts`/`apply.ts` is parsed out of the source and asked whether the
@@ -39,10 +39,10 @@
  * EXISTING SURFACE:
  *
  *   `beatKeys`        (ui/flash.ts) — does the board pulse anything for this?
- *   `fizzledIds`      (ui/flash.ts) — R271: does the stack strip mark it?
+ *   `fizzledIds`      (ui/flash.ts) — CR D6.12: does the stack strip mark it?
  *   `negatedIds`      (ui/flash.ts) — same, for an answered item
- *   `tokenLossNotice` (ui/inspect.ts) — R266: does the prompt bar already have it?
- *   the R65 erased pile — does `erasedDialogHtml` already draw it?
+ *   `tokenLossNotice` (ui/inspect.ts) — CR D7.4a: does the prompt bar already have it?
+ *   the CR D6.6c erased pile — does `erasedDialogHtml` already draw it?
  *
  * Every one of those is imported rather than restated, so WIDENING A SURFACE
  * NARROWS THIS TIER automatically and no toast is ever the second thing
@@ -52,12 +52,12 @@
  * ── WHAT THIS IS NOT
  *
  * It is not a confirmation and not a question. Everything here has already
- * happened and none of it can be undone (R194 argues the general case). The
+ * happened and none of it can be undone (the token-loss ruling, now CR D2.6a, argues the general case). The
  * player may ignore every toast and lose nothing that is not already in the
- * log — R266 is about the log not being the ONLY surface, not about replacing
+ * log — CR D7.4 is about the log not being the ONLY surface, not about replacing
  * it, and nothing here removes a line from it.
  *
- * It is also NOT the R266 prompt bar. The owner put the regroup token loss in
+ * It is also NOT the CR D7.4a prompt bar. The owner put the regroup token loss in
  * "the normal warning and choice area" because it is a single, rare, personal
  * loss with a name on it; `244` asserts in so many words that it is not a
  * corner toast. This tier is the other shape: many small losses, several of
@@ -151,7 +151,7 @@ export interface CostToast {
   /** identity for coalescing and for merging a repeat into a live row */
   key: string;
   /** the engine's sentence, verbatim. The client adds no prose of its own —
-   * same rule as the R266 bar, and for the same reason: the engine already
+   * same rule as the CR D7.4a bar, and for the same reason: the engine already
    * said it better than a paraphrase could, and a paraphrase drifts. */
   msg: string;
   /** how many identical sentences folded into this row */
@@ -161,7 +161,7 @@ export interface CostToast {
 /** a toast that is up, and the clock reading it comes down at */
 export interface LiveCostToast extends CostToast { until: number }
 
-/** the R65 erased pile: `E.ev()` files an 'erased' event's card names on the
+/** the CR D6.6c erased pile: `E.ev()` files an 'erased' event's card names on the
  * seat's public erased list, and `erasedDialogHtml` draws that list. So an
  * erase WITH names has a surface and one without does not — the engine's own
  * gate, asked rather than restated. */
@@ -185,9 +185,9 @@ export function costToast(ev: EngineEvent): CostToast | null {
   if (ZONE_CHANGE.has(ev.type)) return null;    // the zone it left is the surface
   if (beatKeys(ev).length) return null;         // the board pulses it
   if (inErasedPile(ev)) return null;            // the erased dialog draws it
-  if (fizzledIds([ev]).length) return null;     // R271: the stack strip marks it
+  if (fizzledIds([ev]).length) return null;     // CR D6.12: the stack strip marks it
   if (negatedIds([ev]).length) return null;     // …and marks an answered item too
-  if (tokenLossNotice([ev], null)) return null; // R266: the prompt bar has it
+  if (tokenLossNotice([ev], null)) return null; // CR D7.4a: the prompt bar has it
   return { key: `${ev.type} ${msg}`, msg, n: 1 };
 }
 

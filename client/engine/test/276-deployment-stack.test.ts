@@ -1,4 +1,4 @@
-/* R286 / CT-184 — DEPLOYMENT HAS A STACK, AND IT IS ONE STACK PER PLAYER.
+/* CR 507.5, 703.7 / CT-184 — DEPLOYMENT HAS A STACK, AND IT IS ONE STACK PER PLAYER.
  *
  * The owner, 2026-09-01, ruling on a question round 36 raised and could not
  * answer:
@@ -14,18 +14,17 @@
  * ⚠ THE OBVIOUS REPAIR WAS TRIED FIRST AND FAILED, AND THAT MEASUREMENT IS
  * WHY THIS FILE IS SHAPED THE WAY IT IS. Routing the play through the
  * deployment stack was attempted during CT-176 and reverted: `settle()` would
- * not drain while ANY decision was open — the R154 gate, the single line
+ * not drain while ANY decision was open — the old global decision hold gate, the single line
  * `if (this.s.decision) return;` — and deployment is SIMULTANEOUS, so one
  * seat's pending question froze the other seat's play. On saved game DQVZ,
  * Ben's Eldritch Dreamtender waited behind Rashi's Floral Singularity X
- * question and spawned in the wrong order; 14 engine tests went red, R154's
- * own two among them.
+ * question and spawned in the wrong order; 14 engine tests went red, the decision gate's own two among them.
  *
  * The revert was right and its reasoning was incomplete. The branch did not
  * fail because deployment plays belong off the stack. It failed because it
  * used **THE** stack — one shared object behind one shared gate — where the
- * rule is one stack **per player**. R154's "a pending question stops the
- * world" is correct in battle, where both seats are in the same game, and
+ * rule is one stack **per player**. The old gate's "a pending question stops the
+ * world" is correct in battle (CR D2.1a), where both seats are in the same game, and
  * wrong in deployment, where by this ruling they are not.
  *
  *  §1  THE HOLD IS SEAT-AWARE. The half that had to land first. Seat 1 is
@@ -37,7 +36,7 @@
  *      when the other seat has items interleaved above it. With the positive
  *      control — drive the same state as the other seat and the other item is
  *      the one that goes.
- *  §3  THE PLAY IS AN ITEM. R286's point 1, and what CT-176 could only paper
+ *  §3  THE PLAY IS AN ITEM. The ruling's first point (CR 507.5), and what CT-176 could only paper
  *      over: the copy sits ABOVE the original and therefore resolves FIRST
  *      (RAQ, "above original spell effect").
  *  §4  THE NEGATIVE CONTROLS. Battle is unchanged — the gate there is the
@@ -59,8 +58,8 @@ const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** A deployment spell that asks nothing and gains a life — the smallest thing
  * that reaches `settle()` at all. (`doneDeploying` never calls settle, so it
- * cannot exercise the gate; R154's own file makes the same point.) */
-const QUIET = 'R286 Quiet';
+ * cannot exercise the gate; the decision gate's own test file, 130-seat-aware-gate, makes the same point.) */
+const QUIET = 'Deploy Quiet';
 registerSynthetic({
   name: QUIET, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
@@ -73,7 +72,7 @@ registerSynthetic({
 /** Turn 1 into deployment with `n` Wraiths on `seat` — their start-of-
  * deployment pile is what leaves that seat mid-question with more queued
  * behind it. Deliberately not `toDeployment`: the Wraiths must be in play
- * BEFORE deployment opens or nothing fires. (R154's `withWraiths`, which this
+ * BEFORE deployment opens or nothing fires. (130-seat-aware-gate's `withWraiths`, which this
  * is a copy of on purpose — the two files must be able to disagree.) */
 function withWraiths(seat: Seat, n: number): Harness {
   const h = new Harness(27600);
@@ -98,7 +97,7 @@ const item = (id: number, controller: Seat): StackItem => ({
 
 /* ═══ §1 THE HOLD IS SEAT-AWARE ══════════════════════════════════════ */
 
-test('R286 §1: seat 1 is mid-question and seat 0\'s deployment play still RESOLVES', () => {
+test('CR 507.5a: seat 1 is mid-question and seat 0\'s deployment play still RESOLVES', () => {
   const h = withWraiths(1, 3);
   assert.equal(h.state.phase, 'deploy');
   assert.equal(hiddenSegment(h.state), 'deploy', 'deployment is a hidden simultaneous segment');
@@ -108,7 +107,7 @@ test('R286 §1: seat 1 is mid-question and seat 0\'s deployment play still RESOL
   const idx = give(h, 0, QUIET);
   const life0 = h.state.players[0]!.life;
   assert.ok(legalActions(h.state, 0).some(a => a.type === 'playCard' && a.handIndex === idx),
-    'R154 already offers it');
+    'CR 507.5a already offers it');
   h.do({ type: 'playCard', seat: 0, handIndex: idx });
 
   assert.equal(h.state.players[0]!.life, life0 + 1,
@@ -119,19 +118,19 @@ test('R286 §1: seat 1 is mid-question and seat 0\'s deployment play still RESOL
     'nothing of seat 0\'s is left standing on it');
 });
 
-test('R286 §1: the play really went ON a stack — it did not skip one', () => {
+test('CR 507.5: the play really went ON a stack — it did not skip one', () => {
   const h = withWraiths(1, 3);
   const idx = give(h, 0, QUIET);
   const evs = h.do({ type: 'playCard', seat: 0, handIndex: idx });
   const pushed = evs.filter(e => e.type === 'stackPushed' && e.data?.['controller'] === 0);
   assert.equal(pushed.length, 1,
-    'R286 point 1: a deployment play is committed with `push`, not `resolve` — if this '
+    'CR 507.5: a deployment play is committed with `push`, not `resolve` — if this '
     + 'is 0 the branch has been put back and §1 above is passing for the old reason');
   assert.ok(evs.some(e => e.type === 'resolved'), 'and then resolved, in the same action');
 });
 
-test('R286 §1: seat 0 acting does not build, aim or resolve seat 1\'s held triggers', () => {
-  // R154's rule, unchanged. R286 narrows the SCOPE of the hold from "everyone"
+test('CR 703.7: seat 0 acting does not build, aim or resolve seat 1\'s held triggers', () => {
+  // CR D2.1d's rule, unchanged. CR 507.5a narrows the SCOPE of the hold from "everyone"
   // to "the seat being asked" and must not narrow it any further than that.
   const h = withWraiths(1, 3);
   const queued = structuredClone(h.state.triggerQueue);
@@ -161,7 +160,7 @@ function settleAs(state: GameState, actor: Seat, stack: StackItem[]): StackItem[
   return e.s.stack;
 }
 
-test('R286 §2: the acting seat\'s TOPMOST item resolves — not the array\'s top', () => {
+test('CR 703.7: the acting seat\'s TOPMOST item resolves — not the array\'s top', () => {
   const h = withWraiths(1, 3);
   assert.equal(h.state.decision?.seat, 1, 'seat 1 holds the open question');
   // seat 1's item is ABOVE seat 0's in the one array. Under a plain `pop()`
@@ -172,7 +171,7 @@ test('R286 §2: the acting seat\'s TOPMOST item resolves — not the array\'s to
     'seat 0 resolved SEAT 0\'S item and left seat 1\'s where it stood');
 });
 
-test('R286 §2 CONTROL: put the question on the OTHER seat and the other item is the one that goes', () => {
+test('CR 703.7 CONTROL: put the question on the OTHER seat and the other item is the one that goes', () => {
   const h = withWraiths(1, 3);
   // the mirror image of §2: seat 0 is the one being asked, seat 1 is the one
   // acting. Same array, same order, opposite answer — which is what makes §2
@@ -186,7 +185,7 @@ test('R286 §2 CONTROL: put the question on the OTHER seat and the other item is
     + 'Without this control §2 would pass on an engine that always took the bottom item');
 });
 
-test('R286 §2: with no acting seat at all, the pre-R286 hold is exactly what happens', () => {
+test('CR 507.5a: with no acting seat at all, the hold from before this rule is exactly what happens', () => {
   const h = withWraiths(1, 3);
   const e = new E(structuredClone(h.state));
   // `E.acting` is null for every call that is not an action — game creation, a
@@ -196,12 +195,12 @@ test('R286 §2: with no acting seat at all, the pre-R286 hold is exactly what ha
   e.settle();
   assert.deepEqual(e.s.stack.map(i => i.id), [9001, 9002],
     'both items stand: an engine that cannot tell whose turn of the crank it is '
-    + 'holds for any question at all, which is where R154 left it');
+    + 'holds for any question at all, which is where the original gate left it');
 });
 
 /* ═══ §3 THE PLAY IS AN ITEM — the copy sits above it ════════════════ */
 
-test('R286 §3: the copy resolves BEFORE the original, because there is finally an original to sit above', () => {
+test('CR 507.5: the copy resolves BEFORE the original, because there is finally an original to sit above', () => {
   const h = new Harness(27610);
   toDeployment(h);
   const A = h.state.initiative as Seat;
@@ -218,7 +217,7 @@ test('R286 §3: the copy resolves BEFORE the original, because there is finally 
   const origAt = order.findIndex(m => m.includes('Overbloom') && !m.includes('(copy)'));
   assert.ok(copyAt >= 0 && origAt >= 0, `both resolutions are logged: ${order.join(' | ')}`);
   assert.ok(copyAt < origAt,
-    'RAQ: "Copy is new spell effect on stack", "above original spell effect". Before R286 '
+    'RAQ: "Copy is new spell effect on stack", "above original spell effect". Before deployment plays went on the stack '
     + 'the deployment play resolved where it stood and the copy could only follow it — the '
     + 'divergence round 36 recorded and could not fix without a stack');
   assert.deepEqual(effStats(h, repl), [15, 17], 'and both landed: +7/+7 twice');
@@ -226,7 +225,7 @@ test('R286 §3: the copy resolves BEFORE the original, because there is finally 
 
 /* ═══ §4 NEGATIVE CONTROLS ══════════════════════════════════════════ */
 
-test('R286 §4: in BATTLE the hold is exactly what it was — a question stops the world', () => {
+test('CR D2.1a: in BATTLE the hold is exactly what it was — a question stops the world', () => {
   const h = withWraiths(1, 3);
   const state = structuredClone(h.state);
   state.phase = 'battle';
@@ -234,17 +233,17 @@ test('R286 §4: in BATTLE the hold is exactly what it was — a question stops t
   const left = settleAs(state, 0, [item(9001, 0), item(9002, 1)]);
   assert.deepEqual(left.map(i => i.id), [9001, 9002],
     'nothing drained. In battle priority is sequential and the opponent mid-resolution '
-    + 'genuinely does hold the game; R154 is the rule working, not a bug');
+    + 'genuinely does hold the game; CR D2.1a is the rule working, not a bug');
 });
 
-test('R286 §4: your OWN question still stops you, in deployment as everywhere else', () => {
+test('CR D2.1: your OWN question still stops you, in deployment as everywhere else', () => {
   const h = withWraiths(1, 3);
   const left = settleAs(h.state, 1, [item(9001, 0), item(9002, 1)]);
   assert.deepEqual(left.map(i => i.id), [9001, 9002],
-    'seat 1 is the seat being asked, so seat 1 drains nothing — R154 rule 1, untouched');
+    'seat 1 is the seat being asked, so seat 1 drains nothing — CR D2.1, untouched');
 });
 
-test('R286 §4: with NO question open the shared drain is what runs, seat filter and all', () => {
+test('CR 507.5: with NO question open the shared drain is what runs, seat filter and all', () => {
   const h = withWraiths(1, 3);
   const state = structuredClone(h.state);
   state.decision = null;
@@ -252,7 +251,7 @@ test('R286 §4: with NO question open the shared drain is what runs, seat filter
   state.triggerQueue = [];
   const left = settleAs(state, 0, [item(9001, 0), item(9002, 1)]);
   assert.deepEqual(left, [],
-    'both drain, top down, exactly as R144(a) has always drained the deployment stack — '
+    'both drain, top down, exactly as the deployment stack has always drained (CR 507.5) — '
     + 'the isolation is a branch for the blocked case, not a new default');
   assert.equal(other(0), 1, 'sanity: the fixture helper is the one this file defines');
 });

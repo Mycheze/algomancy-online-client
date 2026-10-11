@@ -4,22 +4,22 @@
     "kind": "f-register-chain-wrong",
     "rule": "keywords.abilities.ambush.resolution",
     "tier": 2,
-    "summary": "R22 is classified current, but its sentence on where a recalled ally goes (\"base card to its owner's hand, its mods to their owners' bins\") was overtaken by R250 §4, \"Zones ALWAYS follow control\": a card leaving play goes to its controller's zone. The two differ when the ambushed ally is a stolen unit or carries an opponent's mod. R22 carries no mark for this.",
+    "summary": "The owner ruling of 2026-08-18 (“Ambush details”) is classified current, but its sentence on where a recalled ally goes (\"base card to its owner's hand, its mods to their owners' bins\") was overtaken by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), \"Zones ALWAYS follow control\": a card leaving play goes to its controller's zone. The two differ when the ambushed ally is a stolen unit or carries an opponent's mod. The owner ruling of 2026-08-18 (“Ambush details”) carries no mark for this.",
     "sides": [
       {
-        "source": "R22",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "ambusher to the bin (\"you lose both\", card ruling). Recall = base card to its **owner's"
       },
       {
-        "source": "R22",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "hand**, its mods to their owners' **bins**, a token target is erased. ⚠ Engine calls:"
       },
       {
-        "source": "R250 (its §4: zones follow control)",
+        "source": "owner ruling, adopted 2026-08-29",
         "quote": "> \"**Zones ALWAYS follow control. One rule, no split.** Whoever CONTROLLED the"
       }
     ],
-    "resolution": "Mark R22's recall sentence as narrowed by R250 in digital-rules.md. The ambush rules cite R22 only for the target, the slot and the fizzle, and leave the destination to the recall rule (keywords.actions.recall.destination, controller's hand). Question for the owner only if the engine's ambush path still recalls to the owner's hand; the verifier should check."
+    "resolution": "Mark the owner ruling of 2026-08-18 (“Ambush details”)’s recall sentence as narrowed by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) in digital-rules.md. The ambush rules cite the owner ruling of 2026-08-18 (“Ambush details”) only for the target, the slot and the fizzle, and leave the destination to the recall rule (keywords.actions.recall.destination, controller's hand). Question for the owner only if the engine's ambush path still recalls to the owner's hand; the verifier should check. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U21-4",
@@ -33,7 +33,7 @@
         "quote": "Requires the player to"
       },
       {
-        "source": "R309",
+        "source": "owner ruling, adopted 2026-10-01",
         "quote": "all tokens (of the same name) onto the stack at once … It's all or nothing"
       }
     ],
@@ -44,14 +44,14 @@
     "kind": "c-owner-call-only",
     "rule": "keywords.abilities.prophecy.latch",
     "tier": 3,
-    "summary": "That a fulfilled prophecy stays fulfilled is the owner's call (R44), reasoned from the reminder text and an announcement by Caleb that the pack does not hold verbatim. No designer ruling decides it.",
+    "summary": "That a fulfilled prophecy stays fulfilled is the owner's call (owner ruling of 2026-08-19, “A fulfilled prophecy latches”), reasoned from the reminder text and an announcement by Caleb that the pack does not hold verbatim. No designer ruling decides it.",
     "sides": [
       {
-        "source": "R44",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "text says the card may be played \"if the prophecy has been fulfilled\" and"
       },
       {
-        "source": "R44",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "of which read as a one-way latch. (Bena's call 2026-08-19.)"
       }
     ],
@@ -62,14 +62,14 @@
     "kind": "c-owner-call-only",
     "rule": "keywords.abilities.unstable.active-zone",
     "tier": 3,
-    "summary": "Caleb's glossary line limits Unstable to a card entering a bin \"from an active zone\", but he never lists the active zones. The list (play and the stack) is the owner's fill, and R145 says not to attribute it to Caleb.",
+    "summary": "Caleb's glossary line limits Unstable to a card entering a bin \"from an active zone\", but he never lists the active zones. The list (play and the stack) is the owner's fill, and the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) says not to attribute it to Caleb.",
     "sides": [
       {
-        "source": "R145",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "is worth being honest that it is a fill and not a citation: **do not attribute"
       },
       {
-        "source": "R145",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> \"in play and the stack are active zones (which is relevant for cards that have"
       }
     ],
@@ -80,14 +80,14 @@
     "kind": "c-owner-call-only",
     "rule": "keywords.abilities.ambush.spell-effect",
     "tier": 3,
-    "summary": "R22 labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.",
+    "summary": "The owner ruling of 2026-08-18 (“Ambush details”) labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.",
     "sides": [
       {
-        "source": "R22",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
       },
       {
-        "source": "R22",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
       }
     ],
@@ -98,7 +98,7 @@
     "kind": "c-owner-call-only",
     "rule": "keywords.abilities.unstable.card-says-bin",
     "tier": 3,
-    "summary": "Pull Under tells its caster to put the deleted unit and its mods into a bin; Unstable says a modded card that would enter a bin is erased instead. R137 records the engine's reading that the card's own destination wins. No designer source decides between the two printed texts.",
+    "summary": "Pull Under tells its caster to put the deleted unit and its mods into a bin; Unstable says a modded card that would enter a bin is erased instead. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) records the engine's reading that the card's own destination wins. No designer source decides between the two printed texts.",
     "sides": [
       {
         "source": "card: Pull Under",
@@ -109,7 +109,7 @@
         "quote": "{i}(If they would enter a bin, erase them instead.)"
       },
       {
-        "source": "R137 (its Pull Under section)",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "destination wins over the Unstable erase. That override used to be card code"
       }
     ],
@@ -127,7 +127,7 @@
         "quote": "{i}(If they would enter a bin, erase them instead.)"
       },
       {
-        "source": "R145",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> `\"Unstable\": \"If an unstable card would enter a bin from an active zone,"
       }
     ],
@@ -138,10 +138,10 @@
     "kind": "g-other",
     "rule": "keywords.abilities.burst.by-name",
     "tier": 4,
-    "summary": "R81 quotes \"The Rules of Algomancy\" as saying burst spells \"of the same type\"; the Manual and the Rulebook 2023 both say \"same name\". R81 reads \"type\" as name.",
+    "summary": "The owner ruling of 2026-08-22 (“Burst groups by NAME […]”) quotes \"The Rules of Algomancy\" as saying burst spells \"of the same type\"; the Manual and the Rulebook 2023 both say \"same name\". The owner ruling of 2026-08-22 (“Burst groups by NAME […]”) reads \"type\" as name.",
     "sides": [
       {
-        "source": "R81 (its name-grouping half)",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "the same type** at the same time\"* (The Rules of Algomancy, spell tokens)."
       },
       {

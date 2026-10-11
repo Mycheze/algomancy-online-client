@@ -131,7 +131,7 @@ export function lineageRecords(
     // reasons — see the ⚠ there for why `mode` is checked rather than assumed
     if (game.mode !== 'constructed') continue;
     if (game.custom) continue;   // BL-43: a custom-rules game is in no lineage record
-    if (game.single) continue;   // R298: nor is a single card duel
+    if (game.single) continue;   // CR D8.2e: nor is a single card duel
     for (const seat of [0, 1] as Seat[]) {
       const id = game.deckIds?.[seat];
       if (!id) continue;

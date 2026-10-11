@@ -25,11 +25,11 @@
     "id": "F-U12-2",
     "rule": "combat.damage.split.boundary-window",
     "title": "02-combat test title asserts the superseded no-priority-between-sub-steps law",
-    "summary": "02-combat.test.ts 'R3/Swift: swift column deals damage first, no priority between sub-steps' names R3's second clause, which R295 amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it.",
+    "summary": "02-combat.test.ts 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”)/Swift: swift column deals damage first, no priority between sub-steps' names the owner ruling of 2026-08-18 (“Formation changes during combat […]”)’s second clause, which the owner ruling of 2026-09-16 (“A split damage step is several…”) amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it.",
     "evidence": [
       {
         "file": "client/engine/test/02-combat.test.ts",
-        "quote": "test('R3/Swift: swift column deals damage first, no priority between sub-steps', () => {"
+        "quote": "test('Swift: swift column deals damage first, no priority between sub-steps', () => {"
       }
     ],
     "ct": "CT-230",
@@ -40,16 +40,16 @@
   {
     "id": "F-U12-3",
     "rule": "combat.damage.split.state-between",
-    "title": "239 'R3 STILL STANDS' asserts at the Swift window, before the normal sub-step runs",
-    "summary": "239-damage-triggers-after-combat.test.ts 'R3 STILL STANDS' claims the Swift-killed Sprite dealt nothing in the normal sub-step and that only the trigger queue waits. Its board is a split step (a Swift blocker against a normal attacker), so after pass/pass/answerElections it is paused at the Swift/normal window: the 'dealt NOTHING in the normal sub-step' assertion is taken before the normal sub-step runs, and in a split step the trigger queue resolves at that window rather than waiting until after combat (R295). The test does not assert its title.",
+    "title": "239 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”) STILL STANDS' asserts at the Swift window, before the normal sub-step runs",
+    "summary": "239-damage-triggers-after-combat.test.ts 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”) STILL STANDS' claims the Swift-killed Sprite dealt nothing in the normal sub-step and that only the trigger queue waits. Its board is a split step (a Swift blocker against a normal attacker), so after pass/pass/answerElections it is paused at the Swift/normal window: the 'dealt NOTHING in the normal sub-step' assertion is taken before the normal sub-step runs, and in a split step the trigger queue resolves at that window rather than waiting until after combat (owner ruling of 2026-09-16, “A split damage step is several…”). The test does not assert its title.",
     "evidence": [
       {
         "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
-        "quote": "test('R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits', () => {"
+        "quote": "test('CR 608.3e STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits', () => {"
       },
       {
         "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
-        "quote": "'having been dealt NOTHING in the normal sub-step — R3, the death was immediate');"
+        "quote": "'having been dealt NOTHING in the normal sub-step — CR 608.3e, the death was immediate');"
       }
     ],
     "ct": "CT-230"

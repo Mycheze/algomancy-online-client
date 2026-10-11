@@ -1,4 +1,4 @@
-/* R183 / CT-49 + CT-50 — WHAT THE HAND'S GREEN RING IS ACTUALLY SAYING.
+/* CR D6.14 / CT-49 + CT-50 — WHAT THE HAND'S GREEN RING IS ACTUALLY SAYING.
  *
  * TWO TICKETS, ONE SURFACE, ON PURPOSE.
  *
@@ -97,7 +97,7 @@ registerSynthetic({
 });
 
 /** ⚠ THE #80 CARD: {Battle} timing, so it cannot be CAST during deployment —
- * and graftable, so `pushMods` offers it anyway. Before R183 this wore the
+ * and graftable, so `pushMods` offers it anyway. Before the hand-verb marks (CR D6.14) this wore the
  * identical ring the PLAIN card above wears. */
 const BATTLE_GRAFT = 'B6 Battle Switch';
 registerSynthetic({
@@ -168,7 +168,7 @@ const classOf = (tag: string): string => (/class="([^"]*)"/.exec(tag) ?? [])[1] 
 
 /* ═══ §1 THE PLAIN CARD IS UNTOUCHED ══════════════════════════════════ */
 
-test('R183 §1: a plainly castable card in hand is drawn exactly as it always was', () => {
+test('CR D6.14: a plainly castable card in hand is drawn exactly as it always was', () => {
   const h = deployment();
   const i = give(h, SEAT, PLAIN);
   const html = ui.show(structuredClone(h.state));
@@ -190,7 +190,7 @@ test('R183 §1: a plainly castable card in hand is drawn exactly as it always wa
 
 /* ═══ §2 THE #80 CASE ═════════════════════════════════════════════════ */
 
-test('R183 §2: a {Battle} spell in deployment is NOT drawn like a castable deployment card', () => {
+test('CR D6.14: a {Battle} spell in deployment is NOT drawn like a castable deployment card', () => {
   const h = deployment();
   spawn(h, SEAT, HOST);                       // something with a graft cause to land on
   const plain = give(h, SEAT, PLAIN);
@@ -208,7 +208,7 @@ test('R183 §2: a {Battle} spell in deployment is NOT drawn like a castable depl
   const html = ui.show(structuredClone(h.state));
   const graftTag = handCard(html, graft), plainTag = handCard(html, plain);
 
-  // THE BUG, in one line: before R183 these two strings were identical.
+  // THE BUG, in one line: before the hand-verb marks (CR D6.14) these two strings were identical.
   assert.notEqual(classOf(graftTag), classOf(plainTag),
     'the graft-only card and the castable card are not drawn the same');
   assert.match(classOf(graftTag), /\bplayable\b/, 'it is still offered — the ring stays on');
@@ -222,7 +222,7 @@ test('R183 §2: a {Battle} spell in deployment is NOT drawn like a castable depl
 
 /* ═══ §3 TWO KINDS AT ONCE ════════════════════════════════════════════ */
 
-test('R183 §3: a card offering two kinds at once says which two', () => {
+test('CR D6.14: a card offering two kinds at once says which two', () => {
   const h = deployment();
   spawn(h, SEAT, HOST);                       // a unit of mine for the augment to land on
   const both = give(h, SEAT, TWO_WAYS);
@@ -241,7 +241,7 @@ test('R183 §3: a card offering two kinds at once says which two', () => {
     'and both verbs are named on the chip');
 });
 
-test('R183 §3: the offer chip is the pure judgement, not a coincidence of this position', () => {
+test('CR D6.14: the offer chip is the pure judgement, not a coincidence of this position', () => {
   // the vocabulary as a function: same input, same words, no DOM in sight.
   assert.equal(handOfferBadge(['cast']), null,
     'cast alone is the unmarked case — no chip');
@@ -259,7 +259,7 @@ test('R183 §3: the offer chip is the pure judgement, not a coincidence of this 
 
 /* ═══ §4 CT-50: THE CACHED CARD, TWICE ════════════════════════════════ */
 
-/** a live glimpse stamp on `name` for `seat`, i.e. R45 permission that expires
+/** a live glimpse stamp on `name` for `seat`, i.e. CR 801.9i permission that expires
  * at end of THIS turn — the silent loss the ticket is about */
 function glimpse(h: Harness, seat: Seat, name: string): number {
   const pl = h.state.players[seat]!;
@@ -268,7 +268,7 @@ function glimpse(h: Harness, seat: Seat, name: string): number {
   return pl.cache.length - 1;
 }
 
-test('R183 §4: a playable cached card is drawn at the right of the hand AND left in the cache row', () => {
+test('CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row', () => {
   const h = deployment();
   const inHand = give(h, SEAT, PLAIN);
   const i = glimpse(h, SEAT, CACHED_NOW);
@@ -300,7 +300,7 @@ test('R183 §4: a playable cached card is drawn at the right of the hand AND lef
     'the chip is the EXPIRY, because forgetting it is the loss the ticket is about');
 });
 
-test('R183 §4: clicking the copy beside the hand plays the cached card, exactly as the cache row does', () => {
+test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly as the cache row does', () => {
   const h = deployment();
   glimpse(h, SEAT, CACHED_NOW);
 
@@ -327,7 +327,7 @@ test('R183 §4: clicking the copy beside the hand plays the cached card, exactly
 
 /* ═══ §5 THE NEGATIVE CONTROL ═════════════════════════════════════════ */
 
-test('R183 §5: a cached card that is NOT playable now stays in the cache row and out of the hand', () => {
+test('CR D6.14: a cached card that is NOT playable now stays in the cache row and out of the hand', () => {
   const h = deployment();
   give(h, SEAT, PLAIN);
   glimpse(h, SEAT, CACHED_LATER);              // {Battle} timing, live stamp, wrong step
@@ -350,7 +350,7 @@ test('R183 §5: a cached card that is NOT playable now stays in the cache row an
 
 /* ═══ §6 THE STATE THE TICKET IS REALLY ABOUT ═════════════════════════ */
 
-test('R183 §6: an empty hand with a live cached play still draws the reminder', () => {
+test('CR D6.14: an empty hand with a live cached play still draws the reminder', () => {
   // the forgetting case in its purest form: nothing in hand, one thing in the
   // cache that expires at end of turn. `handZoneHtml` is still rendered (the
   // hand is empty, not hidden), so the strip is where the reminder can live.
@@ -366,7 +366,7 @@ test('R183 §6: an empty hand with a live cached play still draws the reminder',
 
 /* ═══ §7 THE OTHER THREE KINDS, THROUGH THE CLIENT ════════════════════ */
 
-test('R183 §7: recycling in planning is a ring that says recycle, not a ring that says cast', () => {
+test('CR D6.14: recycling in planning is a ring that says recycle, not a ring that says cast', () => {
   // the fifth folded kind, and the one that is furthest from "cast": during
   // PLANNING a hand card's only offer is recycleForResource, and it used to
   // wear the identical green cast ring.
@@ -388,7 +388,7 @@ test('R183 §7: recycling in planning is a ring that says recycle, not a ring th
 /* the state used above is cloned into the client, so nothing here leaks into
  * another test file's Harness — but assert it, because a shared client is the
  * one thing in this file two tests could fight over */
-test('R183: the driver is holding its own state, not a fixture Harness', () => {
+test('CR D6.14: the driver is holding its own state, not a fixture Harness', () => {
   const h = deployment();
   const before: GameState = structuredClone(h.state);
   ui.show(structuredClone(h.state));

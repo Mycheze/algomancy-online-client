@@ -4,16 +4,16 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (mid-resolution payments via ctx.choose),
- * R8 (control change swaps sides straight up), R9 (bounded budgets per card),
- * R12 (regions exclusive — listeners and effects are region-scoped),
- * R115 (created units arrive where their SOURCE is — ctx.region),
- * R31 (triggers between combat damage sub-steps resolve immediately).
+ * Rules referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 111.9 (mid-resolution payments via ctx.choose),
+ * CR 711.1 (control change swaps sides straight up), CR 803.4 (bounded budgets per card),
+ * CR 601.1a (regions exclusive — listeners and effects are region-scoped),
+ * CR 601.5 (created units arrive where their SOURCE is — ctx.region),
+ * CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch (metal = copies, transforms
  * and token games; the engine has NO copy/transform machinery):
- *  - TOKEN TARGETING (Arcane Echo / Download): FIXED by R64 — TargetSpec has
+ *  - TOKEN TARGETING (Arcane Echo / Download): FIXED (CR 300.5c, 110.1a) — TargetSpec has
  *    a 'token' kind (unit tokens and spell tokens alike), so "target token" is
  *    a real cast-time target on both. It used to be a resolution-time
  *    ctx.choose, which is what the playtest report "Download didn't have me
@@ -25,10 +25,10 @@
  *    Celestial Shifter and Deformant and to say both chose and paid X at
  *    RESOLUTION, Frosted Denial-style. Deformant went first (a real
  *    `castCost`, both sacrifices in the cast window, the receipt carrying
- *    their counters); R196 took Celestial Shifter the same way, with a
+ *    their counters); Celestial Shifter went the same way (CR 705.3b), with a
  *    `payMana` cast cost so the [x] is a bracketed cost like every other one
  *    and the opponent sees X before responding. Discharge stopped being one
- *    of them at R64.
+ *    of them once variable costs were paid at cast.
  *  - BASE-STAT CHANGES (Aberrant Statweaver / Body Swap / Celestial Shifter /
  *    Borrower of Forms) are real REPLACEMENTS of stat layer 2 — the number on
  *    the card changes — not deltas. The one-shots stamp Entity.baseSet via
@@ -37,20 +37,20 @@
  *    3/3, and a later base-setter simply overwrites an earlier one
  *    (E.baseStatsOf resolves the two sources last-wins by timestamp).
  *    Counters and until-regroup deltas still apply on top (layer 3).
- * ✔ AUTOMATON OF ABUNDANCE IS A BATCH REPLACEMENT NOW (R104). It used to fire
+ * ✔ AUTOMATON OF ABUNDANCE IS A BATCH REPLACEMENT NOW (CR 708.9). It used to fire
  *    per 'spawned', so a batch of N identical tokens yielded N extra copies
  *    instead of one per unique — playtest report #60's example. It now reads
- *    the whole creation (one resolving part = one batch, R80's unit) and adds
- *    one copy per unique token — which R157 §24 defines as the (name, X) PAIR,
+ *    the whole creation (one resolving part = one batch, CR 112.8's unit) and adds
+ *    one copy per unique token — which CR 304.14 defines as the (name, X) PAIR,
  *    so a Robot 2 and a Robot 5 are two of them. Nothing reaches the stack,
  *    and the module-level `let aoaCopying` guard is gone with the trigger.
  *  - Borrower of Forms copies base stats, counters and temporary stat changes
- *    of the erased unit. UNPARKED by R118 (the COPY LAYER): card text,
+ *    of the erased unit. UNPARKED by the COPY LAYER (CR 710.2): card text,
  *    attributes, statics and activated abilities all copy now, via a permanent
  *    FACE. It still BINS as "Borrower of Forms" — that is the owner's
  *    split-identity ruling, not a gap: the game name is the face, the physical
  *    card is not.
- *    ✔ R147 CHANGED HOW THE FACE ARRIVES. It used to be relayed through battle
+ *    ✔ THE ENTERS-AS-COPY RULING (CR 303.11) CHANGED HOW THE FACE ARRIVES. It used to be relayed through battle
  *    counters and a region ledger into a SELF-SPAWN TRIGGER, so the body
  *    entered play as a plain 2/2 Borrower of Forms and became the copy one
  *    resolution later — every spawn watcher in the region read the wrong body,
@@ -60,12 +60,12 @@
  *  - Ancient One copies TRIGGERED abilities of adjacent allies only, and only
  *    while a formation exists (adjacency is a battle concept). Copied "when
  *    I ..." abilities read the Ancient One as "I"; bounded copies burn a
- *    per-copy budget on the Ancient One (R9). UNPARKED by R118: activated
+ *    per-copy budget on the Ancient One. UNPARKED by the copy layer (CR 710.7): activated
  *    abilities and statics now project too, through `projects` + E.facesWith.
  *  - Biomass Devourer reads "nontoken" off the death event's `token` FACT
- *    (R70 — the dead entity is gone by trigger time, which is why the fact
+ *    (CR 714.9 — the dead entity is gone by trigger time, which is why the fact
  *    rides the event; this used to be a match on the rendered message).
- *    ✔ R140 CHANGED THE REST OF THIS ENTRY. It used to read "an Unstable-erased
+ *    ✔ THE EXACT-COPY RULING (CR 405.6b) CHANGED THE REST OF THIS ENTRY. It used to read "an Unstable-erased
  *    card has no bin copy to erase, but the paid counters land anyway". Two
  *    things are different now: the card is told WHICH bin copy died (the
  *    'died' event carries `binSeat`/`binNth`), so it can no longer erase an
@@ -74,35 +74,35 @@
  *    pay and no counters.
  *  - (Celestial Fluxmorph's donated "[Augment] when I despawn" NO LONGER
  *    misses a recall. This entry used to read "E.recall erases mods before
- *    firing the despawn event (engine limitation)"; R167 moved that deletion
+ *    firing the despawn event (engine limitation)"; a fix moved that deletion
  *    to the bottom of afterDespawn, so the donated sentence now fires on a
- *    recall and a cache exactly as it does on a death — and R172 adds the
- *    third route, an ERASE. Not an approximation any more.)
+ *    recall and a cache exactly as it does on a death — and on the
+ *    third route, an ERASE (CR 410.2). Not an approximation any more.)
  *  - (Download's steal was listed here as "removes the token from its old
  *    formation but cannot slot it into the thief's (no mid-battle
- *    formation-join primitive)". IT IS NOT AN APPROXIMATION — R172: the owner
+ *    formation-join primitive)". IT IS NOT AN APPROXIMATION — CR 711.3: the owner
  *    ruled on 2026-08-25 that a unit stolen mid-battle SITS OUT UNTIL REGROUP,
  *    which is precisely what the engine does. See the ⚠ on E.giveControl and
- *    the two Download cases in 145-erase-routes.test.ts. R8's "joins the new
+ *    the two Download cases in 145-erase-routes.test.ts. The old "joins the new
  *    controller's formations" is honored AT REGROUP, which is when formations
  *    are next built; the token swaps sides immediately, owner unchanged.)
- *  - Deformant's "delete all units" is region-scoped (R12) and unit cost is
+ *  - Deformant's "delete all units" is region-scoped (CR 601.1c) and unit cost is
  *    the printed mana (X-cost cards count as 0).
  *
  * PARKED (needs engine primitives that do not exist; subsets implemented):
- *  - (Dispatch Courier UNPARKED by R97, round 17 — see the card. The play-timing
+ *  - (Dispatch Courier unparked in round 17 — see the card. The play-timing
  *    gating card code could not reach is now `PlayPermission.playAtHaste`,
  *    summed by `E.hastePlayAllowance` and asked at all three gates.)
- *  - (Cosmic Conspirator UNPARKED by R104, BOTH halves — see the card. The
+ *  - (Cosmic Conspirator UNPARKED by the replacement layer (CR 708.3), BOTH halves — see the card. The
  *    spell-token half never needed an event: a replacement is consulted at the
  *    creation call, so `E.createSpellToken` is a seam without dispatching
  *    anything. The Robot half stopped creating-then-erasing, which is what
  *    playtest report #64 was really about.)
- *  - (Ancient One UNPARKED by R118, 2026-08-23 — both halves. Neighbour
+ *  - (Ancient One UNPARKED by the copy layer (CR 710.7), 2026-08-23 — both halves. Neighbour
  *    projection is `CardDef.projects`, and pushActivatedOptions /
  *    activationSource now read `E.facesWith(u, 'activated')` rather than
  *    `getCard(u.card).abilities`, so a projected ability is OFFERED and
- *    ACCEPTED, with its R9 budget keyed by FACE. Triggered abilities keep the
+ *    ACCEPTED, with its budget keyed by FACE. Triggered abilities keep the
  *    bookkeeping when() — it labels each mimicked trigger "Ancient One (as X)",
  *    which the generic face machinery cannot do.)
  */
@@ -113,7 +113,7 @@ import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets } from '
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/* R181: `tokensInRegion(g, region)` lived here — "all tokens (unit tokens +
+/* `tokensInRegion(g, region)` lived here (see CLAUDE.md § The gates) — "all tokens (unit tokens +
  * spell tokens) in a region, absent ones excluded" — with zero call sites.
  * Deleted rather than wired up: nothing in this batch counts tokens by region.
  * A dead helper's doc comment is a confident description of machinery nobody
@@ -126,10 +126,10 @@ import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets } from '
  * opponent" narrowing is exactly what excludes the unit-damage channels, so
  * this hears the aggregated combat 'lifeLost' and nothing else. My column
  * connects if it is attacking unblocked, or blocked/blocking with {Piercing},
- * and the sub-step now running has to be one MY column strikes in (R117, and
- * R157 §5 for the {Swift}{Sluggish} column that strikes in two of them).
+ * and the sub-step now running has to be one MY column strikes in (CR 608.9a, and
+ * CR 608.2c for the {Swift}{Sluggish} column that strikes in two of them).
  *
- * R157 §4 (owner, 2026-08-25) is what changed here: this copy carried NO POWER
+ * CR 608.9a's power gate is what changed here: this copy carried NO POWER
  * GATE AT ALL, so a 0-power column read another column's aggregated `lifeLost`
  * as its own. The gate is the LIVE COLUMN's total power — never the anchor's
  * own, which is what Blightmound wrongly read: "0 power units do no damage.
@@ -151,7 +151,7 @@ function myColumnConnected(g: E, self: Entity, ev: EngineEvent): boolean {
 // everyone else's +X/+X still apply on top (layer 3).
 card('Aberrant Statweaver', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -164,8 +164,8 @@ card('Aberrant Statweaver', {
 // "[Augment] I have all abilities of adjacent allies. {/n}{i}(This includes
 // modded abilities.)" — mm/2 1/1 Ancient Mimic Unit.
 //
-// R118 — the ADDITIVE, CONTINUOUS half of the copy layer, and the reason the
-// layer could not be a stamp: adjacency changes inside a single combat (R72
+// CR 710.7 — the ADDITIVE, CONTINUOUS half of the copy layer, and the reason the
+// layer could not be a stamp: adjacency changes inside a single combat (CR 602.5
 // column collapse, a neighbour dying, blockers being declared), so "all
 // abilities of adjacent allies" has to be re-asked every time it is read. That
 // is exactly `CardDef.projects`, which radiates through E.anchored() the way
@@ -177,13 +177,13 @@ card('Aberrant Statweaver', {
 //  · STATICS and ACTIVATED abilities are the `projects` declaration below.
 //    They are read off the holder's FACES now (E.facesWith), so a neighbour's
 //    "your units are base 3/3" really radiates from the Ancient One too.
-//    The ACTIVATED half is OFFERED and ACCEPTED as of R118's second half:
+//    The ACTIVATED half is OFFERED and ACCEPTED too (CR 710.7):
 //    pushActivatedOptions and activationSource both read
 //    `E.facesWith(u, 'activated')`, and `Action.via` gained a {face} arm so
-//    composeParts keys the R9 budget by the face rather than the body.
+//    composeParts keys the budget by the face rather than the body.
 //
 //  · TRIGGERED abilities stay with the bookkeeping when() below, which
-//    predates R118 and does something the generic face machinery cannot: it
+//    predates the copy layer and does something the generic face machinery cannot: it
 //    labels each mimicked trigger "Ancient One (as Minor Kraken)", so the
 //    ordering UI says WHOSE trigger it is. `PROJECTED_FACETS` is overridden to
 //    ['statics', 'activated'] for exactly that reason — leaving 'triggered' in
@@ -194,16 +194,16 @@ card('Aberrant Statweaver', {
 // TRIGGERED abilities (own card + augment-donated text) as the Ancient One's
 // own triggers. "I" in a copied ability is the Ancient One; ab.when runs with
 // the Ancient One as self. Bounded copies burn a per-source budget on the
-// Ancient One (R9).
+// Ancient One.
 const AO_EVENTS: EventType[] = [
   'spawned', 'died', 'despawned', 'draw', 'lifeLost', 'damage',
-  // R179: Rider of the Tides, Xenopod Progenitor and Galerider Eel moved OFF
+  // CR 402.4: Rider of the Tides, Xenopod Progenitor and Galerider Eel moved OFF
   // 'despawned'+'draw' and onto 'handEntered' (the one hand-entry event). All
   // three were mimickable here before, so leaving this list alone would have
   // quietly taken them away from the Ancient One — a regression caused by the
   // rewire, not a pre-existing gap.
   'handEntered',
-  // R129: 'cardPlayed' rides beside 'spellPlayed' because Void Mandible's
+  // CR 108.1a: 'cardPlayed' rides beside 'spellPlayed' because Void Mandible's
   // augment text moved onto it — an adjacent ally wearing one must still be
   // mimicked ("it explicitly includes modded abilities").
   'countersChanged', 'modApplied', 'spellPlayed', 'cardPlayed', 'targeted',
@@ -211,8 +211,8 @@ const AO_EVENTS: EventType[] = [
   'afterCombat', 'endOfTurn',
 ];
 /**
- * R172 — the reentrancy guard, and the last of the module-level latches
- * playtest report #60 named (R104 removed the other five).
+ * The reentrancy guard, and the last of the module-level latches
+ * playtest report #60 named (the replacement layer removed the other five).
  *
  * It used to be `let aoScanning = false` at module scope. Two things were
  * wrong with that, and only one of them was visible:
@@ -236,7 +236,7 @@ const AO_EVENTS: EventType[] = [
  * is one synchronous pass whose only card-authored call is a neighbour's
  * `ab.when(g, self, ev)`, and no `when` in the pool dispatches an event —
  * none of the 72 of them calls `g.fireEvent`, `g.ev`, `g.destroy`,
- * `g.spawnUnit` or `g.dealDamage` (R1 wants conditions pure: they read state
+ * `g.spawnUnit` or `g.dealDamage` (CR 109.3a wants conditions pure: they read state
  * at event time and answer a boolean). `g.s.triggerQueue.push` only queues.
  * So there is no nesting today and the guard is dead code.
  *
@@ -249,7 +249,7 @@ const AO_EVENTS: EventType[] = [
 const AO_SCAN_KEY = 'ao:scanning';
 /** the FACES an Ancient One (or its host) borrows right now: every adjacent
  * ally's own face plus every card augmented onto it ("this includes modded
- * abilities"). Geometry and raw fields only — R118 forbids reading a number
+ * abilities"). Geometry and raw fields only — nothing may read a number
  * from here, because `projects` runs underneath effStats. */
 function aoBorrowedFaces(g: E, self: Entity): string[] {
   const out: string[] = [];
@@ -260,23 +260,23 @@ function aoBorrowedFaces(g: E, self: Entity): string[] {
       const m = g.entity(modId);
       if (m && m.appliedAs === 'augment') out.push(m.card);
     }
-    // R341: a neighbour that is a COPY carries the augments it copied
+    // CR 710.2a: a neighbour that is a COPY carries the augments it copied
     for (const c of g.copiedAugments(n, 'behavior')) out.push(c);
   }
   return out;
 }
 card('Ancient One', {
-  // R118: the statics/activated half. 'triggered' is deliberately excluded —
+  // CR 710.7: the statics/activated half. 'triggered' is deliberately excluded —
   // the when() below already delivers it, with its own attribution label.
   //
-  // R127 adds 'behavior' — the owner: "it basically just copies the whole text
+  // 'behavior' is projected too (CR 710.7) — the owner: "it basically just copies the whole text
   // box of adjacent allies … the only thing it doesn't are attributes". So the
   // neighbour's costMods / effectAttrs / amountMods / modPermissions /
   // playPermissions / mustBeTargeted / replace* hooks all radiate from the
   // Ancient One too. 'attrs' is STILL absent, and that is the whole of the
   // stated exclusion: a neighbour's {Piercing} or {Unstable} does not ride
   // along.
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated', 'behavior'] }],
@@ -285,13 +285,13 @@ card('Ancient One', {
     type: 'triggered', events: AO_EVENTS,
     label: 'I have all abilities of adjacent allies (triggered abilities)',
     when: (g, self, ev) => {
-      if (self.budgets[AO_SCAN_KEY]) return false;   // R172: see AO_SCAN_KEY
+      if (self.budgets[AO_SCAN_KEY]) return false;   // see AO_SCAN_KEY
       self.budgets[AO_SCAN_KEY] = 1;
       try {
         const src = ev.data?.['unit'] as EntityId | undefined;
         for (const n of g.adjacentInFormation(self.id)) {
           if (n.controller !== self.controller) continue;
-          // R118: a neighbour that is itself a COPY donates the face it wears
+          // CR 710.4: a neighbour that is itself a COPY donates the face it wears
           const face = g.nameOf(n);
           const sources: { cardName: string; prefix: 'ability' | 'augment' }[] = [
             { cardName: face, prefix: 'ability' },
@@ -301,7 +301,7 @@ card('Ancient One', {
             const m = g.entity(modId);
             if (m && m.appliedAs === 'augment') sources.push({ cardName: m.card, prefix: 'augment' });
           }
-          // R341: and the augments a neighbouring COPY copied
+          // CR 710.2a: and the augments a neighbouring COPY copied
           for (const c of g.copiedAugments(n, 'triggered')) sources.push({ cardName: c, prefix: 'augment' });
           for (const { cardName, prefix } of sources) {
             if (cardName === 'Ancient One') continue;   // no recursive mimicry
@@ -310,7 +310,7 @@ card('Ancient One', {
             (list ?? []).forEach((ab, idx) => {
               if (ab.type !== 'triggered' || !ab.events.includes(ev.type)) return;
               if (ab.self && src !== self.id) return;       // "when I ...": I = the Ancient One
-              if (ab.when && !ab.when(g, self, ev)) return; // conditions read me as "I" (R1: now)
+              if (ab.when && !ab.when(g, self, ev)) return; // conditions read me as "I" (CR 109.3a: now)
               const key = `ao:${prefix}:${cardName}#${idx}`;
               if (ab.bounded) {
                 if ((self.budgets[key] ?? 0) > 0) return;
@@ -335,19 +335,19 @@ card('Ancient One', {
 });
 
 // "[Switch1] Create a copy of target token." — m/2 2/1 {Battle} Arcane Mimic
-// Spell. R64: "target token" is a CAST-TIME target — unit tokens and spell
+// Spell. CR 300.5c, 110.1a: "target token" is a CAST-TIME target — unit tokens and spell
 // tokens both, either side's. Both copies are created where the SOURCE is,
-// i.e. ctx.region (R115) — cast in the enemy region, the unit copy stays there.
+// i.e. ctx.region (CR 304.8a) — cast in the enemy region, the unit copy stays there.
 // tokenStats/counters/x are copied; mods are not.
 const echoCopy: EffectDef = {
   targets: { what: 'token', prompt: 'Arcane Echo: create a copy of target token' },
-  // R69: the token's NAME is the target's — "a copy of target token" can be a
+  // the token's NAME is the target's — "a copy of target token" can be a
   // Fireball, a Robot, a Wraith, a Hooba-God, anything a token is. No fixed
   // list can be true, so this declares `createsAny` instead of lying with one.
   createsAny: true,
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    // R333: a spell token already cast is a token too — the copy is a fresh,
+    // CR 304.11d: a spell token already cast is a token too — the copy is a fresh,
     // uncast token of the same name and X, here, like any other copy
     if (t && 'stack' in t) {
       const item = g.s.stack.find(i => i.id === t.stack);
@@ -381,23 +381,22 @@ card('Arcane Echo', {
 // those tokens plus an additional copy of each unique token you created." —
 // mm/5 2/6 Automaton Construct Unit.
 //
-// UNPARKED as a real BATCH replacement (R104). It used to be a trigger on
+// UNPARKED as a real BATCH replacement (CR 708.9). It used to be a trigger on
 // every unit-token 'spawned' event, and report #60 named exactly what that got
 // wrong: "Automaton of Abundance fires per spawn so N identical tokens yield N
 // copies instead of one per unique." A trigger cannot see a creation; it only
 // ever sees one spawn. `replaceTokenBatch` is handed the WHOLE creation — one
-// resolving part, the same unit R80 gave effect damage — so "each unique token
+// resolving part, the same unit effect damage uses (CR 112.8) — so "each unique token
 // you created" finally has a creation to be unique across. The module-level
 // `let aoaCopying` guard is deleted with the trigger: an extra is not part of
 // the batch that produced it, and the engine's own latch says so once.
 //
-// "UNIQUE" IS THE (NAME, X) PAIR — R157 §24 / R161, owner 2026-08-25,
+// "UNIQUE" IS THE (NAME, X) PAIR — CR 304.14, owner 2026-08-25,
 // verbatim: *"'Unique' means unique (name, X) pair — you get two extras."*
 // So a Robot 2 and a Robot 5 in one batch are TWO unique tokens and yield two
 // extras, one of each; three Robot 2s are one and yield one.
 //
-// This is a reversal, and it is the reading R104 flagged as the one place the
-// uniqueness question had a choice. The old key was `r.name` alone, on the
+// This is a reversal, and it is the reading first flagged as the one place the uniqueness question had a choice. The old key was `r.name` alone, on the
 // argument that `Entity.card` is the engine's definition of identity (it is
 // what bins, what "name a card" effects match, what counters-by-name and
 // DECK_LIST and the inspector key off) and that X is a quantity ON a token
@@ -423,7 +422,7 @@ card('Arcane Echo', {
 // the text arrives as an augment mod.
 card('Automaton of Abundance', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     replaceTokenBatch: (_g, self, batch) => {
@@ -431,7 +430,7 @@ card('Automaton of Abundance', {
       const extra: TokenRequest[] = [];
       for (const r of batch) {
         if (r.form !== 'unit' || r.seat !== self.controller) continue;
-        const key = `${r.name} #${r.x}`;         // R157 §24: the (name, X) pair
+        const key = `${r.name} #${r.x}`;         // CR 304.14: the (name, X) pair
         if (seen.has(key)) continue;                 // one copy per unique pair
         seen.add(key);
         extra.push({ ...r });
@@ -444,7 +443,7 @@ card('Automaton of Abundance', {
 // "[Augment] Whenever a nontoken unit dies, you may pay [two] to erase it and
 // put two +1/+1 counters on me." — m/2 3/2 Alien Robot Unit. Text-box
 // [Augment]: live when played normally, donated on augment ("me" = the host).
-// 'died' listeners are region-scoped (R12). R70: "nontoken" is read off the
+// 'died' listeners are region-scoped (CR 601.1d). CR 714.9: "nontoken" is read off the
 // death event's token flag; the erase removes the card from its owner's bin.
 card('Biomass Devourer', {
   augmentText: [{
@@ -456,15 +455,15 @@ card('Biomass Devourer', {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Biomass Devourer: the carrier is gone — no counters.'); return; }
         if (g.openMana(ctx.controller) < 2) { g.ev('info', 'Biomass Devourer: cannot pay [two] — no counters.'); return; }
-        // R140: "erase IT" is the copy this death put into a bin, named by the
+        // CR 405.6b: "erase IT" is the copy this death put into a bin, named by the
         // (binSeat, binNth) stamp `E.destroy` writes onto the 'died' event —
-        // R131's bin identity, the same pair 'trashed' already carried. The old
+        // CR 405.6's bin identity, the same pair 'trashed' already carried. The old
         // code searched by name (`bin.lastIndexOf(name)`, controller's bin
         // first, then everyone's), which is a different question: once the dead
-        // copy has been swept out — a token, or an {Unstable} death under R137
+        // copy has been swept out — a token, or an {Unstable} death (the engine bins it and then erases it; CR 801.2h never bins it, CT-246)
         // — the last copy of that name is an INNOCENT older one, and this card
         // ERASES what it finds. That is a card leaving the game permanently by
-        // mistake, the worst of the three misses R140 closes, so the miss is
+        // mistake, the worst of the three misses this closes, so the miss is
         // "gone" and nothing at all happens.
         const slot = eventBinSlot(g, ctx.event);
         if (!slot) { g.ev('info', 'Biomass Devourer: the death event names no card — nothing to erase.'); return; }
@@ -487,7 +486,7 @@ card('Biomass Devourer', {
         // `ctx.choose` throws and re-enters this run from the top, so the slot
         // above was resolved against the live bin on the pass that got the
         // answer — one lookup, no second search.
-        g.removeFromBin(slot.seat, slot.index, 'erased');   // R124
+        g.removeFromBin(slot.seat, slot.index, 'erased');   // CR 405.7
         g.ev('erased', `${name} is ERASED from ${g.pname(slot.seat)}'s bin.`, { card: name, seat: slot.seat });
         g.addCounters(self, 2);
       },
@@ -502,7 +501,7 @@ card('Biomass Devourer', {
 // counters and temp changes keep applying on top, a later base-setter
 // overwrites it rather than compounding with it, and the log says what
 // happened ("base becomes 4/4") instead of a misleading -X/+X. Regroup clears
-// it (R11 step 3). Needs both targets alive at resolution.
+// it (CR 506.2 step 3). Needs both targets alive at resolution.
 const bodySwap: EffectDef = {
   targets: { what: 'unit', prompt: 'Body Swap: exchange the base stats of two target units until regroup', count: 2, min: 2, symmetric: true },
   run: (g, ctx) => {
@@ -527,11 +526,11 @@ card('Body Swap', {
 // changes, counters, card text and mods)." — mmm/7 2/2 {Battle} Squid Mimic
 // Spell Unit.
 //
-// R118 — the COPY LAYER, and this card is the PERMANENT case: "I BECOME an
+// CR 710.2 — the COPY LAYER, and this card is the PERMANENT case: "I BECOME an
 // exact copy" prints no duration, so the face is stamped `until: 'permanent'`
 // and survives regroup (there is a live test that says so).
 //
-// R147 — and it is ONE RESOLUTION. The spell erases the target, prepares the
+// CR 303.11 — and it is ONE RESOLUTION. The spell erases the target, prepares the
 // face, and hands it to its OWN stack item (`ctx.spawnWearing`); `E.afterParts`
 // spawns the body already wearing it, before the `spawned` event fires. What
 // travels:
@@ -544,35 +543,35 @@ card('Body Swap', {
 //     rather than reading the copied card's printed pair, and it does so
 //     because its reminder text says "I copy all stat changes";
 //   · the COUNTERS, as real counters on the Borrower (facts about the unit);
-//   · the MODS' TEXT, as R118 ruling 2 rules it ("Inherit the mods text").
+//   · the MODS' TEXT, as CR 710.2 rules it ("Inherit the mods text").
 //     No mod ENTITY is cloned (`Entity.mods` stays empty); the mods ride on
 //     the face (`CopyRef.mods`) and WORK: a copied graft joins the copied
-//     cause (R336), a copied augment's [Augment] box is the copy's own text
-//     (R341). Its Unstable half is REVERSED (R336 / CT-225, the RAQ): the
+//     cause, a copied augment's [Augment] box is the copy's own text
+//     (CR 710.2a). Its Unstable half is REVERSED (CT-225, the RAQ; CR 710.2c): the
 //     copy is not modded, so it bins like anything else when it dies.
 //
-// ⚠ What does NOT travel, by R118 ruling 1: the PHYSICAL card. A Borrower that
+// ⚠ What does NOT travel, by CR 201.5: the PHYSICAL card. A Borrower that
 // became a Good Whale and then dies puts **Borrower of Forms** in the bin.
 // `Entity.card` is never rewritten, which is the whole reason this is a layer
-// in front of the identity and not R101's in-place transform.
+// in front of the identity and not an in-place transform.
 //
 // ⚠ The old `self.tokenStats = [p, t]` write is GONE. tokenStats is LAYER 1
 // ("what a token was created as") and the Borrower is not a token, so the
-// write made R106 {Unaware} read the BORROWED numbers as printed. The face
+// write made CR 802.9a {Unaware} read the BORROWED numbers as printed. The face
 // carries them now, at layer 0, where {Unaware} reads them correctly.
 //
-// Target gone at resolution → the spell fizzles and Borrower is binned (R5),
+// Target gone at resolution → the spell fizzles and Borrower is binned (CR 704.6),
 // and no body spawns at all, so there is nothing to dress.
 //
-// ⚠ R147 (CARD-TODO #37) — WHAT THIS USED TO BE, and why it is not that.
+// ⚠ CR 303.11 (CARD-TODO #37) — WHAT THIS USED TO BE, and why it is not that.
 // The face was parked on a per-region ledger (`copyParks`) with the copied
 // numbers spread across `bof:*` battle counters, and a `spawned` trigger on
 // the body claimed them. The body therefore ENTERED as a plain 2/2 Borrower of
 // Forms and became the copy one resolution later. Two things followed, both
 // wrong:
 //   · Anything watching the spawn read the wrong body. Nectar Ridge Oracle —
-//     "when another ally with greater defense than power spawns" — is R1's own
-//     worked example and it read 2/2 instead of the borrowed body; and the
+//     "when another ally with greater defense than power spawns" — is the textbook
+//     event-time condition (CR 109.3a), and it read 2/2 instead of the borrowed body; and the
 //     caster was stopped and asked to ORDER the copy trigger against whatever
 //     else the spawn had triggered, a question with no answer worth giving.
 //   · The ledger was keyed by REGION, not by caster. Two Borrowers resolving
@@ -581,7 +580,7 @@ card('Body Swap', {
 //     and the first body stayed a Borrower of Forms permanently. That is not
 //     a theoretical worry — one Borrower each in a two-player region reaches
 //     it, and 26-metal-a pins it.
-// The trigger and the ledger are both gone. R143's shape, one question over:
+// The trigger and the ledger are both gone. CR 303.10's shape, one question over:
 // `spawnUnder` says whose the body is when it arrives, `spawnWearing` says
 // what it is.
 card('Borrower of Forms', {
@@ -618,10 +617,10 @@ card('Borrower of Forms', {
 // [Augment] When I despawn, remove all counters from your units." — m/2 1/1
 // Cosmic Spirit {Virus} Unit. The first sentence stays with the card (plain
 // ability); the [Augment] sentence transfers ("I" = the host). "Your units"
-// is region-scoped (R12/R25). Despawn = ANY leave-play (died + despawned —
+// is region-scoped (CR 601.1b). Despawn = ANY leave-play (died + despawned —
 // Bloated Manablub's precedent). ⚠ This used to end "the donated form misses
-// host RECALLS (mods are erased before the despawn event fires)" — R167 fixed
-// that, and R172 added the third route: the donated sentence now fires on a
+// host RECALLS (mods are erased before the despawn event fires)" — that was fixed,
+// and an ERASE became the third route (CR 410.2): the donated sentence now fires on a
 // death, a recall, a cache, an exchange and an ERASE alike.
 card('Celestial Fluxmorph', {
   abilities: [{
@@ -659,14 +658,14 @@ card('Celestial Fluxmorph', {
 // donated (via { mod }). "Base X/X" is a layer-2 rewrite, so counters stay on
 // top and regroup restores the printed body.
 //
-// R196 — THE [x] IS A REAL COST NOW. It used to be chosen and paid at
+// CR 705.3b — THE [x] IS A REAL COST NOW. It used to be chosen and paid at
 // RESOLUTION with a `ctx.choose`, which meant the item sat on the stack with
 // its size unknown and the opponent had to decide whether to answer a "base
-// X/X" without knowing X. R157 §21: any [bracketed] clause is a COST or a
+// X/X" without knowing X. CR 205.3: any [bracketed] clause is a COST or a
 // MODE, fixed when the item goes on the stack — never a resolution-time pick.
 // `castCost: { kind: 'payMana', n: 'X' }` is that, and it is the SAME
 // collector an X SPELL's bracketed cost uses; `ctx.x` reads back what was
-// paid, which under R157 §1 is what the ability cost.
+// paid, which under CR 705.3b is what the ability cost.
 card('Celestial Shifter', {
   augmentText: [{
     type: 'activated', cost: {},
@@ -701,7 +700,7 @@ card('Containment Protocol', {
 // create a token of any of these types. (With the same X value.)" — m/3 3/3
 // Luminary Unit.
 //
-// FULLY UNPARKED (R104), and it is the card playtest report #64 was filed
+// FULLY UNPARKED (CR 708.3), and it is the card playtest report #64 was filed
 // against: "Biotoxicity didn't give me the choice of what kinds of tokens I
 // wanted even though I had Cosmic Conspirator." Two defects, both structural:
 //
@@ -723,7 +722,7 @@ card('Containment Protocol', {
 //
 // THE CHOICE IS RAISED WITH `E.askInResolution`, the seam `E.glimpse` uses:
 // `partChoose` is non-null only inside a resolving part, which is where token
-// creation lives. The decision suspends the whole part and replays it (R85) —
+// creation lives. The decision suspends the whole part and replays it —
 // which is exactly why the substitution must happen before any state is
 // mutated, and it is. Outside a resolving part (an engine-internal creation, a
 // direct call from a test) there is nothing to hang a decision on, so this
@@ -786,10 +785,10 @@ card('Cosmic Conspirator', {
 //
 // `includeSelf: true` is the engine shape "me AND another ally" needed, and it
 // is not "any two units": the source is mandatory and choice-free (charged
-// through the same branch R73's "[Sacrifice me]" uses) and is EXCLUDED from
+// through the same branch Eldritch Dreamtender's "[Sacrifice me]" uses) and is EXCLUDED from
 // the menu the second one is chosen from. `canPayCastCost` demands both halves
 // up front, so the Deformant never dies for a cost whose remainder cannot be
-// paid — the all-or-nothing rule R110 applies to a multiplied graft cost.
+// paid — the all-or-nothing rule CR 111.14 applies to a multiplied graft cost.
 //
 // THE TOTAL COMES FROM THE RECEIPT, not from the board: both units are already
 // dead when `run` executes, so `costPaid.sacrificedUnits` carries their
@@ -804,7 +803,7 @@ card('Cosmic Conspirator', {
 // between the cost and the effect that the printed card does not have (the
 // ledger entry called it out as exactly that). The pick is a COST now.
 //
-// ⚠ AND NO `usableWhen`. It is not missing, it is redundant: R77's board
+// ⚠ AND NO `usableWhen`. It is not missing, it is redundant: CR 705.3a's board
 // condition ("another ally") is precisely what `canPayCastCost` answers for
 // `sacrificeUnits` + `includeSelf`, and `abilityUnusable` asks it before the
 // ability is ever offered. A `usableWhen` restating it would be a second
@@ -822,7 +821,7 @@ card('Deformant', {
         g.ev('info', `Deformant: ${paid.map(r => r.card).join(' and ')} were sacrificed with `
           + `${total} counter${total === 1 ? '' : 's'} between them — deleting all units with cost ${total}.`);
         for (const u of g.unitsIn(ctx.region)) {
-          if (g.costOf(u) === total) g.destroy(u, 'is deleted');   // R336: the face's cost
+          if (g.costOf(u) === total) g.destroy(u, 'is deleted');   // CR 710.1a: the face's cost
         }
       },
     },
@@ -833,15 +832,15 @@ card('Deformant', {
 // target unit." — m/1 {Battle} Elemental Technology Spell. The removal is
 // the effect's own cost, chosen counter by counter at resolution
 // (plan-then-commit: the picks are tallied first, then committed together
-// with the damage). "Allies" = your units in this region (R12).
+// with the damage). "Allies" = your units in this region (CR 601.4e).
 const dischargeZap: EffectDef = {
-  // R64: the bracket is an ADDITIONAL COST, so it is paid at cast, before the
+  // CR 702.4, 702.6b: the bracket is an ADDITIONAL COST, so it is paid at cast, before the
   // item is on the stack and before anyone can respond — and the counters
   // removed ARE X. It used to be a mid-resolution ctx.choose loop, which meant
   // Rashi's opponent got to answer a Discharge whose size was still unchosen,
   // and a negate would have refunded a cost that had never been paid.
   castCost: { kind: 'removeCounters', from: 'allies', n: 'X' },
-  xZeroWarning: 'X = 0 deals no damage',   // R74
+  xZeroWarning: 'X = 0 deals no damage',   // CR D7.1a
   targets: { what: 'unit', prompt: 'Discharge: I deal X damage to target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
@@ -857,7 +856,7 @@ card('Discharge', {
 });
 
 // "[Augment] Each turn, you may play a unit during the mana step as if it had
-// [Haste]." — mm/2 2/1 Robot Horse Unit. UNPARKED by R97 (report #74, WEHH
+// [Haste]." — mm/2 2/1 Robot Horse Unit. UNPARKED in round 17 (report #74, WEHH
 // 2026-08-22: "Dispatch Courier didn't give me the option to play a card with
 // haste"). It did not, because nothing anywhere asked: play-timing gating
 // lives in apply.ts and had no seam card code could reach.
@@ -868,14 +867,14 @@ card('Discharge', {
 // step, but you can play haste cards and resources as special actions"; asked
 // what the mana step is, nyarlathotep8457: "Yes the Mana step is the resources
 // step of the planning phase". So the printed "during the mana step" IS this
-// engine's R18 haste step.
+// engine's CR 803.2a haste step.
 //
-// R97 added the seam: `PlayPermission.playAtHaste` (dsl.ts), gathered and
+// Round 17 added the seam `PlayPermission.playAtHaste` (dsl.ts), gathered and
 // SUMMED by `E.hastePlayAllowance`, asked through `E.mayPlayAtHaste` at the
 // three gates that have to agree — `startHasteStep`'s canHaste (which skips
 // the step outright, so it is the one that made the card invisible),
 // `legalActions`' haste branch, and `playAtTiming`'s planning branch — and
-// charged against `s.hastePlaysUsed`, the per-seat sibling of R43's
+// charged against `s.hastePlaysUsed`, the per-seat sibling of the prophecy row's
 // `hasteManaSpent` (a PLAY is not an ability activation, so `Entity.budgets`
 // never sees one). The haste step happens once a turn, so its window IS the
 // printed "Each turn".
@@ -888,13 +887,14 @@ card('Discharge', {
 //    the unit will spawn into formation", and "Q: Does that count as 'playing
 //    a spell' for some triggers? A: Yes."
 //  · "Each turn" — an allowance of exactly 1. Two Couriers are two plays,
-//    which is why R97 sums grantors instead of OR-folding them.
+//    which is why CR 504.7a sums grantors instead of OR-folding them.
 //  · [Augment] — the grant belongs to the ANCHOR's controller, so augmented
 //    onto a host it is the host's controller who may play the unit. Same rule
-//    as R95's Rook and every other anchored text.
+//    as CR 723.5c's Rook and every other anchored text.
 //  · It does NOT decide the zone. The printed line says "play a unit" with no
 //    zone in it, so any zone `playAtTiming` reaches in the haste step is fair
-//    — hand today, and a cache release already had its own [Haste] route (R42).
+//    — hand today. (A banner's [Haste] does not give a cached card a haste
+//    release: it is played at its own printed timing, CR 803.7i.)
 //  · It does NOT get to say yes to a {Battle} card. RAQ "[Solved] Dispatch
 //    Courier vs Battle Timing": "No, despite gaining :haste: they can still
 //    only be played during :battle:." That refusal is general, so it lives in
@@ -904,14 +904,14 @@ card('Discharge', {
 // [Haste] by erasing me as an additional cost") stayed parked through this —
 // the grantor is a card in the BIN, which `anchored()` does not walk, and the
 // grant carries an additional COST, which `PlayCtx` has no room for — until
-// R123 gave it its own seam: `CardBehavior.binPlayPermissions`, gathered by
+// it was given its own seam: `CardBehavior.binPlayPermissions`, gathered by
 // `E.binHasteGrantorIndex` over the owner's bin, with the erase paid beside
 // the play's other costs. Slurpr ("You can apply other mods during [Haste] as
-// if it was deployment") is the MOD-timing twin and belongs to R95's family,
-// not this one. Rook is already live on R95.
+// if it was deployment") is the MOD-timing twin and belongs to Rook's family
+// (CR 504.8a, 723.5), not this one. Rook is already live.
 card('Dispatch Courier', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     playPermissions: [{
@@ -926,33 +926,32 @@ card('Dispatch Courier', {
 // "Gain control of target token. You may choose new targets for spells
 // controlled this way." — mm/1 4/3 {Battle} Technology Spell.
 // (This note used to read "⚠ the token is picked at resolution (not
-// stack-targetable)" — six lines above the R64 spec that makes it a cast-time
-// target. It had outlived its own code; corrected here.)
-// The steal is R8's straight swap: controller flips (owner stays), and the
+// stack-targetable)" — six lines above the spec that makes it a cast-time target. It had outlived its own code; corrected here.)
+// The steal is CR 711.1's straight swap: controller flips (owner stays), and the
 // token leaves its old formation. A stolen spell token is cast fresh by its
 // new controller, so "choose new targets" is automatic.
 //
-// R148/CT-38: the swap is E.giveControl, not a raw `tok.controller = …` plus a
+// CT-38: the swap is E.giveControl, not a raw `tok.controller = …` plus a
 // local unslot. "Target token" reaches UNIT tokens as well as spell tokens
 // (pushUnitTargets offers both), and a unit token can be augmented or grafted
 // — so the hand-rolled version stole a modded Robot and left its mods behind,
 // still answering to the seat it was taken from. The choke point also owns the
-// region: R112 exclusivity applies here too (a spell token has no mods to
+// region: CR 711.4 exclusivity applies here too (a spell token has no mods to
 // carry, and `mods` is [] on one, so the same call is correct for both kinds).
 //
-// ⚠ R172 — MID-BATTLE, THE STOLEN TOKEN SITS OUT UNTIL REGROUP, AND THAT IS
+// ⚠ CR 711.3 — MID-BATTLE, THE STOLEN TOKEN SITS OUT UNTIL REGROUP, AND THAT IS
 // THE RULE, NOT A GAP. Download is a {Battle} spell, so it can steal a Robot
 // with the formations already declared. Owner, 2026-08-25: *it sits out until
 // regroup* — controller changes at once, the unit is OUT of the formation for
 // the rest of this battle (it attacks for nobody and blocks for nobody), and
 // it joins its new controller's side at regroup, which is when formations are
 // next built. `E.giveControl`'s unslot is what delivers that; it must NOT grow
-// a re-slot. The engine has done this since R148 by accident of having no
-// formation-join primitive — R172 only writes the decision down and pins it,
+// a re-slot. The engine has done this since control changes were routed through one primitive, by accident of having no formation-join
+// primitive — the owner's 2026-08-25 ruling (CR 711.3) only wrote the decision down and pinned it,
 // so the next reader does not "repair" a correct behaviour.
 card('Download', {
   spellEffect: {
-    // R64: "target token" is a CAST-TIME target — the playtest report was
+    // CR 110.1a: "target token" is a CAST-TIME target — the playtest report was
     // "Download didn't have me target anything…", and it did not: the token
     // was picked at resolution, so the opponent responded to a theft with no
     // victim named and Mohruung-style "when I become targeted" never fired.
@@ -964,7 +963,7 @@ card('Download', {
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      // R333 / CT-215: a spell token already on the stack — "Gain control of
+      // CR 304.11d / CT-215: a spell token already on the stack — "Gain control of
       // target token. You may choose new targets for spells controlled this
       // way." The item changes hands, then its new controller re-picks each
       // target; offering the current one is the "may" (Gravitational
@@ -996,7 +995,7 @@ card('Download', {
         g.ev('info', 'Download: the token is gone or already yours — nothing changes hands.');
         return;
       }
-      // R8: it swaps sides — mods, formation slot and region all handled by
+      // CR 711.1: it swaps sides — mods, formation slot and region all handled by
       // the choke point, which announces the handover itself.
       g.giveControl(tok, ctx.controller);
     },
@@ -1006,20 +1005,21 @@ card('Download', {
 // "[Augment] When my column deals combat damage to an opponent, sacrifice me.
 // If you do, look at that player's hand and discard a card from it." — mm/1
 // 1/1 {Haste} {Evasive} Cosmic Alien Unit. Text-box [Augment]: live when
-// played normally, donated on augment ("me" = the host). Fires between combat
-// damage sub-steps and resolves immediately (R31). ⚠ column-connect read off
+// played normally, donated on augment ("me" = the host). Triggers in a combat
+// damage sub-step and goes on the stack after it (CR 608.9). ⚠ column-connect read off
 // the aggregated combat lifeLost event (Amphivore's approximation).
 //
-// R73 (Bena's ruling, 2026-08-22): "sacrifice me" is a CAST COST. The report
+// Bena's ruling, 2026-08-22, which the engine follows although CR 111.8 makes the
+// sacrifice part of the effect (F-U04-5): "sacrifice me" is a CAST COST. The report
 // was "Technically, Eldritch Dreamtender needs to be sacrificed for its ability
 // to go on the stack, but it's still visually in play while resolving its
 // trigger" — and it is right. The sacrifice used to be a g.destroy() inside
 // effect.run, at RESOLUTION, so the unit sat on the board through a whole
 // priority window first.
 //
-// Both halves are in place now. R64/R67 settle bracketed costs in the cast
+// Both halves are in place now. CR 111.2, 702.5 settle bracketed costs in the cast
 // window for spells, activated AND triggered items alike (buildTriggerItem ->
-// collectTargets -> collectCastCosts), and R73 added the one cost this card
+// collectTargets -> collectCastCosts), and that ruling added the one cost this card
 // needed: `sacrificeUnits` with `from: 'self'`, resolved through item.sourceId
 // exactly as `removeCounters`' own `from: 'self'` is.
 //
@@ -1027,17 +1027,17 @@ card('Download', {
 // sacrifice is now mandatory (no "if you do" to decline), unrespondable (a
 // choice-free cost is charged with no decision and no suspension), and the
 // whole trigger is skipped when the source is already dead by settle time
-// (an unpayable cost sets part.spent — R5). That is what "sacrificed for its
+// (an unpayable cost sets part.spent). That is what "sacrificed for its
 // ability to go on the stack" means. The printed line is effect prose with an
 // if-you-do rider rather than a printed [cost]; the ruling reads it as a cost
 // anyway.
 card('Eldritch Dreamtender', {
   augmentText: [{
-    type: 'triggered', events: ['combatFaceDamage'],   // R238
+    type: 'triggered', events: ['combatFaceDamage'],   // CR 608.8a
     label: "sacrifice me — look at that player's hand and discard a card",
     when: (g, self, ev) => myColumnConnected(g, self, ev),
     effect: {
-      // R73: paid on the way to the stack, not here. By the time run() is
+      // The 2026-08-22 ruling: paid on the way to the stack, not here. By the time run() is
       // called the Dreamtender is already in its owner's bin — so there is no
       // selfOf() to read, and there deliberately is no "if you do" check
       // either: an unpaid cost means this run() never happens at all.
@@ -1046,7 +1046,7 @@ card('Eldritch Dreamtender', {
         const who = ctx.event?.data?.['seat'] as Seat | undefined;
         if (who === undefined) return;
         const hand = g.player(who).hand;
-        // R197b: "look at that player's hand" — a PRIVATE look, not a reveal.
+        // CR 402.2a: "look at that player's hand" — a PRIVATE look, not a reveal.
         // The naming line belongs to the looker alone (`privateTo`, dropped
         // for every other seat by server/view.ts::visibleToSeat); the public
         // line is E.revealHandTo's "X looks at Y's hand", which names nothing.
@@ -1063,7 +1063,7 @@ card('Eldritch Dreamtender', {
           options: hand.map((name, i) => ({ label: name, value: i, card: name })),
         }) as number;
         if (hand[pick] === undefined) return;
-        // R40: discarding from hand is TRASHING, and the trasher is the owner
+        // CR 801.2e: discarding from hand is TRASHING, and the trasher is the owner
         // of the bin the card enters — `who`, not the Dreamtender's controller.
         g.discardFromHand(who, pick);
       },

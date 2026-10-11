@@ -1,8 +1,8 @@
-/* R276 / CT-142 — THE COST-TOAST TIER, AND THE POPULATION IT MUST COVER.
+/* CR D7.4 / CT-142 — THE COST-TOAST TIER, AND THE POPULATION IT MUST COVER.
  *
  * ── THE TICKET, AND THE DECISION THAT UNBLOCKED IT
  *
- * R266 (the owner, round 32): *"NOTHING should only exist in the log."*
+ * The owner, round 32 (now CR D7.4): *"NOTHING should only exist in the log."*
  * CT-142 measured what that costs. `244-log-is-not-the-only-surface` derives —
  * from the engine's own source, never from a list — the announcements that
  * have no surface but the log, and ranks the subset where the absence COST the
@@ -44,8 +44,8 @@
  * Measured here, per SITE, against the client as it stands after this round:
  *
  *     20  structural sites match ABSENCE ∧ COSTLY   (244 calls these tier 1)
- *    − 1  the regroup token erase — R266 gave it a .promptbar this round
- *    − 2  the two `fizzled` sites — R271 gave them a stack-strip mark
+ *    − 1  the regroup token erase — given a .promptbar this round (CR D7.4a)
+ *    − 2  the two `fizzled` sites — given a stack-strip mark (CR D6.12)
  *    ─────
  *     17  structural announcements with no surface but the log
  *    + 5  the same class in `src/cards/**`, which 244 scopes out of ITS
@@ -57,7 +57,7 @@
  *
  * The ticket's 19 is the number of ROWS in 244's stem table, which is 19 stems
  * covering 20 sites (`the [~] cost cannot be paid` occurs twice). It did NOT
- * move because of R271, contrary to the brief: R271 gave the `fizzled` TYPE a
+ * move because of the fizzle-mark change (CR D6.12), contrary to the brief: that change gave the `fizzled` TYPE a
  * consumer, and 244's inventory is derived per SITE off the event's own data
  * keys, so the type-level change left its count exactly where it was. What
  * moves the number here is that this file asks the surfaces themselves.
@@ -115,7 +115,7 @@ function skipBraces(s: string, i: number): number {
  * Not cosmetic, and 244 paid for learning it: `ev()` sites in this engine
  * routinely carry a paragraph of comment BETWEEN the message and the data
  * object, and a comment containing a comma splits the argument list in the
- * wrong place. That is how an earlier pass read R194 as having no data at all.
+ * wrong place. That is how an earlier pass read the token-loss announcement (CR D2.6a) as having no data at all.
  */
 function stripComments(s: string): string {
   const out = s.split('');
@@ -244,7 +244,7 @@ function eventOf(s: Site): EngineEvent {
 
 /* ── §0. NON-VACUITY, BEFORE ANY CLAIM IS MADE ────────────────────────── */
 
-test('[R276] the rule convicts and acquits: it is neither empty nor a tautology', () => {
+test('[CR D7.4] the rule convicts and acquits: it is neither empty nor a tautology', () => {
   const sites = structuralSites();
   assert.ok(sites.length > 150, `positive control: the engine was really scanned (${sites.length} sites)`);
 
@@ -264,7 +264,7 @@ test('[R276] the rule convicts and acquits: it is neither empty nor a tautology'
     'negative control: an ordinary announcement does not');
 });
 
-test('[R276] the classifiers are the same ones 244 derives the inventory with', () => {
+test('[CR D7.4] the classifiers are the same ones 244 derives the inventory with', () => {
   // ONE definition of the class. ui/toast.ts is the canonical copy and 244
   // carries the second; if either is widened without the other, the shipping
   // rule and the measurement stop describing the same set of announcements and
@@ -288,7 +288,7 @@ test('[R276] the classifiers are the same ones 244 derives the inventory with', 
     'COSTLY has been widened in one file and not the other');
 });
 
-test('[R276] this scan and the one in 244 agree about how many announcements the engine makes', () => {
+test('[CR D7.4] this scan and the one in 244 agree about how many announcements the engine makes', () => {
   const src = readFileSync(new URL('./244-log-is-not-the-only-surface.test.ts', import.meta.url), 'utf8');
   const m = /assert\.equal\(sites\.length, (\d+),/.exec(src);
   assert.ok(m, '244 no longer pins its own site count in the shape this guard reads — '
@@ -308,7 +308,7 @@ const costlyClass = (sites: readonly Site[]): Site[] =>
 const listing = (l: readonly Site[]): string =>
   l.map(s => `  ${s.file}:${s.line} [${s.type}] ${s.msg}`).join('\n');
 
-test('[R276] the derived tier-1 population, and every member of it earns a toast', () => {
+test('[CR D7.4] the derived tier-1 population, and every member of it earns a toast', () => {
   const costly = costlyClass(structuralSites());
   // 20 → 21 with the 2026-09-21 Deferral Drone errata: "this turn" narrowed to
   // "this phase", so an unspent [3] discount now expires at a phase boundary
@@ -339,12 +339,12 @@ test('[R276] the derived tier-1 population, and every member of it earns a toast
     'something is being kept out of the tier by a surface it does not actually have:\n'
     + listing(surfaced));
   assert.equal(surfaced.filter(s => /unused spell token\(s\) to regroup/.test(s.msg)).length, 1,
-    'R266 gave the regroup token erase a promptbar; the toast must not say it a second time');
+    'the regroup token erase has a promptbar (CR D7.4a); the toast must not say it a second time');
   assert.equal(surfaced.filter(s => /fizzl/.test(s.msg)).length, 2,
-    'R271 gave a fizzled stack item its own mark on the strip; likewise');
+    'a fizzled stack item has its own mark on the strip (CR D6.12); likewise');
 });
 
-test('[R276] the two already-surfaced kinds go quiet only because the surface answers yes', () => {
+test('[CR D7.4] the two already-surfaced kinds go quiet only because the surface answers yes', () => {
   // The positive control for the exclusions above. Take each excluded site,
   // break the ONE thing the existing surface keys off, and the toast must
   // appear — otherwise the exclusion is a coincidence of wording rather than a
@@ -362,7 +362,7 @@ test('[R276] the two already-surfaced kinds go quiet only because the surface an
   }
 });
 
-test('[R276] the card pool announces the same class and the tier carries that too', () => {
+test('[CR D7.4] the card pool announces the same class and the tier carries that too', () => {
   // 244 scopes src/cards out of ITS question on the grounds that a card
   // narrating its own text sits next to the card saying it. That argument does
   // not survive the move to THIS question: an absence has nothing next to it.
@@ -386,7 +386,7 @@ test('[R276] the card pool announces the same class and the tier carries that to
     'the only pool member the tier drops must be one the board already pulses');
 });
 
-test('[R276] the whole tier, as one number, over engine and pool together', () => {
+test('[CR D7.4] the whole tier, as one number, over engine and pool together', () => {
   const all = [...costlyClass(structuralSites()), ...costlyClass(cardSites())];
   const toasted = all.filter(s => costToast(eventOf(s)));
   // 22 → 23 with the Deferral Drone errata; see the tier-1 population above.
@@ -397,7 +397,7 @@ test('[R276] the whole tier, as one number, over engine and pool together', () =
 
 /* ── §2. the rule rejects what it should ──────────────────────────────── */
 
-test('[R276] an absence nobody paid for is not a toast', () => {
+test('[CR D7.4] an absence nobody paid for is not a toast', () => {
   // ABSENCE alone is far too wide — 244 measures 38 log-only announcements and
   // only 20 of them cost anything. The tier is the ranked half; the rest stay
   // in the log, which is what the log is for.
@@ -408,7 +408,7 @@ test('[R276] an absence nobody paid for is not a toast', () => {
   assert.deepEqual(leaked, [], 'bookkeeping is leaking into the loss channel:\n' + listing(leaked));
 });
 
-test('[R276] anything the board already pulses is not a toast', () => {
+test('[CR D7.4] anything the board already pulses is not a toast', () => {
   // the hand-off to ui/flash.ts::beatKeys, both ways round
   const base = { type: 'info' as EventType, msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.' };
   assert.ok(costToast({ ...base, data: {} }), 'positive control: with nothing to pulse it toasts');
@@ -417,7 +417,7 @@ test('[R276] anything the board already pulses is not a toast', () => {
     'a life badge is a surface too');
 });
 
-test('[R276] a zone change is its own surface and never a toast', () => {
+test('[CR D7.4] a zone change is its own surface and never a toast', () => {
   assert.ok(ZONE_CHANGE.size > 10, 'positive control: the zone set is populated');
   for (const ty of ZONE_CHANGE) {
     assert.equal(costToast({ type: ty as EventType, msg: 'Grox is skipped and does nothing.', data: {} }), null,
@@ -427,14 +427,14 @@ test('[R276] a zone change is its own surface and never a toast', () => {
     'positive control: the same sentence on a type with no zone behind it DOES toast');
 });
 
-test('[R276] an event with no message is not a log line and not a toast either', () => {
+test('[CR D7.4] an event with no message is not a log line and not a toast either', () => {
   assert.equal(costToast({ type: 'info', msg: '', data: {} }), null);
   assert.equal(costToast({ type: 'stackFlash', msg: '', data: { item: { id: 1 } } }), null);
 });
 
 /* ── §3. several in one resolution ────────────────────────────────────── */
 
-test('[R276] identical sentences in one batch coalesce into one row with a count', () => {
+test('[CR D7.4] identical sentences in one batch coalesce into one row with a count', () => {
   const one: EngineEvent = { type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} };
   const two: EngineEvent = { type: 'info', msg: 'Bo: there is no legal target for that — it does nothing.', data: {} };
   const got = costToasts([one, { ...one }, two, { ...one }]);
@@ -444,7 +444,7 @@ test('[R276] identical sentences in one batch coalesce into one row with a count
   assert.equal(got[0]!.msg, one.msg, 'and the engine sentence is carried verbatim');
 });
 
-test('[R276] distinct losses stack, staggered, and the queue drops what has expired', () => {
+test('[CR D7.4] distinct losses stack, staggered, and the queue drops what has expired', () => {
   const evs: EngineEvent[] = [1, 2, 3].map(i => ({
     type: 'info', msg: `Ann: the [${i} Fire] cost cannot be paid — that effect is skipped.`, data: {},
   }));
@@ -461,7 +461,7 @@ test('[R276] distinct losses stack, staggered, and the queue drops what has expi
   assert.equal(queueCostToasts(q, [], q[2]!.until + 1).length, 0, 'and eventually all of them');
 });
 
-test('[R276] a repeat of a row that is still up refreshes it instead of duplicating it', () => {
+test('[CR D7.4] a repeat of a row that is still up refreshes it instead of duplicating it', () => {
   const ev: EngineEvent = { type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} };
   const first = queueCostToasts([], [ev], 1000);
   const again = queueCostToasts(first, [ev], 1500);
@@ -470,7 +470,7 @@ test('[R276] a repeat of a row that is still up refreshes it instead of duplicat
   assert.ok(again[0]!.until > first[0]!.until, 'and a restarted clock, because it just happened again');
 });
 
-test('[R276] the overflow is counted and pointed at the log, never dropped in silence', () => {
+test('[CR D7.4] the overflow is counted and pointed at the log, never dropped in silence', () => {
   const evs: EngineEvent[] = Array.from({ length: COST_TOAST_MAX + 3 }, (_, i) => ({
     type: 'info' as EventType, msg: `Ann: the [${i} Fire] cost cannot be paid — that effect is skipped.`, data: {},
   }));
@@ -485,14 +485,14 @@ test('[R276] the overflow is counted and pointed at the log, never dropped in si
   assert.equal(shown[shown.length - 1]!.key, q[q.length - 1]!.key);
 });
 
-test('[R276] the strip schedules its own exit', () => {
+test('[CR D7.4] the strip schedules its own exit', () => {
   const q = queueCostToasts([], [{ type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} }], 1000);
   assert.equal(nextCostToastWake(q, 1000), q[0]!.until, 'there is a moment to repaint at');
   assert.equal(nextCostToastWake(q, q[0]!.until), null, 'and none once the strip is empty');
   assert.equal(nextCostToastWake([], 1000), null);
 });
 
-test('[R276] the tier wears one label, because a per-case label map is a typed list', () => {
+test('[CR D7.4] the tier wears one label, because a per-case label map is a typed list', () => {
   const html = costToastHtml(queueCostToasts([], [
     { type: 'info', msg: 'Ann: the [2 Fire] cost cannot be paid — that effect is skipped.', data: {} },
     { type: 'info', msg: 'Bo: there is no legal target for that — it does nothing.', data: {} },
@@ -510,8 +510,8 @@ test('[R276] the tier wears one label, because a per-case label map is a typed l
 
 /* ── §4. a real engine event, through the real rule ───────────────────── */
 
-test('[R276] a spell that resolves with nothing to aim at produces a toast, end to end', () => {
-  // R223/R227: an effect entered with no legal target says so and does nothing.
+test('[CR D7.4] a spell that resolves with nothing to aim at produces a toast, end to end', () => {
+  // CR D7.3a: an effect entered with no legal target says so and does nothing.
   // The rig is 196-empty-target-fizzle's, because that file already argues at
   // length why starving an effect slot is the reachable way to produce this.
   const h = new Harness(2560);
@@ -536,7 +536,7 @@ test('[R276] a spell that resolves with nothing to aim at produces a toast, end 
     'and it carries the engine sentence, naming the card the player is looking at');
 });
 
-test('[R276] an ordinary resolution produces no toast at all', () => {
+test('[CR D7.4] an ordinary resolution produces no toast at all', () => {
   // the negative control the ui-driver preamble asks for: a channel that fires
   // on everything cannot be measured. A real batch off a real action that cost
   // nobody anything must leave the tier empty.
@@ -549,14 +549,14 @@ test('[R276] an ordinary resolution produces no toast at all', () => {
 
 /* ── §5. THE CLIENT. RED until the ui/main.ts + style.css patch lands ─── */
 
-/** put a state and its batch in front of the client, spending the R150 pacing
+/** put a state and its batch in front of the client, spending the CR D5.4 pacing
  * throttle the way a player would (244 explains why this is necessary) */
 function show(state: GameState, events?: EngineEvent[]): string {
   ui.update(state, [], events ? { events } : {});
   return ui.key('s');
 }
 
-test('[R276] the client puts a costly absence on the screen and not only in the log', () => {
+test('[CR D7.4] the client puts a costly absence on the screen and not only in the log', () => {
   const h = new Harness(2562);
   toDeployment(h);
   ui.join(h.state, 0);
@@ -575,7 +575,7 @@ test('[R276] the client puts a costly absence on the screen and not only in the 
   assert.equal(/costtoast/.test(ui.click({ btn: 'costtoastclose' })), false, 'dismissed');
 });
 
-test('[R276] an ordinary batch puts no toast on the screen', () => {
+test('[CR D7.4] an ordinary batch puts no toast on the screen', () => {
   const h = new Harness(2563);
   toDeployment(h);
   ui.join(h.state, 0);
@@ -588,7 +588,7 @@ test('[R276] an ordinary batch puts no toast on the screen', () => {
     'a plain absence and a death are not this channel');
 });
 
-test('[R276] the tier has a stylesheet of its own', () => {
+test('[CR D7.4] the tier has a stylesheet of its own', () => {
   // the strip is position: fixed and has to sit in the one free corner —
   // .glimpsenotice owns bottom right and .toast owns bottom centre. Without
   // this it renders in the document flow, which is worse than not rendering.
@@ -601,8 +601,8 @@ test('[R276] the tier has a stylesheet of its own', () => {
     'and it respects the motion preference, like .glimpsenotice');
 });
 
-test('[R276] the log still carries every one of them', () => {
-  // R266 is about the log not being the ONLY surface. Nothing in this round
+test('[CR D7.4] the log still carries every one of them', () => {
+  // CR D7.4 is about the log not being the ONLY surface. Nothing in this round
   // may take a line OUT of it, so the tier is asserted to be additive: every
   // toasted announcement still has a message, which is what puts it in the log.
   const all = [...costlyClass(structuralSites()), ...costlyClass(cardSites())]

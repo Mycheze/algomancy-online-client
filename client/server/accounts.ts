@@ -30,7 +30,7 @@ import {
 import type { PublicDeckView } from './publicdecks.ts';
 import type { TrioHistoryRow } from './trio.ts';
 import { accountsFile } from './statepaths.ts';
-// R290: a conceded game weighs by the turn it was conceded on. The fold below
+// CR D8.5: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
 import { concessionWeight, type Concession, type ConcessionWeight } from './concession.ts';
 import { rulesSummary, type CustomRules } from '../ui/customrules.ts';
@@ -404,7 +404,7 @@ export interface RecordedGame {
    */
   rated?: boolean;
   /**
-   * R290 — IF a concede decided this game: who conceded, on which game turn.
+   * CR D8.5 — IF a concede decided this game: who conceded, on which game turn.
    * Stamped by the room when the concede landed and copied here by
    * history.ts; never derived from the replay. `concessionWeight(game)` turns
    * it into walkover / early / normal, and every fold that cares asks that
@@ -421,7 +421,7 @@ export interface RecordedGame {
    */
   custom?: CustomRules;
   /**
-   * R298 — a SINGLE CARD DUEL, and the card each seat played ([seat0, seat1]).
+   * CR D8.2e — a SINGLE CARD DUEL, and the card each seat played ([seat0, seat1]).
    * Recorded and tagged exactly like `custom`: in the match history, in no
    * profile total, achievement, deck record or player rating. It is what the
    * card ladder is folded from (cardladder.ts). Absent on every other game.
@@ -773,7 +773,7 @@ const addInto = (into: Record<string, number>, from: Record<string, number>): vo
 /** Fold one seat of one game into one profile. Pure addition plus the two
  * order-dependent bits (streaks and first/last played). */
 function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
-  // R290: a WALKOVER — conceded on turn 1 — "shouldn't really be a game", and
+  // CR D8.5: a WALKOVER — conceded on turn 1 — "shouldn't really be a game", and
   // it is not one here: it touches nothing on either player's profile. Not
   // games, not wins or losses, not the streak, not first/last played, not a
   // single counter an achievement reads. The row stays in the history (the
@@ -785,7 +785,7 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   // BL-43: a custom-rules game likewise touches nothing — same exit, same reason
   // it sits above the first increment
   if (game.custom) return;
-  // R298: and so does a single card duel — it rates the CARDS, not the players
+  // CR D8.2e: and so does a single card duel — it rates the CARDS, not the players
   if (game.single) return;
   const s = game.seats[seat]!;
   const oppId = game.users[seat === 0 ? 1 : 0];
@@ -839,7 +839,7 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
     // than anything that happened at the table.
     if (!game.diverged) {
       /**
-       * R290: an EARLY concession (turn 2) is a win for the record but "not
+       * CR D8.5: an EARLY concession (turn 2) is a win for the record but "not
        * really a full game", so the feats a game that barely happened would
        * hand out for free are withheld from it. Four are gated on `full`:
        *   Blitz     "win by turn 5"            — a turn count, the named case
@@ -1228,7 +1228,7 @@ export interface MatchRow {
   unitsPlayed: number; spellsPlayed: number; damageDealt: number;
   favoriteElement: Element | null;
   /**
-   * R290: present only when a concede decided the game. `weight` is computed
+   * CR D8.5: present only when a concede decided the game. `weight` is computed
    * HERE (concessionWeight) rather than by the client, so the thresholds stay
    * in one file; `mine` says whether this account was the one who conceded.
    * A `walkover` row is in the history and counted nowhere — the tab says so.
@@ -1236,7 +1236,7 @@ export interface MatchRow {
   concession?: { turn: number; weight: ConcessionWeight; mine: boolean };
   /** BL-43: present only for a custom-rules game — its rules as summary lines */
   custom?: string[];
-  /** R298: present only for a single card duel — [your card, theirs] */
+  /** CR D8.2: present only for a single card duel — [your card, theirs] */
   single?: [CardName, CardName];
 }
 

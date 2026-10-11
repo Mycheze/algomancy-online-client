@@ -1,7 +1,7 @@
 /**
- * R249 — THE SPENT-BUDGET MARKER FOLLOWS THE ABILITY, NOT THE CLIENT.
+ * CR D6.10b — THE SPENT-BUDGET MARKER FOLLOWS THE ABILITY, NOT THE CLIENT.
  *
- * Playtest report #120, and it is a RE-REPORT of the one R135 answered:
+ * Playtest report #120, and it is a RE-REPORT of the one the earlier text-box fix answered:
  *
  *   "The UI bug I reported about the 'once' effects showing the wrong icon
  *    once expended has now flip flopped. The [Switch1] and [once] effects are
@@ -11,7 +11,7 @@
  *
  * ── the shape ────────────────────────────────────────────────────────
  *
- * Before R135 the note said `[Switch1]` for every spent budget; R135 made it
+ * Before the text-box fix the note said `[Switch1]` for every spent budget; that fix made it
  * say `[Once]` for every spent budget. Two constants, one report each, and
  * the second report is the first one with the sides swapped — the #46 → #60 →
  * #75 shape this repo keeps catching. Neither fix was ever ABOUT the card: a
@@ -31,9 +31,9 @@
  *     future card which breaks either one fails here instead of silently
  *     going back to a coin flip.
  *
- * ── what R249 did NOT overturn ───────────────────────────────────────
+ * ── what the spent-marker rule did NOT overturn ───────────────────────────────────────
  *
- * R135 said three things and only one of them moved. The note is still SHORT
+ * The text-box fix said three things and only one of them moved. The note is still SHORT
  * (it does not restate `ab.label`), the augment and graft lines still do not
  * repeat the icon their own tag shows, and {Unstable} still rides in `state` —
  * all still guarded in test/122. What moved is the claim that the note is
@@ -100,7 +100,7 @@ function boundedPool(): { name: CardName; ability: number[]; augment: number[] }
 // failure mode being guarded is a display that does not read the card, and a
 // test that stamps its own key would be free to be wrong about the key too.
 
-test('R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints', () => {
+test('CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card prints', () => {
   const { e, h, A } = board(22800);
   // "After combat, [Switch1] Put a +1/+1 counter on each of your units."
   const se = spawn(h, A, 'Synaptic Energizer');
@@ -115,7 +115,7 @@ test('R249: a spent bounded GRAFT ability wears the [Switch1] its own card print
     'so the player sees the bounded-graft symbol, which is what the ability is');
 });
 
-test('R249: a spent [once] ability wears [Once] — the same code, the other card', () => {
+test('CR D6.10b: a spent [once] ability wears [Once] — the same code, the other card', () => {
   const { e, h, A } = board(22801);
   // "[once] When another ally with greater defense than power spawns, draw a
   // card." — fired for real by spawning a 2/3 next to it, so the budget below
@@ -133,7 +133,7 @@ test('R249: a spent [once] ability wears [Once] — the same code, the other car
 
 // ── 2. the notes whose marker belongs to a MOD, not to the host ──────
 
-test('R249: a spent bounded graft rider takes its marker from the mod, not the host', () => {
+test('CR D6.10b: a spent bounded graft rider takes its marker from the mod, not the host', () => {
   const { e, h, A } = board(22802);
   // Spewing Mushroom prints an UNBOUNDED [Switch] cause, so the only spent
   // budget on this board belongs to the rider — and the rider is a different
@@ -153,7 +153,7 @@ test('R249: a spent bounded graft rider takes its marker from the mod, not the h
     'read off the transferred half of the mod card, which is what a graft IS');
 });
 
-test('R249: an augment-donated bounded ability takes the marker of the donor', () => {
+test('CR D6.10b: an augment-donated bounded ability takes the marker of the donor', () => {
   const { e, h, A } = board(22803);
   // "[Augment][once] Gain 2 debt: I gain +3/+3 until regroup." on a host that
   // prints the OTHER marker. The two cards disagree on purpose: a note that
@@ -173,7 +173,7 @@ test('R249: an augment-donated bounded ability takes the marker of the donor', (
     'read off the donated half of the mod card, which is what an augment IS');
 });
 
-test('R249: a card whose OWN augment box is spent reads that box, not its type line', () => {
+test('CR D6.10b: a card whose OWN augment box is spent reads that box, not its type line', () => {
   // The fourth emit site: `augment:<this card>#i` on the card's own budgets.
   // It is the rarest of the four and the easiest to leave behind on a sweep
   // that only counted the obvious three, which is exactly why it is here.
@@ -186,7 +186,7 @@ test('R249: a card whose OWN augment box is spent reads that box, not its type l
 
 // ── 3. the whole pool, spent for real, one card at a time ────────────
 
-test('R249: every card in the pool with a bounded ability gets the marker it prints', () => {
+test('CR D6.10b: every card in the pool with a bounded ability gets the marker it prints', () => {
   // 89 cards, each spawned and each budget reserved through E.composeParts —
   // the engine's own reservation, so the budget KEY is never something this
   // test knows how to spell. The expectation comes back through iconizeText,
@@ -232,7 +232,7 @@ test('R249: every card in the pool with a bounded ability gets the marker it pri
 
 // ── 4. the invariants that make a per-CLAUSE read exact ──────────────
 
-test('R249: no card prints both markers, and none has two bounded abilities', () => {
+test('CR D6.10b: no card prints both markers, and none has two bounded abilities', () => {
   // Both of these are what let one clause answer for one budget. If a future
   // card breaks either, the marker becomes a guess again — and the box has now
   // been wrong in both directions once each, so a guess is not acceptable.
@@ -246,7 +246,7 @@ test('R249: no card prints both markers, and none has two bounded abilities', ()
   assert.deepEqual(both, [],
     'a card printing both markers would need its clauses split before the note can name one');
   assert.deepEqual(two, [],
-    'a card with two bounded abilities would need the note to say WHICH, which R135 '
+    'a card with two bounded abilities would need the note to say WHICH, which the text-box fix '
     + 'removed on the grounds that no card has two');
 
   // the graft half of the same invariant: a bounded rider always prints
@@ -262,9 +262,9 @@ test('R249: no card prints both markers, and none has two bounded abilities', ()
   assert.deepEqual(odd, [], 'bounded graft donors are exactly the ones printing [Switch1]');
 });
 
-test('R249: the fallback is [Once], and only two cards in the pool reach it', () => {
+test('CR D6.10b: the fallback is [Once], and only two cards in the pool reach it', () => {
   // The Bonesculptor ("each deployment") and Gridxlan ("during deployment")
-  // spell their budget in prose. R135s answer is kept for exactly these: with
+  // spell their budget in prose. CR D6.10b's [Once] is kept for exactly these: with
   // nothing printed to follow, the note names the budget.
   const prose = boundedPool()
     .map(b => b.name)
@@ -276,7 +276,7 @@ test('R249: the fallback is [Once], and only two cards in the pool reach it', ()
   assert.equal(budgetMarker(''), '[Once]', 'and so does an empty one');
 });
 
-test('R249: the two halves of a printed card are read separately', () => {
+test('CR D6.10b: the two halves of a printed card are read separately', () => {
   // `ownClause` is the complement of `augmentClause`. ⚠ SWAPPING THE TWO AT
   // the host emit site is a NO-OP against today's pool — no card has both a
   // bounded `abilities[]` and an `[Augment]` box, so both scopes return the

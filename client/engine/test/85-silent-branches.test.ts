@@ -117,7 +117,7 @@ function bait(g: E, controller: Seat, victim: EntityId): StackItem {
 }
 
 /** a second unit in `bait`'s region, for a retarget to move the bait onto.
- * R307: a retargeter writes only a target its own menu offered, and the menu
+ * CR 110.9, 110.5: a retargeter writes only a target its own menu offered, and the menu
  * is the units in the ITEM's region — the bait's, which is its controller's
  * home. */
 function redirectable(g: E, controller: Seat): Entity {
@@ -197,7 +197,7 @@ test('Abduct whose ransom is declined still takes the unit', () => {
 test('Divine Intervention that changes an effect\'s targets announces the change', () => {
   const { g, D, A, theirs } = board(8520);
   bait(g, D, theirs.id);
-  // R307: the new target must be one the menu offers — a unit in the bait's
+  // CR 110.9: the new target must be one the menu offers — a unit in the bait's
   // own region (the bait is D's, at D's home); `mine` is at A's and never was
   const dest = redirectable(g, D);
   const evs = resolve(spellOf('Divine Intervention'), g,
@@ -224,7 +224,7 @@ test('Divine Intervention and Gravitational Correction report a retarget the sam
   const read = (card: string, answers: Answers): EngineEvent | undefined => {
     const { g, A, D, theirs } = board(8522);
     bait(g, D, theirs.id);
-    const dest = redirectable(g, D);   // R307: an offered target, as above
+    const dest = redirectable(g, D);   // CR 110.9: an offered target, as above
     const evs = resolve(spellOf(card), g,
       { controller: A, sourceName: card, targets: [{ stack: 4242 }], x: 0 },
       { ...answers, 'retarget:0:0': { unit: dest.id } });
@@ -290,7 +290,7 @@ for (const [card, def, extra] of STACK_GONE) {
 
 // ── 5. THE UNIT YOU AIMED AT IS GONE ────────────────────────────────────
 //
-// R5/R56: a target that leaves play between cast and resolution. The engine
+// CR 704.6b, 704.5: a target that leaves play between cast and resolution. The engine
 // keeps the resolved target object, so the run gets an Entity whose id no
 // longer resolves — the same thing a player sees when their removal spell is
 // answered by a sacrifice.
@@ -326,14 +326,14 @@ const CARRIER_GONE: [string, EffectDef][] = [
   ['Auric Ascendant', abilityOf('Auric Ascendant')],
   ['Corrupting Blight', augmentOf('Corrupting Blight')],
   ['Hexbane Shiitake', augmentOf('Hexbane Shiitake')],
-  // R178 removed Maelstrom Charger from this list, and from the declined-pay
+  // Maelstrom Charger was removed (CR 109.6) from this list, and from the declined-pay
   // section below. It has NO EffectDef at all any more: the designer's ruling
   // is that its printed line is *"neither Triggered nor Activated"*, so it is a
   // `CardBehavior.asYouPlay` option collected in the cast window, and there is
   // no resolving effect for either of those situations to arise in. Its
   // carrier cannot be gone when the option is offered (the offer is read off
   // the live board), and the declined half is now guarded where it lives —
-  // test/151-copy-and-moved-mods.test.ts, "R178 Maelstrom Charger: declining
+  // test/151-copy-and-moved-mods.test.ts, "CR 702.3g Maelstrom Charger: declining
   // the sacrifice says so and copies nothing".
 ];
 
@@ -396,7 +396,7 @@ test('Spore of Regenesis whose erase cost is declined announces that nothing ret
 test('Murkdrop Distiller that declines to cache the trashed card announces that', () => {
   const { g, A } = board(8565);
   g.player(A).bin.push('Ignis Sprite');
-  // R140: the event carries `binNth` — WHICH copy of that name in that bin was
+  // CR 405.6: the event carries `binNth` — WHICH copy of that name in that bin was
   // trashed — exactly as E.noteTrashed stamps it. Without it the card reads the
   // trash as "that copy is already gone" and takes the OTHER silent branch, so
   // this fixture has to be a faithful trashed event or it tests nothing.
@@ -412,8 +412,8 @@ test('Murkdrop Distiller that declines to cache the trashed card announces that'
 
 test('Murkdrop Distiller triggered on a card that is not in the bin announces that', () => {
   // a trashed {Unstable} card is binned and swept away before this trigger
-  // resolves (R137). This used to say a TOKEN; a token is no longer trashed
-  // at all (R306), so it never reaches this branch.
+  // resolves (in the engine's reading, CT-246; see CR 801.2h). This used to say a TOKEN; a token is no longer trashed
+  // at all (CR 801.2d), so it never reaches this branch.
   const { g, A } = board(8566);
   const evs = resolve(abilityOf('Murkdrop Distiller'), g, {
     controller: A, sourceName: 'Murkdrop Distiller',
@@ -432,7 +432,7 @@ test('The Bonesculptor that declines to play a unit from the bin announces that'
   assert.ok(g.player(A).bin.includes('Tidal Menace'), 'and the unit stayed in the bin');
 });
 
-// COSMIC CONSPIRATOR USED TO BE HERE, and R104 took it out of this file's
+// COSMIC CONSPIRATOR USED TO BE HERE, and the replacement layer took it out of this file's
 // class rather than out of coverage. It is no longer an EFFECT at all: "if you
 // would create … you may instead create" is a REPLACEMENT (`replaceTokenCreation`),
 // which is consulted at the creation call and never resolves off a stack. This
@@ -457,13 +457,13 @@ test('Hexbane Shiitake that declines the exchange announces that the spell is le
   assert.equal(g.s.stack[0]!.controller, D, 'and the spell stayed with its caster');
 });
 
-// (R178: Maelstrom Charger's declined sacrifice used to be tested here, as a
+// (Maelstrom Charger's declined sacrifice used to be tested here, as a
 // resolving EffectDef with `{ sac: false }` pre-answered. It has no EffectDef
 // now — the designer's *"neither Triggered nor Activated"* makes it a cast-
 // window `asYouPlay` option, which this file's `resolve()` harness cannot
 // reach because there is nothing to resolve. The decline still has to speak,
 // and is guarded through a real play in
-// test/151-copy-and-moved-mods.test.ts: "R178 Maelstrom Charger: declining the
+// test/151-copy-and-moved-mods.test.ts: "CR 702.3g Maelstrom Charger: declining the
 // sacrifice says so and copies nothing".)
 
 // ── 8. AN X THAT IS ZERO, AND AN EMPTY ZONE ─────────────────────────────
@@ -498,10 +498,9 @@ test('Perpetual Construct modded with a zero-cost mod announces that no unit is 
 
 // ── 9. "EACH OPPONENT" WITH NOBODY THERE ────────────────────────────────
 //
-// ⚠ MOVED OUT — R209 / CARD-TODO #74. Restitution, Vroot and Flzzz used to be
-// tested here, and they were the three members of R25's "each opponent over a
-// region holding nobody else" family that the OLD FUZZ happened to reach. R187
-// then repaired the other ten and put them in
+// ⚠ MOVED OUT — CARD-TODO #74. Restitution, Vroot and Flzzz used to be
+// tested here, and they were the three members of CR 601.4d's "each opponent over a
+// region holding nobody else" family that the OLD FUZZ happened to reach. The CT-70 repair then fixed the other ten and put them in
 // `test/158-silent-region-branches.test.ts`, which left the family split across
 // two files — and §11 below and 158's own class test made the SAME house-rule
 // claim about disjoint card lists, so when the family next grew neither file
@@ -585,11 +584,11 @@ test('every card fixed here is one the whole-pool drill also watches', () => {
     ...STACK_GONE.map(([c]) => c),
     ...TARGET_GONE.map(([c]) => c),
     ...CARRIER_GONE.map(([c]) => c),
-    // (NO_OPPONENT's three moved to 158 with the rest of their family — R209)
+    // (NO_OPPONENT's three moved to 158 with the rest of their family — CR D7.3)
     'Abduct', 'Divine Intervention', 'Organic Exchange', 'Siphon Life',
     'Tides of the Cosmos', 'Perpetual Construct', 'Afflicting Anima', 'Swarmling',
     'Dragnol', 'Spore of Regenesis', 'Murkdrop Distiller', 'The Bonesculptor',
-    // (Cosmic Conspirator was here until R104 turned it into a replacement —
+    // (Cosmic Conspirator was here until it became a replacement (CR 708.3) —
     // see the note above. It carries no EffectDef now, by construction, so the
     // drill cannot and should not watch it.)
   ];

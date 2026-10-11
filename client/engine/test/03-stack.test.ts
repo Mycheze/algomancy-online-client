@@ -35,7 +35,7 @@ test('the stack: negate & fizzle, spell units, priority order', () => {
   pick(h, { stack: h.state.stack[0]!.id });   // negate own Lillik (legal-shaped)
   pass(h); pass(h);   // resolve Dreadwave: negates Lillik, spawns 6/4
   assert.ok(unitsOf(h, D).some(u => u.card === 'Dreadwave Devourer'), 'Dreadwave spawned as a unit');
-  // R68: negation is REMOVAL — Lillik left the stack the instant Dreadwave
+  // CR 704.4: negation is REMOVAL — Lillik left the stack the instant Dreadwave
   // resolved, and no further priority round is spent popping a dead item
   assert.equal(h.state.stack.length, 0, 'the negated Lillik is off the stack already');
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Leaping Lillik'), 'negated spell unit never spawned');
@@ -84,7 +84,7 @@ test('bounded triggers & battle-scoped ordinal counters', () => {
   pass(h); pass(h);                              // resolve arc → Ignis dies, two triggers fire
   assert.ok(!ent(h, f1), 'Ignis died');
   assert.equal(h.state.battleCounters[region]![`allyDeaths:${A}`], 2, 'second ally death counted');
-  // two simultaneous triggers for A → A orders them (R2): Reclaimer resolves first
+  // two simultaneous triggers for A → A orders them (CR 706.5): Reclaimer resolves first
   const dec = h.decision;   // fresh path: TS narrowed h.state.decision to null above
   assert.equal(dec?.kind, 'orderTriggers', 'owner orders simultaneous triggers');
   const opts = dec!.options.map(o => o.label);

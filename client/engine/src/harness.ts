@@ -10,7 +10,7 @@ export class Harness {
   state: GameState;
   /** THE HOTSEAT FIREHOSE — every seat's lines in one array, in order.
    *
-   * ⚠ R203 / CT-84: there are no seats in here and no `visibleToSeat` near it,
+   * ⚠ CT-84 (see 174-secrecy-is-seat-aware): there are no seats in here and no `visibleToSeat` near it,
    * so `log` cannot answer "who was allowed to read this?" and an assertion
    * written against it is unfalsifiable as a secrecy claim. It stays flat
    * because the hotseat UI has exactly one screen and genuinely wants that.

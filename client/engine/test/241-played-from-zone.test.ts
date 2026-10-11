@@ -1,4 +1,4 @@
-/* R263 — WHERE A MID-RESOLUTION PLAY CAME FROM.
+/* CR 701.4a — WHERE A MID-RESOLUTION PLAY CAME FROM.
  *
  * The owner, answering round-32 Q3 (verbatim): *"I've answered this before.
  * Those cards are still cast. It matters WHERE they come from. If the card
@@ -6,8 +6,8 @@
  * cache or bin or somewhere else, it's not played from the hand."*
  *
  * `playInline` (batch-water-a) is the shared helper for a card played during
- * another card's resolution. Under R198 that play reaches the stack properly,
- * but it carried NO R49 `from` marker at all — so Proph and Stalwart Sentinel,
+ * another card's resolution. Under CR 701.4 that play reaches the stack properly,
+ * but it carried NO CR 410.6 `from` marker at all — so Proph and Stalwart Sentinel,
  * which print *"when you play a card from anywhere other than your hand"*,
  * read a blank and fired for NOBODY. Not "from hand" (a correct silence) and
  * not "from elsewhere" (a correct fire): neither.
@@ -131,7 +131,7 @@ function inlinePlayCallSites(): { file: string; args: string }[] {
   return out;
 }
 
-test('R263 §1: every mid-resolution play names the zone it came out of', () => {
+test('CR 701.4a: every mid-resolution play names the zone it came out of', () => {
   const sites = inlinePlayCallSites();
   // POSITIVE CONTROL. A scan that matched nothing passes forever and looks
   // exactly like one that works.
@@ -151,7 +151,7 @@ test('R263 §1: every mid-resolution play names the zone it came out of', () => 
     'the pool splits both ways — if every caller says the same thing, one of them is wrong');
 });
 
-test('R263 §1: the zone is REQUIRED, so the compiler asks the question first', () => {
+test('CR 701.4a: the zone is REQUIRED, so the compiler asks the question first', () => {
   const src = readFileSync(join(SETS, 'batch-water-a.ts'), 'utf8');
   assert.ok(/export type InlinePlayOpts = \{[\s\S]*?\n  from: InlinePlayZone;/.test(src),
     'InlinePlayOpts.from must be non-optional — `from?:` lets a caller stay silent');
@@ -166,7 +166,7 @@ test('R263 §1: the zone is REQUIRED, so the compiler asks the question first', 
  * correctly silent one.
  */
 
-test('R263 §2 control: Proph and Stalwart Sentinel do fire on an ordinary play from elsewhere', () => {
+test('CR 410.6 control: Proph and Stalwart Sentinel do fire on an ordinary play from elsewhere', () => {
   const h = new Harness(24100);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -193,7 +193,7 @@ test('R263 §2 control: Proph and Stalwart Sentinel do fire on an ordinary play 
 
 /* ═══ §3 HOOBA-PON — "from your hand", so a correct SILENCE ══════════════ */
 
-test('R263 §3: Hooba-Pon plays from the hand, so Proph and Stalwart Sentinel stay quiet', () => {
+test('CR 701.4a: Hooba-Pon plays from the hand, so Proph and Stalwart Sentinel stay quiet', () => {
   const h = new Harness(24101, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -207,22 +207,22 @@ test('R263 §3: Hooba-Pon plays from the hand, so Proph and Stalwart Sentinel st
   pass(h); pass(h);                                // the attack trigger resolves
   const drew = draws(h, A);
   decide(h, l => l === 'Hooba-Pon');               // pay for the unit in hand
-  if (h.state.decision) decide(h, () => true);     // R29: where it is played into
-  drain(h);                                        // R198's window, then it lands
+  if (h.state.decision) decide(h, () => true);     // CR 602.7: where it is played into
+  drain(h);                                        // CR 703.5's window, then it lands
 
   assert.ok(ent(h, proph) && ent(h, sentinel), 'both watchers are still on the board');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Hooba-Pon').length, 2,
     'the play really happened — otherwise the silence below proves nothing');
   assert.deepEqual(playZones(h, 'Hooba-Pon').filter(z => z.type !== 'spawned'),
     [{ type: 'cardPlayed', from: 'hand' }],
-    'R49: the play announced the hand as its zone');
+    'CR 410.6: the play announced the hand as its zone');
   assert.equal(draws(h, A), drew, 'Proph did NOT draw — the card came out of the hand');
   assert.equal(ent(h, sentinel)!.counters, 0, 'and the Sentinel took no counters');
 });
 
 /* ═══ §4 INSIDIOUS INVITATION — "from hand", the same silence ════════════ */
 
-test('R263 §4: Insidious Invitation plays from each seat own hand, so neither watcher fires', () => {
+test('CR 701.4a: Insidious Invitation plays from each seat own hand, so neither watcher fires', () => {
   const h = new Harness(24102, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -244,7 +244,7 @@ test('R263 §4: Insidious Invitation plays from each seat own hand, so neither w
   assert.ok(unitsOf(h, A).some(u => u.card === 'Echo of Despair'), 'the play really happened');
   assert.deepEqual(playZones(h, 'Echo of Despair').filter(z => z.type !== 'spawned'),
     [{ type: 'cardPlayed', from: 'hand' }],
-    'R49: out of the playing seat own hand');
+    'CR 410.6: out of the playing seat own hand');
   assert.equal(draws(h, A), drew, 'Proph did NOT draw');
   assert.equal(ent(h, sentinel)!.counters, 0, 'and the Sentinel took no counters');
 });
@@ -256,7 +256,7 @@ test('R263 §4: Insidious Invitation plays from each seat own hand, so neither w
  * both watchers fire — and this is the one mid-resolution play that feeds them.
  */
 
-test('R263 §5: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows', () => {
+test('CR 410.6: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows', () => {
   const h = new Harness(24103, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -290,7 +290,7 @@ test('R263 §5: Tides of the Cosmos plays off the top of the deck, so Proph draw
 
 /* ═══ §6 THE IN-PLACE PATH ══════════════════════════════════════════════
  *
- * `playInline` has TWO paths, and the marker has to ride both. R198's push
+ * `playInline` has TWO paths, and the marker has to ride both. The push
  * path (§3-§5 above) builds a StackItem and lets `commitItem` / `resolveItem`
  * carry `from` onto the events. Outside a priority window there is no stack to
  * push to and the play happens in place, announcing itself on a hand-rolled
@@ -300,18 +300,18 @@ test('R263 §5: Tides of the Cosmos plays off the top of the deck, so Proph draw
  */
 
 /** ⚠ THE REGION IS LOAD-BEARING. A trigger only hears what happens where it is
- * standing (R12), so a rig that plays into region 0 while the watchers stand
+ * standing (CR 601.1d), so a rig that plays into region 0 while the watchers stand
  * in their home region proves nothing and looks like a clean pass. */
 const inlineCtx = (e: E, seat: Seat) => ({
   controller: seat,
-  sourceName: 'R263 test rig',
+  sourceName: 'zone test rig',
   region: e.homeRegion(seat),
   targets: [],
   event: null,
   choose: () => { throw new Error('the in-place unit path must ask nothing'); },
 });
 
-test('R263 §6: the in-place path stamps the zone on the body own spawn event', () => {
+test('CR 701.4a: the in-place path stamps the zone on the body own spawn event', () => {
   const h = new Harness(24104);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -344,7 +344,7 @@ test('R263 §6: the in-place path stamps the zone on the body own spawn event', 
   assert.equal(ent(h, sentinel)!.counters, 2, 'and the Sentinel grew');
 });
 
-test('R263 §6: an in-place SPELL play stamps the zone on its hand-rolled spellPlayed', () => {
+test('CR 701.4a: an in-place SPELL play stamps the zone on its hand-rolled spellPlayed', () => {
   const h = new Harness(24105);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -364,14 +364,14 @@ test('R263 §6: an in-place SPELL play stamps the zone on its hand-rolled spellP
 
 /* ═══ §7 A TOKEN IS NOT A CARD ══════════════════════════════════════════
  *
- * R129: `token: false` is a stated fact on a play event, not a default, and a
+ * CR 304.2, 304.15: `token: false` is a stated fact on a play event, not a default, and a
  * created token is not a played card at all. It must never carry a `from` —
  * that is what keeps "played from anywhere other than your hand" off every
  * effect-created body, and it is the assertion that makes §5's fire mean
  * something narrower than "any arrival".
  */
 
-test('R263 §7: an effect-created token carries no zone at all, so neither watcher fires', () => {
+test('CR 410.6b: an effect-created token carries no zone at all, so neither watcher fires', () => {
   const h = new Harness(24106);
   toDeployment(h);
   const A = h.state.deployPlayer!;

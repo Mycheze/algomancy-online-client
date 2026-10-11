@@ -1,4 +1,4 @@
-/* R220 — scenario batch E: EIGHT CONJUNCTIONS.
+/* scenario batch E (see 14-scenario-tester.md): EIGHT CONJUNCTIONS.
  *
  * See `scenarios.ts` for the type and the worked example (`lithoghul-donated`),
  * and `docs/14-scenario-tester.md` for why any of this exists.
@@ -41,7 +41,7 @@
  *
  * The owner's own three examples are all conjunctions, not single cards:
  * "drawing extra cards in the draft step" is the card step MEETING an effect
- * that draws; "not erasing spell tokens" is regroup MEETING R11; "wisps not
+ * that draws; "not erasing spell tokens" is regroup MEETING CR 506.2; "wisps not
  * sacrificing themselves" is a self-sacrifice clause MEETING whatever is
  * supposed to stop it. A single-clause scenario structurally cannot find any of
  * those, and batches A–D were entirely single-clause. Each entry below names
@@ -52,7 +52,7 @@
  *
  * `wispweaver-wisps-attack-alone` is the find. Infernal Wispweaver prints
  * "Your wisps gain +2/+1 and do not sacrifice themselves after combat" with no
- * region qualifier, and the engine applies R12 (a static reaches only its own
+ * region qualifier, and the engine applies CR 601.2 (a static reaches only its own
  * region — `E.staticsFor`: `a.region === target.region`). Send the wisps in and
  * keep the 2/1 weaver at home — which is how anybody would play the card — and
  * the wisps drop from 2/2 to 0/1 the instant they cross, and sacrifice
@@ -68,7 +68,7 @@
  * is "drawing extra cards in the draft step", and `/api/scenario/open` deals
  * every scenario room with `createRoom(..., 'shared', ...)` — the mode is a
  * literal in `main.ts`, and `Scenario` has no field for it. So no scenario in
- * any batch can open a draft step, a pack, or a merge. R162 folded 'shared'
+ * any batch can open a draft step, a pack, or a merge. A shared game counts as constructed (CR 901.7b), which folds 'shared'
  * into the CONSTRUCTED branch of the card step, so `blurf-worldbender-card-step`
  * below reaches the same PLACE the draft step's replacement reaches — but it is
  * not the draft step, and pretending otherwise would be the thing docs/13 §5
@@ -78,18 +78,18 @@
  * ── FOUR THINGS THAT COST TIME (A–D's list, plus one) ────────────────────
  *
  * 1. A VALUE IMPORT FROM `scenarios.ts` IS A STARTUP CRASH. See the ⚠ below.
- * 2. THE HASTE STEP IS NOT SKIPPED FOR YOU. R18 opens it whenever a seat HOLDS
- *    a payable haste card, so a scenario dealing one into a hand must put its
+ * 2. THE HASTE STEP IS NOT SKIPPED FOR YOU. It once opened only when a seat HELD
+ *    a payable haste card, so a scenario dealing one into a hand had to put its
  *    own `doneHaste` in the prologue. TWO of the eight below deliberately do
  *    NOT, because the haste step is where the owner has to stand
  *    (`dispatch-courier-haste-unit`, `harbinger-tokens-through-regroup`); they
  *    declare `phase: 'planning'`, which is where the haste step lives — it is a
  *    STEP of the planning phase, not a phase of its own.
- * 3. ⚠ R18's TRIGGER IS NOT ONLY "A HASTE CARD IN HAND". `E.startHasteStep`'s
- *    `canHaste` also says yes to a grant-funded play (Dispatch Courier, R97)
- *    and to a cache release whose prophecy is fulfilled (R42). ⚠ THIS NOTE IS
- *    HISTORY: R228 deleted `canHaste` outright and the step now opens
- *    unconditionally, and the scenario that turned on it
+ * 3. ⚠ THE OLD HASTE-STEP TRIGGER WAS NOT ONLY "A HASTE CARD IN HAND". `E.startHasteStep`'s
+ *    `canHaste` also says yes to a grant-funded play (Dispatch Courier)
+ *    and to a cache release whose prophecy is fulfilled (CR 803.7h). ⚠ THIS NOTE IS
+ *    HISTORY: canHaste was deleted outright and the step now opens
+ *    unconditionally (CR 504.5), and the scenario that turned on it
  *    (`tithe-enforcer-haste-release`) went with the 2026-09-21 errata. Kept
  *    because the reasoning below still explains why these boards declare
  *    `phase: 'planning'`.
@@ -117,21 +117,21 @@ export const BATCH_E: Record<string, Scenario> = {
    * ① REGROUP × SPELL TOKENS — and the token's own creator counting them.
    *
    * THE TWO RULES:
-   *   · R11 step (+): every spell token is erased at regroup.
+   *   · CR 506.2 step (+): every spell token is erased at regroup.
    *   · Harbinger of Immolation's `[Augment]` static: "Your spell tokens stay
    *     through regroup" (`StaticMod.survivesRegroup`, asked per token by
    *     `E.startRegroup`).
-   * and the join is the ORDER inside the R11 sequence, which nothing outside
+   * and the join is the ORDER inside the CR 506.2 sequence, which nothing outside
    * `engine/test/12-fire-a.test.ts` has ever exercised.
    *
    * WHY IT IS NOT A "DOES THE CARD WORK" TEST. Three separate things have to
    * line up in one step and each is a different rule:
    *
-   *  1. THE TOKEN RIDES OUT (R87). The Fireball is sent with the attack, so
+   *  1. THE TOKEN RIDES OUT (CR 604.2c). The Fireball is sent with the attack, so
    *     when regroup begins it is standing in the ENEMY's region while its
    *     protector is at home. The survival query is a STATIC and every static
-   *     is region-scoped (R12), so read one line earlier it would answer NO.
-   *     R11 step (1) brings spell tokens home before the query runs — a line
+   *     is region-scoped (CR 601.1d), so read one line earlier it would answer NO.
+   *     CR 506.2 step (1) brings spell tokens home before the query runs — a line
    *     `startRegroup` carries a comment about precisely because it "never used
    *     to matter (every token was erased two steps below)".
    *  2. THE QUERY IS ASKED BEFORE STEP (3), not after. Step (3) tears down the
@@ -152,8 +152,8 @@ export const BATCH_E: Record<string, Scenario> = {
   'harbinger-tokens-through-regroup': {
     id: 'harbinger-tokens-through-regroup',
     card: 'Harbinger of Immolation',
-    why: 'R11 regroup MEETS the survivesRegroup static, with the token riding out '
-      + 'to the enemy region first (R87) so the region-scoped query (R12) has to be '
+    why: 'The regroup step MEETS the survivesRegroup static, with the token riding out '
+      + 'to the enemy region first so the region-scoped query has to be '
       + 'asked after everyone comes home. Then the survivor feeds the Harbinger\'s own '
       + '"X = 1 + your spell tokens" trigger, so the number on the second token is the '
       + 'answer to the first question. The card stayed dead through two playtest '
@@ -175,7 +175,7 @@ export const BATCH_E: Record<string, Scenario> = {
     initiative: YOU,
     you: {
       // r/1, printed timing [Haste] — so holding it is what OPENS the haste
-      // step (R18), and the scenario deliberately lands INSIDE that step.
+      // step, and the scenario deliberately lands INSIDE that step.
       hand: ['Molten Upheaval'],
       // the Harbinger (which does nothing while it stands there — its trigger
       // is end-of-turn and its static is a property of the tokens), plus one
@@ -193,8 +193,8 @@ export const BATCH_E: Record<string, Scenario> = {
     prologue: () => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // NO `doneHaste`: the haste step is where the owner has to stand. R18
-      // opened it because seat 0 holds a payable haste card, and seat 1 does
+      // NO `doneHaste`: the haste step is where the owner has to stand.
+      // Seat 0 holds a payable haste card, and seat 1 does
       // not, so `hasteDone` is [false, true] — the owner's step, alone.
     ],
     // the haste step is a STEP OF THE PLANNING PHASE, not a phase; `s.phase`
@@ -211,11 +211,11 @@ export const BATCH_E: Record<string, Scenario> = {
    * THE TWO RULES, meeting at one turn boundary:
    *   · The card step, REPLACED. Worldbender: "Skip your draft step. When you
    *     do, draw a card…", implemented as `CardBehavior.replaceCardStep` and
-   *     consulted from `E.startTurn` in mode 'shared' (R162).
+   *     consulted from `E.startTurn` in mode 'shared' (CR 901.7b).
    *   · An effect that hands you a card from OUTSIDE the step. Blurf:
    *     "[Augment] At the end of turn, cache the top card of the deck. It gains
    *     'Prophecy: 1 turn passes'. You gain debt equal to its cost."
-   * and R43's tick sits exactly between them: `startTurn` runs the card step and
+   * and CR 803.7e's tick sits exactly between them: `startTurn` runs the card step and
    * then `refreshProphecies()`, in that order, in the same method.
    *
    * ⚠ BATCH B ALREADY HAS `worldbender-card-step`, and it is the single-card
@@ -223,7 +223,7 @@ export const BATCH_E: Record<string, Scenario> = {
    * question it asks is one no card prints an answer to:
    *
    *   WHEN DOES "1 turn passes" TICK? The card is cached at the end of turn 1.
-   *   R43 counts forward from the moment of caching (`p.turn`), so `turn 2 -
+   *   CR 803.7e counts forward from the moment of caching (`p.turn`), so `turn 2 -
    *   turn 1 >= 1` and it is fulfilled AT THE TOP OF THE VERY NEXT TURN — the
    *   same instant Worldbender is replacing the card step. The other reading —
    *   a whole turn has to pass, so turn 3 — is equally natural from the English
@@ -242,7 +242,7 @@ export const BATCH_E: Record<string, Scenario> = {
     id: 'blurf-worldbender-card-step',
     card: 'Blurf',
     why: 'the replaced card step MEETS an effect that adds a card outside it, at the '
-      + 'one instant both happen. The ruling in it: R43 counts a granted "1 turn '
+      + 'one instant both happen. The ruling in it: the prophecy rule counts a granted "1 turn '
       + 'passes" forward from the moment of caching, so a card cached at the end of '
       + 'turn 1 is free at the TOP of turn 2 — not turn 3. prophesy has fired twice in '
       + 'the project\'s history and this is the granted-prophecy sibling of it.',
@@ -309,7 +309,7 @@ export const BATCH_E: Record<string, Scenario> = {
    *     is an exact implementation rather than an approximation, because the
    *     Wisp has exactly one ability.
    *
-   * THE JOIN IS R12. `E.staticsFor` gathers only radiators standing in the
+   * THE JOIN IS CR 601.1d. `E.staticsFor` gathers only radiators standing in the
    * TARGET'S OWN REGION (`a.region === target.region`), with no exception for
    * this card. A battle is fought in the DEFENDER's region, so the moment the
    * wisps attack they are no longer in the weaver's region — and the weaver is
@@ -334,8 +334,8 @@ export const BATCH_E: Record<string, Scenario> = {
     id: 'wispweaver-wisps-attack-alone',
     card: 'Infernal Wispweaver',
     why: 'THE SELF-SACRIFICE SEAM, and the engine contradicts the printed line. "Your '
-      + 'wisps … do not sacrifice themselves after combat" has no region in it; R12 '
-      + 'scopes every static to its own region, and a battle is fought in the '
+      + 'wisps … do not sacrifice themselves after combat" has no region in it; the rules '
+      + 'scope every static to its own region, and a battle is fought in the '
       + "DEFENDER's. Attack with the wisps and leave the 2/1 weaver at home — the way "
       + 'anyone would play it — and they lose the +2/+1 as they cross and sacrifice '
       + 'themselves anyway, which is the playtest complaint the card was un-parked for. '
@@ -374,7 +374,7 @@ export const BATCH_E: Record<string, Scenario> = {
     prologue: () => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // neither seat holds a haste card, so R18 never opens the step
+      // runPrologue walks both seats through the haste step
     ],
     phase: 'battle',
     priority: null,
@@ -393,7 +393,7 @@ export const BATCH_E: Record<string, Scenario> = {
    *   · Waxen Witness: "[Switch1] Cache target unit. It gains 'Prophecy — One
    *     Battle Passes'." — a GRANTED prophecy, not a printed banner, so it
    *     goes through `normalizeProphecy` and the `battlesPass` rule row.
-   *   · R43's battle counter: in 1v1 BOTH the initiative battle and the
+   *   · CR 803.7f's battle counter: in 1v1 BOTH the initiative battle and the
    *     counterattack tick it, so "one battle" is genuinely one round and the
    *     prophecy comes true IN THE SAME TURN it was granted.
    *
@@ -415,7 +415,7 @@ export const BATCH_E: Record<string, Scenario> = {
   'waxen-witness-battle-prophecy': {
     id: 'waxen-witness-battle-prophecy',
     card: 'Waxen Witness',
-    why: 'a GRANTED prophecy (not a printed banner) fulfilled by R43\'s battle tick '
+    why: 'a GRANTED prophecy (not a printed banner) fulfilled by the prophecy battle tick '
       + 'inside one turn, then released with playCached — two actions with 2 and 10 '
       + 'repetitions in the entire recorded history of the project. The join nothing '
       + 'prints an answer to: the cache holds a CARD, so a 13/6 goes in and a 10/3 '
@@ -455,7 +455,7 @@ export const BATCH_E: Record<string, Scenario> = {
     prologue: () => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // no haste card in either hand, so R18 never opens the step; the owner
+      // runPrologue walks both seats through the haste step; the owner
       // lands on his own attack declaration
     ],
     phase: 'battle',
@@ -469,11 +469,11 @@ export const BATCH_E: Record<string, Scenario> = {
    *
    * THE TWO RULES:
    *   · Proph: "When you play a unit or spell from anywhere other than your
-   *     hand, [Switch1] Draw a card." R49 stamps `data.from` on both events, so
+   *     hand, [Switch1] Draw a card." The engine stamps `data.from` on both events (CR 410.6), so
    *     a cache release reads as `from: 'cache'` and is exactly what this
    *     watches.
-   *   · R37: APPLYING A MOD IS NOT PLAYING A CARD. An augment out of the cache
-   *     fires no play event at all — and R41/R42 make it FREE out of a cache
+   *   · CR 701.2: APPLYING A MOD IS NOT PLAYING A CARD. An augment out of the cache
+   *     fires no play event at all — and CR 403.3c, 803.7k make it FREE out of a cache
    *     entry whose prophecy is fulfilled, so it leaves the same zone by the
    *     same permission, for the same price, in the same step.
    *
@@ -483,8 +483,8 @@ export const BATCH_E: Record<string, Scenario> = {
    * has almost certainly never fired at all.
    *
    * THE ORDER IN THE SCRIPT IS LOAD-BEARING. Proph's ability is `[Switch1]` —
-   * bounded, once per turn (R9). Doing the PLAY first would spend the budget
-   * and make the augment's silence unreadable ("did R37 stop it, or was the
+   * bounded, once per turn (CR 109.9). Doing the PLAY first would spend the budget
+   * and make the augment's silence unreadable ("did CR 701.2a stop it, or was the
    * trigger already used?"). Augment first, and the silence is the rule.
    *
    * The board is built so the prophecy is fulfilled THE INSTANT it is made:
@@ -501,7 +501,7 @@ export const BATCH_E: Record<string, Scenario> = {
     id: 'proph-cache-release-vs-mod',
     card: 'Proph',
     why: 'the same card leaves the same zone twice, one step apart, and only one of '
-      + 'them is a PLAY. R49 gives a cache release `from: cache` (Proph draws); R37 '
+      + 'them is a PLAY. The rules give a cache release `from: cache` (Proph draws); the play-vs-mod errata '
       + 'says applying a mod is not playing a card (Proph must not). Both are free off '
       + 'a fulfilled prophecy, so price, permission and window are identical and the '
       + 'rule is the only difference. playCached has ten repetitions ever; the '
@@ -547,7 +547,7 @@ export const BATCH_E: Record<string, Scenario> = {
         { card: 'Resonant Form' },
       ],
       // Air Plant's banner is [2lg], twice: four mana with two to spare, and a
-      // wood pip to meet. R301 charges a banner's affinity — before it this
+      // wood pip to meet. A banner's affinity is charged (CR 803.7d) — before that ruling this
       // was six flat light and both prophesies would now be refused. Neither
       // RELEASE costs anything, which is still the point.
       resources: { light: 5, wood: 1 },
@@ -573,12 +573,12 @@ export const BATCH_E: Record<string, Scenario> = {
    * rider when the thing it is riding on goes away.
    *
    * THE TWO RULES, and they say opposite things:
-   *   · R79 {Unstable}: a modded card is Unstable — "when it dies or is erased,
+   *   · CR 720.7 {Unstable}: a modded card is Unstable — "when it dies or is erased,
    *     IT AND ALL OF ITS MODS ARE ERASED WITH IT" (Manual p.35). The log says
    *     so out loud the moment the graft lands: "it is now Unstable".
    *   · Leaving play WITHOUT dying. `E.leavePlay` — the path a recall and a
    *     cache share — pushes every nontoken mod into its OWNER'S BIN instead.
-   *     Neither "dies" nor "is erased" is what happened, so R79's sentence
+   *     Neither "dies" nor "is erased" is what happened, so CR 720.7's sentence
    *     never fires.
    * A recall is the cheapest way to put those two in the same instant, and
    * Vaporweave Eidolon recalls ITSELF for nothing: "[zero]: [Switch1] Recall
@@ -588,8 +588,7 @@ export const BATCH_E: Record<string, Scenario> = {
    * seconds rather than an assertion: `[zero]:` is the Eidolon's GRAFT CAUSE,
    * so activating it fires the base ability AND the grafted rider as ONE
    * composite (Manual p.33). The host removes itself from play in the middle of
-   * that resolution. Does the rider still deliver? R167 records this exact
-   * family being silently half-dead once already — a printed "[Augment] When I
+   * that resolution. Does the rider still deliver? This exact family has been silently half-dead once already — a printed "[Augment] When I
    * despawn" that worked on a death and did nothing on a recall or a cache,
    * measured at destroy 1 / recall 0 / cache 0.
    *
@@ -600,10 +599,10 @@ export const BATCH_E: Record<string, Scenario> = {
   'graft-host-recalls-itself': {
     id: 'graft-host-recalls-itself',
     card: 'Vaporweave Eidolon',
-    why: 'R79 says a modded card is Unstable and its mods are erased with it; leaving '
+    why: 'A modded card is Unstable and its mods are erased with it; leaving '
       + 'play WITHOUT dying bins them instead. A self-recall puts both in one instant. '
       + 'The third question in the same click: the host removes itself mid-resolution — '
-      + 'does the grafted rider still deliver? R167 records this exact family being '
+      + 'does the grafted rider still deliver? CARD-TODO #50 records this exact family being '
       + 'silently dead on recalls and caches while working on deaths.',
     expect:
       'You are in DEPLOYMENT. Vaporweave Eidolon is a 4/3 that prints "[zero]: Recall\n'
@@ -656,9 +655,9 @@ export const BATCH_E: Record<string, Scenario> = {
    * card that is not a haste card.
    *
    * THE TWO RULES:
-   *   · R18: only [Haste] cards may be played in the haste step
+   *   · CR 504.2: only [Haste] cards may be played in the haste step
    *     (`playAtTiming`: "only haste cards during the haste step").
-   *   · R97: a `PlayPermission` widens that. Dispatch Courier — "[Augment] Each
+   *   · CR 803.2b: a `PlayPermission` widens that. Dispatch Courier — "[Augment] Each
    *     turn, you may play a unit during the mana step as if it had [Haste]" —
    *     is playtest report #74 ("Dispatch Courier didn't give me the option to
    *     play a card with haste"; it did not, because nothing anywhere asked).
@@ -678,19 +677,18 @@ export const BATCH_E: Record<string, Scenario> = {
    * before the battle, so it can attack in the same turn. That is the reason
    * the permission is worth anything, and it is the last line of the check.
    *
-   * ⚠ THIS SCENARIO ALSO PROVES R18'S OPENING CONDITION IS NOT WHAT IT LOOKS
-   * LIKE. The owner's hand holds no [Haste] card whatsoever, and the haste step
-   * is open anyway — `E.startHasteStep`'s `canHaste` consults the grant. If the
-   * board opens straight into the battle phase instead, the step never asked.
+   * ⚠ THE HASTE STEP OPENS EVERY TURN (CR 504.5). The owner's hand holds no
+   * [Haste] card whatsoever and the step is open anyway; what the grant changes
+   * is what may be PLAYED in it (CR 504.7a).
    */
   'dispatch-courier-haste-unit': {
     id: 'dispatch-courier-haste-unit',
     card: 'Dispatch Courier',
-    why: 'R18 says only haste cards in the haste step; R97 lets a grantor widen that '
+    why: 'Only haste cards are played in the haste step; a grantor widens that '
       + 'by exactly one play per turn. The join is the allowance — two playable units '
       + 'in hand, and the second must stop being offered. Report #74 is this card doing '
-      + 'nothing because nothing asked, and the same `canHaste` is why the step is open '
-      + 'at all with no haste card in hand.',
+      + 'nothing because nothing asked. The step itself opens every turn, haste card '
+      + 'in hand or not.',
     expect:
       'You are in the HASTE STEP — look at the board and note that your hand holds no\n'
       + '[Haste] card at all. Dispatch Courier on your board is what opened it.\n'
@@ -722,8 +720,8 @@ export const BATCH_E: Record<string, Scenario> = {
     prologue: () => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // NO `doneHaste` — the haste step is the whole scenario. R18 opened it
-      // for seat 0 off the Courier's grant, not off a card in hand, and seat 1
+      // NO `doneHaste` — the haste step is the whole scenario. Seat 0 plays in
+      // it off the Courier's grant, not off a card in hand, and seat 1
       // has nothing to do in it (`hasteDone` is [false, true]).
     ],
     phase: 'planning',
@@ -739,10 +737,10 @@ export const BATCH_E: Record<string, Scenario> = {
    * timing, and `hasteWithUsedMana` has no printed card at all.
    *
    * WHAT WAS AND WAS NOT LOST. `prophesy` and `playCached` still run end to
-   * end through the two Air Plant scenarios above, and R43's condition is
+   * end through the two Air Plant scenarios above, and CR 803.7e's condition is
    * driven in full by `36-cache-prophecy` on a synthetic card. The one
    * property that went with it — "turn 3's haste step OPENS for a card that is
-   * not in hand" — had already been made unremarkable by R228, which deleted
+   * not in hand" — had already been made unremarkable by the change that made the haste step unconditional (CR 504.5), which deleted
    * `canHaste` and opens the step unconditionally; `200-haste-step-is-
    * unconditional` is where that lives now.
    *

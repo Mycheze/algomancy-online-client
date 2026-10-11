@@ -10,7 +10,7 @@
  * Identity is per-zone and deliberately weak:
  *   field/mod entity  e<id>            stable (engine entity id)
  *   stack item        s<id>            stable (engine stack id)
- *   cache entry       c<uid>           stable (R41 uid), else name+occurrence
+ *   cache entry       c<uid>           stable (cache uid), else name+occurrence
  *   hand / bin card   h<seat>:<name>#k index-free: the k-th copy of that name
  *
  * Hand and bin hold bare CardNames with no identity of their own, so the k-th
@@ -115,7 +115,7 @@ export function census(s: GameState): Census {
     nameKeys(pl.bin, `b${seat}:`).forEach((key, i) => slots.push({
       key, zone: 'bin', seat, card: pl.bin[i]!, anchor: anchorOf('bin', seat),
     }));
-    // cache entries carry a stable uid (R41); pre-uid entries fall back to
+    // cache entries carry a stable uid; pre-uid entries fall back to
     // name+occurrence like hand and bin
     const cache = pl.cache ?? [];
     const cacheFallback = nameKeys(cache.map(c => c.card), `c${seat}:`);

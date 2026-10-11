@@ -4,7 +4,7 @@
     "kind": "a-sources-disagree",
     "rule": "concepts.cards.faces.back-not-token",
     "tier": 3,
-    "summary": "R101 transcribes the back face Beyond, Codex Incarnate with the type line \"Book Token Unit\". R157 §10 (owner, later) rules that the back face is NOT a token.",
+    "summary": "The owner ruling of 2026-08-23 (“TRANSFORM: turning a card over is…”) transcribes the back face Beyond, Codex Incarnate with the type line \"Book Token Unit\". The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner, later) rules that the back face is NOT a token.",
     "seeAlso": [
       {
         "id": "D-U06-5",
@@ -13,26 +13,26 @@
     ],
     "sides": [
       {
-        "source": "R157",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "side. And the back is NOT a token."
       },
       {
-        "source": "R101",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> **Beyond, Codex Incarnate** — cost 0, 8/3, *Book Token Unit*"
       },
       {
-        "source": "R157",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "\"Turns back over. In all zones, other than play, it exists as the front"
       }
     ],
-    "resolution": "An owner call where the print has two readings. Checked 2026-10-10: the scan data/cards/Beyond-Codex-Incarnate.jpg prints the type line \"Book Token Unit\", as R101 transcribed it. R157 §10 reads that word as marking a face that never enters a deck (which is how the engine uses it), not as making the card a token, and R160 turns the card back over before it leaves play, so it reaches the bin as Scholar of the Void and can be recurred. The rules (concepts.cards.faces.back-not-token, types.tokens.back-face) state R157 §10 with basis owner, for sign-off. A judge who reads the type line literally would make the turned card a token while it is in play (so \"nontoken\" text would not count it); the bin result is the same either way."
+    "resolution": "An owner call where the print has two readings. Checked 2026-10-10: the scan data/cards/Beyond-Codex-Incarnate.jpg prints the type line \"Book Token Unit\", as the owner ruling of 2026-08-23 (“TRANSFORM: turning a card over is…”) transcribed it. The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) reads that word as marking a face that never enters a deck (which is how the engine uses it), not as making the card a token, and the owner ruling of 2026-08-25 (“WHEN a transformed card turns back…”) turns the card back over before it leaves play, so it reaches the bin as Scholar of the Void and can be recurred. The rules (concepts.cards.faces.back-not-token, types.tokens.back-face) state the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) with basis owner, for sign-off. A judge who reads the type line literally would make the turned card a token while it is in play (so \"nontoken\" text would not count it); the bin result is the same either way."
   },
   {
     "id": "D-U03-3",
     "kind": "f-register-chain-wrong",
     "rule": "concepts.targets.recheck",
     "tier": 2,
-    "summary": "R88 and R144 still say that a target restriction is asked when targets are chosen and never asked again at resolution. R324 (later) judges every target again against its restriction as the effect begins to resolve. The register marks R64 and R256 as amended by R324, but not R88 or R144.",
+    "summary": "The owner ruling of 2026-08-23 (“\"Target effect targeting me\" is a…”) and the owner ruling of 2026-08-24 (“deployment uses the stack, and a…”) still say that a target restriction is asked when targets are chosen and never asked again at resolution. The owner ruling of 2026-10-09 (“Every target is re-checked against its…”) (later) judges every target again against its restriction as the effect begins to resolve. The register marks the owner ruling of 2026-08-21 (“A bracketed cost is paid at…”) and the owner ruling of 2026-08-29 (“A RESTRICTIVE CLAUSE ON THE TARGET…”) as amended by the owner ruling of 2026-10-09 (“Every target is re-checked against its…”), but not the owner ruling of 2026-08-23 (“\"Target effect targeting me\" is a…”) or the owner ruling of 2026-08-24 (“deployment uses the stack, and a…”).",
     "seeAlso": [
       {
         "id": "D-U14-4",
@@ -41,59 +41,59 @@
     ],
     "sides": [
       {
-        "source": "R88",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "cast and is never re-asked (R5/R56), so the world may legally stop satisfying"
       },
       {
-        "source": "R144",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "re-asked at resolution**, and a card that needs it re-checked does so in its"
       },
       {
-        "source": "R324",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "When an item begins to resolve, every target it declared is judged again by the"
       }
     ],
-    "resolution": "R324 is later and designer-backed; the rule follows it. The register should mark R88's sentence, and the census sentence in R144, as amended by R324, as it already does for R64 and R256."
+    "resolution": "The owner ruling of 2026-10-09 (“Every target is re-checked against its…”) is later and designer-backed; the rule follows it. The register should mark the owner ruling of 2026-08-23 (“\"Target effect targeting me\" is a…”)’s sentence, and the census sentence in the owner ruling of 2026-08-24 (“deployment uses the stack, and a…”), as amended by the owner ruling of 2026-10-09 (“Every target is re-checked against its…”), as it already does for the owner ruling of 2026-08-21 (“A bracketed cost is paid at…”) and the owner ruling of 2026-08-29 (“A RESTRICTIVE CLAUSE ON THE TARGET…”). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U03-4",
     "kind": "f-register-chain-wrong",
     "rule": "concepts.abilities.triggered.per-target",
     "tier": 2,
-    "summary": "R161 §16, presented as current, says the engine still makes ONE trigger that creates two tokens for two targeted allies, and that the engine change was not made. Test 136 asserts two separate triggers on the stack. R184 credits the fix (the 'targeted' event's seat and kind) to \"R163\", and digital-rules.md has no R163.",
+    "summary": "The owner ruling of 2026-08-25 (“six of […] answers, and the one…”), presented as current, says the engine still makes ONE trigger that creates two tokens for two targeted allies, and that the engine change was not made. Test 136 asserts two separate triggers on the stack. The owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) credits the fix (the 'targeted' event's seat and kind) to \"R163\", and digital-rules.md has no R163.",
     "sides": [
       {
-        "source": "R161",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "left.** The owner says two *triggers*; this is one trigger creating two tokens."
       },
       {
-        "source": "R184",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "dispatched, carrying `formation` plus R163's `seat` + `kind`."
       },
       {
         "source": "file: client/engine/test/136-triggers-and-modes.test.ts",
-        "quote": "test('R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two', () => {"
+        "quote": "test('CR 109.3d: two targeted allies are TWO TRIGGERS on the stack, not one that makes two', () => {"
       }
     ],
-    "resolution": "The rule follows R157 §16 (two targets, two triggers), which the test now asserts. The register should mark R161 §16's approximation paragraph as closed by whichever ruling closed it, and either restore R163 or correct R184's citation of it."
+    "resolution": "The rule follows the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (two targets, two triggers), which the test now asserts. The register should mark the owner ruling of 2026-08-25 (“six of […] answers, and the one…”)’s approximation paragraph as closed by whichever ruling closed it, and either restore R163 or correct the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”)’s citation of it. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
   },
   {
     "id": "D-U03-5",
     "kind": "g-other",
     "rule": "concepts.targets.region",
     "tier": 4,
-    "summary": "Sources silent on whether a plain \"target unit\" can reach a unit in another region. R265 defines ally and enemy by region, and then reports an engine measurement that no unit target reaches another region; R12 says only that things exist in one region at a time.",
+    "summary": "Sources silent on whether a plain \"target unit\" can reach a unit in another region. The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) defines ally and enemy by region, and then reports an engine measurement that no unit target reaches another region; the owner ruling of 2026-08-18 (“Regions are exclusive”) says only that things exist in one region at a time.",
     "sides": [
       {
-        "source": "R265",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "Claim 3 — ally and enemy are region-scoped"
       },
       {
-        "source": "R12",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "**Things exist in exactly one region at a time.**"
       }
     ],
-    "resolution": "No printed, designer or owner sentence states the rule for plain unit targets. The rule states R265's measured behaviour at medium confidence, as the owner's law. Question for the owner only if some card is meant to target a unit in another region."
+    "resolution": "No printed, designer or owner sentence states the rule for plain unit targets. The rule states the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s measured behaviour at medium confidence, as the owner's law. Question for the owner only if some card is meant to target a unit in another region."
   },
   {
     "id": "D-U03-6",
@@ -103,7 +103,7 @@
     "summary": "How a once-per-turn limit works for a card in a bin (one use per player per card name, shared by copies in one bin) is an owner reading of \"per card\" for a card not in play. No printed or designer source.",
     "sides": [
       {
-        "source": "R124",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
       }
     ],
@@ -117,11 +117,11 @@
     "summary": "That \"an ally\" and \"target ally\" include the effect's own source rests on the owner's reading of the printed words (the pool says \"another\" when it means not-me). No designer source.",
     "sides": [
       {
-        "source": "R265",
+        "source": "owner ruling, adopted 2026-08-30",
         "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
       },
       {
-        "source": "R71",
+        "source": "owner ruling, adopted 2026-08-22",
         "quote": "**\"An ally\" MAY be the Wraith (or its host) ITSELF — a unit is its own"
       }
     ],
@@ -132,10 +132,10 @@
     "kind": "g-other",
     "rule": "concepts.targets.distinct",
     "tier": 4,
-    "summary": "Sources silent on whether two different grafts in one graft composite may target the same object. R307 rules distinct targets only within one part, and says so. The RAQ treats the whole composite as a single effect.",
+    "summary": "Sources silent on whether two different grafts in one graft composite may target the same object. The owner ruling of 2026-09-30 (“A retarget fills each slot legally…”) rules distinct targets only within one part, and says so. The RAQ treats the whole composite as a single effect.",
     "sides": [
       {
-        "source": "R307",
+        "source": "owner ruling, adopted 2026-09-30",
         "quote": "Not decided here: whether two **different** parts of a graft composite may"
       },
       {
@@ -150,18 +150,18 @@
     "kind": "g-other",
     "rule": "concepts.abilities.once.spent-on-use",
     "tier": 4,
-    "summary": "R113 says a bounded use is spent once the ability is put on the stack and that nothing hands it back after that; its own keep-list (and the engine) leaves the use unspent when a \"you may\" is declined or cannot be offered as the ability resolves, after it was stacked.",
+    "summary": "The owner ruling of 2026-08-23 (“a bounded use is spent by…”) says a bounded use is spent once the ability is put on the stack and that nothing hands it back after that; its own keep-list (and the engine) leaves the use unspent when a \"you may\" is declined or cannot be offered as the ability resolves, after it was stacked.",
     "sides": [
       {
-        "source": "R113",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "the ability is activated, or when it is put on the stack.** Before that moment the player"
       },
       {
-        "source": "R113",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "Hexbane Shiitake declined, or never asked in the end-of-turn window; Murkdrop Distiller with nothing in the bin to cache"
       },
       {
-        "source": "R113",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "> \"Its ability can only be triggered once per turn, but you can choose for each spell if"
       }
     ],
@@ -172,14 +172,14 @@
     "kind": "b-engine-only",
     "rule": "concepts.abilities.once.trashed",
     "tier": 3,
-    "summary": "Sources silent on how [Switch1] bounds a \"When I am trashed\" ability. R124's per-player-per-name limit covers abilities that listen from the bin; the engine fires a trash trigger from a fresh stand-in per trashed card, so two copies trashed in one turn both trigger.",
+    "summary": "Sources silent on how [Switch1] bounds a \"When I am trashed\" ability. The owner ruling of 2026-08-24 (“'leftBin': every bin removal goes through…”)’s per-player-per-name limit covers abilities that listen from the bin; the engine fires a trash trigger from a fresh stand-in per trashed card, so two copies trashed in one turn both trigger.",
     "sides": [
       {
         "source": "card: Maw of Despair",
         "quote": "When I am trashed, [Switch1] Glimpse 2."
       },
       {
-        "source": "R124",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
       },
       {
@@ -187,50 +187,50 @@
         "quote": "which is right: each trashed card is its own instance. Its id is not in"
       }
     ],
-    "resolution": "The rule states the engine's behaviour with basis engine. Question for the owner only if \"once per turn\" on a trash trigger is meant per player and card name, as R124 reads it for a card in a bin; then the second copy trashed in a turn would not trigger."
+    "resolution": "The rule states the engine's behaviour with basis engine. Question for the owner only if \"once per turn\" on a trash trigger is meant per player and card name, as the owner ruling of 2026-08-24 (“'leftBin': every bin removal goes through…”) reads it for a card in a bin; then the second copy trashed in a turn would not trigger."
   },
   {
     "id": "D-U03-11",
     "kind": "f-register-chain-wrong",
     "rule": "concepts.abilities.granted.is-ability",
     "tier": 2,
-    "summary": "R63, presented as current, says granted text is silenced by R62 exactly like printed text. R328 reversed R62's veto: an ability gained after the strip is not removed. The register marks R62 reversed by R328 but does not mark R63 amended.",
+    "summary": "The owner ruling of 2026-08-21 (“Granting rules text”), presented as current, says granted text is silenced by the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) exactly like printed text. The owner ruling of 2026-10-09 (“Stripping is a layer applied in…”) reversed the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”)’s veto: an ability gained after the strip is not removed. The register marks the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) reversed by the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”) but does not mark the owner ruling of 2026-08-21 (“Granting rules text”) amended.",
     "sides": [
       {
-        "source": "R63",
+        "source": "owner ruling, adopted 2026-08-21",
         "quote": "Granted text is silenced by R62 exactly like printed text — it is an ability the"
       },
       {
-        "source": "R328",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "stripping applies**. Anything the unit gains **afterwards** — a mod attached, an"
       }
     ],
-    "resolution": "Mark R63's silencing sentence amended by R328 (only granted text that predates the strip is silenced). The rule follows R328."
+    "resolution": "Mark the owner ruling of 2026-08-21 (“Granting rules text”)’s silencing sentence amended by the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”) (only granted text that predates the strip is silenced). The rule follows the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”)."
   },
   {
     "id": "D-U03-12",
     "kind": "a-sources-disagree",
     "rule": "concepts.abilities.replacement.targeted",
     "tier": 4,
-    "summary": "The Manual says replacement effects don't use the stack. R102 (owner) puts the substitute of a replacement that names a target (Beyond, Codex Incarnate's rot clause) on the stack as a triggered ability, while the event itself is replaced at once.",
+    "summary": "The Manual says replacement effects don't use the stack. The owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) (owner) puts the substitute of a replacement that names a target (Beyond, Codex Incarnate's rot clause) on the stack as a triggered ability, while the event itself is replaced at once.",
     "sides": [
       {
         "source": "Manual p.41",
         "quote": "Instead” are called replacement effects. Unlike triggered abilities, replacement effects don’t use the stack"
       },
       {
-        "source": "R102",
+        "source": "owner ruling, adopted 2026-08-23",
         "quote": "2. **A replacement that names a TARGET still uses the stack.** A target has to be"
       }
     ],
-    "resolution": "The rules follow both: the replacement itself never waits on the stack (R102 replaces the damage before anything is queued), and only a substitute that needs a target goes on the stack. Question for the owner only if the Manual's sentence is meant to cover the substitute too; then a target would have to be chosen with no stack, and Beyond's clause would not be respondable."
+    "resolution": "The rules follow both: the replacement itself never waits on the stack (the owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) replaces the damage before anything is queued), and only a substitute that needs a target goes on the stack. Question for the owner only if the Manual's sentence is meant to cover the substitute too; then a target would have to be chosen with no stack, and Beyond's clause would not be respondable."
   },
   {
     "id": "D-U03-13",
     "kind": "g-other",
     "rule": "concepts.targets.becomes-targeted",
     "tier": 1,
-    "summary": "The designer says a graft onto Mohruung makes \"he will trigger first\". A graft in deployment is not put on the stack, so R53's \"above the spell that targeted\" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).",
+    "summary": "The designer says a graft onto Mohruung makes \"he will trigger first\". A graft in deployment is not put on the stack, so the owner ruling of 2026-08-19 (“\"When I become targeted\" fires on…”)’s \"above the spell that targeted\" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).",
     "seeAlso": [
       {
         "id": "D-U03-14",
@@ -247,7 +247,7 @@
         "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
       },
       {
-        "source": "R53",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "the stack **above** the spell that targeted — the trigger resolves first."
       },
       {

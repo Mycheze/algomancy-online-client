@@ -3,7 +3,7 @@
  *
  *   node replay-room.ts games/SMVJ.json           # summary + verdict
  *   node replay-room.ts games/SMVJ.json --log     # + the full annotated event log
- *   node replay-room.ts games/SMVJ.json --as-recorded          # + the DELTA (R200)
+ *   node replay-room.ts games/SMVJ.json --as-recorded          # + the DELTA
  *   node replay-room.ts games/SMVJ.json --as-recorded --at <sha>
  *   node replay-room.ts games/SMVJ.json --json    # one line, for a corpus sweep
  *
@@ -35,7 +35,7 @@
  * which is exactly how playtest game UZRG came to reject 79 of its 276 actions
  * with nobody noticing for weeks.
  *
- * ── R169 / CT-45: A SKIP COUNT IS NOT A REPORT ────────────────────────
+ * ── CT-45 (see 143-replay-divergence): A SKIP COUNT IS NOT A REPORT ────────────────────────
  *
  * This tool used to lead with "141 actions logged, 126 replayed, 15 skipped",
  * which reads as a 89%-faithful replay with a handful of independent hiccups.
@@ -61,7 +61,7 @@
  *
  * The count is still printed. It is never printed alone.
  *
- * ── R200 / CT-66: A REFUSAL IS AN UPPER BOUND, NOT A MEASUREMENT ──────
+ * ── CT-66: A REFUSAL IS AN UPPER BOUND, NOT A MEASUREMENT ──────
  *
  * Everything above still only reports the first REFUSAL, and that is where the
  * engine finally NOTICED — not where the rules moved. A rules change lands at
@@ -73,7 +73,7 @@
  *
  * One replay cannot do better, because it has nothing to compare against. So
  * the room file now records the commit each stretch of it was played under
- * (`versions`, R200), `--as-recorded` checks that commit out into a throwaway
+ * (`versions`), `--as-recorded` checks that commit out into a throwaway
  * detached worktree and runs the same probe there, and the tool reports the
  * DELTA between the two runs. Three things follow, and all three are the point:
  *
@@ -99,18 +99,18 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import type { Action, CardName, Element, EngineEvent, GameMode, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, checkSingleDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
-// R216 — a scenario room's board is part of its DEAL, not of its log. This
+// CR D8.4 — a scenario room's board is part of its DEAL, not of its log. This
 // file is the second of the four deal sites scenarios.ts's header lists, and
-// it is the one that matters most: without this import the R200 divergence
+// it is the one that matters most: without this import the divergence
 // diff would report every scenario game as diverging from action 0, which is
-// the exact failure mode R200 exists to remove.
+// the exact failure mode replay versioning exists to remove.
 import { dealScenario } from './scenarios.ts';
 import { UNKNOWN_VERSION, isEngineVersion, repoDir } from './engine-version.ts';
 import { digest, probe, signature, type ProbeRefusal } from './replay-probe.ts';
 
 /**
  * `Fork` / `LostAction` are the shapes `server/rooms.ts` WRITES into a saved
- * game. Until R181 they were restated here, structurally, because `rooms.ts`
+ * game. Until the tooling round they were restated here, structurally, because `rooms.ts`
  * pulls in `ws` and the whole socket layer and importing even a TYPE from it
  * dragged that into any project checking this analysis — engine/test/143
  * imports this file, and its `tsc` went from clean to 7 errors.
@@ -141,10 +141,10 @@ export interface RoomFile {
    * Absent on every file written before BL-38 — see Room.sigs in rooms.ts. */
   sigs?: string[];
   decks?: [CardName[] | null, CardName[] | null];
-  /** R200: which engine recorded which stretch of this log. Absent in every
-   * file written before R200 — see versionsOf(). */
+  /** which engine recorded which stretch of this log. Absent in every
+   * file written before replay versioning — see versionsOf(). */
   versions?: VersionStamp[];
-  /** R216: the scenario this room was dealt with. Absent on every ordinary
+  /** CR D8.4: the scenario this room was dealt with. Absent on every ordinary
    * game; present means the deal was not a plain `createGame`. */
   scenario?: string;
   /** BL-43: a live draft's custom rules and the deal they resolved to. Absent
@@ -181,7 +181,7 @@ export interface Analysis {
    * `sigs` in the room file, written by the engine that was there. Where the
    * two disagree is where this replay stopped being the game — which is a
    * measurement, unlike a refusal, which is only an upper bound. A log that
-   * replays with zero refusals into a different game (KAWJ, R295) differs here
+   * replays with zero refusals into a different game (KAWJ) differs here
    * and nowhere else.
    */
   sigs: string[];
@@ -232,7 +232,7 @@ const CLI = process.argv[1] !== undefined
  * Now it names the seat and the reason and refuses. A replay that cannot be
  * trusted must not run.
  */
-/** `checkDeck`, or — R298 — a single card duel's thirty-of-one deck, which is
+/** `checkDeck`, or — CR D8.2 — a single card duel's thirty-of-one deck, which is
  * the one other shape the engine deals. The error stays checkDeck's. */
 function deckCheck(d: unknown): ReturnType<typeof checkDeck> {
   const c = checkDeck(d);
@@ -290,7 +290,7 @@ function dealOf(raw: RoomFile, mode: GameMode): DraftDeal | undefined {
   return deal;
 }
 
-/* ══ R200 §1 — PERMANENTLY UNREPLAYABLE IS NOT A DIVERGENCE ═══════════
+/* ══ §1 — PERMANENTLY UNREPLAYABLE IS NOT A DIVERGENCE ═══════════
  *
  * `trioOf` and `decksOf` above THROW on a file whose deal cannot be
  * reproduced, which is right — a replay that cannot be trusted must not run.
@@ -331,7 +331,7 @@ export function unreplayableReason(raw: RoomFile): string | null {
   return null;
 }
 
-/* ══ R200 §2 — WHICH ENGINE RECORDED WHICH STRETCH ════════════════════ */
+/* ══ §2 — WHICH ENGINE RECORDED WHICH STRETCH ════════════════════ */
 
 /** One stretch of the log and the engine it was recorded against. */
 export interface VersionSegment { from: number; to: number; sha: string }
@@ -393,7 +393,7 @@ export function versionsOf(raw: RoomFile): VersionInfo {
   let reference: string | null = null;
   let why: string | null = null;
   if (!last) {
-    why = 'this file carries no `versions` stamp at all. Every game recorded before R200 is\n'
+    why = 'this file carries no `versions` stamp at all. Every game recorded before versions were stamped is\n'
       + '    in this state, and versioning cannot reach back: the commit it was played on was\n'
       + '    never written down. Pass --at <sha> if you know it from elsewhere (a deploy log,\n'
       + '    the file mtime against `git log`), or accept that this file is only ever\n'
@@ -407,7 +407,7 @@ export function versionsOf(raw: RoomFile): VersionInfo {
   return { stamps, segments, reference, why, inconsistent };
 }
 
-/* ══ R200 §3 — A STALE COPY DOES NOT ERROR, IT REASSURES ══════════════
+/* ══ §3 — A STALE COPY DOES NOT ERROR, IT REASSURES ══════════════
  *
  * A truncated 104-action copy of a 375-action game replayed "✓ FAITHFUL"
  * three times over several hours, because it stopped before the interesting
@@ -467,7 +467,7 @@ export function crossCheck(file: string, raw: RoomFile): SourceCheck {
   return { verdict: 'same', note: `action log matches the canonical ${canon} (${mine} actions)` };
 }
 
-/* ══ R200 §4 — THE DELTA BETWEEN TWO ENGINES ══════════════════════════
+/* ══ §4 — THE DELTA BETWEEN TWO ENGINES ══════════════════════════
  *
  * The thing the tool could not do. One replay can only report a REFUSAL, and a
  * refusal is an upper bound on the divergence: the rules move at action [k],
@@ -708,7 +708,7 @@ export function analyze(raw: RoomFile): Analysis {
   const a = runOnce(raw);
   const declared: Fork[] = Array.isArray(raw.forks) ? raw.forks : [];
   const declaredLost = declared.flatMap(f => f.lost ?? []);
-  // R191: a fork's list is no longer all refusals. A `kind: 'changed'` entry
+  // CARD-TODO #67c: a fork's list is no longer all refusals. A `kind: 'changed'` entry
   // says the OPPOSITE of a refusal — that action replayed fine and came to
   // mean something else — so it must not join `declaredIdx`, which exists to
   // answer "the file says this index does not replay". Counting one there
@@ -733,7 +733,7 @@ export function analyze(raw: RoomFile): Analysis {
   const after = divergedAt ? divergedAt.i + 1 + cascade.length : raw.actions.length;
   const resumedAt = divergedAt && after < raw.actions.length ? after : null;
   // a wedge that runs to the last logged action, or to the one action that can
-  // always end a game under an open question (R65: concede is exempt from the
+  // always end a game under an open question (CR 104.4a: concede is exempt from the
   // decision gate on purpose), is a total loss of the rest of the log
   const wedged = cascade.length > 0
     && (resumedAt === null || raw.actions[resumedAt]!.type === 'concede');
@@ -746,11 +746,11 @@ export function analyze(raw: RoomFile): Analysis {
  * the prose, not in the numbers. */
 export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
   showLog?: boolean; deterministic?: boolean;
-  /** R200: what the canonical copy of this game says about this one */
+  /** what the canonical copy of this game says about this one */
   source?: SourceCheck;
-  /** R200: which engine recorded which stretch */
+  /** which engine recorded which stretch */
   versions?: VersionInfo;
-  /** R200: the diff against the engine this game was recorded on */
+  /** the diff against the engine this game was recorded on */
   delta?: Delta;
 } = {}): { lines: string[]; exit: number } {
   const out: string[] = [];
@@ -780,7 +780,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
     say(`  determinism: ${opts.deterministic ? 'OK (two runs identical)' : '⚠ DIVERGED — engine bug, report this'}`);
   }
 
-  // ── R200: is this even the right copy of the file? ───────────────────
+  // ── is this even the right copy of the file? ───────────────────
   // Printed HIGH, before anything anyone might act on. A stale copy makes
   // every line below it a confident statement about a game that is not the
   // one being investigated, and the whole cost of that failure last time was
@@ -791,7 +791,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
     say(`  ${mark} source: ${opts.source.note}`);
   }
 
-  // ── R200: which engine recorded this, and can we go and get it? ──────
+  // ── which engine recorded this, and can we go and get it? ──────
   if (opts.versions) {
     const v = opts.versions;
     if (!v.stamps.length) {
@@ -840,7 +840,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
     }
   }
 
-  // ── R200: the DELTA — the only thing that can name the real divergence ──
+  // ── the DELTA — the only thing that can name the real divergence ──
   //
   // Printed BEFORE the verdict, and it outranks it. The verdict below is built
   // from refusals, and a refusal is an upper bound: it is where the engine
@@ -1014,7 +1014,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
         say('       had already parted company with the log.');
       }
     }
-    // R200: a refusal index is an UPPER BOUND. Say so whenever nothing has
+    // a refusal index is an UPPER BOUND. Say so whenever nothing has
     // measured the real one — "fix [121]" sent six investigations to the
     // wrong action, because [121] is where the engine NOTICED, not where the
     // rules moved.
@@ -1073,7 +1073,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
     say('  ✓ FAITHFUL — every logged action replays cleanly under the current');
     say('    engine, and the file declares no forks. seed + actions reproduces');
     say('    this game exactly.');
-    // R200: FAITHFUL is the verdict a stale copy produces. A 104-action
+    // FAITHFUL is the verdict a stale copy produces. A 104-action
     // truncation of a 375-action game reported this three times over several
     // hours and reassured everybody, because a prefix of a good log IS a good
     // log — it just stops before the interesting part. So a ✓ that could not
@@ -1085,7 +1085,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
     }
   }
 
-  // R200: a stale or mismatched copy outranks every verdict above it. Nothing
+  // a stale or mismatched copy outranks every verdict above it. Nothing
   // computed from the wrong file is worth acting on, so the exit code says so
   // even when the replay itself was clean.
   if (opts.source && (opts.source.verdict === 'stale' || opts.source.verdict === 'differs')) {
@@ -1100,7 +1100,7 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
 }
 
 /**
- * R200 §1 — the report for a file that can never be replayed, as a VERDICT
+ * the report for a file that can never be replayed, as a VERDICT
  * rather than as a stack trace.
  *
  * Separate from `reportLines` because there is no `Analysis` to report: the
@@ -1144,7 +1144,7 @@ if (CLI) {
   const source = crossCheck(file, raw);
   const versions = versionsOf(raw);
 
-  // R200 §1 — classify before replaying. A file whose deal cannot be
+  // classify before replaying. A file whose deal cannot be
   // reproduced used to reach here as an uncaught throw: a stack trace, exit 1,
   // indistinguishable from the tool being broken, and counted as a divergence
   // by every sweep that has ever run over the corpus.
@@ -1164,7 +1164,7 @@ if (CLI) {
   const b = analyze(raw);   // determinism double-check
   const deterministic = JSON.stringify(an.state) === JSON.stringify(b.state);
 
-  // R200 §4 — the diff, when asked for and when the file says where to look.
+  // the diff, when asked for and when the file says where to look.
   let dl: Delta | undefined;
   if (process.argv.includes('--as-recorded')) {
     const atFlag = process.argv.indexOf('--at');

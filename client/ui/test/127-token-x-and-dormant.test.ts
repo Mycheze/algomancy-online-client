@@ -1,5 +1,5 @@
 /**
- * R151 — two presentation defects from owner playtest reports #99 and #97.
+ * CR D6.9a, 106.3b — two presentation defects from owner playtest reports #99 and #97.
  *
  * CT-33 (#99): *"Tokens should have their X value in their text box modified to
  * say the actual number, rather than X. So a Poison 5 would say 'Put 5 -1/-1
@@ -10,10 +10,10 @@
  * players don't think they're active. During planning they should show
  * normally tho."*
  *
- * NOT the R134/R141/R142 markup class. Those were each a formatter failing to
+ * NOT the old markup bugs. Those were each a formatter failing to
  * consume a printed token and emitting it verbatim; here `X` is genuinely the
  * word on the card and what was missing is a live per-instance value. The
- * sweep below is the R141 guard: a fix that reached Poison and not Fireball,
+ * sweep below is the census-first guard: a fix that reached Poison and not Fireball,
  * or the spell tokens and not Robot, would look green without it.
  *
  * Seeds 5900-5999.
@@ -32,14 +32,14 @@ import { ent, giveResources, skipHasteStep, spawn, toDeployment } from '../../en
 const q = (h: Harness): E => new E(h.state);
 /** the whole text box as one string, the way a player reads it */
 const boxText = (e: E, u: Entity): string => entityTextBox(e, u).lines.map(l => l.text).join(' ');
-/** an X used as a VALUE — the spelling R151 substitutes (not X/X, not [x]) */
+/** an X used as a VALUE — the spelling CR D6.9 substitutes (not X/X, not [x]) */
 const BARE_X = /(?<![\w+\-/[{])X(?![\w/\]}])/;
 /** printed reminder text: it NAMES the variable, so its X legitimately stays */
 const stripReminders = (s: string): string => s.replace(/\{i\}[\s\S]*?(?:\{\/i\}|$)/g, '');
 
 /* ── CT-33 · the headline case ──────────────────────────────────────── */
 
-test('R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine', () => {
+test('CR D6.9/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine', () => {
   const h = new Harness(5901);
   const e = q(h);
   const A = 0 as Seat;
@@ -55,7 +55,7 @@ test('R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from th
   assert.equal(printedTextBox('Poison').lines[0]!.text, 'Put X -1/-1 counters on target unit.');
 });
 
-test('R151/CT-33: a token minted by a CARD specialises too (Ignis Sprite → Fireball 1)', () => {
+test('CR D6.9a/CT-33: a token minted by a CARD specialises too (Ignis Sprite → Fireball 1)', () => {
   const h = new Harness(5902);
   const A = 0 as Seat;
   // "When I spawn or die, [Switch] Create a Fireball 1."
@@ -66,7 +66,7 @@ test('R151/CT-33: a token minted by a CARD specialises too (Ignis Sprite → Fir
   assert.equal(boxText(e, fb!), 'Deal 1 damage to any target.');
 });
 
-test('R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change', () => {
+test('CR D6.9a/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change', () => {
   const h = new Harness(5903);
   const e = q(h);
   const A = 0 as Seat;
@@ -83,9 +83,9 @@ test('R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they
     '"so does the 3 value" would be a broken sentence, not a specialised one');
 });
 
-/* ── CT-33 · the whole-pool sweep (the R141 guard) ──────────────────── */
+/* ── CT-33 · the whole-pool sweep (the census-first guard) ──────────────────── */
 
-test('R151/CT-33 sweep: EVERY token card with an X placeholder renders a number', () => {
+test('CR D6.9a/CT-33 sweep: EVERY token card with an X placeholder renders a number', () => {
   const tokenCards = allCardNames().filter(n => /token/i.test(getCard(n).type ?? ''));
   assert.ok(tokenCards.length >= 6, `the pool's token cards were found: ${tokenCards.length}`);
   const withX = tokenCards.filter(n => BARE_X.test(stripReminders(getCard(n).text ?? '')));
@@ -113,7 +113,7 @@ test('R151/CT-33 sweep: EVERY token card with an X placeholder renders a number'
 
 /* ── CT-33 · negative controls ──────────────────────────────────────── */
 
-test('R151/CT-33: X/X, +X/+X and -X/-X are STAT notation and never substituted', () => {
+test('CR D6.9/CT-33: X/X, +X/+X and -X/-X are STAT notation and never substituted', () => {
   // the three spellings the pool really uses for a stat pair
   assert.equal(substituteX('Create an X/X unit, where X is the mod\'s cost.', 4),
     'Create an X/X unit, where 4 is the mod\'s cost.');
@@ -129,7 +129,7 @@ test('R151/CT-33: X/X, +X/+X and -X/-X are STAT notation and never substituted',
   assert.equal(substituteX('create a Fireball X+1', 2), 'create a Fireball 2+1');
 });
 
-test('R151/CT-33: a live NON-token card keeps its printed X (nothing has a value)', () => {
+test('CR D6.9/CT-33: a live NON-token card keeps its printed X (nothing has a value)', () => {
   const h = new Harness(5904);
   const A = 0 as Seat;
   // "…create an X/X unit, where X is the damage I am dealt."
@@ -141,7 +141,7 @@ test('R151/CT-33: a live NON-token card keeps its printed X (nothing has a value
   assert.ok(txt.includes('where X is the damage'), `template intact: ${txt}`);
 });
 
-test('R151/CT-33: a token whose text has no X renders exactly the printed card', () => {
+test('CR D6.9a/CT-33: a token whose text has no X renders exactly the printed card', () => {
   const h = new Harness(5905);
   const e = q(h);
   const A = 0 as Seat;
@@ -152,7 +152,7 @@ test('R151/CT-33: a token whose text has no X renders exactly the printed card',
 
 /* ── CT-31 · the dormant-resource row ───────────────────────────────── */
 
-test('R151/CT-31: dormant resources are muted in battle and deployment, normal in planning', () => {
+test('CT-31: dormant resources are muted in battle and deployment, normal in planning', () => {
   const h = new Harness(5906);
   const A = 0 as Seat;
   // every game opens with two DORMANT prismites (apply.ts), so the row this
@@ -190,7 +190,7 @@ test('R151/CT-31: dormant resources are muted in battle and deployment, normal i
     ['muted', 'muted', 'normal', 'normal', 'muted', 'muted'], 'deployment mutes them too');
 });
 
-test('R151/CT-31: only DORMANT is muted — an expended resource is not', () => {
+test('CR 105.4c/CT-31: only DORMANT is muted — an expended resource is not', () => {
   assert.equal(emphasisOf({ state: 'dormant' }, 'battle'), 'muted');
   assert.equal(emphasisOf({ state: 'dormant' }, 'deploy'), 'muted');
   assert.equal(emphasisOf({ state: 'dormant' }, 'planning'), 'normal');
@@ -201,7 +201,7 @@ test('R151/CT-31: only DORMANT is muted — an expended resource is not', () => 
   assert.equal(emphasisOf({ state: 'open' }, 'battle'), 'normal');
 });
 
-test('R151/CT-31: the spendable/dormant split is the ENGINE\'s answer, not the UI\'s', () => {
+test('CR 106.3b/CT-31: the spendable/dormant split is the ENGINE\'s answer, not the UI\'s', () => {
   const h = new Harness(5908);
   const A = 0 as Seat;
   h.state.players[A]!.resources.length = 0;      // drop the starting prismites

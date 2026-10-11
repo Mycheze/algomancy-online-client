@@ -1,7 +1,7 @@
-/* R302 — "13 Units Die": the WITNESSED death count (Vengeance).
+/* CR 803.7m — "13 Units Die": the WITNESSED death count (Vengeance).
  *
  * Vengeance's banner was missing from the transcription entirely until
- * 2026-09-20 (R301, bot/pipeline/read_card_faces.py). Restoring it handed the
+ * 2026-09-20 (bot/pipeline/read_card_faces.py). Restoring it handed the
  * engine a condition PROPHECY_RULES had never seen, and an unrecognised
  * condition can never be fulfilled — `prophecyMet` logs a warning and returns
  * false forever. So for the length of one commit Vengeance was worse than it
@@ -46,20 +46,20 @@ function killUnits(h: Harness, seat: Seat, n: number): void {
 
 // ── §1 the condition is known at all ──────────────────────────────────
 
-test('R302 §1: the banner Vengeance prints is a condition the engine knows', () => {
+test('CR 803.7m: the banner Vengeance prints is a condition the engine knows', () => {
   const p = getCard('Vengeance').prophecy;
-  assert.ok(p, 'Vengeance prints a prophecy banner (R301 restored it)');
+  assert.ok(p, 'Vengeance prints a prophecy banner (restored 2026-09-20)');
   assert.equal(p.condition, '13 Units Die');
   const h = new Harness(3140);
   const e = new E(h.state);
   assert.ok(e.prophecyProgress(0, e.makeProphecy(p.condition, 0)),
     'it METERS — an unrecognised condition returns null here and can never be '
-    + 'fulfilled, which is what Vengeance was between R301 and R302');
+    + 'fulfilled, which is what Vengeance was until its condition could be counted');
 });
 
 // ── §2 a death you were not there for does not count ──────────────────
 
-test('R302 §2: a death is counted only by the seats that were in the region', () => {
+test('CR 803.7m: a death is counted only by the seats that were in the region', () => {
   const h = new Harness(3141);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -80,7 +80,7 @@ test('R302 §2: a death is counted only by the seats that were in the region', (
 
 // ── §3 ...and in combat, everyone is there ────────────────────────────
 
-test('R302 §3: combat puts the attacker in the region, so both seats see every death in it', () => {
+test('CR 803.7m: combat puts the attacker in the region, so both seats see every death in it', () => {
   const h = new Harness(3142);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -107,7 +107,7 @@ test('R302 §3: combat puts the attacker in the region, so both seats see every 
 
 // ── §4 the counting rules that make it a prophecy ─────────────────────
 
-test('R302 §4: it counts forward from prophesying, off THIS seat\'s witnessed total (R43)', () => {
+test('§4: it counts forward from prophesying, off THIS seat\'s witnessed total (CR 803.7)', () => {
   const h = new Harness(3143);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -119,7 +119,7 @@ test('R302 §4: it counts forward from prophesying, off THIS seat\'s witnessed t
 
   const prog = () => new E(h.state).prophecyProgress(A, pr());
   assert.deepEqual(prog(), { done: 0, need: 3, unit: 'unit' },
-    'and the meter starts at zero, not four — R43 counts forward');
+    'and the meter starts at zero, not four — CR 803.7e counts forward');
 
   killUnits(h, A, 2);
   assert.deepEqual(prog(), { done: 2, need: 3, unit: 'unit' });
@@ -128,12 +128,12 @@ test('R302 §4: it counts forward from prophesying, off THIS seat\'s witnessed t
   killUnits(h, A, 1);
   assert.equal(new E(h.state).prophecyMet(A, pr()), true, 'the third death fulfils it');
   assert.equal(prog(), null,
-    'and the meter goes away rather than reading 3/3: R44 latches fulfilment '
+    'and the meter goes away rather than reading 3/3: CR 803.7g latches fulfilment '
     + 'and the card wears its ✓ instead (prophecyProgress returns null for a '
     + 'fulfilled entry by design — see its doc comment)');
 });
 
-test('R302 §4: the stamp is the CONTROLLER\'s count, not a shared one', () => {
+test('CR 803.7m: the stamp is the CONTROLLER\'s count, not a shared one', () => {
   const h = new Harness(3144);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -146,7 +146,7 @@ test('R302 §4: the stamp is the CONTROLLER\'s count, not a shared one', () => {
     + 'its controller was never present for');
 });
 
-test('R302 §4: the meter keeps pace at Vengeance\'s own printed 13', () => {
+test('CR D6.6a: the meter keeps pace at Vengeance\'s own printed 13', () => {
   const h = new Harness(3145);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -167,9 +167,8 @@ test('R302 §4: the meter keeps pace at Vengeance\'s own printed 13', () => {
   assert.equal(new E(h.state).prophecyMet(A, pr()), true, 'the thirteenth does it');
 });
 
-test('R302 §4: a state cached before the tally existed counts from zero, not from nothing', () => {
-  // `deaths` is optional and additive (a save written before R302 has no such
-  // field). The fallback must be 0, so an old entry becomes fulfillable rather
+test('§4: a state cached before the tally existed counts from zero, not from nothing', () => {
+  // `deaths` is optional and additive (a save written before the field existed has no such field). The fallback must be 0, so an old entry becomes fulfillable rather
   // than permanently stuck — generous, which is the safe direction.
   const h = new Harness(3146);
   toDeployment(h);
@@ -183,7 +182,7 @@ test('R302 §4: a state cached before the tally existed counts from zero, not fr
 
 // ── §5 the systemic guards ────────────────────────────────────────────
 
-test('R302 §5: EVERY printed prophecy banner names a condition the engine can fulfil', () => {
+test('§5: EVERY printed prophecy banner names a condition the engine can fulfil', () => {
   // The Vengeance bug generalised. A condition with no PROPHECY_RULES row is
   // not inert: `prophecyMet` returns false forever, so the card is cacheable
   // and unreleasable — strictly worse than having no banner. Nothing caught
@@ -210,13 +209,13 @@ test('R302 §5: EVERY printed prophecy banner names a condition the engine can f
   assert.deepEqual(unrecognised, [],
     'a printed banner the engine cannot fulfil. Add a row to PROPHECY_RULES '
     + '(engine.ts) — and give it a `progress` function, or the card counts '
-    + 'toward something no player can see (R302).');
+    + 'toward something no player can see (CR D6.6a).');
 });
 
-test('R302 §5: and every counting condition in the pool can be metered', () => {
+test('CR D6.6a: and every counting condition in the pool can be metered', () => {
   // The other half: a rule with no `progress` is legal (a STATE condition has
   // nothing to count) but a rule whose condition contains a number and offers
-  // no meter is the readability bug R279 and R302 both exist to fix.
+  // no meter is the readability bug CR D6.6a exists to fix.
   const unmetered: string[] = [];
   for (const name of DECK_LIST) {
     const banner = getCard(name).prophecy;

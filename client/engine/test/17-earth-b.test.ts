@@ -3,12 +3,12 @@
  * static -7/-7 (Malformed Monstrosity — its augment-donated half stays a ⚠
  * counters approximation: mod-carried statics), Crystal makers
  * (Metamorphic Luminary, Mohruung), a plan-then-commit each-player damage
- * spell (Meteor Shower, R25), survive-damage growth (Mirage Scuttler),
- * augment-application triggers (Morphic Mentor, Perpetual Construct), R1's
+ * spell (Meteor Shower, CR 601.4d), survive-damage growth (Mirage Scuttler),
+ * augment-application triggers (Morphic Mentor, Perpetual Construct), CR 109.3a's
  * textbook spawn condition (Nectar Ridge Oracle), damage-triggered growth
  * (Plodding Pebble), retaliation (Restitution), attrs-only registration
  * (Reality Bender) and a stack sweep (Return to Nature). Oorblak's combat-
- * damage redirection (R38 replaceCombatDamageToPlayer) is live as of
+ * damage redirection (CR 608.8c replaceCombatDamageToPlayer) is live as of
  * 2026-08-22, and its PIERCING-EXCESS half as of 2026-08-23 — the todo that
  * used to stand in for Caleb's RAQ answer is now four real tests, and the card
  * came off ledgers/card-ledger.ts with them. States are built explicitly
@@ -71,7 +71,7 @@ test('Malformed Monstrosity: a true -7/-7 static in BOTH forms (mod-carried, hos
   const h = new Harness(1701);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  // played normally: own [Augment] text is live (R26) → a continuous static,
+  // played normally: own [Augment] text is live (CR 305.4) → a continuous static,
   // not counters: the 10/9 is a live 3/2 with a clean counters field
   const mm = spawn(h, p, 'Malformed Monstrosity');
   assert.deepEqual(effStats(h, mm), [3, 2], '10/9 with the -7/-7 static = 3/2');
@@ -136,7 +136,7 @@ test('Mirage Scuttler: surviving damage grows it by that much; lethal damage doe
   const h = new Harness(1704);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  // played normally: own [Augment] text live (R26)
+  // played normally: own [Augment] text live (CR 305.4)
   const sc = spawn(h, p, 'Mirage Scuttler');          // 0/2
   dealDamage(h, 1 - p, sc, 1);                        // survives 1 → +1 counter
   assert.deepEqual(effStats(h, sc), [1, 3], '0/2 +1/+1 = 1/3 (damage survived)');
@@ -147,12 +147,12 @@ test('Mirage Scuttler: surviving damage grows it by that much; lethal damage doe
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Mirage Scuttler'), hostId: host });
   dealDamage(h, 1 - p, host, 2);                      // survives 2 → +2 counters
   assert.deepEqual(effStats(h, host), [5, 7], '3/5 +2/+2 = 5/7');
-  // lethal damage: "survive" fails at event time (R1) → no counters, it dies
+  // lethal damage: "survive" fails at event time (CR 109.3a) → no counters, it dies
   dealDamage(h, 1 - p, host, 20);
   assert.ok(!ent(h, host), 'lethal damage kills without triggering the growth');
 });
 
-test('Mirage Scuttler: an overkill combat hit marks the WHOLE amount, not the lethal part (R114)', () => {
+test('Mirage Scuttler: an overkill combat hit marks the WHOLE amount, not the lethal part (CR 608.6d)', () => {
   // Report #84: "ALL damage is dealt to units, even if it surpasses its
   // defense." The Scuttler reads its growth straight off the `n` of the
   // damage event, so the old lethal-capped assignment fed it a trimmed
@@ -162,7 +162,7 @@ test('Mirage Scuttler: an overkill combat hit marks the WHOLE amount, not the le
   // always lethal by construction (a unit is only assigned more than its
   // share once that share — its own lethal need — has been paid), so the
   // Scuttler's "whenever I SURVIVE damage" can never see an overkill. The
-  // survive-and-grow half is the effect-damage test above; what R114 changes
+  // survive-and-grow half is the effect-damage test above; what CR 608.6d changes
   // here is the number the event carries.
   const h = new Harness(1714);
   toDeployment(h);
@@ -195,7 +195,7 @@ test('Mohruung: augment-targeting triggers a Crystal 2, once per turn ([Switch1]
   let crystals = tokensOf(h, p).filter(t => t.card === 'Crystal');
   assert.equal(crystals.length, 1, 'being targeted by an augment → one Crystal');
   assert.equal(crystals[0]!.x, 2, 'a Crystal 2');
-  // bounded (R9): a second targeting this turn makes nothing
+  // bounded (CR 109.9): a second targeting this turn makes nothing
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: mo });
   crystals = tokensOf(h, p).filter(t => t.card === 'Crystal');
   assert.equal(crystals.length, 1, '[Switch1]: only once per turn');
@@ -216,7 +216,7 @@ test('Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy au
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: mentor });
   pass(h); pass(h);                                   // virus resolves → mod applied → trigger
   pass(h); pass(h);                                   // resolve the trigger
-  // R93: Reality Bender is the convenient cheap Virus here, and its type-line
+  // CR 802.8a: Reality Bender is the convenient cheap Virus here, and its type-line
   // [Augment] donates {Inverted} to the Mentor along the way — so stat layer 5
   // now negates the Mentor's own +2/+2 off its printed 2/3: 4/5 → 2·2−4 /
   // 2·3−5 = 0/1. The +2/+2 is still what is being measured (without the
@@ -231,7 +231,7 @@ test('Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy au
   finishBattle(h);
 });
 
-test('Nectar Ridge Oracle: defense>power ally spawn draws, once per turn ([once], R1 condition)', () => {
+test('Nectar Ridge Oracle: defense>power ally spawn draws, once per turn ([once], CR 109.3a condition)', () => {
   const h = new Harness(1707);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -243,15 +243,15 @@ test('Nectar Ridge Oracle: defense>power ally spawn draws, once per turn ([once]
   spawn(h, p, 'Mohruung');                            // 1/5: defense > power → draw
   assert.equal(h.state.players[p]!.hand.length, before + 1, 'defense>power ally → draw');
   spawn(h, p, 'Mohruung');                            // second qualifying spawn same turn
-  assert.equal(h.state.players[p]!.hand.length, before + 1, '[once]: only once per turn (R9)');
+  assert.equal(h.state.players[p]!.hand.length, before + 1, '[once]: only once per turn (CR 109.9)');
 });
 
-// ── Oorblak (R38 replaceCombatDamageToPlayer; un-parked 2026-08-22) ──────
+// ── Oorblak (CR 608.8c replaceCombatDamageToPlayer; un-parked 2026-08-22) ──────
 //
 // "[Augment] If combat damage would be dealt to you, that damage is dealt to
 // me instead." Assertions stop just after the combat-damage sub-step rather
 // than running finishBattle, because Oorblak is {Unstable} and regroup would
-// erase the very entity whose damage we are reading (R69).
+// erase the very entity whose damage we are reading.
 
 /** attack unblocked with `columns` and stop with combat damage dealt */
 function unblockedCombat(h: Harness, attacker: Seat, columns: EntityId[][]): void {
@@ -323,7 +323,7 @@ test('Oorblak: as a Virus, "me" is the HOST — an enemy host eats its own contr
   assert.equal(ent(h, host)!.damage, 3, 'and "me" is the host, which took the 3');
 });
 
-// ── Oorblak, the PIERCING-EXCESS half (R98's wider hook; R103/R114) ──────
+// ── Oorblak, the PIERCING-EXCESS half (the wider replacement hook; CR 802.16p, 608.8c) ──────
 //
 // Caleb, rules-questions 2025-04-09, answering _passer's case — and the case
 // matters, because in it Oorblak is virused UNDER A 1/1, which is why one
@@ -389,11 +389,11 @@ test('Oorblak: a NON-Piercing overkill is absorbed whole — nothing spills onto
   pass(h); pass(h);
   assert.ok(!ent(h, host), 'the 1/1 still eats the whole 5 and dies of it');
   assert.equal(h.state.players[D]!.life, lifeD,
-    'a plain overkill spills nothing — only Piercing leaves the body (R114)');
+    'a plain overkill spills nothing — only Piercing leaves the body (CR 608.6d)');
 });
 
-test('Oorblak: the Piercing excess is what is left after BOTH doublings — {Powerful} at the source, {Vulnerable} on receipt (R103)', () => {
-  // R103's order of operations, on the combat side. A 3-power {Powerful}
+test('Oorblak: the Piercing excess is what is left after BOTH doublings — {Powerful} at the source, {Vulnerable} on receipt (CR 802.16a)', () => {
+  // CR 802.16a's order of operations, on the combat side. A 3-power {Powerful}
   // {Piercing} column deals 6 (doubled at the source, before assignment); a
   // {Vulnerable} Oorblak receives double, so 2 pool is the share that kills
   // its 4 toughness and 4 pool carries on. Miss either doubling and the
@@ -453,7 +453,7 @@ test('Plodding Pebble: dealt damage → a +1/+1 counter, once per turn ([Switch1
   assert.deepEqual(effStats(h, pb), [1, 5], '0/4 +1/+1 = 1/5');
   assert.equal(ent(h, pb)!.counters, 1);
   dealDamage(h, 1 - p, pb, 1);                        // second damage same turn
-  assert.equal(ent(h, pb)!.counters, 1, '[Switch1]: only once per turn (R9)');
+  assert.equal(ent(h, pb)!.counters, 1, '[Switch1]: only once per turn (CR 722.5)');
   assert.equal(ent(h, pb)!.damage, 2, 'the damage itself still lands');
 });
 
@@ -463,13 +463,13 @@ test('Reality Bender: {Inverted} 2/3 — as a unit and donated by type-line [Aug
   const p = h.state.deployPlayer!;
   const rb = spawn(h, p, 'Reality Bender');
   assert.ok(ownAttrs(h, rb).has('Inverted'), 'played normally: has Inverted');
-  // Stat layer 5 landed in round 17 (R93), and the card is no longer
+  // Stat layer 5 landed in round 17 (CR 802.8a), and the card is no longer
   // attrs-only registration. With nothing having CHANGED its stats there is
   // no change to invert, so the printed 2/3 still stands — that is the layer
   // working, not the layer missing.
   assert.deepEqual(effStats(h, rb), [2, 3], '2/3: no stat change, so nothing to invert');
   ent(h, rb)!.counters = -1;
-  assert.deepEqual(effStats(h, rb), [3, 4], 'R93: its own -1/-1 counter inverts to +1/+1');
+  assert.deepEqual(effStats(h, rb), [3, 4], 'CR 802.8a: its own -1/-1 counter inverts to +1/+1');
   ent(h, rb)!.counters = 0;
   const host = spawnToken(h, p, 1, 1);
   giveResources(h, p, 'earth', 2);                    // e / 2
@@ -477,10 +477,10 @@ test('Reality Bender: {Inverted} 2/3 — as a unit and donated by type-line [Aug
   assert.ok(ownAttrs(h, host).has('Inverted'), 'type-line [Augment] donates Inverted');
   ent(h, host)!.counters = 2;
   assert.deepEqual(effStats(h, host), [-1, -1],
-    'R93: and the donated {Inverted} really inverts the host — a 1/1 at +2/+2 is a -1/-1');
+    'CR 802.8a: and the donated {Inverted} really inverts the host — a 1/1 at +2/+2 is a -1/-1');
 });
 
-test('Restitution: dealt combat damage → each opponent loses that much (R25)', () => {
+test('Restitution: dealt combat damage → each opponent loses that much (CR 601.4d)', () => {
   const h = new Harness(1712);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -512,7 +512,7 @@ test('Return to Nature: negates everything on the stack and erases all mods in t
   h.do({ type: 'declareAttack', seat: A, columns: [[ml]] });   // Luminary trigger → stack
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Return to Nature') });
   pass(h); pass(h);                                   // Return to Nature resolves first
-  assert.equal(h.state.stack.length, 0, 'R68: the negated trigger left the stack with it');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated trigger left the stack with it');
   assert.equal(tokensOf(h, A).filter(t => t.card === 'Crystal').length, 0,
     'the Crystal trigger was negated — no Crystal');
   assert.equal(ent(h, host)!.mods.length, 0, 'all mods erased');
@@ -522,7 +522,7 @@ test('Return to Nature: negates everything on the stack and erases all mods in t
   finishBattle(h);
 });
 
-// ── R110: "trigger two copies of this graft ability" — the ruling ────────
+// ── CR 722.7: "trigger two copies of this graft ability" — the ruling ────────
 //
 // "Amphivore / Lost Guardian. Bounded Grafts and Ralph explained." (moderator,
 // 2025-03-21): ONE stack item with the grafts doubled, top-to-bottom and then
@@ -552,7 +552,7 @@ function lostGuardianAfterCombat(h: Harness, p: Seat, lg: EntityId, hand?: strin
   pass(h); pass(h);                                   // combat (0 power) → afterCombat trigger
 }
 
-test('R110: Lost Guardian repeats a BOUNDED [Switch1] graft too — two copies, one budget', () => {
+test('CR 722.7b: Lost Guardian repeats a BOUNDED [Switch1] graft too — two copies, one budget', () => {
   const h = new Harness(1760);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -567,7 +567,7 @@ test('R110: Lost Guardian repeats a BOUNDED [Switch1] graft too — two copies, 
   finishBattle(h);
 });
 
-test('R110: a "[cost]: effect" graft under Lost Guardian pays its cost TWICE and resolves twice', () => {
+test('CR 111.14: a "[cost]: effect" graft under Lost Guardian pays its cost TWICE and resolves twice', () => {
   const h = new Harness(1761);
   toDeployment(h);
   const p = h.state.deployPlayer!, foe = 1 - p;
@@ -583,7 +583,7 @@ test('R110: a "[cost]: effect" graft under Lost Guardian pays its cost TWICE and
   finishBattle(h);
 });
 
-test('R110: all or nothing — one card in hand cannot pay a doubled [Discard a card], so nothing is paid and nothing happens', () => {
+test('CR 111.14: all or nothing — one card in hand cannot pay a doubled [Discard a card], so nothing is paid and nothing happens', () => {
   const h = new Harness(1762);
   toDeployment(h);
   const p = h.state.deployPlayer!, foe = 1 - p;
@@ -605,15 +605,15 @@ test('R110: all or nothing — one card in hand cannot pay a doubled [Discard a 
 // "Aberrant Statweaver shouldn't have entered the bin. It's Unstable." (XVUR,
 // 2026-08-23). {Unstable} on the TYPE LINE was carried by NOTHING: the
 // extractor dropped the marker (deliberately not an Attr — it is a bin
-// replacement, not a combat attribute), so E.isUnstable unioned mods, the R96
+// replacement, not a combat attribute), so E.isUnstable unioned mods, the CR 803.8c
 // stamp and modded copies, and the pool's two printed carriers fell through
 // to the bin. Unstable replaces the BIN, not the death: the card still DIES
 // and death triggers still fire (Caleb 2025-03-13 "They die"; 2025-04-08
 // "unstable units still die, they just get erased instead of ending up in the
 // bin") — destroy()'s erase branch fires the same 'died' event, which the
-// R69/R96 tests already pin for the modded and stamped ways in.
+// existing tests already pin for the modded and stamped ways in (CR 803.8i).
 //
-// ⚠ R137 (2026-08-24) repairs the PROSE of the two tests below without moving
+// ⚠ The owner's 2026-08-24 Unstable-trash call (engine only; CR 801.2h differs, CT-246) repairs the PROSE of the two tests below without moving
 // their outcome. They used to say "the bin never sees it" — that is no longer
 // how the engine gets there. An Unstable unit that dies now enters the bin, is
 // trashed there, and is swept out by a state-based action, exactly as a dying
@@ -632,11 +632,11 @@ test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, 
   assert.ok(!h.state.players[p]!.bin.includes('Aberrant Statweaver'),
     'it does not REST in a bin — {Unstable} replaces the bin entry');
   assert.ok((h.state.players[p]!.erased ?? []).includes('Aberrant Statweaver'),
-    'the public erased pile records it (R65)');
-  // R137: the printed-{Unstable} way in behaves like the other three
+    'the public erased pile records it (CR 407.1)');
+  // The engine (CT-246): the printed-{Unstable} way in behaves like the other three
   assert.ok(h.events.concat(e.events).some(ev => ev.type === 'trashed'
     && ev.data?.['card'] === 'Aberrant Statweaver' && ev.data?.['from'] === 'play'),
-  'and it WAS trashed on the way through (R137)');
+  'and the engine trashed it on the way through (CT-246; CR 801.2h: not trashed)');
 });
 
 test('Oorblak: printed {Unstable} — erased on death while UNMODDED (report #89)', () => {
@@ -662,13 +662,13 @@ test('printed {Unstable} census: the flag mirrors the type line over the whole p
   }
 });
 
-// ── R65: Return to Nature's erases reach the public pile ───────────────────
+// ── CR 407.2: Return to Nature's erases reach the public pile ───────────────────
 //
 // Found 2026-08-25 by the 30-file divergence sweep. PRINTED: "Negate all
 // effects. Erase all mods." The mod erasure was a bare
 // `delete g.s.entities[id]` plus an 'info' line — so a nontoken mod card left
 // the game and NEITHER PLAYER COULD SEE WHERE IT WENT. `E.ev('erased', …)` is
-// the only thing that files the R65 pile, and every other erase in the pool
+// the only thing that files the erased pile (CR 407.2), and every other erase in the pool
 // emits it (Finality, Necromantic Rebuke, Spore of Regenesis, and
 // disposeToBin's own token-mod line).
 //

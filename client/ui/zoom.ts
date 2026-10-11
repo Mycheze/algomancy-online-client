@@ -319,7 +319,7 @@ let settle: ReturnType<typeof setTimeout> | null = null;
  * After a repaint: the card that was zoomed has been replaced by a new
  * element (every paint rebuilds the board). Zoom whatever is under the cursor
  * NOW, without the grow animation — the same card in the same place reads as
- * nothing having happened, which is R272's rule for the hover box too — and
+ * nothing having happened, which is the rule the hover box follows too — and
  * look again once the paint's flights and transitions have settled.
  */
 export function zoomAfterPaint(): void {

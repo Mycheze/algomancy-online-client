@@ -43,9 +43,18 @@ test('§2 a known kind, and a tweet long at most', () => {
   }
 });
 
+/** an internal id a player cannot follow: a retired ruling, a rule number, a ticket, a report.
+ * (`#163` sits outside the `\b…\b`: `\b#` never matches after a space, so until 2026-10 the
+ * report-number half of this check could not fire — its positive control below found that.) */
+const INTERNAL_ID = /\b(?:R\d{2,}|CR \d{3}|CR D\d|BL-\d+|CT-\d+)\b|#\d{2,}\b/;
+
 test('§3 written for a player: no ruling numbers, ticket ids or markup', () => {
+  // players never see rule numbers: the comprehensive rules are this repo's spec, not the game's text
+  for (const bad of ['per R303, cached cards play', 'per CR 608.2b, damage', 'see CR D6.16a', 'BL-45 landed', 'CT-12 fixed', 'report #163'])
+    assert.match(bad, INTERNAL_ID, `the id check went blind on "${bad}"`);
+  assert.doesNotMatch('the 2026 league starts in March', INTERNAL_ID, 'the id check fires on ordinary words');
   for (const u of UPDATES) {
-    assert.doesNotMatch(u.text, /\b(R\d{2,}|BL-\d+|CT-\d+|#\d{2,})\b/, `an internal id in "${u.text}"`);
+    assert.doesNotMatch(u.text, INTERNAL_ID, `an internal id in "${u.text}"`);
     assert.doesNotMatch(u.text, /<[a-z/]/i, `markup in "${u.text}" — the text is escaped, so it would show literally`);
   }
 });

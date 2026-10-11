@@ -2,19 +2,19 @@
  *
  * Behaviour only; printed data comes from printed.json (never hand-copied).
  * Spec for the expansion's new mechanics: docs/08-light-and-dark.md,
- * rulings R38-R48 in docs/digital-rules.md.
+ * and the Comprehensive Rules.
  *
  * Every card is a HYBRID whose second element is Light or Dark. Printed text
  * is quoted in a comment above each card (batch-hybrids-wm-a convention).
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (trigger conditions at EVENT time, amounts at
- * resolution), R5 (fizzle vs partial), R6 (mid-resolution payments/choices via
- * ctx.choose), R9 (bounded [Switch1]/[once] budgets per card), R12/R25
- * ("each opponent" = the region's present seats), R19 (layer-4 Balanced),
- * R27 (state-derived amounts read live), R35 (bracketed costs paid at cast),
- * R37 (applying a mod is not playing), R40 (trash), R71 (the Wraith token).
+ * Rulings referenced: CR 109.3a, 109.3b (trigger conditions at EVENT time, amounts at
+ * resolution), CR 704.6, 704.6b (fizzle vs partial), CR 704.1a (mid-resolution payments/choices via
+ * ctx.choose), CR 803.4 (bounded [Switch1]/[once] budgets per card), CR 601.4d
+ * ("each opponent" = the region's present seats), CR 802.1j (layer-4 Balanced),
+ * CR 107.8 (state-derived amounts read live), CR 702.4 (bracketed costs paid at cast),
+ * CR 701.2 (applying a mod is not playing), CR 801.2 (trash).
  *
  * Cards in this batch:
  *   Air Plant             Arbiter of Vitality   Blight's End
@@ -25,7 +25,7 @@
  *   Splort                The Omniphage         Vengeance
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- * ✔ NON-MANA COSTS ARE REAL NOW (R35/R49). Darkblast declares
+ * ✔ NON-MANA COSTS ARE REAL NOW (CR 702.4, 111.2). Darkblast declares
  *    `castCost: { kind: 'discardCard', n: 1 }` and Cadaverous Cultivator
  *    `cost: { discard: 1 }`: both are chosen and paid in the CAST window,
  *    before the item reaches the stack, and an unpayable cost makes the
@@ -34,44 +34,44 @@
  *    Combustible Bogwalker's "sacrifice a nontoken unit OR discard a card" is
  *    the printed either/or shape, `cost: { discardOrSacrifice: 1 }` — also a
  *    real activation cost, also paid before the item reaches the stack.
- * ✔ X-MANY TARGETS ARE REAL NOW (R64/R67). This entry used to read "TargetSpec
+ * ✔ X-MANY TARGETS ARE REAL NOW (CR 110.1a). This entry used to read "TargetSpec
  *    .count is fixed at definition time and X is only known after the cast
  *    payment", so Blight's End picked its hosts mid-resolution. `count: 'X'`
- *    reads the X that R35 already fixed before targets are asked for, so the
+ *    reads the X that CR 107.2a already fixed before targets are asked for, so the
  *    spell goes on the stack aiming at named units and opponents respond to
  *    the picks.
- * ✔ PROLIFERATING SLIME IS A REAL REPLACEMENT NOW (R104). "put that many
+ * ✔ PROLIFERATING SLIME IS A REAL REPLACEMENT NOW (CR 708.1). "put that many
  *    counters plus one instead" is an `AmountMod` — consulted by addCounters /
  *    gainRot / gainDebt before they commit, summed across holders, never on the
  *    stack — so the counters arrive once with the right number on them, and the
  *    module-level `let proliferating` that guarded the old trigger's
  *    re-entrancy is deleted (report #60 counted those flags as the symptom).
- * ✔ ARBITER OF VITALITY IS A REAL REPLACEMENT NOW (R162). It used to be a pair
- *    of triggers, parked in R104's "still not replaceable" list because it is a
+ * ✔ ARBITER OF VITALITY IS A REAL REPLACEMENT NOW (CR 708.6). It used to be a pair
+ *    of triggers, parked in the replacement layer's "still not replaceable" list because it is a
  *    MULTIPLIER on a life change rather than a substitution of one, and the
- *    multiplicative amount family did not exist. R157 §23 supplies both the
+ *    multiplicative amount family did not exist. The owner's 2026-08-25 answer (now CR 112.3) supplies both the
  *    family and its composition rule — *"always n*2*v"* — so it is one
  *    `AmountMultiplier` consulted by gainLife/loseLife before the total moves:
  *    two Arbiters quadruple (they used to triple) and a lethal loss is
  *    multiplied BEFORE the lethal check rather than after it.
- * ✔ "[Battle]" ON AN ACTIVATED ability is `ActivatedAbility.timing` now (R49),
+ * ✔ "[Battle]" ON AN ACTIVATED ability is `ActivatedAbility.timing` now (CR 705.2),
  *    enforced at ACTIVATION: Cadaverous Cultivator is not offered during
  *    deployment and apply() refuses it there.
  *
- * ✔ DEFERRAL DRONE IS COMPLETE (R119, 2026-08-23). The last residue — "does a
+ * ✔ DEFERRAL DRONE IS COMPLETE (CR 111.10k, 2026-08-23). The last residue — "does a
  *    paid-for one-shot discount outlive its source?" — was ruled on: it does,
  *    "you paid for it". All three parts (set / read / spend) moved off the
  *    entity onto `GameState.nextPlayDiscount`, because a charge that survives
  *    the Drone needs a spend path that survives it too. See the card below and
- *    R119; its card-ledger entry is deleted.
+ *    CR 111.10k; its card-ledger entry is deleted.
  *
- * ✔ VENGEANCE IS LIVE (R122). This entry used to sit under PARKED — "there is
+ * ✔ VENGEANCE IS LIVE (CR 111.10d). This entry used to sit under PARKED — "there is
  *    no channel for 'and a sacrifice' … Inert [Augment] text; plays as a 7/9"
- *    — and that expired when R122 added the THIRD CostMod channel: an imposed
+ *    — and that expired when the engine added the THIRD CostMod channel (CR 111.10d): an imposed
  *    bracketed SACRIFICE on card plays, which gates the opponent's cast and is
  *    paid in the cast window. See the card's own comment for the clause walk.
  *
- * ✔ BROUGH'S "EVERYTHING" IS LITERAL (R125's principle, applied 2026-08-24).
+ * ✔ BROUGH'S "EVERYTHING" IS LITERAL (CR 707.7's principle, applied 2026-08-24).
  *    The static used to be filtered to `kind === 'unit'`, which is exactly the
  *    invented qualifier the Rotspore ruling took off. Removed; see the card for
  *    what it does and does not change (nothing arithmetical, today).
@@ -79,8 +79,8 @@
  * PARKED (needs engine machinery that does not exist yet):
  *  - nothing in this batch.
  *
- * UNPARKED by the R51 wave: Inexorable Miasma's second sentence ("After
- * combat, if I am in your bin …") is a `zone: 'bin'` trigger — see R51 and the
+ * UNPARKED by the bin-listener wave: Inexorable Miasma's second sentence ("After
+ * combat, if I am in your bin …") is a `zone: 'bin'` trigger — see CR 400.5 and the
  * card's own comment.
  */
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
@@ -95,19 +95,18 @@ import { isEnt, isUnitCard } from './helpers.ts';
  *
  * ⚠ THIS NOTE WAS STALE (corrected 2026-08-22, card-ledger audit). It named
  * {Pure} as "in the union but PARKED engine-side … the engine simply ignores
- * it". R61 shipped {Pure} — E.pure() switches the attribute layer off for a
+ * it". {Pure} has shipped (CR 802.25b) — E.pure() switches the attribute layer off for a
  * whole attack/block exchange — and it reads E.ownAttrs, which folds in
  * statics' `attrs`. So a {Pure} granted by one of the rows below is honoured
  * at the combat choke points exactly like a printed one.
  *
  * {Unaware} used to be called out here as the one still-inert name. It is not
- * any more: R106 shipped stat layer 6 on 2026-08-23, so a row granting
+ * any more: stat layer 6 (CR 802.9) shipped on 2026-08-23, so a row granting
  * {Unaware} makes the Omniphage read at its PRINTED stats — and collapses
  * whatever it deals damage to or fights to printed as well. Bubb, Trashling
  * and Haboob came off the card ledger with it.
  *
- * {Inverted} came off the same list one round earlier: R93 shipped stat layer
- * 5 for playtest report #73, so a row granting {Inverted} now really inverts
+ * {Inverted} came off the same list one round earlier: stat layer 5 (CR 802.8a) shipped for playtest report #73, so a row granting {Inverted} now really inverts
  * the Omniphage's net stat change, and Reality Bender and Its Dark Bubb came
  * off the card ledger with it.
  *
@@ -133,10 +132,10 @@ const ALL_ATTRS: Attr[] = [
 // behaviour here — only the [Augment] static does. Statics are live both while
 // the card is a unit in play and while it rides as an augment mod, anchored on
 // the HOST when donated (staticsFor), which is exactly what "your other units"
-// wants. Region-scoped by the engine (R12).
+// wants. Region-scoped by the engine (CR 601.1d).
 card('Air Plant', {
   augmentable: true,   // text-box [Augment] implemented as a static
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -151,10 +150,10 @@ card('Air Plant', {
 // down.)" — lg/5 0/0 {Battle} Cosmic Spell.
 //
 // "All players" is the whole table, not the region: life totals are a player
-// property and the card names players, not units (contrast R25's region-scoped
+// property and the card names players, not units (contrast CR 601.4d's region-scoped
 // "each opponent"). The average is floored, then each player is moved to it
 // with the ordinary gain/lose primitives so {Blessed}-style listeners and the
-// lethal check behave normally. Unbounded graft ([Switch], R9).
+// lethal check behave normally. Unbounded graft ([Switch], CR 722.5).
 const equalizeLife: EffectDef = {
   run: (g, ctx) => {
     const seats: Seat[] = [0, 1];
@@ -178,11 +177,11 @@ card('Equilibriate', {
 // "[Augment] Double all life gain and life loss. {i}(Damage causes loss of
 // life.)" — lr/8 6/3 Cosmic Horror Unit.
 //
-// R162 UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of
+// THE MULTIPLIER RULE (CR 708.6) UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of
 // triggers that dealt out a SECOND helping after the first had landed, and
-// R104's own "what is still NOT replaceable" list named it: a multiplicative
+// the replacement layer's own "what is still NOT replaceable" list named it: a multiplicative
 // amount family did not exist, and how one would compose with the additive one
-// was a ruling nobody had made. R157 §23 is that ruling, verbatim:
+// was a ruling nobody had made. The owner's 2026-08-25 answer (now CR 708.6) is that ruling, verbatim:
 //
 //   "quadruple it!! So always n*2*v (n is num of arbiters, v is original
 //    damage/life gain value)"
@@ -206,8 +205,8 @@ card('Equilibriate', {
 // what is implemented — but he was answering about TWO, and the third has
 // never been put to him.
 //
-// ⚠ AND ITS COMPOSITION WITH AN ADDITIVE `AmountMod` IS STILL UNRULED. R157
-// §23's interim decision — multiplier AFTER the additive layer — lives in
+// ⚠ AND ITS COMPOSITION WITH AN ADDITIVE `AmountMod` IS STILL UNRULED. The
+// 2026-08-25 interim decision (now CR 708.6a) — multiplier AFTER the additive layer — lives in
 // E.lifeAmount, not here.
 //
 // The parenthetical "(Damage causes loss of life.)" is why the mod claims
@@ -220,7 +219,7 @@ card('Equilibriate', {
 // Slime precedent for [Augment] text implemented as a continuous mod.
 card('Arbiter of Vitality', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     amountMultipliers: [{
@@ -231,21 +230,21 @@ card('Arbiter of Vitality', {
 });
 
 // "[Augment] Cards your opponents play during battle gain '[Sacrifice a
-// unit]'." — lr/13 7/9 Occult Unit. LIVE (R122): the third CostMod channel —
-// an IMPOSED bracketed additional cost on card PLAYS (R59 brought mana,
-// R60 life; a sacrifice is neither, and it carries a CHOICE).
+// unit]'." — lr/13 7/9 Occult Unit. LIVE (CR 111.10d): the third CostMod channel —
+// an IMPOSED bracketed additional cost on card PLAYS (the first two channels brought mana
+// and life; a sacrifice is neither, and it carries a CHOICE).
 //
 // Clause by clause:
 //  - "Cards", unqualified — units and spells alike are taxed. A spell TOKEN
-//    is not: casting one IS playing a spell (R305), but a token is not a
-//    card (R133). `CARD_PLAY_KINDS` is the printed noun, and the token route
+//    is not: casting one IS playing a spell (CR 701.1c), but a token is not a
+//    card (CR 304.2). `CARD_PLAY_KINDS` is the printed noun, and the token route
 //    (doCastSpellToken) does not consult this channel at all.
 //  - "your opponents" — seats other than mine. `self` is the ANCHOR
 //    (E.costModsFor), so donated as an augment the text reads from the HOST:
-//    "you" is the host's controller, no extra code (Deferral Drone, R59).
-//  - "play" — applying a mod is not playing (R37): purpose 'mod' is exempt.
+//    "you" is the host's controller, no extra code (Deferral Drone, CR 720.6b).
+//  - "play" — applying a mod is not playing (CR 701.2): purpose 'mod' is exempt.
 //  - "during battle" — the battle phase only, and region-scoped like every
-//    radiating mod (R12): it taxes the battle it is standing in.
+//    radiating mod (CR 601.1d): it taxes the battle it is standing in.
 // The sacrifice is the PAYER's choice (their units in the battle region,
 // tokens included), it gates castability when they control none there, and it
 // is paid in the cast window before the item reaches the stack. Two
@@ -254,13 +253,13 @@ card('Arbiter of Vitality', {
 // (Tranquility / Stasis Sentry precedent).
 card('Vengeance', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     costMods: [{
       sacrifice: (g, self, ctx) =>
         g.s.phase === 'battle' && ctx.purpose === 'play' && ctx.seat !== self.controller
-          && CARD_PLAY_KINDS.has(ctx.card.kind) ? 1 : 0,          // "Cards" — R133/R305
+          && CARD_PLAY_KINDS.has(ctx.card.kind) ? 1 : 0,          // "Cards" — CR 304.2, 701.1c
     }],
   },
 });
@@ -271,12 +270,12 @@ card('Vengeance', {
 // units are equal to the greater of the two.)" — le/4 0/4 Cosmic Unit.
 //
 // "Everything" is unowned and unqualified: EVERYTHING in the region, both
-// players', the carrier included. {Balanced} is a layer-4 attribute (R19) —
+// players', the carrier included. {Balanced} is a layer-4 attribute (CR 802.1j) —
 // granting it through a static lands in ownAttrs, which statLayerAttrs reads,
 // so the max-of-the-two rewrite happens in the right layer for free.
 //
 // The predicate used to read `target.kind === 'unit'`, which is the same
-// invented qualifier R125 took off Rotspore Herald: `StaticMod.affects` is
+// invented qualifier the Rotspore ruling (CR 707.7) took off Rotspore Herald: `StaticMod.affects` is
 // typed over an `Entity`, units were the case in mind, and the shape of the
 // mechanism got promoted into a rule about the card. It is off, for the same
 // reason — the printed text has nothing to hang it on.
@@ -290,14 +289,14 @@ card('Vengeance', {
 // having anyway: an unequal-statted spell token, or any future reader of a
 // non-unit's stats, gets the printed answer instead of the mechanism's.
 //
-// Unlike Rotspore Herald, this sentence needs only ONE channel: R125's second
-// mechanism (`effectAttrs`) exists to attribute a resolving SPELL that has no
+// Unlike Rotspore Herald, this sentence needs only ONE channel: the engine's second
+// mechanism (`effectAttrs`, which carries CR 707.7 to spells) exists to attribute a resolving SPELL that has no
 // entity, and a spell has no power or defense for "balanced" to act on —
 // `grantedAttrs` is read only by dealEffectDamageAll's source-attribute set
 // ({Deadly}/{Poisonous}/{Resonant}/{Piercing}/{Unaware}). Checked, not assumed.
 card('Brough', {
   augmentable: true,   // text-box [Augment] implemented as a static (see below)
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -308,7 +307,7 @@ card('Brough', {
 });
 
 // "" — le/6 10/3 {Blessed} {Piercing} Structure Unit. No rules text: both
-// attributes are printed on the type line and {Blessed} is engine-side (R48,
+// attributes are printed on the type line and {Blessed} is engine-side (CR 802.22b,
 // simultaneous lifelink). Registered so it enters DECK_LIST.
 card('Hammer of Justice', {});
 
@@ -332,12 +331,12 @@ card('Rime Wraith', {});
 // "Your life total" is the CARRIER's controller (the host's, when this rides as
 // a Virus/augment mod — statics are anchored on the host). "All units" is
 // unqualified: every unit in the region, both players'. The parity is read
-// live at every stat evaluation (R27), so gaining or losing a single life
+// live at every stat evaluation (CR 707.4), so gaining or losing a single life
 // flips the whole board. dp must not call effStats (reentrancy guard) — it
 // reads the raw life total, which is safe.
 card('Life Power Dude', {
   augmentable: true,   // text-box [Augment] implemented as a static
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -351,17 +350,17 @@ card('Life Power Dude', {
 // "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
 // less." — lm/2 2/2 Horror Unit.
 //
-// FULLY BUILT 2026-08-23 (R119). The card is three lines of card code now
+// FULLY BUILT 2026-08-23 (CR 111.10k). The card is three lines of card code now
 // because all three moving parts live in the engine, and that is the ruling
 // rather than a tidy-up:
 //
-//   R119 (owner, 2026-08-23): the charge SURVIVES the Drone. "You paid for
+//   CR 111.10k (owner, 2026-08-23): the charge SURVIVES the Drone. "You paid for
 //   it." The ability has RESOLVED and the 4 debt is gone, so sacrificing the
 //   Drone in response must not evaporate a discount the player already bought.
 //
 // The first build (2026-08-22) put the charge on `Entity.budgets` and the
 // discount in a `CostMod`, which meant BOTH halves radiated from the Drone:
-// kill it and the charge vanished, which is exactly what R119 rejects. Moving
+// kill it and the charge vanished, which is exactly what CR 111.10k rejects. Moving
 // only the charge would have been worse — the SPEND half was a bookkeeping
 // trigger on the same card, so a dead Drone would have left a charge nothing
 // could ever consume. So all three parts moved together:
@@ -370,34 +369,34 @@ card('Life Power Dude', {
 //             .nextPlayDiscount[seat]`. `ctx.controller` is the ITEM's
 //             controller, which is the Drone's controller in play and the
 //             HOST's controller when the text is donated by an augment — so
-//             R59's "'you' is the host's controller" still falls out for free.
+//             "'you' is the host's controller" (CR 720.6b) still falls out for free.
 //   · READ  — one line in `E.manaToPlay`, after the CostMod fold and before
 //             the clamp at zero, so a [1] card goes free rather than negative.
-//             Guarded by `purpose === 'play'`: R37/R59, applying a mod is not
+//             Guarded by `purpose === 'play'`: CR 701.2b, applying a mod is not
 //             playing, so an augment/graft/Virus pays printed price and burns
 //             nothing.
 //   · SPEND — `E.spendNextPlayDiscount(seat)` at the two emit sites a play
 //             already fires from: 'spellPlayed' in commitItem (skipping a
-//             spell TOKEN — casting one IS playing a spell since R305, but
+//             spell TOKEN — casting one IS playing a spell (CR 701.1c), but
 //             the card prints "the next CARD you play" and a token is not a
-//             card, R133; `manaToPlay` withholds the discount from a token
+//             card, CR 304.2; `manaToPlay` withholds the discount from a token
 //             for the same reason) and 'spawned' in spawnUnit (skipping a unit with no
 //             `from`, i.e. CREATED rather than played). Both fire after
 //             payment, so the charge is standing while the bill is computed
 //             and gone by the next play. Deliberately NOT in payCard: a free
-//             prophecy release (R111) never reaches payCard and still spends
+//             prophecy release (CR 803.7h) never reaches payCard and still spends
 //             the charge, which is the behaviour these sites already had.
 //   · CLEAR — `E.startTurn`, beside the `Entity.budgets` wipe that used to
 //             give "this turn" for free.
 //
-// NAMED CONSEQUENCE (R119): a CostMod is region-scoped (R12) and a per-seat
+// NAMED CONSEQUENCE (CR 111.10k): a CostMod is region-scoped (CR 111.10) and a per-seat
 // charge is not, so a seat acting in two regions in one turn now gets the
 // discount wherever they play. That is the more correct reading — "the next
-// card YOU play" is player-scoped, and R12 fences information crossing
+// card YOU play" is player-scoped, and the region rule (CR 101.6) fences effects crossing
 // regions, not a player's own resolved bookkeeping.
 
 // ⚠ ERRATA 2026-09-21: the printed window narrowed from "this TURN" to "this
-// PHASE", and the CLEAR half above moved with it. Everything else in R119
+// PHASE", and the CLEAR half above moved with it. Everything else about the charge (CR 111.10k)
 // stands — the charge is still player-side, still survives the Drone dying,
 // still spent at the two play emit sites. Only its expiry changed.
 //
@@ -414,7 +413,7 @@ card('Life Power Dude', {
 // stands, because those are one phase.
 //
 // ⚠ NOT A PER-TURN BOUND WEARING A NEW NAME. The `[once]` above is still per
-// TURN (R9), so a seat gets one charge a turn and now has one phase to spend
+// TURN (CR 109.9), so a seat gets one charge a turn and now has one phase to spend
 // it. Those two windows are different lengths on purpose, and
 // `45-hybrids-ld-b` pins them apart so that collapsing either into the other
 // fails — "[once] — one activation per turn" against "the charge expires at a
@@ -429,7 +428,7 @@ card('Life Power Dude', {
 // to the printed text anyway: the card says phase.
 card('Deferral Drone', {
   augmentText: [{
-    // [once] = `bounded`, R9: one activation per turn per CARD. The DISCOUNT it
+    // [once] = `bounded`, CR 803.4: one activation per turn per CARD. The DISCOUNT it
     // buys is per phase — see above; the two do not share a window.
     type: 'activated', bounded: true, cost: { debt: 4 },
     label: 'gain 4 debt: the next card you play this phase costs [3] less',
@@ -449,12 +448,12 @@ card('Deferral Drone', {
 // "When you trash another card, [Switch1] Each opponent loses 3 life and you
 // gain 3 life." — ld/3 2/2 Cosmic Horror Unit.
 //
-// R40 'trashed' event: "you trash" = the bin's owner is my controller (the
+// CR 801.2e 'trashed' event: "you trash" = the bin's owner is my controller (the
 // event carries the trasher's seat). "Another card" is free — a trigger source
 // has to be a unit IN PLAY and a trashed card is by definition in a bin, so it
 // can never be this entity. Region-scoped by the event (noteTrashed stamps
-// actionRegion, R12). "Each opponent" = the region's other present seats
-// (R25). Bounded cause + bounded graft ([Switch1], R9).
+// actionRegion, CR 601.1d). "Each opponent" = the region's other present seats
+// (CR 601.4d). Bounded cause + bounded graft ([Switch1], CR 722.5).
 const murkstalkerDrain: EffectDef = {
   run: (g, ctx) => {
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
@@ -482,27 +481,27 @@ card('Murkstalker', {
 // An ACTIVATED ability in the [Augment] text box (the Slag Spewer precedent):
 // live while the card is a unit in play and donated to hosts.
 //
-// R49: the either/or line is a real ACTIVATION cost
+// CR 111.6, 705.3: the either/or line is a real ACTIVATION cost
 // (`discardOrSacrifice: 1`) — it GATES the activation and is chosen and paid
 // in the cast window, before the item reaches the stack. Both modes TRASH the
-// paid card (R40), which is the point in a dark-element deck. The engine's
+// paid card (CR 801.2a), which is the point in a dark-element deck. The engine's
 // sacrifice pool excludes tokens and the ability's own source.
 //
 // ⚠ Consequence of paying at the right time: with nothing in your bin to
 // recall, the cost is still paid — the printed line is a cost, not a targeted
-// spell, and R35 pays costs before effects. The old resolution-time version
+// spell, and CR 111.7 pays costs before effects. The old resolution-time version
 // checked the bin first and paid nothing; that was the more forgiving reading,
 // not the more correct one.
 // "Recall … in your bin" moves a unit card from the bin to the HAND (recall is
-// always to hand, Manual). Bounded by [once] (R9).
+// always to hand, Manual). Bounded by [once] (CR 109.9).
 card('Combustible Bogwalker', {
   augmentText: [{
     type: 'activated', cost: { discardOrSacrifice: 1 }, bounded: true,
     label: 'sacrifice a nontoken unit or discard a card: recall target unit in your bin',
     effect: {
-      // R64: "target unit in your bin" is a declared target. NOTE the
+      // CR 110.1a: "target unit in your bin" is a declared target. NOTE the
       // ordering it inherits: targets are collected BEFORE the activation
-      // cost is paid (R57), so the pick is made against the bin as it stands
+      // cost is paid (CR 111.7), so the pick is made against the bin as it stands
       // BEFORE the discard/sacrifice pushes another card into it — you cannot
       // recall the very card you are about to pay with. That is the printed
       // reading (the cost is paid to use the ability, not as part of it) and
@@ -518,9 +517,9 @@ card('Combustible Bogwalker', {
           g.ev('info', 'Combustible Bogwalker: no unit in your bin — the cost is paid for nothing.');
           return;
         }
-        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
         if (name !== undefined) {
-          g.toHand(ctx.controller, name, 'bin');   // R179
+          g.toHand(ctx.controller, name, 'bin');   // CR 402.4
           g.ev('info', `Combustible Bogwalker: ${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
         }
       },
@@ -535,15 +534,15 @@ card('Combustible Bogwalker', {
 // castCost below and the header's ✔ note. (The paragraph that used to stand
 // here said "CastCost only knows `sacrificeUnit`, so it is paid at RESOLUTION";
 // that expired when CastCost grew its other six kinds, and it contradicted the
-// declaration thirteen lines under it.) Bounded graft ([Switch1], R9); on a
+// declaration thirteen lines under it.) Bounded graft ([Switch1], CR 722.5); on a
 // graft the CARRIER's controller pays and the carrier aims the 5 damage.
 const darkblastEffect: EffectDef = {
   targets: { what: 'any', prompt: 'Darkblast: deal 5 damage to any target' },
-  // R35/R49: a REAL bracketed cast cost now — chosen and paid at cast, before
+  // CR 702.4: a REAL bracketed cast cost now — chosen and paid at cast, before
   // the spell reaches the stack. With an empty hand the cast is ILLEGAL
   // (castable() refuses it and legalActions never offers it); on a grafted
   // rider it is optional and declining skips just that part. The discard
-  // TRASHES the card (R40), which is the point of the card in a dark deck.
+  // TRASHES the card (CR 801.3), which is the point of the card in a dark deck.
   castCost: { kind: 'discardCard', n: 1 },
   run: (g, ctx) => {
     const t = ctx.targets[0];
@@ -559,10 +558,10 @@ card('Darkblast', {
 // "When another card is trashed, [Switch1] I deal 2 damage to any target." —
 // rd/2 2/2 Mystic Unit.
 //
-// R40 'trashed', ANY player's (unqualified — contrast Murkstalker's "when
+// CR 801.2 'trashed', ANY player's (unqualified — contrast Murkstalker's "when
 // YOU trash"), region-scoped by the event. "Another card" is free: the trigger
 // source is a unit in play and the trashed card is in a bin. Bounded cause +
-// bounded graft ([Switch1], R9); the target is collected when the trigger is
+// bounded graft ([Switch1], CR 722.5); the target is collected when the trigger is
 // put on the stack, like any targeted trigger.
 const splortBolt: EffectDef = {
   targets: { what: 'any', prompt: 'Splort: deal 2 damage to any target' },
@@ -584,12 +583,12 @@ card('Splort', {
 
 // "Augment a Wight onto X target units." — gd/X 0/0 {Battle} Blight Spell.
 //
-// R71: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
+// CR 721.6: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
 // as an augment MOD on the host rather than spawning the body, and the mod is
 // a token so it is erased (never binned, never trashed) when it leaves play.
-// R67: the X targets are DECLARED targets, collected as the spell goes on the
+// CR 110.1a: the X targets are DECLARED targets, collected as the spell goes on the
 // stack (`count: 'X'`, which the collector reads off the X already fixed by
-// R35's cast-time payment) — they used to be mid-resolution picks, so the
+// CR 107.2a's cast-time payment) — they used to be mid-resolution picks, so the
 // spell sat on the stack aiming at nobody. "Target units" is unqualified, so an ENEMY unit
 // is a legal host: the Wraith's donated "[Augment] When I attack or block, put
 // a -1/-1 counter on me" then shrinks THEM. X = 0 does nothing (the card does
@@ -604,7 +603,7 @@ card("Blight's End", {
     creates: ['Wraith'],
     run: (g, ctx) => {
       // the targets ARE the hosts; each is re-read at resolution so a unit
-      // that died in between is simply skipped (R5 partial resolution)
+      // that died in between is simply skipped (CR 704.6b partial resolution)
       let made = 0;
       for (const t of ctx.targets) {
         if (!isEntityTarget(t)) continue;
@@ -627,13 +626,13 @@ card("Blight's End", {
 // (composeParts joins graft parts to a graftCause ability). It is therefore
 // NOT given a graftEffect — there is nothing to transfer, so the card cannot
 // itself be grafted onto something else.
-// R49: both halves are now real. `timing: 'battle'` is the printed [Battle]
+// CR 705.2, 111.2: both halves are now real. `timing: 'battle'` is the printed [Battle]
 // marker, enforced at ACTIVATION (deployment activation is refused and never
 // offered); `cost: { discard: 1 }` is the printed cost, which gates the
 // activation (an empty hand makes it unactivatable) and is chosen and paid in
 // the cast window, before the item reaches the stack — so the grafts riding on
 // it can no longer resolve off an unpaid cost. The discard TRASHES the card
-// (R40). Unbounded ([Switch], not [Switch1]) — repeatable while you keep
+// (CR 801.3). Unbounded ([Switch], not [Switch1]) — repeatable while you keep
 // discarding.
 card('Cadaverous Cultivator', {
   abilities: [{
@@ -652,9 +651,9 @@ card('Cadaverous Cultivator', {
 // {Battle} Blight Spell.
 //
 // First sentence scripted: {Poisonous} until regroup (addTempAttr clears with
-// temp stats, R11 step 3).
+// temp stats, CR 506.2 step 3).
 //
-// Second sentence UNPARKED by R51: `zone: 'bin'` dispatches a trigger to a card
+// Second sentence UNPARKED by the bin-listener wave (CR 400.5): `zone: 'bin'` dispatches a trigger to a card
 // SITTING IN A BIN, anchored on a detached stand-in whose controller is the
 // bin's owner — so "if I am in YOUR bin" is ctx.controller throughout. The
 // stand-in has id -1 and is not in play, which is exactly right: this card is
@@ -662,10 +661,10 @@ card('Cadaverous Cultivator', {
 //
 // "You MAY remove a -1/-1 counter from a unit to recall me" is a cost with a
 // choice, paid at resolution via ctx.choose (the trigger is already on the
-// stack by then, so R35's cast window does not apply): decline, or pick a unit
+// stack by then, so the cast window (CR 702.4) does not apply): decline, or pick a unit
 // carrying at least one -1/-1 counter. Only a NET-negative unit qualifies —
 // counters cancel pairwise in this engine, so a unit on net +1 has no -1/-1
-// counter to remove. Region-scoped (R12/R25).
+// counter to remove. Region-scoped (CR 601.1b, 601.4d).
 card('Inexorable Miasma', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Inexorable Miasma: target unit gains {Poisonous} until regroup' },
@@ -688,7 +687,7 @@ card('Inexorable Miasma', {
     // region is the one `fireZoneTriggers` gives it and the one the trigger
     // resolves in (ctx.region = the queued trigger's region = self.region), so
     // this reads the same units the resolution's pool does. The re-check in
-    // `run` stays: a counter can come off before this resolves (R1).
+    // `run` stays: a counter can come off before this resolves (CR 109.3b).
     when: (g, self) => g.unitsIn(self.region).some(u => u.counters < 0),
     effect: {
       run: (g, ctx) => {
@@ -716,8 +715,8 @@ card('Inexorable Miasma', {
         g.addCounters(u, 1);                        // net counters: +1 removes a -1/-1
         const idx = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
         if (idx === -1) { g.ev('info', 'Inexorable Miasma: it left the bin — nothing is recalled.'); return; }
-        g.removeFromBin(ctx.controller, idx, 'recalled');   // R124
-        g.toHand(ctx.controller, 'Inexorable Miasma', 'bin');   // R179
+        g.removeFromBin(ctx.controller, idx, 'recalled');   // CR 405.7
+        g.toHand(ctx.controller, 'Inexorable Miasma', 'bin');   // CR 402.4
         g.ev('info', `Inexorable Miasma is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },
     },
@@ -728,7 +727,7 @@ card('Inexorable Miasma', {
 // put that many counters plus one instead." — gd/2 1/2 {Virus} Blight Slime
 // Unit.
 //
-// UNPARKED as a real replacement (R104). It used to be two triggers on
+// UNPARKED as a real replacement (CR 708.5). It used to be two triggers on
 // 'countersChanged'/'rotGained'/'debtGained' that added the "plus one" AFTER
 // the printed counters had already landed, guarded by a module-level `let
 // proliferating` — because the top-up was itself a counter placement and the
@@ -753,7 +752,7 @@ card('Inexorable Miasma', {
 // a second trigger.
 card('Proliferating Slime', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     amountMods: [{
@@ -786,13 +785,13 @@ const binGrants = (g: E, seat: Seat, attr: Attr): boolean =>
 //
 // One static PER ATTRIBUTE, because StaticMod.attrs is a fixed list while the
 // bin is not: each row grants its own attribute exactly when a unit card in
-// the controller's bin prints it. Live at every evaluation (R27) — binning a
+// the controller's bin prints it. Live at every evaluation (CR 707.4) — binning a
 // {Flying} unit lights the Omniphage up immediately. "Your bin" is the
 // carrier's controller's (the HOST's when donated, statics being anchored on
 // the host); "I" is the carrier itself, so each row only affects self.
 card('The Omniphage', {
   augmentable: true,   // text-box [Augment] implemented as statics
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: ALL_ATTRS.map(attr => ({

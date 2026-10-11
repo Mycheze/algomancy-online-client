@@ -22,7 +22,7 @@ test('setup & planning', () => {
   const pileBefore = h.state.sharedRecycled?.length ?? 0;
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' });
   assert.equal(h.state.players[0]!.hand.length, before - 1, 'recycle: hand -1');
-  // R296: PAST THE MARK, not onto the bottom of the live deck. The assertion
+  // CR 408.2: PAST THE MARK, not onto the bottom of the live deck. The assertion
   // here used to read `sharedDeck.length === deckBefore + 1`; the card is in
   // the recycle pile now and comes back only when the deck runs out.
   assert.equal(h.state.sharedDeck.length, deckBefore, 'recycle: the live deck is unchanged');
@@ -87,13 +87,13 @@ test('affinity gating: prismites are NOT wild', () => {
   giveResources(h, p, 'fire', 6);
   h.state.players[p]!.resources.forEach(r => { if (r.kind === 'prismite') r.state = 'open'; });
   assert.equal(new E(h.state).canPayCard(p, 'Dreadwave Devourer'), false,
-    '6 fire + 2 ACTIVE prismites still fail bb — prismites give no affinity (R17)');
+    '6 fire + 2 ACTIVE prismites still fail bb — prismites give no affinity (CR 105.5)');
   giveResources(h, p, 'water', 2);
   assert.equal(new E(h.state).canPayCard(p, 'Dreadwave Devourer'), true,
     '2 real water resources meet bb');
 });
 
-test('R17/prismites: dormant start, no affinity, planning exchange into any element', () => {
+test('prismites: dormant start, no affinity, planning exchange into any element', () => {
   const h = new Harness(31);
   const p = 0;
   // turn 1 planning: activate both starting prismites (the typical line)

@@ -114,7 +114,7 @@
   },
   {
     "key": "concepts.abilities.as-you-play",
-    "textHash": "7a66cb5b48b5f8ff",
+    "textHash": "675763eb31f3678b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -271,7 +271,7 @@
   },
   {
     "key": "concepts.abilities.mod-text",
-    "textHash": "cfbd394dea6e464f",
+    "textHash": "9e215fd04df511ed",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
@@ -545,7 +545,7 @@
   },
   {
     "key": "concepts.abilities.once.multiplier",
-    "textHash": "47dfa9b68048264a",
+    "textHash": "bd0ebdb3e3905ee0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -626,7 +626,7 @@
   },
   {
     "key": "concepts.abilities.once.per-card",
-    "textHash": "a492b018a2ba2083",
+    "textHash": "b8bcaa6ece43e555",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -885,7 +885,7 @@
   },
   {
     "key": "concepts.abilities.once.x-zero",
-    "textHash": "6514bfbf1aabe773",
+    "textHash": "cf7bb184c66513d7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -954,7 +954,7 @@
   },
   {
     "key": "concepts.abilities.replacement.targeted",
-    "textHash": "49c44594ed0f847f",
+    "textHash": "63da12b2b2bf9873",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U03-r2",
@@ -1114,7 +1114,7 @@
   },
   {
     "key": "concepts.abilities.triggered.condition",
-    "textHash": "d6162502852c00c9",
+    "textHash": "987a99599c6ee034",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1169,7 +1169,7 @@
   },
   {
     "key": "concepts.abilities.triggered.per-target",
-    "textHash": "e00e5b695a24e914",
+    "textHash": "08a768cabe7ea76a",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U03-r2",
@@ -1353,7 +1353,7 @@
   },
   {
     "key": "concepts.cards.copies",
-    "textHash": "cd1b8bce9ec217a7",
+    "textHash": "e342870d97ab1fbe",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
@@ -1524,7 +1524,7 @@
   },
   {
     "key": "concepts.cards.faces",
-    "textHash": "ba07e7231337f0e3",
+    "textHash": "bb3d36f4a9962600",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1604,7 +1604,7 @@
   },
   {
     "key": "concepts.cards.faces.own-back",
-    "textHash": "23e2f7aff30d77f1",
+    "textHash": "c9bb8c49f70a02a3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1642,7 +1642,7 @@
   },
   {
     "key": "concepts.cards.identity",
-    "textHash": "c24a6fe9980ab540",
+    "textHash": "20b1965ced85cdb2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1831,7 +1831,7 @@
   },
   {
     "key": "concepts.cards.token.not-trashed",
-    "textHash": "6d168bd64822fe01",
+    "textHash": "301cb66e685938de",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1931,7 +1931,7 @@
   },
   {
     "key": "concepts.cards.token.where",
-    "textHash": "8536e9d25d45d45c",
+    "textHash": "bc2705b2d313e3cf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2016,7 +2016,7 @@
   },
   {
     "key": "concepts.targets.ally",
-    "textHash": "3ab119883fd64956",
+    "textHash": "dc158e0099efa0d3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2055,7 +2055,7 @@
   },
   {
     "key": "concepts.targets.ally.another",
-    "textHash": "efc7f940fcf6e0fa",
+    "textHash": "4ca7fba27ab68b67",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2141,7 +2141,7 @@
   },
   {
     "key": "concepts.targets.ally.effect-controller",
-    "textHash": "85bec132005125cb",
+    "textHash": "ae162d4a41b73634",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U03-r3",
@@ -2200,7 +2200,7 @@
   },
   {
     "key": "concepts.targets.ally.self",
-    "textHash": "6fdabb562146286e",
+    "textHash": "cae9bbabe0f65b8b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2724,7 +2724,7 @@
   },
   {
     "key": "concepts.targets.legal.clause",
-    "textHash": "af9efb2a6826a2b1",
+    "textHash": "1c6cd0f4bc474ecf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2898,7 +2898,7 @@
   },
   {
     "key": "concepts.targets.legal.player",
-    "textHash": "8dbbec0b45aab7d3",
+    "textHash": "9060753dce596251",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U03-r3",
@@ -2963,7 +2963,7 @@
   },
   {
     "key": "concepts.targets.must-be-targeted",
-    "textHash": "3bf555a55a348304",
+    "textHash": "d8905639d6ea718e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U03-r2",
@@ -3101,7 +3101,7 @@
   },
   {
     "key": "concepts.targets.must-be-targeted.several",
-    "textHash": "1f55f3c4b6824d17",
+    "textHash": "aec8e511971c714a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3182,7 +3182,7 @@
   },
   {
     "key": "concepts.targets.not-target.distribution",
-    "textHash": "f34ac9b53b3dfc5f",
+    "textHash": "2236507fd5549b8b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3229,7 +3229,7 @@
   },
   {
     "key": "concepts.targets.not-target.traits",
-    "textHash": "5e840210a14b3d11",
+    "textHash": "2f6f02e25b3cdcc4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3272,7 +3272,7 @@
   },
   {
     "key": "concepts.targets.not-target.wraith",
-    "textHash": "f225a66672d55815",
+    "textHash": "40ab67795b967f3b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3353,7 +3353,7 @@
   },
   {
     "key": "concepts.targets.region",
-    "textHash": "0b04cfec59a957c5",
+    "textHash": "08842bef079c5a4f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3392,7 +3392,7 @@
   },
   {
     "key": "concepts.targets.region.cache",
-    "textHash": "324d5d758e5e3dc7",
+    "textHash": "6cb34b7af115a2a7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3591,7 +3591,7 @@
   },
   {
     "key": "concepts.targets.what.count",
-    "textHash": "92a5754083da6556",
+    "textHash": "d38f09957c256f0a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3723,7 +3723,7 @@
   },
   {
     "key": "concepts.targets.what.up-to",
-    "textHash": "6f64abaef678279e",
+    "textHash": "a0fa6f30e57e45f7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",

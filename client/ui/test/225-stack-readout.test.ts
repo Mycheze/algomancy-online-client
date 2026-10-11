@@ -113,7 +113,7 @@ test('§1a Retribution Thing wears its X on the stack, and it is the number it w
 });
 
 test('§1b the declared mode narrows the forecast to the half that was chosen', async () => {
-  // R57 fixes the bracket at cast, so on the stack "lost 7 / gained 0" is no
+  // CR 702.5 fixes the bracket at cast, so on the stack "lost 7 / gained 0" is no
   // longer a choice — one of them is what this item will do, and showing both
   // would be showing a number nobody can now cast for.
   const { h, D } = bledDefenderHasPriority(22502);
@@ -306,7 +306,7 @@ test('§2a a lured unit wears a badge, and an unlured one does not', async () =>
 });
 
 test('§2b the badge marks exactly the units the ENGINE would refuse to attack with', async () => {
-  /* The client may not hold a second opinion (R245), so the set is asked of
+  /* The client may not hold a second opinion (CR D1.3), so the set is asked of
    * the engine and never restated here: sweep every unit the seat controls,
    * offer the engine a declaration built out of that ONE unit, and count the
    * refusals that name {Alluring}. The badge count on screen has to match, at

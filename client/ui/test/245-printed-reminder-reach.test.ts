@@ -1,13 +1,13 @@
 /**
- * R267 — CAN THE REPOSITORY SEE THE GAME'S OWN WORDS?
+ * CR D6.11 — CAN THE REPOSITORY SEE THE GAME'S OWN WORDS?
  *
  * Round-32 Q6. The owner answered *"Rot has now been added"*, and round 32 had
  * told him there were no game words for {Rot} to be added FROM. That answer was
  * wrong, and it was wrong for a reason that generalises well past {Rot}:
  *
- *   R248 filled the glossary from the pool's `{i}(...)` reminder spans.
- *   R252 added the Algomancy Manual for the rows no card reminds you about.
- *   R252 §3 then stated, as a fact, that the remaining rows were ones for which
+ *   The first reminder ruling filled the glossary from the pool's `{i}(...)` reminder spans.
+ *   A second ruling added the Algomancy Manual for the rows no card reminds you about.
+ *   That second ruling's §3 then stated, as a fact, that the remaining rows were ones for which
  *   "the glossary row remains the ONLY statement of the rule this repository
  *   has."
  *
@@ -64,7 +64,7 @@ test('POSITIVE CONTROL: the pool, the glossary and both reviewed channels all lo
  * 1. THE DERIVED CANDIDATE SET IS EXACTLY THE REVIEWED ONE
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R267: every convention-B candidate the pool produces has a reviewed verdict', () => {
+test('CR D6.11: every convention-B candidate the pool produces has a reviewed verdict', () => {
   // THE POINT OF THE WHOLE FILE. The candidate set is DERIVED from printed
   // card data; the verdict on each candidate is REVIEWED, because the
   // derivation admits real noise ("create a Shard. {i}(It spawns dormant.)"
@@ -80,7 +80,7 @@ test('R267: every convention-B candidate the pool produces has a reviewed verdic
     + 'words) or reject it with the reason, in ui/glossary.ts LEAD_ACCEPTED / LEAD_REJECTED.');
   assert.ok(Object.keys(LEAD_VERDICTS.accepted).length >= 3,
     'fewer than three accepted convention-B reminders');
-  // R267: an accepted verdict may NAME the card whose wording is shown. Where it
+  // CR D6.11: an accepted verdict may NAME the card whose wording is shown. Where it
   // does, that card must really print the sentence the row displays — otherwise
   // the name is decoration and printed.json key order is picking again.
   for (const [term, card] of Object.entries(LEAD_VERDICTS.accepted)) {
@@ -96,7 +96,7 @@ test('R267: every convention-B candidate the pool produces has a reviewed verdic
     + 'stopped earning its keep and the derivation can be used directly');
 });
 
-test('R267: no term is claimed by both reminder conventions', () => {
+test('CR D6.11: no term is claimed by both reminder conventions', () => {
   // convention A is the more specific statement and must win outright;
   // two sources claiming one row is the ambiguity 227 already forbids.
   const both = [...LEAD_CANDIDATES.keys()].filter(t => {
@@ -118,7 +118,7 @@ test('R267: no term is claimed by both reminder conventions', () => {
  * ui/glossary.ts, so this is a check on the POOL and not on that code */
 const flat = (s: string): string => s.replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
 
-test('R267: each accepted convention-B reminder is printed on a real card, verbatim', () => {
+test('CR D6.11: each accepted convention-B reminder is printed on a real card, verbatim', () => {
   const bad: string[] = [];
   for (const term of Object.keys(LEAD_VERDICTS.accepted)) {
     const shown = GLOSSARY.find(e => e.term === term);
@@ -148,19 +148,19 @@ test('R267: each accepted convention-B reminder is printed on a real card, verba
   assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
 });
 
-test('R267: the three rows this ruling moved are the ones the pool actually speaks for', () => {
+test('CR D6.11: the three rows this ruling moved are the ones the pool actually speaks for', () => {
   // named on purpose: these three were each written down SOMEWHERE as a row the
   // game is silent about, and each claim was false when it was made.
-  //   {Glimpse}  R252 §3 — "the ONLY statement of the rule this repository has"
-  //   {Unstable} R252 §4 — judged the manual inadmissible, never checked a card
-  //   {Ambush}   R252 §1 — took the manual while six cards printed a shorter one
+  //   {Glimpse}  the manual ruling, §3 — "the ONLY statement of the rule this repository has"
+  //   {Unstable} the manual ruling, §4 — judged the manual inadmissible, never checked a card
+  //   {Ambush}   the manual ruling, §1 — took the manual while six cards printed a shorter one
   for (const term of ['Glimpse', 'Unstable', 'Ambush']) {
     const e = GLOSSARY.find(g => g.term === term)!;
     assert.ok(PRINTED_REMINDERS.has(term),
       `{${term}} has stopped being a printed row — if a card lost its reminder that is a real `
-      + 'event, and R267 needs re-reading before this line is edited');
+      + 'event, and CR D6.11 needs re-reading before this line is edited');
     assert.equal(e.manualOn, undefined, `{${term}} is printed; the manual must not also claim it`);
-    assert.ok((e.ruling ?? []).includes('printed'), `{${term}} does not cite printed`);
+    assert.ok((e.cites ?? []).includes('printed'), `{${term}} does not cite printed`);
   }
   assert.equal(MANUAL_REMINDERS.has('Ambush'), false,
     'ui/manual-reminders.json quotes the manual for {Ambush} again — printed beats manual, so '
@@ -171,7 +171,7 @@ test('R267: the three rows this ruling moved are the ones the pool actually spea
  * 3. THE CARD-LIBRARY CHANNEL REBUILDS OUT OF THE CHECKED-IN RULES FILE
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R267: every card-library sentence is quoted verbatim from the file it cites', () => {
+test('CR D6.11: every card-library sentence is quoted verbatim from the file it cites', () => {
   // The same standard 231 holds the manual to, one channel over. What this
   // proves is that WE TRANSCRIBED THE CARD FAITHFULLY. It does NOT prove the
   // card is in the current print run, and the _README says so in as many words.
@@ -191,7 +191,7 @@ test('R267: every card-library sentence is quoted verbatim from the file it cite
   assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
 });
 
-test('R267: a card-library row shows the game words and keeps the authored rule', () => {
+test('CR D6.11: a card-library row shows the game words and keeps the authored rule', () => {
   const authored = new Map(AUTHORED_GLOSSARY.map(e => [e.term, e.text]));
   for (const [term, r] of LIBRARY_REMINDERS) {
     const e = GLOSSARY.find(g => g.term === term)!;
@@ -204,7 +204,7 @@ test('R267: a card-library row shows the game words and keeps the authored rule'
   }
 });
 
-test('R267: the card library is consulted LAST, never over the pool or the manual', () => {
+test('CR D6.11: the card library is consulted LAST, never over the pool or the manual', () => {
   const clash = [...LIBRARY_REMINDERS.keys()]
     .filter(t => PRINTED_REMINDERS.has(t) || MANUAL_REMINDERS.has(t));
   assert.deepEqual(clash, [],
@@ -216,8 +216,8 @@ test('R267: the card library is consulted LAST, never over the pool or the manua
  * 4. THE MEASUREMENT — what each channel actually reaches
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('R267: the four channels partition the glossary, and the split is pinned', () => {
-  // Not decoration. R252 §3 published a number for this and the number was
+test('CR D6.11: the four channels partition the glossary, and the split is pinned', () => {
+  // Not decoration. The manual ruling (§3) published a number for this and the number was
   // wrong, so the number is now derived and asserted rather than written in
   // prose where nothing can check it.
   const of = (e: typeof GLOSSARY[number]): string =>
@@ -229,13 +229,13 @@ test('R267: the four channels partition the glossary, and the split is pinned', 
   assert.deepEqual(tally, { printed: 18, manual: 6, library: 1, authored: 18 },
     'the channel split moved. If PRINTED went up a card started reminding players about a row '
     + '(good, and the row should stop citing the weaker channel); if AUTHORED went up a row lost '
-    + 'a source. Either way R267 wants re-reading before this number is edited.');
+    + 'a source. Either way CR D6.11 wants re-reading before this number is edited.');
   assert.equal(Object.values(tally).reduce((a, b) => a + b, 0), GLOSSARY.length,
     'the four channels no longer partition the table — a row is being counted twice or not at all');
-  // and the thing R252 §3 got wrong, stated as an assertion this time
+  // and the thing that ruling got wrong, stated as an assertion this time
   assert.ok(tally.printed! > 15,
-    'convention B has stopped reaching the three rows it was written for — R248 found 15 and '
-    + 'R267 found three more, so anything at or below 15 means the second convention is dead');
+    'convention B has stopped reaching the three rows it was written for — the first scan found 15 and '
+    + 'a second scan found three more, so anything at or below 15 means the second convention is dead');
 });
 
 /* ════════════════════════════════════════════════════════════════════════

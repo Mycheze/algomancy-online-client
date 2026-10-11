@@ -115,7 +115,7 @@
     "summary": "Single Card Duel is an owner format with no printed or designer source. It breaks the printed 2-copy limit (30 copies of one card) and replaces constructed's draw phase with a flat draw of 2.",
     "sides": [
       {
-        "source": "R298",
+        "source": "owner ruling, adopted 2026-09-18",
         "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
       },
       {
@@ -123,7 +123,7 @@
         "quote": "pre-built decks to the game with up to 2 copies of each"
       }
     ],
-    "resolution": "Stated as the client's variant, basis owner, and labelled as not the printed game. The owner calls it \"a goofy thought experiment format\"; no sign-off beyond R298 is needed, but it belongs in Annex P's owner-only list."
+    "resolution": "Stated as the client's variant, basis owner, and labelled as not the printed game. The owner calls it \"a goofy thought experiment format\"; no sign-off beyond the owner ruling of 2026-09-18 (“Single Card Duel: thirty copies of…”) is needed, but it belongs in Annex P's owner-only list."
   },
   {
     "id": "D-U22-9",
@@ -133,7 +133,7 @@
     "summary": "Custom live-draft rules (pack size, element count, hand, draws, life, simple-only, bans, filter) are an owner feature with no printed or designer source. Pack sizes other than 10 contradict print, which always uses 10-card packs.",
     "sides": [
       {
-        "source": "R292",
+        "source": "owner ruling, adopted 2026-09-14",
         "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
       },
       {
@@ -141,25 +141,25 @@
         "quote": "At the start of a game or when the draft is refreshed (see below), each player is dealt a Pack of cards. Packs in Algomancy always"
       }
     ],
-    "resolution": "Stated as the client's variant, basis owner. A custom game is not the printed game, and R292 itself says so; the standard game is unchanged."
+    "resolution": "Stated as the client's variant, basis owner. A custom game is not the printed game, and the owner ruling of 2026-09-14 (“Custom rules on a live draft…”) itself says so; the standard game is unchanged."
   },
   {
     "id": "D-U22-10",
     "kind": "g-other",
     "rule": "formats.constructed.card-text.shared-mode",
     "tier": 4,
-    "summary": "The owner said the client's \"shared\" testing mode \"I guess it'd be constructed?\". R162 applied that to card text only (Worldbender's branch); a shared game still has no constructed draw phase (draw 4, put back 2), only a flat draw of 2, and its turn-1 hand differs (7 cards in the test title, against constructed's 4 + 4 − 2).",
+    "summary": "The owner said the client's \"shared\" testing mode \"I guess it'd be constructed?\". The owner ruling of 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”) applied that to card text only (Worldbender's branch); a shared game still has no constructed draw phase (draw 4, put back 2), only a flat draw of 2, and its turn-1 hand differs (7 cards in the test title, against constructed's 4 + 4 − 2).",
     "sides": [
       {
-        "source": "R157",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "> *\"Shared mode isn't a real thing. You invented it for testing. So I guess"
       },
       {
-        "source": "R162",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "Shared has no draft step and no draw phase, so its card step is the flat"
       }
     ],
-    "resolution": "The rule states the narrow reading R162 implemented: shared counts as constructed where card text asks. Shared is a testing mode, not a format a player chooses, so no owner question unless shared games are ever offered to players."
+    "resolution": "The rule states the narrow reading the owner ruling of 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”) implemented: shared counts as constructed where card text asks. Shared is a testing mode, not a format a player chooses, so no owner question unless shared games are ever offered to players."
   },
   {
     "id": "D-U22-11",

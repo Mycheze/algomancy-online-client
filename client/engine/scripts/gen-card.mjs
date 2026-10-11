@@ -162,7 +162,7 @@ function skeleton(name) {
     body.push(`    type: 'triggered', events: [${events.map(x => `'${x}'`).join(', ')}],${self ? ' self: true,' : ''}${bounded ? ' bounded: true,' : ''} graftCause: true,`);
     if (!events.length) todos.push(`could not guess events for "${clause}" — fill them in`);
     body.push(`    label: '${effText.replace(/'/g, "\\'").slice(0, 60)}',`);
-    body.push(`    // TODO trigger clause: "${clause}" — add when() if it has a condition (R1: checked at event time)`);
+    body.push(`    // TODO trigger clause: "${clause}" — add when() if it has a condition (CR 109.3a: checked at event time)`);
     body.push(`    effect: { run: (g, ctx) => { /* TODO: ${effText} */ } },`);
     body.push(`  }],`);
     body.push(`  graftEffect: { bounded: ${bounded}, effect: /* TODO: share the effect const */ undefined as never },`);

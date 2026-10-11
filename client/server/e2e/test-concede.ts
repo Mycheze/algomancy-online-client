@@ -1,4 +1,4 @@
-/* Integration test for R65's concede (run: node test-concede.ts).
+/* Integration test for CR 104.4's concede (run: node test-concede.ts).
  *
  * Same harness style as the other server tests: spawn the real server on an
  * ephemeral port, drive it over raw WebSockets, no test framework.
@@ -10,7 +10,7 @@
  * result, and survive a restart — and it must be refused when it is not yours
  * to concede.
  *
- * R290 (2026-09-05) added a second stamp beside the result: WHO conceded and
+ * A 2026-09-05 change (now CR D8.5) added a second stamp beside the result: WHO conceded and
  * on WHICH TURN, because a turn-1 concede is a walkover and a turn-2 one a
  * half-weight game. §3 plays three real games to turn 1, 2 and 5 over the
  * socket, concedes each, and reads the stamp back off the room file and
@@ -76,7 +76,7 @@ class Client {
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 /** Resolve once neither client has received a message for `quietMs` (the
- * R204/CT-85 shape from test-clock.ts: never read a view with a known-pending
+ * CT-85 shape from test-clock.ts: never read a view with a known-pending
  * successor). */
 async function quiesce(a: Client, b: Client, quietMs = 120, maxMs = 3000): Promise<void> {
   const deadline = Date.now() + maxMs;
@@ -126,7 +126,7 @@ async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, lab
   throw new Error(`advanceUntil(${label}): gave up after 200 rounds`);
 }
 
-// R204/CT-85: the server picks its own port and tells us which — see
+// CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
 // test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
 // port unheld for as long as node took to boot.
 const server = await spawnServer();
@@ -174,7 +174,7 @@ try {
   const again = await a.next(m => m.t === 'error', cAt);
   ok(/game is over/i.test(again.msg ?? ''), 'conceding twice is refused');
 
-  // R290: the post-game payload says what the concession weighed
+  // CR D8.5: the post-game payload says what the concession weighed
   const over = a.msgs.find(m => m.t === 'gameover') as (Msg & { concession?: { seat: number; turn: number; weight: string } }) | undefined;
   ok(!!over, 'the conceder got the post-game payload');
   eq(over?.concession?.weight, 'walkover', '⭐ and it says this turn-1 concede was a walkover');
@@ -183,13 +183,13 @@ try {
 
   a.ws.close(); b.ws.close();
 
-  // ── R290 §3: the stamp carries the TURN, and the turn decides the weight ──
+  // ── CR D8.5: the stamp carries the TURN, and the turn decides the weight ──
   //
   // Three real games, over the socket, conceded on turn 1, 2 and 5. The file
   // must carry `{ seat, turn }`, and the history import must turn that into
   // walkover / early / normal WITHOUT replaying — so the assertion is on the
   // saved JSON first and the imported row second.
-  console.log('\n[R290: who conceded, on which turn]');
+  console.log('\n[CR D8.5: who conceded, on which turn]');
   eq(saved.concession?.seat, 0, 'turn-1 game: the file names the conceder');
   eq(saved.concession?.turn, 1, '⭐ turn-1 game: the file carries turn 1');
 

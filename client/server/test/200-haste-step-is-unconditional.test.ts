@@ -1,4 +1,4 @@
-/* R228 (owner ruling, 2026-08-28) — THE HASTE STEP IS ALWAYS OFFERED.
+/* CR 504.5 (owner ruling, 2026-08-28) — THE HASTE STEP IS ALWAYS OFFERED.
  *
  * ── THE RULING
  *
@@ -49,7 +49,7 @@
  * ⚠ §1 IS THE ONE THAT IS EASY TO GET WRONG. Every secrecy test in this
  * engine was unfalsifiable for months because `Harness.absorb()` flattens all
  * events into one seatless `h.log`; two genuine leaks survived 153 test files
- * for that reason (R203 / 174-secrecy-is-seat-aware). Nothing below reads
+ * for that reason (174-secrecy-is-seat-aware). Nothing below reads
  * `h.log`. §1's control is there so a green cannot mean "the assertion cannot
  * fail" — it compares two boards that DO differ publicly and requires the
  * served views to differ.
@@ -92,7 +92,7 @@ const served = (h: Harness): string => JSON.stringify(viewFor(h.state, D));
 
 /* ═══ §1 — the channel is closed, and the instrument can still see ═════ */
 
-test('R228 §1: seat 1 is served the same view whatever seat 0 is holding', () => {
+test('CR 504.5: seat 1 is served the same view whatever seat 0 is holding', () => {
   // one printed {Haste} unit (r/1, affordable) against one {Battle} unit that
   // no timing and no grant can make playable here. Same hand SIZE, which is
   // public and must stay public; different contents, which are not.
@@ -121,7 +121,7 @@ test('R228 §1: seat 1 is served the same view whatever seat 0 is holding', () =
     'the two SEATS are served different views — the redactor is doing something');
 });
 
-test('R228 §1 control: the same comparison DOES fire on a difference seat 1 may see', () => {
+test('CR 504.5 control: the same comparison DOES fire on a difference seat 1 may see', () => {
   // docs/13 §7.4: an observation channel needs a control showing it can see.
   // If `served()` compared two boards as equal no matter what, §1 above would
   // be green and unfalsifiable. Here the boards differ in something PUBLIC —
@@ -147,7 +147,7 @@ test('R228 §1 control: the same comparison DOES fire on a difference seat 1 may
 
 const RECLAIMER = 'Eldritch Reclaimer';   // bb/4 spell unit, "recall target unit in your bin", min 0
 
-test(`R228 §2: ${RECLAIMER} under Dispatch Courier, EMPTY BIN — the step used to vanish`, () => {
+test(`CR 504.5: ${RECLAIMER} under Dispatch Courier, EMPTY BIN — the step used to vanish`, () => {
   // THE REPRO. `canHaste` judged the spec-wide `targets` and treated a min-0
   // "up to N" spec as needing a candidate; `castable()` lets such a spell be
   // cast at nothing. With an empty bin the two disagreed, `canHaste` won
@@ -164,10 +164,10 @@ test(`R228 §2: ${RECLAIMER} under Dispatch Courier, EMPTY BIN — the step used
     'and accepted — the offer and the enforcement always agreed; only the window did not');
 });
 
-test(`R228 §2 bin control: a UNIT in the bin is what used to open the same board`, () => {
+test(`CR 504.5 bin control: a UNIT in the bin is what used to open the same board`, () => {
   // the control that isolates the divergence to the empty-bin case: with a
   // candidate to recall, `canHaste`'s copy agreed with `castable()` and the
-  // step opened even before R228. A SPELL in the bin did not — the spec is
+  // step opened even before the step became unconditional. A SPELL in the bin did not — the spec is
   // unit-restricted — which is how narrow the old gate was.
   const unit = board([RECLAIMER], { courier: true, bin: ['Nebula Drifter'] });
   const spell = board([RECLAIMER], { courier: true, bin: ['Fireball'] });
@@ -180,9 +180,9 @@ test(`R228 §2 bin control: a UNIT in the bin is what used to open the same boar
   assert.ok(getCard(RECLAIMER).spellEffect?.targets, 'the spec is still there to be restricted');
 });
 
-test('R228 §2 negative control: no Courier, no play — the step opens, and does nothing', () => {
+test('CR 504.5 negative control: no Courier, no play — the step opens, and does nothing', () => {
   // ⚠ WITHOUT THIS THE FIX COULD DEGRADE INTO "always open for the wrong
-  // reason". The window is unconditional now, so every claim about the R97
+  // reason". The window is unconditional now, so every claim about the CR 803.2b
   // grant has to be read off the OFFER instead. Take the grantor away and the
   // seat is served `doneHaste` and nothing else.
   const h = board([RECLAIMER], { courier: false, bin: ['Nebula Drifter'] });
@@ -208,8 +208,8 @@ const HANDS: Record<string, string[]> = {
   'an unaffordable haste unit': ['The Everywhere'],
 };
 
-test('R228 §3: at donePlanning → haste, the step does not depend on hand contents', () => {
-  // The claim R224 actually makes, stated once over the whole matrix rather
+test('CR 504.5: at donePlanning → haste, the step does not depend on hand contents', () => {
+  // The claim CR 504.5 actually makes, stated once over the whole matrix rather
   // than card by card — and stated as an INVARIANT, so a future card cannot
   // reintroduce the dependency without reddening this.
   const seen = new Set<string>();
@@ -228,7 +228,7 @@ test('R228 §3: at donePlanning → haste, the step does not depend on hand cont
 
 /* ═══ §4 — the measurement, derived so it cannot rot ══════════════════ */
 
-/** a card an R97 grant ("play a UNIT during the mana step as if it had
+/** a card a CR 803.2b grant ("play a UNIT during the mana step as if it had
  * [Haste]") could ever reach: a unit or spell unit whose printed timing is
  * neither {Battle} (RAQ: a battle card stays one) nor already [Haste]. */
 function grantEligible(name: string): boolean {
@@ -237,7 +237,7 @@ function grantEligible(name: string): boolean {
     && c.timing !== 'battle' && c.timing !== 'haste';
 }
 
-test('R228 §4: the over-permissive half of the old divergence had population ZERO', () => {
+test('CR 504.5: the over-permissive half of the old divergence had population ZERO', () => {
   // `canHaste` never asked whether a bracketed [cast cost] / [Gain N debt] was
   // payable, and judged the spec-wide `targets` rather than slot 0 — three
   // ways to say "yes" to a hand `castable()` would refuse, i.e. an empty step
@@ -251,12 +251,12 @@ test('R228 §4: the over-permissive half of the old divergence had population ZE
   });
   assert.deepEqual(offenders, [],
     'a haste-reachable card now carries a cast cost, a debt line or {noPlayFromHand}. That is '
-    + 'not a bug — R228 deleted the predicate that could disagree about it — but it means the '
+    + 'not a bug — making the haste step unconditional (CR 504.5) deleted the predicate that could disagree about it — but it means the '
     + 'measurement this ruling rests on has changed, and the ruling note should say so.');
   assert.ok(reachable.length > 200, `only ${reachable.length} reachable cards — this would pass vacuously`);
 });
 
-test(`R228 §4: ${RECLAIMER} is still the whole under-permissive population`, () => {
+test(`CR 504.5: ${RECLAIMER} is still the whole under-permissive population`, () => {
   // The other half: `canHaste` said NO to a min-0 spec with no candidate,
   // where `castable()` says yes. Only a grant-eligible card could reach the
   // step to be refused, and there is exactly one. If a second ever appears,
@@ -280,7 +280,7 @@ test(`R228 §4: ${RECLAIMER} is still the whole under-permissive population`, ()
 
 /* ═══ §5 — nothing else moved ═════════════════════════════════════════ */
 
-test('R228 §5: no seat is auto-done, and BOTH have to close the step', () => {
+test('CR 504.5a: no seat is auto-done, and BOTH have to close the step', () => {
   // the old code marked a seat done before it could act, which is the same
   // broadcast wearing a different hat. Now `doneHaste` is a thing a player
   // says, and one saying it is not two.
@@ -292,11 +292,11 @@ test('R228 §5: no seat is auto-done, and BOTH have to close the step', () => {
   assert.deepEqual(h.legal(A), [], 'and a finished seat is offered nothing');
   h.do({ type: 'doneHaste', seat: D });
   assert.equal(h.state.phase, 'battle', 'the second one does');
-  assert.equal(h.state.hasteDone, null, 'R43: the window is nulled on the way out');
+  assert.equal(h.state.hasteDone, null, 'the window is nulled on the way out');
 });
 
-test('R228 §5: the step still ENDS properly — endOfHaste fires exactly once', () => {
-  // R50/R18: 'endOfHaste' used to fire even on the skipped path, because *an
+test('CR 504.6: the step still ENDS properly — endOfHaste fires exactly once', () => {
+  // The end-of-haste event (CR 504.6): 'endOfHaste' used to fire even on the skipped path, because *an
   // optimisation must not be observable*. There is no skipped path any more,
   // so the guarantee is now structural — but firing it twice, or not at all,
   // would be a new bug and this is where it would show.
@@ -309,7 +309,7 @@ test('R228 §5: the step still ENDS properly — endOfHaste fires exactly once',
   assert.equal(h.state.phase, 'battle');
 });
 
-test('R228 §5: a bluff is a real move — you may sit in the step holding nothing', () => {
+test('CR 504.5a: a bluff is a real move — you may sit in the step holding nothing', () => {
   // playtest report #109, "Bluff Haste", granted as the fix. The empty-handed
   // seat is offered the step, may sit in it, and the OTHER seat's served view
   // never says which of those two things is happening.

@@ -1,5 +1,5 @@
 /**
- * R167 / CARD-TODO #50 — A DONATED "[Augment] When I despawn" MUST FIRE
+ * CR 721.1f / CARD-TODO #50 — A DONATED "[Augment] When I despawn" MUST FIRE
  * WHICHEVER WAY ITS HOST LEAVES PLAY.
  *
  * `E.fireEvent` finds a mod's donated `[Augment]` text by walking the host's
@@ -18,7 +18,7 @@
  *     cache     0
  *
  * Half a printed word — and the same object behaving differently depending on
- * how its host left play, which is the exact shape R137 exists to remove. The
+ * how its host left play, which is exactly the inconsistency to remove. The
  * repair moves the mod deletion out of `leavePlay` and down to the bottom of
  * `afterDespawn`, which puts it in the same place in the sequence
  * `disposeToBin` already uses. Nothing between the two halves can RESOLVE
@@ -114,7 +114,7 @@ function leaveBy(h: Harness, host: EntityId, route: Route): void {
 // HOST's defense at event time, which is a second thing that can only happen
 // while the window is open.
 
-test('R167 (i): a donated "[Augment] When I despawn" fires on a RECALL', () => {
+test('CR 721.1f (i): a donated "[Augment] When I despawn" fires on a RECALL', () => {
   const { h, A, host } = board(14100, 'A Pile of Runes');
   assert.equal(tokensNamed(h, 'Crystal').length, 0, 'no Crystal before the recall');
 
@@ -123,13 +123,13 @@ test('R167 (i): a donated "[Augment] When I despawn" fires on a RECALL', () => {
   assert.equal(ent(h, host), undefined, 'the host left play…');
   assert.ok(h.state.players[A]!.hand.includes('Rune Channeler'), '…for its owner’s hand');
   assert.equal(triggersOf(h, 'A Pile of Runes'), 1,
-    'the donated despawn text fired. Before R167 leavePlay() deleted the mod entity before '
+    'the donated despawn text fired. Before the fix leavePlay() deleted the mod entity before '
     + '\'despawned\' was fired, so fireEvent’s mod scan found nothing and this was 0.');
   assert.equal(tokensNamed(h, 'Crystal').length, 1,
     'and it RESOLVED — a queued trigger that never resolves is not a card doing what it prints');
 });
 
-test('R167 (ii): a donated "[Augment] When I despawn" fires on a CACHE', () => {
+test('CR 721.1f (ii): a donated "[Augment] When I despawn" fires on a CACHE', () => {
   const { h, A, host } = board(14101, 'A Pile of Runes');
 
   leaveBy(h, host, 'cache');
@@ -137,11 +137,11 @@ test('R167 (ii): a donated "[Augment] When I despawn" fires on a CACHE', () => {
   assert.equal(ent(h, host), undefined, 'the host left play…');
   assert.ok(new E(h.state).cache(A).some(c => c.card === 'Rune Channeler'), '…for its owner’s cache');
   assert.equal(triggersOf(h, 'A Pile of Runes'), 1,
-    'the donated despawn text fired on a cache too — 0 before R167');
+    'the donated despawn text fired on a cache too — 0 before the fix');
   assert.equal(tokensNamed(h, 'Crystal').length, 1, 'and resolved');
 });
 
-test('R167 (iii): a donated "[Augment] When I despawn" still fires exactly ONCE on a DEATH', () => {
+test('CR 721.1f (iii): a donated "[Augment] When I despawn" still fires exactly ONCE on a DEATH', () => {
   // The regression guard. A death already worked (disposeToBin deletes its mods
   // last, deliberately); the risk in moving the delete out of leavePlay is a
   // SECOND scan of the same mods, not a missing one. `exactly once` is the
@@ -162,14 +162,14 @@ test('R167 (iii): a donated "[Augment] When I despawn" still fires exactly ONCE 
 //
 // Chitin Shredder has no text at all, so nothing here can be answered by a
 // trigger cancelling something. It is owned by the OTHER seat, which is what
-// separates "its own owner's bin" (R137) from "the body's".
+// separates "its own owner's bin" (the Unstable-trash ruling) from "the body's".
 //
 // The three routes legitimately DIFFER in where the card comes to rest: a
 // recall and a cache leave it in the bin, while a death makes the body
-// {Unstable} (R69: a modded card is Unstable) and the state-based sweep takes
-// both back out again (R137/R140).
+// {Unstable} (CR 803.8e: a modded card is Unstable) and the state-based sweep takes
+// both back out again (an engine route; CR 410.4b erases both instead, CT-246).
 //
-// ⚠ R244 (2026-08-29, report #129) makes that difference decide the TRASH as
+// ⚠ The owner's mod-trash ruling (2026-08-29, report #129; CR 720.8, 720.8a) makes that difference decide the TRASH as
 // well, and this test used to assert the opposite. A mod left behind in a bin
 // stays there and is trashed; a mod erased with its host is not trashed at
 // all, because it is PART of that unit and never had a presence of its own.
@@ -177,31 +177,31 @@ test('R167 (iii): a donated "[Augment] When I despawn" still fires exactly ONCE 
 // trashed by the HOST'S CONTROLLER — `A` on this board — while the card still
 // goes to its own owner's bin (`D`). What must still be identical across the
 // routes is that nothing happens TWICE.
-test('R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes', () => {
+test('CR 801.2f (iv): a nontoken mod is binned and trashed exactly once on all three routes', () => {
   for (const [i, route] of ROUTES.entries()) {
     const { h, A, D, host } = board(14110 + i, 'Chitin Shredder', a => (1 - a) as Seat);
 
     leaveBy(h, host, route);
 
     if (route === 'death') {
-      // R69/R137: the body is {Unstable} because it is modded, so the sweep
-      // pulls the pair back out of the bins it just entered — and R244 says
+      // the body is {Unstable} because it is modded (CR 410.4b), so the engine's sweep (CT-246)
+      // pulls the pair back out of the bins it just entered — and CR 801.2g says
       // that departure is not a trashing.
       assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,
-        'death: erased with its host, so never trashed (R244; this was 1 under R137)');
+        'death: erased with its host, so never trashed (CR 720.8a; this was 1 under the earlier reading)');
       assert.equal(countIn(erasedOf(h, A), 'Chitin Shredder'), 1,
-        'death: swept out of the bin exactly once — Unstable. R250 §4: out of the '
+        'death: swept out of the bin exactly once — Unstable. CR 410.4a: out of the '
         + 'HOST CONTROLLER bin, because zones follow control');
       assert.equal(countIn(binOf(h, A), 'Chitin Shredder'), 0, 'death: and does not rest there');
       assert.equal(countIn(erasedOf(h, D), 'Chitin Shredder'), 0,
         'death: the mod owner zones are not involved');
     } else {
       assert.equal(trashesOf(h, 'Chitin Shredder').length, 1,
-        `${route}: the mod was left behind in a bin and STAYS there, so R40 trashed it — once`);
+        `${route}: the mod was left behind in a bin and STAYS there, so it was trashed (CR 801.2f) — once`);
       assert.equal(trashesOf(h, 'Chitin Shredder')[0]!.data!['seat'], A,
-        `${route}: by the HOST’s controller — a mod is part of the unit it sits on (R244)`);
+        `${route}: by the HOST’s controller — a mod is part of the unit it sits on (CR 720.8)`);
       assert.equal(countIn(binOf(h, A), 'Chitin Shredder'), 1,
-        `${route}: R250 §4 — and the CARD rests in that same seat bin, exactly one copy`);
+        `${route}: CR 410.4a — and the CARD rests in that same seat bin, exactly one copy`);
       assert.equal(countIn(binOf(h, D), 'Chitin Shredder'), 0,
         `${route}: the mod owner does not get it back`);
       assert.equal(countIn(erasedOf(h, A), 'Chitin Shredder'), 0,
@@ -214,21 +214,21 @@ test('R167 (iv): a nontoken mod is binned and trashed exactly once on all three 
 // (v) a TOKEN mod: one erased-pile entry, no bin, on every route
 // ══════════════════════════════════════════════════════════════════════
 //
-// R69: a token mod has no card of its own, so it never reaches a bin and is
-// never trashed; R65 files it on the public erased pile instead. Moving the
+// CR 410.4c: a token mod has no card of its own, so it never reaches a bin and is
+// never trashed; CR 407.3a files it on the public erased pile instead. Moving the
 // deletion later must not file it twice, nor let it slip into a bin.
-test('R167 (v): a token mod reaches the erased pile exactly once, and no bin, on all three routes', () => {
+test('CR 407.3a (v): a token mod reaches the erased pile exactly once, and no bin, on all three routes', () => {
   for (const [i, route] of ROUTES.entries()) {
     const { h, A, host } = board(14120 + i, 'Wraith-token');
 
     leaveBy(h, host, route);
 
     assert.equal(countIn(erasedOf(h, A), 'Wraith'), 1,
-      `${route}: the token mod is filed on the erased pile exactly once (R65/R69)`);
+      `${route}: the token mod is filed on the erased pile exactly once (CR 407.3a)`);
     assert.equal(countIn(binOf(h, A), 'Wraith'), 0,
       `${route}: a token mod has no card to bin`);
     assert.equal(trashesOf(h, 'Wraith').length, 0,
-      `${route}: and nothing that never entered a bin is trashed (R40)`);
+      `${route}: and nothing that never entered a bin is trashed (CR 801.2)`);
   }
 });
 
@@ -259,7 +259,7 @@ const DONATED_DESPAWN = [
   'Demon of the Depths',
 ] as const;
 
-test('R167 (vi): every card with donated despawn text now answers a RECALL the way it answers a DEATH', () => {
+test('CR 721.1f (vi): every card with donated despawn text now answers a RECALL the way it answers a DEATH', () => {
   DONATED_DESPAWN.forEach((name, i) => {
     const byDeath = board(14130 + i * 2, name);
     leaveBy(byDeath.h, byDeath.host, 'death');
@@ -271,12 +271,12 @@ test('R167 (vi): every card with donated despawn text now answers a RECALL the w
 
     assert.equal(onDeath, 1, `${name}: the death route is the one that always worked`);
     assert.equal(onRecall, onDeath,
-      `${name}: a recall must reach the same printed text. Before R167 this was 0 against 1 — `
+      `${name}: a recall must reach the same printed text. Before the fix this was 0 against 1 — `
       + 'the mod entity was deleted before the despawn event fired.');
   });
 });
 
-test('R167 (vi-control): Tempest Oracle’s OWN despawn text was never on the mod scan', () => {
+test('CR 721.1f (vi-control): Tempest Oracle’s OWN despawn text was never on the mod scan', () => {
   // Its text box has no [Augment] marker, so there is no `augmentText` to
   // donate: as a mod it contributes nothing on any route, and as a UNIT it is
   // found by fireEvent's `dyingUnit` unshift. Pinned so the inventory's claim
@@ -298,7 +298,7 @@ test('R167 (vi-control): Tempest Oracle’s OWN despawn text was never on the mo
 // mod entities, so `afterDespawn` has to — and if a future caller of
 // `leavePlay` ever forgets to reach it, the mods are orphaned entities whose
 // host is gone, which is a leak this assertion is here to catch.
-test('R167 (vii): the mod entities are deleted once the despawn window closes', () => {
+test('CR 721.1f (vii): the mod entities are deleted once the despawn window closes', () => {
   for (const [i, route] of ROUTES.entries()) {
     const { h, host } = board(14140 + i, 'A Pile of Runes');
     const modIds = h.state.entities[host]!.mods.slice();

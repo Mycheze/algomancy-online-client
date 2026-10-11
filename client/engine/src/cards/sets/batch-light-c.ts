@@ -2,17 +2,17 @@
  *
  * Behaviour only; printed data comes from printed.json (never hand-copied).
  * Spec for the expansion's new mechanics: docs/08-light-and-dark.md,
- * rulings R38-R48 in docs/digital-rules.md. Printed text is quoted in a
+ * and the Comprehensive Rules. Printed text is quoted in a
  * comment above every card for review.
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (mid-resolution payments via ctx.choose),
- * R9 (bounded budgets per card), R12 (regions exclusive — listeners and
- * targets are region-scoped), R26 (a card's own [Augment] text is live when
- * it is played normally), R37 (applying a mod is not PLAYING a card),
- * R40 (trashing), R41-R45 (cache / prophecy / glimpse), R48 ({Blessed} is
+ * Rules referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 111.9 (mid-resolution payments via ctx.choose),
+ * CR 803.4 (bounded budgets per card), CR 601.1a (regions exclusive — listeners and
+ * targets are region-scoped), CR 305.4 (a card's own [Augment] text is live when
+ * it is played normally), CR 701.2 (applying a mod is not PLAYING a card),
+ * CR 801.2 (trashing), CR 403.1, 801.9 (cache / prophecy / glimpse), CR 802.22b ({Blessed} is
  * simultaneous — the engine does it, no card code needed).
  *
  * Cards in this batch:
@@ -22,13 +22,13 @@
  *   Slurpr, Suspend, Tithe Enforcer, Void Mandible, Witness of the Crossing.
  *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
- * ✔ LIFE COSTS ARE REAL ACTIVATION COSTS NOW (R49). Hand Peeper and Life Leech
+ * ✔ LIFE COSTS ARE REAL ACTIVATION COSTS NOW (CR 111.2). Hand Peeper and Life Leech
  *    declare `cost: { life: N }`: the cost GATES the activation (an ability you
  *    cannot pay for is not offered and apply() refuses it) and is paid as the
- *    ability is activated, before it reaches the stack. R49's ruling: a life
+ *    ability is activated, before it reaches the stack. CR 111.6b: a life
  *    cost is payable only while you have MORE life than it costs — paying your
  *    last life is refused too.
- * ✔ NULLBRINGER IS A REAL REPLACEMENT NOW (R104). It used to be a trigger —
+ * ✔ NULLBRINGER IS A REAL REPLACEMENT NOW (CR 708.1). It used to be a trigger —
  *    gain N, then lose 2N — which landed on the right FINAL total and was wrong
  *    about everything in between: the life total SPIKED up through N, a
  *    `lifeGained` fired for a gain the card says never happened, and in battle
@@ -36,20 +36,20 @@
  *    `replaceLifeGain` hook there is no gain at all and no lifeGained event, and
  *    "they lose that much" is exactly N. First-true-consumes, so two
  *    Nullbringers still turn +N into -N without the old WeakSet.
- * ✔ VOID MANDIBLE HEARS ITS WHOLE PRINTED NOUN NOW (R129). It used to hear
+ * ✔ VOID MANDIBLE HEARS ITS WHOLE PRINTED NOUN NOW (CR 108.1a). It used to hear
  *    'spellPlayed', which the engine fires for spell / spell unit / spell
  *    token casts only — so the five {Battle}-timing UNIT cards and the five
  *    Ambush modes pushed a stack item with no play event at all and went
  *    straight past a card that prints "when a nontoken CARD is played". The
  *    engine fires 'cardPlayed' now (spell / spell unit / unit / ambush) and
- *    the card listens to that. Mods are still not played at all (R37) and
+ *    the card listens to that. Mods are still not played at all (CR 701.2a) and
  *    correctly are not caught; a spell TOKEN is not a card and is out of the
  *    event's membership, which is what the printed "nontoken" says.
  *  - FEED TO HOOBA / REAP THE DUE erase through helpers.ts's `eraseFromPlay`.
  *    (`E.eraseFromPlay` exists now — CARD-TODO #15 needed one engine side for
  *    Skybreaker's "Erase me:" cost — but the card-side copies still carry their
  *    own log wording that card tests read, so folding them in is its own sweep.)
- * ✔ PREDICTION PROPHET TAKES ANY NUMBER NOW (R197). This entry used to read
+ * ✔ PREDICTION PROPHET TAKES ANY NUMBER NOW (CR 107.9). This entry used to read
  *    "a Decision carries a finite option list — so the menu runs 0 … your
  *    current life + 5", and that cap was an engine limit wearing the card's
  *    clothes: gaining more than five life between [Haste] and deployment is
@@ -59,26 +59,26 @@
  *    client renders it as a typed box with a −/+ dial, and the floor is 0
  *    only because a game ending at 0 life means no deployment step can ever
  *    observe a negative total. (Everything else about the card was already
- *    exact: the prediction is taken in R50's 'endOfHaste' settle window and
+ *    exact: the prediction is taken in CR 504.6's 'endOfHaste' settle window and
  *    kept in the entity's own `budgets`, which only E.startTurn wipes, so it
- *    survives battle and regroup into the same turn's deployment.) R90, R197.
- * ✔ SUSPEND IS COMPLETE. The LIFE LOCK shipped with R104 — a region-keyed
+ *    survives battle and regroup into the same turn's deployment.) CR 504.6a, CR 107.9.
+ * ✔ SUSPEND IS COMPLETE. The LIFE LOCK (CR 708.10) shipped with the replacement layer — a region-keyed
  *    battleCounter read by E.gainLife and E.loseLife alike, so "can't change"
  *    really is both directions. "ERASE ME" shipped with CARD-TODO #15: this
  *    entry used to say "card code cannot reach the stack item it is resolving
  *    from", and now it can — `ctx.eraseSelf()` raises `StackItem.eraseSelf` and
- *    `E.dischargeItem` sends the card to the erased pile (R65) instead of the
+ *    `E.dischargeItem` sends the card to the erased pile (CR 407.1) instead of the
  *    bin. The card's ledgers/card-ledger.ts entry is deleted with that change.
  *
  * UN-PARKED (all five; kept as history — report, don't invent):
- *  - Gatekeeper of Souls: UN-PARKED by R64. "I must be targeted if able" is a
+ *  - Gatekeeper of Souls: UN-PARKED once targeting restrictions existed. "I must be targeted if able" is a
  *    targeting COMPULSION — the mirror of a restriction, narrowing other
  *    effects' candidate lists — and E.targetCandidates has the seam now.
  *    CardBehavior.mustBeTargeted; see the card.
- *  - Just a Unit: {Pure} is LIVE as of R61 — enforced by the engine at the
+ *  - Just a Unit: {Pure} is LIVE (CR 802.25b) — enforced by the engine at the
  *    combat choke points (E.pure), not by card behaviour. See the card.
  * ✔ SLURPR IS COMPLETE (2026-08-23). Its card half — `ModPermission.applyAtHaste`,
- *    an unbudgeted OR-fold in R95's shape — landed first; the three ENGINE seams
+ *    an unbudgeted OR-fold in Rook's shape — landed first; the three ENGINE seams
  *    it was waiting on are all in the tree now: `E.mayApplyModAtHaste` (the
  *    gatherer beside `E.mayAugmentInBattle`, which needs the private
  *    `anchored()` walk), the haste branch in `doAugment` and `doGraft` through
@@ -86,9 +86,9 @@
  *    `legalHasteActions`' `pushHasteMods` and, the one that would otherwise have
  *    made the whole thing unreachable, `startHasteStep`'s `canHaste` (report #74
  *    in mod form). Its ledger entry is deleted with that change.
- *  - (Suspend is fully unparked: its lock by R104, its "Erase me" by
+ *  - (Suspend is fully unparked: its lock by the replacement layer (CR 708.10), its "Erase me" by
  *    CARD-TODO #15 — see the ✔ note above and the card.)
- *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
+ *  - (Calming Force COMPLETE as of round 17: "I can't be played from your
  *    hand" is the `noPlayFromHand` flag — see the card.)
  */
 import type { EntityId, Seat } from '../../types.ts';
@@ -114,14 +114,14 @@ function slotOf(g: E, id: EntityId): { col: EntityId[]; idx: number } | null {
 
 // "{i}(Damage dealt by a blessed source causes its controller to gain that
 // much life.)" — l/2 2/2 {Virus} [Augment] {Blessed} Horror Unit. Reminder
-// text only: {Blessed} is an ATTRIBUTE and the engine implements it (R48,
+// text only: {Blessed} is an ATTRIBUTE and the engine implements it (CR 802.22a,
 // E.blessedGain), and the type-line [Augment] {Blessed} grant comes off
 // printed.augmentAttrs. Nothing to script — but the registration is what puts
 // it into DECK_LIST.
 card('Blessed Thing', {});
 
 // "I can't be played from your hand.{/n}Negate all other effects." — ll/2
-// {Battle} Nature Spell. COMPLETE as of R100: the hand restriction was an
+// {Battle} Nature Spell. COMPLETE as of round 17: the hand restriction was an
 // apply.ts zone gate that card code could not reach, and is now the
 // `noPlayFromHand` CardBehavior flag — the mirror of `prophesyFromBin`,
 // defaulting permissive, enforced once in `doPlayCard` and refused at all
@@ -131,7 +131,7 @@ card('Blessed Thing', {});
 //
 // ⚠ The line names one zone and one verb, so that is all it takes away. The
 // card is still perfectly reachable from anywhere else it could ever be — a
-// cache release (R42/R45), a bin-play permission (R96), or as a mod — and it
+// cache release (CR 403.3a, 801.9e), a bin-play permission (CR 405.9), or as a mod — and it
 // can still be discarded and recycled from hand like any card. Only PLAYING
 // it from hand is gone, which in practice makes it a card you have to set up.
 //
@@ -150,7 +150,7 @@ card('Calming Force', {
   spellEffect: {
     run: (g, ctx) => {
       let n = 0;
-      for (const it of [...g.s.stack]) {   // R68: negate() splices
+      for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
         g.negate(it.id);
         n++;
       }
@@ -163,13 +163,13 @@ card('Calming Force', {
 });
 
 // "After combat, cache up to one target card with cost 1 from your bin. You
-// may play it until end of turn." — l/2 0/1 Horror Unit. R64: the bin IS a
+// may play it until end of turn." — l/2 0/1 Horror Unit. CR 110.3: the bin IS a
 // targetable zone now, so "up to one target card … from your bin" is a real
 // declared target (min 0 carries the "up to"). "Cost 1" is the
 // PRINTED mana cost; an X card is never 1. The cached card gets the
 // glimpse-style until-end-of-turn permission (E.cacheFromBin playable:true) —
 // which is what "you may play it until end of turn" means, so the mana is
-// still paid and affinity is ignored (R45).
+// still paid and affinity is ignored (CR 801.9e).
 card('Delver of the Ephemeral', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'],
@@ -194,7 +194,7 @@ card('Delver of the Ephemeral', {
 
 // "[Switch1] Delete target unit. Its controller creates a 4/4 unit in its
 // position in play." — l/2 {Battle} Hooba Spell. The whole sentence is the
-// bounded graftable effect ([Switch1], R9). "In its position in play" is the
+// bounded graftable effect ([Switch1], CR 722.5). "In its position in play" is the
 // exact formation slot when there is one (E.ambushSwap's pattern): the token
 // is spawned first and swapped into the slot, THEN the target is removed, so
 // the removal's unslot finds nothing to take out.
@@ -232,17 +232,16 @@ card('Feed to Hooba', {
 });
 
 // "[Augment] When a player selects targets for an effect during battle, I
-// must be targeted if able." — l/4 0/7 Horror Unit. UN-PARKED by R64: the
-// targeting seam exists now, and a compulsion is the mirror of a restriction —
+// must be targeted if able." — l/4 0/7 Horror Unit. UN-PARKED once targeting restrictions existed: the targeting seam exists now, and a compulsion is the mirror of a restriction —
 // it narrows OTHER effects' candidate lists instead of its own. `if able` is
 // the fallback: a list the Gatekeeper is not legally on (Unmake, which reaches
 // only base power 2 or less) is left exactly as it was. It radiates like a
 // static — live as a unit in play, donated while it is an augment mod — and
-// R62 silences it with every other ability. The compulsion is region-scoped
-// like everything else (R12), which is also what "during battle" amounts to:
+// CR 712.1a silences it with every other ability. The compulsion is region-scoped
+// like everything else (CR 601.1d), which is also what "during battle" amounts to:
 // outside battle the only units in your region are your own.
 card('Gatekeeper of Souls', {
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     mustBeTargeted: true,
@@ -252,7 +251,7 @@ card('Gatekeeper of Souls', {
 
 // "{i}(Damage dealt by a blessed source causes its controller to gain that
 // much life.){/n}I deal 3 damage to any target." — ll/2 {Battle} {Blessed}
-// Cosmic Spell. The {Blessed} half is entirely engine-side (R48): the gain is
+// Cosmic Spell. The {Blessed} half is entirely engine-side (CR 802.22b): the gain is
 // committed inside E.dealEffectDamage on the same game-state check as the
 // damage, BEFORE the lethal check, so Godray aimed at its own controller
 // heals them first and cannot kill them.
@@ -267,11 +266,11 @@ card('Godray', {
 });
 
 // "[Augment] Pay 3 life: Look at target player's hand." — l/1 0/2 Horror
-// Unit. Text-box [Augment]: live when played normally (R26), donated when the
-// card is applied as an augment. R49: the 3 life is a real ACTIVATION cost —
+// Unit. Text-box [Augment]: live when played normally (CR 305.4), donated when the
+// card is applied as an augment. CR 111.6b: the 3 life is a real ACTIVATION cost —
 // it gates the activation (at 3 life or less the ability is not offered and
 // apply() refuses it) and is paid before the ability reaches the stack.
-// ⚠ R12: "target player" only reaches the opponent where they are present —
+// ⚠ CR 110.3c: "target player" only reaches the opponent where they are present —
 // i.e. during battle; activated in your own deployment the only present seat
 // is you.
 card('Hand Peeper', {
@@ -279,7 +278,7 @@ card('Hand Peeper', {
     type: 'activated', cost: { life: 3 },
     label: "pay 3 life: look at target player's hand",
     effect: {
-      // R64: the 'player' kind — the seats present in the region and nothing
+      // CR 110.3c: the 'player' kind — the seats present in the region and nothing
       // else. 'any' also offered their units, which have no hand to look at.
       targets: { what: 'player', prompt: "Hand Peeper: look at target player's hand" },
       run: (g, ctx) => {
@@ -293,7 +292,7 @@ card('Hand Peeper', {
 
 // "{i}(Pure cards and cards they are interacting with ignore all other
 // attributes.)" — l/2 2/3 {Virus} {Pure} Spirit Unit.
-// R61: {Pure} is LIVE, and it needs no card behaviour — the attribute itself
+// CR 802.25b: {Pure} is LIVE, and it needs no card behaviour — the attribute itself
 // is the whole card, enforced by the engine (E.pure). It was parked on the
 // assumption that it wanted the general attribute-SUPPRESSION layer still
 // parked for Monke / Suppression Field / Transmogrifant, but it does not:
@@ -307,7 +306,7 @@ card('Just a Unit', {});
 // "[Augment] Pay 5 life: I gain +3/+3 until regroup." — l/2 1/1 {Virus}
 // Horror Unit. Text-box [Augment]: "I" is the card itself when it is a unit in
 // play, and the HOST when it is donated as a Virus/augment (the standard
-// anchoring rule — ctx.sourceId is the host). R49: the 5 life is a real
+// anchoring rule — ctx.sourceId is the host). CR 111.6, 111.7: the 5 life is a real
 // ACTIVATION cost, gating the activation and paid before it hits the stack.
 card('Life Leech', {
   augmentText: [{
@@ -326,7 +325,7 @@ card('Life Leech', {
 // "[Augment] If a player would gain life, they lose that much life instead."
 // — l/3 3/3 {Virus} Spirit Unit.
 //
-// UNPARKED as a real replacement (R104). It used to be a TRIGGER: gain N, then
+// UNPARKED as a real replacement (CR 708.3). It used to be a TRIGGER: gain N, then
 // lose 2N. That landed on the right FINAL total (baseline − N) and was wrong
 // about everything in between, which is precisely what the owner reported —
 // the life total SPIKED up through N before coming back, anything watching
@@ -353,7 +352,7 @@ card('Life Leech', {
 // {Blessed} gains too (E.blessedGain routes through E.gainLife).
 card('Nullbringer', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     replaceLifeGain: (g, _self, seat, n) => {
@@ -366,17 +365,17 @@ card('Nullbringer', {
 // "During [Haste], predict your life total. At the start of deployment,
 // create a 5/5 unit if you matched the prediction." — lll/3 1/3 Spirit Unit.
 //
-// R90 — FULLY UNPARKED. The park note above this card used to claim the first
+// CR 504.6a — FULLY UNPARKED. The park note above this card used to claim the first
 // sentence needed "a player action during the haste step and a field in
 // PlayerState/Entity to keep the number, neither of which exists". Both halves
 // of that claim were stale, which is the same lesson Oorblak taught: a PARKED
 // note is a CLAIM about the engine as it was the day it was written.
 //
-//  (a) THE ACTION. R50's 'endOfHaste' fires inside a real settle() window
+//  (a) THE ACTION. CR 504.6's 'endOfHaste' fires inside a real settle() window
 //      (E.startBattlePhase: "A trigger from step 1 may suspend on a decision,
 //      which would strand the game … so the flip is deferred to
 //      finishHasteEnd()"). A trigger there is therefore allowed to raise a
-//      decision, and `ctx.choose` IS the number-picker — the same R6 dialogue
+//      decision, and `ctx.choose` IS the number-picker — the same CR 704.1a dialogue
 //      Reap the Due uses two cards below. No new player action was ever
 //      needed; the prediction is simply asked for at the tail of the step.
 //  (b) THE FIELD. `Entity.budgets` is a per-entity number store that E.startTurn
@@ -394,7 +393,7 @@ card('Nullbringer', {
 // problems) — so the +1 keeps "never predicted" distinguishable and the
 // start-of-deployment trigger can say which of the two happened.
 //
-// R197: "PREDICT YOUR LIFE TOTAL" IS ANY NUMBER, AND NOW IT REALLY IS.
+// CR 107.9: "PREDICT YOUR LIFE TOTAL" IS ANY NUMBER, AND NOW IT REALLY IS.
 // This used to be a `payOrDecline` menu running `0 … life + 5`, so a
 // prediction more than five above where you stood during [Haste] could not be
 // entered — and life climbing more than five between the haste step and
@@ -418,13 +417,13 @@ card('Prediction Prophet', {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) return;                       // gone before the trigger resolved
-        // R1/R27: the amount is read at RESOLUTION, off the live life total —
+        // CR 107.8: the amount is read at RESOLUTION, off the live life total —
         // a haste-step play that moved your life moves the menu with it.
         const life = g.player(ctx.controller).life;
         const n = ctx.choose('predict', {
           kind: 'number', seat: ctx.controller,
           prompt: `${ctx.sourceName}: predict your life total at the start of deployment`,
-          options: [],                             // R197: the value IS the answer
+          options: [],                             // CR D7.2a: the value IS the answer
           numeric: { min: 0, max: null, suggest: life, suggestLabel: 'where you stand now' },
         }) as number;
         self.budgets[PREDICTION_KEY] = n + 1;    // +1: 0 is a real prediction
@@ -452,7 +451,7 @@ card('Prediction Prophet', {
           return;
         }
         g.ev('info', `${ctx.sourceName}: the prediction of ${predicted} was matched.`);
-        // R115: a created unit arrives where its SOURCE is (ctx.region)
+        // CR 601.5: a created unit arrives where its SOURCE is (ctx.region)
         g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
           { token: true, tokenStats: [5, 5] });
       },
@@ -461,15 +460,15 @@ card('Prediction Prophet', {
 });
 
 // "Erase target unit unless its controller gains debt equal to twice your
-// [l]." — l/1 {Battle} Cosmic Spell. R6: the "unless" payment is a
+// [l]." — l/1 {Battle} Cosmic Spell. CR 111.9: the "unless" payment is a
 // mid-resolution dialogue for the TARGET'S controller (they choose), with no
-// priority window around it. R39: debt is a player counter paid off at the end
-// of the next resource step. The amount is computed at RESOLUTION (R1) from
+// priority window around it. CR 112.14: debt is a player counter paid off at the end
+// of the next resource step. The amount is computed at RESOLUTION (CR 107.8) from
 // the caster's live LIGHT affinity.
 //
 // ⚠ THE ORACLE FILE ONCE TRANSCRIBED THE PIP AS [d]. The scan shows the light
 // pip, the same one as the cost, and the card is mono-light — so the file was
-// corrected at source (2026-09-20) and the engine reads `light`. R300 is the whole
+// corrected at source (2026-09-20) and the engine reads `light`. The 2026-09-20 source correction is the whole
 // of it, including why the mistyped symbol left this card doing nothing at all
 // from the only deck that can cast it. Casting it costs [l], so the demand is
 // always at least 2 debt: the free save has no way to occur.
@@ -502,9 +501,9 @@ card('Reap the Due', {
 });
 
 // "When I spawn or die, [Switch1] Glimpse 1." — l/1 0/1 {Haste} Alien Unit.
-// The glimpse is the bounded graftable effect ([Switch1], R9), so grafting it
+// The glimpse is the bounded graftable effect ([Switch1], CR 722.5), so grafting it
 // onto another host donates the glimpse to that host's own spawn/death.
-// R45: glimpse reveals the top card, caches it, and stamps it playable until
+// CR 801.9b, 801.9f: glimpse reveals the top card, caches it, and stamps it playable until
 // end of turn — mana still paid, affinity ignored, timing still obeyed.
 const glimpseOne: EffectDef = {
   run: (g, ctx) => { g.glimpse(ctx.controller, 1); },
@@ -523,7 +522,7 @@ card('Seer of Empty Spaces', {
 // deployment." — l/2 2/2 Horror Unit.
 //
 // LIVE END TO END as of 2026-08-23: `ModPermission.applyAtHaste`, the
-// MOD-timing twin of Rook's R95 `augmentInBattle`, declared exactly the way
+// MOD-timing twin of Rook's CR 723.5 `augmentInBattle`, declared exactly the way
 // Rook declares its own — and the engine now ASKS it, at four gates.
 // `E.mayApplyModAtHaste` gathers the permission; apply.ts's `hasteModAllowed`
 // is the one predicate both the action path (`doAugment` / `doGraft`) and the
@@ -532,18 +531,18 @@ card('Seer of Empty Spaces', {
 // absence would have made every other one unreachable (report #74 in mod
 // form). The card's ledger entry is deleted with that change.
 //
-// WHY THIS FAMILY AND NOT R97's. Dispatch Courier prints "Each turn, you may
-// play a unit …", so R97 SUMS its grants into a per-turn budget kept in
+// WHY THIS FAMILY AND NOT CR 803.2b's. Dispatch Courier prints "Each turn, you may
+// play a unit …", so CR 504.7a SUMS its grants into a per-turn budget kept in
 // `hastePlaysUsed`. Slurpr prints no "each turn" at all, so it is an
-// unbudgeted OR-FOLD in R95's shape: one grantor is enough, two Slurprs are
+// unbudgeted OR-FOLD in Rook's shape: one grantor is enough, two Slurprs are
 // not twice as permissive, and NO new GameState field is needed anywhere.
 //
-// "OTHER MODS" IS AUGMENTS AND GRAFTS BOTH — R37's word for both is "mod" —
+// "OTHER MODS" IS AUGMENTS AND GRAFTS BOTH — CR 701.2's word for both is "mod" —
 // so this checks neither `ctx.kind` nor `ctx.from`. Unlike Rook, whose printed
 // "from hand and bin" is what makes Rook (not apply.ts) refuse the cache,
 // Slurpr names no zone list: "as if it was deployment" grants whatever
 // deployment already grants, and every other deployment refusal still stands
-// (paying for the mod under R37/R59's `purpose: 'mod'`, the host being in your
+// (paying for the mod under CR 701.2b's `purpose: 'mod'`, the host being in your
 // own region, a graft needing its own graft cause).
 //
 // "OTHER" is not a self-exclusion the predicate has to enforce: the granting
@@ -557,7 +556,7 @@ card('Seer of Empty Spaces', {
 // controller — what "[Augment]" means everywhere else in the engine.
 card('Slurpr', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     modPermissions: [{
@@ -569,20 +568,20 @@ card('Slurpr', {
 // "Target player's life total can't change during this battle. Erase me." —
 // ll/2 {Battle} Nature Spell.
 //
-// BOTH HALVES ARE LIVE. The lock shipped with R104; "Erase me" shipped with
+// BOTH HALVES ARE LIVE. The lock (CR 708.10) shipped with the replacement layer; "Erase me" shipped with
 // CARD-TODO #15 and is `ctx.eraseSelf()` — the seam `E.dischargeItem` reads to
-// send a resolved spell's card to the erased pile (R65) instead of its bin.
+// send a resolved spell's card to the erased pile (CR 407.1) instead of its bin.
 // The card's ledger entry, which tracked the erase half alone, is deleted with
 // this change (card-ledger.ts's house rule). ⚠ The erase is part of the
-// EFFECT, so a NEGATED Suspend is binned normally — R68 — unlike R79's
+// EFFECT, so a NEGATED Suspend is binned normally — CR 406.4b — unlike CR 704.2c's
 // {Unstable}, which is a stamp on the card. Pinned by 89-self-erase.
 //
 // A BATTLE-SCOPED LOCK, not a radiating static and not a card hook, and the
 // shape is forced rather than chosen: Suspend is a SPELL. It resolves and goes
 // to the bin, so there is nothing left in play for `E.anchored()` to radiate
-// from — exactly Abyssal Evocation's situation, and exactly R96's answer. What
+// from — exactly Abyssal Evocation's situation, and exactly the same answer. What
 // the card grants is a fact about this battle, which is what battleCounters
-// are: region-keyed (R14's "'this battle' is this region's battle", so round
+// are: region-keyed (CR 505.6's "'this battle' is this region's battle", so round
 // 1's lock does not leak into round 2) and wiped by the existing per-battle
 // reset, so "during this battle" needs no cleanup of its own and no new
 // GameState field.
@@ -604,7 +603,7 @@ card('Slurpr', {
 // practice; the guard is `E.lifeLocked` returning false with no battle.
 card('Suspend', {
   spellEffect: {
-    // R64: "target player" is the 'player' kind. Under 'any' the lock could be
+    // CR 110.3c: "target player" is the 'player' kind. Under 'any' the lock could be
     // aimed at a unit, which has no life total to lock.
     targets: { what: 'player', prompt: "Suspend: target player's life total can't change this battle" },
     run: (g, ctx) => {
@@ -618,7 +617,7 @@ card('Suspend', {
       // "Erase me." — the second sentence, and it reads as the card's price for
       // the lock: a battle-long life lock that could then be recurred out of
       // the bin is a different card. Unconditional given the spell resolves, so
-      // it sits outside the target guard. R65: dischargeItem sends it to the
+      // it sits outside the target guard. CR 407.1: dischargeItem sends it to the
       // erased pile instead of the bin (StackItem.eraseSelf).
       ctx.eraseSelf();
     },
@@ -627,18 +626,18 @@ card('Suspend', {
 
 // (no rules text) — ll/7 4/6 {Haste} {Flying} Angel Spirit Unit with the
 // printed banner "[2ll] Prophecy — End [Haste] with used mana". Everything the
-// banner does is engine-side: the prophesy action (R42/R301, deployment only,
+// banner does is engine-side: the prophesy action (CR 803.7b, 803.7d, deployment only,
 // mana AND the banner's own affinity — the second light pip in both the cost
 // and the banner was read off the scan on 2026-09-20, having been lost in
-// transcription), the PROPHECY_RULES row `hasteWithUsedMana` (R43 — you must haste
-// something ELSE during the step to fulfil it), R44's latch, and the free,
+// transcription), the PROPHECY_RULES row `hasteWithUsedMana` (CR 803.7 — you must haste
+// something ELSE during the step to fulfil it), CR 803.7g's latch, and the free,
 // affinity-free release from cache at its printed {Haste} timing. The
 // registration is the whole job.
 card('Tithe Enforcer', {});
 
 // "[Augment] When a nontoken card is played during battle, sacrifice me. If
 // you do, negate that effect. {i}(This is not optional.)" — ll/2 2/1 {Haste}
-// Alien Anima Unit. Text-box [Augment]: live when played normally (R26),
+// Alien Anima Unit. Text-box [Augment]: live when played normally (CR 305.4),
 // donated when applied — and then "me" is the HOST, which is the drawback of
 // hanging it on something. Mandatory, and it does NOT care whose card it is:
 // its own controller's spells trigger it too.
@@ -647,15 +646,15 @@ card('Tithe Enforcer', {});
 // (commitItem fires the event before pushItem), so the item is found at
 // RESOLUTION, with this trigger sitting above it.
 //
-// R207 / CT-79 — BY ID, and the engine had to be taught to say which id.
-// "Negate THAT EFFECT" is the pronoun R164/R166 settled for Origon and Hexbane
-// Shiitake, and R178/R191 finished those two by matching on the id the play
+// CR 706.13 / CT-79 — BY ID, and the engine had to be taught to say which id.
+// "Negate THAT EFFECT" is the pronoun already settled for Origon and Hexbane
+// Shiitake (CR 706.13), and those two were finished by matching on the id the play
 // event carries. That fix was IMPOSSIBLE here until now: `spellPlayed` carries
 // `item`, `cardPlayed` did not, and this card must hear `cardPlayed` because
-// it must see UNITS as well as spells (R129, below). So the id went onto
+// it must see UNITS as well as spells (CR 108.1a, below). So the id went onto
 // `cardPlayed` too (engine.ts, `commitItem`) and this is the fourth and last
-// card in that class — Earthbound Replicator (R178), Origon, Hexbane Shiitake
-// (both R191), and this. The class was closed one card at a time across three
+// card in that class — Earthbound Replicator, Origon, Hexbane Shiitake,
+// and this. The class was closed one card at a time across three
 // tickets (CT-58 → CT-69 → CT-79); the sweep that ends it is exhaustive over
 // every `g.s.stack` access in all 30 set files, and every other one either
 // matches an id off a target ref or sweeps the whole stack.
@@ -663,16 +662,16 @@ card('Tithe Enforcer', {});
 // THE THREE DEFECTS IT CLOSES, all of them live:
 //  (a) the scan ran FORWARD from index 0 while `pushItem` appends, so with two
 //      same-card same-seat plays on the stack it negated the OLDER one. (Not
-//      even R166's `.reverse()`, which the other two cards at least had.)
+//      even the `.reverse()`, which the other two cards at least had.)
 //  (b) NO `!i.copy` guard at all, so it could negate a COPY where the original
-//      never reached the stack. R164: a copy is NOT played — *"the 1st copy
+//      never reached the stack. CR 701.5: a copy is NOT played — *"the 1st copy
 //      wasn't 'played'"* — so a card keying off a play must not see one. By id
 //      that is now true for a STRONGER reason than a flag test: `pushSpellCopy`
 //      never routes through `commitItem`, so no play event can ever name a
 //      copy. The guard stays as an ASSERTION of what the id must be, exactly
-//      as R191 kept it on the other two.
+//      as the other two keep it.
 //  (c) the one no ticket named: the OTHER `cardPlayed` emitter, the `asPlay`
-//      spawn (R165 — Wake the Dead, The Bonesculptor), has no stack item at
+//      spawn (CR 301.9 — Wake the Dead, The Bonesculptor), has no stack item at
 //      all. Wake the Dead is a {Battle} spell, so a unit it raises out of a
 //      bin could share a name with an unrelated item standing on the stack and
 //      this card negated THAT. Absent `item` now means "this play put no
@@ -680,14 +679,14 @@ card('Tithe Enforcer', {});
 //
 // ⚠ (c) LEAVES A DIVERGENCE, deliberately: the sacrifice is still paid on a
 // play that has no item to negate, because "sacrifice me. If you do, negate
-// that effect" (R73) makes the cost mandatory and the negate conditional on
-// it, not the other way round. Under R198 that play WOULD be on the stack and
-// the sacrifice would buy something; the `asPlay` path predates R198 and still
+// that effect" (CR 111.8) makes the cost mandatory and the negate conditional on
+// it, not the other way round. Under CR 701.4 that play WOULD be on the stack and
+// the sacrifice would buy something; the `asPlay` path predates the mid-resolution stack rule and still
 // spawns in place. That is an engine approximation, not a rule, and it is
 // named at `spawnUnit`'s `playEv` rather than papered over with a `when` guard
 // that would quietly rewrite when this card triggers.
 //
-// R129: it hears 'cardPlayed', not 'spellPlayed'. The printed noun is CARD,
+// CR 108.1a: it hears 'cardPlayed', not 'spellPlayed'. The printed noun is CARD,
 // and "everything is a card, including units" (owner, 2026-08-24) — so a
 // {Battle}-timing UNIT and an AMBUSH are exactly as much "a card played
 // during battle" as a spell is, and both used to push a stack item with no
@@ -696,12 +695,13 @@ card('Tithe Enforcer', {});
 // construction; the `token !== true` guard below is kept as belt-and-braces
 // so a future payload change cannot quietly widen the card.
 //
-// R73 (2026-08-22): "sacrifice me. If you do, …" is a CAST COST — the same
+// Owner ruling (2026-08-22), which the engine follows although CR 111.8 makes the
+// sacrifice part of the effect (F-U04-5): "sacrifice me. If you do, …" is a CAST COST — the same
 // printed shape, and the same ruling, as Eldritch Dreamtender, and the printed
 // "(This is not optional.)" says out loud what the cost reading already gives.
 // It used to be a g.destroy() at resolution. Paid on the way to the stack now,
 // so the carrier is gone before anyone can answer the negate; a carrier that is
-// ALREADY gone makes the cost unpayable and the whole trigger is skipped (R5),
+// ALREADY gone makes the cost unpayable and the whole trigger is skipped,
 // which is what the old "the carrier is gone" branch said in longhand.
 card('Void Mandible', {
   augmentText: [{
@@ -718,18 +718,18 @@ card('Void Mandible', {
           g.ev('info', 'Void Mandible: the event names no card — nothing is negated.');
           return;
         }
-        // R207 (c): the play never built a stack item — an `asPlay` spawn.
+        // (c) above: the play never built a stack item — an `asPlay` spawn.
         // There is no effect standing there, so there is nothing to negate;
         // the old (card, controller) scan would have found somebody else's.
         if (itemId === undefined) {
           g.ev('info', `Void Mandible: ${name} was played with no effect on the stack — nothing is negated.`);
           return;
         }
-        // R207: BY ID — the item the event NAMES. The rest are assertions
+        // CR 706.13: BY ID — the item the event NAMES. The rest are assertions
         // about what that id must be, not a search:
-        //  · R129's membership, the same one 'cardPlayed' fires for, so a
+        //  · the membership of CR 108.1a and 300.5d, the same one 'cardPlayed' fires for, so a
         //    {Battle} unit and an Ambush are in it and a spell token is not;
-        //  · R164's `!i.copy` — a copy was never played, and by id it is
+        //  · CR 706.13's `!i.copy` — a copy was never played, and by id it is
         //    unreachable anyway (`pushSpellCopy` bypasses `commitItem`).
         const it = g.s.stack.find(i =>
           i.id === itemId && i.controller === seat && !i.copy && CARD_PLAY_KINDS.has(i.kind));
@@ -756,11 +756,11 @@ card('Void Mandible', {
 // card's own field — so nothing here changed; the ledger entry went, and the
 // {todo:true} became a real test in 40-light-c.test.ts.
 //
-// R110: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
+// CR 722.7: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
 // every other attached graft three times in the one composite (G1 → G2 → G1
 // → G2 → G1 → G2), bounded grafts included, each copy with its own targets
 // and its own [cost] (paid thrice or not at all). The effect itself does
-// nothing at resolution. Bounded ([Switch1], R9): once per turn as a cause
+// nothing at resolution. Bounded ([Switch1], CR 722.5): once per turn as a cause
 // and as a graft.
 const tripleGrafts: EffectDef = {
   graftCopies: 3,
@@ -768,7 +768,7 @@ const tripleGrafts: EffectDef = {
     const self = selfOf(g, ctx);
     const others = self ? self.mods.filter(id => {
       const m = g.entity(id);
-      // R131: NOT a card-name exclusion — the grafts this multiplier has
+      // CR 201.2: NOT a card-name exclusion — the grafts this multiplier has
       // nothing to do with are the OTHER MULTIPLIERS (composeParts never
       // multiplies a multiplier), whatever they are called. A second copy
       // of this very card grafted here is one of them; a different multiplier
@@ -783,7 +783,7 @@ card('Witness of the Crossing', {
   abilities: [{
     type: 'triggered', events: ['lifeGained', 'lifeLost'], bounded: true, graftCause: true,
     label: 'trigger three copies of each grafted ability (one single trigger)',
-    // R1: checked once, at event time — the life total AFTER the change is what
+    // CR 109.3a: checked once, at event time — the life total AFTER the change is what
     // "becomes 1 or 13" reads, and both gains and losses can produce it.
     when: (g, self, ev) => {
       if (g.s.phase !== 'battle') return false;

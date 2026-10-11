@@ -4,25 +4,25 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (partial resolution / fizzles), R6 (mid-resolution choices via
- * ctx.choose), R9 (bounded budgets per card), R12/R25 (region scoping),
- * R115 (created UNITS arrive where their SOURCE is — ctx.region — unless the
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (partial resolution / fizzles), CR 704.1a (mid-resolution choices via
+ * ctx.choose), CR 803.4 (bounded budgets per card), CR 101.6, 601.4d (region scoping),
+ * CR 601.5 (created UNITS arrive where their SOURCE is — ctx.region — unless the
  * text names a place; Hooba-Nan's "adjacent slots" already was battle-local),
- * R31 (triggers between combat damage sub-steps resolve immediately).
+ * CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - CONTROL CHANGES (Corrupting Blight / Hexbane Shiitake — Hush Mush is no
- *    longer one of these; R143 makes its body ENTER under the other seat
+ *    longer one of these; CR 303.10 makes its body ENTER under the other seat
  *    rather than change hands, see below):
- *    UN-PARKED (R112, 2026-08-23). This used to describe a batch-local
+ *    UN-PARKED (2026-08-23). This used to describe a batch-local
  *    giveControl(); the engine now has `E.giveControl(u, to)` — unit AND
  *    mods change controller (Bena's ruling), it leaves any formation
- *    through removeFromFormation (so the R72 collapse happens), and it goes
+ *    through removeFromFormation (so the CR 602.5b collapse happens), and it goes
  *    to the new controller's home now if that controller is not present.
  *  - EARNEST DEFENDER: still the log-tail reconstruction, but NOT for the
  *    reason this note used to give. It said "'targeted' events are logged but
- *    NOT dispatched to trigger listeners"; R53 fixed that — commitItem calls
+ *    NOT dispatched to trigger listeners"; that was fixed (CR 110.11): commitItem calls
  *    fireEvent('targeted', …) for every unit target of every stack item, which
  *    is how Mohruung works. What the dispatched event does NOT carry is who is
  *    doing the targeting: its data is { item, unit, region } only, with no
@@ -34,14 +34,14 @@
  *    tokens count as spells here, and that is now the whole file's answer
  *    rather than this card's exception — see Hexbane Shiitake, where the
  *    opposite guard was a literal-reading bug. (The old parenthetical said
- *    "R26's 'played' exclusion is about 'you play' triggers"; R26 is about
+ *    "R26's 'played' exclusion is about 'you play' triggers"; the token-creation rule (CR 304.15) is about
  *    token CREATION and settles nothing here either way.)
- *    CLOSED by R157 §16 / R161, owner 2026-08-25, verbatim: *"Once per
+ *    CLOSED by the owner 2026-08-25 (now CR 109.3d, 706.6), verbatim: *"Once per
  *    targeted ally — two targets, two triggers, two 1/1s."* The count is the
  *    number of TARGETED ALLIES, not the number of spells, and it is now
  *    produced: `targetedAllies` is called twice — once from `when` (does this
- *    spell touch any of mine, R1 at event time) and once from `run` (HOW MANY,
- *    R1 at resolution, off the same event snapshot `ctx.event`).
+ *    spell touch any of mine, CR 109.3a at event time) and once from `run` (HOW MANY,
+ *    CR 109.3b at resolution, off the same event snapshot `ctx.event`).
  *    ⚠ STILL AN APPROXIMATION, and now the approximation is the SHAPE rather
  *    than the number: the owner says two TRIGGERS and this is one trigger
  *    creating two tokens. The two differ in three places that a card could
@@ -55,22 +55,22 @@
  *    with a three-line `when` and stops being a log-tail scrape at all.
  *  - FUNGAL GARDENER: NO LONGER an approximation. This said "a died event
  *    carries no token flag … so nontoken-ness is read from the died message";
- *    R70 stamps `token` (with `counters`, `verb`, `seat`, `region`) onto every
+ *    the engine stamps `token` (with `counters`, `verb`, `seat`, `region`) onto every
  *    leave-play event precisely because the entity is gone by trigger time,
  *    and the card reads ev.data.token.
  *  - HUSH MUSH: NO LONGER an approximation, and no longer a handoff. This
  *    said the spell stashed the negated effect's controller in a per-region
  *    battleCounters ledger for its own `spawned` trigger to read, and worried
  *    that two Hush Mushes resolving in one region before either spawned would
- *    share it (last write wins). R143 deleted both the trigger and the ledger:
+ *    share it (last write wins). The enter-under-the-other-seat ruling (CR 303.10) deleted both the trigger and the ledger:
  *    `ctx.spawnUnder(seat)` raises `StackItem.spawnUnder` and `E.afterParts`
- *    spawns the body as THAT seat's unit, owner still the caster (R107). The
+ *    spawns the body as THAT seat's unit, owner still the caster (CR 400.4a). The
  *    two-copies case retires with the ledger — the answer now rides on each
  *    spell's OWN stack item, so two copies cannot see each other's. The bug
  *    that forced this was report #96: while the body spawned under the caster
  *    and only then changed hands, the caster's own "whenever another ally
  *    spawns" watchers fired on it.
- *  - BURGEON: NO LONGER an approximation (R166), and the note that used to sit
+ *  - BURGEON: NO LONGER an approximation (CR 709.7), and the note that used to sit
  *    here was false in the one clause that mattered. It read: "'double' adds
  *    the current EFFECTIVE stat as an until-regroup bonus (stat layer 3).
  *    Under a layer-4 multiplier (Tough/Balanced) the result overshoots
@@ -84,8 +84,8 @@
  *    the layer-3 delta that lands the EFFECTIVE stat on the promised number
  *    instead of assuming the layers above it are the identity.
  *  - HOOBA-NAN: NO LONGER an approximation, and no longer this card's problem.
- *    R75 put "adjacent" in the engine (E.adjacentSlots): sides and
- *    above/below, nothing diagonal. R304 opened the edges of the attacking
+ *    The adjacency ruling (CR 603.2a) put "adjacent" in the engine (E.adjacentSlots): sides and
+ *    above/below, nothing diagonal. The edge ruling (CR 603.3) opened the edges of the attacking
  *    line again, but through E.putInSlot's single re-key, so the old "only
  *    while no blocks are declared" guard — which existed because unshifting a
  *    column renumbers every b.blocks key — stays gone.
@@ -102,13 +102,13 @@ import { selfOf, isEnt, modeTargetOf, doubleStats, rechooseTargets, commitRetarg
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** create a 1/1 unit token for `seat` in `region`. R115: `region` is REQUIRED
+/** create a 1/1 unit token for `seat` in `region`. CR 601.5: `region` is REQUIRED
  * and is always the SOURCE's region (`ctx.region`) — the old `?? homeRegion`
  * default is exactly how four cards silently inherited the wrong answer. */
 const makeOneOne = (g: E, seat: Seat, region: number): Entity =>
   g.spawnUnit(seat, 'Unit Token', region, { token: true, tokenStats: [1, 1] });
 
-/* ─────────────────── R166: "double" as a printed promise ────────────────
+/* ─────────────────── CR 709.7: "double" as a printed promise ────────────────
  *
  * "Double the power or defense of target unit" (Burgeon) and "Double my power
  * and defense" (Surly Stalker, batch-water-b.ts) both used to be
@@ -130,7 +130,7 @@ const makeOneOne = (g: E, seat: Seat, region: number): Entity =>
  * would have to special-case: {Balanced} sets both stats to the higher of the
  * two (so doubling a Balanced unit's defense necessarily lifts its power too —
  * that is the attribute doing its job), and {Inverted} runs the whole thing
- * backwards (R93: it reverses the CHANGE, so the delta that doubles the number
+ * backwards (CR 802.8a: it reverses the CHANGE, so the delta that doubles the number
  * is a negative one).
  *
  * `effStats` is a pure read with no memo, so the probe below is free to try a
@@ -140,9 +140,9 @@ const makeOneOne = (g: E, seat: Seat, region: number): Entity =>
 // ────────────────────────────── the cards ──────────────────────────────
 
 // "Create a Poison 1 for each of your units." — gg/4 Ancient Blight Spell
-// (deploy timing). "Your units" is region-scoped (R12): the units you have
+// (deploy timing). "Your units" is region-scoped (CR 101.6): the units you have
 // where the spell resolves (your home region during deployment). Poison spell
-// tokens appear at ctx.region, like everything else created (R115).
+// tokens appear at ctx.region, like everything else created (CR 601.5).
 card('All-Consuming Blight', {
   spellEffect: {
     creates: ['Poison'],
@@ -162,7 +162,7 @@ card('All-Consuming Blight', {
 // hand (nothing moves).
 card('Bioremediation', {
   spellEffect: {
-    // R64: 'player' is the player-only kind. 'any' — the damage kind — offered
+    // CR 110.3c: 'player' is the player-only kind. 'any' — the damage kind — offered
     // the region's units too, and a unit has no hand to reveal.
     targets: { what: 'player', prompt: 'Bioremediation: target player reveals their hand — you take a card from it' },
     run: (g, ctx) => {
@@ -180,28 +180,28 @@ card('Bioremediation', {
       }) as number;
       const [name] = hand.splice(pick, 1);
       if (name === undefined) { g.ev('info', 'Bioremediation: that card is gone — nothing is taken.'); return; }
-      // R179: out of one hand and into another — `from: 'hand'`
+      // CR 402.4: out of one hand and into another — `from: 'hand'`
       g.toHand(ctx.controller, name, 'hand');
       g.ev('info', `Bioremediation: ${g.pname(ctx.controller)} takes ${name}.`);
     },
   },
 });
 
-/** R256: does stack item `stackId` aim at anything ALLIED to seat `ally`?
+/** CR 110.3: does stack item `stackId` aim at anything ALLIED to seat `ally`?
  *
  * "Allied" reads every declared target of every LIVE (unspent) part: units by
  * controller, players by seat, stack items by their controller. A cached-card
  * or bin-card target is nobody's effect and counts for nothing.
  *
- * The Virus arm is R88's, and it is the reason this predicate is not just the
+ * The Virus arm is CR 110.10a's, and it is the reason this predicate is not just the
  * inline `some()` it used to be. `doAugment` builds a Virus stack item with
  * `parts: []` and a `hostId`, so a read over `parts[].targets` says a Virus
- * targets nothing — yet the designer ruled otherwise, in the exchange R88
- * quotes, which names THIS CARD:
+ * targets nothing — yet the designer ruled otherwise, in the exchange the Virus ruling
+ * (now CR 110.10a) quoted, which names THIS CARD:
  *   > "You can redirect a virus, it is a targeted effect" … "Interesting, so
  *   > you could Graxxlid or Boon of Protection it as well?" — "Yep! They're
  *   > fully interactible." (calebgannon)
- * R79's other Virus shape (`hostStack`, a Virus aimed at a spell on the stack)
+ * CR 723.4's other Virus shape (`hostStack`, a Virus aimed at a spell on the stack)
  * is allied when that SPELL is allied. */
 const aimsAtAlly = (g: E, stackId: number, ally: Seat | undefined): boolean => {
   if (ally === undefined) return false;
@@ -226,7 +226,7 @@ const aimsAtAlly = (g: E, stackId: number, ally: Seat | undefined): boolean => {
 // "Negate target effect that targets an allied effect, player or unit." —
 // gg/1 {Battle} Druid Spell. "Allied" = yours, in 1v1.
 //
-// R256 (report #134, round 32) — "…THAT TARGETS an allied effect, player or
+// CR 110.3 (report #134, round 32) — "…THAT TARGETS an allied effect, player or
 // unit" is a relative clause modifying the target noun, so it is a TARGETING
 // restriction and lives in `TargetSpec.restrict`. It used to be enforced only
 // at resolution, and from the table that is a card that promises an answer it
@@ -239,15 +239,15 @@ const aimsAtAlly = (g: E, stackId: number, ally: Seat | undefined): boolean => {
 // ⚠ The comment that used to sit here cited a "Graxxlid/Minor Kraken
 // precedent" for the RESOLUTION check, and that citation is what let this
 // survive four rounds: both of those cards were converted the other way, and
-// today each carries BOTH halves. R88 is the ruling, and it states the general
+// today each carries BOTH halves. The Virus ruling (now CR 110.10a) states the general
 // rule — "the printed restriction is part of what makes a target LEGAL, not a
-// condition checked once the spell resolves" (R64), under the RAQ thread's "in
+// condition checked once the spell resolves" (CR 110.3a), under the RAQ thread's "in
 // order to play a card, you must be able to select the valid targets for the
-// effect". R88 even names this card as asking the neighbouring question.
+// effect". CR 110.10a even names this card as asking the neighbouring question.
 // THE PRECEDENT IS BOTH HALVES, NOT THE SECOND ONE.
 //
-// So the resolution check STAYS, and is not dead code (R88 says so in as many
-// words). A restriction is asked at cast and never re-asked (R5/R56), so the
+// So the resolution check STAYS, and is not dead code (CR 704.5 says so in as many
+// words). A restriction is asked at cast and never re-asked (CR 110.1a), so the
 // world may legally stop satisfying it in between: a Redirect or an Enigmatic
 // Warder moves the aimed-at effect's targets, a part goes spent, or the
 // targeted item leaves the stack entirely (85-silent-branches STACK_GONE).
@@ -260,7 +260,7 @@ card('Boon of Protection', {
     targets: {
       what: 'stackEffect',
       prompt: 'Boon of Protection: negate target effect that targets an allied effect, player or unit',
-      // R256: the printed "that targets an allied …" clause, as a targeting
+      // CR 110.3: the printed "that targets an allied …" clause, as a targeting
       // restriction. `ctx.ally` is the EFFECT's controller — never the
       // chooser's — which is the seat "allied" is measured from.
       restrict: (g, t, ctx) => 'stack' in t && aimsAtAlly(g, t.stack, ctx.ally),
@@ -284,10 +284,10 @@ card('Boon of Protection', {
 
 // "[Switch1] Double the power or defense of target unit until regroup." —
 // g/2 {Battle} Druid Spell. The whole sentence is the bounded graftable
-// effect ([Switch1], R9). ⚠ header approximation: adds the current EFFECTIVE
+// effect ([Switch1], CR 722.5). ⚠ header approximation: adds the current EFFECTIVE
 // stat as a temp bonus.
 //
-// R57 — WHICH STAT IS A CAST-TIME DECLARATION (`EffectDef.modes`), asked right
+// CR 702.5 — WHICH STAT IS A CAST-TIME DECLARATION (`EffectDef.modes`), asked right
 // after the target and before any cost. It used to be a mid-resolution
 // ctx.choose, and that is the playtest report this card is famous for: the
 // Burgeon sat on the stack with its half UNKNOWN, the opponent spent a card
@@ -320,7 +320,7 @@ const burgeonEffect: EffectDef = {
     options: (g, _item, part) => {
       const u = modeTargetOf(g, part);
       const [p, d] = u ? g.effStats(u) : [0, 0];
-      // R284 `half`: printed "[power {i1}or defense]"
+      // CR D6.10a `half`: printed "[power {i1}or defense]"
       return [
         { label: u ? `Power (${p} → ${p * 2})` : 'Power', value: 'power', half: 0 },
         { label: u ? `Defense (${d} → ${d * 2})` : 'Defense', value: 'defense', half: 1 },
@@ -334,7 +334,7 @@ const burgeonEffect: EffectDef = {
       return;
     }
     const [p, d] = g.effStats(t);
-    // R57: declared at cast, not asked here (see the header).
+    // CR 702.5: declared at cast, not asked here (see the header).
     const mode = ctx.mode;
     const [stat, was] = mode === 'defense' ? ['defense', d] as const : ['power', p] as const;
     if (was <= 0) {
@@ -342,7 +342,7 @@ const burgeonEffect: EffectDef = {
       return;
     }
     g.ev('info', `Burgeon doubles ${t.card}'s ${stat}: ${was} → ${was * 2} until regroup.`);
-    // R166: NOT `addTemp(+was)` — `was` is the layer-4 number and addTemp
+    // CR 709.7: NOT `addTemp(+was)` — `was` is the layer-4 number and addTemp
     // writes at layer 3, so {Tough}/{Balanced} would apply to it a second
     // time. `doubleStats` solves for the delta that makes the board read
     // `was * 2`.
@@ -368,7 +368,7 @@ card('Corrupting Blight', {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
         if (!me) { g.ev('info', 'Corrupting Blight: the carrier is gone — no control changes.'); return; }
-        // R243: chosen from the players present in MY region
+        // CR 601.4c: chosen from the players present in MY region
         const candidates = g.seatsHere(me.region).filter(s => s !== me.controller);
         if (!candidates.length) {
           g.ev('info', `Corrupting Blight: everybody already controls ${me.card} — no control changes.`);
@@ -389,24 +389,24 @@ card('Corrupting Blight', {
 // a 1/1 unit." — g/3 1/3 {Haste} Flower Guardian Unit. ⚠ header
 // approximation: listens on 'spellPlayed' and reads the 'targeted' entries
 // commitItem logged immediately before it. ('targeted' IS dispatched now —
-// R53 — but its data is { item, unit, region }, with no controller and no
+// CR 110.11 — but its data is { item, unit, region }, with no controller and no
 // kind, so an "enemy SPELL" cannot be recognised from it alone; see header.)
 // "Ally" = a unit my controller controls (me included).
-// R115: the 1/1 arrives where the source is (ctx.region).
+// CR 601.5: the 1/1 arrives where the source is (ctx.region).
 //
-// R157 §16 / R161 — ONE 1/1 PER TARGETED ALLY: *"Once per targeted ally — two
+// CR 109.3d / CR 706.6 — ONE 1/1 PER TARGETED ALLY: *"Once per targeted ally — two
 // targets, two triggers, two 1/1s."* The count is a FACT OF THE EVENT (the
 // targets were declared in the cast window and the 'targeted' entries are
 // already logged when 'spellPlayed' fires), so it is read at event time, in
-// `when`, and STAMPED onto the event — the same place R70 keeps `token` and
+// `when`, and STAMPED onto the event — the same place a leave-play event keeps `token` (CR 714.9) and
 // "[Augment] Whenever an ally becomes the target of an enemy spell, create a
-// 1/1 unit." — R157 §16, the owner, verbatim: *"Once per targeted ally — two
+// 1/1 unit." — the owner, verbatim (CR 109.3d): *"Once per targeted ally — two
 // targets, two triggers, two 1/1s."*
 //
 // It listens on 'targeted', which `E.commitItem` dispatches ONCE PER TARGET —
 // so "two triggers" comes for free and this card does no counting at all.
 //
-// ⚠ It could not be written this way until R161 widened the event. The payload
+// ⚠ It could not be written this way until the event was widened. The payload
 // was `{ item, unit, region }`: enough to know a unit was targeted, not enough
 // to know BY WHOM or by WHAT. The only way to answer "an enemy SPELL" was to
 // listen on 'spellPlayed' and scrape the log tail for the run of 'targeted'
@@ -418,8 +418,8 @@ card('Corrupting Blight', {
 // Automaton of Abundance adds one extra, not two). `seat` + `kind` on the event
 // retire the whole apparatus.
 //
-// "Spell" is `isSpellEffect`: spell, spellUnit, spellToken — R157 §13, *"tokens
-// are spells"*.
+// "Spell" is `isSpellEffect`: spell, spellUnit, spellToken — the owner's *"tokens
+// are spells"* (CR 300.5a).
 card('Earnest Defender', {
   augmentText: [{
     type: 'triggered', events: ['targeted'],
@@ -440,10 +440,10 @@ card('Earnest Defender', {
 
 // "Whenever a nontoken enemy dies, [Switch] Create a 1/1 unit." — gg/2 1/2
 // Fungus Druid Unit. Died trigger, region-scoped by fireEvent; "enemy" =
-// the dead unit's controller differs from mine (R1: checked at event time).
-// R70: nontoken-ness is a FACT ON THE EVENT (ev.data.token) — it used to be a
+// the dead unit's controller differs from mine (CR 109.3a: checked at event time).
+// CR 714.9: nontoken-ness is a FACT ON THE EVENT (ev.data.token) — it used to be a
 // string match on the death message. The creation is the unbounded graftable
-// piece ([Switch]); R115: the 1/1 arrives at the source's region (ctx.region).
+// piece ([Switch]); CR 601.5: the 1/1 arrives at the source's region (ctx.region).
 const gardenerSprout: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => { makeOneOne(g, ctx.controller, ctx.region); },
@@ -454,7 +454,7 @@ card('Fungal Gardener', {
     label: 'create a 1/1 unit (a nontoken enemy died)',
     when: (g, self, ev) =>
       ev.data?.seat !== undefined && ev.data.seat !== self.controller
-        && ev.data?.token !== true,   // R70: the fact rides the event
+        && ev.data?.token !== true,   // CR 714.9: the fact rides the event
     effect: gardenerSprout,
   }],
   graftEffect: { bounded: false, effect: gardenerSprout },
@@ -464,10 +464,10 @@ card('Fungal Gardener', {
 // Unit. Statics-only text-box [Augment] (⚠ header): the aura is anchored on
 // the carrier — the host when donated — and "other" excludes the anchor by
 // id. Live when played normally (the Elder buffs everyone but itself);
-// region-scoped by the statics layer (R12).
+// region-scoped by the statics layer (CR 101.6).
 card('Glowhaven Elder', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -483,7 +483,7 @@ card('Glowhaven Elder', {
 // draw is main text (never donated; a Virus attach is not a spawn). Despawn
 // = ANY leave-play: 'died' + 'despawned', self-filtered (Bloated Manablub
 // precedent — a donated copy fires for the HOST leaving play, the mod scan
-// runs before mods are erased). "Each other player" is region-scoped (R25):
+// runs before mods are erased). "Each other player" is region-scoped (CR 601.4d):
 // the present seats of the event region except the carrier's controller.
 card('Growing Plague', {
   abilities: [{
@@ -496,7 +496,7 @@ card('Growing Plague', {
     label: 'each other player draws two cards (I despawned)',
     effect: {
       run: (g, ctx) => {
-        // R187/CT-70: "each OTHER player" is region-scoped (R25), so alone in a
+        // CR D7.3/CT-70: "each OTHER player" is region-scoped (CR 601.4d), so alone in a
         // home region the loop is empty. Announce the empty case.
         const others = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
         if (!others.length) {
@@ -511,22 +511,22 @@ card('Growing Plague', {
 
 // "[Augment][once] Whenever another player plays a spell, you may exchange
 // control of me for that spell. If you do, you may choose new targets for
-// that spell." — g/4 3/3 Arcane Fungus Unit. [once] = bounded (R9). The
+// that spell." — g/4 3/3 Arcane Fungus Unit. [once] = bounded (CR 109.9). The
 // trigger stacks above the spell and resolves first; the spell is found on the
-// stack BY ITS ID, which the play event carries (R191 / R178 — see the lookup
+// stack BY ITS ID, which the play event carries (CR 706.13 — see the lookup
 // below and the Origon note in batch-hybrids-fwe). All choices
-// are gathered before mutating (plan-then-commit, R6): the exchange
+// are gathered before mutating (plan-then-commit): the exchange
 // (pay-or-decline), then a new-target pick per declared target (keep is
 // always offered). Committing flips item.controller to me and hands the
-// carrier to the spell's owner (E.giveControl, R112).
+// carrier to the spell's owner (E.giveControl, CR 711.1).
 //
 // LITERAL-READING AUDIT (2026-08-24): SPELL TOKENS COUNT. This used to carry
-// `ev.data?.token !== true` and the note "spell tokens are not 'played'
-// (R26)", and both were wrong:
-//  · R26 is about token CREATION ("the created 1/1 is a token and can't
-//    re-trigger"), and R59's "a spell token is cast from play, not played" was
+// `ev.data?.token !== true` and the note "spell tokens are not 'played'" (citing the token-creation
+// ruling, now CR 304.15), and both were wrong:
+//  · that ruling is about token CREATION ("the created 1/1 is a token and can't
+//    re-trigger"), and the cost-modifier ruling's "a spell token is cast from play, not played" was
 //    about what a COST modifier may tax. Neither is about this trigger — and
-//    R305 (owner, 2026-09-28) has since overturned R59's line outright:
+//    the owner has since overturned that line outright:
 //    casting a spell token IS playing a spell.
 //  · The engine's own answer is the opposite: `commitItem` fires 'spellPlayed'
 //    for a spell token with `token: true` — Nimbus Eel's printed "When you
@@ -540,7 +540,7 @@ card('Growing Plague', {
 //    which both count tokens. The set says "nontoken" when it means it.
 // So the guard is gone and 'spellToken' joins the kinds the exchange can find
 // on the stack — without that second half the trigger would fire and then
-// report "no longer on the stack", which is the dead-clause shape (R125).
+// report "no longer on the stack", which is the dead-clause shape.
 card('Hexbane Shiitake', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'], bounded: true,   // [once]
@@ -549,7 +549,7 @@ card('Hexbane Shiitake', {
     effect: {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
-        // R113: the ability IS the offer to exchange. Where the offer cannot
+        // CR 109.9b: the ability IS the offer to exchange. Where the offer cannot
         // be put to the player at all — no carrier, no spell left to swap for —
         // the use is not spent, exactly as an outright decline is not.
         if (!me) { ctx.refundBudget?.(); g.ev('info', 'Hexbane Shiitake: the carrier is gone — no exchange.'); return; }
@@ -557,14 +557,14 @@ card('Hexbane Shiitake', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         const itemId = ctx.event?.data?.['item'] as number | undefined;
         if (cardName === undefined || seat === undefined) { ctx.refundBudget?.(); return; }
-        // R191: BY ID. "That spell" is the item the play event named, and the
-        // event names it — `spellPlayed` carries `item` (R178). This used to be
-        // R166's `[...g.s.stack].reverse().find(i => i.card === cardName && …)`,
+        // CR 706.13: BY ID. "That spell" is the item the play event named, and the
+        // event names it — `spellPlayed` carries `item`. This used to be
+        // the `[...g.s.stack].reverse().find(i => i.card === cardName && …)`,
         // which is correct only while the push order keeps the played item
         // above every other item with the same (card, controller); an id is
         // correct under any order. Earthbound Replicator is the precedent.
         //
-        // R164: AND NOT A COPY — a separate question, kept as an ASSERTION
+        // CR 706.13: AND NOT A COPY — a separate question, kept as an ASSERTION
         // rather than dropped with the scan. A copy carries the ORIGINAL's card
         // name and (for both copiers) its controller, which is what made it
         // reachable by (card, controller) at all; it is unreachable by id,
@@ -583,7 +583,7 @@ card('Hexbane Shiitake', {
         // CARD-TODO #18: the offer is put to the player WHEREVER this resolves,
         // the end-of-turn window included. A ctx.choose suspension raised there
         // is answered like any other and E.finishTurnEnd closes the owed turn
-        // flip on the way back out of settle() (R85), so there is no longer a
+        // flip on the way back out of settle(), so there is no longer a
         // "cannot be asked" branch — `pays` is the answer and nothing else.
         const pays = ctx.choose('swap', {
           kind: 'payOrDecline', seat: ctx.controller,
@@ -599,7 +599,7 @@ card('Hexbane Shiitake', {
           g.ev('info', `Hexbane Shiitake: ${item.label} is left alone — no exchange.`);
           return;
         }
-        // R307: each menu is the SLOT's legal candidates, judged for the
+        // CR 110.9: each menu is the SLOT's legal candidates, judged for the
         // item's controller-to-be (`ctx.controller` — "ally" is measured from
         // whoever will control it): its own restriction, and never a ref in a
         // sibling slot, one changed earlier in this pass included.
@@ -628,19 +628,19 @@ card('Hexbane Shiitake', {
 // "[Augment] When I attack, if I am still in formation, create a 1/1 unit
 // in all my empty adjacent slots." — ggg/4 5/4 Hooba Banana Unit. Text-box
 // [Augment]; live when played normally. "Still in formation" is checked at
-// RESOLUTION (R27-style).
+// RESOLUTION (CR 602.6g-style).
 //
-// R75: the slot set is the ENGINE's now (E.adjacentSlots) — "sides and
+// CR 603.2a: the slot set is the ENGINE's now (E.adjacentSlots) — "sides and
 // above/below, nothing diagonal", over the slots the formation actually has.
 // This card does NOT get the placement choice that "in my formation" cards
 // get: it names its own slots, so there is nothing to choose.
 //
-// R304 (Bena 2026-09-25, report YUZY): the empty column past either END of the
+// CR 603.3 (Bena 2026-09-25, report YUZY): the empty column past either END of the
 // attacking line is a slot too — "you put it on the edge and it makes 2 units",
-// which the owner calls the card's most frequent use. From R75 (2026-08-21)
+// which the owner calls the card's most frequent use. From 2026-08-21
 // until then the edges were closed and a lone Hooba-Nan made one 1/1 where it
 // now makes three. A new column goes in through E.putInSlot, so a left end
-// re-keys `blocks` and the column counters in the one commit R72 uses.
+// re-keys `blocks` and the column counters in the one commit a closing-up line uses (CR 603.5a).
 card('Hooba-Nan', {
   augmentText: [{
     type: 'triggered', events: ['attacked'], self: true,
@@ -664,17 +664,17 @@ card('Hooba-Nan', {
 // "Negate target effect. Its controller gains control of me." — gg/2 3/1
 // {Battle} Arcane Fungus Spell Unit.
 //
-// R143: ONE spell resolution, so ONE controller. The body is spawned by
+// CR 303.10: ONE spell resolution, so ONE controller. The body is spawned by
 // E.afterParts once every part has run, and `ctx.spawnUnder()` tells it whose
 // unit to spawn — the body ENTERS as the negated effect's controller's ally.
 // It is deliberately NOT a `spawned` trigger calling giveControl afterwards
-// (which is what this was until R143): that spawns the body under the CASTER
+// (which is what this was until the ruling CR 303.10 now states): that spawns the body under the CASTER
 // first, and the caster's own "whenever another ally spawns" watchers fire on
 // a unit that was never theirs — report #96, where the owner's Flourishing
 // Flora took a counter he correctly refused. Every ally-spawn watcher could
 // see that window; Flora was just the one on the board.
 //
-// OWNERSHIP STAYS WITH ME (R107 owner≠controller): the opponent gains
+// OWNERSHIP STAYS WITH ME (CR 400.4a owner≠controller): the opponent gains
 // CONTROL, but it is still my card and still my bin when it dies.
 //
 // The seat is read off the stack item BEFORE the negate and stashed on my own
@@ -685,7 +685,7 @@ card('Hooba-Nan', {
 // ⚠ header's worry is retired rather than merely unreachable).
 //
 // A gone target fizzles the whole spell — the unit never spawns and is binned
-// (R5). If we get here with nothing to negate, nothing is stashed and the body
+// (CR 704.6). If we get here with nothing to negate, nothing is stashed and the body
 // simply enters as mine, which is what "no effect's controller" has to mean.
 card('Hush Mush', {
   spellEffect: {
@@ -718,7 +718,7 @@ card('Hush Mush', {
 // the carrier fights. Anchored on the host when donated.
 card('Inspiration', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -732,7 +732,7 @@ card('Inspiration', {
 
 // "Target unit gains +0/+1 until regroup. Draw a card." — g/1 {Battle}
 // Mystic Druid Spell. Single part: if the target is gone at resolution the
-// part fizzles and nothing happens, draw included (R5 — the clauses are one
+// part fizzles and nothing happens, draw included (CR 704.6 — the clauses are one
 // part). Otherwise: temp toughness + a draw.
 card('Invigorate', {
   spellEffect: {
@@ -746,9 +746,9 @@ card('Invigorate', {
 });
 
 // "[Augment][once] When I am dealt damage, create that many 1/1 units." —
-// gg/3 0/4 Alien Insect Plant Unit. [once] = bounded (R9). Both damage
+// gg/3 0/4 Alien Insect Plant Unit. [once] = bounded (CR 109.9). Both damage
 // channels fire 'damage' with the amount in data.n; "that many" is read from
-// the event snapshot (R1, Lithoghul precedent). R115: the 1/1s arrive where
+// the event snapshot (Lithoghul precedent). CR 304.8a: the 1/1s arrive where
 // Jollyglop is — take damage while attacking and they are minted in the enemy
 // region, in no column. Poisonous damage becomes counters and never
 // fires 'damage' (earth-c precedent, noted).
@@ -767,9 +767,9 @@ card('Jollyglop', {
 });
 
 // "When I attack in a formation of four or more units, [Switch1] Draw a
-// card." — g/3 3/3 Plant Luminary Unit. Condition at event time (R1):
+// card." — g/3 3/3 Plant Luminary Unit. Condition at event time (CR 109.3a):
 // the attacking formation (b.columns, all mine — I just attacked) holds 4+
-// living units. The draw is the bounded graftable piece ([Switch1], R9).
+// living units. The draw is the bounded graftable piece ([Switch1], CR 722.5).
 const leaderDraw: EffectDef = {
   run: (g, ctx) => g.draw(ctx.controller, 1),
 };

@@ -11,11 +11,11 @@
         "quote": "Algomancy consists of 5 Elements, which all offer different ways to play and interact"
       },
       {
-        "source": "R54",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "silently drop the bonus for wood, metal, light and dark, and keeping both would"
       }
     ],
-    "resolution": "Not a conflict of rules: the Manual predates the expansion. The rule states both counts. Every general rule in 105-106 that the Manual states for \"the elements\" is applied to Light and Dark too (for example the affinity Shard, R54); that extension has no printed source."
+    "resolution": "Not a conflict of rules: the Manual predates the expansion. The rule states both counts. Every general rule in 105-106 that the Manual states for \"the elements\" is applied to Light and Dark too (for example the affinity Shard, the owner ruling of 2026-08-19 (“A Shard is not a Prismite”)); that extension has no printed source."
   },
   {
     "id": "D-U02-2",
@@ -33,7 +33,7 @@
         "quote": "Resource types needed to be present among your resources"
       },
       {
-        "source": "R151",
+        "source": "owner ruling, adopted 2026-08-25",
         "quote": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
       },
       {
@@ -48,22 +48,22 @@
     "kind": "c-owner-call-only",
     "rule": "concepts.elements.game-elements",
     "tier": 3,
-    "summary": "The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and R17 put no such limit.",
+    "summary": "The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) put no such limit.",
     "sides": [
       {
         "source": "Manual p.18",
         "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
       },
       {
-        "source": "R17",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
       },
       {
-        "source": "R299",
+        "source": "owner ruling, adopted 2026-09-19",
         "quote": "early on a prismite), and once active may be exchanged for any element of the game."
       }
     ],
-    "resolution": "The rule states R299 (\"any element of the game\"), an owner call with no printed or designer source. Question for the owner only if the Manual's \"any resource\" is meant to reach elements outside a live draft's selection (for example a fire resource in a water-wood-metal draft)."
+    "resolution": "The rule states the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) (\"any element of the game\"), an owner call with no printed or designer source. Question for the owner only if the Manual's \"any resource\" is meant to reach elements outside a live draft's selection (for example a fire resource in a water-wood-metal draft)."
   },
   {
     "id": "D-U02-4",
@@ -81,11 +81,11 @@
         "quote": "Deal 2 prismites to each player face down (dormant)."
       },
       {
-        "source": "R17",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana"
       }
     ],
-    "resolution": "Both are printed. The Manual is the later edition and R17 follows it; the rule states the Manual. Mana Converter is the 2023 name for the Prismite."
+    "resolution": "Both are printed. The Manual is the later edition and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) follows it; the rule states the Manual. Mana Converter is the 2023 name for the Prismite."
   },
   {
     "id": "D-U02-5",
@@ -114,14 +114,14 @@
     "kind": "a-sources-disagree",
     "rule": "concepts.resources.prismite.exchange",
     "tier": 4,
-    "summary": "What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which read literally is a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.",
+    "summary": "What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which read literally is a fresh, un-expended resource. The owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”) says the new resource keeps the Prismite's current state.",
     "sides": [
       {
-        "source": "R132",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
       },
       {
-        "source": "R17",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
       },
       {
@@ -129,17 +129,17 @@
         "quote": "Sometimes it can be advantageous to delay exchanging them."
       }
     ],
-    "resolution": "Settled by the designer, for R17. Caleb (Discord rules-questions, 2024-07-23, calebgannon), asked whether Prismites can give 4 mana on turn 1, answered that exchanging a Prismite uses no activation, \"However when you do that you're losing the prismite, so you can only ever have 2 total mana on the first turn\". A fresh, un-expended resource after an expended Prismite would be a third mana, so the designer's stated intent outranks the literal \"then activate it\" (authority order: where Caleb states an intent that differs from print, follow Caleb), and R17's \"keeping its current state\" is the law. concepts.resources.prismite.exchange states it (redrafted 2026-10-10 to say so outright). The engine agrees (413 sets an active Prismite expended, exchanges it, and the fire resource is still expended). No engine change, no register change. The first synthesis of this item ruled for the literal print reading; it had not seen Caleb's line, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export under calebgannon on that date."
+    "resolution": "Settled by the designer, for the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”). Caleb (Discord rules-questions, 2024-07-23, calebgannon), asked whether Prismites can give 4 mana on turn 1, answered that exchanging a Prismite uses no activation, \"However when you do that you're losing the prismite, so you can only ever have 2 total mana on the first turn\". A fresh, un-expended resource after an expended Prismite would be a third mana, so the designer's stated intent outranks the literal \"then activate it\" (authority order: where Caleb states an intent that differs from print, follow Caleb), and the owner ruling of 2026-08-18 (“Prismites give no affinity; active ones…”)’s \"keeping its current state\" is the law. concepts.resources.prismite.exchange states it (redrafted 2026-10-10 to say so outright). The engine agrees (413 sets an active Prismite expended, exchanges it, and the fire resource is still expended). No engine change, no register change. The first synthesis of this item ruled for the literal print reading; it had not seen Caleb's line, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export under calebgannon on that date."
   },
   {
     "id": "D-U02-8",
     "kind": "a-sources-disagree",
     "rule": "concepts.resources.prismite.exchange.element-only",
     "tier": 2,
-    "summary": "Whether a Prismite can be exchanged into a Shard. The card says \"a non-prismite resource\" and the Manual \"other resources\"; a Shard is a resource. R299 says an exchange names an element, and the engine and test 308 refuse a Shard.",
+    "summary": "Whether a Prismite can be exchanged into a Shard. The card says \"a non-prismite resource\" and the Manual \"other resources\"; a Shard is a resource. The owner ruling of 2026-09-19 (“Recycling can make a Prismite”) says an exchange names an element, and the engine and test 308 refuse a Shard.",
     "sides": [
       {
-        "source": "R132",
+        "source": "owner ruling, adopted 2026-08-24",
         "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
       },
       {
@@ -147,11 +147,11 @@
         "quote": "exchanged for other resources, meaning players essentially get to pick their two"
       },
       {
-        "source": "R299",
+        "source": "owner ruling, adopted 2026-09-19",
         "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
       }
     ],
-    "resolution": "Printed text, read literally, outranks R299, and the permissive reading is taken: the rule allows a Shard. The engine refuses it: F-U02-3 (CT-237). A Shard is never better than an element resource, so the fix is low priority. Question for the owner only if R299's \"an exchange names an element\" was a deliberate ruling on Shards rather than the reason a Prismite cannot become a Prismite."
+    "resolution": "Printed text, read literally, outranks the owner ruling of 2026-09-19 (“Recycling can make a Prismite”), and the permissive reading is taken: the rule allows a Shard. The engine refuses it: F-U02-3 (CT-237). A Shard is never better than an element resource, so the fix is low priority. Question for the owner only if the owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s \"an exchange names an element\" was a deliberate ruling on Shards rather than the reason a Prismite cannot become a Prismite."
   },
   {
     "id": "D-U02-9",
@@ -179,7 +179,7 @@
         "quote": "All resources have the ability to be expended for 1"
       },
       {
-        "source": "R54",
+        "source": "owner ruling, adopted 2026-08-19",
         "quote": "gives **one generic mana** once activated, gives **no affinity**, and **cannot"
       },
       {
@@ -201,11 +201,11 @@
         "quote": "X can't be zero."
       },
       {
-        "source": "R339",
+        "source": "owner ruling, adopted 2026-10-09",
         "quote": "can't be zero\" therefore has no legal free play, and Tides of the Cosmos does"
       },
       {
-        "source": "R35",
+        "source": "owner ruling, adopted 2026-08-18",
         "quote": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
       }
     ],

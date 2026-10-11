@@ -20,7 +20,7 @@
 import type { Seat } from '../engine/src/types.ts';
 import type { Scenario } from './scenarios.ts';
 
-// R218: a batch may import only TYPES from scenarios.ts — restate the seats
+// a batch may import only TYPES from scenarios.ts (see 14-scenario-tester.md) — restate the seats
 const YOU: Seat = 0;
 const OPPONENT: Seat = 1;
 

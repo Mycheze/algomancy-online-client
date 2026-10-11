@@ -1,4 +1,4 @@
-/* R303 — A CACHED CARD'S MOD VERBS ARE GATED LIKE ITS PLAY VERB.
+/* CR 720.5a — A CACHED CARD'S MOD VERBS ARE GATED LIKE ITS PLAY VERB.
  *
  * Reported in Discord, 2026-09-20: *"once a card expires after being glimpsed
  * … you're still able to graft with it on future turns (and probably augment
@@ -66,7 +66,7 @@ registerSynthetic(unit('T315 Rider', 1, 1, { cost: 'ee', mana: 2, augmentAttrs: 
  * alone make the mod unaffordable and the refusal comes from the price
  * instead of the permission. A test that cannot tell the two apart is not
  * guarding the ruling — this one is affordable from any zone, so the ONLY
- * thing that can refuse it is R303. */
+ * thing that can refuse it is CR 720.5a. */
 registerSynthetic(unit('T315 Plain Rider', 1, 1, { cost: '', mana: 2, augmentAttrs: ['Tough'] }), {
   graftEffect: { bounded: false, effect: { run: g => { g.ev('info', 'T315 Plain Rider grafts.'); } } },
 });
@@ -135,7 +135,7 @@ function glimpseTop(h: Harness, seat: Seat, name: string): void {
 
 // ── the report: an EXPIRED glimpse ────────────────────────────────────
 
-test('R303: an expired glimpse is not a graft, not an augment, not anything', () => {
+test('CR 801.9i: an expired glimpse is not a graft, not an augment, not anything', () => {
   const h = sterile(3150);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -155,13 +155,13 @@ test('R303: an expired glimpse is not a graft, not an augment, not anything', ()
     IllegalAction, 'the graft is refused, not merely unoffered');
   assert.throws(() => h.do({ type: 'augment', seat: P, from: 'cache', index: 0, hostId: host }),
     IllegalAction);
-  assert.equal(h.state.players[P]!.cache!.length, 1, 'the card is still there — inert, not erased (R45)');
+  assert.equal(h.state.players[P]!.cache!.length, 1, 'the card is still there — inert, not erased (CR 801.9i)');
   assert.equal(ent(h, host)!.mods.length, 0, 'and nothing was attached');
 });
 
 // ── the glimpse turn: allowed, priced like the play ───────────────────
 
-test('R303: a LIVE glimpse grafts for the card\'s mana, ignoring affinity', () => {
+test('CR 801.9g: a LIVE glimpse grafts for the card\'s mana, ignoring affinity', () => {
   const h = sterile(3151);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -179,7 +179,7 @@ test('R303: a LIVE glimpse grafts for the card\'s mana, ignoring affinity', () =
   assert.equal(h.state.players[P]!.cache!.length, 0, 'and it left the cache');
 });
 
-test('R303: a live glimpse augments on the same terms', () => {
+test('CR 801.9g: a live glimpse augments on the same terms', () => {
   const h = sterile(3152);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -194,7 +194,7 @@ test('R303: a live glimpse augments on the same terms', () => {
   assert.ok(h.q.ownAttrs(ent(h, host)!).has('Tough'), 'and the augment really applied');
 });
 
-test('R303: the glimpse waives the pips, NOT the mana — broke means refused', () => {
+test('CR 801.9g: the glimpse waives the pips, NOT the mana — broke means refused', () => {
   const h = sterile(3153);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -207,7 +207,7 @@ test('R303: the glimpse waives the pips, NOT the mana — broke means refused', 
 
 // ── the prophecy column ───────────────────────────────────────────────
 
-test('R303: an UNFULFILLED prophecy cannot be grafted — "no you can\'t do that"', () => {
+test('CR 803.7k: an UNFULFILLED prophecy cannot be grafted — "no you can\'t do that"', () => {
   const h = sterile(3154);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -223,7 +223,7 @@ test('R303: an UNFULFILLED prophecy cannot be grafted — "no you can\'t do that
     IllegalAction);
 });
 
-test('R303: a FULFILLED prophecy still grafts for free, affinity and all', () => {
+test('CR 803.7k: a FULFILLED prophecy still grafts for free, affinity and all', () => {
   const h = sterile(3155);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -235,7 +235,7 @@ test('R303: a FULFILLED prophecy still grafts for free, affinity and all', () =>
   assert.equal(h.q.cachePermission(P, 0), 'prophecy');
   const mana = h.q.openMana(P);
   const opt = h.legal(P).find(a => a.type === 'graft' && a.from === 'cache');
-  assert.ok(opt, 'still offered (R42, Caleb 2024-12-03)');
+  assert.ok(opt, 'still offered (CR 803.7k, Caleb 2024-12-03)');
   h.do(opt!);
   assert.equal(h.q.openMana(P), mana, 'nothing paid — it was bought at the banner');
   assert.equal(ent(h, host)!.mods.length, 1);
@@ -243,7 +243,7 @@ test('R303: a FULFILLED prophecy still grafts for free, affinity and all', () =>
 
 // ── the seam ──────────────────────────────────────────────────────────
 
-test('R303: legalActions and apply agree about every cache entry', () => {
+test('CR 720.5a: legalActions and apply agree about every cache entry', () => {
   const h = sterile(3156);
   intoDeployment(h);
   const P = h.state.deployPlayer!;
@@ -270,7 +270,7 @@ test('R303: legalActions and apply agree about every cache entry', () => {
   }
 });
 
-test('R303: hand and bin are untouched — they never needed a permission', () => {
+test('CR 720.5: hand and bin are untouched — they never needed a permission', () => {
   const h = sterile(3157);
   intoDeployment(h);
   const P = h.state.deployPlayer!;

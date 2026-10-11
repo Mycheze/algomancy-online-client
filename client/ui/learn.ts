@@ -1,4 +1,4 @@
-/* R297 — LEARN TO PLAY: dealing, saving and resuming the tutorial game.
+/* CR D8.1 — LEARN TO PLAY: dealing, saving and resuming the tutorial game.
  *
  * `?learn=play&el=<element>` starts (or resumes) the game; main.ts hands the
  * SoloServer's socket to a NetBackend and renders the NET path from there. The

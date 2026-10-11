@@ -1,8 +1,8 @@
 # 08 — Light & Dark: mechanics spec
 
 **This file is the contract for the expansion.** Every agent scripting a Light or Dark
-card codes against it, and every rule here should end up as a test. Rulings are numbered
-in [digital-rules.md](digital-rules.md) (R38–R48); this doc is the readable version with
+card codes against it, and every rule here should end up as a test. The numbered rules are
+in the Comprehensive Rules; this doc is the readable version with
 the card inventory attached.
 
 ## Provenance
@@ -105,7 +105,7 @@ rules text or an activated-ability cost.
 A fourth zone alongside hand, bin and deck. Caleb: *"basically exile with the intent to be
 referenced later"*, *"a neutral zone like the hand and bin"* (2024-02-25).
 
-- **Cache is public information** (⚠ R41, Bena's call): glimpse reveals, and Prismatic
+- **Cache is public information** (⚠ CR 403.2, Bena's call): glimpse reveals, and Prismatic
   Observer targets a cached card, so both players can see it. No server-side redaction.
 - A cached card **stays cached** if never used. It is not discarded, binned or erased.
 - Being in cache does **not** by itself permit playing: *"You can only play cached cards
@@ -116,7 +116,7 @@ referenced later"*, *"a neutral zone like the hand and bin"* (2024-02-25).
   live glimpse, affinity waived either way, and nothing at all once the window has closed.
   ⚠ These two bullets sat next to each other for a year while the engine read the second as
   overriding the first, which is how an expired glimpse stayed a live graft forever. See
-  [R303](digital-rules.md#r303--the-caches-mod-verbs-are-gated-on-the-same-permission-as-its-play-verb).
+  [CR 720.5a, 720.4b](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r720.5a).
 - When a card in play with mods on it is cached, **the mods go to the bin**, they do not
   travel with it (Caleb, 2024-09-15).
 
@@ -151,7 +151,7 @@ source zone; **no card may be prophesied from the bin unless it says so.**
 
 **Fulfilment counts forward from the moment of prophesying** (Caleb, 2024-09-22:
 *"It needs to be prophecied beforehand … Same way that 'Four turns pass' can't just be
-played on turn 5"*). ⚠ R44 (Bena's call): once fulfilled, a prophecy **latches** —
+played on turn 5"*). ⚠ CR 803.7g (Bena's call): once fulfilled, a prophecy **latches** —
 "anytime after the condition has been met" reads as permanent, so a card prophesied on
 "your life is 5 or less" stays playable even if you gain life back.
 
@@ -333,12 +333,12 @@ Engine consequences:
 - A Wraith dying **IS** trashing — see [Tokens CAN be trashed](#-tokens-can-be-trashed-bena-2026-08-21--reverses-the-earlier-position)
   above (Bena, 2026-08-21). The old "tokens are excluded" line is reversed.
 
-⚠ **R47 is now materially wrong.** It encodes the old behaviour — that a dying Wraith is
+⚠ **The old Wraith ruling is now materially wrong.** It encodes the old behaviour — that a dying Wraith is
 *not* erased and re-attaches *itself* as a mod, ceasing to exist only when no legal ally
 exists. Under the new card the dying Wraith **is** erased and a **new** token is created.
-R47 is being rewritten by the engine work in this same round; see
-[digital-rules.md](digital-rules.md) for the current wording. **This doc does not edit
-that file** — treat digital-rules.md as the ruling of record once it lands.
+That ruling was rewritten by the engine work in the same round, in the ruling register
+(since retired). The current Wraith rules are in the Comprehensive Rules
+(`data/comprehensive-rules/`). **This doc did not edit the register.**
 
 **Cards (7):** Afflicting Anima, Blight's End, Cosmic Devourer, Legion of the Depths,
 Plague Ritual, Primordial Coalescence, Xzydris.
@@ -362,7 +362,7 @@ to resolve.
 | `{Blessed}` | Damage dealt by a blessed source causes its controller to gain that much life. | Blessed Thing, Flzzz, Godray, Hammer of Justice, Shib |
 | `{Afflicting}` | When an afflicting source kills one or more units, those units' controllers gain a rot. | Umbral Decay |
 | `{Lethal}` | Any combat damage from a lethal unit will kill a player. | Gublin |
-| `{Pure}` | Pure cards and cards they are interacting with ignore all other attributes. | Just a Unit — **LIVE** (R61), see below |
+| `{Pure}` | Pure cards and cards they are interacting with ignore all other attributes. | Just a Unit — **LIVE** (CR 802.25), see below |
 | `{Modular}` | You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs. | Spellbind |
 
 **Blessed** is lifelink, and it is *simultaneous*: Caleb, 2024-09-15 — *"Simultaneous"*;
@@ -375,7 +375,7 @@ blessed source cannot kill its own controller through its own damage.
 *"we check damage and stats of units that were interacted with during spell resolutions"*.
 This matters because Umbral Decay's own effect *is* two -1/-1 counters. Per the reminder
 text it is one rot per affected controller per kill event, however many units died.
-⚠ R48 marks that last point as Bena's reading; no designer statement was found.
+⚠ That last point is the owner's reading; no designer statement was found.
 
 **Lethal** kills a player outright on any combat damage. Note the Blightsea Polyp
 interaction above: rot replacing the column's damage still counts as damage dealt, so
@@ -385,7 +385,7 @@ Lethal still kills.
 2025-02-07: *"spellbind is an additional cost so it shows up on the stack with all it's
 mods"*, and a copy of the spell would copy the mods too.
 
-**`{Pure}` is LIVE as of R61** — the parking call above turned out to be wrong, and it is
+**`{Pure}` is LIVE** (now CR 802.25) — the parking call above turned out to be wrong, and it is
 worth saying why. It was parked because it looked like it needed the attribute-suppression
 layer still parked for Monke, Suppression Field and Transmogrifant. It does not: those
 suppress a card's attributes *globally and durably*, whereas Pure is scoped to a single
@@ -398,7 +398,7 @@ The other three are genuinely different and stay parked.
 
 ---
 
-## Playing vs applying (recap of R37)
+## Playing vs applying (recap of CR 701)
 
 Only **units and spells** are played. Applying a mod — Virus, graft or augment, from hand,
 bin or cache — is **not** playing a card, so "when(ever) you play a …" triggers do not
@@ -411,8 +411,8 @@ provisional local errata, 2026-08-19.
 
 - Attribute suppression proper (Monke, Suppression Field, Transmogrifant) —
   `{Pure}` is done and needed none of it (above).
-- ~~The general cost-modifier layer.~~ Delivered in two halves: mana in R59
-  (Tranquility) and life in R60 (Arbiter of Armistice). `Deferral Drone` ("the next card
+- ~~The general cost-modifier layer.~~ Delivered in two halves: mana
+  (Tranquility) and life (Arbiter of Armistice), both now CR 111.10 and 111.10d. `Deferral Drone` ("the next card
   you play this turn costs `[3]` less") is still parked — it wants a *consumable*
   modifier, which neither half is.
 - Multiplayer prophecy counting (per-player turn vs table round) — 1v1 only, so
@@ -423,12 +423,12 @@ provisional local errata, 2026-08-19.
 ## Engine wave D (2026-08-19): what the nine card batches asked for, and got
 
 All nine batch agents independently reported the same short list of missing
-primitives. They are built; the rulings are R49–R51 in `docs/digital-rules.md`.
+primitives. They are built; the rulings are now in the Comprehensive Rules.
 
 **Built.** A `lifeGained:<seat>` battle ledger mirroring `lifeLost` (Life
 Channel, Riftspawn Remnant, Retribution Thing). An `endOfHaste` event, fired
-before the R43 mana-tally sweep (Keeper of Tithes, Debt Plant). A
-`startOfDeployment` event, fired after R38's rot damage (Xzydris, Scholar of the
+before the prophecy mana-tally sweep (Keeper of Tithes, Debt Plant). A
+`startOfDeployment` event, fired after CR 507.4's rot damage (Xzydris, Scholar of the
 Void, Prediction Prophet, and the base set's Invasive Species). Real non-mana
 costs on both spells (`payLife` / `discardCard` / `gainDebt`, plus the printed
 `gainDebt` line) and activated abilities (life / debt / discard N /
@@ -453,7 +453,7 @@ Glook) and a bin-zone cost (Grox).
 Four fixes, all cross-file, made once the whole repo was held by a single
 agent:
 
-1. **`E.glimpse` now implements R45 as corrected** — reveal N, cache exactly
+1. **`E.glimpse` now implements the glimpse rule (CR 801.9) as corrected** — reveal N, cache exactly
    ONE of the glimpser's choice, recycle the other N-1 to the bottom of the
    deck. The choose-one is raised through the resolving part's own
    `ctx.choose` via a new `E.partChoose` seam, so every one of the eleven
@@ -462,15 +462,15 @@ agent:
    `Glook`, `Seer of Empty Spaces`, `Visionary Construct`) became correct with
    **no card-code change**. `Big Glimpse Card` is untouched — it is the
    deliberate pile variant.
-2. **`E.destroy(u, verb, { binTo })`** — R40's "trashed by the owner of the bin
+2. **`E.destroy(u, verb, { binTo })`** — the trashing ruling's (now CR 801.2e) "trashed by the owner of the bin
    it enters" needed the bin push and the trash attribution to be one
    decision. `Pull Under`'s reroute-after-the-fact block is gone.
-3. **Two base-set cards unparked** by the R50/R51 primitives: `Invasive
+3. **Two base-set cards unparked** by the turn-structure and zone-trigger primitives: `Invasive
    Species` (a `startOfDeployment` trigger) and `Cinder Scuttler` (a
    `zone: 'bin'` trigger). `Abyssal Evocation` stays parked — it needs a
    bin-play permission in `doPlayCard`, a different gap.
-4. **R52** settles where created units arrive (the controller's home region),
-   closing R33's open question in favour of R28. Six Light & Dark cards moved.
-   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit
-   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general
+4. **A ruling** settled where created units arrive (the controller's home region),
+   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.
+   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit
+   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general
    rule and moves those six cards back where they started.

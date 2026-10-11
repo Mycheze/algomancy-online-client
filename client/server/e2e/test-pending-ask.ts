@@ -1,7 +1,7 @@
-/* R247 — the redacted "somebody owes an answer" stub, and the leak test that
+/* CR D6.4 — the redacted "somebody owes an answer" stub, and the leak test that
  * bounds it (run: node test-pending-ask.ts). No sockets: builds the report's
  * own {Alluring} board with the engine and reads viewFor() directly, the way
- * test-view-snapshot.ts does for R85.
+ * test-view-snapshot.ts does for the rollback snapshot.
  *
  * ── the report ───────────────────────────────────────────────────────
  *
@@ -21,7 +21,7 @@
  *
  * ── what this file is actually guarding ──────────────────────────────
  *
- * R247's line is: **THAT a choice is pending is public; WHAT is being chosen is
+ * CR D6.4's line is: **THAT a choice is pending is public; WHAT is being chosen is
  * not.** A stub that leaks the options, the candidate targets, the prompt or
  * the kind of question is worse than no stub at all, so the guards below are
  * written as a LEAK TEST and not as a feature test:
@@ -100,7 +100,7 @@ function withoutStub(v: SeatView): SeatView {
 // ══ the board: report #117's own example ══════════════════════════════
 //
 // Tempest Wrangler is the pool's one printed {Alluring} unit. Attacking with
-// it queues R84's trigger, and putting that trigger on the stack asks its
+// it queues CR 802.15a's trigger, and putting that trigger on the stack asks its
 // controller to pick the enemy unit being lured — the exact question in the
 // report, in the battle phase, with the allurer attacking and fully public.
 
@@ -244,7 +244,7 @@ console.log('\n[5. a spell nobody can see yet stays invisible]');
 console.log('\n[6. the freeze wins — same board, one variable changed]');
 {
   // `frozenOpp` is non-null exactly inside a hidden segment (rooms.ts
-  // segSnapshot), and it is the SAME gate R144 uses for the stack. Passing the
+  // segSnapshot), and it is the SAME gate CR 703.7 uses for the stack. Passing the
   // board's own snapshot is the controlled comparison: identical state, one
   // argument different.
   const frozen = viewFor(state, watcher, structuredClone(state));

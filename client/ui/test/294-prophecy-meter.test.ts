@@ -4,7 +4,7 @@
  *    'close' you are to being able to play it. So here my Hooba-God just says
  *    '4 turns pass' but I have no way to check how many already passed."
  *
- * The number existed — R43 stamps the turn a card was prophesied on and the
+ * The number existed — the engine stamps the turn a card was prophesied on (CR 803.7e) and the
  * fulfilment test reads `turn - stamp >= n` — and nothing showed it. Now:
  *
  *   §1 the engine says how far along a COUNTING prophecy is (turns, battles),
@@ -46,7 +46,7 @@ test('§1 the engine meters a counting prophecy off the same delta the fulfilmen
   // a state condition has nothing to count
   const state = h.state.players[0]!.cache![1]!.prophecy!;
   assert.equal(h.q.prophecyProgress(0, state), null, 'a state condition has no meter');
-  // once fulfilled (R44 latches) the meter is gone
+  // once fulfilled (it latches, CR 803.7g) the meter is gone
   p.fulfilled = true;
   assert.equal(h.q.prophecyProgress(0, p), null, 'a fulfilled prophecy has no meter');
   // and the other counting unit
@@ -83,12 +83,12 @@ test('§3 the control: a state condition reads "waiting" with no meter', () => {
   assert.doesNotMatch(html, /Your life is 10 or less — \d/, 'no "n to go" on a state condition');
 });
 
-// ── §4 R302: the meter is on the TABLE, not only inside the dialog ────
+// ── §4 CR D6.6a: the meter is on the TABLE, not only inside the dialog ────
 //
 // Owner, 2026-09-20: "the tally and 'progress toward Prophecy working' needs
 // to be VISIBLE to all players at all times". §2 above is the dialog, which
 // you have to open. This is the zone line under the cache on the board, which
-// you do not — and because R41 makes the cache public, it renders for the
+// you do not — and because the cache is public (CR D6.6), it renders for the
 // opponent's cache on the same terms as your own.
 
 test('§4 the cache zone line meters a counting prophecy without opening anything', () => {
@@ -100,7 +100,7 @@ test('§4 the cache zone line meters a counting prophecy without opening anythin
     'the board itself says how far along it is — no click required');
 });
 
-test('§4 it meters the OPPONENT\'s cache too — the zone is public (R41)', () => {
+test('§4 it meters the OPPONENT\'s cache too — the zone is public (CR D6.6)', () => {
   const h = new Harness(2945);
   toDeployment(h);
   // seat 1's prophecy, watched from seat 0
@@ -113,7 +113,7 @@ test('§4 it meters the OPPONENT\'s cache too — the zone is public (R41)', () 
     + 'would be exactly the thing report VNNW complained about, one seat over');
 });
 
-test('§4 Vengeance\'s 13 deaths meter on the table like any other count (R302)', () => {
+test('§4 Vengeance\'s 13 deaths meter on the table like any other count (CR D6.6a)', () => {
   const h = new Harness(2946);
   toDeployment(h);
   const A = h.state.deployPlayer!;

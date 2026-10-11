@@ -1,4 +1,4 @@
-/* R205 — CT-75 and CT-82(b)(c)(d): the checker that could not see a nested
+/* CT-75 and CT-82(b)(c)(d): the checker that could not see a nested
  * affordance, and the serialiser nobody had named.
  *
  * ── WHY THIS FILE EXISTS ──────────────────────────────────────────────
@@ -25,7 +25,7 @@
  * sentence is what let it survive: docs/13-assessment.md §5's list of checkers
  * that reported more sight than they had, one entry longer.
  *
- * R205 gave the driver real ancestors (`ancestorsOf`, resolved out of the
+ * CARD-TODO #75 gave the driver real ancestors (`ancestorsOf`, resolved out of the
  * rendered HTML), so `closest()` here is now the browser's algorithm — element
  * first, then outward, nearest match wins.
  *
@@ -46,7 +46,7 @@
  *     space, and no two attributes on one line are separated by more than one.
  *     That is what makes a regex spanning two of them able to fail.
  * §6  CT-82(d). `anim.ts`'s flight stagger — the second serialiser, live and
- *     unnamed since R189 fixed the first one.
+ *     unnamed since the first one was fixed (CR D6.7).
  *
  * Seeds 17600-17699.
  */
@@ -133,7 +133,7 @@ function scanTag(chunk: string, name: string): string {
 
 /* ══ §1 THE DRIVER HAS ANCESTORS ═══════════════════════════════════════ */
 
-test('R205 §1: the driver resolves closest() through REAL ancestors, nearest first', () => {
+test('§1: the driver resolves closest() through REAL ancestors, nearest first', () => {
   const h = loaded(17601);
   const html = ui.show(structuredClone(h.state));
 
@@ -172,14 +172,14 @@ test('R205 §1: the driver resolves closest() through REAL ancestors, nearest fi
     'contains() includes the node itself, as the DOM\'s does');
 });
 
-test('R205 §1: closest() prefers the element itself, then the nearest ancestor', () => {
+test('§1: closest() prefers the element itself, then the nearest ancestor', () => {
   const h = loaded(17602);
   const html = ui.show(structuredClone(h.state));
   const all = affordances(html);
 
   // the thumb carries data-btn="cacheplay" and sits inside data-btn="cacheopen".
   // A browser's closest('[data-btn]') returns the THUMB. That is the one
-  // property R192 leaned on, and until R205 nothing could check it.
+  // property the cache-thumb fix (CR D6.16) leaned on, and until CARD-TODO #75 nothing could check it.
   const thumb = all.find(a => a.btn === 'cacheplay')!;
   assert.equal(thumb.btn, 'cacheplay');
   assert.equal(thumb.enclosingBtn, 'cacheopen');
@@ -229,7 +229,7 @@ const swallowed = (html: string): string[] =>
     .filter(a => a.act !== null && a.enclosingBtn !== null)
     .map(a => `data-act="${a.act}" is inside data-btn="${a.enclosingBtn}" — ${a.tag.slice(0, 90)}`);
 
-test('R205 §2: no data-act in the rendered board sits inside a data-btn container', () => {
+test('§2: no data-act in the rendered board sits inside a data-btn container', () => {
   const seen = corpus();
   assert.ok(seen.length >= 8, 'the corpus is the coverage — it must not quietly shrink');
   let containers = 0;
@@ -251,9 +251,9 @@ test('R205 §2: no data-act in the rendered board sits inside a data-btn contain
 
 /* ══ §3 THE POSITIVE CONTROL ═══════════════════════════════════════════ */
 
-test('R205 §3: shown the swallowed shape, the detector says so — verbatim', () => {
+test('§3: shown the swallowed shape, the detector says so — verbatim', () => {
   // CARD-TODO #64's prescribed fix, written out. It is not reachable from
-  // main.ts any more (R192 and R205 both wrote data-btn instead), so it is
+  // main.ts any more (both later fixes wrote data-btn instead), so it is
   // planted here: §2 without this is a checker with no proof it can go red.
   const planted = '<div class="board"><div class="regioncache" data-btn="cacheopen" data-p="0">'
     + '<div class="regionbinthumbs"><div class="card" data-act="cache" data-p="0" data-i="0">'
@@ -279,7 +279,7 @@ test('R205 §3: shown the swallowed shape, the detector says so — verbatim', (
 
 /* ══ §4 CT-82(b): THE BIN PANEL ════════════════════════════════════════ */
 
-test('R205 §4: a bin card usable RIGHT NOW is one click from the region panel', () => {
+test('CR D6.16: a bin card usable RIGHT NOW is one click from the region panel', () => {
   const h = loaded(17620);
 
   // disbelieve the ticket first: the engine has to actually be offering this,
@@ -307,7 +307,7 @@ test('R205 §4: a bin card usable RIGHT NOW is one click from the region panel',
     'and the mod flow is live: the click reached handleBinClick, not binopen');
 });
 
-test('R205 §4: an unusable bin thumb keeps the old route — the click opens the zone', () => {
+test('CR D6.16: an unusable bin thumb keeps the old route — the click opens the zone', () => {
   const h = deployment(17621);
   h.state.players[SEAT]!.bin.push(HOST, HOST);
   assert.deepEqual(
@@ -338,11 +338,11 @@ const looseClasses = (html: string): string[] =>
 const looseGaps = (html: string): string[] =>
   [...html.matchAll(/"[ \t][ \t]+[a-zA-Z-]+="/g)].map(m => m[0]!);
 
-test('R205 §5: nothing the client writes has a doubled or trailing space in a class', () => {
+test('§5: nothing the client writes has a doubled or trailing space in a class', () => {
   for (const { where, html } of corpus()) {
     assert.deepEqual([...new Set(looseClasses(html))], [],
       `${where}: a class attribute with a stray space. CSS does not care and a regex does — `
-      + 'this is how /badge offer/ became an assertion that could never fail (CT-65/R192). '
+      + 'this is how /badge offer/ became an assertion that could never fail (CT-65). '
       + 'Build the list with a conditional that carries its own space, or filter(Boolean).join.');
     assert.deepEqual([...new Set(looseGaps(html))], [],
       `${where}: two attributes on one line with more than one space between them. `
@@ -351,7 +351,7 @@ test('R205 §5: nothing the client writes has a doubled or trailing space in a c
   }
 });
 
-test('R205 §5: …and the check can go red — it is not matching nothing', () => {
+test('§5: …and the check can go red — it is not matching nothing', () => {
   assert.deepEqual(looseClasses('<div class="card  cached">'), ['card  cached']);
   assert.deepEqual(looseClasses('<div class="card ">'), ['card ']);
   assert.deepEqual(looseGaps('<div class="card"  data-prev="x">'), ['"  data-prev="']);
@@ -365,8 +365,8 @@ test('R205 §5: …and the check can go red — it is not matching nothing', () 
 const mv = (from: string | null, to: string | null): { fromAnchor: string | null; toAnchor: string | null } =>
   ({ fromAnchor: from, toAnchor: to });
 
-test('R205 §6: flights that made the same journey in one render share a beat', () => {
-  // R189's own moment, one layer down: four units die in a seat's field and
+test('CR D6.7b: flights that made the same journey in one render share a beat', () => {
+  // CR D6.7's own moment, one layer down: four units die in a seat's field and
   // four triggers land on the stack in ONE update. That is one thing happening
   // and was drawn as four, 45ms apart, because the delay was the array index.
   const batch = [mv('@field:0', '@stack'), mv('@field:0', '@stack'),
@@ -375,7 +375,7 @@ test('R205 §6: flights that made the same journey in one render share a beat', 
     'one journey, one beat — the batch leaves together');
 });
 
-test('R205 §6: a sequence still looks sequential — different journeys are spaced', () => {
+test('CR D6.7b: a sequence still looks sequential — different journeys are spaced', () => {
   const chain = [mv('@hand:0', '@stack'), mv('@stack', '@field:0'), mv('@field:1', '@bin:1')];
   assert.deepEqual(flightDelays(chain), [0, 45, 90],
     'three different trips are three beats, exactly as before');
@@ -388,8 +388,8 @@ test('R205 §6: a sequence still looks sequential — different journeys are spa
     'the second and later members of a journey rejoin its beat wherever they sit in the list');
 });
 
-test('R205 §6: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step', () => {
-  // R189's third consequence, held to literally: "a batch the client can read
+test('CR D6.7b: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step', () => {
+  // The pacing ruling's third consequence (now CR D6.7b), held to literally: "a batch the client can read
   // nothing about behaves exactly as it did before". A `leave` (erased,
   // trashed) has no destination and an `enter` (a token out of nowhere) has no
   // origin, so neither can be shown to be simultaneous with anything.
@@ -402,7 +402,7 @@ test('R205 §6: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps it
   assert.deepEqual(flightDelays(mix), [0, 45, 45]);
 });
 
-test('R205 §6: the cap still holds, and it caps BEATS not cards', () => {
+test('CR D6.7b: the cap still holds, and it caps BEATS not cards', () => {
   // twelve cards on twelve different trips: the old stagger and the new one
   // agree exactly, which is what makes this a refactor for every case that is
   // not a batch

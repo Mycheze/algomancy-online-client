@@ -4,14 +4,14 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fizzle vs partial), R6 (mid-resolution payments via ctx.choose),
- * R9 (bounded budgets per card), R12 (regions exclusive — listeners are
- * region-scoped), R14 ("this battle" counters are per region-battle),
- * R22 (ambush details).
+ * Rules referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6, 704.6b (fizzle vs partial), CR 111.9 (mid-resolution payments via ctx.choose),
+ * CR 803.4 (bounded budgets per card), CR 601.1a (regions exclusive — listeners are
+ * region-scoped), CR 505.6 ("this battle" counters are per region-battle),
+ * CR 803.6 (ambush details).
  *
  * GLIMPSE (Celestial Purge / Oracle of Foretelling / Premonition) is REAL as
- * of the Light & Dark expansion: E.glimpse (R45) reveals the top N, caches
+ * of the Light & Dark expansion: E.glimpse (CR 801.9) reveals the top N, caches
  * exactly ONE of the glimpser's choice and recycles the other N-1 to the
  * bottom of the deck; the cached card is playable until end of turn — pay the
  * mana, ignore affinity, obey timing. It replaced a pre-cache approximation
@@ -26,7 +26,7 @@
  *    Ambush cost as the word "[three_blue]", which the extractor could not
  *    read; it is "[3b]" at source now, so the Ambush mode is real and needs
  *    nothing from this file.
- *  - Amphivore: NO LONGER parked (R110, 2026-08-23). This note used to say
+ *  - Amphivore: NO LONGER parked (the 2026-08-23 ruling, CR 722.7). This note used to say
  *    bounded grafts "correctly run once" and targeted grafts could not
  *    collect extra targets. The ruling says the opposite on both counts
  *    ("Any Bounded Grafts will be repeated"; costs are paid thrice), and
@@ -45,15 +45,15 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  * Invitation's "play a unit from hand", Tides of the Cosmos' "play them now",
  * Spell Excavation's bin play.
  *
- * ── R198: THIS IS A REAL PLAY, AND A REAL PLAY GOES ON THE STACK ─────────
+ * ── CR 701.4: THIS IS A REAL PLAY, AND A REAL PLAY GOES ON THE STACK ─────────
  *
  * It used to run the played card's effect IN PLACE, inside the resolution that
  * played it, so nobody ever held priority between "you play it" and "it
  * resolves" (divergence inventory §2a, RESPONSE WINDOW MID-RESOLUTION). It
  * does not any more, wherever there is a priority regime to hand a window to:
  * the card is built into a `StackItem`, everything about the play that has to
- * be DECLARED is declared here (its target R67, its mode R57 and — Hooba-Pon —
- * the formation spot it is played into, R29), and `E.commitItem(…, 'push')`
+ * be DECLARED is declared here (its target CR 702.3c, its mode CR 702.5 and — Hooba-Pon —
+ * the formation spot it is played into, CR 702.3e), and `E.commitItem(…, 'push')`
  * puts it on the stack exactly as `playAtTiming` does for a card played out of
  * a hand. The outer resolution finishes, `finishResolutionTail` hands out
  * priority, and the played card is sitting there: respondable, negatable,
@@ -64,13 +64,13 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  * everything else resolves.** Outside a battle priority window there is nobody
  * to hand priority to — deployment and the haste step are hidden simultaneous
  * segments with no response windows at all, and between combat sub-steps
- * triggers are special actions with no priority (R3). Pushing there would be
+ * triggers are special actions with no priority. Pushing there would be
  * worse than wrong: nothing drains a planning-phase stack, and
  * `pumpCombatDamage` refuses to run while the stack is non-empty, so an item
  * pushed in either place would strand the game. `inlinePlayGoesToStack` is
  * that gate and it is deliberately narrow.
  *
- * ⚠ HOW THIS CANNOT REPRODUCE THE R85 SNAPSHOT HAZARD. A `'resolve'`
+ * ⚠ HOW THIS CANNOT REPRODUCE THE RESOLVE-SNAPSHOT HAZARD. A `'resolve'`
  * suspension carries a whole-`GameState` snapshot and `E.resumeResolve` does
  * `this.s = snap`, so anything a SECOND seat landed while that question was
  * open would be erased by the answer (130-seat-aware-gate §3). Nothing here is
@@ -88,9 +88,9 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  *
  * `seat` is who is doing the playing (Insidious Invitation walks every seat in
  * turn); it defaults to the effect's controller. `outcome` is:
- *  · `'stacked'` — R198's path. The card is ON THE STACK and the ENGINE owns
- *    everything from here: its resolution, its R5 fizzle, and where its card
- *    goes afterwards (`dischargeItem` — a bin, an "Erase me.", or the R96
+ *  · `'stacked'` — CR 701.4's path. The card is ON THE STACK and the ENGINE owns
+ *    everything from here: its resolution, its CR 704.6 fizzle, and where its card
+ *    goes afterwards (`dischargeItem` — a bin, an "Erase me.", or the CR 704.2c
  *    Unstable erase). A caller must not bin it, place it or erase it.
  *  · `'unit'` (a plain unit body), `'ok'` (a spell, or a spell unit whose
  *    spell part resolved) or `'fizzled'` (a targeted spell with no candidates
@@ -105,12 +105,12 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  * registration order (= deck order) untouched.
  */
 export type InlinePlay = {
-  /** `'cached'` — R337: played as a Prophecy, the card went to the cache;
+  /** `'cached'` — CR 803.7n: played as a Prophecy, the card went to the cache;
    * like `'stacked'`, the caller must not bin it */
   outcome: 'unit' | 'ok' | 'fizzled' | 'stacked' | 'cached';
   unit?: Entity;
   /**
-   * R146(b): the resolving effect raised **"Erase me."** (`ctx.eraseSelf()`).
+   * CR 406.4a: the resolving effect raised **"Erase me."** (`ctx.eraseSelf()`).
    * There is still no stack item to flag — `playInline` is the whole point of
    * not making one — so the request is RECORDED here and the CALLER, which is
    * the thing that decides where the card goes, honours it by erasing instead
@@ -124,7 +124,7 @@ export type InlinePlay = {
 };
 
 /**
- * R263 — the zone a mid-resolution play came OUT of, which is the whole of
+ * CR 701.4a — the zone a mid-resolution play came OUT of, which is the whole of
  * what Proph and Stalwart Sentinel read ("when you play a card from anywhere
  * other than your hand"). Owner, answering round-32 Q3: *"Those cards are
  * still cast. It matters WHERE they come from. If the card originates in the
@@ -153,32 +153,32 @@ export type InlinePlayZone = 'hand' | 'cache' | 'bin' | 'deck';
 /** What a caller may ask a mid-resolution play to carry onto its stack item. */
 export type InlinePlayOpts = {
   /**
-   * R263: WHERE this play originated. Required — see `InlinePlayZone`.
-   * Carried onto the stack item (`StackItem.from`, R49) on the push path and
+   * CR 701.4a: WHERE this play originated. Required — see `InlinePlayZone`.
+   * Carried onto the stack item (`StackItem.from`) on the push path and
    * onto the hand-rolled 'spellPlayed' / the body's 'spawned' on the in-place
    * path, so a mid-resolution play answers "from anywhere other than your
    * hand" the same way an ordinary cast does.
    */
   from: InlinePlayZone;
   /**
-   * R96: the play makes the card {Unstable} — Spell Excavation's bin play,
+   * CR 803.8c: the play makes the card {Unstable} — Spell Excavation's bin play,
    * *"it will be erased, not binned"*. On the stack that is a STAMP, read by
    * the one predicate every stack exit shares (`E.itemIsUnstable`), so the
-   * erase happens at `dischargeItem` on resolution, on an R5 fizzle and on a
+   * erase happens at `dischargeItem` on resolution, on a fizzle (CR 704.6) and on a
    * NEGATION alike. That last one is new and is the point: an excavated spell
    * answered by Dematerialize is now erased rather than falling into a bin the
    * card says it never reaches.
    */
   unstable?: boolean;
   /**
-   * R29: the card is played INTO the player's formation (Hooba-Pon's "into an
+   * CR 702.3e: the card is played INTO the player's formation (Hooba-Pon's "into an
    * open position in my formation"), so WHERE is part of the play and is
    * declared here, before anyone may respond — never afterwards, which is what
    * `E.placeInFormation` is for and why the two are different rules.
    */
   intoFormation?: boolean;
   /**
-   * R337 — RAQ "[Solved] Tides of Cosmos - all you need to know.", point 3:
+   * CR 701.2c — RAQ "[Solved] Tides of Cosmos - all you need to know.", point 3:
    * *"Tides allows you to play Viruses/Ambushes/Prophecy."* The alternative
    * MODE the card is played in, on the push path only (a battle window, the
    * only place an Ambush or a battle Virus exists). Absent = the plain play.
@@ -188,7 +188,7 @@ export type InlinePlayOpts = {
 };
 
 /**
- * R338: can `seat` pay `name`'s bracketed additional cost right now — the
+ * CR 702.4e, 702.4a: can `seat` pay `name`'s bracketed additional cost right now — the
  * gate a mid-resolution play shares with an ordinary cast (`castable`), so a
  * card whose [cost] cannot be paid is never offered. `inHand`: the card is
  * still in the hand being read, and it cannot discard ITSELF to pay its own
@@ -199,10 +199,10 @@ export const inlineCostPayable = (g: E, seat: Seat, name: string, region: number
   return !cost || g.canPayCastCost(seat, cost, region, inHand ? 1 : 0);
 };
 
-/** R337: the alternative ways a card can be played mid-resolution */
+/** CR 701.2c: the alternative ways a card can be played mid-resolution */
 export type InlineMode = 'virus' | 'ambush' | 'prophecy';
 
-/** R337: what `seat` could play `name` as, right now, besides the plain play —
+/** CR 701.2c: what `seat` could play `name` as, right now, besides the plain play —
  * a Virus needs a unit to go on, an Ambush an ally to swap with, a Prophecy
  * only its printed banner. Free plays ignore timing and the mode's own cost
  * line ("you still look at 'main' cost of the card"), so neither is read. */
@@ -215,19 +215,19 @@ export const inlineModes = (g: E, name: string, region: number, seat: Seat): Inl
   return out;
 };
 
-/** R337: the units a Virus played mid-resolution may go on — every unit in
- * the battle region, either side (a Virus may augment an enemy, R157 §26) */
+/** CR 701.2c, 723.2: the units a Virus played mid-resolution may go on — every unit in
+ * the battle region, either side (a Virus may augment an enemy) */
 const virusHosts = (g: E, region: number): Entity[] =>
   g.unitsIn(region).filter(u => u.kind === 'unit' && !u.absent);
 
 /**
- * R337: play `name` in an alternative mode, mid-resolution, on the push path.
+ * CR 701.2c: play `name` in an alternative mode, mid-resolution, on the push path.
  * Each one is what its own action does from a hand, minus the payment (the
  * play is free) and minus the timing gate (Tides ignores timing):
  *  · Virus — the augment item `doAugment` builds, aimed at a unit chosen here,
- *    on the stack above everything (R37: applying a mod is not playing).
- *  · Ambush — the 'ambush' item `doAmbush` builds, its ally chosen here (R67).
- *  · Prophecy — the card is cached with its banner's condition (R42), as
+ *    on the stack above everything (CR 701.2: applying a mod is not playing).
+ *  · Ambush — the 'ambush' item `doAmbush` builds, its ally chosen here (CR 110.1a).
+ *  · Prophecy — the card is cached with its banner's condition (CR 803.7), as
  *    `doProphesy` does; nothing reaches the stack.
  */
 const playInlineMode = (
@@ -276,13 +276,13 @@ const playInlineMode = (
 };
 
 /**
- * R198 — is there a priority window to hand this play to?
+ * CR 701.4 — is there a priority window to hand this play to?
  *
  * The same test `playAtTiming` makes, written once: a card played during
  * BATTLE goes on the stack ('push'), and a card played anywhere else resolves
  * where it stands ('resolve'). `priority !== null` and the damage-step
  * exclusion are the two ways a battle can be running with no window open — a
- * combat sub-step (R3: triggers there are special actions) and the interval
+ * combat sub-step (CR 608.3a: triggers there are special actions) and the interval
  * `advanceBattleStep` nulls priority in. Pushing in either would strand the
  * item: `pumpCombatDamage` will not run with a non-empty stack, and nothing
  * outside `settle`'s deployment drain resolves one.
@@ -291,17 +291,17 @@ export const inlinePlayGoesToStack = (g: E): boolean =>
   g.s.phase === 'battle' && g.s.priority !== null && !g.s.battle?.damageStep;
 
 /**
- * R198's push path: declare the play, then put it on the stack.
+ * CR 702.3's push path: declare the play, then put it on the stack.
  *
  * Everything asked here is asked with `ctx.choose`, so it rides the OUTER
  * resolution's suspension exactly as the in-place path's questions always did
  * — no nested `'cast'` suspension, which `GameState.decision`'s single slot
- * could not hold anyway. That is also what keeps R35/R57/R67's rule true for a
+ * could not hold anyway. That is also what keeps CR 702.3's rule true for a
  * mid-resolution play: X, mode, target and formation spot are all fixed before
  * the opponent sees the item, so nobody responds to an undeclared spell.
  *
  * NOT hand-rolled past the choke point: `E.commitItem` fires 'spellPlayed' and
- * R129's 'cardPlayed', bumps the two `spellsPlayed:` ledgers, dispatches
+ * CR 108.1a's 'cardPlayed', bumps the two `spellsPlayed:` ledgers, dispatches
  * 'targeted' and pushes. The in-place path fires a hand-rolled 'spellPlayed'
  * and none of the rest, which is a second divergence this closes on the way
  * past — a mid-resolution play is a play, and Void Mandible's "when a card is
@@ -316,29 +316,29 @@ const pushInlinePlay = (
   const parts: EffectPart[] = eff ? [{ effectKey: `spell:${name}`, targets: [] }] : [];
   const part = parts[0];
   // The item exists before its questions so its costs can be paid against it
-  // (R338); its id is still taken LAST — see below.
+  // (CR 702.4e); its id is still taken LAST — see below.
   const item: StackItem = {
     id: -1, kind: def.kind, card: name, label: name,
     controller: seat, region: ctx.region, negated: false, parts,
     ...(opts.unstable ? { unstable: true } : {}),
-    // R263: the zone this play came out of, exactly where `doPlayCard` and
+    // CR 701.4a: the zone this play came out of, exactly where `doPlayCard` and
     // `doPlayCached` put it. `commitItem` copies it onto 'spellPlayed' and
     // 'cardPlayed'; `resolveItem` / `afterParts` hand it to `spawnUnit`, which
-    // copies it onto 'spawned'. Set once here, and the whole R49 pipeline —
+    // copies it onto 'spawned'. Set once here, and the whole `from` pipeline (CR 410.6) —
     // both play events AND the body's arrival — carries it for free.
     from: opts.from,
   };
-  // R338: "Any additional [cost] of the card must be paid." The cast window's
+  // CR 702.4e: "Any additional [cost] of the card must be paid." The cast window's
   // own collector, asked through this resolution's chooser. A VARIABLE cost
   // first (it sizes the spell, as in collectTargets), the fixed ones after
-  // everything is declared (R57).
+  // everything is declared (CR 702.3a, 702.3f).
   const ask = (which: string): InlineCostAsk => (pi, step, d) =>
     ctx.choose(`${key}:${which}${pi}.${step}`, { ...d, kind: 'targets' });
   g.collectInlineCastCosts(item, 'variable', ask('xcost'));
   if (eff?.targets && part) {
-    // R67: declared as the card is played, like every other target. An empty
+    // CR 702.3c: declared as the card is played, like every other target. An empty
     // candidate list is NOT special-cased into an early bin here — the item is
-    // pushed with no target and `resolveItem`'s R5 branch fizzles it and
+    // pushed with no target and `resolveItem`'s CR 704.6 branch fizzles it and
     // discharges its card, which is the same destination the caller used to
     // hand-roll plus a real 'fizzled' event for the reader.
     const cands = g.targetCandidates(eff.targets, ctx.region, undefined, seat);
@@ -350,7 +350,7 @@ const pushInlinePlay = (
     }
   }
   if (eff && part) {
-    // R57: the modal half, declared before the item is respondable — which is
+    // CR 702.5: the modal half, declared before the item is respondable — which is
     // what collectModes does for a card played from a hand, and what the
     // in-place path could only approximate.
     const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: part.targets });
@@ -361,9 +361,9 @@ const pushInlinePlay = (
     const slots = g.formationSlots(seat);
     if (slots.length) {
       // BL-24: kind 'formationSlot', never 'electricPath' — an electricPath's
-      // numeric values are entity ids by contract (R4) and the client pings
+      // numeric values are entity ids by contract (CR 802.17) and the client pings
       // them on the board. These are placements. Same kind, and the same
-      // opaque `FormationSpot` values, that R29's own cast-window ask uses.
+      // opaque `FormationSpot` values, that CR 702.3e's own cast-window ask uses.
       spot = (slots.length === 1 ? slots[0]!.spot : ctx.choose(`${key}:spot`, {
         kind: 'formationSlot', seat,
         prompt: `${ctx.sourceName}: where does ${name} join the formation?`,
@@ -375,7 +375,7 @@ const pushInlinePlay = (
   }
   if (spot) item.formationSpot = spot;
   g.collectInlineCastCosts(item, 'fixed', ask('cost'));
-  // The id is taken LAST, after every question: `ctx.choose` throws, R85 rewinds
+  // The id is taken LAST, after every question: `ctx.choose` throws, the suspension rewinds
   // `nextId` to the part boundary and the part replays from the top, so an id
   // spent before a question is spent again on every attempt.
   item.id = g.s.nextId++;
@@ -390,12 +390,12 @@ export const playInline = (
   if (inlinePlayGoesToStack(g)) return pushInlinePlay(g, ctx, name, key, seat, opts);
   const def = getCard(name);
   if (def.kind === 'unit') {
-    // R263: a plain unit play is announced on ONE event — its own 'spawned' —
+    // CR 701.4a: a plain unit play is announced on ONE event — its own 'spawned' —
     // so the zone goes on the spawn. Proph and Stalwart Sentinel both listen
     // there for a unit (they route a spell unit to 'spellPlayed' instead, by a
     // `getCard(name).kind` check, so nothing is counted twice).
     //
-    // ⚠ R119 rides along, deliberately: `spawnUnit` spends the Deferral Drone
+    // ⚠ CR 111.10k rides along, deliberately: `spawnUnit` spends the Deferral Drone
     // charge exactly when `opts.from !== undefined`, because "a unit that came
     // from a ZONE was PLAYED". A mid-resolution play IS a play (the owner's
     // ruling opening this note), so it burns the charge like any other. It did
@@ -404,7 +404,7 @@ export const playInline = (
   }
   const ev = g.ev('spellPlayed',
     `${g.pname(seat)} plays ${name} (via ${ctx.sourceName}).`,
-    // R263: `from` on the hand-rolled event, the same field `commitItem` puts
+    // CR 701.4a: `from` on the hand-rolled event, the same field `commitItem` puts
     // on the real one. Without it Proph and Stalwart Sentinel read a blank and
     // fired for NOBODY — neither "from hand" nor "from elsewhere".
     { seat, card: name, token: false, region: ctx.region, from: opts.from });
@@ -429,14 +429,14 @@ export const playInline = (
       }
     }
     if (!fizzled) {
-      // R57: a modal card played inline has no cast window to declare its half
+      // CR 702.5: a modal card played inline has no cast window to declare its half
       // in — it never reaches the stack — so it is asked here, through
       // ctx.choose, exactly as it was before the mode moved. See inlineMode.
       const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: refs });
       eff.run(g, {
         controller: seat, sourceName: name, region: ctx.region,
         targets, event: null, mode,
-        // R146(b): an inline run has no stack item to flag — but "Erase me."
+        // CR 406.4a: an inline run has no stack item to flag — but "Erase me."
         // is a printed sentence (Collect Remains, Suspend, Temporal Rift) and
         // swallowing it left those spells BINNED and recurrable when they were
         // played for free. Record it; the caller honours it. This used to be
@@ -449,18 +449,18 @@ export const playInline = (
   }
   if (fizzled) return { outcome: 'fizzled' };
   if (def.kind === 'spellUnit') {
-    // R263: the body carries the zone too — the same shape `afterParts` uses
+    // CR 701.4a: the body carries the zone too — the same shape `afterParts` uses
     // for an ordinary spell-unit cast (`...(item.from ? { from: item.from }`).
     // It does NOT double-count: the play was already announced on
     // 'spellPlayed' above, and both readers drop a 'spawned' whose card is not
-    // kind 'unit'. What it DOES buy is R119's charge spend, in the one place
+    // kind 'unit'. What it DOES buy is CR 111.10k's charge spend, in the one place
     // the in-place path has for it.
     return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from }), eraseSelf };
   }
   return { outcome: 'ok', eraseSelf };
 };
 
-/** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
+/** Glimpse N for a seat (CR 801.9) — reveal the top N, cache exactly ONE of the
  * glimpser's choice and recycle the rest to the bottom of the deck; until end
  * of turn the cached card may be played as if in hand, ignoring affinity but
  * still paying the mana and still obeying timing. N > 1 raises the choose-one
@@ -470,7 +470,7 @@ function glimpse(g: E, seat: Seat, n: number): void {
 }
 
 /** life a seat lost in this region's battle — the engine's per-battle ledger
- * (E.loseLife bumps battleCounter `lifeLost:<seat>`; reset per battle, R14) */
+ * (E.loseLife bumps battleCounter `lifeLost:<seat>`; reset per battle, CR 505.6) */
 const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeLost:${seat}`);
 
@@ -478,23 +478,23 @@ const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
 
 // "When my column deals combat damage to an opponent, [Switch1][Switch1]
 // [Switch1] (Trigger three copies of this graft ability as one single
-// trigger)." — b/4 2/5 Frog Beast Unit. The cause is bounded (once/turn, R9).
-// R110: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
+// trigger)." — b/4 2/5 Frog Beast Unit. The cause is bounded (once/turn, CR 722.5).
+// CR 722.7: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
 // every other attached graft three times in the one composite (G1 → G2 → G1
 // → G2 → G1 → G2). Per the ruling this card is named in ("Amphivore / Lost
 // Guardian. Bounded Grafts and Ralph explained", 2025-03-21) bounded grafts
 // ARE repeated, targeted grafts pick a target per copy, and a "[cost]:
 // effect" graft pays its cost three times or not at all.
 //
-// R195 — "MY COLUMN DEALS COMBAT DAMAGE TO AN OPPONENT" is the ONE shared
+// CR 608.9a — "MY COLUMN DEALS COMBAT DAMAGE TO AN OPPONENT" is the ONE shared
 // engine predicate now, `E.columnDealtCombatDamage`, on the 'face' channel
 // alone ("to an opponent" is what excludes the unit channels). This card used
 // to hand-roll the reconstruction and was the last copy carrying neither of
-// the two gates the shared one has: R117's sub-step gate (it fired on a
-// {Swift} column's hit while standing in a normal column) and R157 §4's power
+// the two gates the shared one has: CR 608.9a's sub-step gate (it fired on a
+// {Swift} column's hit while standing in a normal column) and CR 608.9a's power
 // gate (a 0-power column "connected"). Measured before the fix, it also fired
 // off a second column's hit while its own {Piercing} pool was absorbed whole
-// by the blockers — that is the attribution R195 added, and it is why the
+// by the blockers — that is the attribution the shared predicate added, and it is why the
 // predicate is asked rather than re-derived here.
 const amphivoreEcho: EffectDef = {
   graftCopies: 3,
@@ -502,7 +502,7 @@ const amphivoreEcho: EffectDef = {
     const self = selfOf(g, ctx);
     const others = self ? self.mods.filter(id => {
       const m = g.entity(id);
-      // R131: NOT a card-name exclusion — the grafts this multiplier has
+      // CR 201.2: NOT a card-name exclusion — the grafts this multiplier has
       // nothing to do with are the OTHER MULTIPLIERS (composeParts never
       // multiplies a multiplier), whatever they are called. A second copy
       // of this very card grafted here is one of them; a different multiplier
@@ -515,8 +515,8 @@ const amphivoreEcho: EffectDef = {
 };
 card('Amphivore', {
   abilities: [{
-    // R238: the face channel's carrier is 'combatFaceDamage', which fires for
-    // a hit an R38 replacement consumed as well as one that cost life.
+    // CR 608.8a: the face channel's carrier is 'combatFaceDamage', which fires for
+    // a hit a replacement consumed as well as one that cost life.
     type: 'triggered', events: ['combatFaceDamage'], bounded: true, graftCause: true,
     label: 'trigger three copies of the grafted abilities (one single trigger)',
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
@@ -531,7 +531,7 @@ card('Amphivore', {
 // {Battle} {Feeble} Spell Unit. The hand is revealed as an info event; the
 // caster picks via ctx.choose (or declines).
 const brippEffect: EffectDef = {
-  // R64: "target player" — the player-only kind, either seat, yourself
+  // CR 110.3c: "target player" — the player-only kind, either seat, yourself
   // included. This said 'any', the DAMAGE kind, which also offered every unit
   // in the region; playtest UFAB aimed it at one and the spell was spent on a
   // hand that does not exist.
@@ -541,7 +541,7 @@ const brippEffect: EffectDef = {
     if (!t || !('player' in t)) return;
     const who = t.player;
     const hand = g.player(who).hand;
-    // R197b: "LOOK AT target player's hand" — a PRIVATE look. The line that
+    // CR 402.2a: "LOOK AT target player's hand" — a PRIVATE look. The line that
     // NAMES the cards is tagged `privateTo` the looker
     // (server/view.ts::visibleToSeat drops it for every other seat);
     // E.revealHandTo below writes the public "X looks at Y's hand", which is
@@ -565,7 +565,7 @@ const brippEffect: EffectDef = {
     }
     const [name] = hand.splice(pick, 1);
     g.recycleToBottom(who, name!);
-    // R197b (the secondary leak, same card). This card went out of a HIDDEN
+    // CR D6.5b (the secondary leak, same card). This card went out of a HIDDEN
     // hand and onto the HIDDEN bottom of a deck — `viewFor` maps every entry
     // of both zones to HIDDEN_CARD — and nothing Bripp prints says "reveal".
     // So the NAME rides a private line and the public line says a card moved
@@ -588,7 +588,7 @@ const brippEffect: EffectDef = {
     // player" includes yourself (see the targeting comment above), and
     // otherwise the audience {looker, owner} happens to be both seats. Fixed
     // unconditionally anyway: a `who === ctx.controller ? private : public`
-    // test is a denylist of exactly the shape R196 argues against, and it rots
+    // test is a denylist, and it rots
     // the moment a third seat can watch.
     g.ev('info', `Bripp recycles ${name} from ${g.pname(who)}'s hand.`,
       { privateTo: ctx.controller });
@@ -603,12 +603,12 @@ card('Bripp', {
 
 // "Erase target unit. Its controller Glimpses 3." — bb/1 {Battle} Cosmic
 // Spell. Erase = remove from the game entirely: no bin, no 'died' trigger and
-// (R40) no trash; its mods are erased with it. The Glimpse is real (R45) and
+// (CR 801.2c) no trash; its mods are erased with it. The Glimpse is real (CR 801.9d) and
 // goes to the ERASED unit's controller — a consolation the opponent usually
 // gets.
 //
-// R172: it DOES fire 'despawned' — "not a death, but it is a despawn"
-// (R157 §3) — and reaches that by going through the engine choke point. ⚠ The
+// CR 801.6a: it DOES fire 'despawned' — "not a death, but it is a despawn"
+// — and reaches that by going through the engine choke point. ⚠ The
 // divergence inventory listed Celestial Purge as a THIRD hand-rolled erase
 // beside helpers.ts and batch-hybrids-ld-a. It never was one: it has always
 // CALLED the helpers copy, which is now a shim over `E.eraseFromPlay`.
@@ -628,7 +628,7 @@ card('Celestial Purge', {
 // "Recall all other spell effects and spell units. (Negate them and put them
 // into their controller's hands.)" — bb/2 {Battle} Cosmic Maelstrom Spell.
 //
-// TWO SWEEPS, and R250 (owner, 2026-08-29, reports #119 + #121) is what makes
+// TWO SWEEPS, and the owner's ruling of 2026-08-29 (reports #119 + #121) is what makes
 // the second one exist:
 //
 //   > "It returns all spell effects on the stack (anything currently on the
@@ -640,7 +640,7 @@ card('Celestial Purge', {
 //     their controller's hand, spell tokens are erased. Triggered/activated
 //     abilities and viruses stay (they are not "spell effects").
 //  2. THE BOARD. Every printed **Spell Unit** standing in this region is
-//     recalled to its CONTROLLER's hand. This half did not exist until R250 —
+//     recalled to its CONTROLLER's hand. This half did not exist until the owner's 2026-08-29 ruling —
 //     the card iterated `g.s.stack` and nothing else, and `recallKinds` is a
 //     set of STACK ITEM kinds, so a Jelly on the table was never even looked
 //     at (card-todo #114, room YFUE).
@@ -653,22 +653,22 @@ card('Celestial Purge', {
 // the time of writing there are 14 printed Spell Units and none of them is
 // named here.
 //
-// R243: "all" is "all in this region", so the board half is `unitsIn(region)`.
+// CR 601.1c: "all" is "all in this region", so the board half is `unitsIn(region)`.
 // The STACK half is deliberately NOT region-scoped — there is one stack, and
 // narrowing it would be a new rule rather than this one.
 //
-// R250 also settles the OTHER half of report #119, and it is a non-change: the
+// The same ruling also settles the OTHER half of report #119, and it is a non-change: the
 // owner believed a castability restriction was stopping this card being cast
 // with no spell effect on the stack. There is none, and there never was —
 // `legalActions` offers it in every priority window the caster can pay for.
-// What actually gated the reported moment was R3: the trigger it wanted to
+// What actually gated the reported moment was CR 608.3a: the trigger it wanted to
 // respond to fired inside the COMBAT DAMAGE STEP, where no one gets priority
 // at all. See test/229-cosmic-and-control.test.ts §3.
 card('Cosmic Reversal', {
   spellEffect: {
     run: (g, ctx) => {
       const recallKinds = new Set(['spell', 'spellUnit', 'spellToken', 'ambush']);
-      // R68: removeFromStack() is the bare primitive — the item leaves the
+      // removeFromStack() is the bare primitive — the item leaves the
       // stack and the CALLER says where its card goes. This used to rebuild
       // g.s.stack from a `keep` array because that primitive did not exist.
       const considered = g.s.stack.length;
@@ -679,18 +679,18 @@ card('Cosmic Reversal', {
         if (!item) continue;
         recalled++;
         if (item.kind === 'spellToken') {
-          // R335: through the hand, then erased — hand-entry watchers hear it
+          // CR 801.7d: through the hand, then erased — hand-entry watchers hear it
           g.recallSpellTokenItem(item, 'Cosmic Reversal');
         } else {
-          // R179: off the STACK and into a hand — `from: 'stack'`
+          // CR 402.4: off the STACK and into a hand — `from: 'stack'`
           g.toHand(item.controller, item.card!, 'stack');
           g.ev('info', `Cosmic Reversal recalls ${item.label} to ${g.pname(item.controller)}'s hand.`);
         }
       }
-      // R250 §2 — THE BOARD. Snapshot first: `recall` deletes entities (and
+      // THE BOARD. Snapshot first: `recall` deletes entities (and
       // bins their mods), and one recall can take another entity with it, so
       // the id is re-looked-up before each one rather than trusted.
-      // R336 / CT-219: the FACE — a Borrower of Forms mimicking a unit is not
+      // CR 710.1a / CT-219: the FACE — a Borrower of Forms mimicking a unit is not
       // a spell unit (RAQ "Borrower of Forms"), whatever its printed card says
       const onBoard = g.unitsIn(ctx.region).filter(u => g.faceDef(u).kind === 'spellUnit');
       let bounced = 0;
@@ -699,7 +699,7 @@ card('Cosmic Reversal', {
         if (!live) continue;
         bounced++;
         // "put them into their CONTROLLER's hands" — printed, and the same
-        // answer R250 gives for a stolen unit's bin. `recall` defaults to the
+        // answer CR 405.3 gives for a stolen unit's bin. `recall` defaults to the
         // owner, so the redirect is stated rather than inherited.
         g.recall(live, { to: live.controller, verb: 'recalled by Cosmic Reversal to' });
       }
@@ -732,7 +732,7 @@ card('Cosmic Reversal', {
 // exists.)
 card('Dreadspawn Horror', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{
@@ -752,7 +752,7 @@ card('Dreamfloat Drifter', {
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
     label: 'you and target opponent each draw a card',
     effect: {
-      // R64: "target opponent" — a player, and not you
+      // CR 110.3c: "target opponent" — a player, and not you
       targets: { what: 'opponent', prompt: 'Dreamfloat Drifter: target opponent (you both draw)' },
       run: (g, ctx) => {
         g.draw(ctx.controller, 1);
@@ -766,9 +766,9 @@ card('Dreamfloat Drifter', {
 });
 
 // "After combat, if a player lost life in this battle, create a copy of me."
-// — b/4 3/2 Mimic Horror Unit. The condition is checked at event time (R1)
+// — b/4 3/2 Mimic Horror Unit. The condition is checked at event time (CR 109.3a)
 // against the engine's per-battle life-loss ledger (E.loseLife → battleCounter
-// `lifeLost:<seat>`; R14: per-region battle scope). "Create" = a token copy
+// `lifeLost:<seat>`; CR 505.6: per-region battle scope). "Create" = a token copy
 // (erased on leaving play, survives regroup); the copy carries the same
 // abilities.
 card('Echo of Despair', {
@@ -779,7 +779,7 @@ card('Echo of Despair', {
       when: (g, _self, ev) => {
         const region = ev.data?.region as number | undefined;
         if (region === undefined) return false;
-        // R243: no behaviour change (a seat that is not here lost no life
+        // CR 101.6: no behaviour change (a seat that is not here lost no life
         // HERE, so it already contributed nothing) — but the rule is that a
         // card asks the region, and an exception nobody can see is how the
         // rule stops being one.
@@ -788,7 +788,7 @@ card('Echo of Despair', {
       effect: {
         creates: ['Echo of Despair'],
         run: (g, ctx) => {
-          // R325: a copy of me is made from my last-known state if I am gone
+          // CR 714.6: a copy of me is made from my last-known state if I am gone
           if (!selfOf(g, ctx) && !g.lastKnownOf(ctx.sourceId)) {
             g.ev('info', 'Echo of Despair: the original is gone — there is nothing to copy.');
             return;
@@ -801,7 +801,7 @@ card('Echo of Despair', {
 });
 
 // "Recall target unit in your bin. (Put it into your hand.)" — bb/4 4/2
-// Fish Horror Spell Unit. R64: a real cast-time target ('binCard'). min 0
+// Fish Horror Spell Unit. CR 110.1a: a real cast-time target ('binCard'). min 0
 // because it is a SPELL UNIT — an empty bin must not make the 4/2 uncastable,
 // and with nothing to recall the body still arrives.
 card('Eldritch Reclaimer', {
@@ -824,8 +824,8 @@ card('Eldritch Reclaimer', {
       const bin = g.player(ctx.controller).bin;
       const name = bin[t.binCard.index];
       if (name === undefined) return;
-      g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
-      g.toHand(ctx.controller, name, 'bin');                          // R179
+      g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
+      g.toHand(ctx.controller, name, 'bin');                          // CR 402.4
       g.ev('info', `${name} is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
     },
   },
@@ -833,14 +833,14 @@ card('Eldritch Reclaimer', {
 
 // "The controller of target enemy effect may pay [x]. If they do, you draw a
 // card. Otherwise, negate that effect. X can't be zero." — b/X {Battle} Ice
-// Spell. X is chosen and paid AT CAST (R35); "X can't be zero" → xMin 1, so
-// the cast is illegal with no open mana. R6: the target's controller's
+// Spell. X is chosen and paid AT CAST (CR 107.2a); "X can't be zero" → xMin 1, so
+// the cast is illegal with no open mana. CR 702.5a: the target's controller's
 // ransom payment stays a mid-resolution decision, skipped (→ negated) when
 // they cannot pay X.
 card('Frosted Denial', {
   xMin: 1,   // "X can't be zero."
   spellEffect: {
-    // R64: "target ENEMY effect" — your own effects were being offered and
+    // CR 110.3a: "target ENEMY effect" — your own effects were being offered and
     // then refused at resolution
     targets: {
       what: 'stackEffect', prompt: 'Frosted Denial: target enemy effect (its controller may pay X)',
@@ -883,7 +883,7 @@ card('Frosted Denial', {
 // I gain +4/+4 and flying until regroup." — bb/3 0/4 Eel Unit. Flying via
 // E.addTempAttr (until regroup).
 //
-// R179 CLOSED THE ESCALATION THIS BLOCK USED TO CARRY. A recall and a draw
+// THE HAND-ENTRY RULING (CR 402.4) CLOSED THE ESCALATION THIS BLOCK USED TO CARRY. A recall and a draw
 // were the only two channels there were; every other route into a hand was a
 // bare `hand.push` that announced nothing, so half this sentence was dead.
 // `E.toHand` is now the one hand-entry point and fires 'handEntered' — ONCE
@@ -902,12 +902,12 @@ card('Frosted Denial', {
 // "OTHER" excludes the carrier's own card via `ev.data.unit`, which `toHand`
 // stamps on the recall route. (Rider of the Tides and Xenopod Progenitor
 // print "a player's hand" and are right to ignore `seat` entirely.)
-// R69, 2026-08-22: a recalled TOKEN visits the hand too, so it counts here —
+// CR 410.5b (ruled 2026-08-22): a recalled TOKEN visits the hand too, so it counts here —
 // Caleb was asked this about Rider of the Tides ("Oh dang yeah it should also
 // trigger it", 2025-04-24). A CACHED unit still does not: it goes to the
 // cache, not a hand, and never reaches `toHand`.
 // The event carries no region (like 'draw'), so the when() pins the listener
-// to the battle region itself (R12).
+// to the battle region itself (CR 601.1d).
 const galeriderSurge: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
@@ -932,7 +932,7 @@ card('Galerider Eel', {
 // "[Augment] When I attack or block, you may play a unit from your hand into
 // an open position in my formation. (You still pay the cost.)" — bb/2 2/2.
 // Text-box [Augment], live when played normally. The unit is paid for
-// (canPayCard/payCard), spawns into the battle region, and R75 asks the
+// (canPayCard/payCard), spawns into the battle region, and CR 602.6 asks the
 // controller WHICH open position — "an open position in my formation" names a
 // kind of slot, not a particular one, so it is the same choice every other
 // "in my formation" card now makes.
@@ -942,7 +942,7 @@ card('Galerider Eel', {
 // you decide to use Hooba-Pon Effect to play Spell-Unit, does that units
 // 'spell' part happens? A: Yes, the spell part happens and if it resolves, the
 // unit will spawn into formation"*, and *"Q: Does that count as 'playing a
-// spell' for some triggers? A: Yes."* (docs/digital-rules, R97/R123 sections;
+// spell' for some triggers? A: Yes."* (CR 303.6;
 // the same ruling is why Dispatch Courier and Writhing Host both read
 // `kind === 'unit' || kind === 'spellUnit'`.) This used to filter the hand on
 // `getCard(name).kind === 'unit'` alone, so a spell unit could not even be
@@ -957,12 +957,12 @@ card('Hooba-Pon', {
     label: 'you may play a unit from your hand into an open formation position',
     effect: {
       run: (g, ctx) => {
-        // R325: a dead Hooba-Pon remembers its formation (RAQ, Dead Unit) —
+        // CR 714.4: a dead Hooba-Pon remembers its formation (RAQ, Dead Unit) —
         // `src` is the referent whether it is alive or not
         const src = ctx.sourceId;
         const b = g.s.battle;
         if (src === undefined || !b) { g.ev('info', 'Hooba-Pon: no formation to play into.'); return; }
-        // R225, AND IT IS AHEAD OF THE PAY QUESTION ON PURPOSE. "An open
+        // CR 602.6e, AND IT IS AHEAD OF THE PAY QUESTION ON PURPOSE. "An open
         // position in MY formation" is read off the source at resolution, and
         // a Hooba-Pon that is not standing in a formation names none. Asked
         // after the pay question instead, a player would be charged a card's
@@ -980,7 +980,7 @@ card('Hooba-Pon', {
         const hand = g.player(seat).hand;
         const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
         hand.forEach((name, i) => {
-          // R338: the additional [cost] too, or the play would skip it
+          // CR 702.4e: the additional [cost] too, or the play would skip it
           if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)) {
             options.push({ label: name, value: i, card: name });
           }
@@ -998,13 +998,13 @@ card('Hooba-Pon', {
         if (name === undefined) { g.ev('info', 'Hooba-Pon: declined — nothing is played.'); return; }
         hand.splice(pick, 1);
         g.payCard(seat, name);
-        // R198 `intoFormation`: in battle this play goes on the stack, so
+        // CR 702.3e `intoFormation`: in battle this play goes on the stack, so
         // "into an open position in my formation" is declared WITH the play
-        // (R29's `formationSpot`, taken atomically with the spawn) rather than
+        // (CR 602.7's `formationSpot`, taken atomically with the spawn) rather than
         // chosen afterwards — the same distinction `E.placeInFormation`'s own
         // note draws, and the same UFAB report: a card played into the line was
         // never in the region to be answered.
-        // R263 `from: 'hand'`: "play a unit FROM YOUR HAND" — the card is
+        // CR 701.4a `from: 'hand'`: "play a unit FROM YOUR HAND" — the card is
         // spliced out of `hand` seven lines up, so the printed noun and the
         // code agree. Proph and Stalwart Sentinel therefore stay QUIET on a
         // Hooba-Pon play, which is a fire they were never owed and could not
@@ -1015,7 +1015,7 @@ card('Hooba-Pon', {
         } else if (played.outcome === 'fizzled') {
           // a spell unit whose spell part found no target: no body, and the
           // card is binned like any fizzled spell unit.
-          // R146(b): no `eraseSelf` check here, and that is not an oversight —
+          // CR 406.4b: no `eraseSelf` check here, and that is not an oversight —
           // this branch is reached only on `outcome: 'fizzled'`, where the
           // effect never ran and so cannot have asked to be erased. (The menu
           // is `isUnitCard`-filtered anyway, and none of the three "Erase me."
@@ -1042,7 +1042,7 @@ card('Hooba-Pon', {
 // designer answered.
 const insidiousInvite: EffectDef = {
   run: (g, ctx) => {
-    // R243: it offers to the seats present HERE — controller first, so the
+    // CR 601.4c: it offers to the seats present HERE — controller first, so the
     // caster is always asked before anybody else
     const seats: Seat[] = [ctx.controller,
       ...g.seatsHere(ctx.region).filter(s => s !== ctx.controller)];
@@ -1050,7 +1050,7 @@ const insidiousInvite: EffectDef = {
       const hand = g.player(seat).hand;
       const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
       hand.forEach((name, i) => {
-        // R338: the additional [cost] too, or the play would skip it
+        // CR 702.4e: the additional [cost] too, or the play would skip it
         if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)) {
           options.push({ label: name, value: i, card: name });
         }
@@ -1071,12 +1071,12 @@ const insidiousInvite: EffectDef = {
       }
       hand.splice(pick, 1);
       g.payCard(seat, name);
-      // R263 `from: 'hand'`: "players may play a unit FROM HAND". Same read as
+      // CR 701.4a `from: 'hand'`: "players may play a unit FROM HAND". Same read as
       // Hooba-Pon — and note the zone is the PLAYING SEAT's hand, not the
       // caster's, which is why it is set per seat inside the loop.
       const played = playInline(g, ctx, name, `invite:${seat}`, seat, { from: 'hand' });
       if (played.outcome === 'fizzled') {
-        // R146(b): 'fizzled' means the effect never ran, so `played.eraseSelf`
+        // CR 406.4b: 'fizzled' means the effect never ran, so `played.eraseSelf`
         // cannot be set here — same confirmation as Hooba-Pon above.
         g.toBin(seat, name, 'stack');   // a fizzled spell unit: no body, card to bin
         g.ev('info', `Insidious Invitation: ${name}'s spell part fizzled — no body arrives.`);
@@ -1095,20 +1095,20 @@ card('Insidious Invitation', {
 });
 
 // "[Battle] Ambush [3b]" — bb/4 8/3 Slime Beast Unit. No behaviour of its
-// own: the whole card is the printed body plus R22's Ambush mode, which the
+// own: the whole card is the printed body plus CR 803.6's Ambush mode, which the
 // engine generates from printed.ambush (3 mana at one water pip). The generated mode is the
 // standard one — "Recall target ally, put me into their position in play".
 card('Lurking Slimebeast', {});
 
 // "When I attack, [Switch1] Recall up to one target unit with 5 or less
-// defense." — bbb/4 5/3 Kraken Unit. Bounded graft cause (R9). ⚠ approx:
+// defense." — bbb/4 5/3 Kraken Unit. Bounded graft cause (CR 722.5). ⚠ approx:
 // TargetSpec cannot filter by stats or express "up to one" — candidates are
 // all units; the "5 or less defense" gate is enforced at resolution (an
 // over-tough pick is a no-op).
 const krakenRecall: EffectDef = {
-  // R64: "with 5 or less defense" is a targeting restriction.
+  // CR 110.3a: "with 5 or less defense" is a targeting restriction.
   targets: {
-    // R126: "up to one" — declaring none is legal, so min is 0, not the
+    // CR 110.1c: "up to one" — declaring none is legal, so min is 0, not the
     // default 1. Without it an attacking Kraken was forced to recall
     // something whenever any unit in reach was legal, including your own.
     what: 'unit', prompt: 'Minor Kraken: recall up to one target unit with 5 or less defense',
@@ -1118,7 +1118,7 @@ const krakenRecall: EffectDef = {
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) {
-      // R126: "up to one" — none declared (or the pick died first) still
+      // CR 110.1c: "up to one" — none declared (or the pick died first) still
       // announces, per 65-effect-conformance.
       g.ev('info', 'Minor Kraken recalls nothing.');
       return;
@@ -1139,7 +1139,7 @@ card('Minor Kraken', {
 
 // "[Battle] Ambush [4bb] … At the end of turn, if you took no actions during
 // deployment, [Switch1] Create a 3/3 unit." — bb/3 2/4 Arcane Lizard Unit.
-// The Ambush mode is engine-level (printed.ambush, R22). Report #86: "you
+// The Ambush mode is engine-level (printed.ambush, CR 803.6). Report #86: "you
 // took no actions" is a REDUCER fact — deployment is simultaneous, so the old
 // event bookkeeping here (spawned/spellPlayed/modApplied gated on
 // `deployPlayer`, a derived initiative marker) could not tell whose action it
@@ -1169,10 +1169,10 @@ card('Mirage Walker', {
 // greatest amount of life lost by a player in this battle." — b/2 2/1
 // {Battle} Sprite Horror Spell Unit. Cost = printed mana (a token's is 0; an
 // X spell's is its X). Life lost read at resolution from the engine's
-// per-battle ledger (E.loseLife → battleCounter `lifeLost:<seat>`; R1 amount,
-// R14 region scope).
+// per-battle ledger (E.loseLife → battleCounter `lifeLost:<seat>`; CR 107.8 amount,
+// CR 505.6 region scope).
 //
-// R157 §1 CONFIRMS THIS READING and makes it the pool-wide one: *"Pips aren't
+// The owner's ruling (CR 202.3) CONFIRMS THIS READING and makes it the pool-wide one: *"Pips aren't
 // a relevant part of looking at the cost of a card in Algomancy. And paying X
 // replaces the letter X on the printed card temporarily."* `item.x` is the
 // paid X and it is the whole cost — not the pips, not pips-plus-X. This card
@@ -1206,7 +1206,7 @@ card('Null Drone', {
   ],
 });
 
-// "Glimpse 5" — b/3 4/1 Polyform Oracle Spell Unit. R45: five are revealed,
+// "Glimpse 5" — b/3 4/1 Polyform Oracle Spell Unit. CR 801.9: five are revealed,
 // ONE is cached (playable this turn ignoring affinity) and four are recycled;
 // the body still spawns.
 card('Oracle of Foretelling', {
@@ -1214,8 +1214,8 @@ card('Oracle of Foretelling', {
 });
 
 // "[Switch1] Target unit gains -1/-1 until regroup for each card in your
-// hand." — b/1 {Battle} Mystic Spell. R1: the amount is the caster's hand
-// size at RESOLUTION. Bounded graft ([Switch1], R9).
+// hand." — b/1 {Battle} Mystic Spell. CR 107.8: the amount is the caster's hand
+// size at RESOLUTION. Bounded graft ([Switch1], CR 722.5).
 const overwhelmShrink: EffectDef = {
   targets: { what: 'unit', prompt: 'Overwhelm: target unit gains -1/-1 for each card in your hand' },
   run: (g, ctx) => {
@@ -1236,8 +1236,8 @@ card('Overwhelm', {
 });
 
 // "Glimpse X, where X is your [b]." — b/1 {Battle} Mystic Spell. X = water
-// affinity at resolution (R1); expended resources still count, prismites
-// don't (R17). Glimpse is real (R45).
+// affinity at resolution (CR 107.8); expended resources still count, prismites
+// don't (CR 105.4a, 105.5). Glimpse is real (CR 801.9).
 card('Premonition', {
   spellEffect: {
     run: (g, ctx) => {

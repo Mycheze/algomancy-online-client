@@ -4,7 +4,7 @@
  * EGBM [334] declared blocks {1:[107], 3:[108]}; [343] Cosmic Reversal
  * recalled the blocker 108, leaving `battle.blocks[3]` an EMPTY list; [345]
  * the engine said "Column 4 is blocked (blockers gone) — no damage through."
- * (R185: removing a blocker does not un-declare the block). The battle panel
+ * (CR 606.3a: removing a blocker does not un-declare the block). The battle panel
  * read `blocks[ci] ?? []`, found nothing, and drew the column "unblocked" —
  * the one word that tells the defender to expect the damage the engine is
  * about to withhold.

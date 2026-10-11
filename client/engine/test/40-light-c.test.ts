@@ -4,23 +4,23 @@
  *
  * Covers: {Blessed} lifelink off a printed attribute (Blessed Thing), the
  * whole-stack sweep (Calming Force), bin→cache with an until-end-of-turn
- * stamp (Delver of the Ephemeral, R45), erase-and-replace-in-slot (Feed to
+ * stamp (Delver of the Ephemeral, CR 801.8a), erase-and-replace-in-slot (Feed to
  * Hooba), blessed effect damage (Godray), pay-life activations (Hand Peeper,
  * Life Leech), the life-gain inversion approximation (Nullbringer), the
- * "unless its controller gains debt" dialogue (Reap the Due, R6/R39),
- * Glimpse 1 on spawn (Seer of Empty Spaces, R45), the prophecy banner
- * end-to-end (Tithe Enforcer, R42/R43), the sacrifice-to-negate augment
+ * "unless its controller gains debt" dialogue (Reap the Due, CR 702.5a, 112.14),
+ * Glimpse 1 on spawn (Seer of Empty Spaces, CR 801.9b), the prophecy banner
+ * end-to-end (Tithe Enforcer, CR 803.7), the sacrifice-to-negate augment
  * (Void Mandible) and the triple-graft cause (Witness of the Crossing).
  *
- * {Pure} (Just a Unit) is live as of R61 and tested here in all four of its
+ * {Pure} (Just a Unit, CR 802.25b) is live and tested here in all four of its
  * combat faces: Flying, Evasive, the attribute-blind damage exchange, Deadly.
  *
  * PARKED cards get a { todo: true } test naming exactly what is missing, plus
  * one shared crash-free registration test: Gatekeeper of Souls, Slurpr,
- * Suspend. (Slurpr is UNPARKED as of 2026-08-23 — R95's haste sibling — and has
+ * Suspend. (Slurpr is UNPARKED as of 2026-08-23 — the haste sibling of Rook's battle permission (CR 723.5) — and has
  * six real tests of its own below.)
  *
- * R90 unparked Prediction Prophet, so it moved out of that shared test and
+ * The haste-decision work (CR 504.6a) unparked Prediction Prophet, so it moved out of that shared test and
  * into three of its own below.
  */
 import { test } from 'node:test';
@@ -42,7 +42,7 @@ const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!
 
 // ── Blessed Thing ────────────────────────────────────────────────────────
 
-test('Blessed Thing: a printed {Blessed} body — its combat damage is lifelink (R48)', () => {
+test('Blessed Thing: a printed {Blessed} body — its combat damage is lifelink (CR 802.22a)', () => {
   const h = new Harness(4000);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -76,21 +76,21 @@ test('Calming Force: negates every OTHER effect on the stack', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Godray') });
   pick(h, { player: D });
   assert.equal(h.state.stack.length, 1, 'Godray is on the stack');
-  // R100: it can't be played from HAND, so it reaches the stack the way it
-  // now has to — cached with a glimpse stamp (R45) and released from there.
+  // CR 702.2b: it can't be played from HAND, so it reaches the stack the way it
+  // now has to — cached with a glimpse stamp (CR 801.9e) and released from there.
   whiteBox(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
   h.do({ type: 'playCached', seat: D, index: 0 });
   assert.equal(h.state.stack.length, 2);
   pass(h); pass(h);                                           // Calming Force resolves (top)
   assert.ok(h.log.some(l => l.includes('Calming Force negates 1 other effect')), 'the sweep is logged');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Godray left the stack at once');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Godray left the stack at once');
   assert.equal(h.state.players[D]!.life, lifeD, 'no damage, no blessed gain');
-  assert.ok(h.state.players[A]!.bin.includes('Godray'), 'a negated spell still goes to the bin (R40: from the stack)');
+  assert.ok(h.state.players[A]!.bin.includes('Godray'), 'a negated spell still goes to the bin (CR 801.2b: from the stack)');
   finishBattle(h);
 });
 
 test('Calming Force: "I can\'t be played from your hand" is enforced, and not just un-offered', () => {
-  // R100. The engine used to be strictly MORE permissive than the printed
+  // CR 702.2b. The engine used to be strictly MORE permissive than the printed
   // card, which is the one direction a rules engine must never be.
   const h = new Harness(4002);
   toDeployment(h);
@@ -135,7 +135,7 @@ test('Delver of the Ephemeral: after combat, caches a cost-1 card from your bin,
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: A, blocks: {} });
   pass(h); pass(h);                                           // combat → afterCombat trigger
-  // R64: the bin card is a declared TARGET, chosen as the trigger is stacked
+  // CR 110.1a: the bin card is a declared TARGET, chosen as the trigger is stacked
   const dec = h.state.decision!;
   assert.equal(dec.seat, A, 'the Delver\'s controller chooses');
   assert.deepEqual(dec.options.map(o => o.label),
@@ -146,7 +146,7 @@ test('Delver of the Ephemeral: after combat, caches a cost-1 card from your bin,
   assert.ok(!h.state.players[A]!.bin.includes('Hand Peeper'), 'it LEFT the bin');
   assert.deepEqual(cacheOf(h, A).map(c => c.card), ['Hand Peeper'], 'and is in the cache');
   assert.equal(cacheOf(h, A)[0]!.playableUntilTurn, h.state.turn, 'playable until end of THIS turn');
-  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'R45: pay the mana, ignore affinity');
+  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'CR 403.3c: pay the mana, ignore affinity');
   assert.ok(ent(h, delver), 'the Delver is still around');
   finishBattle(h);
 });
@@ -191,11 +191,11 @@ test('Feed to Hooba: the whole sentence is the bounded [Switch1] graft', () => {
   h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Feed to Hooba'), hostId: host, position: 0 });
   assert.equal(ent(h, host)!.mods.length, 1, 'Feed to Hooba grafted on (it has a [Switch1] effect)');
   // the host's OWN [Switch1] cause was spent by its spawn glimpse, and a spent
-  // bounded cause bounds the whole composite (R9) — so wait for the budget
+  // bounded cause bounds the whole composite (CR 722.5b) — so wait for the budget
   // reset at the next turn before killing it
   toNextBattle(h, A);
   finishBattle(h);
-  const victim = spawn(h, A, 'Unit Token');                   // in the host's region (R12)
+  const victim = spawn(h, A, 'Unit Token');                   // in the host's region (CR 101.6)
   whiteBox(h, e => e.destroy(e.entity(host)!, 'dies'));
   if (h.state.decision) pick(h, { unit: victim });
   assert.ok(!ent(h, victim), 'the grafted delete ran off the death trigger');
@@ -205,7 +205,7 @@ test('Feed to Hooba: the whole sentence is the bounded [Switch1] graft', () => {
 // ── Gatekeeper of Souls ──────────────────────────────────────────────────
 
 test('Gatekeeper of Souls: "I must be targeted if able" — it takes the hit', () => {
-  // R64 un-parked it: a compulsion is the mirror of a restriction, narrowing
+  // it was un-parked once targeting restrictions existed: a compulsion is the mirror of a restriction, narrowing
   // OTHER effects' candidate lists.
   const h = new Harness(4090);
   toDeployment(h);
@@ -249,7 +249,7 @@ test('Gatekeeper of Souls: "if able" — an effect it is not a legal target for 
 
 // ── Godray ───────────────────────────────────────────────────────────────
 
-test('Godray: 3 damage to any target, and {Blessed} gains its controller 3 (R48)', () => {
+test('Godray: 3 damage to any target, and {Blessed} gains its controller 3 (CR 802.22a)', () => {
   const h = new Harness(4005);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -308,7 +308,7 @@ test('Hand Peeper: pay 3 life to look at target player\'s hand', () => {
   finishBattle(h);
 });
 
-test('Hand Peeper: R49 — at exactly 3 life the cost is unpayable and the activation is ILLEGAL', () => {
+test('Hand Peeper: CR 111.6b — at exactly 3 life the cost is unpayable and the activation is ILLEGAL', () => {
   const h = new Harness(4008);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -322,12 +322,12 @@ test('Hand Peeper: R49 — at exactly 3 life the cost is unpayable and the activ
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: A, entityId: hp, abilityIndex: 0, via: 'augment' }),
     /cannot pay the activation cost/,
-    'R49: a cost you cannot survive is not payable');
+    'CR 111.6b: a cost you cannot survive is not payable');
   assert.equal(h.state.players[A]!.life, 3, 'still alive — a cost is never paid to kill yourself');
   assert.equal(h.state.seenHand[A], null, 'and nothing was seen');
   assert.ok(!h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === hp),
     'and it is not offered');
-  // at 4 life it IS payable. R57: the life goes once the target is chosen —
+  // at 4 life it IS payable. CR 111.7: the life goes once the target is chosen —
   // still at cast, before the item reaches the stack, but after you have seen
   // what you can aim at.
   h.state.players[A]!.life = 4;
@@ -469,7 +469,7 @@ test('Nullbringer: two copies do not stack — one inversion per life-gain event
 });
 
 test('Nullbringer: the gain never happens, so no lifeGained event is ever fired', () => {
-  // R104, and the OBSERVABLE difference between a replacement and the trigger
+  // CR 708.3, and the OBSERVABLE difference between a replacement and the trigger
   // this replaces. The old implementation gained N and then lost 2N: the final
   // total was right and everything in between was wrong — the life total spiked
   // up through N, and anything watching `lifeGained` fired for a gain the card
@@ -510,19 +510,19 @@ test('Nullbringer: the replacement never reaches the stack, so nothing can negat
 
 // ── Prediction Prophet ───────────────────────────────────────────────────
 
-/** R197: answer the prediction. `kind: 'number'` is the one decision whose
+/** CR D7.2a: answer the prediction. `kind: 'number'` is the one decision whose
  * `choice` IS the value rather than an index into `options` (there are none),
  * which is what lets the card take ANY number — see `NumericEntry`. */
 function predict(h: Harness, n: number): void {
   const dec = h.state.decision!;
-  assert.equal(dec.kind, 'number', 'the prediction is a numeric entry (R197)');
+  assert.equal(dec.kind, 'number', 'the prediction is a numeric entry (CR D7.2a)');
   assert.deepEqual(dec.options, [], 'a numeric entry carries no options');
   h.do({ type: 'decide', seat: dec.seat, choice: n });
 }
 
 /** finish this turn's deployment and run the next turn's planning + haste
  * step, stopping the moment a decision is raised — Prediction Prophet's
- * prediction is asked for inside R50's end-of-haste settle window, which is
+ * prediction is asked for inside CR 504.6's end-of-haste settle window, which is
  * BEFORE skipHasteStep's usual doneHaste plumbing has anything left to do. */
 function toPrediction(h: Harness): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -532,14 +532,14 @@ function toPrediction(h: Harness): void {
   if (!h.state.decision) skipHasteStep(h);
 }
 
-test('Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (R90)', () => {
+test('Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (CR 504.6a)', () => {
   const h = new Harness(4030);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   spawn(h, A, 'Prediction Prophet');
   const before = unitsOf(h, A).length;
   toPrediction(h);
-  // (a) THE ACTION: R50's endOfHaste window may suspend on a decision, so the
+  // (a) THE ACTION: CR 504.6's endOfHaste window may suspend on a decision, so the
   // prediction is asked for there — this is the half the park note called
   // "a player action that does not exist".
   assert.equal(h.state.decision!.kind, 'number', 'the prediction is asked for during [Haste]');
@@ -555,7 +555,7 @@ test('Prediction Prophet: the [Haste] prediction is a real decision, and matchin
   assert.equal(unitsOf(h, A).length, before + 1);
 });
 
-test('Prediction Prophet: the prediction survives battle and regroup, and a MISS creates nothing (R90)', () => {
+test('Prediction Prophet: the prediction survives battle and regroup, and a MISS creates nothing (CR 504.6a)', () => {
   const h = new Harness(4031);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -572,7 +572,7 @@ test('Prediction Prophet: the prediction survives battle and regroup, and a MISS
   assert.equal(unitsOf(h, A).length, before, 'a miss creates nothing');
 });
 
-test('Prediction Prophet: predicting the life total you will END the battle on creates the 5/5 (R90)', () => {
+test('Prediction Prophet: predicting the life total you will END the battle on creates the 5/5 (CR 504.6a)', () => {
   const h = new Harness(4032);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -591,7 +591,7 @@ test('Prediction Prophet: predicting the life total you will END the battle on c
 
 // ── Reap the Due ─────────────────────────────────────────────────────────
 
-test('Reap the Due: its controller may gain 2x your [l] debt to save the unit (R6/R39)', () => {
+test('Reap the Due: its controller may gain 2x your [l] debt to save the unit (CR 111.9, 112.14)', () => {
   const h = new Harness(4013);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -634,11 +634,11 @@ test('Reap the Due: declining erases the unit outright (no bin, no trash)', () =
   pick(h, false);
   assert.ok(!ent(h, victim), 'erased');
   assert.equal(h.state.players[D]!.debt, 0, 'no debt');
-  assert.ok(!h.state.players[D]!.bin.includes('Good Whale'), 'erasing never touches a bin (R40)');
+  assert.ok(!h.state.players[D]!.bin.includes('Good Whale'), 'erasing never touches a bin (CR 801.2c)');
   finishBattle(h);
 });
 
-test('Reap the Due: the payment is never free — casting it at all costs [l] (R6/R39)', () => {
+test('Reap the Due: the payment is never free — casting it at all costs [l] (CR 111.9, 112.14)', () => {
   // The old test here asserted the opposite: "with no dark affinity the
   // payment is 0 debt and the unit is always saved". That was the mistyped
   // [d] reading, and under it the DEGENERATE case was the normal one — a
@@ -670,7 +670,7 @@ test('Reap the Due: the payment is never free — casting it at all costs [l] (R
 
 // ── Seer of Empty Spaces ─────────────────────────────────────────────────
 
-test('Seer of Empty Spaces: Glimpse 1 when it spawns (R45)', () => {
+test('Seer of Empty Spaces: Glimpse 1 when it spawns (CR 801.9b)', () => {
   const h = new Harness(4016);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -690,7 +690,7 @@ test('Seer of Empty Spaces: the [Switch1] glimpse is bounded, and graftable onto
   const seer = spawn(h, A, 'Seer of Empty Spaces');           // glimpse #1 (spawn)
   assert.equal(cacheOf(h, A).length, 1);
   whiteBox(h, e => e.destroy(e.entity(seer)!, 'dies'));
-  assert.equal(cacheOf(h, A).length, 1, 'bounded ([Switch1], R9): only once per turn');
+  assert.equal(cacheOf(h, A).length, 1, 'bounded ([Switch1], CR 722.5): only once per turn');
 
   // grafted onto ANOTHER graft cause the glimpse rides that host's trigger —
   // here Witness of the Crossing, whose base effect triples it (3 glimpses)
@@ -713,7 +713,7 @@ test('Seer of Empty Spaces: the [Switch1] glimpse is bounded, and graftable onto
 
 /**
  * Finish deployment, take the new turn's planning to its end and STOP in the
- * R18 haste step — util.ts's `toNextBattle` skips it, which is exactly what
+ * CR 504 haste step — util.ts's `toNextBattle` skips it, which is exactly what
  * these tests must not do.
  *
  * `setup` runs AFTER the turn has flipped, and therefore after the draw: the
@@ -740,7 +740,7 @@ function modsOffered(h: Harness, seat: Seat): string[] {
 }
 
 test('Slurpr: mods may be applied during [Haste] as if it was deployment', () => {
-  // R95's HASTE-timing sibling, end to end. The card half (an unbudgeted
+  // CR 504.8a: the HASTE-timing sibling of Rook's permission (CR 723.5), end to end. The card half (an unbudgeted
   // OR-folding `ModPermission.applyAtHaste`) was already declared; the three
   // engine seams are `E.mayApplyModAtHaste`, the haste branch in `doAugment` /
   // `doGraft`, and the two offer gates.
@@ -766,12 +766,12 @@ test('Slurpr: mods may be applied during [Haste] as if it was deployment', () =>
   assert.ok(ownAttrs(h, host).has('Flying'), 'and did what an augment does');
   assert.ok(!h.state.players[A]!.hand.includes('Ephemeral Skywalker'), 'the card left hand');
   h.do({ type: 'doneHaste', seat: A });
-  h.do({ type: 'doneHaste', seat: D });          // R228: both seats close the step
+  h.do({ type: 'doneHaste', seat: D });          // CR 504.5a: both seats close the step
   assert.equal(h.state.phase, 'battle', 'the step closes normally afterwards');
   finishBattle(h);
 });
 
-test('Slurpr: a GRAFT lands during [Haste] too — R37 calls both of them "mods"', () => {
+test('Slurpr: a GRAFT lands during [Haste] too — CR 701.2 calls both of them "mods"', () => {
   const h = new Harness(4031);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -794,7 +794,7 @@ test('Slurpr: a GRAFT lands during [Haste] too — R37 calls both of them "mods"
 });
 
 test('Slurpr: the [Haste] mod permission is region-scoped and belongs to the grantor\'s controller', () => {
-  // R12, and the reason the permission is gathered by the `anchored()` walk
+  // CR 101.6, and the reason the permission is gathered by the `anchored()` walk
   // rather than globally: "I am 99% sure that Rook has to be in the region,
   // since there are no global effects in Algomancy".
   const h = new Harness(4032);
@@ -811,10 +811,10 @@ test('Slurpr: the [Haste] mod permission is region-scoped and belongs to the gra
     }
   });
   assert.equal(h.state.hasteDone![D], false, 'D, who has the Slurpr, gets the step');
-  // R228: the WINDOW no longer answers this question — it opens for everybody,
+  // CR 504.5: the WINDOW no longer answers this question — it opens for everybody,
   // precisely so that it cannot report what a seat is holding. The region
   // scope is read off the OFFER instead, which is where it was always enforced.
-  assert.equal(h.state.hasteDone![A], false, 'A is in the step too (R228)');
+  assert.equal(h.state.hasteDone![A], false, 'A is in the step too (CR 504.5)');
   assert.deepEqual(modsOffered(h, A), [],
     'but a grantor in another region reaches nobody, so A is offered no mod');
   assert.deepEqual(h.legal(A).map(a => a.type), ['doneHaste'],
@@ -836,9 +836,9 @@ test('Slurpr: the haste step is USABLE for a hand of nothing but mods', () => {
   // `startHasteStep`'s `canHaste` used to skip the step OUTRIGHT when no seat
   // had a legal PLAY, so a board with a Slurpr and a hand of nothing but mods
   // would never reach the offer gate or the action path, however correct both
-  // are. That is playtest report #74 (R97, Dispatch Courier) one verb over.
+  // are. That is playtest report #74 (Dispatch Courier) one verb over.
   //
-  // R228 removed the skip entirely — the step is unconditional now — so the
+  // The haste-step ruling (now CR 504.5) removed the skip entirely — the step is unconditional now — so the
   // seam this test guards moved from the WINDOW to the OFFER, and that is what
   // it reads: A must be able to DO something in the step, and the control
   // below must not.
@@ -858,7 +858,7 @@ test('Slurpr: the haste step is USABLE for a hand of nothing but mods', () => {
   assert.equal(h.state.phase, 'planning', 'nobody has been pushed into battle');
   assert.ok(modsOffered(h, A).length > 0, 'and A really is offered the mod in it');
   // and the control: take the grantor away and A is offered NOTHING in the
-  // step (which still opens — R228 — so the offer is what carries the claim)
+  // step (which still opens — CR 504.5 — so the offer is what carries the claim)
   const h2 = new Harness(4034);
   toDeployment(h2);
   const A2 = h2.state.deployPlayer!, D2 = (1 - A2) as Seat;
@@ -869,7 +869,7 @@ test('Slurpr: the haste step is USABLE for a hand of nothing but mods', () => {
     giveResources(h2, A2, 'fire', 4);
     give(h2, A2, 'Ephemeral Skywalker');
   });
-  assert.deepEqual(h2.state.hasteDone, [false, false], 'the step still opens (R228)');
+  assert.deepEqual(h2.state.hasteDone, [false, false], 'the step still opens (CR 504.5)');
   assert.deepEqual(modsOffered(h2, A2), [], 'but with no grantor no mod is offered');
   assert.deepEqual(h2.legal(A2).map(a => a.type), ['doneHaste'],
     'and done is the whole of A2\'s options — the grant is what makes the step USEFUL');
@@ -912,11 +912,11 @@ test('without a Slurpr the [Haste] refusal is unchanged — modding is a deploym
   finishBattle(h);
 });
 
-test('Slurpr: R37 — a mod applied during [Haste] pays at purpose "mod" and is not a play', () => {
-  // Applying a mod is not PLAYING a card (R37), and "as if it was deployment"
+test('Slurpr: CR 701.2 — a mod applied during [Haste] pays at purpose "mod" and is not a play', () => {
+  // Applying a mod is not PLAYING a card (CR 701.2), and "as if it was deployment"
   // does not change that. Two consequences, both asserted here: the bill is
   // the `purpose: 'mod'` bill — a Tranquility's "Spells cost [one] more to
-  // PLAY" cannot reach it — and R97's per-turn haste-play allowance is not
+  // PLAY" cannot reach it — and CR 504.7a's per-turn haste-play allowance is not
   // charged, because no play happened.
   const h = new Harness(4036);
   toDeployment(h);
@@ -940,7 +940,7 @@ test('Slurpr: R37 — a mod applied during [Haste] pays at purpose "mod" and is 
   assert.equal(billed, 2, 'the mod bill is the printed cost — no play tax reaches it');
   assert.equal(before - open(), billed, 'and that is exactly what was spent');
   assert.equal(h.state.hastePlaysUsed?.[A] ?? 0, 0,
-    'R97: no haste PLAY was made, so no grant allowance was drained');
+    'CR 504.7a: no haste PLAY was made, so no grant allowance was drained');
   h.do({ type: 'doneHaste', seat: A });
   finishBattle(h);
 });
@@ -948,7 +948,7 @@ test('Slurpr: R37 — a mod applied during [Haste] pays at purpose "mod" and is 
 // ── Suspend ──────────────────────────────────────────────────────────────
 
 test("Suspend: the target's life total can't change in either direction this battle", () => {
-  // R104. Both halves are live: the lock here, and "Erase me" in
+  // CR 708.10. Both halves are live: the lock here, and "Erase me" in
   // 89-self-erase (CARD-TODO #15). The card's ledger entry is gone with it.
   const h = new Harness(4025);
   toDeployment(h);
@@ -971,9 +971,9 @@ test("Suspend: the target's life total can't change in either direction this bat
 });
 
 test('Suspend: the lock is this battle only, and lapses with the battle that made it', () => {
-  // R14 via a region-keyed battleCounter: "this battle" is this region's
+  // CR 505.6 via a region-keyed battleCounter: "this battle" is this region's
   // battle, and startBattlePhase's existing wipe is the whole cleanup. That is
-  // the same shape Abyssal Evocation's bin permission uses (R96), and for the
+  // the same shape Abyssal Evocation's bin permission uses (CR 803.8d), and for the
   // same forced reason — Suspend is a SPELL, so nothing of it stays in play to
   // radiate from.
   const h = new Harness(4026);
@@ -1000,7 +1000,7 @@ test('Suspend: the lock is this battle only, and lapses with the battle that mad
 // by ending the haste step with mana spent on something else, release free at
 // its {Haste} timing — and it is gone because the thing it tested is gone.
 //
-// NOTHING ABOUT R43 WENT WITH IT. `36-cache-prophecy` drives the same
+// NOTHING ABOUT CR 803.7 WENT WITH IT. `36-cache-prophecy` drives the same
 // condition end to end on `Test Haste Prophet`, a synthetic card carrying
 // `condition: 'End [Haste] with used mana'`, and `normalizeProphecy` is unit
 // tested there too. So the PROPHECY_RULES row `hasteWithUsedMana` keeps its
@@ -1048,8 +1048,8 @@ test('Void Mandible: a nontoken card played in battle sacrifices it and is negat
   assert.equal(h.state.stack.length, 2, 'Godray + the Mandible trigger above it');
   pass(h); pass(h);                                           // the trigger resolves first
   assert.ok(!ent(h, vm), 'the Mandible sacrificed itself');
-  assert.ok(h.state.players[A]!.bin.includes('Void Mandible'), 'a sacrifice bins it (and trashes it, R40)');
-  assert.equal(h.state.stack.length, 0, 'R68: the negated Godray left the stack at once');
+  assert.ok(h.state.players[A]!.bin.includes('Void Mandible'), 'a sacrifice bins it (and trashes it, CR 801.2a)');
+  assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Godray left the stack at once');
   assert.equal(h.state.players[A]!.life, lifeA, 'no 3 damage, and no blessed gain for D');
   finishBattle(h);
 });
@@ -1150,9 +1150,9 @@ test('Witness of the Crossing: [Switch1][Switch1][Switch1] triples EVERY graft, 
   //      everything on there three times"
   //
   // ("Amphivavor" = Amphivore.) So: three copies, of EVERYTHING attached, as
-  // one single trigger — which is exactly R110's `graftCopies: 3`, the same
+  // one single trigger — which is exactly `graftCopies: 3` (CR 722.7), the same
   // field Amphivore uses, and the same behaviour
-  // 14-water-a.test.ts::"R110: a TARGETED graft under Amphivore aims each of
+  // 14-water-a.test.ts::"CR 722.7c: a TARGETED graft under Amphivore aims each of
   // its three copies separately" already pins on that card.
   //
   // This test is the Witness's own copy of that proof, and it discriminates in
@@ -1176,7 +1176,7 @@ test('Witness of the Crossing: [Switch1][Switch1][Switch1] triples EVERY graft, 
   h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
   const lifeD = h.state.players[D]!.life;
   whiteBox(h, e => e.loseLife(A, 1, 'test'));                 // 14 → 13: the cause fires
-  // R110: each copy of the TARGETED graft collects its own target set, so the
+  // CR 722.7c: each copy of the TARGETED graft collects its own target set, so the
   // one trigger asks three separate questions before it ever resolves
   let asked = 0;
   while (h.state.decision && asked < 6) { pick(h, { player: D }); asked++; }
@@ -1200,7 +1200,7 @@ test('parked cards still register, play and attach without crashing', () => {
   // vanilla bodies
   const ju = spawn(h, A, 'Just a Unit');
   assert.deepEqual(effStats(h, ju), [2, 3]);
-  // (Prediction Prophet used to be listed here; R90 unparked it and its own
+  // (Prediction Prophet used to be listed here; the haste-decision work (CR 504.6a) unparked it and its own
   // tests below cover the body as well as the text.)
   // inert [Augment] entries: still applicable as (blank) augments
   const gk = spawn(h, A, 'Gatekeeper of Souls');
@@ -1208,7 +1208,7 @@ test('parked cards still register, play and attach without crashing', () => {
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Slurpr'), hostId: gk });
   assert.equal(ent(h, gk)!.mods.length, 1, 'Slurpr attached as an augment');
   assert.deepEqual(effStats(h, gk), [0, 7], 'and changes nothing');
-  // Suspend is NOT parked any more — the lock shipped with R104 and "Erase me"
+  // Suspend is NOT parked any more — the lock (CR 708.10) shipped with the replacement layer and "Erase me"
   // with CARD-TODO #15. It stays in this block only as a smoke test that it
   // still plays; what it does is asserted in its own tests and in
   // 89-self-erase.

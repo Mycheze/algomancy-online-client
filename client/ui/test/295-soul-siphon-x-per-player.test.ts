@@ -13,7 +13,7 @@
  *
  *   §1 each {player} option on the target bar wears that seat's X
  *   §2 once the target is declared, the stack chip keeps only that seat's row
- *      (the same self-checking narrowing R57 modes have in stackPreviewX)
+ *      (the same self-checking narrowing CR 702.5 modes have in stackPreviewX)
  *   §3 the control: a mode-narrowed card (Retribution Thing) and an option
  *      that is not a player are untouched
  *   §4 (owner, 2026-09-27, room MBRE) the HAND chip shows ONE number — the

@@ -191,6 +191,6 @@ test('BL-38 §8 a scenario room is refused by name, not dealt a plain board', ()
     () => new ReplayServer({ ...FILE, scenario: 'some-scenario' }, 0, true),
     /scenario/,
     'dealing a plain board under a log written for a scenario reports every '
-    + 'action as a divergence — the exact false answer R200 exists to prevent',
+    + 'action as a divergence — the exact false answer replay versioning exists to prevent',
   );
 });

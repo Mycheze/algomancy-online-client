@@ -4,17 +4,17 @@
  *
  * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
  *
- * Rulings referenced: R1 (conditions at event time, amounts at resolution),
- * R5 (fight effects need both units — a gone target fizzles the part),
- * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded budgets
- * per card), R12/R25 ("each player/opponent" reads the event region's
+ * Rulings referenced: CR 109.3a, 109.3b (conditions at event time, amounts at resolution),
+ * CR 704.6c (fight effects need both units — a gone target fizzles the part),
+ * CR 704.1a (mid-resolution payments/choices via ctx.choose), CR 803.4 (bounded budgets
+ * per card), CR 101.6, 601.4d ("each player/opponent" reads the event region's
  * present seats; listeners are region-scoped).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - FIGHT: modelled as simultaneous effect damage — powers are snapshotted,
  *    then each unit's damage is dealt via dealEffectDamage with THAT unit's
  *    card as the source (so Deadly/Poisonous/etc. on a fighter applies).
- *  - Aetherflux Golem: NO LONGER an approximation (R168, CARD-TODO #48). This
+ *  - Aetherflux Golem: NO LONGER an approximation (CR 721.1e, CARD-TODO #48). This
  *    note used to read '"+2/+2" is modelled as two +1/+1 counters (the engine's
  *    only permanent stat layer) … counter-matters effects see them'. Playtest
  *    #46 rejected exactly that shape on the card printing the same sentence
@@ -22,8 +22,8 @@
  *    never on the stack, and it leaves with the virus. See the card.
  *
  * UN-PARKED (kept as history; nothing in this batch is parked):
- *  - Crevice Lurker: UN-PARKED (R121) — the ability-cost tax rides R59's
- *    CostMod layer under the two new purposes ('activate'/'trigger'), and
+ *  - Crevice Lurker: UN-PARKED (CR 111.10f, 111.10g) — the ability-cost tax rides the
+ *    CostMod layer (CR 111.10) under the two new purposes ('activate'/'trigger'), and
  *    the pay-to-trigger gate is E.gateTaxedTrigger at processTriggerQueue's
  *    stack-bound choke point. See the card.
  *  - Hooba-Lan: UN-PARKED — E.createShard() (a real 'shard' ResourceKind,
@@ -40,7 +40,7 @@
  *    printed-data-only, which is the CORRECT definition — the face owns no
  *    behaviour. ⚠ Do not "implement" it: printed.json has Resource faces for
  *    only fire, water and earth, so moving the rule onto card definitions
- *    would drop the bonus for wood/metal/light/dark. R116, R54; registry.ts
+ *    would drop the bonus for wood/metal/light/dark. CR 106.7c; registry.ts
  *    still excludes it from DECK_LIST (a resource face, not a deck card).
  */
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
@@ -51,17 +51,17 @@ import { selfOf, isEnt, chooseUnit } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+/** CR 601.4c: `E.seatsHere` is the one answer for the whole pool. SIX files had
  * grown their own copy of this and they did NOT agree — most ordered it
  * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
 const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** Two units fight: they deal damage to each other equal to their power,
  * simultaneously — powers snapshotted first, then both hits are dealt via
- * dealEffectDamage with the FIGHTER as the source (R318: its live
+ * dealEffectDamage with the FIGHTER as the source (CR 801.11a: its live
  * attributes, never the spell's). */
 const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
-  /* R106 {Unaware}: a fight is an interaction, so if EITHER fighter is Unaware
+  /* CR 802.9c {Unaware}: a fight is an interaction, so if EITHER fighter is Unaware
    * both of them are read off the printed cards ("it looks ONLY at what is the
    * literal printed text on all cards 'involved'"), in both directions.
    *
@@ -70,19 +70,19 @@ const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
    * for a fight, are the fighter's only when `ctx.sourceId` is unset (a spell
    * like Battle); an ability that makes two units fight is still its own
    * source. So the flag is handed over explicitly through `grantedAttrs`, the
-   * same seam R79 uses to donate a virus's attributes to a resolving effect.
+   * same seam that donates a virus's attributes to a resolving effect (CR 721.4b).
    * Without it, Bubb fighting an Eminence would kill it at printed and take
    * the Eminence's EFFECTIVE power back. */
   const collapsed = g.collapsedBy(a, [b]);
   const [pa] = g.interactionStats(a, [b]);
   const [pb] = g.interactionStats(b, [a]);
-  /* R318: each FIGHTER is the source of the damage it deals, with its own live
+  /* CR 801.11a: each FIGHTER is the source of the damage it deals, with its own live
    * attributes — RAQ "[Solved] Squish/Fight/Battle vs Source of damage": "Q:
    * When I play Squish/Fight/Battle, what is source of damage? A: Unit. …
    * You look at units Attributes. It doesn't matter if Squish is Powerful".
-   * So `sourceId` names the fighter (R94 reads its live attributes, its
-   * column's included under R294), and the spell's own `grantedAttrs` (a
-   * virus on the stack item, R79) are NOT passed on. Only the Unaware
+   * So `sourceId` names the fighter (CR 802.10e reads its live attributes, its
+   * column's included under CR 712.8a), and the spell's own `grantedAttrs` (a
+   * virus on the stack item, CR 723.4) are NOT passed on. Only the Unaware
    * collapse flag is. */
   const granted: Attr[] = collapsed ? ['Unaware'] : [];
   g.ev('info', `${a.card} fights ${b.card}.`);
@@ -95,12 +95,12 @@ const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
 // "When I die, [Switch] Rockfall 4. (Each player chooses one of their units.
 // I deal 4 damage to each of the chosen units.)" — e/2 2/1 {Haste} Rock Pile
 // Unit. Died trigger (self); unbounded graft ([Switch]). "Each player" =
-// the event region's present seats (R12/R25) — dying during deployment, only
+// the event region's present seats (CR 601.4d) — dying during deployment, only
 // my controller is present. Each player picks their OWN unit (auto when they
 // have only one); all picks are gathered before any damage (plan-then-commit),
 // then I deal 4 to each. The pick is a real question even when the trigger
 // resolves in the end-of-turn window — a ctx.choose suspension there is
-// answered and the turn flip is closed afterwards by E.finishTurnEnd (R85).
+// answered and the turn flip is closed afterwards by E.finishTurnEnd.
 const rockfall4: EffectDef = {
   run: (g, ctx) => {
     const picks: Entity[] = [];
@@ -113,7 +113,7 @@ const rockfall4: EffectDef = {
     }
     const live = picks.filter(u => g.entity(u.id));
     if (!live.length) { g.ev('info', 'Rockfall 4: nobody has a unit to choose — nothing is dealt damage.'); return; }
-    g.dealEffectDamageAll(ctx, live.map(u => ({ target: u, n: 4 })));   // R80: one batch
+    g.dealEffectDamageAll(ctx, live.map(u => ({ target: u, n: 4 })));   // CR 112.8: one batch
   },
 };
 card('A Fast Pile of Rocks', {
@@ -130,7 +130,7 @@ card('A Fast Pile of Rocks', {
 // attached (augment or Virus, both attach as 'augment' mods); played normally
 // its own [Augment] text is live (Manual Q&A) — a 3/3 in effect.
 //
-// R168 (CARD-TODO #48): a plain STATIC now, not a triggered ability adding two
+// CR 721.1e (CARD-TODO #48): a plain STATIC now, not a triggered ability adding two
 // +1/+1 counters. Three cards print this identical sentence — "[Augment] I gain
 // ±N/±N" — and the other two (Malformed Monstrosity, Tenebrous Bulborb) became
 // statics after playtest report #46, where the owner ruled on Bulborb: "The 'I
@@ -158,7 +158,7 @@ card('A Fast Pile of Rocks', {
 //    Bulborb's -2/-2 does.
 card('Aetherflux Golem', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     statics: [{ affects: (_g, self, t) => t.id === self.id, dp: 2, dt: 2 }],
@@ -167,7 +167,7 @@ card('Aetherflux Golem', {
 
 // "Two target units fight. (They deal damage to each other equal to their
 // power.)" — ee/4 {Battle} Bedlam Spell. Both units are cast-time targets
-// (count: 2, min: 2). R5: the fight needs both — a gone target fizzles.
+// (count: 2, min: 2). CR 704.6c: the fight needs both — a gone target fizzles.
 card('Battle', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Battle: two target units — they fight', count: 2, min: 2, symmetric: true },
@@ -186,7 +186,7 @@ card('Battle', {
 // "[Augment] {Unaware} Druid Rock Turtle Unit" — e/4 5/6. Type-line
 // [Augment] grants {Unaware}; printed.augmentAttrs carries it and
 // printed.attrs keeps it live when played normally. Vanilla otherwise.
-// The attribute is LIVE as of R106 (2026-08-23): stat layer 6 shipped. Bubb —
+// The attribute is LIVE since 2026-08-23 (CR 802.9): stat layer 6 shipped. Bubb —
 // or any host its [Augment] lands on — reads at the numbers PRINTED on its
 // card, through counters, auras, base rewrites, {Tough} and {Inverted} alike;
 // and so does everything it is dealing damage to or in combat with, which is
@@ -197,8 +197,8 @@ card('Bubb', {});
 
 // "[Augment] Abilities cost [one] more to activate or trigger during battle.
 // (Choosing to not pay this prevents the abilities from triggering.)" —
-// ee/2 2/3 Golem Beast Unit. UN-PARKED (R121): the ability-cost half of the
-// R59 CostMod layer, consulted with the two new purposes — 'activate'
+// ee/2 2/3 Golem Beast Unit. UN-PARKED (CR 111.10f): the ability-cost half of the
+// CR 111.10 CostMod layer, consulted with the two new purposes — 'activate'
 // (E.payActivationCost + the shared canPayAbilityCost gate, so an
 // unaffordable taxed activation is neither offered nor accepted) and
 // 'trigger' (E.gateTaxedTrigger, the one pay-to-trigger choke point in
@@ -210,19 +210,19 @@ card('Bubb', {});
 //  · it "taxes the cost to activate or trigger abilities" — and can stop
 //    e.g. Ruinbringer's "After combat, delete all units" like a negate can;
 //  · an ability's "if you do" clause is NOT its own trigger — no double tax;
-//  · (R37 family) Augment/Ambush are ways to PLAY a card, not activated
+//  · (CR 701.2b family) Augment/Ambush are ways to PLAY a card, not activated
 //    abilities — applying a mod is not taxed (purpose 'mod' is never
 //    'activate'/'trigger').
 // Clause by clause:
 //  · "Abilities" is unqualified — BOTH players' abilities; ctx.card ignored;
 //  · "during battle" — the phase gate below; deployment and haste are free;
-//  · region-scoped like every CostMod (R12), radiating from the card in play
+//  · region-scoped like every CostMod (CR 111.10), radiating from the card in play
 //    AND from the augment mod anchored on its host (Tranquility's shape:
 //    `augmentable: true`, text-box [Augment] live when played normally);
-//  · two Lurkers SUM to +2, as CostMod deltas always do (R59).
+//  · two Lurkers SUM to +2, as CostMod deltas always do (CR 111.10).
 card('Crevice Lurker', {
   augmentable: true,
-  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     costMods: [{
@@ -238,8 +238,8 @@ card('Crevice Lurker', {
 // opponent." — eee/3 2/3 Alien Strider Unit. Text-box [Augment]; live when
 // played normally (Manual Q&A). NOT self: the afterCombat event carries no
 // source unit (Embermaw precedent) — region scoping keeps it to the battle
-// I'm in. Amount = MY defense at RESOLUTION (R1: effStats of the carrier —
-// the host when donated); "each opponent" region-scoped (R25).
+// I'm in. Amount = MY defense at RESOLUTION (CR 109.3b: effStats of the carrier —
+// the host when donated); "each opponent" region-scoped (CR 601.4d).
 card('Deathglow Strider', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -250,7 +250,7 @@ card('Deathglow Strider', {
       // and each of these three is a real thing a player needs told
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // R325: gone before this resolves, it deals its LAST-KNOWN defense
+        // CR 714.3: gone before this resolves, it deals its LAST-KNOWN defense
         const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
         if (!self && !lk) { g.ev('info', 'Deathglow Strider: the carrier is gone — no damage.'); return; }
         const def = self ? g.effStats(self)[1] : lk!.defense;
@@ -263,7 +263,7 @@ card('Deathglow Strider', {
           g.ev('info', 'Deathglow Strider: no opponent is in this region — no damage.');
           return;
         }
-        g.dealEffectDamageAll(ctx, foes.map(seat => ({ target: { player: seat }, n: def })));   // R80
+        g.dealEffectDamageAll(ctx, foes.map(seat => ({ target: { player: seat }, n: def })));   // CR 112.8
       },
     },
   }],
@@ -275,7 +275,7 @@ card('Deathglow Strider', {
 // apply.ts::maybeGrantShard for all seven elements. Bare is CORRECT — the face
 // owns no behaviour. ⚠ Adding it here would double the bonus for earth and,
 // once the rule moved off maybeGrantShard, delete it for the four elements
-// with no printed face. R116; guarded by test/12-fire-a's sweep.
+// with no printed face. CR 106.7c; guarded by test/12-fire-a's sweep.
 // registry.ts keeps it out of DECK_LIST (resource face).
 card('Earth Resource', {});
 
@@ -284,14 +284,14 @@ card('Earth Resource', {});
 // power.)" — ee/6 6/8 Alien Avatar Unit. Text-box [Augment]. Damage event,
 // self-filtered (combat and effect damage both fire 'damage'). The target is
 // declared when the trigger goes on the stack; the [one] payment is a
-// mid-resolution pay-or-decline (R6), skipped outright when unaffordable.
+// mid-resolution pay-or-decline (CR 111.9), skipped outright when unaffordable.
 // "Another" is enforced at resolution (Minor Kraken precedent).
 card('Eminence of the Barrens', {
   augmentText: [{
     type: 'triggered', events: ['damage'], self: true,
     label: 'you may pay [one] — I fight another target unit',
     effect: {
-      // R64: "ANOTHER target unit" — the Eminence cannot fight itself
+      // CR 110.4d: "ANOTHER target unit" — the Eminence cannot fight itself
       targets: {
         what: 'unit', prompt: 'Eminence of the Barrens: I fight another target unit (if you pay [one])',
         restrict: notSelf,
@@ -343,11 +343,11 @@ card('Enigmatic Warder', {
         }
         const me = selfOf(g, ctx);
         if (!me) { g.ev('info', 'Enigmatic Warder: the carrier is gone — nothing to retarget to.'); return; }
-        // R58: only slots I could LEGALLY occupy. Changing a target may not
+        // CR 110.9, 110.4c: only slots I could LEGALLY occupy. Changing a target may not
         // create an illegal one — the playtest bug was this Warder dropping
         // itself into Fight's "target ALLY" slot while belonging to the other
         // player, where "ally" means ally of the SPELL's controller. It also
-        // may not duplicate a sibling slot ("another target unit", R56).
+        // may not duplicate a sibling slot ("another target unit", CR 704.5).
         const slots: [number, number][] = [];
         item.parts.forEach((p, pi) => {
           if (p.spent) return;
@@ -375,16 +375,16 @@ card('Enigmatic Warder', {
 
 // "[Switch1] Target ally and another target unit fight. (They deal damage to
 // each other equal to their power.)" — e/1 {Battle} Bedlam Spell. The whole
-// sentence is the bounded graftable effect ([Switch1], R9).
+// sentence is the bounded graftable effect ([Switch1], CR 722.5).
 //
-// PLAYTEST FIX (R58): the printed text says "target ally AND ANOTHER TARGET
+// PLAYTEST FIX (CR 110.1a, 110.1b): the printed text says "target ally AND ANOTHER TARGET
 // unit" — BOTH are targets, chosen at cast. This used to take only the ally at
 // cast and pick the second unit mid-resolution, which meant the opponent never
 // saw what the spell was aimed at while it was on the stack, and the second
 // "target" could not be responded to at all. Now it is a two-slot spec with
 // per-slot legality: slot 0 an ally of the CASTER, slot 1 any other unit.
 //
-// Both are re-checked at resolution rather than trusted from cast (R56/R58):
+// Both are re-checked at resolution rather than trusted from cast (CR 704.5, 110.4c):
 // Enigmatic Warder can redirect a slot afterwards, and the playtest bug was
 // the OPPONENT's Warder moving itself into the "ally" slot — "ally" means ally
 // of this spell's controller, never of the redirector's.
@@ -420,20 +420,20 @@ card('Fight', {
 
 // "When my column deals combat damage, [Switch1] Put a +1/+1 counter on each
 // of your units." — ee/3 1/3 {Swift} Luminary Primordial Unit. Condition at
-// event time (R1) on the two channels combat damage can take, which is exactly
+// event time (CR 109.3a) on the two channels combat damage can take, which is exactly
 // what `E.columnDealtCombatDamage`'s CHANNEL parameter names. The clause is
 // UNQUALIFIED — no "to an opponent" — so it hears both:
 //  - 'units' — 'damage' with no source tag (combat, not effect damage) whose
 //    victim is in the column DIRECTLY OPPOSING mine (combat damage is
 //    pairwise, so that damage came from my column);
 //  - 'face'  — 'lifeLost' why 'combat' of which my column dealt a share.
-// R195 routed this card into the shared predicate; the hand-rolled copy that
-// used to sit here carried R117's sub-step gate and R157 §4's power gate
+// The per-unit breakdown change routed this card into the shared predicate; the hand-rolled copy that
+// used to sit here carried the sub-step and power gates (CR 608.9a)
 // correctly and the face arm as "my column connects", which is geometry rather
 // than damage: a {Piercing} column the blockers absorbed whole connects, deals
 // the player nothing, and used to claim another column's hit.
-// [Switch1] bounded (R9) — one firing per turn no matter how many hits.
-// "Your units" is region-scoped (R12); counters land at RESOLUTION (R1).
+// [Switch1] bounded (CR 722.5) — one firing per turn no matter how many hits.
+// "Your units" is region-scoped (CR 101.6); counters land at RESOLUTION (CR 109.3b).
 const flowstoneCounters: EffectDef = {
   run: (g, ctx) => {
     const mine = g.unitsOf(ctx.controller, ctx.region);
@@ -443,7 +443,7 @@ const flowstoneCounters: EffectDef = {
 };
 card('Flowstone Arcanite', {
   abilities: [{
-    type: 'triggered', events: ['damage', 'combatFaceDamage'], bounded: true, graftCause: true,   // R238
+    type: 'triggered', events: ['damage', 'combatFaceDamage'], bounded: true, graftCause: true,   // CR 608.8a
     label: 'put a +1/+1 counter on each of your units',
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['units', 'face']),
     effect: flowstoneCounters,
@@ -467,7 +467,7 @@ card('Flowstone Arcanite', {
  *    targeted effect and that Graxxlid reaches it. Caleb, rules-questions:
  *    "You can redirect a virus, it is a targeted effect", and asked directly
  *    "so you could Graxxlid or Boon of Protection it as well?" — "Yep!
- *    They're fully interactible." R79's other virus shape (`hostStack`, a
+ *    They're fully interactible." The other virus shape (CR 723.4: `hostStack`, a
  *    virus aimed at a SPELL on the stack) is not aimed at me and is excluded.
  */
 const aimsAtUnit = (g: E, stackId: number, me: EntityId | undefined): boolean => {
@@ -480,30 +480,30 @@ const aimsAtUnit = (g: E, stackId: number, me: EntityId | undefined): boolean =>
 
 // "[Augment][once] [one]: Negate target effect targeting me. That effect's
 // controller draws a card." — ee/2 2/3 Arcane Guardian {Virus} Unit. An
-// ACTIVATED ability in the [Augment] text box, [once] = bounded (R9).
+// ACTIVATED ability in the [Augment] text box, [once] = bounded (CR 109.9).
 // "Me" = the carrier (the host when donated).
 //
 // Report #70 (GETD, 2026-08-22): "Graxxlid is lighting up like I can activate
 // its ability despite there being no legal targets on the stack". It was: the
 // spec was a bare `what: 'stackEffect'`, so EVERY item on the stack was a
 // candidate and "targeting me" was checked only at resolution, as an info
-// line. R64 settles which of the two that clause is — "the printed restriction
+// line. The targeting-restriction ruling (CR 110.3a) settles which of the two that clause is — "the printed restriction
 // is part of what makes a target LEGAL, not a condition checked once the spell
 // resolves" — so it belongs in `restrict`, which the three places that must
 // agree all read: the candidate menu, `castable`, and `canFillSlot`. The
 // designer-community source under it is the RAQ thread "[Solved] Target
 // requirements to put effect on stack": "In order to play a card, you MUST be
 // able to select the valid targets for the effect. Eg. You cannot play
-// Resurrect if there aren't any 2 mana units in your bin." R64 already gates
-// an ABILITY the same way ("one whose mandatory target has nothing legal to
+// Resurrect if there aren't any 2 mana units in your bin." The engine already gates
+// an ABILITY the same way, as CR 705.3a requires ("one whose mandatory target has nothing legal to
 // aim at is not offered and is refused"), which is exactly the ask: with no effect
 // on the stack aiming at Graxxlid, `abilityUnusable` drops the activation from
 // `legalActions` and the client's green `.activatable` halo — a pure read of
 // `legalActions` — goes out on its own. No UI change. (The inverse of report
 // #35, where a card that COULD act was not drawn as if it could.)
 //
-// The resolution check STAYS, and is not dead code. R64 is explicit that a
-// restriction is not re-asked at resolution (R5/R56), so between activation
+// The resolution check STAYS, and is not dead code. A restriction is checked
+// again as the effect begins to resolve (CR 704.5), because between activation
 // and resolution the world may legally stop satisfying it: Redirect moves an
 // effect's targets ("You can redirect a virus, it is a targeted effect"), a
 // part can be spent, the aiming item can leave the stack, and Reconfigure can
@@ -521,14 +521,14 @@ card('Graxxlid', {
       targets: {
         what: 'stackEffect',
         prompt: 'Graxxlid: negate target effect targeting me',
-        // R64: the printed "targeting me" clause, as a targeting restriction
+        // CR 110.3a: the printed "targeting me" clause, as a targeting restriction
         restrict: (g, t, ctx) => 'stack' in t && aimsAtUnit(g, t.stack, ctx.sourceId),
       },
       run: (g, ctx) => {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;
         const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-        // R113: both of these are a TARGETED bounded trigger that missed —
+        // CR 109.9a: both of these are a TARGETED bounded trigger that missed —
         // the same shape as a fizzle, which the designer ruled spends the use
         // ("regardless of if that ability resolves or doesn't"). Answering a
         // Graxxlid by moving its target off the stack is meant to cost it the
@@ -549,9 +549,9 @@ card('Graxxlid', {
 });
 
 // "I deal 1 damage to each unit." — ee/4 {Battle} {Unaware} Sand Spell.
-// "Each unit" = every unit in the effect's region (R12), both sides;
+// "Each unit" = every unit in the effect's region (CR 101.6), both sides;
 // the unit list is snapshotted, then each still-alive unit is hit.
-// {Unaware} on this spell is LIVE and is the whole point of the card (R106):
+// {Unaware} on this spell is LIVE and is the whole point of the card (CR 802.9):
 // a spell has no stats of its own to collapse, so its {Unaware} collapses what
 // it HITS. The owner, 2026-08-23: "Haboob kills anything that has 1 defense
 // printed at the card level" — a 1/1 under four +1/+1 counters dies to this 1
@@ -561,7 +561,7 @@ card('Haboob', {
     run: (g, ctx) => {
       const units = g.unitsIn(ctx.region);
       if (!units.length) { g.ev('info', 'Haboob: there is no unit here to damage.'); return; }
-      // R80: "each unit" is one batch — every unit here is dealt its 1 at once
+      // CR 112.8: "each unit" is one batch — every unit here is dealt its 1 at once
       g.dealEffectDamageAll(ctx, units.map(u => ({ target: u, n: 1 })));
     },
   },
@@ -584,7 +584,7 @@ card('Hooba-Lan', {
 // e/1 4/4 Occult Rock {Virus} Unit. Text-box [Augment] — as a Virus on an
 // enemy unit, "you" is the HOST's controller (the trigger's controller is
 // the carrier's controller), which is the whole point of the card. "That
-// much" = the event's amount (R1: read from the event snapshot).
+// much" = the event's amount (read from the event snapshot).
 card('Lithoghul', {
   augmentText: [{
     type: 'triggered', events: ['damage'], self: true,

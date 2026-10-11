@@ -19,7 +19,7 @@
 import type { Seat } from '../engine/src/types.ts';
 import type { Scenario } from './scenarios.ts';
 
-// R218: a batch may import only TYPES from scenarios.ts — restate the seats
+// a batch may import only TYPES from scenarios.ts (see 14-scenario-tester.md) — restate the seats
 const YOU: Seat = 0;
 const OPPONENT: Seat = 1;
 
@@ -161,7 +161,7 @@ export const BATCH_I: Record<string, Scenario> = {
       resources: { fire: 4 },
     },
     opponent: { hand: [], play: [{ card: 'Bubb' }], resources: { earth: 2 } },
-    // R18: the haste step opens because you hold a payable haste card; the
+    // the haste step opens because you hold a payable haste card; the
     // opponent holds none, so they are marked done the moment it opens
     prologue: () => [
       { type: 'donePlanning', seat: YOU },

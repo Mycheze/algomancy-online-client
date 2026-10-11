@@ -1,4 +1,4 @@
-/* R206 / CT-76 + CT-80 — the glossary against the rules it paraphrases.
+/* CT-76 + CT-80 — the glossary against the rules it paraphrases.
  *
  * WHY THIS FILE EXISTS. `ui/glossary.ts` is not UI copy. The card inspector
  * prints one of its rows under every card that mentions a keyword, so to a
@@ -10,19 +10,21 @@
  * statement of it, AND IT IS WHAT R184 READ."
  *
  * Nothing checked it. The cost is on the record twice:
- *   · report #106 — R45 was corrected on 2026-08-19 (glimpse caches exactly
+ *   · report #106 — the glimpse rule was corrected on 2026-08-19 (glimpse caches exactly
  *     ONE and recycles the rest) and the glossary kept the pre-correction
  *     wording for SEVEN DAYS, contradicting, on screen, the printed box
  *     directly above it. The report was triaged to the printed data twice.
- *   · R206 (2026-08-26) audited all 43 rows and found NINE wrong — three of
+ *   · The 2026-08-26 audit checked all 43 rows and found NINE wrong — three of
  *     them on CT-80's own "checked and correct, do not re-audit" list.
  *
  * WHAT THIS FILE CAN SEE, stated plainly so nobody reads more into a green
  * run than is there:
- *   1. CITATIONS RESOLVE. Every row names the ruling(s) it paraphrases, and
- *      every `R<n>` must resolve to a `## R<n>` in docs/digital-rules.md that
- *      is not withdrawn, superseded or narrowed. This is the check that would
- *      have caught {Unaware} still teaching R10 after R106 replaced it.
+ *   1. CITATIONS RESOLVE. Every row names the comprehensive rule(s) it
+ *      paraphrases by key (`cites: ['attr.piercing.excess', 'printed']`), and
+ *      every key must be a live rule: a record in data/comprehensive-rules/rules/
+ *      that the ledger has not removed. This is the check that would have
+ *      caught {Unaware} still teaching a replaced reading for three days (it
+ *      did, under the retired R-ruling register this file used to read).
  *   2. PRINTED TEXT WINS. For the 15 attributes that carry a printed reminder
  *      in printed.json, the row must not drop a rules-significant word the
  *      CARD uses. Derived from the pool, not enumerated here: a new card with
@@ -31,14 +33,14 @@
  *      {Electric} (the dropped recursion) independently of the audit.
  *   3. SIX ROWS ARE PINNED AGAINST THE ENGINE ITSELF — the ones whose rule is
  *      readable out of a named function's source.
- *   4. R248 / report #118 — SHORTENING IS NOT DELETING (§7). An exported row's
+ *   4. CR D6.11 / report #118 — SHORTENING IS NOT DELETING (§7). An exported row's
  *      `text` is now the pool's own printed reminder wherever the pool prints
  *      one, so §7 asserts BOTH directions of that swap: the printed sentence
  *      really is what a player sees, and the authored generalisation survives
  *      verbatim in `rule`. Without it, checks 1-3 could pass on rows that had
  *      been quietly reduced to their printed sentence, because they all read
  *      `stated()` — the complete statement, whichever field holds it.
- *      R252 / report #119 adds a SECOND displacing channel — the Algomancy
+ *      Report #119 (CR D6.11) adds a SECOND displacing channel — the Algomancy
  *      Manual, for seven rows no card reminds you about — and §7 states the
  *      invariant over both: `rule` exists exactly when something the GAME says
  *      displaced the authored sentence, and the row names which channel said
@@ -47,11 +49,11 @@
  *
  * WHAT IT CANNOT SEE: most of the prose. No machine reads "its column can
  * only be blocked by a column with Flying" and tells you the engine agrees.
- * Rows resting on neither a ruling nor printed text are listed BY NAME below
+ * Rows resting on neither a rule nor printed text are listed BY NAME below
  * so the size of that hole is a number rather than a feeling.
  *
  * ⚠ Every observation channel here has a positive control, per docs/13 §7.4:
- * the staleness detector is run against known-stale and known-live rulings,
+ * the citation check is run against a removed rule and a key no rule has,
  * every source scrape asserts it found its target, and the last section
  * MUTATES rows and asserts each mutation is named. A checker with no proof it
  * can go red is the thing this ticket is about.
@@ -61,14 +63,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { DIGITAL_RULES } from '../../engine/scripts/paths.mjs';
+import { CR_LEDGER } from '../../engine/scripts/paths.mjs';
+import { loadInputs } from '../../engine/scripts/cr/render.mjs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS,
   type GlossEntry, type GlossSource,
 } from '../glossary.ts';
 
 /**
- * R248 — THE SENTENCE THIS FILE IS ABOUT.
+ * CR D6.11 — THE SENTENCE THIS FILE IS ABOUT.
  *
  * Report #118 split every row in two: an exported row's `text` is now the
  * POOL'S OWN printed reminder wherever the pool prints one, and the authored
@@ -86,7 +89,6 @@ import {
 const stated = (e: GlossEntry): string => e.rule ?? e.text;
 
 const read = (p: string): string => readFileSync(new URL(p, import.meta.url), 'utf8');
-const RULES = readFileSync(DIGITAL_RULES, 'utf8');
 const ENGINE = read('../../engine/src/engine.ts');
 const APPLY = read('../../engine/src/apply.ts');
 const GLOSS_SRC = read('../glossary.ts');
@@ -94,86 +96,33 @@ const PRINTED = JSON.parse(read('../../engine/src/cards/printed.json')) as Recor
 const TYPES = read('../../engine/src/types.ts');
 
 /* ════════════════════════════════════════════════════════════════════════
- * 1. THE REGISTER: does an R-number resolve, and is the ruling still live?
+ * 1. THE RULES: does a rule key name a live rule?
  * ════════════════════════════════════════════════════════════════════════ */
 
-/**
- * Every `## R<n>` section of docs/digital-rules.md, header line plus the head
- * of its body.
- *
- * The head matters because THE MARKER IS NOT ALWAYS IN THE HEADER. Two of the
- * five stale rulings in the file are only marked in a blockquote under it:
- * R10 ("IMPLEMENTED BY R106 … R106 is the operative one") and R76 ("The
- * Alluring rule stated here is SUPERSEDED by R84"). A header-only check reads
- * both as live — and R10 is exactly the ruling {Unaware} was still quoting,
- * so a header-only check would have missed the bug this file was written for.
- */
-function register(): Map<string, { header: string; head: string }> {
-  const out = new Map<string, { header: string; head: string }>();
-  const lines = RULES.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const m = /^## (R\d+[a-z]?)\b(.*)$/.exec(lines[i]!);
-    if (!m) continue;
-    // ⚠ stop at the next `## ` — R9's body is TWO LINES, so a fixed-size
-    // window runs straight into R10's "R106 is the operative one" and marks
-    // R9 retired. Measured, not guessed: a 20-line window failed on R9 and
-    // R17 in exactly that way.
-    let end = i + 1;
-    while (end < lines.length && !lines[end]!.startsWith('## ')) end++;
-    // …and only the LEADING blockquote, which is where both body-marked
-    // retirements live (R10 and R76 each open with `> ⚠ **…**`).
-    const head = lines.slice(i + 1, end).filter(l => l.startsWith('>')).join('\n');
-    out.set(m[1]!, { header: lines[i]!, head });
-  }
-  return out;
-}
-const REGISTER = register();
+/** every live comprehensive rule, by key (its record) */
+const RECORDS = new Map(loadInputs().records.map(r => [r.key, r]));
+type LedgerEntry = { num: string; key: string; removed?: string; kind?: string };
+const LEDGER = (JSON.parse(readFileSync(CR_LEDGER, 'utf8')) as { entries: LedgerEntry[] }).entries;
+/** a glossary source that is a rule key (the others are the named upstream documents) */
+const isKey = (s: string): boolean => /^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(s);
 
-/**
- * The markers the repo actually uses to retire a ruling, and WHERE it puts
- * them: the header line, or the leading blockquote under it.
- *
- * Two deliberate narrowings, both learned by measuring:
- *  · "superseded BY" retires this ruling; "Supersedes R76" (in R84's body)
- *    says this ruling retired ANOTHER. Matching the active voice would mark
- *    every replacement as dead.
- *  · the blockquote restriction is not decoration. R18's body contains the
- *    sentence "**The ⚠ is withdrawn (2026-08-21).**" — it is the ruling's
- *    WARNING that was withdrawn, not the ruling — and a body-wide match reads
- *    R18 as retired and takes the {Haste} row down with it.
- */
-const STALE = /❌|\bWITHDRAWN\b|\bRETIRED\b|\bsuperseded\s+by\b|\bnarrowed\s+by\s+R\d+|\bis\s+the\s+operative\s+one\b/i;
-
-function staleness(tok: string): string | null {
-  const sec = REGISTER.get(tok);
-  if (!sec) return null;
-  const hit = STALE.exec(sec.header) ?? STALE.exec(sec.head);
-  return hit ? hit[0] : null;
+/** why a key is not a live rule, or null: a removed rule is a tombstone in the ledger */
+function staleness(key: string, ledger: readonly LedgerEntry[] = LEDGER, records: ReadonlyMap<string, unknown> = RECORDS): string | null {
+  const e = ledger.find(x => x.key === key);
+  if (e?.removed) return `removed: ${e.removed}`;
+  // a SECTION is a live rule too: it has a ledger entry and no record of its own
+  if (!records.has(key) && !(e && ledger === LEDGER && (e as { kind?: string }).kind === 'section')) return 'no such rule';
+  return null;
 }
 
-test('POSITIVE CONTROL: the staleness detector can tell a retired ruling from a live one', () => {
-  assert.ok(REGISTER.size > 150, `only parsed ${REGISTER.size} rulings — the register parse is broken`);
-  // the five known-retired rulings, each marked a DIFFERENT way. If any of
-  // these reads "live", the citation check below is decorative.
-  for (const [tok, why] of [
-    ['R28', 'header: ❌ WITHDRAWN … superseded by R115'],
-    ['R52', 'header: ❌ WITHDRAWN … superseded by R115'],
-    ['R108', 'header: (narrowed by R113)'],
-    ['R76', 'BODY blockquote: "SUPERSEDED by R84"'],
-    ['R10', 'BODY blockquote: "R106 is the operative one"'],
-  ] as const) {
-    assert.ok(REGISTER.has(tok), `${tok} is not in the register at all`);
-    assert.ok(staleness(tok), `${tok} must read as retired — ${why}`);
-  }
-  // and the negative half: the replacements, the rulings this glossary leans
-  // on hardest, and the three that a looser detector DID read as retired —
-  // R9 (two-line body, so a fixed window ran into R10's marker), R17 (same,
-  // into R18's) and R18 itself ("**The ⚠ is withdrawn**" is about the warning).
-  for (const tok of ['R9', 'R17', 'R18', 'R45', 'R84', 'R106', 'R113', 'R115', 'R133', 'R184', 'R190']) {
-    assert.ok(REGISTER.has(tok), `${tok} is not in the register`);
-    assert.equal(staleness(tok), null,
-      `${tok} reads as retired — the detector is over-matching and every citation is now suspect`);
-  }
+test('POSITIVE CONTROL: the citation check can tell a live rule from a removed one and from none', () => {
+  assert.ok(RECORDS.size > 1500, `only read ${RECORDS.size} rules — the records went missing`);
+  assert.equal(staleness([...RECORDS.keys()][0]!), null, 'a live rule reads as live');
+  assert.equal(staleness('concepts.no-such-rule'), 'no such rule');
+  const tomb = [{ num: '999.1', key: 'concepts.retired-rule', removed: 'merged into 100.1' }];
+  assert.equal(staleness('concepts.retired-rule', tomb, new Map([['concepts.retired-rule', {}]])), 'removed: merged into 100.1',
+    'a tombstoned key must read as removed even while a stale record still carries it');
+  assert.ok(isKey('attr.piercing.excess') && !isKey('printed') && !isKey('docs/08'), 'the key test cannot tell a key from a document');
 });
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -226,7 +175,7 @@ function printedReminders(): Map<string, { card: string; sentence: string }[]> {
   return out;
 }
 /**
- * R267: the pool's SECOND reminder convention — the keyword is printed as the
+ * CR D6.11: the pool's SECOND reminder convention — the keyword is printed as the
  * ability and the parenthetical explains it without repeating the word
  * ("Glimpse 1 {i}(Reveal the top card ...)"). `printedReminders` above cannot
  * see one, because it matches the term INSIDE the span.
@@ -327,13 +276,13 @@ const WORD_CLASSES: readonly (readonly string[])[] = [
 
 function citationComplaints(e: GlossEntry): string[] {
   const bad: string[] = [];
-  const cites = e.ruling ?? [];
+  const cites = e.cites ?? [];
   if (!cites.length) {
-    bad.push(`{${e.term}}: no \`ruling\` — every row must say where its sentence comes from`);
+    bad.push(`{${e.term}}: no \`cites\` — every row must say where its sentence comes from`);
     return bad;
   }
   for (const src of cites) {
-    if (!/^R\d/.test(src)) {
+    if (!isKey(src)) {
       if (!['printed', 'Rulebook', 'Manual', 'CardLibrary', 'docs/08'].includes(src)) {
         bad.push(`{${e.term}}: unknown source "${src}"`);
       } else if (src === 'printed' && !REMINDERS.has(e.term)) {
@@ -343,7 +292,7 @@ function citationComplaints(e: GlossEntry): string[] {
         bad.push(`{${e.term}}: cites 'CardLibrary', but ui/card-library-reminders.json quotes no `
           + "card for it — 'CardLibrary' is not an escape hatch either");
       } else if (src === 'Manual' && !MANUAL_REMINDERS.has(e.term)) {
-        // R252, and the same reasoning: a source a reader cannot follow is
+        // CR D6.11, and the same reasoning: a source a reader cannot follow is
         // worse than none, because it reads as checked. Citing the Manual
         // means ui/manual-reminders.json quotes it, with a heading and a page,
         // and 231 rebuilds that quote out of the manual itself.
@@ -352,14 +301,12 @@ function citationComplaints(e: GlossEntry): string[] {
       }
       continue;
     }
-    if (!REGISTER.has(src)) {
-      bad.push(`{${e.term}}: cites ${src}, which has no \`## ${src}\` section in docs/digital-rules.md `
-        + `— a citation that does not resolve is worse than none, because it reads as checked`);
-      continue;
-    }
     const why = staleness(src);
-    if (why) {
-      bad.push(`{${e.term}}: cites ${src}, which is marked "${why}" `
+    if (why === 'no such rule') {
+      bad.push(`{${e.term}}: cites ${src}, which is no comprehensive rule `
+        + `— a citation that does not resolve is worse than none, because it reads as checked`);
+    } else if (why) {
+      bad.push(`{${e.term}}: cites ${src}, which is ${why} `
         + `— the row is teaching a rule that has been replaced`);
     }
   }
@@ -387,7 +334,7 @@ function printedAgreementComplaints(e: GlossEntry): string[] {
  * 4. THE TABLE, checked
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-76: every glossary row cites a ruling, and every citation RESOLVES and is LIVE', () => {
+test('CT-76: every glossary row cites a rule, and every citation RESOLVES and is LIVE', () => {
   const bad = GLOSSARY.flatMap(citationComplaints);
   assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
 });
@@ -403,52 +350,34 @@ test('every attribute with a printed reminder ADMITS it, so a new reminder canno
   // opt out of §3 by not citing 'printed'.
   const missing = [...REMINDERS.keys()].filter(term => {
     const e = GLOSSARY.find(g => g.term === term);
-    return !e || !(e.ruling ?? []).includes('printed');
+    return !e || !(e.cites ?? []).includes('printed');
   }).sort();
   assert.deepEqual(missing, [],
     'these attributes carry a printed reminder the glossary row does not cite');
 });
 
-test('the rows resting on NEITHER a ruling NOR printed text, by name', () => {
+test('the rows resting on NEITHER a rule NOR printed text, by name', () => {
   // The honest size of the hole. Everything here is unchecked prose: no
-  // R-number to resolve, no printed sentence to compare against. Shrinking the
+  // rule key to resolve, no printed sentence to compare against. Shrinking the
   // list is real work; growing it needs a reason in the commit message.
   const unbacked = GLOSSARY
-    .filter(e => !(e.ruling ?? []).some(s => /^R\d/.test(s) || s === 'printed'))
+    .filter(e => !(e.cites ?? []).some(s => isKey(s) || s === 'printed'))
     .map(e => e.term).sort();
   assert.deepEqual(unbacked, ['Evasive', 'Resonant'],
-    'Evasive is the Rulebook\'s two-blocker rule with no ruling and no printed reminder; '
+    'Evasive is the Rulebook\'s two-blocker rule with no rule key and no printed reminder; '
     + 'Resonant comes from the Light & Dark provisional glossary (docs/08) and nothing else');
 });
 
-test('the R-numbers in this file\'s COMMENTS all resolve (they may be historical)', () => {
-  // Deliberately weaker than the `ruling` check: a comment SHOULD be free to
-  // say "this row used to teach R10". What it may not do is cite a number that
-  // does not exist — an audit of 2026-08-26 found twelve such numbers loose
-  // under client/ (R134-R136, R141, R142, R163, R175-R177, R186, R201,
-  // and R159, which docs/16-divergence-inventory.md:190 says outright does not
-  // exist), several cited 20-40 times.
-  const cited = new Set([...GLOSS_SRC.matchAll(/\bR(\d+)\b/g)].map(m => `R${m[1]!}`));
-  assert.ok(cited.size > 10, `only found ${cited.size} R-numbers in ui/glossary.ts — the sweep is broken`);
-  // R206 was the one named exemption here while the ruling sat in the round's
-  // scratchpad — the working agent may not edit docs/digital-rules.md, so the
-  // orchestrator lands it. It IS landed, so its exemption is gone.
-  //
-  // R248 landed 2026-08-29 (round 31) and its exemption was deleted in the same
-  // commit, which is the only state this list is ever meant to rest in.
-  //
-  // ⚠ R252 (round 31b, report #119 — the manual is the second reminder channel)
-  // is written up in the round's scratchpad and NOT YET in docs/digital-rules.md.
-  // ORCHESTRATOR: delete it from this set in the commit that lands the ruling.
-  //
-  // ⚠ R279 (round 35, reports #148-#150/#153 — what a card says about itself)
-  // is written up in the round's scratchpad and NOT YET in
-  // docs/digital-rules.md. ORCHESTRATOR: delete it from this set in the commit
-  // that lands the ruling.
-  const PENDING = new Set<string>();   // R279 landed in digital-rules.md 2026-08-30
-  const dangling = [...cited].filter(t => !REGISTER.has(t) && !PENDING.has(t)).sort();
-  assert.deepEqual(dangling, [],
-    'ui/glossary.ts cites R-numbers with no `## R<n>` section in docs/digital-rules.md');
+test('the CR numbers in ui/glossary.ts\'s comments all name live rules (they may be historical)', () => {
+  // Deliberately weaker than the `cites` check: a comment SHOULD be free to
+  // say "this row used to teach the reading CR 801.1 replaced". What it may not
+  // do is cite a number that does not exist — an audit of 2026-08-26 found
+  // twelve dead numbers loose under client/, several cited 20-40 times.
+  const live = new Set(LEDGER.filter(e => !e.removed).map(e => e.num));
+  const cited = new Set([...GLOSS_SRC.matchAll(/\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)/g)].map(m => m[1]!));
+  assert.ok(cited.size > 5, `only found ${cited.size} CR numbers in ui/glossary.ts — the sweep is broken`);
+  const dangling = [...cited].filter(n => !live.has(n)).sort();
+  assert.deepEqual(dangling, [], 'ui/glossary.ts cites CR numbers that name no live rule');
 });
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -461,7 +390,7 @@ test('the R-numbers in this file\'s COMMENTS all resolve (they may be historical
  * matches nothing is how nine passing tests missed a live rules bypass
  * (docs/13 §5). */
 
-/** R248: the row's COMPLETE statement — `rule` when a printed reminder took
+/** CR D6.11: the row's COMPLETE statement — `rule` when a printed reminder took
  * over `text`, `text` otherwise. Every §5 assertion is about a generalisation
  * the printed card does not make, so this is the field that has to carry it. */
 const text = (term: string): string => {
@@ -486,7 +415,7 @@ function bodyOf(src: string, needle: string, where: string): string {
 /* ════════════════════════════════════════════════════════════════════════
  * ENGINE-ROW COHERENCE — what these six are, and what they are NOT
  *
- * ⚠ RENAMED 2026-08-30 (R281 / CT-171). Each of these regexes the ENGINE
+ * ⚠ RENAMED 2026-08-30 (CT-171). Each of these regexes the ENGINE
  * SOURCE and the glossary ROW and requires them to agree. That is a DRIFT
  * DETECTOR and it is worth having: it catches a row and the code parting ways.
  *
@@ -495,38 +424,38 @@ function bodyOf(src: string, needle: string, where: string): string {
  * When the engine is wrong, a test of this shape holds the ROW wrong too and
  * reddens whoever fixes it. That is not hypothetical: the {Prophecy} row was
  * rewritten to match `cachedTiming`, and `cachedTiming` gated a fulfilled
- * prophecy to its [Haste] marker in flat contradiction of R42 while citing R42
- * as its authority (R277). Doc and code agreed; both were wrong; the agreement
+ * prophecy to its [Haste] marker in flat contradiction of the prophecy ruling (now
+ * CR 803.7i) while citing that same ruling as its authority. Doc and code agreed; both were wrong; the agreement
  * is what made it look settled.
  *
- * Note also what these messages say and do not check: "re-read R106" names a
- * ruling that nothing here reads. The missing third leg — every citation on a
+ * Note also what these messages say and do not check: "re-read CR 802.9a" names a
+ * rule that nothing here reads. The missing third leg — every citation on a
  * row with no outside witness must NAME that row's term — is
  * `261-glossary-basis.test.ts` §2, and it removed two citations doing no work
- * ({Once}→R9, {Unaware}→R19) the day it was written.
+ * ({Once}→control-change ruling, {Unaware}→the attribute-order ruling) the day it was written.
  * ════════════════════════════════════════════════════════════════════════ */
-test('ENGINE-ROW COHERENCE R40/R306 {Trash}: the row and noteTrashed agree about the token check', () => {
+test('ENGINE-ROW COHERENCE CR 801.2d {Trash}: the row and noteTrashed agree about the token check', () => {
   const body = bodyOf(ENGINE, 'toBin(seat: Seat, name: CardName', 'E.toBin');
   assert.ok(body.length < 400, 'toBin grew a body — re-read it before trusting the check below');
   assert.doesNotMatch(body, /token/i,
     'E.toBin now mentions tokens. If the ENGINE gained a token check, this test is the wrong '
-    + 'thing to change — read R133 first, then the glossary row.');
+    + 'thing to change — read CR 304.2 first, then the glossary row.');
   assert.doesNotMatch(text('Trash'), /non-?token/i,
-    'the row conditions trashing on being a nontoken and the engine does not. R133: the only '
+    'the row conditions trashing on being a nontoken and the engine does not (CR 304.2: a token is not a card). The only '
     + 'printed "nontoken" wording came from Void Scavenger, a card CUT from the set.');
-  // R306: the token check moved to the trash choke point, and the row must
+  // CR 801.2d: the token check moved to the trash choke point, and the row must
   // say so positively — a token is never trashed.
   // (the signature carries an `opts: { … }` type, so the body is scraped from
   // the `): void {` that follows the name, not from the name's first brace)
   const noteAt = ENGINE.indexOf('noteTrashed(seat: Seat');
   assert.notEqual(noteAt, -1, 'E.noteTrashed: could not find its signature — the scrape is broken');
   assert.match(bodyOf(ENGINE.slice(noteAt), '): void {', 'E.noteTrashed'), /anchor\?\.token\) return/,
-    'E.noteTrashed no longer returns early for a token — R306 says a dying token is never trashed');
+    'E.noteTrashed no longer returns early for a token — CR 801.2d says a dying token is never trashed');
   assert.match(text('Trash'), /token[^.]*(not|never)[^.]*trashed/i,
-    'the row has to say a token is not trashed (R306)');
+    'the row has to say a token is not trashed (CR 801.2d)');
 });
 
-test('ENGINE-ROW COHERENCE R61 {Feeble}/{Pure}: the row and the block gate agree about the carve-out', () => {
+test('ENGINE-ROW COHERENCE CR 802.12b {Feeble}/{Pure}: the row and the block gate agree about the carve-out', () => {
   const at = APPLY.indexOf("'Feeble units cannot block'");
   assert.notEqual(at, -1, 'could not find the `Feeble units cannot block` gate in apply.ts — scrape broken');
   const gate = APPLY.slice(APPLY.lastIndexOf('e.need(', at), at);
@@ -538,28 +467,28 @@ test('ENGINE-ROW COHERENCE R61 {Feeble}/{Pure}: the row and the block gate agree
     + 'exception the engine implements twice (apply.ts canBlockAlone and checkBlocks)');
 });
 
-test('ENGINE-ROW COHERENCE R61 {Pure}: the row and the engine agree that the WHOLE set is emptied', () => {
+test('ENGINE-ROW COHERENCE CR 802.25b {Pure}: the row and the engine agree that the WHOLE set is emptied', () => {
   assert.match(ENGINE, /pure \? new Set<string>\(\) : this\.colAttrs\(ids\)/,
-    'exchangeAt no longer blanks the attribute set — re-read R61 before touching the row');
+    'exchangeAt no longer blanks the attribute set — re-read CR 802.25b before touching the row');
   const t = text('Pure');
   assert.match(t, /all other attributes/i, "the printed reminder's own words (Just a Unit)");
   assert.doesNotMatch(t, /switches off Flying, Evasive and Sneaky/i,
     'the superseded enumeration is back. It named three attributes; the engine blanks the set, '
     + 'and its own docstring names Piercing/Deadly/Powerful/Swift as switched off too.');
-  assert.match(t, /feeble/i, 'R61: a Pure card ignores its OWN other attributes — Pure+Feeble blocks');
+  assert.match(t, /feeble/i, 'CR 802.12b: a Pure card ignores its OWN other attributes — Pure+Feeble blocks');
 });
 
-test('ENGINE-ROW COHERENCE R79/R157 {Virus}: the row and the battle gate agree about hand and ownership', () => {
+test('ENGINE-ROW COHERENCE CR 723.2 {Virus}: the row and the battle gate agree about hand and ownership', () => {
   const pred = bodyOf(APPLY, 'function battleAugmentAllowed', 'battleAugmentAllowed');
   assert.match(pred, /c\.virus && \(from === 'hand' \|\| from === 'cache'\)/,
     'the base battle-augment rule changed — re-read it before trusting the row');
   assert.match(text('Virus'), /hand/i,
     'the row omitted the REAL restriction: a virus in your bin is not a battle-time augment');
-  // R311 (report #195): the cache plays like the hand, so the window reaches it too
+  // CR 723.2a (report #195): the cache plays like the hand, so the window reaches it too
   assert.match(text('Virus'), /cache/i,
-    'the row says hand only — R311 opened the battle window to a playable cache card');
+    'the row says hand only — CR 723.2a lets a playable cache card into the battle window');
   // …and the restriction it INVENTED. The battle branch checks priority and
-  // region and nothing about the host's controller (R157 §26, owner verbatim:
+  // region and nothing about the host's controller (CR 723.5a, owner verbatim:
   // "yes it can also go to an enemy. That's the whole point of the card").
   const branch = APPLY.slice(APPLY.indexOf("if (e.s.phase === 'battle') {", APPLY.indexOf('function doAugment')));
   assert.ok(branch.length > 200, 'could not find doAugment\'s battle branch — scrape broken');
@@ -571,19 +500,19 @@ test('ENGINE-ROW COHERENCE R79/R157 {Virus}: the row and the battle gate agree a
     'the row restricted a battle virus to enemy units. The engine never did.');
 });
 
-test('ENGINE-ROW COHERENCE R106 {Unaware}: the row and stat layer 6 agree on PRINTED stats', () => {
+test('ENGINE-ROW COHERENCE CR 802.9a {Unaware}: the row and stat layer 6 agree on PRINTED stats', () => {
   assert.match(ENGINE, /statAttrs\.includes\('Unaware'\)\) return this\.printedStats\(e\)/,
-    'stat layer 6 no longer collapses to printed stats — re-read R106');
+    'stat layer 6 no longer collapses to printed stats — re-read CR 802.9a');
   const t = text('Unaware');
   assert.match(t, /printed/i,
-    'the row carried R10\'s "everything counts as interacting with it" and never once stated the '
+    'the row carried the old "everything counts as interacting with it" and never once stated the '
     + 'operative rule: both sides of the interaction read the numbers PRINTED on the cards');
-  assert.doesNotMatch(t, /^Everything counts as interacting/i, 'R10\'s superseded wording is back');
+  assert.doesNotMatch(t, /^Everything counts as interacting/i, 'the superseded wording is back');
 });
 
-test('ENGINE-ROW COHERENCE R45/R190/R296 {Recycle}: the row and recycleToBottom agree on the MARK', () => {
+test('ENGINE-ROW COHERENCE CR 801.9, 801.10 {Recycle}: the row and recycleToBottom agree on the MARK', () => {
   // ⚠ THIS USED TO ASSERT `deckOf(seat).push(` — "recycling means onto the
-  // bottom of the deck". R296 moved the destination: a recycled card goes past
+  // bottom of the deck". An owner ruling of 2026-09-16 (now CR 408.2) moved the destination: a recycled card goes past
   // the MARK, into a pile that is shuffled back in only when the deck runs out.
   // The coherence claim is unchanged in spirit and is the point of this whole
   // file: whatever the engine does with a recycled card, the glossary row a
@@ -595,7 +524,7 @@ test('ENGINE-ROW COHERENCE R45/R190/R296 {Recycle}: the row and recycleToBottom 
   assert.match(t, /mark/i, 'and the row a player reads says so');
   assert.match(t, /shuffled/i, 'including the half that makes the mark worth having');
   assert.doesNotMatch(t, /gone for the rest of the game|out of the game(?!\W)/i,
-    'the pre-R190 wording is back — leaving the game is the one thing recycling never does');
+    'the wording from before the glossary fix is back — leaving the game is the one thing recycling never does');
 });
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -610,40 +539,28 @@ test('ENGINE-ROW COHERENCE R45/R190/R296 {Recycle}: the row and recycleToBottom 
 const MUTANTS: readonly { why: string; row: GlossEntry; expect: RegExp }[] = [
   {
     why: 'a row with no citation at all',
-    row: { term: 'Piercing', text: 'anything', ruling: [] },
-    expect: /no `ruling`/,
+    row: { term: 'Piercing', text: 'anything', cites: [] },
+    expect: /no `cites`/,
   },
   {
-    why: 'a citation that does not resolve (one of the twelve loose numbers)',
-    row: { term: 'Piercing', text: 'anything', ruling: ['R159'] as GlossSource[] },
-    expect: /cites R159, which has no `## R159` section/,
+    why: 'a citation that does not resolve',
+    row: { term: 'Piercing', text: 'anything', cites: ['attr.piercing.no-such-rule'] as GlossSource[] },
+    expect: /cites attr\.piercing\.no-such-rule, which is no comprehensive rule/,
   },
   {
-    why: 'a citation to a WITHDRAWN ruling',
-    row: { term: 'Piercing', text: 'anything', ruling: ['R28'] },
-    // the header reads "❌ WITHDRAWN (2026-08-23) — superseded by R115"; the
-    // leftmost marker wins, and which of the three it reports does not matter
-    expect: /cites R28, which is marked "(?:❌|WITHDRAWN|superseded by)"/,
-  },
-  {
-    why: 'a citation to a ruling superseded only in its BODY — the {Unaware} case',
-    row: { term: 'Unaware', text: 'Everything counts as interacting with it.', ruling: ['R10'] },
-    expect: /cites R10, which is marked "is the operative one"/,
-  },
-  {
-    why: 'a citation to a NARROWED ruling',
-    row: { term: 'Once', text: 'anything', ruling: ['R108'] },
-    expect: /cites R108, which is marked "narrowed by R113"/,
+    why: 'a source that is neither a rule key nor a named document',
+    row: { term: 'Piercing', text: 'anything', cites: ['the owner said so'] as unknown as GlossSource[] },
+    expect: /unknown source "the owner said so"/,
   },
   {
     why: "'printed' claimed for an attribute no card prints a reminder for",
-    row: { term: 'Reaping', text: 'anything', ruling: ['printed'] },
+    row: { term: 'Reaping', text: 'anything', cites: ['printed'] },
     expect: /cites 'printed', but no card in the pool prints a reminder for it/,
   },
   {
     why: 'the real {Piercing} bug: the printed card says controller, the row said defending player',
     row: {
-      term: 'Piercing', ruling: ['R103'],
+      term: 'Piercing', cites: ['printed'],
       text: 'Excess damage from its blocked column carries through to the defending player (automatic).',
     },
     expect: /PRINTED reminder on Protective Adaptations .* drops \[controller\]/,
@@ -651,14 +568,14 @@ const MUTANTS: readonly { why: string; row: GlossEntry; expect: RegExp }[] = [
   {
     why: 'the real {Electric} bug: the printed card names the recursion, the row did not',
     row: {
-      term: 'Electric', ruling: ['R4'],
+      term: 'Electric', cites: ['printed'],
       text: 'Excess damage arcs to an adjacent unit in the formation — the controller picks the path.',
     },
     expect: /PRINTED reminder on Envoy of Lightning .* drops \[recursive\]/,
   },
   {
     why: 'a {Poisonous} row whose counters quietly stopped being -1/-1',
-    row: { term: 'Poisonous', ruling: ['printed'], text: 'Damage it deals becomes permanent damage counters.' },
+    row: { term: 'Poisonous', cites: ['printed'], text: 'Damage it deals becomes permanent damage counters.' },
     expect: /drops \[-1\/-1\]/,
   },
 ];
@@ -681,7 +598,7 @@ test('POSITIVE CONTROL: and stays GREEN on the rows as they really are', () => {
 });
 
 /* ════════════════════════════════════════════════════════════════════════
- * 7. R248 — THE SPLIT ITSELF: shortening is not deleting
+ * 7. CR D6.11 — THE SPLIT ITSELF: shortening is not deleting
  * ════════════════════════════════════════════════════════════════════════
  *
  * Report #118 asked for the printed reminder and got it. The risk that came
@@ -696,7 +613,7 @@ test('POSITIVE CONTROL: and stays GREEN on the rows as they really are', () => {
  * every authored sentence is still on the exported row, character for
  * character, in one field or the other. */
 
-test('R248: every authored sentence survives onto the exported row', () => {
+test('CR D6.11: every authored sentence survives onto the exported row', () => {
   // THE ANTI-DELETION CHECK. Not "the row still says something about
   // Piercing" — the authored sentence, verbatim, in `rule` or in `text`.
   // Fifteen of the 43 rows have a printed reminder displacing them; the other
@@ -715,7 +632,7 @@ test('R248: every authored sentence survives onto the exported row', () => {
   assert.equal(AUTHORED_GLOSSARY.length, GLOSSARY.length, 'a row went missing between the two tables');
 });
 
-test('R248: a row the pool prints a reminder for SHOWS that reminder, verbatim', () => {
+test('CR D6.11: a row the pool prints a reminder for SHOWS that reminder, verbatim', () => {
   // The other direction, and the one that keeps report #118 fixed. Derived
   // from PRINTED_REMINDERS rather than from a list of the fifteen: a new card
   // shipping a reminder retires the corresponding edited row for free, and
@@ -724,7 +641,7 @@ test('R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
   for (const e of GLOSSARY) {
     const printed = PRINTED_REMINDERS.get(e.term)?.[0];
     if (!printed) {
-      // R252: a second channel displaces a row now — the Algomancy Manual, for
+      // CR D6.11: a second channel displaces a row now — the Algomancy Manual, for
       // seven rows no card reminds you about. The invariant is unchanged and
       // is stated here over BOTH channels rather than being relaxed for one:
       // `rule` exists exactly when something the GAME says displaced the
@@ -746,7 +663,7 @@ test('R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
         if (e.printedOn !== undefined) bad.push(`{${e.term}}: printedOn is set on a manual row`);
         continue;
       }
-      // R267: and a THIRD channel — a card the designer has posted that our
+      // CR D6.11: and a THIRD channel — a card the designer has posted that our
       // pool does not carry. Same invariant, stated over all three rather than
       // relaxed for the new one.
       const library = LIBRARY_REMINDERS.get(e.term);
@@ -788,7 +705,7 @@ test('R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
     'the manual channel is declared but is not reaching the exported rows');
 });
 
-test('R248: the two reminder scrapes in this repo agree, term for term', () => {
+test('CR D6.11: the two reminder scrapes in this repo agree, term for term', () => {
   // §2's REMINDERS reads types.ts's `Attr` union and matches per SENTENCE;
   // ui/glossary.ts's PRINTED_REMINDERS reads the pool's own `attrs` arrays and
   // keeps a whole span when only one attribute is in it. Two mechanisms, and

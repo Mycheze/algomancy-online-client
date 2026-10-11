@@ -1,6 +1,6 @@
-/* R161 — six of the owner's R157 answers, made real.
+/* Six of the owner's 2026-08-25 card answers, made real.
  *
- * R157 is the owner's 2026-08-25 pass over 27 card questions. Six of them are
+ * The owner's 2026-08-25 pass covered 27 card questions. Six of them are
  * behaviour changes in cards this file guards, and every one of them REVERSES
  * something the engine shipped, which is why they get a file rather than a
  * line in a per-batch test: a reversal that is only ever asserted next to the
@@ -81,7 +81,7 @@ function drainStack(h: Harness): void {
 // on the [Augment] died half — and the matching test fails on "the trigger
 // fired at all", because with a clean board neither gate is satisfied.
 
-test('R157 §15: the after-combat trigger fires with NO -1/-1 counter anywhere, and offers a clean enemy', () => {
+test('CR 110.3a: the after-combat trigger fires with NO -1/-1 counter anywhere, and offers a clean enemy', () => {
   const h = new Harness(13600);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -104,7 +104,7 @@ test('R157 §15: the after-combat trigger fires with NO -1/-1 counter anywhere, 
   finishBattle(h);
 });
 
-test('R157 §15: target a clean enemy, counter it in the after-window, and the steal lands', () => {
+test('CR 110.3a: target a clean enemy, counter it in the after-window, and the steal lands', () => {
   // THE LINE THE GATE COST, and the reason it was escalated: after combat,
   // aim at a spotless enemy, put a -1/-1 counter on it with a {Battle} spell
   // while the trigger sits on the stack, and gain control of it. Under the old
@@ -136,7 +136,7 @@ test('R157 §15: target a clean enemy, counter it in the after-window, and the s
   finishBattle(h);
 });
 
-test('R157 §15: the [Augment] death half fires with no -1/-1-countered ally to give away', () => {
+test('CR 107.8: the [Augment] death half fires with no -1/-1-countered ally to give away', () => {
   const h = new Harness(13602);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -144,7 +144,7 @@ test('R157 §15: the [Augment] death half fires with no -1/-1-countered ally to 
   spawnToken(h, D, 1, 1);                                   // a spotless ally, not given away
   const atk = spawnToken(h, A, 1, 1);
   toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });   // R25: A is present here
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });   // CR 601.4d: A is present here
   // kill it outright: the death trigger must fire even with nothing to hand over
   whiteBox(h, e => e.destroy(e.entity(harv)!, 'dies'));
   assert.equal(h.state.decision?.kind, 'targets',
@@ -177,7 +177,7 @@ function twinFlameBoard(seed: number):
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   spawn(h, D, 'Earnest Defender');                          // 1/3, the [Augment] text is live
   const allies = [spawnToken(h, D, 1, 4), spawnToken(h, D, 1, 4)];
-  // A's own units reach the battle region only by ATTACKING into it (R12), and
+  // A's own units reach the battle region only by ATTACKING into it (CR 601.2), and
   // the "aimed at their own board" case needs two of them there to shoot
   const theirs = [spawnToken(h, A, 1, 4), spawnToken(h, A, 1, 4)];
   giveResources(h, A, 'fire', 3);                           // Twin Flame rr/3
@@ -186,7 +186,7 @@ function twinFlameBoard(seed: number):
   return { h, A, D, allies, theirs };                       // A holds priority
 }
 
-test('R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two', () => {
+test('CR 109.3d: two targeted allies are TWO TRIGGERS on the stack, not one that makes two', () => {
   // The ruling is "two targets, two TRIGGERS, two 1/1s" — and the trigger count
   // is not cosmetic. Under the old log-tail reconstruction one trigger made two
   // tokens, so a negate aimed at it took BOTH, an ordering question listed one
@@ -211,7 +211,7 @@ test('R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that
   finishBattle(h);
 });
 
-test('R157 §16: an enemy spell targeting TWO allies makes TWO 1/1s', () => {
+test('CR 109.3d: an enemy spell targeting TWO allies makes TWO 1/1s', () => {
   const { h, A, D, allies } = twinFlameBoard(13610);
   const before = unitsOf(h, D).length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Twin Flame') });
@@ -224,7 +224,7 @@ test('R157 §16: an enemy spell targeting TWO allies makes TWO 1/1s', () => {
   finishBattle(h);
 });
 
-test('R157 §16: the same spell aimed at ONE ally still makes exactly one', () => {
+test('CR 109.3d: the same spell aimed at ONE ally still makes exactly one', () => {
   const { h, A, D, allies } = twinFlameBoard(13611);
   const before = unitsOf(h, D).length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Twin Flame') });
@@ -235,7 +235,7 @@ test('R157 §16: the same spell aimed at ONE ally still makes exactly one', () =
   finishBattle(h);
 });
 
-test('R157 §16: a spell aimed at the enemy\'s OWN units makes none', () => {
+test('CR 109.3d: a spell aimed at the enemy\'s OWN units makes none', () => {
   // the multiplicity is over TARGETED ALLIES, not over targets: A shooting
   // A's own board is not "an ally becomes the target of an enemy spell"
   const { h, A, D, theirs } = twinFlameBoard(13612);
@@ -281,7 +281,7 @@ function bothLedgersMoved(seed: number): { h: Harness; A: Seat; D: Seat; prey: E
   return { h, A, D, prey };                                 // D holds priority
 }
 
-test('R157 §21: the half is named at CAST, and "gained" reads only the gained ledger', () => {
+test('CR 205.3: the half is named at CAST, and "gained" reads only the gained ledger', () => {
   const { h, D, prey } = bothLedgersMoved(13620);
   const ledger = new E(h.state);
   assert.equal(ledger.battleCounter(h.state.battle!.region, `lifeLost:${D}`), 7, 'lost 7');
@@ -298,7 +298,7 @@ test('R157 §21: the half is named at CAST, and "gained" reads only the gained l
   finishBattle(h);
 });
 
-test('R157 §21: the other half of the same board reads the lost ledger', () => {
+test('CR 205.3: the other half of the same board reads the lost ledger', () => {
   const { h, D, prey } = bothLedgersMoved(13621);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Retribution Thing') });
   pick(h, { unit: prey });
@@ -308,9 +308,9 @@ test('R157 §21: the other half of the same board reads the lost ledger', () => 
   finishBattle(h);
 });
 
-test('R157 §21: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it', () => {
-  // R57's whole point: the opponent responds to a fully declared effect. The
-  // half cannot be re-chosen once it is on the stack, and R1 still reads the
+test('CR 205.3: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it', () => {
+  // CR 702.5's whole point: the opponent responds to a fully declared effect. The
+  // half cannot be re-chosen once it is on the stack, and CR 107.8 still reads the
   // AMOUNT at resolution — so a "gained" cast whose gained ledger grows in the
   // response window deals the bigger number, and never switches to "lost".
   const { h, D, prey } = bothLedgersMoved(13622);
@@ -323,7 +323,7 @@ test('R157 §21: the mode is FIXED at cast — a ledger that moves afterwards do
     'still "gained" — nobody was asked again');
   pass(h); pass(h);
   assert.equal(ent(h, prey)!.damage, 7,
-    'the declared LEDGER is fixed at cast; the AMOUNT in it is read at resolution (R1)');
+    'the declared LEDGER is fixed at cast; the AMOUNT in it is read at resolution (CR 107.8)');
   finishBattle(h);
 });
 
@@ -336,7 +336,7 @@ test('R157 §21: the mode is FIXED at cast — a ledger that moves afterwards do
 // and legalActions stops offering it), which is exactly the behaviour the
 // ruling refuses.
 
-test('R157 §22: No Hand Killer is activatable with an EMPTY hand, and burns its [once] for nothing', () => {
+test('CR 109.9c: No Hand Killer is activatable with an EMPTY hand, and burns its [once] for nothing', () => {
   const h = new Harness(13630);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -353,7 +353,7 @@ test('R157 §22: No Hand Killer is activatable with an EMPTY hand, and burns its
   assert.ok(!actionKeys(h, P).includes(act), 'the [once] budget was spent on the pointless activation');
 });
 
-test('R157 §22: with cards in hand the same ability still offers a real X, and X = 0 is one of the options', () => {
+test('CR 109.9c: with cards in hand the same ability still offers a real X, and X = 0 is one of the options', () => {
   const h = new Harness(13631);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -382,11 +382,11 @@ test('R157 §22: with cards in hand the same ability still offers a real X, and 
 /** the batch replacement as the engine calls it, on a real anchor */
 function extrasFor(h: Harness, anchor: Entity, batch: TokenRequest[]): TokenRequest[] {
   const e = new E(h.state);
-  // R268: the hook is printed inside the [Augment] box, so it lives in augmentBox
+  // CR 721.1: the hook is printed inside the [Augment] box, so it lives in augmentBox
   return radiantHook('Automaton of Abundance', 'replaceTokenBatch')!(e, anchor, batch) ?? [];
 }
 
-test('R157 §24: a Robot 2 and a Robot 5 in one batch yield TWO extras, one of each', () => {
+test('CR 304.14: a Robot 2 and a Robot 5 in one batch yield TWO extras, one of each', () => {
   const h = new Harness(13640);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -401,7 +401,7 @@ test('R157 §24: a Robot 2 and a Robot 5 in one batch yield TWO extras, one of e
     'one of each, not two of the first');
 });
 
-test('R157 §24: three IDENTICAL Robot 2s are one unique token and still yield ONE extra', () => {
+test('CR 304.14: three IDENTICAL Robot 2s are one unique token and still yield ONE extra', () => {
   const h = new Harness(13641);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -416,7 +416,7 @@ test('R157 §24: three IDENTICAL Robot 2s are one unique token and still yield O
   assert.equal(extras[0]!.x, 2);
 });
 
-test('R157 §24: end to end — Manufacture\'s Robot 3/2/1 is THREE unique tokens', () => {
+test('CR 708.9: end to end — Manufacture\'s Robot 3/2/1 is THREE unique tokens', () => {
   // the whole path, through a real creation batch: one resolving part, three
   // requests with three different X, three extras
   const h = new Harness(13642);
@@ -459,7 +459,7 @@ function rookBoard(seed: number): { h: Harness; A: Seat; D: Seat; theirs: Entity
   return { h, A, D, theirs, curio };                        // A holds priority
 }
 
-test('R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle', () => {
+test('CR 723.5a: a Rook-enabled augment lands on an ENEMY unit during battle', () => {
   const { h, D, theirs, curio } = rookBoard(13650);
   pass(h);                                                  // A declines → D holds priority
   assert.equal(getCard('Curio Drifter').virus, false,
@@ -477,8 +477,8 @@ test('R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle', (
   finishBattle(h);
 });
 
-test('R157 §26: without a Rook the same augment is not offered at all', () => {
-  // the control: this is R95's printed base case ("a {Virus}, from hand, and
+test('CR 723.5a: without a Rook the same augment is not offered at all', () => {
+  // the control: this is CR 723.2's printed base case ("a {Virus}, from hand, and
   // nothing else"), and it is what the permission is overriding
   const h = new Harness(13651);
   toDeployment(h);
@@ -498,21 +498,21 @@ test('R157 §26: without a Rook the same augment is not offered at all', () => {
   finishBattle(h);
 });
 
-test('R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK (R79)', () => {
+test('CR 723.5a: a Rook-enabled augment reaches a SPELL ON THE STACK (CR 723.4)', () => {
   const { h, A, D, curio } = rookBoard(13652);
   giveResources(h, A, 'fire', 3);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Twin Flame') });
-  if (h.state.decision) pick(h, { doneTargets: true });                                  // R126: "up to two" — declare none
+  if (h.state.decision) pick(h, { doneTargets: true });                                  // CR 110.1c: "up to two" — declare none
   const host = h.state.stack[0]!.id;
   const act = { type: 'augment' as const, seat: D, from: 'hand' as const, index: curio, hostStack: host };
   assert.ok(actionKeys(h, D).includes(JSON.stringify(act)),
-    'R79\'s stack host is reachable through the same permission');
+    'CR 723.4\'s stack host is reachable through the same permission');
   h.do(act);
   assert.equal(h.state.stack.length, 2, 'the virus sits above the spell it is augmenting');
   finishBattle(h);
 });
 
-test('R157 §26: the permission is the ROOK CONTROLLER\'s, not everybody\'s', () => {
+test('CR 723.5a: the permission is the ROOK CONTROLLER\'s, not everybody\'s', () => {
   // "[Augment] You may augment…" — `self` is the anchor, so the grant belongs
   // to the Rook's controller. The attacker gets nothing out of it.
   const { h, A, theirs } = rookBoard(13653);

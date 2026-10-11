@@ -1,11 +1,11 @@
-/* R283 — {Reaping} pays ONE card for the whole kill, and its second sentence
+/* CR 802.21 — {Reaping} pays ONE card for the whole kill, and its second sentence
  * is unreachable in this pool.
  *
  * ── WHY THIS WAS WRONG FOR AS LONG AS IT WAS ──────────────────────────
  *
- * R184 built {Reaping} as a kill rider and says so in its own words: none of
+ * The Reaping ruling built {Reaping} as a kill rider and says so in its own words: none of
  * the four cards *"carries a reminder at all. `ui/glossary.ts` is the repo's
- * own statement of it, AND IT IS WHAT R184 READ."* `156-reaping-and-formation`
+ * own statement of it, AND IT IS WHAT […] READ."* `156-reaping-and-formation`
  * repeats that in its header. It is false, and the CT-171 glossary audit found
  * out by opening the scans. Every {Reaping} card prints, in italics above its
  * ability line:
@@ -64,7 +64,7 @@ function board(seed: number): { h: Harness; A: Seat; D: Seat } {
   return { h, A, D: (1 - A) as Seat };
 }
 
-test('R283 §0 PREMISE: the kill-diff seam really pays a reaping source for one dead unit', () => {
+test('CR 802.21 PREMISE: the kill-diff seam really pays a reaping source for one dead unit', () => {
   const { h, A, D } = board(28300);
   const victim = spawn(h, D, 'Unit Token');
   const e = new E(h.state);
@@ -77,7 +77,7 @@ test('R283 §0 PREMISE: the kill-diff seam really pays a reaping source for one 
     'one kill still pays exactly one card — the seam works and the test can see it');
 });
 
-test('R283 §1 CONTROL: a diff with no dead unit pays nothing', () => {
+test('CR 802.21 CONTROL: a diff with no dead unit pays nothing', () => {
   const { h, A, D } = board(28301);
   spawn(h, D, 'Unit Token');
   const e = new E(h.state);
@@ -88,7 +88,7 @@ test('R283 §1 CONTROL: a diff with no dead unit pays nothing', () => {
     'nothing died, so nothing is drawn — the payout is not unconditional');
 });
 
-test('R283 §2 THE FIX: two units dying in one kill draw ONE card, not two', () => {
+test('CR 802.21 THE FIX: two units dying in one kill draw ONE card, not two', () => {
   const { h, A, D } = board(28302);
   const a = spawn(h, D, 'Unit Token');
   const b = spawn(h, D, 'Unit Token');
@@ -103,11 +103,11 @@ test('R283 §2 THE FIX: two units dying in one kill draw ONE card, not two', () 
   e.killRiders(before, new Set(['Reaping']), 'Probe', A);
   assert.equal(h.state.players[A]!.hand.length, drew + 1,
     'the printed reminder reads "kills ONE OR MORE units, draw A CARD" — one card for the '
-    + 'whole kill. Paying per body is the pre-R283 reading, taken from the repo own paraphrase '
+    + 'whole kill. Paying per body is the old reading, taken from the repo own paraphrase '
     + 'because the printed reminder never reached printed.json');
 });
 
-test('R283 §2b and it does not scale with the body count — three dead still draw one', () => {
+test('CR 802.21 and it does not scale with the body count — three dead still draw one', () => {
   const { h, A, D } = board(28303);
   const ids = [spawn(h, D, 'Unit Token'), spawn(h, D, 'Unit Token'), spawn(h, D, 'Unit Token')];
   const e = new E(h.state);
@@ -123,7 +123,7 @@ test('R283 §2b and it does not scale with the body count — three dead still d
     + 'some other off-by-one, three cannot');
 });
 
-test('R283 §3 the fix is barely reachable in this pool, and that is recorded not guessed', () => {
+test('CR 802.21 the fix is barely reachable in this pool, and that is recorded not guessed', () => {
   const printers = allCardNames().filter(n => (getCard(n).attrs ?? []).includes('Reaping'));
   assert.deepEqual(printers.sort(),
     ['Flame of History', 'Invasive Reassignment', 'Noxious Demise', 'Seismomancy'],
@@ -141,10 +141,10 @@ test('R283 §3 the fix is barely reachable in this pool, and that is recorded no
   }
 });
 
-test('R283 §4 nothing in the pool can give a UNIT reaping, which is why the second sentence is not built', () => {
+test('CR 802.21 nothing in the pool can give a UNIT reaping, which is why the second sentence is not built', () => {
   const printers = allCardNames().filter(n => (getCard(n).attrs ?? []).includes('Reaping'));
   assert.ok(printers.length > 0, 'non-vacuity: the pool really does print {Reaping}');
-  // (a) no printer can donate it as an augment/virus — R79 donates augmentAttrs
+  // (a) no printer can donate it as an augment/virus — an augment on a spell donates its augmentAttrs (CR 721.4b)
   for (const n of printers) {
     assert.deepEqual(getCard(n).augmentAttrs ?? [], [],
       `${n} can now donate its attributes to a host. If {Reaping} can land on a UNIT, the unit `

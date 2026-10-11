@@ -1,4 +1,4 @@
-/* R235-adjacent / CT-99 — "WE MOVED IT TO THE BACKLOG" MUST BE CHECKABLE.
+/* CT-99 — "WE MOVED IT TO THE BACKLOG" MUST BE CHECKABLE.
  *
  * ── WHY THIS EXISTS ───────────────────────────────────────────────────
  *

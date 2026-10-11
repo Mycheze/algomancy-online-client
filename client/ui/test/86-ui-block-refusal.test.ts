@@ -15,7 +15,7 @@
  * returns the moment the intent is on the wire, and the refusal lands
  * milliseconds later, by which time the plan is gone. Every network game.
  *
- * WHAT THE FIX IS. R84's shape, widened, exactly as the todo entry says. R84
+ * WHAT THE FIX IS. The Alluring gate's shape, widened, exactly as the todo entry says. That gate
  * asks the ENGINE'S OWN validator whether the plan being built would be
  * refused, so a compulsory block is named rather than discovered; the only
  * thing that kept it to {Alluring} was that the rest of the block legality was
@@ -38,7 +38,7 @@
  * an indent or a line-break anchor so a reformat cannot quietly delete it.
  *
  * NOT CHANGED, AND ASSERTED NOT CHANGED: which blocks are legal. `checkBlocks`
- * is the same checks in the same order, and the last test in the R84 section
+ * is the same checks in the same order, and the last test in the Alluring section
  * puts every declaration `legalActions` offers back through the new verdict.
  */
 import { test } from 'node:test';
@@ -93,7 +93,7 @@ test('#77: the block legality the client could only reach by being refused is no
   assert.equal(blockDeclarationIssue(e, D, { 0: [def[0]!] }, []), null, 'so is a real block');
   const bad = blockDeclarationIssue(e, D, { 9: [def[0]!] }, []);
   assert.ok(bad, 'a column that does not exist is refused');
-  // R321: side-blocks made a key past the attack legal, so the words are about
+  // CR 606.4: side-blocks made a key past the attack legal, so the words are about
   // the BLOCKING column now — one this far out is still refused
   assert.match(bad!, /no such blocking column/, "in the engine's own words, unchanged");
 });
@@ -176,7 +176,7 @@ test('#77: {Feeble} — the unit that cannot block is the one that is named', ()
 });
 
 test('#77: a lone {Sneaky} attacker — nothing survives, and the notice says so', () => {
-  // R20: a lone Sneaky attacker cannot be blocked at all, so there is no
+  // CR 802.14a: a lone Sneaky attacker cannot be blocked at all, so there is no
   // surviving sub-plan. The verdict must not pretend there is one.
   const { h, D, def } = battlefield(7707, ['Whispering Mantid'], ['The Foretold', 'The Foretold']);
   const lone = h.state.battle!.columns.flat();
@@ -187,7 +187,7 @@ test('#77: a lone {Sneaky} attacker — nothing survives, and the notice says so
   assert.deepEqual(v!.offenders.map(o => o.id), [def[0]!], 'and the blocker is named');
 });
 
-// ── the counterattack half (R87): units first, then their riders ──────
+// ── the counterattack half (CR 610.3): units first, then their riders ──────
 
 test('#77: an illegal counterattacker does not cost you the blocks', () => {
   const { h, D, atk, def } = battlefield(7708,
@@ -201,7 +201,7 @@ test('#77: an illegal counterattacker does not cost you the blocks', () => {
 });
 
 test('#77: a token with no unit to travel with is dropped, not the whole plan', () => {
-  // R87 / _passer 2025-05-10: "In order to move spell tokens, you must have
+  // CR 610.3 / _passer 2025-05-10: "In order to move spell tokens, you must have
   // attacked opponent Region… you must send atleast 1 of your unit." A token
   // named with an empty `send` is exactly the mistake that used to wipe the
   // board.
@@ -219,7 +219,7 @@ test('#77: a token with no unit to travel with is dropped, not the whole plan', 
   assert.deepEqual(v!.offenders.map(o => o.id), [tok!.id], 'the token is what is named');
 });
 
-// ── (c) R84's compulsory block, carried through the same machinery ────
+// ── (c) CR 606.2e's compulsory block, carried through the same machinery ────
 
 /** the reported UFAB position: two columns, one Alluring, one able blocker */
 function luredDefender(seed: number): { h: Harness; D: Seat; d1: EntityId } {
@@ -242,7 +242,7 @@ function luredDefender(seed: number): { h: Harness; D: Seat; d1: EntityId } {
   return { h, D, d1 };
 }
 
-test('#77 + R84: a compulsory block is REQUIRED, not an offender', () => {
+test('#77 + CR 606.2e: a compulsory block is REQUIRED, not an offender', () => {
   const { h, D, d1 } = luredDefender(7710);
   // the shape of the original report: the lured unit sent to the other column
   const v = blockVerdict(h.state, D, { 1: [d1] }, [], []);
@@ -253,7 +253,7 @@ test('#77 + R84: a compulsory block is REQUIRED, not an offender', () => {
   assert.deepEqual(Object.keys(v!.keep.blocks).map(Number), [0], 'in the column it is owed to');
 });
 
-test('#77 + R84: the compulsory core is a plan the engine takes', () => {
+test('#77 + CR 606.2f: the compulsory core is a plan the engine takes', () => {
   const { h, D } = luredDefender(7711);
   const v = blockVerdict(h.state, D, {}, [], []);
   assert.ok(v, 'declining is illegal under a live duty');
@@ -263,7 +263,7 @@ test('#77 + R84: the compulsory core is a plan the engine takes', () => {
 });
 
 test('#77: widening the error did not widen the RULE — every legal block is still legal', () => {
-  // the R84 invariant, re-run against the new machinery: a client that refuses
+  // the invariant, re-run against the new machinery: a client that refuses
   // a declaration `legalActions` offers is the same bug wearing the other hat.
   for (const seed of [7712, 7713]) {
     const { h, D } = luredDefender(seed);
@@ -373,7 +373,7 @@ test('#77: …and drops it only when an authoritative state says the declaration
 });
 
 test('#77: a plan the engine would refuse never reaches the wire at all', () => {
-  // The R84 pre-gate is why the post-send verdict branch is belt to braces
+  // The pre-gate is why the post-send verdict branch is belt to braces
   // rather than the main road: an illegal declaration is named in the bar and
   // Confirm is turned off BEFORE anything is sent. Asserted here by pressing
   // it anyway, which is what Enter would do.
@@ -403,7 +403,7 @@ test('#77 wiring: the post-send verdict branch is still there for what the pre-g
   assert.match(MAIN, /blockVerdict\(\s*s,\s*s\.battle!\.defender,\s*blocks,\s*send,\s*spellTokens\s*\)/,
     'the click handler asks the verdict before it sends');
   assert.match(MAIN, /ui\.blockRefusal\s*=\s*verdict;/, 'and holds the verdict for the bar');
-  // R321: with the left side-blocks it lands as a build AND its left offset
+  // CR 606.4a: with the left side-blocks it lands as a build AND its left offset
   assert.match(MAIN, /columns:\s*ui\.columns,\s*left:\s*ui\.blockLeft\s*\}\s*=\s*buildOfPlan\(\s*verdict\.keep\.blocks\s*\)/,
     'putting the surviving plan back on the board rather than clearing it');
   assert.match(MAIN, /data-btn="resetblocks"/, 'the report asked for this button by name');
