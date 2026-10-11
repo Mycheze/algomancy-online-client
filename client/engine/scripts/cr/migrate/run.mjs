@@ -129,7 +129,8 @@ async function runSteps(steps, { decisionsDir } = {}) {
     const { report } = recite({ cites, decisions: loadDecisions(decisionsDir), skipFiles: owned });
     log.recite = report;
     time('recite');
-    if (report.selfCheck?.length) throw Object.assign(new Error(`recite self-check: ${report.selfCheck.length} line(s) (run-log.json recite.selfCheck)`), { log });
+    // the run goes on (so the diff shows them) but ends non-zero
+    if (report.selfCheck?.length) (log.failures ??= []).push(`recite self-check: ${report.selfCheck.length} line(s) — run-log.json recite.selfCheck`);
   }
   if (steps.includes('repin')) {
     const { repin } = await import('./repin.mjs');
@@ -201,7 +202,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const steps = stepsOf();
     const dDir = arg('--decisions') ? resolve(arg('--decisions')) : undefined;
     let log, code = 0;
-    try { log = await runSteps(steps, { decisionsDir: dDir }); }
+    try { log = await runSteps(steps, { decisionsDir: dDir }); if (log.failures?.length) code = 1; }
     catch (e) { log = e.log ?? {}; log.error = String(e.stack ?? e); code = 1; }
     const outDir = join(CR_BUILD_DIR, 'migrate');
     mkdirSync(outDir, { recursive: true });
@@ -209,6 +210,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const brief = Object.fromEntries(Object.entries(log).map(([k, v]) => [k, k === 'recite' ? {
       byKind: v.byKind, leave: v.leave?.length, dropUnapplied: v.dropUnapplied?.length, rewordUnapplied: v.rewordUnapplied?.length,
       titles: v.titles, bindings: { rewritten: v.bindings?.rewritten, unresolved: v.bindings?.unresolved?.length }, files: v.files, notFound: v.notFound,
+      selfCheck: v.selfCheck?.length, handOwned: v.handOwned,
     } : k === 'absorb' ? { recordsWithRulings: v.recordsWithRulings, ownerEntries: v.ownerEntries, scopeMissing: v.scopeMissing, unknownIds: v.unknownIds, bareDropped: v.bareDropped?.length } : v]));
     console.log(JSON.stringify(brief, null, 1));
     process.exit(code);
