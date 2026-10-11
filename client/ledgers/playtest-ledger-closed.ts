@@ -4198,6 +4198,19 @@ export const CLOSED: LedgerEntry[] = [
       "Real. The trigger went on the stack and resolved inside one update; the stack beat replays it on the client, and since 2026-10-03 a beat held the UNIT it made off the board, but not the life: the number, its flash, its cue and the identity-row pulse all moved at the click. Life inside a beat's resolution window is now that beat's result (flash.ts lifeResults/heldLife): the pill, soundPass and beatCensus read the SHOWN life and it lands at the beat's end on the beat's own wake. A cost or combat damage (no beat) shows at once; a resync holds nothing; motion off holds nothing. Mutation-checked six ways. Measured over CDP on HPTR at [66]: ♥33 through both beats, ♥36 as Iyngstra's leaves the strip. Left: the window's closing events are a hand list (phase, turn, combat damage, afterCombat, negated, fizzled, another push).",
   },
   {
+    id: 204, room: "HPTR", date: "2026-10-10",
+    report: "Owner, at [122]: \"We should rework the whole UI, especially during battle, to better use the available space and be more dynamic. There are so many moments where there is an absolute ton of unused space on screen, but the units and the important area is all scrunched into the side of the screen.\"",
+    status: 'fixed',
+    guards: [
+      "448-battle-space-plan.test.ts::§1 the fight is as wide as its columns need",
+      "448-battle-space-plan.test.ts::§2 the HPTR four-rank fight grows",
+      "448-battle-space-plan.test.ts::§4 what the fight cannot use goes back to the bands",
+      "449-battle-board-grid.test.ts::§3 the columns stand in the middle of the fight",
+    ],
+    note:
+      "Real, measured first: in every battle slice of HPTR cards covered 5.5-12.9% of the board; the blocks were fixed halves, the battle rows a fixed 1:1.5, cards capped at 86px, columns packed left, and at 1280x720 a back blocker was clipped out of sight. CT-278, docs/18 Round 7: the fight takes the height its ranks can use, then only the width its columns need (never under the old half), units up to 100px, centred; edges unchanged. The owner reviewed it on HPTR slices and batch J review boards and corrected a first build that took a fixed share.",
+  },
+  {
     id: 205, room: "HPTR", date: "2026-10-10",
     report: "Owner, at [184]: \"We really should hide many of the top right settings toggles in a deeper settings menu. The stuff that usually doesn't need to be touched during a game can just be hidden.\"",
     status: 'fixed',

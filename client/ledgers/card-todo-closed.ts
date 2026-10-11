@@ -10938,4 +10938,31 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-10-11. Two seams, one rule. (1) E.fireEvent gained `beingPlayed`: the asPlay spawn (Wake the Dead, The Bonesculptor) dispatches its 'cardPlayed' with the arriving body excluded from the listeners, which fixes Bloomcaster and Void Mandible and every future 'cardPlayed' listener. (2) A plain unit's play is announced on its own 'spawned' (R263), which a \"When I spawn\" ability must keep hearing, so the two cards that read 'spawned' as a play (Stalwart Sentinel, Proph) drop their own arrival with the shared helpers.ts isOwnArrival. 444 derives every play listener in the pool (21 cards) and plays each from hand, cache, bin and deck.",
     status: 'done',
   },
+  {
+    id: 278, area: 'client', severity: 'major',
+    title: 'the battle board wastes space: the units and the important area are scrunched to one side',
+    detail:
+      'Playtest report #204 (HPTR, 2026-10-10, owner, at [122]): "We should rework the whole UI, '
+      + 'especially during battle, to better use the available space and be more dynamic. There are '
+      + 'so many moments where there is an absolute ton of unused space on screen, but the units and '
+      + 'the important area is all scrunched into the side of the screen." A layout project for the '
+      + 'regions board, not one defect. Parked by the owner on 2026-10-11 as bigger than the round '
+      + 'that took the other three HPTR reports.',
+    evidence: 'playtest report #204; HPTR replays faithfully (198/198) at f50c8ed.',
+    fix: 'Its own round. Start by measuring: slice HPTR at [122] (tools/slice-game.py), screenshot '
+      + 'the battle at 1440x900 and 1280x720, and map which zones hold what share of the screen '
+      + 'before proposing a layout to the owner.',
+    proof: null,
+    verify: 'Open HPTR sliced at [122] on the regions board and look at how much of the screen the '
+      + 'battle uses.',
+    reportId: 204,
+    guards: [
+      '448-battle-space-plan.test.ts::§1 the fight is as wide as its columns need',
+      '448-battle-space-plan.test.ts::§2 the HPTR four-rank fight grows',
+      '448-battle-space-plan.test.ts::§3 units grow to the owner cap of 100px',
+      '448-battle-space-plan.test.ts::§5 a wide attack pushes the other region aside only as far as it needs',
+    ],
+    closed: 'FIXED 2026-10-11 (docs/18 Round 7). The owner chose: the fight block grows, edges stay, units up to a cap; on review corrected it to "the space it needs": fit.ts planBattleBoard takes the height first (the In Play bands give way), then only the width the columns need at that size, never under the old half board; the cap is 100px. Owner on the review server: "It takes the space that it needs in a simple way and makes sure that everything stays nice and visible."',
+    status: 'done',
+  },
 ];
