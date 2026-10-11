@@ -8,21 +8,31 @@
  * 43px beside a 1048×388 empty rectangle at 1440×900, and at 1280×720 its back
  * blocker rank was cut off.
  *
+ * The owner's correction to the first build (which gave the fight three
+ * quarters of the board whatever it held): "it's taking up the space that it
+ * doesn't need … the horizontal space should be expanded when needed", and
+ * "the 120px cap is a bit big. I think it should cap at 100px/card during a
+ * fight." So: height first, then only the width the columns need, never under
+ * the old half; the rest stays with the other region.
+ *
  * ui/fit.ts planBattleBoard decides the board's shape in a battle; this pins
  * its arithmetic on the boards HPTR was measured on (the `.lboard` content
  * boxes at 1280×720, 1344×768, 1440×900 and 1920×1080, and a narrow one).
  *
- * §1 the fight's column takes most of the width; the idle one is a narrow band
+ * §1 the fight is as wide as its columns need — never under the old half,
+ *    and a fight that fits in half keeps the old half-and-half board
  * §2 the HPTR four-rank fight: bigger at 1440×900, every rank standing at 1280×720
- * §3 units grow to the owner's ~120px cap where there is room, never past it
+ * §3 units grow to the owner's 100px cap where there is room, never past it
  * §4 the height the fight cannot use goes back to the bands, all of it
- * §5 the idle column is as wide as what it holds wants, within its bounds
+ * §5 a wide attack pushes the other region aside only as far as it needs,
+ *    and never past one floor card (two for the send slot)
  * §6 more columns or more ranks never mean bigger cards
  * §7 the DOM pass writes the shape on the board before any zone is fitted
+ * §8 the band you build a formation from keeps its units at the slots' size
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { battleMeasure, FLOOR, IDLE_SHARE, planBattleBoard, SEND_SLOT_SPAN, type BattleBoardIn } from '../fit.ts';
+import { battleMeasure, FLOOR, planBattleBoard, SEND_SLOT_SPAN, type BattleBoardIn } from '../fit.ts';
 import { BAND, BATTLE_CAP, fitBoard, GROW } from '../layout.ts';
 
 /** the `.lboard` content boxes measured on HPTR (board box less its 2+4px padding) */
@@ -41,7 +51,7 @@ function input(board: { w: number; h: number }, cols: number, ranksTop: number, 
     board, gapX: 8, gapY: 6, cols, ranksTop, ranksBot,
     o: { cw: BATTLE_CAP, gap: 6, chrome: 8, floor: 40, side: { n: 0, frac: 0.6, pad: 12 } },
     chrome: CHROME, bandMin: BAND.two, bandFloor: BAND.one,
-    idle: { send: false, cards: 0, invaders: 0, pad: 20, gap: 6, rowCw: 52, lineCw: 78, floor: FLOOR, ...idle },
+    idle: { send: false, pad: 20, gap: 6, floor: FLOOR, ...idle },
   };
 }
 const plan = (i: BattleBoardIn) => {
@@ -54,23 +64,46 @@ const plan = (i: BattleBoardIn) => {
  * column; three row gaps are outside the fight) */
 const fightBox = (i: BattleBoardIn, p: { idle: number; bandTop: number; bandBot: number }) =>
   ({ w: i.board.w - i.gapX - p.idle, h: i.board.h - 3 * i.gapY - p.bandTop - p.bandBot });
+/** what the plan's columns need across, at its card width */
+const needW = (i: BattleBoardIn, p: { cw: number }) => battleMeasure(Math.max(1, i.cols), i.ranksTop, i.ranksBot, i.o).width(p.cw) + CHROME.w;
+const half = (i: BattleBoardIn) => (i.board.w - i.gapX) / 2;
 
 const BATTLES: Array<[number, number, number]> = [[1, 1, 1], [2, 2, 2], [3, 0, 2], [2, 1, 2], [5, 1, 1], [7, 0, 1], [9, 2, 2]];
 
-test('§1 the fight column takes most of the board; the idle one is a narrow band at the side', () => {
+test('§1 the fight is as wide as its columns need, never under the old half', () => {
   for (const [name, board] of Object.entries(BOARDS)) {
     for (const [c, t, b] of BATTLES) {
       const i = input(board, c, t, b);
       const p = plan(i);
       const f = fightBox(i, p);
-      // the old board gave the fight exactly half the width, whatever it held
-      assert.ok(f.w >= board.w * (1 - IDLE_SHARE) - i.gapX,
-        `${name}, ${c} cols ${t}+${b}: the fight is ${f.w} of ${board.w}px wide`);
-      assert.ok(p.idle <= Math.max(i.idle.pad + FLOOR, board.w * IDLE_SHARE), `${name}: idle ${p.idle}px`);
-      assert.ok(p.idle >= i.idle.pad + FLOOR, `${name}: the idle band still holds one card at the floor`);
+      const need = needW(i, p), h = half(i);
+      assert.equal(f.w, p.fight, `${name}: the two columns fill the board`);
+      assert.ok(p.fight >= h, `${name} ${c}/${t}+${b}: never under the half it had (${p.fight} < ${h})`);
+      if (need <= h) {
+        // a fight that fits in half keeps the old board exactly
+        assert.equal(p.wide, false, `${name} ${c}/${t}+${b}: needs ${need}px of ${h}, so no wider`);
+        assert.equal(p.fight, h);
+        assert.equal(p.idle, h, 'and the other region keeps its half');
+      } else {
+        assert.equal(p.wide, true);
+        // as wide as it needs (a wide fight is two tracks: at least half and a gap)…
+        assert.ok(p.fight <= Math.max(need, h + i.gapX) + 1, `${name} ${c}/${t}+${b}: ${p.fight}px for a need of ${need}`);
+        // …unless the board runs out first, and then the columns fan or shrink inside it
+        assert.ok(p.fight >= Math.min(need, board.w - i.gapX - (i.idle.pad + FLOOR)) - 1, `${name}: it gets what it needs`);
+      }
     }
   }
-  assert.ok(IDLE_SHARE <= 0.25, 'a narrow band: a quarter of the board at most');
+  // HPTR s084 (two columns, four ranks) is height-bound: the old half-and-half
+  // board with bigger units, not a fight in three quarters of the table
+  for (const name of ['1344x768', '1440x900', '1920x1080']) {
+    const p = plan(input(BOARDS[name]!, 2, 2, 2));
+    assert.equal(p.wide, false, `${name}: s084 stays half and half`);
+  }
+  // HPTR s129 (three columns at the cap) at 1440 needs more than half: it widens, by what it needs
+  const i129 = input(BOARDS['1440x900']!, 3, 0, 2);
+  const p129 = plan(i129);
+  assert.equal(p129.cw, BATTLE_CAP);
+  assert.equal(p129.wide, needW(i129, p129) > half(i129));
 });
 
 test('§2 the HPTR four-rank fight grows at 1440x900 and every rank stands at 1280x720', () => {
@@ -93,8 +126,8 @@ test('§2 the HPTR four-rank fight grows at 1440x900 and every rank stands at 12
   }
 });
 
-test('§3 units grow to the owner cap of about 120px where there is room, and never past it', () => {
-  assert.equal(BATTLE_CAP, 120, 'the owner\'s number (2026-10-11): "a moderate cap"');
+test('§3 units grow to the owner cap of 100px where there is room, and never past it', () => {
+  assert.equal(BATTLE_CAP, 100, 'the owner, on the board (2026-10-11): "it should cap at 100px/card during a fight"');
   assert.ok(BATTLE_CAP > Math.round(78 * GROW), 'above the field\'s cap the battle used to share');
   const roomy = plan(input(BOARDS['1920x1080']!, 1, 1, 1));
   assert.equal(roomy.cw, BATTLE_CAP, 'one column a rank a side at 1920x1080 reaches the cap');
@@ -128,22 +161,24 @@ test('§4 what the fight cannot use goes back to the bands, and the bands never 
   assert.ok(p.bandTop > 2 * BAND.two, `seven columns one rank deep: the bands get ${p.bandTop}px`);
 });
 
-test('§5 the idle column holds what it holds: the send slot, the counterattackers on their way, its invaders', () => {
-  const board = BOARDS['1440x900']!;
-  const empty = plan(input(board, 2, 2, 2));
-  assert.equal(empty.idle, 20 + FLOOR, 'empty: one floor card and its padding');
-  const send = plan(input(board, 2, 2, 2, { send: true }));
-  assert.ok(send.idle >= 20 + SEND_SLOT_SPAN * FLOOR + 6, `the send box keeps its two-card slot (${send.idle}px)`);
-  const three = plan(input(board, 2, 2, 2, { cards: 3 }));
-  assert.equal(three.idle, 20 + 3 * 58 - 6, 'three counterattackers on their way stand one row deep at the row size');
-  const many = plan(input(board, 2, 2, 2, { cards: 12 }));
-  assert.equal(many.idle, Math.round(board.w * IDLE_SHARE), 'twelve stop at a quarter of the board and wrap');
-  // a fight that needs the width keeps it: twelve columns at 1280 leave the idle at its least
-  const wi = input(BOARDS['1280x720']!, 12, 1, 1, { cards: 4 });
-  const wide = plan(wi);
-  assert.ok(wide.idle < 20 + 4 * 58 - 6, `the premise: the idle band gets less than it wants (${wide.idle}px)`);
-  assert.ok(battleMeasure(12, 1, 1, wi.o).width(wide.cw) + CHROME.w <= fightBox(wi, wide).w,
-    'the fight\'s columns are never squeezed for the idle band');
+test('§5 a wide attack pushes the other region aside only as far as it needs, and never past a floor card', () => {
+  // seven columns one rank deep (HPTR, turn 6): wide at every size
+  for (const [name, board] of Object.entries(BOARDS)) {
+    const i = input(board, 7, 0, 1);
+    const p = plan(i);
+    assert.equal(p.wide, true, `${name}: seven columns need more than half`);
+    assert.ok(p.idle >= i.idle.pad + FLOOR, `${name}: the other column keeps one card at the floor (${p.idle})`);
+    assert.ok(needW(i, p) <= p.fight + 1 || p.idle === i.idle.pad + FLOOR, `${name}: the line stands in its column`);
+  }
+  // the send box keeps its two-card slot
+  const send = plan(input(BOARDS['1280x720']!, 12, 1, 1, { send: true }));
+  assert.ok(send.idle >= 20 + SEND_SLOT_SPAN * FLOOR + 6, `the send box keeps its slot (${send.idle}px)`);
+  const nosend = plan(input(BOARDS['1280x720']!, 12, 1, 1));
+  assert.ok(nosend.idle < 20 + FLOOR + 14, `twelve columns take all but about one floor card (${nosend.idle}px left)`);
+  // and its columns are never squeezed for the other region
+  const wi = input(BOARDS['1440x900']!, 5, 1, 1);
+  const wp = plan(wi);
+  assert.ok(needW(wi, wp) <= fightBox(wi, wp).w, 'the fight\'s columns fit their column');
 });
 
 test('§6 more columns or more ranks never mean bigger cards', () => {
@@ -170,22 +205,44 @@ test('§7 the DOM pass writes the shape onto a fighting board before any zone is
   g.getComputedStyle = () => ({ getPropertyValue: () => '', columnGap: '8px', rowGap: '6px' });
   try {
     const rect = (w: number, h: number) => ({ width: w, height: h, x: 0, y: 0, top: 0, left: 0, right: w, bottom: h });
-    const vars = new Map<string, string>();
-    const style = { setProperty: (k: string, v: string) => { vars.set(k, v); }, getPropertyValue: () => '' };
-    const none = { length: 0 };
-    const cols = { style: { getPropertyValue: (v: string) => (v === '--rowstop' || v === '--rowsbot' ? '2' : '') },
-      querySelectorAll: () => ({ length: 2 }) };
-    const fight = { querySelector: (sel: string) => (sel === '.cols' ? cols : null), querySelectorAll: () => none };
-    const idle = { dataset: { region: '1' }, classList: { contains: () => false }, querySelectorAll: () => none };
-    const lb = {
-      style, getBoundingClientRect: () => rect(1166, 622), querySelectorAll: () => none,
-      querySelector: (sel: string) => (sel === '.lfight.focus' ? fight : sel === '.lfight:not(.focus)' ? idle : null),
-    };
-    const root = { querySelector: (sel: string) => (sel === '.lboard[data-fight]' ? lb : null), querySelectorAll: () => [] } as unknown as ParentNode;
-    fitBoard(root, 78);
-    // the stand-in's paddings are all zero (the stub reads every one as '')
-    const p = plan({ ...input(BOARDS['1440x900']!, 2, 2, 2, { pad: 0 }), chrome: { w: 0, h: 0 } });
-    assert.deepEqual(Object.fromEntries(vars), { '--lidle': `${p.idle}px`, '--lbandt': `${p.bandTop}px`, '--lbandb': `${p.bandBot}px` },
-      'the board gets the plan for what it holds');
+    // HPTR s084 (two columns, two ranks a side: fits in half) and turn 6 (seven columns, one rank: wide)
+    for (const [n, top, bot] of [[2, 2, 2], [7, 0, 1]] as const) {
+      const vars = new Map<string, string>();
+      const style = { setProperty: (k: string, v: string) => { vars.set(k, v); }, getPropertyValue: () => '' };
+      const none = { length: 0 };
+      const cols = { style: { getPropertyValue: (v: string) => (v === '--rowstop' ? String(top) : v === '--rowsbot' ? String(bot) : '') },
+        querySelectorAll: () => ({ length: n }) };
+      const fight = { querySelector: (sel: string) => (sel === '.cols' ? cols : null), querySelectorAll: () => none };
+      const idle = { dataset: { region: '1' }, classList: { contains: () => false }, querySelectorAll: () => none };
+      const lb = {
+        style, dataset: {} as Record<string, string>, getBoundingClientRect: () => rect(1166, 622), querySelectorAll: () => none,
+        querySelector: (sel: string) => (sel === '.lfight.focus' ? fight : sel === '.lfight:not(.focus)' ? idle : null),
+      };
+      const root = { querySelector: (sel: string) => (sel === '.lboard[data-fight]' ? lb : null), querySelectorAll: () => [] } as unknown as ParentNode;
+      fitBoard(root, 78);
+      // the stand-in's paddings are all zero (the stub reads every one as '')
+      const p = plan({ ...input(BOARDS['1440x900']!, n, top, bot, { pad: 0 }), chrome: { w: 0, h: 0 } });
+      assert.deepEqual(Object.fromEntries(vars), { '--lidle': `${p.idle}px`, '--lbandt': `${p.bandTop}px`, '--lbandb': `${p.bandBot}px` },
+        `${n} columns: the board gets the plan for what it holds`);
+      assert.equal(p.wide, n === 7, 'the premise: only the seven-column attack needs more than half');
+      assert.equal('wide' in lb.dataset, p.wide, `${n} columns: three tracks only when the fight needs more than half`);
+    }
   } finally { g.getComputedStyle = had; }
+});
+
+test('§8 a band you build a formation from keeps its units at the size of the slots they go to', () => {
+  // battle-space-defend: four columns attack you, you declare blocks with four
+  // units waiting in your In Play — they stood at ~50px beside ~85px slots
+  for (const name of ['1344x768', '1440x900', '1920x1080']) {
+    const base = input(BOARDS[name]!, 6, 1, 2);
+    const plain = plan(base);
+    const cap = Math.round(78 * GROW);
+    const built = plan({ ...base, source: { top: 0, bot: 4, cap, pad: 12 } });
+    const unit = Math.floor((built.bandBot - 12) / 1.4);
+    assert.ok(unit >= Math.min(built.cw, cap) - 1, `${name}: the waiting units (${unit}px) stand at the slots' ${built.cw}px`);
+    assert.ok(Math.floor((plain.bandBot - 12) / 1.4) < plain.cw, `${name}: the premise — without it they were smaller`);
+    assert.ok(built.bandTop < built.bandBot, `${name}: the other band still gives way (${built.bandTop} < ${built.bandBot})`);
+    const f = fightBox(base, built);
+    assert.ok(battleMeasure(6, 1, 2, base.o).height(built.cw) + CHROME.h <= f.h, `${name}: and the fight still stands`);
+  }
 });

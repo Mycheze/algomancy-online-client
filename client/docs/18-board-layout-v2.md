@@ -323,7 +323,8 @@ cut off.
    and an empty or near-empty In Play gives its height to the fight. The
    columns stand in the middle of the fight and are sized to fill it.
 2. **Units may grow to ~120px** where there is room — a moderate cap, not
-   unbounded. The 40px battle floor stays the floor.
+   unbounded. The 40px battle floor stays the floor. *(Corrected the same day
+   to 100px, and the width to "only what it needs" — see below.)*
 3. **The edges do not change much**: the rail, the info offshoot, the hand
    dock, the top bar, the action bar and the 1500px `#app` cap stay.
 4. **Every screen size matters equally**: it scales with the window.
@@ -339,7 +340,7 @@ and the classic board is untouched):
   keep their place and width; below them the fight's column is two tracks, the
   idle column one (`--lidle`). Each L is still a band and a column, so the tints
   (`.lback`), the seam and the ring follow by grid lines alone.
-- **The shape is planned from the room** (`ui/fit.ts planBattleBoard`, written by
+- **The shape is planned from the room** (first build; the width rule is corrected below) (`ui/fit.ts planBattleBoard`, written by
   `ui/layout.ts shapeBoard` before any zone is fitted, as `--lidle`, `--lbandt`,
   `--lbandb`). The bands stand at the info offshoot's two-line height (`BAND.two`,
   80px) while the fight can use the height; whatever the fight cannot use — its
@@ -353,7 +354,7 @@ and the classic board is untouched):
   board (`IDLE_SHARE`), and never into width the fight's columns need. Its
   inputs are the board's own box, card counts and paddings, so it cannot chase
   its tail.
-- **The cap is 120px** (`BATTLE_CAP`; the field keeps `GROW`). The invader strip's
+- **The cap was 120px** (`BATTLE_CAP`; 100px since the correction below; the field keeps `GROW`). The invader strip's
   cards stay 0.6× the line's.
 - **The columns are centred** in the fight, by auto margins (which give way to
   the edge when the row is full, so a crowded row is never cut at both ends),
@@ -369,8 +370,8 @@ and the classic board is untouched):
   (half the board), not the fight column's; in a battle both shapes have the
   same eight corners, so the entry still tweens.
 
-Before → after on the same HPTR slices (`client/ui/test/448` pins the
-arithmetic on these boards): the four-rank fight (s084) 43 → 66px at 1440×900,
+Before → after the FIRST build, on the same HPTR slices (superseded by the
+correction below): the four-rank fight (s084) 43 → 66px at 1440×900,
 60 → 98px at 1920×1080, and at 1280×720 still the 40px floor but with all four
 ranks standing (the back blocker was cut off); the three-column attack (s129)
 77 → 120px at 1440×900, 48 → 65px at 1280×720, 56 → 82px at 1344×768; the
@@ -385,9 +386,60 @@ two idle bands and the stack's band — but YOUR region is the focus and stays a
 it was; for a later round), the field's `GROW`, the hand dock, the column labels
 and vs line inside the battle table.
 
-Guards: `client/ui/test/448-battle-space-plan` (the plan's arithmetic and the
-DOM pass that writes it), `449-battle-board-grid` (`data-fight` in both rounds
-from both seats, the grid per side, the centring), `450-ring-takes-the-visitor-info`.
+#### The owner's correction (2026-10-11, same day, on a live dev server)
+
+The first build gave the fight three quarters of the board whatever it held
+(the idle column at most a quarter, the bands at their minimum, a 120px cap).
+The owner, reviewing it on the HPTR slices: *"it's taking up the space that it
+doesn't need. Those first several [HPTR] links were to a combat that really
+didn't need all that additional horizontal space."* — *"the 120px cap is a bit
+big. I think it should cap at 100px/card during a fight."* — *"the horizontal
+space should be expanded *when needed*."*
+
+The rule now (settled): **size the fight to what its columns NEED, not to a
+share of the board.**
+
+1. **Height first.** The fight takes as much height as its ranks can use at up
+   to the cap; the In Play bands give way (as above).
+2. **Then only the width it needs.** The fight block is as wide as its columns
+   stand at that size (their gaps and chrome, and the invader strip when there
+   is one) — and never narrower than the half-board block it had before the
+   round. A fight that fits in half keeps the old half-and-half board EXACTLY
+   (style.css `.lboard.fighting[data-fight]`: two tracks); a wider one gets
+   `data-wide` (three tracks, the bands still split at half) and pushes the
+   other region aside by as much as it needs, never past one floor card of the
+   idle column (two for the send slot).
+3. **Everything it does not need stays with the other region**, as before the
+   round. So a small or height-bound fight (HPTR s084: two columns, four ranks)
+   is the old 50/50 board with taller, bigger units; only a wide attack moves
+   the seam.
+4. **The cap is 100px** (`BATTLE_CAP`). The 40px floor stays.
+
+`IDLE_SHARE` and the idle column's "as wide as what it holds wants" are gone:
+the idle column is simply what the fight leaves. Two fixes from the batch-J
+review boards (`server/scenarios-j.ts`, battle-space-*) came with it:
+
+- **The band you build a formation FROM keeps its units at the slots' size.**
+  Declaring blocks, your four waiting units stood at ~50px beside ~85px empty
+  slots (the band had given its height to the fight). planBattleBoard's
+  `source` — the In Play bands holding units you can put in the declaration
+  (`.card.playable`, i.e. ui/battle.ts formationCandidates) — picks the
+  largest card width at which the fight AND that band both stand, so the units
+  and the slots match (77/77px on the defend board at 1440×900).
+- **A column's label never wraps** (`max-width: var(--cw)`, one line,
+  ellipsis): "column 5 · side-block" wrapped to two lines, which dropped that
+  column's slots below the rest and widened it past the plan.
+
+After the correction (`layout-measure/after2/`): HPTR s084 is 46px at
+1344×768 and 66px at 1440×900 in the old half block (531 / 579px wide), every
+rank standing; s129 (three columns) 82px / 100px, also in the half block; the
+seven-column attack 100px in an 812px block at both sizes.
+
+Guards: `client/ui/test/448-battle-space-plan` (the plan's arithmetic — need
+not share, never under half, the 100px cap, the source band — and the DOM pass
+that writes it), `449-battle-board-grid` (`data-fight` in both rounds from both
+seats, the half-and-half grid and the wide one per side, the centring, the
+labels), `450-ring-takes-the-visitor-info`.
 
 ## The toggle
 

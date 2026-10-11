@@ -2,17 +2,20 @@
  * the markup and the stylesheet that make the battle board's shape.
  *
  * The owner chose the shape: the two Ls, their tints, the seam and the ring
- * stay; the block holding the fight takes most of the board, the region not
- * in use is "smooshed to the side", and the edges (the info offshoots) do not
- * move. Before the round the battle used the board's one 6 × 9 grid, so the
+ * stay, the edges (the info offshoots) do not move, and the fight gets the
+ * room it NEEDS — "the horizontal space should be expanded when needed"
+ * (their correction to a first build that gave it three quarters of the board
+ * whatever it held). So a fight that fits in half keeps the half-and-half
+ * board, and a wider one (`data-wide`, ui/layout.ts) widens. Before the round the battle used the board's one 6 × 9 grid, so the
  * fight's block was always exactly half the board wide (`yfight yfight yfight
  * tfight tfight tfight`) and its columns packed against its left edge.
  *
  * §1 the board says which column holds the fight, in both rounds and from
  *    both seats, and says nothing outside a battle (the board there is the
  *    one it was); the counterattackers on their way wrap down the idle column
- * §2 the stylesheet: a battle grid per side, the fight's column two tracks of
- *    three, the bands still split at half, the tints and seam following
+ * §2 the stylesheet: a battle grid whose columns are the old halves; with
+ *    `data-wide` one per side, the fight's column two tracks of three, the
+ *    bands still split at half; the tints and seam following both
  * §3 the columns stand in the middle of the fight, in the width the invader
  *    strip leaves them, by auto margins (which give way when the row is full)
  */
@@ -96,9 +99,17 @@ const span = (rows: string[][], name: string): [number, number] => {
   return [Math.min(...at), Math.max(...at)];
 };
 
-test('§2 a battle grid per side: the fight column two tracks of three, the bands still split at half', () => {
+test('§2 the battle grid: the old halves, and per side when the fight needs more, the bands still split at half', () => {
+  // a fight that fits in half: two tracks, exactly the half-and-half board it was
+  const base = rule('.lboard.fighting[data-fight]');
+  assert.match(base, /grid-template-rows: var\(--lbandt[^;]*\) auto minmax\(0, [\d.]+fr\) auto var\(--lbandb/);
+  assert.match(base, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.deepEqual(areas(base), [['tinfo', 'tplay'], ['yinv', 'tfight'], ['yfight', 'tfight'], ['yfight', 'tinv'], ['yplay', 'yinfo']]);
+  assert.match(rule('.lboard[data-fight] > .lback.mine.b'), /grid-column: 1 \/ 2/);
+  assert.match(rule('.lboard[data-fight] > .lback.theirs.b'), /grid-column: 2 \/ 3/);
+  assert.ok(CSS.includes('.lboard[data-fight] > .lseam { grid-column: 2; }'), 'the seam at the half');
   for (const side of ['mine', 'theirs'] as const) {
-    const body = rule(`.lboard.fighting[data-fight="${side}"]`);
+    const body = rule(`.lboard.fighting[data-fight="${side}"][data-wide]`);
     const rows = areas(body);
     assert.equal(rows.length, 5, `${side}: band · row · fight · row · band`);
     assert.ok(rows.every(r => r.length === 3), `${side}: three tracks`);
@@ -110,7 +121,7 @@ test('§2 a battle grid per side: the fight column two tracks of three, the band
     // the idle track is the measured one; the half track is where the bands split
     const tracks = cols.split(/\s+(?![^(]*\))/);
     assert.equal(tracks.length, 3, `${side}: ${cols}`);
-    assert.match(tracks[i0]!, /^var\(--lidle/, `${side}: the idle column is the planned width`);
+    assert.match(tracks[i0]!, /^var\(--lidle/, `${side}: the idle column is what the fight leaves`);
     const half = side === 'mine' ? 0 : 2;
     assert.equal(tracks[half], 'calc(50% - 4px)', `${side}: one track is exactly the old half (3 of 6 tracks and 2 gaps)`);
     // the bands split at that track, whichever side the fight is on: the info
@@ -128,17 +139,18 @@ test('§2 a battle grid per side: the fight column two tracks of three, the band
     assert.deepEqual(span(rows, 'yinv'), span(rows, 'yfight'), `${side}: my invaders row is my column's width`);
     assert.deepEqual(span(rows, 'tinv'), span(rows, 'tfight'), `${side}: theirs likewise`);
   }
-  assert.match(rule('.lboard.fighting[data-fight]'), /grid-template-rows: var\(--lbandt[^;]*\) auto minmax\(0, [\d.]+fr\) auto var\(--lbandb/);
   // the tints (and so the ring) and the seam follow the columns
-  assert.match(rule('.lboard[data-fight="mine"] > .lback.mine.b'), /grid-column: 1 \/ 3/);
-  assert.match(rule('.lboard[data-fight="mine"] > .lback.theirs.b'), /grid-column: 3 \/ 4/);
-  assert.match(rule('.lboard[data-fight="theirs"] > .lback.mine.b'), /grid-column: 1 \/ 2/);
-  assert.match(rule('.lboard[data-fight="theirs"] > .lback.theirs.b'), /grid-column: 2 \/ 4/);
-  assert.match(rule('.lboard[data-fight="mine"] > .lseam'), /grid-column: 3/);
-  assert.match(rule('.lboard[data-fight="theirs"] > .lseam'), /grid-column: 2/);
+  assert.match(rule('.lboard[data-fight="mine"][data-wide] > .lback.mine.b'), /grid-column: 1 \/ 3/);
+  assert.match(rule('.lboard[data-fight="mine"][data-wide] > .lback.theirs.b'), /grid-column: 3 \/ 4/);
+  assert.match(rule('.lboard[data-fight="theirs"][data-wide] > .lback.mine.b'), /grid-column: 1 \/ 2/);
+  assert.match(rule('.lboard[data-fight="theirs"][data-wide] > .lback.theirs.b'), /grid-column: 2 \/ 4/);
+  assert.match(rule('.lboard[data-fight="mine"][data-wide] > .lseam'), /grid-column: 3/);
+  assert.match(rule('.lboard[data-fight="theirs"][data-wide] > .lseam'), /grid-column: 2/);
   assert.match(rule('.lboard[data-fight] > .lback.theirs.a'), /grid-column: 1 \/ -1/);
   // and the board outside a battle is untouched: still the six-by-nine grid
   assert.match(rule('.lboard'), /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
+  // the markup never says `data-wide`: only the plan, from the room, does
+  assert.doesNotMatch(paint(R1, 0), /data-wide/);
 });
 
 test('§3 the columns stand in the middle of the fight, clear of the invader strip', () => {
@@ -146,6 +158,8 @@ test('§3 the columns stand in the middle of the fight, clear of the invader str
   assert.match(rule('.lboard[data-fight] .lfight.focus .cols > :last-child'), /margin-right: auto/);
   assert.match(rule('.lboard[data-fight] .lfight.focus .cols > .col'), /margin-top: auto; margin-bottom: auto/);
   assert.match(rule('.lboard[data-fight] .lfight.focus:has(> .linvside) .cols'), /padding-right: var\(--invw/);
+  // a column's label never wraps or widens its column past its card
+  assert.match(rule('.lboard[data-fight] .lfight.focus .col > .collabel'), /max-width: var\(--cw\); white-space: nowrap;/);
   // the strip's width is written on the block, where `.cols` can read it
   const layout = readFileSync(fileURLToPath(new URL('../layout.ts', import.meta.url)), 'utf8');
   assert.match(layout, /el\.style\.setProperty\('--invw'/);

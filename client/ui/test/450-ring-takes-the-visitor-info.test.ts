@@ -88,14 +88,14 @@ test('the ring takes in the visitor info at its own width, not the fight column'
   assert.ok(alongBottom.length && Math.min(...alongBottom) >= 587, `…from my info offshoot's edge (reached ${Math.min(...alongBottom)}px)`);
 });
 
-test('the ring keeps eight corners in a battle either way, so the entry still tweens point for point', () => {
+test('the ring keeps eight corners round a wide fight either way, so the entry still tweens point for point', () => {
   assert.equal(corners(board(FIGHT_MINE, 'bottom', false)), 8, 'not yet entered');
   assert.equal(corners(board(FIGHT_MINE, 'bottom', true)), 8, 'entered');
   assert.equal(corners(board(FIGHT_THEIRS, 'top', false)), 8);
   assert.equal(corners(board(FIGHT_THEIRS, 'top', true)), 8);
 });
 
-test('outside a battle the ring is the six-cornered L it always was', () => {
+test('outside a battle, or round a fight that fits in half, the ring is the six-cornered L it always was', () => {
   // the L as ringBoard drew it before round 7, corner for corner
   const i = 1.5, a = HALVES['.lback.mine.a']!, b = HALVES['.lback.mine.b']!;
   const before = roundedPath([[a.l + i, b.t + i], [b.r - i, b.t + i], [b.r - i, a.t + i], [a.r - i, a.t + i], [a.r - i, a.b - i], [a.l + i, a.b - i]], 8);
@@ -103,4 +103,9 @@ test('outside a battle the ring is the six-cornered L it always was', () => {
   const ta = HALVES['.lback.theirs.a']!, tb = HALVES['.lback.theirs.b']!;
   const beforeTop = roundedPath([[ta.l + i, ta.t + i], [ta.r - i, ta.t + i], [ta.r - i, tb.b - i], [tb.l + i, tb.b - i], [tb.l + i, ta.b - i], [ta.l + i, ta.b - i]], 8);
   assert.equal(board(HALVES, 'top', false), beforeTop);
+  // a fight that fits in half keeps the half-and-half board, and with the
+  // visitor in, the ring it always drew: the column straight up over their info
+  const far = HALVES['.lback.theirs.a']!;
+  const visited = roundedPath([[a.l + i, far.t + i], [b.r - i, far.t + i], [b.r - i, a.t + i], [a.r - i, a.t + i], [a.r - i, a.b - i], [a.l + i, a.b - i]], 8);
+  assert.equal(board(HALVES, 'bottom', true), visited);
 });

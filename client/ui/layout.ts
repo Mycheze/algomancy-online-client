@@ -177,10 +177,11 @@ const INV_FRAC = 0.6, INV_PAD = 12, INV_GAP = 4;
 const STAGE_CHROME = 8;
 /** the battle's card floor on this board */
 const FLOOR = 40;
-/** the battle's card CAP (owner, 2026-10-11, report #204: units "may grow up
- * to ~120px" when there is room — a moderate cap, not unbounded). It was the
- * field's GROW, 86px, beside a block that was half empty. */
-export const BATTLE_CAP = 120;
+/** the battle's card CAP (owner, 2026-10-11, report #204: a moderate cap, not
+ * unbounded — first "~120px", then on the board: "the 120px cap is a bit big.
+ * I think it should cap at 100px/card during a fight"). It was the field's
+ * GROW, 86px. */
+export const BATTLE_CAP = 100;
 /** a band's height in a battle (style.css `.linfo` in its two-line form, the
  * name and life line over the resources, and its 6px padding): `two` is what
  * it needs, `one` the name-and-life line alone, which is as far as it gives
@@ -247,7 +248,6 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
   const ranks = cols ? ranksOf(cols) : { top: 1, bot: 1 };
   const battle = fight.querySelector('.battle');
   const inv = fight.querySelectorAll('.linvside .card').length;
-  const idleRegion = idleEl.dataset['region'];
   const plan = planBattleBoard({
     board: { w: box.w - chrome(lb, 'h'), h: box.h - chrome(lb, 'v') },
     gapX: parseFloat(cs.columnGap) || 0, gapY: parseFloat(cs.rowGap) || 0,
@@ -260,21 +260,31 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
       h: chrome(fight, 'v') + (battle ? chrome(battle, 'v') : 0) + (stage ? STAGE_CHROME : 0),
     },
     bandMin: BAND.two, bandFloor: BAND.one,
-    idle: {
-      send: idleEl.classList.contains('sendhere'),
-      cards: idleEl.querySelectorAll('.zone > .card').length,
-      invaders: lb.querySelectorAll(`.linv[data-region="${idleRegion}"] .card`).length,
-      pad: chrome(idleEl, 'h'), gap: 6,
-      rowCw: Math.round(baseCw * 2 / 3), lineCw: baseCw, floor: CARD_FLOOR,
-    },
+    idle: { send: idleEl.classList.contains('sendhere'), pad: chrome(idleEl, 'h'), gap: 6, floor: CARD_FLOOR },
+    // the units you can put in the declaration being built (ui/battle.ts
+    // formationCandidates → `playable` on a standing unit)
+    source: sourceOf(lb, baseCw),
   });
   if (!plan) return;
   const key = JSON.stringify(plan);
   if (lastShape.get(lb) === key) return;
   lastShape.set(lb, key);
+  // a fight that fits in half the board keeps the half-and-half grid; a
+  // wider one is the three-track grid with the idle column `--lidle` wide
+  if (plan.wide) lb.dataset['wide'] = ''; else delete lb.dataset['wide'];
   lb.style.setProperty('--lidle', `${plan.idle}px`);
   lb.style.setProperty('--lbandt', `${plan.bandTop}px`);
   lb.style.setProperty('--lbandb', `${plan.bandBot}px`);
+}
+
+/** the In Play bands holding units the viewer can put in the formation being
+ * built, for planBattleBoard's `source` */
+function sourceOf(lb: HTMLElement, baseCw: number): { top: number; bot: number; cap: number; pad: number } | undefined {
+  const n = (side: string): number => lb.querySelectorAll(`.lplay.${side} .regionmain .card.playable`).length;
+  const top = n('theirs'), bot = n('mine');
+  if (!top && !bot) return undefined;
+  const play = lb.querySelector(top ? '.lplay.theirs' : '.lplay.mine');
+  return { top, bot, cap: Math.round(baseCw * GROW), pad: play ? chrome(play, 'v') : 12 };
 }
 
 /**
