@@ -68,13 +68,13 @@ export function areaOf(p) {
 }
 
 /** JSON: [path-of-field, string] for every string leaf */
-function* leaves(v, path = '') {
-  if (typeof v === 'string') yield [path, v];
-  else if (Array.isArray(v)) for (const x of v) yield* leaves(x, path);
+function* leaves(v, path = '', top = null) {
+  if (typeof v === 'string') yield [path, v, top];
+  if (Array.isArray(v)) for (let i = 0; i < v.length; i++) yield* leaves(v[i], path, top ?? (path === '' ? i : null));
   else if (v && typeof v === 'object') {
     for (const [k, x] of Object.entries(v)) {
-      yield [`${path ? path + '.' : ''}${k}`, k]; // keys can cite too (sourceHashes {"R114": …})
-      yield* leaves(x, `${path ? path + '.' : ''}${k}`);
+      yield [`${path ? path + '.' : ''}${k}`, k, top]; // keys can cite too (sourceHashes {"R114": …})
+      yield* leaves(x, `${path ? path + '.' : ''}${k}`, top);
     }
   }
 }
@@ -118,8 +118,10 @@ export function runCensus({ dump = false } = {}) {
     const add = (o) => occ.push({ file: f, area, ...o });
     if (f.endsWith('.json') && f.startsWith('data/comprehensive-rules/')) {
       const j = JSON.parse(text);
-      for (const [field, s] of leaves(j)) {
-        for (const m of s.matchAll(TOKEN)) add({ field: field.replace(/\.\d+/g, ''), m, s, idx: m.index, line: null });
+      let leaf = 0;
+      for (const [field, s, top] of leaves(j)) {
+        for (const m of s.matchAll(TOKEN)) add({ field: field.replace(/\.\d+/g, ''), m, s, idx: m.index, line: null, jrow: top, leaf });
+        leaf++;
       }
       continue;
     }
@@ -169,7 +171,7 @@ export function runCensus({ dump = false } = {}) {
     // under the `primary` proposal (rmap.mjs), a multi ruling gets its anchor's target
     const prim = cls === 'multi' && r?.proposals ? r.proposals.primary : null;
     const mechPrimary = mech || (!dropped && !fp && !!prim && uniq(prim.class) && !hist && form !== 'range' && !visibleCandidate);
-    return { file: o.file, line: o.line, area: o.area, field: o.field ?? null, id, n, cls, fp, target, form, hist, code, visibleCandidate, dropped, mech, mechPrimary, primaryTarget: prim?.target ?? null,
+    return { file: o.file, line: o.line, col: idx, jrow: o.jrow ?? null, leaf: o.leaf ?? null, text: dump ? s : undefined, area: o.area, field: o.field ?? null, id, n, cls, fp, target, form, hist, code, visibleCandidate, dropped, mech, mechPrimary, primaryTarget: prim?.target ?? null,
       ctx: s.slice(Math.max(0, idx - 60), idx + 60).replace(/\s+/g, ' ') };
   });
 

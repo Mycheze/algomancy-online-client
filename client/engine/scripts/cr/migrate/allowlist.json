@@ -1,0 +1,60 @@
+{
+ "_doc": "Tokens that look like R-ruling citations but are not. A census row is excluded (method fp) when its file matches and its line (or JSON string) contains `match`; `ids` narrows it to those tokens. Rows the census itself labels fp (out-of-range numbers, `const R1 = …` identifiers, the docs/07 visual-redesign rounds R0–R5) are excluded without an entry here; these are the ones no heuristic can see. Matching is by text, not line number, so the list survives a rebase.",
+ "entries": [
+  {
+   "file": "client/engine/test/184-ruling-register.test.ts",
+   "match": "citedRulings('this follows R42 and also R7.')",
+   "reason": "register-machinery fixture: input to the citation parser"
+  },
+  {
+   "file": "client/engine/test/184-ruling-register.test.ts",
+   "match": "citedRulings('R1234 is out of range, R0 too')",
+   "reason": "register-machinery fixture: input to the citation parser"
+  },
+  {
+   "file": "client/engine/test/184-ruling-register.test.ts",
+   "match": "## R100b — another",
+   "reason": "register-machinery fixture: input to the heading parser"
+  },
+  {
+   "file": "client/ui/test/177-glossary-conformance.test.ts",
+   "match": "cites R159, which has no",
+   "reason": "register-machinery fixture: an expected error message"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "match": "an R-number as a reader would see one",
+   "reason": "example tokens in a doc comment about the leak detector"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "match": "'The step ALWAYS happens (R224)",
+   "reason": "leak-detector fixture"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "match": "/\\{Haste\\}\\.text: R224/",
+   "reason": "leak-detector fixture"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "match": "rule: 'see R99",
+   "reason": "leak-detector fixture"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "match": "/\\.rule: R99/",
+   "reason": "leak-detector fixture"
+  },
+  {
+   "file": "client/ui/test/214-deck-page-wiring.test.ts",
+   "match": "R1: it works",
+   "reason": "card-panel fixture string"
+  },
+  {
+   "file": "client/engine/test/411-cr-extract.test.ts",
+   "match": "/^R340 Squish",
+   "reason": "a test-title regex: follows the title rename, not a citation"
+  }
+ ]
+}
