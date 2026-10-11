@@ -906,7 +906,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     for (const [abs, t] of jsonOut) writeFileSync(abs, t);
   }
   report.titleMap = Object.fromEntries([...titleMap].map(([k, v]) => [k, v.length]));
-  return { report, after, before, titleMap };
+  return { report, after, before, titleMap, editsOf, consumed };
 }
 
 /** undo a JS string literal's escapes (\u00a7, \x41, \', \\, \n …) */

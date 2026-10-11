@@ -24,6 +24,9 @@
  * build/migrate/dry.diff and a summary to build/migrate/dry-summary.json, and
  * removes the worktree unless --keep (its path is printed; tests can run there).
  *
+ *   node run.mjs --check-decisions <file.json> [--rescore] [--json]
+ *                                               simulate recite for the ids one decisions file decides
+ *                                               (checkdecisions.mjs); writes nothing
  *   node run.mjs capture <path>… --from <dir>   record hand edits: copy <dir>/<path> into
  *                                               hand/files/, base = HEAD:<path> here
  *   node run.mjs capture --delete <path>…        record a deletion (hand step)
@@ -244,6 +247,12 @@ async function dryRun() {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (process.argv[2] === 'capture') capture();
+  else if (arg('--check-decisions')) {
+    const { checkDecisions, printResults } = await import('./checkdecisions.mjs');
+    const res = await checkDecisions(arg('--check-decisions'), { rescore: process.argv.includes('--rescore') });
+    printResults(res, process.argv.includes('--json'));
+    process.exit(res.every((r) => r.status === 'applied') ? 0 : 1);
+  }
   else if (process.argv.includes('--dry-run')) await dryRun();
   else {
     const steps = stepsOf();
