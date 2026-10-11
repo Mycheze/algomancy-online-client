@@ -18,6 +18,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import type { DecisionOption, Seat } from '../src/types.ts';
+import { hiddenSegment, legalActions } from '../src/apply.ts';
+import { registerSynthetic } from '../src/cards/dsl.ts';
+import { playableCachedIndexes } from '../../ui/inspect.ts';
 import { ent, pass, spawn, toDeployment, toNextBattle, withE } from './util.ts';
 
 /** the index in the event stream of the first `type` event naming `card` */
@@ -82,15 +85,38 @@ test('cr:zones.changes.leave-play-order — a unit exchanged out of play despawn
   assert.ok(despawned < trashed, `its despawn (event ${despawned}) comes before its trash (event ${trashed})`);
 });
 
-// ── Annex D: the cache panel while a decision is open (promoted from the U24 round-4 verifier's probe) ──
+// ── Annex D: the cache panel while a decision is open (adopted from the U24 round-4 verifier's probe) ──
 
-test('cr:annexd.display.panels.cache-dialog-only — while a decision is open, no cache-panel card is promoted to a one-click use', async () => {
-  const { playableCachedIndexes } = await import('../../ui/inspect.ts');
-  // while a decision is open the only legal actions are its answers (D6.3c)
-  const decideOnly = [{ type: 'decide', seat: 0, choice: 0 }, { type: 'decide', seat: 0, choice: 1 }] as never[];
-  assert.deepEqual(playableCachedIndexes(decideOnly), [],
-    'no cached entry gets the one-click thumb, so a click on any of them opens the full cache');
-  // control: the same function does promote a cache entry with a live offer of any mode (R311)
-  const graftOnly = [{ type: 'graft', seat: 0, from: 'cache', index: 0, hostId: 5, position: 0 }] as never[];
-  assert.deepEqual(playableCachedIndexes(graftOnly), [0], 'a graft-only cache offer IS promoted');
+const CACHED_NOW = 'CR440 Cached Now';
+registerSynthetic({
+  name: CACHED_NOW, cost: '', mana: 0, power: 0, toughness: 0,
+  type: 'Test Spell', kind: 'spell', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [], image: '', text: 'Gain 3 life.',
+}, { spellEffect: { run: (g, ctx) => { g.gainLife(ctx.controller, 3, CACHED_NOW); } } });
+
+test('cr:annexd.display.panels.cache-dialog-only — in deployment, the deciding seat gets no one-click cache card; the other seat still does', () => {
+  const h = new Harness(44002);
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  for (const s of [0, 1] as Seat[]) if (h.state.hasteDone && !h.state.hasteDone[s]) h.do({ type: 'doneHaste', seat: s });
+  // three Wraiths: their start-of-deployment "choose an ally" puts a real decision to seat 1
+  for (let i = 0; i < 3; i++) spawn(h, 1, 'Wraith');
+  h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  if (h.state.phase === 'battle') h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  assert.equal(hiddenSegment(h.state), 'deploy', 'deployment: a hidden simultaneous segment');
+  assert.equal(h.state.decision?.seat, 1, 'a decision is open for seat 1');
+
+  // both seats hold a castable deploy-timing card glimpsed this turn
+  for (const s of [0, 1] as Seat[]) {
+    const pl = h.state.players[s]!;
+    pl.cache ??= [];
+    pl.cache.push({ card: CACHED_NOW, uid: 44090 + s, playableUntilTurn: h.state.turn } as never);
+  }
+  assert.deepEqual(playableCachedIndexes(legalActions(h.state, 1)), [],
+    'the seat whose decision is open: no cache card is promoted, so a click opens the full cache');
+  assert.deepEqual(playableCachedIndexes(legalActions(h.state, 0)), [0],
+    'the other seat is not stopped by that decision: its cached card still plays on one click');
+  h.do({ type: 'playCached', seat: 0, index: 0 } as never);   // throws if refused
+  assert.equal(h.state.decision?.seat, 1, 'and seat 1\'s decision is still open after the play');
+  assert.equal((h.state.players[0]!.cache ?? []).length, 0, 'the cached card was played: it left the cache');
 });

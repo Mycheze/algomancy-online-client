@@ -10170,9 +10170,9 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 |---|---|
 | Printed | 462 |
 | Designer | 209 |
-| Owner call | 693 |
+| Owner call | 692 |
 | Engine only | 36 |
-| Mixed | 397 |
+| Mixed | 398 |
 
 ### Verification
 

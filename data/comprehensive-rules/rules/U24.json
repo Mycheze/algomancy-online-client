@@ -4235,11 +4235,11 @@
     "key": "annexd.display.panels.cache-dialog-only",
     "parent": "annexd.display.panels",
     "order": 1,
-    "text": "While a decision is open, clicking a card in the cache panel opens the full cache. A cached card that is one of the decision's choices is not picked from the panel.",
+    "text": "While an open decision stops a player from acting (see annexd.auto-pass.open-decision), no card in that player's cache panel is used by one click: clicking one opens the full cache. A cached card that is one of the decision's choices is not picked from the panel. A player whom another player's decision does not stop, inside a hidden simultaneous segment (see annexd.auto-pass.open-decision.segment), still uses their cached cards from the panel on one click.",
     "examples": [
       {
-        "text": "With a decision open, no card in the cache panel is used by one click, so clicking any of them opens the full cache.",
-        "test": "440-cr-uncovered-rulings.test.ts::cr:annexd.display.panels.cache-dialog-only — while a decision is open, no cache-panel card is promoted to a one-click use"
+        "text": "In deployment, a Wraith's start-of-deployment choice is open for one player. That player's castable cached card is not one click from the panel; the other player's castable cached card still is, and playing it leaves the decision open.",
+        "test": "440-cr-uncovered-rulings.test.ts::cr:annexd.display.panels.cache-dialog-only — in deployment, the deciding seat gets no one-click cache card; the other seat still does"
       }
     ],
     "see": [],
@@ -4251,19 +4251,27 @@
         {
           "ref": "R192 (its decision-target exception)",
           "quote": "and a cached card that is a legal decision TARGET (Prismatic Observer, R41) likewise"
+        },
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "A decision belonging to another seat stops you only where the engine cannot"
         }
       ],
       "history": [],
-      "engine": [],
+      "engine": [
+        "apply.ts:decisionBlocks",
+        "apply.ts:legalActions"
+      ],
       "tests": [
         "440-cr-uncovered-rulings.test.ts",
         "163-cache-affordance-and-badges.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round) for R192's exceptions. Revised after the round-4 verifier's partial: R192's other exception (an augment- or graft-only cache entry keeps the dialog route) was overtaken by R311 (the cache plays like the hand), and the client promotes such an entry to the one-click thumb, which D6.16 already states. Only the decision half is kept. F-U24-6 (no R311->R192 supersession edge) is a register question, filed in the round's tickets, not an engine divergence, so it is removed.",
+    "notes": "Drafted 2026-10-11 (coverage round) for R192's exceptions. Revised after the round-4 verifier's partial: R192's other exception (an augment- or graft-only cache entry keeps the dialog route) was overtaken by R311 (the cache plays like the hand), and the client promotes such an entry to the one-click thumb, which D6.16 already states. Only the decision half is kept. F-U24-6 (no R311->R192 supersession edge) is a register question, filed in the round's tickets, not an engine divergence, so it is removed. Revised again after the second partial: scoped to the player the decision stops (R154: in a hidden segment another seat's decision does not stop you), example now drives a real deployment (adopted from the verifier's probe), basis mixed (ruling + engine).",
     "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1",
       "R192": "adedcbd988e9d0a572f71648f0e048fad01a6dab9d08bc68f2dd70d49a14ad3d"
     }
   },
