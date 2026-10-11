@@ -40,12 +40,27 @@ const RULING_ID = /^R(\d+)(b?)(?![\w])/;
 
 /* ── JSON files: parse, mutate, write back in the file's own indent ── */
 export { indentOf };
-export function editJson(abs, fn, { dryRun = false } = {}) {
+export function editJson(abs, fn, { dryRun = false, preserve = false } = {}) {
   const text = readFileSync(abs, 'utf8');
   const j = JSON.parse(text);
+  const before = preserve ? JSON.parse(text) : null;
   const changed = fn(j);
   if (!changed) return false;
-  const out = JSON.stringify(j, null, indentOf(text)) + (text.endsWith('\n') ? '\n' : '');
+  let out;
+  if (preserve) {
+    // a hand-formatted file: replace each changed string leaf in the raw text, keep the layout
+    out = text;
+    const walk = (a, b) => {
+      if (typeof a === 'string') {
+        if (a !== b) {
+          const from = JSON.stringify(a), to = JSON.stringify(b);
+          if (out.split(from).length !== 2) throw new Error(`${abs}: cannot place an edit of ${from.slice(0, 60)} (not exactly once)`);
+          out = out.replace(from, () => to);
+        }
+      } else if (a && typeof a === 'object') for (const k of Object.keys(a)) walk(a[k], b[k]);
+    };
+    walk(before, j);
+  } else out = JSON.stringify(j, null, indentOf(text)) + (text.endsWith('\n') ? '\n' : '');
   if (out === text) return false;
   if (!dryRun) writeFileSync(abs, out);
   return true;
@@ -218,7 +233,7 @@ export function absorb({ dryRun = false } = {}) {
     };
     walk(j);
     return changed;
-  }, { dryRun }));
+  }, { dryRun, preserve: true }));
 
   report.unknownIds = [...unknown].sort();
   return report;
