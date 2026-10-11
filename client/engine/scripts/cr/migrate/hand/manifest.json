@@ -119,6 +119,48 @@
    "op": "delete",
    "step": "hand",
    "base": "a137cb903e73f75a830a1d3632ab106dd071eb78"
+  },
+  "client/ledgers/scenario-queue.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "4aeafc1869428a1acde9eec28d914e3d4a267c1e",
+   "baseFile": true
+  },
+  "client/ui/test/231-manual-text.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "94a57a2985870957892b4d13923aeb168b7e6495",
+   "baseFile": true
+  },
+  "client/engine/test/70-playtest-ledger.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "48f11d62ea1c90f9b8f53b6699f1bbce353fe0d4",
+   "baseFile": true
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "b93ad85b4882bbfbd7c6abff69337d18f065b754",
+   "baseFile": true
+  },
+  "client/ui/glossary.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "a3b22a1a0be6f92a836da09d95fab4ea66978e28",
+   "baseFile": true
+  },
+  "client/ledgers/card-todo.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "101348b56e8f0636b532f3fcec15628a035b2adc",
+   "baseFile": true
+  },
+  "client/ledgers/card-todo-closed.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "f5943686024f0835b4b63feef8277d53e7bcdc6b",
+   "baseFile": true
   }
  }
 }

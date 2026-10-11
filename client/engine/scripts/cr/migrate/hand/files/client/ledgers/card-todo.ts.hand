@@ -345,7 +345,7 @@ const OPEN: TodoEntry[] = [
       + 'MEASURED by instrumenting playInline and running every test file that can reach it '
       + '(each one naming one of its three callers): 41 calls, 38 down the stack push path '
       + 'through E.commitItem, which fires CR 108.1a\'s cardPlayed with CR 706.13\'s item id like any '
-      + 'other play. The only three in-place hits are 241-played-from-zone\'s synthetic "\'zone test rig\' '
+      + 'other play. The only three in-place hits are 241-played-from-zone\'s synthetic "zone test rig '
       + 'test rig" driving the function directly in the deploy phase. No card reaches it, '
       + 'because all three callers can only run inside a battle priority window — which is '
       + 'exactly inlinePlayGoesToStack\'s predicate: Hooba-Pon triggers on [attacked, blocked], '

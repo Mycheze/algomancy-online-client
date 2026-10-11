@@ -2210,7 +2210,7 @@ export const CLOSED: TodoEntry[] = [
       '129-disposal-tail.test.ts::CR 410.7 (iii): an Unstable body is swept with its mods',
       '129-disposal-tail.test.ts::a nontoken mod is binned and trashed the same whether its host dies or is exchanged',
       '90-coverage-census.test.ts::every bin ENTRY goes through',
-      '42-dark-b.test.ts::test(\'engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host',
+      '42-dark-b.test.ts::engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host',
     ],
     status: 'done',
   },
@@ -6532,11 +6532,11 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Open the Rules page and read the Piercing entry, then compare it with the printed reminder.',
     guards: [
-      '227-reminder-text.test.ts::CR D6.11: no string a renderer can reach off a glossary row carries an R-number',
-      '227-reminder-text.test.ts::CR D6.11: no module that imports the glossary touches its citation field',
-      '227-reminder-text.test.ts::CR D6.11: rendering every card in the pool leaks no R-number',
-      '227-reminder-text.test.ts::CR D6.11: a row no channel reminds a player about keeps its full authored rule',
-      '177-glossary-conformance.test.ts::CR D6.11: a row the pool prints a reminder for SHOWS that reminder, verbatim',
+      '227-reminder-text.test.ts::R248: no string a renderer can reach off a glossary row carries an R-number',
+      '227-reminder-text.test.ts::R248: no module that imports the glossary touches its citation field',
+      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
+      '227-reminder-text.test.ts::R248/R252: a row no channel reminds a player about keeps its full authored rule',
+      '177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
     ],
     closed:
       'RULED AND FIXED 2026-08-29 as CR D6.11. '
@@ -6972,8 +6972,8 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all',
       '224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner',
-      '224-mod-trash.test.ts::test(\'CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is\'',
-      '224-mod-trash.test.ts::test(\'CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods\'',
+      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is',
+      '224-mod-trash.test.ts::CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods',
     ],
     closed:
       'RULED AND FIXED 2026-08-29 as. '
@@ -7512,7 +7512,7 @@ export const CLOSED: TodoEntry[] = [
       '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
       '236-browser-glossary-reach.test.ts::CT-130: rot is explained on every card that mentions it',
       '236-browser-glossary-reach.test.ts::CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it',
-      '227-reminder-text.test.ts::CR D6.11: rendering every card in the pool leaks no R-number',
+      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
     ],
     closed:
       'RULED AND FIXED 2026-08-29 as CR D6.11c — ONE LINE in cardpanel.ts glossaryFor, and it closes '
@@ -7571,7 +7571,7 @@ export const CLOSED: TodoEntry[] = [
       '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
       '236-browser-glossary-reach.test.ts::CT-130: rot is explained on every card that mentions it',
       '236-browser-glossary-reach.test.ts::CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it',
-      '227-reminder-text.test.ts::CR D6.11: rendering every card in the pool leaks no R-number',
+      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
     ],
     closed:
       'FIXED 2026-08-29 by CR D6.11c / CT-129, with no Rot-specific code at all — the text-driven attach '
@@ -9436,9 +9436,9 @@ export const CLOSED: TodoEntry[] = [
       'Pick a row for a keyword with no printed reminder and ask what it rests on. If the '
       + 'answer is "it matches the engine", that is the defect.',
     guards: [
-      '261-glossary-basis.test.ts::CR 802.9h every row declares what it rests on, and the rulings-only set is the pinned one',
-      '261-glossary-basis.test.ts::CR 802.9h every ruling a rulings-only row cites NAMES that row term',
-      '261-glossary-basis.test.ts::CR 802.9h POSITIVE CONTROL: the three channels and the register all loaded',
+      '261-glossary-basis.test.ts::R281 §1 every row declares what it rests on, and the rulings-only set is the pinned one',
+      '261-glossary-basis.test.ts::R281 §2 every ruling a rulings-only row cites NAMES that row term',
+      '261-glossary-basis.test.ts::R281 §0 POSITIVE CONTROL: the three channels and the register all loaded',
       '262-type-line-attributes.test.ts::CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text',
     ],
     closed:

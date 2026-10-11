@@ -154,9 +154,9 @@ export interface GlossEntry {
    * printed sentence stays in `text`, and the rules reference shows it.
    */
   short?: string;
-  /** CT-76: where this sentence comes from. NOT decoration — every rule key
-   * here is asserted to name a live comprehensive rule. A rule this row USED
-   * to state belongs in a comment, never here.
+  /** CT-76: where this sentence comes from. NOT decoration — every
+   * rule key here is asserted to name a live comprehensive rule. A rule this
+   * row USED to state belongs in a comment, never here.
    *
    * ⚠ OPTIONAL IN THE TYPE, MANDATORY IN FACT. Two callers build a synthetic
    * GlossEntry that is not a glossary row and has no rule behind it —
