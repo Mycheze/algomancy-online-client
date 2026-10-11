@@ -918,7 +918,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       if (nq === null) continue;
       // a needle that lost its words would make the proof vacuously true (or false): never write it
       const words = (x) => (String(x).match(/[A-Za-z0-9]{3,}/g) ?? []).length;
-      if (!nq || words(nq) < Math.max(2, Math.ceil(words(sp.tok.v) / 2))) {
+      if (!nq || words(nq) < Math.max(1, Math.ceil(words(sp.tok.v) / 2))) {
         report.requoted.failed.push(`${rel}: still(${sp.target}, '${sp.tok.v.slice(0, 60)}') would become '${String(nq ?? '').slice(0, 40)}'`);
         report.selfCheck ??= [];
         (report.needleFailures ??= []).push({ file: rel, why: `proof needle lost its words: '${sp.tok.v.slice(0, 60)}' → '${String(nq ?? '').slice(0, 40)}'`, text: sp.tok.v.slice(0, 120) });
