@@ -101,24 +101,15 @@ SCRAPPED_RULES = [
     "loses the ability to be grafted onto (for example, if their graftable ability "
     "is removed somehow), all grafted cards are removed and returned to the draft "
     "pool immediately.",
-    # Light & Dark provisional glossary, Wraith (2026-10-11): settled since — a
-    # unit is its own ally (CR 102.7a / 110.4a, "A unit is its own ally"), so
-    # the Wraith may choose itself.
-    'UNCONFIRMED: whether the Wraith may choose ITSELF as the "ally" for its '
-    'deployment trigger is not settled by any source here.',
 ]
 
 # The same, for a passage too long to quote whole: everything from `start`
 # through `end` (both included) is cut. Matched against the text as the chunk
 # holds it (the L&D glossary's paragraphs are whitespace-normalised).
 SCRAPPED_SPANS = [
-    # Light & Dark provisional glossary, Trash / Trashed (2026-10-11): REVERSED.
-    # Tokens are NOT trashed — CR 108.2e "A token is never trashed, because only
-    # a card can be trashed" and CR 304.10a "A token that enters a bin is not
-    # trashed." The definition before this span ("A nontoken card entering a bin
-    # ... is trashed") already says so and stays.
-    ("TOKENS CAN BE TRASHED (relayed ruling, 2026-08-21).",
-     "no official Light & Dark rulebook or errata exists to settle either."),
+    # (empty) The L&D glossary's reversed "tokens can be trashed" passage was cut
+    # here for one build on 2026-10-11, then corrected at its source: that file
+    # is OURS, so a stale entry there is fixed in the file, not filtered here.
 ]
 
 # How often each SCRAPPED_RULES / SCRAPPED_SPANS entry cut something in this

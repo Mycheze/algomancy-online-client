@@ -161,9 +161,14 @@ check("the corpus's CR matches the JSON edition chunk for chunk",
 print("stale content")
 cid = {r["id"]: r for r in corpus}
 alltext = "\n".join(r["text"] for r in corpus)
-check("the L&D glossary no longer says tokens can be trashed", "TOKENS CAN BE TRASHED" not in alltext
-      and "nontoken card entering a bin" in cid["ld-glossary:trash-trashed"]["text"])
-check("the Wraith self-pick is no longer UNCONFIRMED", "may choose ITSELF" not in cid["ld-glossary:wraith"]["text"])
+check("the L&D glossary says tokens are NOT trashed", "TOKENS CAN BE TRASHED" not in alltext
+      and "TOKENS ARE NOT TRASHED" in cid["ld-glossary:trash-trashed"]["text"]
+      and "for the purposes of triggers" in cid["ld-glossary:trash-trashed"]["text"])
+check("the Wraith may choose itself, chosen as the trigger goes on the stack",
+      "MAY choose itself" in cid["ld-glossary:wraith"]["text"] and "UNCONFIRMED" not in cid["ld-glossary:wraith"]["text"]
+      and "chosen on resolution" not in cid["ld-glossary:wraith"]["text"])
+check("the primer agrees: tokens are not trashed, the Wraith may choose itself",
+      "TOKENS CAN BE" not in core.PRIMER and "TOKENS ARE NOT" in core.PRIMER and "a Wraith may choose itself" in core.PRIMER)
 for t in ("conjure", "historic", "skirmish"):
     check(f"old glossary {t}: flagged obsolete and outdated",
           cid[f"glossary:{t}"]["outdated_risk"] and cid[f"glossary:{t}"]["text"].startswith("[OBSOLETE:"))
@@ -172,8 +177,9 @@ check("old glossary Augment/Graft: no discard-only, no draft pool, no graft on t
               for s in ("must be in your discard", "draft pool", "on top or beneath")))
 check("Worldbender's outdated oracle ruling is out of its chunk",
       "draft skipping" not in cid["card:Worldbender"]["text"] and not cid["card:Worldbender"]["metadata"]["has_rulings"])
-check("a SCRAPPED span cuts start..end inclusive", build_corpus.drop_scrapped(
-    "keep TOKENS CAN BE TRASHED (relayed ruling, 2026-08-21). gone no official Light & Dark rulebook or errata exists to settle either. kept") == "keep kept")
+build_corpus.SCRAPPED_SPANS.append(("BEGIN-X.", "END-X."))
+check("a SCRAPPED span cuts start..end inclusive", build_corpus.drop_scrapped("keep BEGIN-X. gone END-X. kept") == "keep kept")
+build_corpus.SCRAPPED_SPANS.pop()
 
 # ── 4. surface wording ──────────────────────────────────────────────────
 print("surface")

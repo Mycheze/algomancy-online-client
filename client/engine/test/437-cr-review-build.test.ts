@@ -33,6 +33,10 @@ const EX = extract();
 const R: CrReview = await buildReview({ ex: EX });
 const INPUTS = loadInputs();
 const FILES = render(INPUTS, EX).files;
+// what the review page offers to download: every edition a person reads. The
+// JSON edition (CR_JSON) is for the judge bot's corpus, not a reader, so the
+// page leaves it out (render.mjs reviewOf `files`).
+const { json: _jsonEdition, ...REVIEW_FILES } = FILES;
 
 const MARK = /\sdata-crt="([^"]*)"/g;
 const marksIn = (html: string): string[] => [...html.matchAll(MARK)].map(m => m[1]!);
@@ -129,7 +133,7 @@ test('each part is the editions own text: html with only the marks added, md and
   for (const d of R.disc) assert.ok(html.includes(unmark(d.html)), `${d.id}: the html is not the report item plus its mark`);
   assert.deepEqual(
     { doc: R.files.doc.text, html: R.files.html.text, txt: R.files.txt.text, annexD: R.files.annexD.text, discrepanciesMd: R.files.disc.text, ownerQuestions: R.files.oq.text, changelog: R.files.changelog.text },
-    FILES, 'files must be render() output');
+    REVIEW_FILES, 'files must be render() output');
 });
 
 test('a section downloaded as html is the edition shell filled: one title hole, one body hole', () => {

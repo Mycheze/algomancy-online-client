@@ -295,23 +295,19 @@ augment on a unit. Both of its lines are live while it stands in play as a unit.
 first trigger points OUTWARD at an ally during deployment; it does not shrink itself by \
 fighting. Its death trigger does NOT move the dying Wraith — that one is erased like any \
 token; the trigger creates a BRAND NEW Wraith as an augment on an ally. "An ally" is not \
-a target: it is chosen on resolution, so it cannot be redirected and cannot fizzle for \
-want of a legal target.
+a target, so nothing that redirects targets touches it, but it is chosen as the trigger \
+goes on the stack: if that ally has left play when the trigger resolves, the trigger \
+fizzles. A unit is its own ally, so a Wraith may choose itself.
 - Trash / trashed — card text: "A nontoken card entering a bin from anywhere other than \
 the stack is trashed" — i.e. a card reaches a bin without having been played. \
-Discarding, sacrificing, milling and dying in combat are ALL trashing. TOKENS CAN BE \
-TRASHED (2026-08-21, reversing an earlier reading): both rulebooks say "Tokens are \
-temporary CARDS", so a token IS a card in Algomancy, unlike Magic; the "nontoken" \
-qualifier survives only on Void Scavenger, a card cut from the set; and the designer's \
-own paraphrase ("basically when a card enters your bin but wasn't played", 2025-02-01) \
-has no such qualifier. A dying token does reach the bin first — the designer confirmed \
-it counts "for the purposes of triggers" (2025-03-12) and that a token "does enter your \
-hand and then gets erased immediately" (2025-06-15) — even though the printed Manual \
-says a leaving token goes to the token pile "instead of the hand or bin"; the rulings \
-win, and both points are provisional. NOT trashing: a spell going to the bin after \
-resolving (it comes from the stack, so negating a spell is not trashing it), or erasing \
-(an erased card never touches a bin at all). The owner of the bin the card enters is the \
-one who trashes it."""
+Discarding, sacrificing, milling and dying in combat are ALL trashing. TOKENS ARE NOT \
+TRASHED (the repo owner's ruling, 2026-09-28, reversing an earlier reading): a token is \
+not a card, and only a card can be trashed. A dying unit token does pass through the bin \
+— the designer confirmed it counts "for the purposes of triggers" (2025-03-12) — and is \
+then erased, but it is not trashed and fires no "when ... trashed" ability. NOT trashing \
+either: a spell going to the bin after resolving (it comes from the stack, so negating a \
+spell is not trashing it), or erasing (an erased card never touches a bin at all). The \
+owner of the bin the card enters is the one who trashes it."""
 
 SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
 card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
@@ -368,9 +364,9 @@ Where such a source explicitly marks a point UNCONFIRMED, do not fill the gap wi
 guess — say it is not documented yet. But where it DOES state a rule and names its \
 source (card text or a dated designer message), answer it directly: rot's timing, what \
 "trashed" means, the Wraith/Wight token, prophecy and debt are all sourced now, so flag \
-them as provisional but do NOT hedge them as unknown. Where a Comprehensive Rules passage \
-states a point the provisional glossary or the primer leaves open or words differently, \
-prefer the newer, more specific passage and say which you followed. Note that a sourced L&D point can still be SUPERSEDED when the card is \
+them as provisional but do NOT hedge them as unknown. The Comprehensive Rules are NEWER \
+than the provisional glossary: where the two conflict on a Light & Dark point, follow the \
+Comprehensive Rules passage, even one marked "owner call". Note that a sourced L&D point can still be SUPERSEDED when the card is \
 redesigned — the Wraith is a 3/3 as of 2026-08-21, and any passage describing a 4/4 \
 Wraith/Wight is an older printing; prefer the primer and the newest-dated source.
 
