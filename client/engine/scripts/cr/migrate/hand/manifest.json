@@ -145,16 +145,60 @@
    "baseFile": true
   },
   "client/ui/glossary.ts": {
-   "op": "merge",
+   "op": "edits",
    "step": "hand",
-   "base": "a3b22a1a0be6f92a836da09d95fab4ea66978e28",
-   "baseFile": true
+   "edits": [
+    {
+     "find": " \\*   2\\. CITE THE RULING\\.[\\s\\S]*?(?=\\n \\*\\n)",
+     "replace": " *   2. CITE THE RULE. Every row carries `cites`, and 177 checks each rule key\n *      in it names a LIVE comprehensive rule \u2014 a removed or unknown one fails,\n *      which is what would have caught {Unaware} still teaching a replaced\n *      reading three days after the owner replaced it."
+    },
+    {
+     "find": " \\* \u26a0 `ruling` IS MACHINERY, NOT COPY\\.[\\s\\S]*?may contain one \u2014",
+     "replace": " * \u26a0 `cites` IS MACHINERY, NOT COPY. It exists so 177 can prove a citation\n * still resolves; a rule key means nothing to a player. No renderer may print\n * it, and no `text`/`rule` may contain a rule number \u2014"
+    },
+    {
+     "find": "/\\*\\* Where a row's sentence comes from\\.[^\\n]*\\n \\* [^\\n]*\\(177 checks it\\); ",
+     "replace": "/** Where a row's sentence comes from. A rule key (`attr.piercing.excess`) must\n * name a LIVE comprehensive rule (177 checks it); "
+    },
+    {
+     "find": "export type GlossSource = `R\\$\\{number\\}` \\| ",
+     "replace": "export type GlossSource = `${string}.${string}` | "
+    },
+    {
+     "find": "/\\*\\* (?:CR [\\dD][\\d.a-z]*/)?CT-76: where this sentence comes from\\. NOT decoration \u2014 every\\n[\\s\\S]*?belong in a comment, never here\\.",
+     "replace": "/** CT-76: where this sentence comes from. NOT decoration \u2014 every rule key\n   * here is asserted to name a live comprehensive rule. A rule this row USED\n   * to state belongs in a comment, never here."
+    },
+    {
+     "find": "teach those two to write `ruling: \\[\\]`",
+     "replace": "teach those two to write `cites: []`"
+    },
+    {
+     "find": "  ruling\\?: readonly GlossSource\\[\\];",
+     "replace": "  cites?: readonly GlossSource[];"
+    }
+   ]
   },
   "client/ledgers/card-todo.ts": {
-   "op": "merge",
+   "op": "edits",
    "step": "hand",
-   "base": "101348b56e8f0636b532f3fcec15628a035b2adc",
-   "baseFile": true
+   "edits": [
+    {
+     "find": "( {4})proof: \\(\\) => still\\('docs/digital-rules\\.md', 'so an X card[^\\n]*?\\) \\|\\| still\\('ledgers/raq\\.ts', ",
+     "replace": "$1// the register half of this entry went with the register (2026-10 CR-only migration); the RAQ note is what is left\n$1proof: () => still('ledgers/raq.ts', "
+    },
+    {
+     "find": "( {4})proof: \\(\\) => rx\\('docs/digital-rules\\.md'[^\\n]*",
+     "replace": "$1// the register heading this was filed against is retired; the rule that still says it is CR D1.2c\n$1proof: () => /counterattack pool that holds exactly one unit[^.]*declares the one-unit formation by itself/.test(fs.readFileSync(CR_ANNEX_D, 'utf8')),"
+    },
+    {
+     "find": "( {4})proof: \\(\\) => still\\('docs/digital-rules\\.md', '\\{Tough\\}[^\\n]*",
+     "replace": "$1// the register sentence is retired; the engine's own account of the divergence is what stays true until it is fixed\n$1proof: () => still('engine/src/engine.ts', 'the engine switches only the ATTRIBUTE layer off for the exchange'),"
+    },
+    {
+     "find": "(import \\{ SRC_DIR \\} from '\\./card-todo-helpers\\.ts';)",
+     "replace": "$1\nimport { CR_ANNEX_D } from '../engine/scripts/paths.mjs';"
+    }
+   ]
   },
   "client/ledgers/card-todo-closed.ts": {
    "op": "merge",

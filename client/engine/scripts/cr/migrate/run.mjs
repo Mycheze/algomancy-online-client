@@ -59,6 +59,20 @@ export function applyHand(root, step) {
     if ((e.step ?? 'hand') !== step) continue;
     const abs = join(root, path);
     if (e.op === 'delete') { if (existsSync(abs)) { unlinkSync(abs); out.deleted.push(path); } continue; }
+    // anchored find/replace edits: for a file recite rewrites around the edit, where a 3-way
+    // merge would clash on the same lines; each `find` (a regex) must match exactly `count` times
+    if (e.op === 'edits') {
+      let t = readFileSync(abs, 'utf8');
+      let bad = null;
+      for (const ed of e.edits) {
+        const re = new RegExp(ed.find, 'g');
+        const n = (t.match(re) ?? []).length;
+        if (n !== (ed.count ?? 1)) { bad = `${path}: edit /${ed.find.slice(0, 60)}/ matched ${n}×, wanted ${ed.count ?? 1}`; break; }
+        t = t.replace(re, ed.replace);
+      }
+      if (bad) out.conflicts.push(bad); else { writeFileSync(abs, t); out.merged.push(path); }
+      continue;
+    }
     const theirs = join(HAND, 'files', `${path}.hand`);
     if (e.op === 'add' || !e.base) { mkdirSync(dirname(abs), { recursive: true }); copyFileSync(theirs, abs); out.merged.push(path); continue; }
     let base;
