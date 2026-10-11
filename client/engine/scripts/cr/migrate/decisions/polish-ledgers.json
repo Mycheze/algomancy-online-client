@@ -141,12 +141,6 @@
    "replace": "",
    "note": "the table went with the register"
   },
-  "line:client/ledgers/card-todo.ts:613": {
-   "action": "reword",
-   "find": " || still('engine/test/util.ts', 'appears when someone holds a payable haste card')",
-   "replace": "",
-   "note": "PSEUDO-ID, HAND EDIT (code): recite requotes this needle to ' */' (always true) because the util.ts sentence was deleted; and drop the trailing still('docs/digital-rules.md', ...) clause, which reads a deleted file"
-  },
   "client/ledgers/card-todo.ts##R299#3883bb8b98#0": {
    "action": "cite",
    "nums": [

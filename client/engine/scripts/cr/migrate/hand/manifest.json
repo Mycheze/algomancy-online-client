@@ -215,6 +215,11 @@
      "find": " \\|\\| still\\('docs/digital-rules\\.md', '\\| \\*\\*clear\\*\\* [^']*'\\)",
      "replace": "",
      "note": "CT-235: the register leg reads a deleted file"
+    },
+    {
+     "find": " \\|\\| still\\('engine/test/util\\.ts', 'appears when someone holds a payable haste card'\\)",
+     "replace": "",
+     "note": "CT-235: util.ts's sentence went with its citation (leftover-drop), so a re-cut needle is ' */' (always true); the leg goes. Code, so the hand step's, not a polish decision (recite's code-shape check refuses it)"
     }
    ]
   },

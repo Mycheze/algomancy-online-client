@@ -913,10 +913,18 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
   for (const [rel, spans] of needleSpans) {
     const t0 = after.get(rel) ?? model(rel).text;
     const m0 = model(rel);
+    // a clause the hand step's anchored edits remove (code: a whole still() leg) is theirs, not
+    // re-cut here — a re-cut needle whose sentence went would fail the words rule below
+    const handSpans = [];
+    try {
+      const he = JSON.parse(readFileSync(join(HERE, 'hand', 'manifest.json'), 'utf8')).files[rel];
+      for (const ed of (he?.op === 'edits' ? he.edits : [])) for (const mm of m0.text.matchAll(new RegExp(ed.find, 'g'))) handSpans.push([mm.index, mm.index + mm[0].length]);
+    } catch { /* no manifest: nothing is the hand step's */ }
     const es = [];
     for (const sp of spans) {
       if (sp.fn === 'rx' || sp.tok.t !== 'str') continue;
       if ((editsOf.get(rel) ?? []).some((e) => sp.s < e.b && e.a < sp.e)) continue; // a hand-written edit took this clause
+      if (handSpans.some(([a, b]) => sp.s < b && a < sp.e)) continue; // the hand step removes this clause
       const target = `client/${sp.target}`;
       const nq = requote(target, sp.tok.v);
       if (nq === null) continue;
