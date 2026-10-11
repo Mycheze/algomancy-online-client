@@ -1,14 +1,15 @@
 /* Scenario batch J: BATTLE SPACE (owner, 2026-10-11; report #204, docs/18 Round 7).
  *
  * Not card-correctness boards — review boards, like batches H and I. During a
- * battle the block holding the fight now grows to take most of the board; the
- * region not in use squeezes to a narrow side column that still shows what it
- * holds; units grow up to ~120px; the rail, the info strip, the hand and the
- * bars do not move. These open on the fight shapes that stress it:
+ * battle the fight is sized to what its columns NEED (owner's correction): it
+ * takes the height first, and widens past the old half-board block only when
+ * its columns need the width — then the region not in use squeezes to a side
+ * column that still shows what it holds. Units grow up to 100px; the rail, the
+ * info strip, the hand and the bars do not move. These open on the fight shapes that stress it:
  *
  *   battle-space-wide      seven single-unit columns — the widest fight
  *   battle-space-tall      three columns, four ranks — the height-bound fight
- *   battle-space-lone      one unblocked attacker — the 120px cap
+ *   battle-space-lone      one unblocked attacker — the 100px cap
  *   battle-space-defend    they attack YOUR region; you are declaring blocks
  *   battle-space-counter   round 2: your five-column counterattack in THEIR region
  *   battle-space-incoming  a six-column round 1 while their four counterattackers wait
@@ -40,7 +41,7 @@ export const BATCH_J: Record<string, Scenario> = {
     expect:
       LOOK
       + 'You attacked their region with seven units, one per column; you have priority.\n'
-      + 'LOOK: the fight takes most of the board and all seven columns fit side by side, none cut off,\n'
+      + 'LOOK: seven columns NEED the width, so the fight widens to fit them all side by side, none cut off,\n'
       + 'the cards as big as the width allows. Your own battle block (empty: everyone is out) is squeezed to\n'
       + 'the side at the left; your Rampart Guardian, left home, still shows in your In Play below it.\n'
       + 'TRY: pass. The opponent blocks nothing; watch the board through the damage and back to normal.',
@@ -122,12 +123,12 @@ export const BATCH_J: Record<string, Scenario> = {
     id: 'battle-space-lone',
     card: 'Bubb',
     why: 'The smallest fight: one attacker, unblocked. It has the whole fight block to itself and must '
-      + 'stop growing at the cap (~120px), not fill the board.',
+      + 'stop growing at the cap (100px), not fill the board.',
     expect:
       LOOK
       + 'You attacked with Bubb alone and they did not block; you have priority.\n'
-      + 'LOOK: Bubb stands in the middle of the fight at the cap (about 120px wide) — big, but not giant;\n'
-      + 'the room it cannot use goes to the In Play bands. Their three units still show in their In Play.\n'
+      + 'LOOK: Bubb stands in the middle of the fight at the cap (100px wide) — big, but not giant;\n'
+      + 'the fight keeps the old half-board block: it needs no more width. Their three units still show in their In Play.\n'
       + 'TRY: pass, and watch the hit land.',
     initiative: YOU,
     you: {
