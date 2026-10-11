@@ -570,7 +570,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     for (let i = 0; i < m.lines.length; i++) {
       const L = m.lines[i];
       const mm = /\bruling:\s*\[([^\]]*)\]/.exec(L);
-      if (!mm || !/^\s*\{\s*term:/.test(L)) continue;
+      if (!mm || /^\s*(\/\/|\*|\/\*)/.test(L)) continue;
       const rs = rowsByLine.get(i + 1) ?? [];
       const items = [...mm[1].matchAll(/'([^']*)'|"([^"]*)"/g)].map((x) => x[1] ?? x[2]);
       const keys = [];
