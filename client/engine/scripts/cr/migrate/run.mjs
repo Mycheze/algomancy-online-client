@@ -57,7 +57,7 @@ export function applyHand(root, step) {
     if ((e.step ?? 'hand') !== step) continue;
     const abs = join(root, path);
     if (e.op === 'delete') { if (existsSync(abs)) { unlinkSync(abs); out.deleted.push(path); } continue; }
-    const theirs = join(HAND, 'files', path);
+    const theirs = join(HAND, 'files', `${path}.hand`);
     if (e.op === 'add' || !e.base) { mkdirSync(dirname(abs), { recursive: true }); copyFileSync(theirs, abs); out.merged.push(path); continue; }
     let base;
     try { base = git(['cat-file', 'blob', e.base], root); } catch { out.missingBase.push(path); continue; }
@@ -88,7 +88,7 @@ function capture() {
     try { base = git(['rev-parse', `HEAD:${p}`]).trim(); } catch { base = null; }
     if (del) { man.files[p] = { op: 'delete', step, base }; continue; }
     const src = join(resolve(from), p);
-    const dst = join(HAND, 'files', p);
+    const dst = join(HAND, 'files', `${p}.hand`); // a suffix no compiler, test runner or scanner picks up
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(src, dst);
     man.files[p] = { op: base ? 'merge' : 'add', step, base, ...(process.argv.includes('--owned') ? { owned: true } : {}) };
