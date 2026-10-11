@@ -8,16 +8,16 @@
  * this repository has."
  *
  * The audit then states its own method in one line **"All 43 rows were read against
- * the engine."** For a row whose keyword prints a reminder that is safe — R206
- * rule 1 is "printed text wins". For a row with no printed reminder the
+ * the engine."** For a row whose keyword prints a reminder that is safe — the
+ * audit's rule 1 is "printed text wins". For a row with no printed reminder the
  * reference was THE IMPLEMENTATION, so where the engine was wrong the row was
  * corrected INTO agreement with the bug.
  *
  * That is not hypothetical. The {Prophecy} row's last sentence was rewritten to
  * match `engine.ts::cachedTiming`, and `cachedTiming` was the defect that lost
- * the owner a game on 2026-08-30 (R277: it gated a fulfilled prophecy to its
+ * the owner a game on 2026-08-30 (it gated a fulfilled prophecy to its
  * [Haste] marker instead of the printed timing, contradicting CR 803.7i while citing
- * the prophecy ruling as its authority The rules document and the engine agreed, both were
+ * the prophecy ruling as its authority). The rules document and the engine agreed, both were
  * wrong, and the agreement is what made it look settled.
  *
  * ⚠ AND THE MECHANISM IS LIVE, NOT HISTORICAL. `177-glossary-conformance`

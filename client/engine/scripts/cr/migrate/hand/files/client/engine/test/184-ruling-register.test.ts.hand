@@ -106,6 +106,10 @@ const ALLOWED: { file: string; match: string; why: string }[] = [
   { file: 'ledgers/backlog.ts', match: 'R0', why: 'the visual redesign\'s rounds R0–R5, not rulings' },
   { file: 'ui/test/286-rules-reference.test.ts', match: 'R', why: 'fixture and doc of the player-copy guard: it must still be shown an R-number to catch' },
   { file: 'ui/test/227-reminder-text.test.ts', match: 'R', why: 'the leak detector\'s fixtures, and the verbatim string a player once saw (report #118)' },
+  { file: 'ui/test/323-recent-updates.test.ts', match: "'per R303, cached cards play'", why: 'fixture: the updates guard must still be shown a retired number to catch' },
+  { file: 'ui/test/214-deck-page-wiring.test.ts', match: 'R1: it works', why: 'fixture: an arbitrary rulings line the card panel must show and not leak; not a citation' },
+  { file: 'engine/test/184-ruling-register.test.ts', match: 'R', why: 'this file: the scans\' own positive controls and the allowlist itself' },
+  { file: 'engine/scripts/cr/check.mjs', match: 'R', why: 'machinery: the doc of uncite(), which still reads the retired forms in frozen verdict spans' },
 ];
 const allowedLine = (rel: string, line: string): boolean => ALLOWED.some(a => a.file === rel && line.includes(a.match));
 

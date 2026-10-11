@@ -42,7 +42,7 @@ test('the UNREACHED ledger is imported whole — 35 cards, not a scrape of 32', 
   // its own entry could not have named. The entry blamed the VOCABULARY of
   // `recall` (no event type of its own, state evidence is a hand delta a
   // bin→play recall never makes) — all true, and never the reason. The card's
-  // trigger fires on COMBAT DAMAGE, and until R261 such a trigger resolved
+  // trigger fires on COMBAT DAMAGE, and until the owner's 2026-08-30 ruling such a trigger resolved
   // inside the damage sub-step with no stack entry, so `ownResolution` had
   // nothing to attribute the payload to whatever the vocabulary said. CR 608.9b gave
   // it a window and the card is now observed delivering.

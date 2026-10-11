@@ -281,6 +281,16 @@
      "replace": "(CR 708.6a)"
     }
    ]
+  },
+  "client/engine/test/147-comment-conformance.test.ts": {
+   "op": "edits",
+   "step": "hand",
+   "edits": [
+    {
+     "find": "if the old design mattered for a ruling, it lives under its '\\n(\\s*)\\+ '## R<n> in docs/digital-rules\\.md and the code cites the number\\.",
+     "replace": "if the old design mattered for a rule, it is in the comprehensive '\n$1+ 'rules and the code cites its CR number."
+    }
+   ]
   }
  }
 }

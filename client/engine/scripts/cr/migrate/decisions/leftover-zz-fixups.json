@@ -1,5 +1,5 @@
 {
- "unit": "fixup-garbles",
+ "unit": "leftover-zz-fixups",
  "decisions": {
   "client/ledgers/card-todo-closed.ts##R3#2fed78207e#0": {
    "action": "reword",
@@ -18,6 +18,24 @@
    "find": "* ⚠ THIS SCENARIO ALSO PROVES R18'S OPENING CONDITION IS NOT WHAT IT LOOKS\n   * LIKE. The owner's hand holds no [Haste] card whatsoever, and the haste step\n   * is open anyway — `E.startHasteStep`'s `canHaste` consults the grant. If the\n   * board opens straight into the battle phase instead, the step never asked.",
    "replace": "* ⚠ THE HASTE STEP OPENS EVERY TURN (CR 504.5). The owner's hand holds no\n   * [Haste] card whatsoever and the step is open anyway; what the grant changes\n   * is what may be PLAYED in it (CR 504.7a).",
    "note": "described a canHaste gate that no longer exists (auditor)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R113#7217ea1d5c#0": {
+   "action": "reword",
+   "find": "branch that R113 put in the\n// SPENDS family (you activated it and whiffed).",
+   "replace": "branch in the\n// SPENDS family (you activated it and whiffed).",
+   "note": "garbled splice (repeated \"branch that\"); words, no new history phrase"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R113#76b2f9310d#0": {
+   "action": "reword",
+   "find": "branch R113 put\n// in the SPENDS family is gone:",
+   "replace": "branch that sat\n// in the SPENDS family is gone:",
+   "note": "garbled splice (lost colon); no new history phrase"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R97#b075aed9af#0": {
+   "action": "reword",
+   "find": "LIVE as of R123 (it was PARKED here through R97): the",
+   "replace": "LIVE (it was PARKED here earlier): the",
+   "note": "keep 147's history-phrase ratchet"
   }
  }
 }
