@@ -46,6 +46,14 @@ import { buildModel, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
 export const ENGINE_EVIDENCE_ROOTS = ['client/engine/src/'];
 export const DIGITAL_EVIDENCE_ROOTS = [...ENGINE_EVIDENCE_ROOTS, 'client/ui/', 'client/server/'];
 const NOT_SOURCE = ['client/ui/test/', 'client/server/test/', 'client/server/e2e/'];
+/**
+ * The retired R-ruling register (deleted 2026-10-11, archived at
+ * refs/archive/r-register-final). A frozen verdict's spans, and a finding's
+ * evidence, may quote it: that is history of what was checked, never evidence a
+ * rule rests on (only engine/ui/server source counts), so a span or evidence item
+ * in it is neither a problem nor stale.
+ */
+export const RETIRED_SOURCES = new Set(['client/docs/digital-rules.md']);
 export const isAnnexD = (r) => /^annexd(\.|$)/.test(String(r?.key ?? ''));
 export function isEvidenceSpan(r, file) {
   const f = String(file ?? '');
@@ -369,6 +377,7 @@ export function check(inputs, ex, opts = {}) {
     if (f.rule && !numOk(f.rule)) P('finding-rule-unresolved', f.id, `rule ${f.rule} is not a live rule number or key`);
     for (const d of f.dupes ?? []) if (!findingIds.has(d)) P('finding-missing', f.id, `dupes names ${d}, which is not in findings`);
     for (const e of f.evidence ?? []) {
+      if (RETIRED_SOURCES.has(String(e.file ?? ''))) continue;
       const t = repoFile(String(e.file ?? ''));
       if (t === null) P('source-missing', f.id, `evidence file ${e.file} does not exist (repo-relative paths only)`);
       else if (!t.includes(norm(e.quote ?? '')) && !uncite(t).includes(uncite(e.quote))) S('finding-evidence', f.id, `evidence no longer in ${e.file}: "${String(e.quote).slice(0, 80)}"`);
@@ -383,6 +392,7 @@ export function check(inputs, ex, opts = {}) {
     if (!recKeys.has(v.key) && !recKeys.has(k)) P('verdict-orphan', v.key, 'a verdict for a key no record has');
     for (const q of v.quote_spans ?? []) {
       if (isAbsolute(String(q.file))) { P('verdict-span-path', v.key, `span file ${q.file} must be repo-relative`); continue; }
+      if (RETIRED_SOURCES.has(String(q.file))) continue;
       const t = repoFile(String(q.file));
       if (t === null) P('source-missing', v.key, `span file ${q.file} does not exist`);
       else if (!t.includes(norm(q.text ?? '')) && !unciteOf(q.file).includes(uncite(q.text))) {

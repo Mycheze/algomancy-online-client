@@ -27,9 +27,11 @@ const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+
 const uncite = (s) => norm(String(s ?? '').replace(CITE_RE, ' ')).replace(/\s+([,.;:)])/g, '$1');
 
 const rows = (abs, text) => JSON.parse(text ?? readFileSync(abs, 'utf8'));
-const atHead = (abs) => { try { return execFileSync('git', ['show', `HEAD:${relative(REPO_ROOT, abs)}`], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 1 << 28 }); } catch { return null; } };
+const atRev = (rev, abs) => { try { return execFileSync('git', ['show', `${rev}:${relative(REPO_ROOT, abs)}`], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 1 << 28 }); } catch { return null; } };
 
-export function repin({ dryRun = false } = {}) {
+/** `baseRev`: the commit the migration started from (HEAD in a plain run; the dry run passes its base) */
+export function repin({ dryRun = false, baseRev = 'HEAD' } = {}) {
+  const atHead = (abs) => atRev(baseRev, abs);
   const old = new Map(), cur = new Map();
   for (const f of readdirSync(CR_RULES_DIR).filter((x) => x.endsWith('.json'))) {
     const abs = join(CR_RULES_DIR, f);

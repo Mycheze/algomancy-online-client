@@ -459,8 +459,12 @@ test('§8 a span whose only change is its rule citation still holds; one whose w
   // migration found it, with a retired citation the rewrite turned into a CR number
   i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE} (${R(9)})`;
   assert.deepEqual(check(i, x).stale, [], 'a citation-only difference made the span stale');
-  i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE}S (${R(9)})`;
+  i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE}S (CR 608.1)`;
   assert.deepEqual(check(i, x).stale.map((s) => s.kind), ['verdict-span'], 'a changed word must still be stale');
+  // a span in the retired register is history: neither a problem nor stale, even though the file is gone
+  i.verdicts[0]!.quote_spans[0]!.file = 'client/docs/digital-rules.md';
+  const r = check(i, x);
+  assert.deepEqual([r.problems, r.stale], [[], []], 'a frozen span quoting the retired register must not fail the gate');
 });
 
 test('§8 a demonstrated rule: an Annex D rule may rest on client/ui or client/server source; a game rule may not', () => {

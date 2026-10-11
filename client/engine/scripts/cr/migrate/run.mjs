@@ -157,7 +157,7 @@ async function runSteps(steps, { decisionsDir } = {}) {
   }
   if (steps.includes('repin')) {
     const { repin } = await import('./repin.mjs');
-    log.repin = repin({});
+    log.repin = repin({ baseRev: arg('--base') ?? 'HEAD' });
     time('repin');
   }
   if (steps.includes('delete')) {
@@ -196,11 +196,12 @@ async function dryRun() {
     mkdirSync(dirname(dst), { recursive: true });
     symlinkSync(realpathSync(src), dst);
   }
+  const baseSha = git(['rev-parse', 'HEAD'], dir).trim();
   const steps = stepsOf();
   const first = steps.filter((x) => ['score', 'absorb', 'recite'].includes(x));
   const second = steps.filter((x) => !first.includes(x));
   const child = (st) => {
-    const a = [join(dir, MIGRATE_REL, 'run.mjs'), '--in-place', '--step', st.join(',')];
+    const a = [join(dir, MIGRATE_REL, 'run.mjs'), '--in-place', '--step', st.join(','), '--base', baseSha];
     if (arg('--decisions')) a.push('--decisions', resolve(arg('--decisions')));
     const res = spawnSync(process.execPath, a, { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8', maxBuffer: 1 << 30 });
     const logPath = join(dir, 'data/comprehensive-rules/build/migrate/run-log.json');

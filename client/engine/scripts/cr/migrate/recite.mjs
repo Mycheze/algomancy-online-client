@@ -695,7 +695,17 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     if (L) {
       const before = L.olds.filter((t) => t.includes(needle)).length;
       const after = L.news.filter((t) => t.includes(out)).length;
-      if (after > before) out = p.neu;
+      if (after > before) {
+        // the shortest word-boundary prefix of the new title that is as unique as the old needle
+        // was, stopping short of a quote (a ledger reader compares raw source text), else the title
+        out = p.neu;
+        const cut = p.neu.search(/['"`\\]/);
+        for (const m of p.neu.matchAll(/\s/g)) {
+          const pre = p.neu.slice(0, m.index);
+          if (cut >= 0 && pre.length > cut) break;
+          if (pre.length >= 12 && L.news.filter((t) => t.includes(pre)).length <= before) { out = pre; break; }
+        }
+      }
     }
     return out;
   };
