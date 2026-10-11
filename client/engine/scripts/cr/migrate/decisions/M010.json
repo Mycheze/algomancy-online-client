@@ -1,0 +1,2471 @@
+{
+ "unit": "M010",
+ "decisions": {
+  "client/docs/06-roadmap.md##R16#ce238006f1#0": {
+   "action": "reword",
+   "suggest": "New provisional engine rulings await Bena's confirmation.",
+   "note": "roadmap history; range R13-R16"
+  },
+  "client/docs/06-roadmap.md##R16#e47e040cda#0": {
+   "action": "reword",
+   "suggest": "Bena to confirm/overturn the early provisional rulings.",
+   "note": "roadmap history; range R13-R16, R18-R22"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#118c294c56#0": {
+   "action": "unsure",
+   "note": "not a citation: example register phrasing in the cr extractor's grammar doc; retire with the extractor"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#118c294c56#1": {
+   "action": "unsure",
+   "note": "not a citation: example register phrasing in the cr extractor's grammar doc; retire with the extractor"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#118c294c56#2": {
+   "action": "unsure",
+   "note": "not a citation: example register phrasing in the cr extractor's grammar doc; retire with the extractor"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#8eb09510a5#0": {
+   "action": "unsure",
+   "note": "not a citation: example register phrasing in the cr extractor's grammar doc; retire with the extractor"
+  },
+  "client/engine/src/apply.ts##R42#4f6328ad6b#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "The old reading that the banner was \"plain mana, no affinity\" was simply false",
+   "note": "history of reversed reading"
+  },
+  "client/engine/src/apply.ts##R42#88346f9c02#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#066c907de8#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#52ac2fc5db#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#9c83ff163f#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "an earlier reading said otherwise for a year"
+  },
+  "client/engine/src/apply.ts##R42#8e5b2956f7#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#f88d0491b8#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#e3469d5baa#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#701d8da503#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#1933320d55#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#62a10b0b83#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R42#f46139b2a9#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R42#83d09c69a6#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "which overturned the earlier claim"
+  },
+  "client/engine/src/cards/dsl.ts##R42#89a381149e#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R42#86151568ce#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R42#b47f736fea#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R42#1c9ff57b3e#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R42#46458557ae#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R42#5cc4c092f8#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R42#0cf6f88df6#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R42#2428c80abf#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R42#dfde01623d#0": {
+   "action": "cite",
+   "nums": [
+    "803.7a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R42#3f3a4cd7eb#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R42#78e81fb152#0": {
+   "action": "cite",
+   "nums": [
+    "803.7a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R42#6ee94fcea4#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R42#e3ede0b5e0#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R42#cf8e76c00b#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R42#8b70443e33#0": {
+   "action": "unsure",
+   "note": "\"own [Haste] route\" for a cache release looks like the reversed release-marker reading (803.7i); comment may be stale"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R42#376dc848fb#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#9eb00ef7de#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#862614601c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#5f4e519d2e#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#1e8db0fe12#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#682b1b4481#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#ab5bb5833c#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#ca02265539#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/src/engine.ts##R42#c795e52fa1#0": {
+   "action": "reword",
+   "nums": [
+    "803.7i"
+   ],
+   "suggest": "(citing the prophecy ruling, Divine Intervention) — a comment citing, as its authority, the rule that says the opposite (803.7i)",
+   "note": "quotes an old comment"
+  },
+  "client/engine/src/types.ts##R42#993edbbfc7#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/types.ts##R42#dcb4c87b0d#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/src/types.ts##R42#c9bfbb75d8#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/src/types.ts##R42#8d61756b7a#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/types.ts##R42#ebbf299417#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "cache a card with a printed prophecy banner, paying the banner's cost, mana and affinity (803.7d)",
+   "note": "STALE comment: states the reversed no-affinity reading"
+  },
+  "client/engine/src/types.ts##R42#89c3d946d7#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R42#32dd9178ef#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R42#687964a193#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R42#18a57dc85e#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R42#d13e8f6c3a#0": {
+   "action": "reword",
+   "nums": [
+    "803.7i"
+   ],
+   "suggest": "The prophecy rules have always said (803.7i)"
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R42#10cc8d30d0#0": {
+   "action": "reword",
+   "suggest": "under a comment citing the prophecy ruling as its authority",
+   "note": "history"
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R42#6ce476763c#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R42#1a03cd400f#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R42#456c0f3159#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "The register said the opposite from 2026-08-19 to 2026-09-20",
+   "note": "history of reversed reading"
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R42#2c16ea5e46#0": {
+   "action": "reword",
+   "suggest": "nothing else in the prophecy rules moved"
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R42#f5350a2cbe#0": {
+   "action": "reword",
+   "nums": [
+    "803.7h"
+   ],
+   "suggest": "the rest of prophecy is untouched (803.7h)"
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R42#909f83fb7b#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#13af694cd6#0": {
+   "action": "reword",
+   "nums": [
+    "803.7b",
+    "803.7d"
+   ],
+   "suggest": "Prophecy: a deployment-only action (803.7b) that caches a banner card for the banner's cost, mana and affinity (803.7d)",
+   "note": "STALE comment: states the reversed no-affinity reading"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#3d96d36775#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "(see 803.7d)"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#15ee9be9f6#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#7d234bfc90#0": {
+   "action": "unsure",
+   "note": "comment calls the trailing [Haste] a RELEASE marker: the reversed reading (803.7b/803.7i); needs human rewrite"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#a1a245d656#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#28d62e87b3#0": {
+   "action": "reword",
+   "nums": [
+    "803.7k"
+   ],
+   "suggest": "so the free graft (803.7k) can be shown"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#b21cd98adb#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#b98c9407a0#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#a6134105e4#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#6159a5c4f4#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#c6d7893762#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#f698807c5f#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#36dc88c6f0#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#33ab2629d9#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#19c73cd6fb#0": {
+   "action": "reword",
+   "suggest": "citing the prophecy ruling",
+   "note": "history"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#19c73cd6fb#1": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#b90b5ddc88#0": {
+   "action": "drop",
+   "note": "engine parse detail; no CR rule says the marker is not part of the condition"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#abd6efe05f#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#4bbe65fffc#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#b930f315ba#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R42#4da151938e#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R42#ac4f76ace0#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R42#b3b9ba2ea7#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R42#4320e67773#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/test/411-cr-extract.test.ts##R42#f00df7001d#0": {
+   "action": "unsure",
+   "note": "cr-extract test asserts register supersession R301->R42; not a citation, retire with the extractor"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R42#5c576f041c#0": {
+   "action": "unsure",
+   "note": "cr-extract test asserts register supersession R301->R42; not a citation, retire with the extractor"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R42#5c576f041c#1": {
+   "action": "unsure",
+   "note": "cr-extract test asserts register supersession R301->R42; not a citation, retire with the extractor"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R42#b477546255#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R42#25c3060ea8#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R42#a78b2ab32d#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R42#f551e9e8dc#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R42#6915858a23#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R42#30fee4ad42#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R42#802d1295d9#0": {
+   "action": "unsure",
+   "note": "closed ledger; states the reversed [Haste]-release-override reading; freeze as history"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#9b45c6baa7#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#391888d90c#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#b4ee06c4ca#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#5df93a49d9#0": {
+   "action": "reword",
+   "suggest": "(the prophecy ruling, Divine Intervention)",
+   "note": "closed ledger; quotes old code comment"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#5df93a49d9#1": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#216547f42f#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#95e448efcc#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo.ts##R42#ab0cb5cf25#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ],
+   "note": "quotes a 36-cache-prophecy message; keep in step with that test's rewrite"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R42#0de6787ac6#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "the register then said the banner costs plain mana with no affinity (since corrected, 803.7d)",
+   "note": "closed ledger; reversed reading"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R42#e1554c93bd#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R42#a4572782b5#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R42#aab5e37d48#0": {
+   "action": "reword",
+   "suggest": "(the prophecy ruling, Divine Intervention)",
+   "note": "closed ledger; quotes old code"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R42#aab5e37d48#1": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ],
+   "note": "closed ledger"
+  },
+  "client/server/e2e/test-scenario.ts##R42#0d98146fc3#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R42#be6ade785c#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R42#06298afd68#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R42#91e3798c47#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/server/scenarios-d.ts##R42#1e802d9417#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/server/scenarios-e.ts##R42#941df27e26#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/server/scenarios-e.ts##R42#b5459d7004#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/ui/cardtext.ts##R42#e31c274444#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "the register declared they did not exist"
+  },
+  "client/ui/glossary.ts##R42#6c5d787415#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/ui/glossary.ts##R42#03c7f18b03#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/ui/glossary.ts##R42#79ad1b5244#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/ui/glossary.ts##R42#1a5b29fe57#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/ui/glossary.ts##R42#2d3b02f099#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/ui/inspect.ts##R42#a75cf46f23#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/ui/inspect.ts##R42#d828e557d0#0": {
+   "action": "reword",
+   "suggest": "the then-current prophecy ruling's",
+   "note": "quotes an old note"
+  },
+  "client/ui/inspect.ts##R42#2fc5e1f019#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "The register said otherwise"
+  },
+  "client/ui/main.ts##R42#b002e883ac#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/ui/main.ts##R42#e5f04247e9#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/ui/main.ts##R42#fabb311033#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/ui/main.ts##R42#9104a7d159#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/ui/main.ts##R42#1b83a7ff22#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/ui/main.ts##R42#265671a85c#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/ui/main.ts##R42#8bb7ee63ff#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/ui/main.ts##R42#04f0cafe16#0": {
+   "action": "cite",
+   "nums": [
+    "803.7b"
+   ]
+  },
+  "client/ui/main.ts##R42#4ce415d374#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/ui/main.ts##R42#7379fdd1de#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/ui/main.ts##R42#42a703bd91#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/ui/main.ts##R42#24a7ee299a#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/ui/main.ts##R42#97cad4ae41#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R42#16abd81486#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R42#16abd81486#1": {
+   "action": "reword",
+   "suggest": "citing the prophecy ruling as its authority",
+   "note": "history"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#6125ad5b18#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ]
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#7060fdff7a#0": {
+   "action": "reword",
+   "suggest": "citing the prophecy ruling as its authority",
+   "note": "history"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#0a2436a722#0": {
+   "action": "reword",
+   "suggest": "the shape the prophecy ruling had on cachedTiming",
+   "note": "history"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#660932e0ce#0": {
+   "action": "unsure",
+   "note": "test reads the register's R42 section directly; must be rewritten with the register deletion"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#a5b519666a#0": {
+   "action": "unsure",
+   "note": "test reads the register's R42 section directly; must be rewritten with the register deletion"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R42#3f497b3c25#0": {
+   "action": "reword",
+   "suggest": "— the old prophecy ruling",
+   "note": "quotes an old fixture note"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R42#25302e46ba#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "The old \"no affinity\" reading was false"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R42#97f09cd2ec#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R42#2d4083914e#0": {
+   "action": "cite",
+   "nums": [
+    "803.7c"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R42#dfe50a1933#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R42#d41fb0d190#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R42#95c12e21dd#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R70#71913de45f#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R70#ac6e682ec4#0": {
+   "action": "reword",
+   "nums": [
+    "714.9"
+   ],
+   "suggest": "it stamped no leave-play `to` (714.9)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R70#1a5437632d#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R70#29acfe905f#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R70#63ea8e026e#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R70#71d7eb9dc9#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R70#908ea11db9#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R70#65283a7318#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R70#a7d25615ed#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R70#b408b06b28#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R70#4242454939#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R70#f357bc0219#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R70#55db662abc#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R70#9c8c64dec3#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R70#4876482c75#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#df8e257a28#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#83d4109113#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#24df2494f3#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#80d3169ebc#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#6dbdf662d2#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#4e336e635b#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "R70's part here is weak; sentence relies on the host's controller trashing"
+  },
+  "client/engine/src/engine.ts##R70#d66191bbfc#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#13719158cd#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#b287651d66#0": {
+   "action": "reword",
+   "nums": [
+    "714.9"
+   ],
+   "suggest": "the leave-play `anchor` (714.9)"
+  },
+  "client/engine/src/engine.ts##R70#5af7e6cfbd#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#d08992eea5#0": {
+   "action": "cite",
+   "nums": [
+    "801.2f"
+   ],
+   "note": "recalled host's mod left in a bin is trashed"
+  },
+  "client/engine/src/engine.ts##R70#eac088eca5#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#da843383e1#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#06dce678fd#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#26efe58cca#0": {
+   "action": "reword",
+   "nums": [
+    "714.9"
+   ],
+   "suggest": "it never stamped the leave-play `to` (714.9)"
+  },
+  "client/engine/src/engine.ts##R70#df909dad57#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#571bbabb2d#0": {
+   "action": "cite",
+   "nums": [
+    "402.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#b1235f31d2#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#352f0a78ad#0": {
+   "action": "cite",
+   "nums": [
+    "714.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R70#7ca955ab53#0": {
+   "action": "cite",
+   "nums": [
+    "714.9a"
+   ]
+  },
+  "client/engine/src/types.ts##R70#1d98050e8d#0": {
+   "action": "cite",
+   "nums": [
+    "714.9a"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R70#aee069495c#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R70#48241cd834#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R70#f190aebb18#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R70#5f1d2f8364#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R70#2071bc7b0c#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R70#b0aee569a9#0": {
+   "action": "cite",
+   "nums": [
+    "801.2f"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R70#c9e874f1aa#0": {
+   "action": "cite",
+   "nums": [
+    "801.2f"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R70#b11346463f#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R70#0bf44b75cf#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R70#cb4c697d13#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R70#d06c3c755a#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R70#94b1f2a409#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R70#e74bca41c5#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R70#5114dcdf96#0": {
+   "action": "cite",
+   "nums": [
+    "720.7c"
+   ]
+  },
+  "client/engine/test/62-death-facts.test.ts##R70#d0d13893c8#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/62-death-facts.test.ts##R70#b655eebb0b#0": {
+   "action": "cite",
+   "nums": [
+    "714.9a"
+   ]
+  },
+  "client/engine/test/62-death-facts.test.ts##R70#c6dd6a68e6#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/62-death-facts.test.ts##R70#d56ea4bf2e#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/62-death-facts.test.ts##R70#00001566e9#0": {
+   "action": "reword",
+   "suggest": "(the earlier reading inverted)",
+   "note": "history"
+  },
+  "client/engine/test/62-death-facts.test.ts##R70#b3963d6985#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R70#d80cd06625#0": {
+   "action": "reword",
+   "nums": [
+    "714.9"
+   ],
+   "suggest": "the leave-play `anchor` (714.9)"
+  },
+  "client/engine/test/drill.ts##R70#63693d53bf#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R70#30d8a8ab95#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R70#99d0a11c72#0": {
+   "action": "reword",
+   "nums": [
+    "714.9"
+   ],
+   "suggest": "the leave-play `anchor` (714.9)",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R70#4584d49cb3#0": {
+   "action": "cite",
+   "nums": [
+    "714.9"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R70#49bb91bf78#0": {
+   "action": "cite",
+   "nums": [
+    "801.2f"
+   ],
+   "note": "closed ledger"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R125#f8547c46ff#0": {
+   "action": "reword",
+   "suggest": "(the dead-clause shape: one clause works, the other silently does nothing)",
+   "note": "methodology label; no general literal-reading rule"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R125#6e3372e364#0": {
+   "action": "reword",
+   "suggest": "(the literal-reading principle applied to every clause in this file)",
+   "note": "methodology label"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R125#6ac516e968#0": {
+   "action": "reword",
+   "suggest": "the invented-qualifier shape is NOT present here",
+   "note": "methodology label"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R125#ed69c863c5#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R125#35608373d4#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "the owner's Rotspore wording (707.7)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R125#350a214bf3#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R125#d47f748ec5#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "the second channel (effectAttrs, which carries 707.7 to spells)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R125#8e9e377ff6#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "is LITERAL (707.7)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R125#041ea463a0#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R125#e74276e5e0#0": {
+   "action": "cite",
+   "nums": [
+    "300.5c"
+   ],
+   "note": "\"token\" unqualified includes both kinds"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R125#d6e4a67b60#0": {
+   "action": "reword",
+   "suggest": "(the dead-clause shape)",
+   "note": "methodology label"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R125#3418b6d3a0#0": {
+   "action": "reword",
+   "suggest": "the invented-mechanism smell",
+   "note": "methodology label"
+  },
+  "client/engine/test/107-semantics-statics.test.ts##R125#0d54223b61#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/test/107-semantics-statics.test.ts##R125#848fd715ed#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/test/107-semantics-statics.test.ts##R125#aa438d4dde#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/test/107-semantics-statics.test.ts##R125#cae7600a58#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/test/109-attr-channel-conformance.test.ts##R125#f21cea8b89#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "THE ROTSPORE BUG SHAPE (707.7), GENERALISED"
+  },
+  "client/engine/test/109-attr-channel-conformance.test.ts##R125#5fbd90d404#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/test/109-attr-channel-conformance.test.ts##R125#20cda5299b#0": {
+   "action": "cite",
+   "nums": [
+    "707.7"
+   ]
+  },
+  "client/engine/test/111-literal-fire.test.ts##R125#72209b35fc#0": {
+   "action": "reword",
+   "suggest": "The literal-reading principle",
+   "note": "methodology; no general CR rule states it"
+  },
+  "client/engine/test/112-literal-wood.test.ts##R125#41dcb41ca3#0": {
+   "action": "reword",
+   "suggest": "The literal-reading principle",
+   "note": "methodology; no general CR rule states it"
+  },
+  "client/engine/test/113-literal-metal.test.ts##R125#b8ea2f361d#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "The owner's Rotspore ruling (707.7)"
+  },
+  "client/engine/test/115-literal-light.test.ts##R125#b0216953bd#0": {
+   "action": "reword",
+   "suggest": "in the invented-qualifier shape",
+   "note": "methodology label"
+  },
+  "client/engine/test/115-literal-light.test.ts##R125#64cf464788#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "— the owner, on Rotspore Herald (707.7)."
+  },
+  "client/engine/test/116-literal-hybrids.test.ts##R125#814b01100d#0": {
+   "action": "reword",
+   "suggest": "the invented-qualifier shape",
+   "note": "methodology label"
+  },
+  "client/engine/test/116-literal-hybrids.test.ts##R125#758f8a44fb#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "the identical invented filter the Rotspore ruling (707.7) took off Rotspore Herald"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R125#aa674bbbdd#0": {
+   "action": "drop",
+   "note": "methodology label"
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R125#9365e9689e#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R125#3b65a644aa#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R125#b0f9cf97cf#0": {
+   "action": "cite",
+   "nums": [
+    "304.9"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R125#60362b3598#0": {
+   "action": "reword",
+   "nums": [
+    "707.7"
+   ],
+   "suggest": "Same failure as the Rotspore ruling (707.7)",
+   "note": "closed ledger"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R125#a73bf47b28#0": {
+   "action": "reword",
+   "suggest": "(the literal-reading audit, batch-light-a:239-247, whose comment names the class outright)",
+   "note": "methodology label"
+  },
+  "client/engine/src/apply.ts##R145#0ce8754743#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R145#45cbae288f#0": {
+   "action": "reword",
+   "suggest": "the bin-entry census sweep",
+   "note": "test machinery label"
+  },
+  "client/engine/src/engine.ts##R145#cb959daace#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/src/engine.ts##R145#56b47f3cf4#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/src/engine.ts##R145#86968093b0#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R145#abb18243d0#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/src/engine.ts##R145#fc0e3fd5b0#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/src/engine.ts##R145#32f8d66781#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#6de79ea247#0": {
+   "action": "cite",
+   "nums": [
+    "400.2"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#a3c80c54d8#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#013972219b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#d18c1c55f0#0": {
+   "action": "cite",
+   "nums": [
+    "803.8k"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#e467a828b4#0": {
+   "action": "cite",
+   "nums": [
+    "803.8a"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#98a65ec14e#0": {
+   "action": "cite",
+   "nums": [
+    "803.8a"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#cb94284517#0": {
+   "action": "cite",
+   "nums": [
+    "803.8b"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R145#1b3e66ba37#0": {
+   "action": "reword",
+   "nums": [
+    "803.8b"
+   ],
+   "suggest": "CR 803.8b needs updating"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R145#0357c4c85c#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R145#4a2d4f591a#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ]
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R145#14f9a1ace4#0": {
+   "action": "drop",
+   "note": "census label in test data"
+  },
+  "client/engine/test/42-dark-b.test.ts##R145#c39a50b45f#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ],
+   "note": "\"trashed there\" is the engine's reading; CR 801.2h differs (F-U18-1)"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#4a97f19ecd#0": {
+   "action": "reword",
+   "suggest": "the bin-ENTRY sweep",
+   "note": "test machinery label"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#ce0b6fea6c#0": {
+   "action": "reword",
+   "suggest": "the bin-entry sweep below",
+   "note": "test machinery label"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#bcdd84c407#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#99dc32af7a#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#ec537b7b07#0": {
+   "action": "reword",
+   "suggest": "The active-zone fix was itself exactly that",
+   "note": "history"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#cfb8b657d6#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R145#8c7dd756b2#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ]
+  },
+  "client/engine/test/stripcode.ts##R145#81bdb247c5#0": {
+   "action": "reword",
+   "suggest": "the bin choke point",
+   "note": "test machinery label"
+  },
+  "client/ledgers/backlog-closed.ts##R145#c7be436f6a#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ],
+   "note": "backlog-closed"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#a05e887458#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ],
+   "note": "closed ledger; \"trashed there\" is engine reading, 801.2h differs"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#0f6647b826#0": {
+   "action": "cite",
+   "nums": [
+    "400.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#781dad19e3#0": {
+   "action": "reword",
+   "nums": [
+    "400.2a"
+   ],
+   "suggest": "landing on top of the active-zone rule (400.2a)",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#8d7cc4a16c#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#af50bc874c#0": {
+   "action": "reword",
+   "suggest": "the bin choke point",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#779ca2f622#0": {
+   "action": "cite",
+   "nums": [
+    "803.8a"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#779ca2f622#0~1": {
+   "action": "cite",
+   "nums": [
+    "803.8a"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R145#7b8b28416f#0": {
+   "action": "reword",
+   "nums": [
+    "803.8a"
+   ],
+   "suggest": "CLOSED by the active-zone ruling (2026-08-25; 803.8a)",
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R145#3fabdb72a0#0": {
+   "action": "reword",
+   "nums": [
+    "803.8a"
+   ],
+   "suggest": "See CR 803.8a.",
+   "note": "closed ledger"
+  },
+  "client/server/test/274-sandbox.test.ts##R145#733d85abc4#0": {
+   "action": "reword",
+   "suggest": "which the bin-entry census requires",
+   "note": "test machinery"
+  },
+  "client/ui/glossary.ts##R145#99ab0009ce#0": {
+   "action": "cite",
+   "nums": [
+    "803.8a"
+   ]
+  },
+  "client/ui/glossary.ts##R145#076529152b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ]
+  },
+  "client/ui/manual-reminders.json##R145#1dbb022c74#0": {
+   "action": "reword",
+   "nums": [
+    "803.8a"
+   ],
+   "suggest": "silent on the active-zone scope (803.8a)"
+  },
+  "client/engine/src/apply.ts##R228#bdd230c19b#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "Making the haste step unconditional (504.5) removed a FOURTH caller"
+  },
+  "client/engine/src/engine.ts##R228#e1538022ea#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "THE UNCONDITIONAL HASTE STEP (504.5) RETIRED THE THIRD GATE."
+  },
+  "client/engine/src/engine.ts##R228#0b92510d68#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R228#3204dfdf83#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R228#874af15101#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R228#9908cd30ec#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R228#71764cdbf9#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/101-deploy-seat-matrix.test.ts##R228#64ca3d0d48#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R228#c68bdc118f#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R228#7f9a054cf2#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R228#137f47db1e#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "the unconditional haste step (504.5) deleted"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R228#4e98f07a06#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R228#eba00dd521#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "The unconditional haste step (504.5) moved"
+  },
+  "client/engine/test/26-metal-a.test.ts##R228#1cea1cbb37#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R228#d222a69b2a#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R228#8af270cfde#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R228#2ae4821dce#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R228#2ee69e56d7#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "The unconditional haste step (504.5) removed the skip entirely"
+  },
+  "client/engine/test/40-light-c.test.ts##R228#e1e9463b41#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R228#74948d5130#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R228#782f226ff0#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R228#8de29a4d4e#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "CLOSED 2026-08-28 (round 29): the haste step always opens (504.5)",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R228#f7ee901e52#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "CLOSED 2026-08-28 (round 29): the haste step always opens (504.5)",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R228#2e8ec4d635#0": {
+   "action": "reword",
+   "suggest": "it PREDATES the haste-step rulings",
+   "note": "closed ledger; history"
+  },
+  "client/ledgers/card-todo.ts##R228#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R228#ab8e270f34#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "FIXED 2026-08-28 (round 29): the haste step always opens (504.5)",
+   "note": "closed ledger"
+  },
+  "client/server/e2e/test-concurrency.ts##R228#22d1b3fd1f#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-forensics.ts##R228#6ea66c3198#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-forensics.ts##R228#5301da8956#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-forensics.ts##R228#0470cccc44#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-hidden.ts##R228#ada84e88ee#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-hidden.ts##R228#dc63e78b81#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-hidden.ts##R228#f8a4558631#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/server/e2e/test-hidden.ts##R228#ef0f6d61b9#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R228#fc7c31f8b0#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "THE UNCONDITIONAL HASTE STEP (504.5) REPLACED THE PARAGRAPH THAT USED TO BE HERE."
+  },
+  "client/server/e2e/test-scenario.ts##R228#6165d1bdcd#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "THE UNCONDITIONAL HASTE STEP (504.5) PUT A REAL STEP BACK BETWEEN THESE TWO LINES"
+  },
+  "client/server/e2e/test-scenario.ts##R228#ad6fdcf88e#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R228#4bca3f5fde#0": {
+   "action": "reword",
+   "suggest": "the 200-haste-step-is-unconditional test",
+   "note": "test pointer"
+  },
+  "client/server/e2e/test-undo-segment.ts##R228#6ea66c3198#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-undo-segment.ts##R228#f71f71d38f#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/e2e/test-undo-segment.ts##R228#d280ed4a86#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/scenarios-e.ts##R228#af1b1efdaf#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "canHaste was deleted outright and the step now opens unconditionally (504.5)"
+  },
+  "client/server/scenarios-e.ts##R228#45bd0ca776#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "by the unconditional haste step (504.5), which deleted `canHaste`"
+  },
+  "client/server/scenarios.ts##R228#4fff967341#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/scenarios.ts##R228#b951810f33#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "Before the haste step became unconditional (504.5)"
+  },
+  "client/server/scenarios.ts##R228#89ad06bfa6#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/scenarios.ts##R228#97f63c3bf8#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#c38e63f0b2#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#222524ef7a#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#f2509c9e84#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#f33dda6206#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#7cc0fc1ed5#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#f848803841#0": {
+   "action": "reword",
+   "suggest": "even before the step became unconditional",
+   "note": "history"
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#f18454b81a#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#e34483aa67#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#47ab22c406#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#a49f94a825#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "the unconditional haste step (504.5) deleted the predicate that could disagree about it"
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#f0e2068273#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#6f4595e0e7#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#5a833fa4e3#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R228#19afce1be3#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/server/test/360-playback-frames.test.ts##R228#34d2b22d50#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/server/view.ts##R228#78f0be6cf1#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "The haste step is unconditional (504.5) precisely because"
+  },
+  "client/ui/glossary.ts##R228#79311611a6#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "THE UNCONDITIONAL HASTE STEP (504.5) DELETED THAT GATE ENTIRELY"
+  },
+  "client/ui/inspect.ts##R228#3fc542ac5c#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "the step is UNCONDITIONAL (504.5)"
+  },
+  "client/ui/inspect.ts##R228#9e17a1edc7#0": {
+   "action": "reword",
+   "suggest": "the duplicate the unconditional haste step deleted",
+   "note": "history"
+  },
+  "client/ui/test/132-token-separation.test.ts##R228#ef1e8315dc#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/ui/test/132-token-separation.test.ts##R228#da5d8fe7cf#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ]
+  },
+  "client/ui/test/286-rules-reference.test.ts##R228#5f3eef9fda#0": {
+   "action": "unsure",
+   "note": "deliberate R-number fixture (owner's screenshot string) for the R-number guard regex; leave verbatim"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R228#f9fba1eb05#0": {
+   "action": "reword",
+   "suggest": "the unconditional haste step shortened those games",
+   "note": "test-history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R228#e1b1bfc64e#0": {
+   "action": "reword",
+   "suggest": "after the haste step became unconditional",
+   "note": "test-history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R228#3e8d78db29#0": {
+   "action": "reword",
+   "suggest": "the unconditional haste step shortened those games",
+   "note": "test-history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R228#e092943cd5#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "THE UNCONDITIONAL HASTE STEP (504.5) IS WHY THIS EXISTS."
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R228#6da12c13ef#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "The unconditional haste step (504.5: every seat clicks `doneHaste` every turn)"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R228#3332e191ff#0": {
+   "action": "reword",
+   "suggest": "not of the rule.",
+   "note": "test-history"
+  },
+  "client/docs/questions-round28.md##R265#b94bd177f4#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/docs/questions-round32.md##R265#ca703f999c#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/engine/scripts/cr/briefs/C-verify.md##R265#bee09620ce#0": {
+   "action": "unsure",
+   "note": "not a citation: example of scoped-ref syntax in the cr pipeline brief; retire with the pipeline"
+  },
+  "client/engine/scripts/cr/briefs/C-verify.md##R265#bee09620ce#1": {
+   "action": "unsure",
+   "note": "not a citation: example of scoped-ref syntax in the cr pipeline brief; retire with the pipeline"
+  },
+  "client/engine/src/apply.ts##R265#a47ef133e0#0": {
+   "action": "drop",
+   "note": "engine design (one predicate for menu and gate); no CR rule"
+  },
+  "client/engine/src/apply.ts##R265#67eb34992e#0": {
+   "action": "drop",
+   "note": "engine design pointer (\"as above\")"
+  },
+  "client/ledgers/card-todo-closed.ts##R265#dab9705283#0": {
+   "action": "reword",
+   "nums": [
+    "110.4"
+   ],
+   "suggest": "FIXED 2026-08-30 alongside the ally definition (110.4)",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo.ts##R265#8bb1e47c51#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/ui/inspect.ts##R265#5b79046c52#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#7e751c2afa#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a",
+    "110.4"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#5faf20a6ae#0": {
+   "action": "cite",
+   "nums": [
+    "110.4"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#dff237ef37#0": {
+   "action": "cite",
+   "nums": [
+    "110.4"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#b4dff1db63#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#53a1206258#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#e33411b7db#0": {
+   "action": "cite",
+   "nums": [
+    "601.4e"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#9c05ce14b7#0": {
+   "action": "cite",
+   "nums": [
+    "601.4e"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#fb4ac1b0d6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4e"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#04741bba8d#0": {
+   "action": "cite",
+   "nums": [
+    "110.4"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#14fdc7661a#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R265#d0e1b27abc#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ]
+  },
+  "data/comprehensive-rules/README.md##R265#0ddfdb0ede#0": {
+   "action": "unsure",
+   "note": "not a citation: README example of scoped-ref syntax in the cr pipeline"
+  },
+  "client/ledgers/card-todo-closed.ts##R282#1ec69cf9a3#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo.ts##R282#2ad950d565#0": {
+   "action": "reword",
+   "suggest": "the retired register said the inspector states a reminder twice",
+   "note": "ticket about stale register text"
+  },
+  "client/ui/cardpanel.ts##R282#96cf96f9c2#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/cardpanel.ts##R282#71a39b57a5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/cardtext.ts##R282#1957d1c6cc#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/cardtext.ts##R282#013f5ed508#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/cardtext.ts##R282#db11f30152#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/main.ts##R282#d1ba66a80c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#5f80446543#0": {
+   "action": "cite",
+   "nums": [
+    "204.4",
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#45f2868b99#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#1f998f23c1#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#4aed52cec8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#8bd221cab6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#9867059113#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#0fa26b44b3#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ]
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#cf5ce56509#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10"
+   ],
+   "note": "no rule says \"state once\"; D6.10 is the box-reminder premise"
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R282#04a500c57f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R293#46beddd994#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R293#9739510caf#0": {
+   "action": "reword",
+   "nums": [
+    "712.3"
+   ],
+   "suggest": "See 712.3 for the rule (report #167, room BTUX) and 299-formless-column"
+  },
+  "client/engine/test/299-formless-column.test.ts##R293#34d4ec9b6c#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ]
+  },
+  "client/engine/test/299-formless-column.test.ts##R293#495378d379#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ]
+  },
+  "client/engine/test/299-formless-column.test.ts##R293#5e6b851290#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ]
+  },
+  "client/engine/test/299-formless-column.test.ts##R293#d354aafcbf#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ]
+  },
+  "client/engine/test/393-raq-mods.test.ts##R293#e176f0b7c0#0": {
+   "action": "reword",
+   "nums": [
+    "712.3"
+   ],
+   "suggest": "Formless was widened to its column (712.3)"
+  },
+  "client/engine/test/393-raq-mods.test.ts##R293#28a9c251ec#0": {
+   "action": "cite",
+   "nums": [
+    "113.3b"
+   ],
+   "note": "comment's open question looks settled by 113.3b (later grants still land); may be stale"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R293#02e779cdb7#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ],
+   "note": "closed ledger"
+  }
+ }
+}

@@ -1,0 +1,2608 @@
+{
+ "unit": "M022",
+ "decisions": {
+  "client/docs/06-roadmap.md##R28#2f22ac26a7#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the old home-region default, since withdrawn",
+   "note": "withdrawn ruling"
+  },
+  "client/docs/06-roadmap.md##R28#be54a864d4#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/docs/08-light-and-dark.md##R28#0f3d0ec664#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R28#ce4b1fde4b#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R28#2912632eb6#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#ecf0810635#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#a7e2efb3d9#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R28#662f74d071#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule was withdrawn",
+   "note": "withdrawn ruling history"
+  },
+  "client/docs/08-light-and-dark.md##R28#dd6006c5ac#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "in favour of the home-region default (since withdrawn)",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R28#97ad76c472#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region rule's rationale",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/22-playtest3.test.ts##R28#1bf10ee4fd#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region rule's rationale",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#4ea6edd93b#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region rule's rationale",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#22c18b55e5#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region rule's rationale",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/22-playtest3.test.ts##R28#dd2125965b#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule is withdrawn",
+   "note": "assertion message"
+  },
+  "client/engine/test/23-wood-a.test.ts##R28#0374db9415#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "was a home-region override",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#170325ab76#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule",
+   "note": "withdrawn ruling history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R28#5d907948da#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region rule",
+   "note": "withdrawn ruling history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#f1983820da#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region rule",
+   "note": "guard against the withdrawn rule"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#c3dd86658f#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region rule",
+   "note": "guard against the withdrawn rule"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R28#16bfe3664e#0": {
+   "action": "unsure",
+   "note": "glossary-conformance test parses register headers; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R28#9bc1c80bee#0": {
+   "action": "unsure",
+   "note": "glossary-conformance test parses register headers; goes with register deletion"
+  },
+  "client/docs/questions-round31.md##R95#7a56f185c0#0": {
+   "action": "unsure",
+   "note": "verbatim owner quote of old UI text in a question-round fixture; freeze (as M009 did)"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0": {
+   "action": "unsure",
+   "note": "verbatim owner quote of old UI text in a question-round fixture; freeze (as M009 did)"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0~1": {
+   "action": "unsure",
+   "note": "verbatim owner quote of old UI text in a question-round fixture; freeze (as M009 did)"
+  },
+  "client/engine/src/apply.ts##R95#72ccd24c4f#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/apply.ts##R95#4be56bff0b#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/apply.ts##R95#09f3631c08#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/apply.ts##R95#9d3119e5da#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/dsl.ts##R95#19d6805e9e#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/dsl.ts##R95#1a0cba5978#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R95#29cd7a95e6#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R95#cbced5b02a#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R95#95a84bd2ac#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R95#38eda711d5#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R95#3a95d77a6b#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/engine.ts##R95#c434499446#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R95#349b57424a#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R95#88e4687a68#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R95#c430e67940#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R95#ab23d36d12#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R95#970836909a#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/ledgers/card-todo-closed.ts##R95#ba8f887632#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/ui/glossary.ts##R95#e8fd2dbe22#0": {
+   "action": "cite",
+   "nums": [
+    "723.5"
+   ],
+   "note": "Rook: augment in battle as if Virus"
+  },
+  "client/engine/src/apply.ts##R95#e2e58579cd#0": {
+   "action": "cite",
+   "nums": [
+    "720.2b"
+   ],
+   "note": "mods outside deployment only where a card says so"
+  },
+  "client/engine/src/apply.ts##R95#2baa547ae3#0": {
+   "action": "cite",
+   "nums": [
+    "720.2b"
+   ],
+   "note": "mods outside deployment only where a card says so"
+  },
+  "client/engine/src/cards/dsl.ts##R95#05ad2a0d5c#0": {
+   "action": "cite",
+   "nums": [
+    "720.2b"
+   ],
+   "note": "mods outside deployment only where a card says so"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R95#f37a9bfe7f#0": {
+   "action": "cite",
+   "nums": [
+    "720.2b"
+   ],
+   "note": "mods outside deployment only where a card says so"
+  },
+  "client/ui/glossary.ts##R95#21131750ef#0": {
+   "action": "cite",
+   "nums": [
+    "720.2b"
+   ],
+   "note": "mods outside deployment only where a card says so"
+  },
+  "client/engine/src/apply.ts##R95#a8531ee80f#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#909a3fa75b#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#968c6271ff#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#bcdab2be85#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#ad7d651962#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#133031f2e7#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#0501af72f4#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/cards/dsl.ts##R95#a591e8e3b3#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R95#d5fc61be03#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/engine.ts##R95#b19c03cd1e#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/engine.ts##R95#13f6f1fdcd#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/test/40-light-c.test.ts##R95#ee983e1b35#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/ui/glossary.ts##R95#aa12e29bf4#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/ui/glossary.ts##R95#f028842797#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/ui/inspect.ts##R95#0b22170a35#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/ui/inspect.ts##R95#bf9fc64d1b#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ],
+   "note": "Slurpr: mods during haste"
+  },
+  "client/engine/src/apply.ts##R95#9876daa503#0": {
+   "action": "cite",
+   "nums": [
+    "723.5b"
+   ],
+   "note": "permission reaches only the zones it names"
+  },
+  "client/engine/src/cards/dsl.ts##R95#52f24bfdc9#0": {
+   "action": "cite",
+   "nums": [
+    "723.5b"
+   ],
+   "note": "permission reaches only the zones it names"
+  },
+  "client/engine/src/cards/dsl.ts##R95#eb87b58297#0": {
+   "action": "drop",
+   "note": "engine fold/shape; no CR rule (non-cumulative permission is a gap)"
+  },
+  "client/engine/src/cards/dsl.ts##R95#6d5f655e00#0": {
+   "action": "drop",
+   "note": "engine fold/shape; no CR rule (non-cumulative permission is a gap)"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R95#d99f73ea99#0": {
+   "action": "drop",
+   "note": "engine fold/shape; no CR rule (non-cumulative permission is a gap)"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R95#64054e3ad1#0": {
+   "action": "drop",
+   "note": "engine fold/shape; no CR rule (non-cumulative permission is a gap)"
+  },
+  "client/engine/src/engine.ts##R95#33c1579360#0": {
+   "action": "drop",
+   "note": "engine fold/shape; no CR rule (non-cumulative permission is a gap)"
+  },
+  "client/engine/src/cards/dsl.ts##R95#3874dc7bae#0": {
+   "action": "cite",
+   "nums": [
+    "723.5c"
+   ],
+   "note": "permission belongs to grantor's controller, its region"
+  },
+  "client/engine/src/cards/dsl.ts##R95#fce94e5a9f#0": {
+   "action": "cite",
+   "nums": [
+    "723.5c"
+   ],
+   "note": "permission belongs to grantor's controller, its region"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R95#d40b90bded#0": {
+   "action": "cite",
+   "nums": [
+    "723.5c"
+   ],
+   "note": "permission belongs to grantor's controller, its region"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R95#c9ca5f4b2c#0": {
+   "action": "reword",
+   "suggest": "the moment the Rook permission reordered legalActions",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R95#89c9ac8da5#0": {
+   "action": "reword",
+   "nums": [
+    "723.5a"
+   ],
+   "suggest": "Both questions once open here are settled: it reaches stack hosts and gives the Virus ability itself",
+   "note": "stale: 'only the permission' reversed (723.5a)"
+  },
+  "client/engine/src/engine.ts##R95#f52bd8939a#0": {
+   "action": "reword",
+   "suggest": "after which the haste-mod and haste-play permissions each became THE ONE PREDICATE",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R95#d47b0bd793#0": {
+   "action": "reword",
+   "suggest": "after which the haste-mod and haste-play permissions each became THE ONE PREDICATE",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R95#01378e2aa3#0": {
+   "action": "reword",
+   "suggest": "after which the haste-mod and haste-play permissions each became THE ONE PREDICATE",
+   "note": "history"
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R95#c56f03a636#0": {
+   "action": "cite",
+   "nums": [
+    "723.2"
+   ],
+   "note": "Virus from hand in battle"
+  },
+  "client/ui/test/231-manual-text.test.ts##R95#089eb098c8#0": {
+   "action": "cite",
+   "nums": [
+    "723.2"
+   ],
+   "note": "Virus from hand in battle"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R95#4ded12eaa6#0": {
+   "action": "cite",
+   "nums": [
+    "707.10"
+   ],
+   "note": "a granted permission is a standing fact"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R95#18a57dc85e#0": {
+   "action": "cite",
+   "nums": [
+    "707.10"
+   ],
+   "note": "a granted permission is a standing fact"
+  },
+  "client/ledgers/card-ledger.ts##R95#2a44da42c0#0": {
+   "action": "reword",
+   "nums": [
+    "504.8a"
+   ],
+   "suggest": "when Slurpr's haste-mod permission was built",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R95#6ff9742011#0": {
+   "action": "reword",
+   "suggest": "the mod permission OR-folds",
+   "note": "design note; non-cumulative permission has no CR rule"
+  },
+  "client/ui/test/231-manual-text.test.ts##R95#3234c1da73#0": {
+   "action": "reword",
+   "suggest": "The trailing list of ruling numbers",
+   "note": "quotes old UI string"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R146#b7be011b95#0": {
+   "action": "unsure",
+   "nums": [
+    "405.5"
+   ],
+   "note": "code says Unstable body trashed then erased; CR 405.5/801.2h: erased instead, not trashed (F-U18-1)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R146#4a2d4f591a#0": {
+   "action": "unsure",
+   "nums": [
+    "405.5"
+   ],
+   "note": "code says Unstable body trashed then erased; CR 405.5/801.2h: erased instead, not trashed (F-U18-1)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#2a3849eb5a#0": {
+   "action": "unsure",
+   "nums": [
+    "405.5"
+   ],
+   "note": "code says Unstable body trashed then erased; CR 405.5/801.2h: erased instead, not trashed (F-U18-1)"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R146#c2465db68b#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/src/engine.ts##R146#0c4da11ea4#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/src/engine.ts##R146#57743f2402#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R146#667adea264#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R146#c74e5c852a#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R146#befaebc381#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R146#e557195729#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R146#f3047b600b#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R146#97b31ad704#0": {
+   "action": "drop",
+   "note": "repair-round history stamp"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R146#0809c0e454#0": {
+   "action": "cite",
+   "nums": [
+    "406.4a"
+   ],
+   "note": "Erase me honoured"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R146#28dc163b2b#0": {
+   "action": "cite",
+   "nums": [
+    "406.4a"
+   ],
+   "note": "Erase me honoured"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R146#8f0efeb825#0": {
+   "action": "cite",
+   "nums": [
+    "406.4a"
+   ],
+   "note": "Erase me honoured"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R146#db0cab57b2#0": {
+   "action": "cite",
+   "nums": [
+    "406.4a"
+   ],
+   "note": "Erase me honoured"
+  },
+  "client/engine/test/15-water-b.test.ts##R146#b6d11f4334#0": {
+   "action": "cite",
+   "nums": [
+    "406.4a"
+   ],
+   "note": "Erase me honoured"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R146#308b18943f#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "fizzled spell never erased itself"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R146#52cbdd9e07#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "fizzled spell never erased itself"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R146#2635337cb2#0": {
+   "action": "cite",
+   "nums": [
+    "405.4a"
+   ],
+   "note": "inline free play binned counts as from the stack"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R146#b45e6f1dbf#0": {
+   "action": "cite",
+   "nums": [
+    "405.4a"
+   ],
+   "note": "inline free play binned counts as from the stack"
+  },
+  "client/engine/test/15-water-b.test.ts##R146#60eb9e5e64#0": {
+   "action": "cite",
+   "nums": [
+    "405.4a"
+   ],
+   "note": "inline free play binned counts as from the stack"
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R146#1b3c505ba2#0": {
+   "action": "cite",
+   "nums": [
+    "405.4a"
+   ],
+   "note": "inline free play binned counts as from the stack"
+  },
+  "client/engine/test/15-water-b.test.ts##R146#ea3e91680c#0": {
+   "action": "cite",
+   "nums": [
+    "405.4a",
+    "406.4a"
+   ],
+   "note": "both halves of Tides' disposal"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#e32bc98485#0": {
+   "action": "cite",
+   "nums": [
+    "405.5"
+   ],
+   "note": "Unstable bin replacement"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#5fd70464fc#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "Before the fix",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#26565d12c4#0": {
+   "action": "cite",
+   "nums": [
+    "405.4"
+   ],
+   "note": "non-Unstable host exchanged from play bins, trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#f203736e15#0": {
+   "action": "reword",
+   "suggest": "the first version of this test asserted … and its write-up flagged",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#9ffa28957d#0": {
+   "action": "reword",
+   "suggest": "the first version of this test asserted … and its write-up flagged",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#e8a15f3dc3#0": {
+   "action": "reword",
+   "suggest": "what the first version pinned",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#65c90e7512#0": {
+   "action": "drop",
+   "note": "'(was R146)' history tag in a test title"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#1ceb37ec1b#0": {
+   "action": "reword",
+   "suggest": "The first fix aligned the body's disposal",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#b8f62110d9#0": {
+   "action": "reword",
+   "suggest": "the question the first fix left open",
+   "note": "history"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R146#ca42544585#0": {
+   "action": "reword",
+   "suggest": "while the bin choke-point fix was underway in a parallel worktree",
+   "note": "history"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R146#ca42544585#1": {
+   "action": "reword",
+   "suggest": "The fix landed (commit 8377b26)",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R146#77770ada99#0": {
+   "action": "reword",
+   "suggest": "found by the sweep of bin entries written by CARD code",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R150#175bfb5dc9#0": {
+   "action": "reword",
+   "nums": [
+    "D2.1b"
+   ],
+   "suggest": "the half the server-side concurrency fix could not reach",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R150#073cc5a526#0": {
+   "action": "reword",
+   "nums": [
+    "D2.1b"
+   ],
+   "suggest": "The server-side concurrency fix (server/rooms) settled that",
+   "note": "history"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R150#c02a50f18a#0": {
+   "action": "reword",
+   "nums": [
+    "D2.1b"
+   ],
+   "suggest": "The server-side concurrency fix (server/rooms) settled that",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R150#82fae285da#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R150#a73a271af5#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R150#dd256be8d9#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R150#873dc14bb4#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#aa341e709c#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/server/rooms.ts##R150#24abc8cff5#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/server/rooms.ts##R150#b69962a0db#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/server/rooms.ts##R150#ca17377ed0#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/ui/main.ts##R150#827ca6276a#0": {
+   "action": "drop",
+   "note": "engine/server design history; no CR rule"
+  },
+  "client/engine/test/146-report-guards.test.ts##R150#7fee7727dd#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R150#555c8c3e74#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/engine/test/232-log-modal.test.ts##R150#85a17dbd1c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/engine/test/252-viewport-and-log.test.ts##R150#6c31e63bfd#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#fb49025f0d#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/flash.ts##R150#d93ba2ee4d#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/main.ts##R150#9b713fed0b#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/main.ts##R150#e892b44a5a#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/main.ts##R150#78bc3b81f0#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/main.ts##R150#907acbfa43#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/main.ts##R150#7b4ff31713#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/pace.ts##R150#a5a705877f#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#8b566e6c16#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#292b003cd3#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#6d747c7dac#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#88949cd30c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#99ddfa9217#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#db44d14c2b#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#e58ed8f712#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#ab9e3aafb7#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/218-one-tempo.test.ts##R150#f727c87860#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/226-log-and-naming.test.ts##R150#620b784d20#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R150#32469606e9#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R150#b9cd3d8bf4#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/ui/test/ui-driver.ts##R150#8633cac8d0#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one-step-per-second tempo"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R150#359915fa01#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R150#f684b909ec#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#508967eff3#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R150#325f547b60#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#81259cc5d3#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#d0a0a93131#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#243f31952a#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#c3266d767d#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#f97d1be127#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R150#3ab90d4e1c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R150#d81d528d6c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/main.ts##R150#a8a0d0e83c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/main.ts##R150#84aba4c8d2#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/main.ts##R150#bd902805f7#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/pace.ts##R150#3ff508b866#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#7ac83df6e6#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#9aecc8130a#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#2f97a2745b#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R150#a558d4d1c7#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4b"
+   ],
+   "note": "only unactionable updates held"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#8125883ea5#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#f3c7e764eb#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#796a97c65e#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#adbf04a602#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/engine/test/265-live-slots-without-a-board.test.ts##R150#e1de5da8ce#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/ui/main.ts##R150#12d47b53f1#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/ui/style.css##R150#e8d360966e#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/ui/test/ui-driver.ts##R150#4e46e40e3d#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/ui/test/ui-driver.ts##R150#d235c8fb53#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/ui/test/ui-driver.ts##R150#cd87ce0195#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5a"
+   ],
+   "note": "only presence/clocks stay live while held"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#6c9ae13924#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#b70f2870d8#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#04e4eaa187#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#686a610222#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ui/main.ts##R150#37f0407086#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ui/test/254-join-nonexistent-room.test.ts##R150#ccd171647f#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ui/test/361-playback-queue.test.ts##R150#0cb5926a94#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/ui/test/362-playback-client.test.ts##R150#785acd537b#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "actionable update flushes the held backlog"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#24cea50bbb#0": {
+   "action": "reword",
+   "suggest": "the real arrival pattern was measured as",
+   "note": "pointer to retired write-up"
+  },
+  "client/ui/main.ts##R150#3a516b828f#0": {
+   "action": "reword",
+   "suggest": "the real arrival pattern was measured as",
+   "note": "pointer to retired write-up"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#5437411aae#0": {
+   "action": "reword",
+   "nums": [
+    "D5.4"
+   ],
+   "suggest": "CLOSED by the pacing fix",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#498751e082#0": {
+   "action": "reword",
+   "nums": [
+    "D2.1b"
+   ],
+   "suggest": "CLOSED by the concurrency fix",
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#b91ed779a9#0": {
+   "action": "reword",
+   "nums": [
+    "D2.1b"
+   ],
+   "suggest": "The concurrency fix settled report #98 … at the SERVER layer",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#0f677874d7#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4c"
+   ],
+   "note": "read before touching"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#96e22212f8#0": {
+   "action": "reword",
+   "suggest": "the skip chip (since removed)",
+   "note": "history; D5.5 now draws no skip control"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R150#0a6cccabe1#0": {
+   "action": "reword",
+   "suggest": "the skip chip (since removed)",
+   "note": "history; D5.5 now draws no skip control"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#03f808bcbb#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "S skips to the live state"
+  },
+  "client/ui/main.ts##R150#f493aa9d92#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "S skips to the live state"
+  },
+  "client/ui/main.ts##R150#c477a1dc40#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "S skips to the live state"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#edecfad290#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "S skips to the live state"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#d4e478c543#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "S skips to the live state"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#1d45cb946f#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "S skips to the live state"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R150#68f8487cc1#0": {
+   "action": "drop",
+   "note": "closed-ledger fix stamp"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R150#d3ba9347dc#0": {
+   "action": "drop",
+   "note": "closed-ledger fix stamp"
+  },
+  "client/server/e2e/suite.test.ts##R150#fbb97839f4#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#56daf72e39#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#9dab098b25#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#e6be9cac43#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/main.ts##R150#287f502edc#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/rooms.ts##R150#c700fd487c#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/view.ts##R150#0f10c4595d#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "note": "one seat's decision does not stop the other in a hidden segment"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#1a52cb2b1e#0": {
+   "action": "reword",
+   "suggest": "The first fix (CT-32) put BOTH halves in the server",
+   "note": "history"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#9d4434fa6b#0": {
+   "action": "reword",
+   "suggest": "the one the first fix wrote it around",
+   "note": "history"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#fe73fad208#0": {
+   "action": "reword",
+   "suggest": "The first fix asserted",
+   "note": "history"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#a096032aa8#0": {
+   "action": "reword",
+   "suggest": "The original §3",
+   "note": "history"
+  },
+  "client/server/e2e/test-concurrency.ts##R150#cb50d81cf3#0": {
+   "action": "reword",
+   "suggest": "the first fix had",
+   "note": "history"
+  },
+  "client/server/main.ts##R150#f15ae9382f#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1c"
+   ],
+   "note": "parked action waits, told waiting not illegal"
+  },
+  "client/server/rooms.ts##R150#b5ace27cf9#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1c"
+   ],
+   "note": "parked action waits, told waiting not illegal"
+  },
+  "client/server/rooms.ts##R150#29b8eb208a#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1c"
+   ],
+   "note": "parked action waits, told waiting not illegal"
+  },
+  "client/server/rooms.ts##R150#18226c332a#0": {
+   "action": "reword",
+   "suggest": "the pre-deferral path",
+   "note": "history"
+  },
+  "client/ui/main.ts##R150#be68424688#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5b"
+   ],
+   "note": "disconnect shown at once"
+  },
+  "client/ui/main.ts##R150#8b7f4aa5aa#0": {
+   "action": "cite",
+   "nums": [
+    "D1.1"
+   ],
+   "note": "pacing changes no legality"
+  },
+  "client/ui/test/128-ui-pace.test.ts##R150#6c1c29042f#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4e"
+   ],
+   "note": "bounded lag"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R150#6472679a19#0": {
+   "action": "reword",
+   "nums": [
+    "D5.4"
+   ],
+   "suggest": "The pacing queue put every inbound update",
+   "note": "history"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R150#03c2ccf744#0": {
+   "action": "reword",
+   "suggest": "until the pacing change wrapped the method",
+   "note": "history"
+  },
+  "client/docs/16-divergence-inventory.md##R166#ce8620bd83#0": {
+   "action": "cite",
+   "nums": [
+    "709.7"
+   ],
+   "note": "DOUBLING OVERSHOOTS"
+  },
+  "client/docs/16-divergence-inventory.md##R166#564da1af52#0": {
+   "action": "drop",
+   "note": "ORIGON: seat-scoped first spell is a printed reading + engine scan; no single CR rule"
+  },
+  "client/docs/16-divergence-inventory.md##R166#564da1af52#1": {
+   "action": "cite",
+   "nums": [
+    "802.3a"
+   ],
+   "note": "SURVIVE-DAMAGE: Deadly kills through a sub-defense hit"
+  },
+  "client/docs/16-divergence-inventory.md##R166#564da1af52#2": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "KEEP-THIS-TARGET"
+  },
+  "client/docs/16-divergence-inventory.md##R166#778d226eba#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/docs/16-divergence-inventory.md##R166#c5e52e38e4#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R166#fd58355f58#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R166#72338eb587#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R166#39107f9531#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R166#100e93d901#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R166#43c74a1b31#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-water-metal.ts##R166#6fdbbcb132#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R166#5f14dbf2d2#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/engine.ts##R166#e788a185ea#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/engine.ts##R166#14d8cc8a96#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/src/engine.ts##R166#aa63daf5cd#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R166#d41e0302ff#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R166#e6325b7757#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R166#4b3a8073ca#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/162-item-identity-and-truthful-events.test.ts##R166#2fdd24d1f8#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R166#8ec17c8b28#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R166#d7adbefd60#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R166#e1cd1147cc#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R166#3d877d69f6#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#86ef591e88#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#4d82ca4d95#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#727e5c9ed0#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#9a50d88839#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/server/test/96-x-preview.test.ts##R166#81f93ae5c8#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/server/test/96-x-preview.test.ts##R166#8855cdfed1#0": {
+   "action": "drop",
+   "note": "engine scan/test-convention history; no rule claim"
+  },
+  "client/docs/16-divergence-inventory.md##R166#a82e64d4a9#0": {
+   "action": "reword",
+   "suggest": "(all settled 2026-08-25)",
+   "note": "closure list"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#8350680afd#0": {
+   "action": "reword",
+   "suggest": "(all settled 2026-08-25)",
+   "note": "closure list"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R166#799b70da51#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a"
+   ],
+   "note": "Deadly hit lethal below defense"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R166#44bbedb761#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a"
+   ],
+   "note": "Deadly hit lethal below defense"
+  },
+  "client/engine/src/engine.ts##R166#863769e7bd#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a"
+   ],
+   "note": "Deadly hit lethal below defense"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R166#576ee22724#0": {
+   "action": "drop",
+   "note": "'their first spell' is the seat's: printed reading, no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R166#03db167cd1#0": {
+   "action": "cite",
+   "nums": [
+    "701.1b"
+   ],
+   "note": "casting a spell token is playing a spell"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R166#e3d8bf80fc#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "change targets one at a time, each kept or rechosen"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R166#0718dbd398#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "change targets one at a time, each kept or rechosen"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R166#da72a276e2#0": {
+   "action": "drop",
+   "note": "printed-text difference; no rule"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R166#ca4d3b3092#0": {
+   "action": "cite",
+   "nums": [
+    "701.5"
+   ],
+   "note": "copy not played, so the pronoun names the played spell"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R166#9648a2f8c8#0": {
+   "action": "cite",
+   "nums": [
+    "701.5"
+   ],
+   "note": "copy not played, so the pronoun names the played spell"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#080b3d1615#0": {
+   "action": "cite",
+   "nums": [
+    "701.5"
+   ],
+   "note": "copy not played, so the pronoun names the played spell"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#de125b9752#0": {
+   "action": "cite",
+   "nums": [
+    "701.5"
+   ],
+   "note": "copy not played, so the pronoun names the played spell"
+  },
+  "client/engine/src/engine.ts##R166#3fe71974b6#0": {
+   "action": "cite",
+   "nums": [
+    "701.1c"
+   ],
+   "note": "plain 'spell' includes tokens"
+  },
+  "client/engine/src/engine.ts##R166#0f96007f9d#0": {
+   "action": "cite",
+   "nums": [
+    "608.7b"
+   ],
+   "note": "lethal damage and Deadly destroy before next sub-step"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R166#ff43886dda#0": {
+   "action": "cite",
+   "nums": [
+    "709.7"
+   ],
+   "note": "quotes another file's bullet; keep in sync"
+  },
+  "client/engine/test/150-registration-order.test.ts##R166#30c1c62648#0": {
+   "action": "reword",
+   "suggest": "The doubling fix factored doubleStats out",
+   "note": "history"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R166#935b9d8109#0": {
+   "action": "reword",
+   "suggest": "The agent for that round",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#a03108636b#0": {
+   "action": "reword",
+   "suggest": "The agent for that round",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#5c349ae948#0": {
+   "action": "reword",
+   "suggest": "survives the Origon fix",
+   "note": "closed ledger title"
+  },
+  "client/ledgers/card-todo-closed.ts##R166#38e1980305#0": {
+   "action": "reword",
+   "suggest": "An earlier fix corrected Origon and Hexbane Shiitake",
+   "note": "history"
+  },
+  "client/docs/questions-round31.md##R244#33c4dc7bd2#0": {
+   "action": "reword",
+   "suggest": "Surfaced by the mod-trash work",
+   "note": "history; questions-round31.md fixture"
+  },
+  "client/docs/questions-round31.md##R244#33c4dc7bd2#1": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/docs/questions-round31.md##R244#cbc472009e#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/src/engine.ts##R244#4e336e635b#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/src/engine.ts##R244#59f84175be#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R244#0b1ac99c43#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#3cdea16436#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#074409f641#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#5ffdafeb86#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#bc232fa0c1#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#b34d30a6fc#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#f97e7df26e#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#bd7330cbdc#0": {
+   "action": "cite",
+   "nums": [
+    "720.8"
+   ],
+   "note": "mod trashed by the host's controller"
+  },
+  "client/docs/questions-round31.md##R244#4beaf8cd0a#0": {
+   "action": "reword",
+   "nums": [
+    "720.8"
+   ],
+   "suggest": "after the mod-trash rule",
+   "note": "history; fixture doc"
+  },
+  "client/engine/src/engine.ts##R244#8876d5b40f#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/engine/src/engine.ts##R244#7d404aece2#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/engine/src/engine.ts##R244#ff1cc7d610#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/engine/src/engine.ts##R244#42d6a0844a#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#6c17520d6e#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R244#dc60073452#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R244#6980c9a361#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R244#6ec2ebe647#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R244#58126af867#0": {
+   "action": "drop",
+   "note": "engine bookkeeping or history stamp"
+  },
+  "client/engine/src/engine.ts##R244#147cb65527#0": {
+   "action": "reword",
+   "nums": [
+    "720.8"
+   ],
+   "suggest": "The mod-trash rule once made them differ",
+   "note": "history; destination since follows control"
+  },
+  "client/engine/src/engine.ts##R244#f33c3f0bfb#0": {
+   "action": "reword",
+   "suggest": "that argument",
+   "note": "engine bin-ref argument"
+  },
+  "client/engine/src/engine.ts##R244#f2de00b3e9#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "under the earlier owner's-bin reading",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#cfa7d33116#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "under the earlier owner's-bin reading",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#e22b36b247#0": {
+   "action": "reword",
+   "nums": [
+    "400.4",
+    "720.8"
+   ],
+   "suggest": "Zones following control supersedes the old destination half (the attribution half stands)",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#32f6cfda2e#0": {
+   "action": "cite",
+   "nums": [
+    "801.2f"
+   ],
+   "note": "mods left behind trashed by host's controller"
+  },
+  "client/engine/src/engine.ts##R244#5b94d1162a#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "the earlier owner's-bin reading, written knowing the question was open",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#a4257f254e#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "the earlier owner's-bin reading, written knowing the question was open",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#6a6247cd8d#0": {
+   "action": "unsure",
+   "note": "stale: says mod goes to its owner's bin; 400.4 sends it to the controller's (zones follow control)"
+  },
+  "client/engine/src/engine.ts##R244#8e98866b1f#0": {
+   "action": "unsure",
+   "note": "stale: says mod goes to its owner's bin; 400.4 sends it to the controller's (zones follow control)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#9341d3b19b#0": {
+   "action": "unsure",
+   "note": "stale: says mod goes to its owner's bin; 400.4 sends it to the controller's (zones follow control)"
+  },
+  "client/engine/src/engine.ts##R244#7878e27604#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/src/engine.ts##R244#6760a59f31#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/src/engine.ts##R244#b1625642bd#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/src/engine.ts##R244#5958a030fd#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#94d732c4e5#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#be70df28a6#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#425e72f3ba#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#a9a6d90c6a#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R244#3980da5a86#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#ba423f69e6#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#ffdba921a1#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#451a395558#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#62449af94a#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#2e6a2edf94#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R244#bd07170e2b#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R244#06a8b614de#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R244#f494f8ad94#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R244#128951be47#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R244#1e9a503f31#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/ledgers/card-todo-closed.ts##R244#4d065d18e8#0": {
+   "action": "cite",
+   "nums": [
+    "720.8a"
+   ],
+   "note": "nontoken mod erased with Unstable host not trashed"
+  },
+  "client/engine/src/engine.ts##R244#e82527f9c7#0": {
+   "action": "reword",
+   "nums": [
+    "720.8"
+   ],
+   "suggest": "the attribution half stands untouched",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#49af80a149#0": {
+   "action": "reword",
+   "suggest": "the earlier reading was written knowing the question was open",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#773ee591cd#0": {
+   "action": "reword",
+   "suggest": "the earlier reading was written knowing the question was open",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#cd9ea96538#0": {
+   "action": "reword",
+   "nums": [
+    "720.8a"
+   ],
+   "suggest": "the mod-erased-with-host rule overruled the earlier 'mods ride with it' reasoning",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R244#5f98f48645#0": {
+   "action": "reword",
+   "nums": [
+    "720.8a"
+   ],
+   "suggest": "the mod-erased-with-host rule overruled the earlier 'mods ride with it' reasoning",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R244#c5038c24f9#0": {
+   "action": "reword",
+   "nums": [
+    "720.8a"
+   ],
+   "suggest": "the mod-erased-with-host rule overruled the earlier 'mods ride with it' reasoning",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#f6ce5d3387#0": {
+   "action": "unsure",
+   "note": "asserts the Unstable BODY is trashed: 720.8a agrees, 801.2h/405.5 say erased instead, not trashed (CR conflict)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#d1d75e6476#0": {
+   "action": "unsure",
+   "note": "asserts the Unstable BODY is trashed: 720.8a agrees, 801.2h/405.5 say erased instead, not trashed (CR conflict)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#d13b01bd17#0": {
+   "action": "unsure",
+   "note": "asserts the Unstable BODY is trashed: 720.8a agrees, 801.2h/405.5 say erased instead, not trashed (CR conflict)"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#c05de47b71#0": {
+   "action": "unsure",
+   "note": "asserts the Unstable BODY is trashed: 720.8a agrees, 801.2h/405.5 say erased instead, not trashed (CR conflict)"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R244#2a99b98b2c#0": {
+   "action": "unsure",
+   "note": "asserts the Unstable BODY is trashed: 720.8a agrees, 801.2h/405.5 say erased instead, not trashed (CR conflict)"
+  },
+  "client/engine/src/engine.ts##R244#b11f8a3c6e#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "zones following control already moved the mod bin this way",
+   "note": "misattributed history"
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R244#071fe045a8#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "zones following control already moved the mod bin this way",
+   "note": "misattributed history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#79819e429f#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "the earlier owner's-pile reading",
+   "note": "history"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#07d9acd584#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "the earlier owner's-pile reading",
+   "note": "history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#b26b1f9a21#0": {
+   "action": "cite",
+   "nums": [
+    "720.8",
+    "720.8a"
+   ],
+   "note": "recall/cache vs erased-with-host"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R244#ce3bd0f80c#0": {
+   "action": "cite",
+   "nums": [
+    "720.8",
+    "720.8a"
+   ],
+   "note": "recall/cache vs erased-with-host"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R244#7611bf767b#0": {
+   "action": "cite",
+   "nums": [
+    "801.2g"
+   ],
+   "note": "mod erased with host has no trash of its own"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R244#6d92bb9303#0": {
+   "action": "cite",
+   "nums": [
+    "801.2g"
+   ],
+   "note": "mod erased with host has no trash of its own"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#831f4a9ab8#0": {
+   "action": "cite",
+   "nums": [
+    "720.6"
+   ],
+   "note": "a mod is part of its host"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#0d1e6195e6#0": {
+   "action": "cite",
+   "nums": [
+    "405.4"
+   ],
+   "note": "cards kept in a bin are trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#e60e50ebd0#0": {
+   "action": "reword",
+   "nums": [
+    "720.8"
+   ],
+   "suggest": "Before the mod-trash rule",
+   "note": "history"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#ec04b46412#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "Zones following control reversed the earlier destination half",
+   "note": "history"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#6e25962064#0": {
+   "action": "reword",
+   "suggest": "the earlier split's hazard",
+   "note": "history"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#6e25962064#1": {
+   "action": "reword",
+   "suggest": "The earlier split of trasher from bin",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#e99cfa16c8#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "superseding the earlier owner's-bin reading",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#fc1db0c7bf#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "superseding the earlier owner's-bin reading",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#4efa9a564c#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "superseding the earlier owner's-bin reading",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#d5e9649181#0": {
+   "action": "reword",
+   "nums": [
+    "720.8"
+   ],
+   "suggest": "The attribution half (CR 720.8) stands entirely",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#b2ee0970d2#0": {
+   "action": "reword",
+   "suggest": "The earlier split ruled",
+   "note": "engine bin-ref history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#2bc19ec7fe#0": {
+   "action": "reword",
+   "suggest": "The earlier split ruled",
+   "note": "engine bin-ref history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#d52bd4efa2#0": {
+   "action": "reword",
+   "suggest": "the mod-trash sweep was",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#9bdfdf248a#0": {
+   "action": "reword",
+   "suggest": "The earlier reading itself flagged this seam",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#cd54e3140b#0": {
+   "action": "reword",
+   "suggest": "under the earlier split",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#14327a30d1#0": {
+   "action": "reword",
+   "suggest": "the way the mod-trash sweep derived its own",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#428e4fd5e0#0": {
+   "action": "reword",
+   "nums": [
+    "720.8"
+   ],
+   "suggest": "The mod-trash rule measured 203 such cards and moved attribution for 200",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R244#18c73f0751#0": {
+   "action": "reword",
+   "nums": [
+    "720.8a"
+   ],
+   "suggest": "The mod-erased-with-host rule inverted this test",
+   "note": "history"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R244#095829daa4#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "on the earlier owner's-bin reasoning",
+   "note": "history"
+  },
+  "client/ledgers/card-todo.ts##R244#ace4804bb8#0": {
+   "action": "cite",
+   "nums": [
+    "720.6a"
+   ],
+   "note": "mod controlled by host's controller"
+  },
+  "client/ui/glossary.ts##R244#479e91dbdf#0": {
+   "action": "cite",
+   "nums": [
+    "405.4"
+   ],
+   "note": "glossary basis"
+  },
+  "client/engine/src/apply.ts##R315#0508b743f6#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/apply.ts##R315#fb33399a65#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/engine.ts##R315#d23d71e767#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/engine.ts##R315#f708c79223#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/engine.ts##R315#3d3e89026a#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/engine.ts##R315#597d0598ce#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/engine.ts##R315#02c7a336a4#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R315#0fca4afbc0#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R315#f56dabaa8c#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R315#cf7cbdb60b#0": {
+   "action": "cite",
+   "nums": [
+    "802.19a"
+   ],
+   "note": "Resonant is its source's trigger"
+  },
+  "client/engine/src/engine.ts##R315#9558ad3a74#0": {
+   "action": "reword",
+   "nums": [
+    "802.19a"
+   ],
+   "suggest": "until the Resonant fix",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R315#55858cdddb#0": {
+   "action": "cite",
+   "nums": [
+    "802.19i"
+   ],
+   "note": "held with other combat-damage triggers"
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R315#69ff87de81#0": {
+   "action": "cite",
+   "nums": [
+    "802.19i",
+    "802.19h"
+   ],
+   "note": "on the stack after combat, negatable"
+  },
+  "client/ledgers/card-todo-closed.ts##R315#ebb273234a#0": {
+   "action": "cite",
+   "nums": [
+    "802.19d"
+   ],
+   "note": "Conduit/Powerful modify Resonant damage"
+  },
+  "client/ledgers/raq.ts##R315#7c5714722b#0": {
+   "action": "cite",
+   "nums": [
+    "802.19d"
+   ],
+   "note": "Conduit/Powerful modify Resonant damage"
+  },
+  "client/ledgers/raq.ts##R315#7c5714722b#0~1": {
+   "action": "cite",
+   "nums": [
+    "802.19d"
+   ],
+   "note": "Conduit/Powerful modify Resonant damage"
+  },
+  "client/ledgers/card-todo-closed.ts##R315#ebb273234a#0~1": {
+   "action": "cite",
+   "nums": [
+    "802.19h"
+   ],
+   "note": "Crevice Lurker taxes it"
+  },
+  "client/ledgers/raq.ts##R315#40e96168e0#0": {
+   "action": "cite",
+   "nums": [
+    "802.19h"
+   ],
+   "note": "Crevice Lurker taxes it"
+  },
+  "client/ledgers/raq.ts##R315#7c5714722b#0~2": {
+   "action": "cite",
+   "nums": [
+    "802.19e"
+   ],
+   "note": "Conduit before Powerful"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R332#10285d0657#0": {
+   "action": "cite",
+   "nums": [
+    "721.5a"
+   ],
+   "note": "each mod Reconfigure moves is applied to the new host"
+  },
+  "client/engine/test/393-raq-mods.test.ts##R332#9893af83da#0": {
+   "action": "cite",
+   "nums": [
+    "721.5a"
+   ],
+   "note": "each mod Reconfigure moves is applied to the new host"
+  },
+  "client/ledgers/card-todo-closed.ts##R332#d50c6df2d5#0": {
+   "action": "cite",
+   "nums": [
+    "721.5a"
+   ],
+   "note": "each mod Reconfigure moves is applied to the new host"
+  },
+  "client/ledgers/raq.ts##R332#9a6cab3b81#0": {
+   "action": "cite",
+   "nums": [
+    "721.5a"
+   ],
+   "note": "each mod Reconfigure moves is applied to the new host"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R335#939d5c9846#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalled spell token enters hand, then erased"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R335#4be5db5d0d#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalled spell token enters hand, then erased"
+  },
+  "client/engine/test/393-raq-mods.test.ts##R335#77e3637f75#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalled spell token enters hand, then erased"
+  },
+  "client/ledgers/raq.ts##R335#bcd9bfc2e1#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalled spell token enters hand, then erased"
+  },
+  "client/engine/src/engine.ts##R335#0446dd47a4#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ],
+   "note": "recalled token enters hand, then erased; counts for watchers"
+  },
+  "client/engine/test/403-raq-fix-mods.test.ts##R335#b9d638e8bb#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ],
+   "note": "recalled token enters hand, then erased; counts for watchers"
+  },
+  "client/ledgers/card-todo-closed.ts##R335#2ca8f329cb#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ],
+   "note": "recalled token enters hand, then erased; counts for watchers"
+  }
+ }
+}

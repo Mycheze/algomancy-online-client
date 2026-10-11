@@ -1,0 +1,2436 @@
+{
+ "unit": "M011",
+ "decisions": {
+  "client/engine/src/engine.ts##R2#0a8f47be2b#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R2#663c4dd384#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R2#d2a78b1cb7#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/src/types.ts##R2#36b2a492cb#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/src/types.ts##R2#96f0db0943#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/03-stack.test.ts##R2#f714542090#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R2#a7307a3a0e#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R2#8122f33f9f#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/152-hand-entry.test.ts##R2#8dd8787624#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/184-ruling-register.test.ts##R2#02a1e96ce9#0": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: R2 is a fixture/example token in a register-parser test, not a ruling cite"
+  },
+  "client/engine/test/187-scenario-queue.test.ts##R2#960865d35e#0": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: R2 is a fixture/example token in a register-parser test, not a ruling cite"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R2#ec093797e4#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R2#54275e9b1a#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R2#3658536775#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R2#f17a85457c#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/ui/main.ts##R2#a5f909a933#0": {
+   "action": "cite",
+   "nums": [
+    "706.5"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R35#0e9aee60a8#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/src/apply.ts##R35#fe5977312d#0": {
+   "action": "cite",
+   "nums": [
+    "702.4a"
+   ]
+  },
+  "client/engine/src/apply.ts##R35#e5eb0f5382#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R35#4039f487db#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/apply.ts##R35#5616e72897#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R35#0247bb04c7#0": {
+   "action": "cite",
+   "nums": [
+    "111.4"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R35#51fabad850#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R35#b20304a384#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R35#a2321b0429#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R35#95d3ade05f#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R35#d1d5efc801#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R35#b3cf6d34b8#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R35#c7d293a9b3#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R35#b5642f0296#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R35#068092bd87#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R35#86e5df890a#0": {
+   "action": "cite",
+   "nums": [
+    "702.4b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R35#b1e0882bcd#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R35#e93f5d3b00#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R35#3f26a3042d#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R35#b70081cfe7#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R35#19d748f59d#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R35#dc1199fe95#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R35#d41c95e3db#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R35#3de4a4d517#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R35#d41c95e3db#0~1": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R35#1035de87ce#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R35#53ad8b2bc0#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R35#5160b79a6c#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#669d565bd1#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#3bb9ea7265#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#d0001f10eb#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#3d56b9bf55#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#f2e0763c2e#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#93f7c6ba43#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R35#1347a151b6#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R35#f45a0a5815#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R35#dbfd7dda01#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R35#c709ad80e2#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#01e484d145#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#5cf4cfc7e5#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#db27dff7f7#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#47aa76fc59#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#d41c95e3db#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#0f521c1698#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R35#d41c95e3db#0~1": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R35#dd3739bf67#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R35#a6ec147fbb#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R35#544cd7aa0e#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R35#75bcc2625f#0": {
+   "action": "cite",
+   "nums": [
+    "111.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R35#8ee663b6e7#0": {
+   "action": "cite",
+   "nums": [
+    "111.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R35#4d6bc495e4#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R35#0dbaa55e26#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R35#c941830cf4#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#bb87909365#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#c339306e31#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#30385853b6#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#eb91868579#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#d2ddedcf49#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#08706e50db#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#a85385b0b2#0": {
+   "action": "cite",
+   "nums": [
+    "702.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#ecf2f1766e#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#f0df2288c5#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#5adffc3421#0": {
+   "action": "cite",
+   "nums": [
+    "111.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#ba621a993e#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#b9e43e6937#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R35#8a6db1ad4f#0": {
+   "action": "unsure",
+   "note": "declinable-rider half reversed (111.15); unpayable-part skip only matches 724.4c Modular"
+  },
+  "client/engine/src/types.ts##R35#505e30e7e6#0": {
+   "action": "unsure",
+   "note": "declinable-rider half reversed (111.15); unpayable-part skip only matches 724.4c Modular"
+  },
+  "client/engine/src/types.ts##R35#ade82c761a#0": {
+   "action": "cite",
+   "nums": [
+    "111.4"
+   ]
+  },
+  "client/engine/src/types.ts##R35#8219b13933#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/types.ts##R35#b73c9e6821#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/src/types.ts##R35#d0139206ea#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/types.ts##R35#a666f419cf#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R35#3563b548b8#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R35#21c8e0e06a#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R35#78d855f22b#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R35#982cc8c86a#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R35#bf28c4539f#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R35#f4aac2d03a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R35#6eab5b79d2#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R35#3affbd0852#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R35#e430c9e51b#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R35#6fba9e55a2#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R35#7491e705d5#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R35#ff7106c63e#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R35#bc41c88d34#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R35#3ae03e427b#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R35#ad29101079#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/146-report-guards.test.ts##R35#72aca2364b#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R35#ad0b1fe035#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#c84701f560#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#d02a7d0cd2#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#bfa5e5dd15#0": {
+   "action": "cite",
+   "nums": [
+    "702.4b"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#ad29101079#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#3429c8a911#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#ad29101079#0~1": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#15a6ab0c9d#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#5ae63ea796#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R35#15a6ab0c9d#0~1": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R35#341e0c8aff#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R35#697385c781#0": {
+   "action": "cite",
+   "nums": [
+    "111.3"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R35#01afcc09e4#0": {
+   "action": "cite",
+   "nums": [
+    "111.3"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R35#6363622080#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R35#6a64c88b59#0": {
+   "action": "cite",
+   "nums": [
+    "702.4b"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R35#e2c8b03b09#0": {
+   "action": "cite",
+   "nums": [
+    "107.8a"
+   ],
+   "note": "X = sacrificed unit defense at payment"
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R35#835da280bf#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R35#7d98fe8805#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/32-cast-costs.test.ts##R35#5a429f7a18#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/32-cast-costs.test.ts##R35#0d172af33c#0": {
+   "action": "cite",
+   "nums": [
+    "702.4b"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R35#f38d77993e#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R35#a11e941973#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R35#b9e0169b9a#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R35#62d0f42a8d#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R35#1735307b05#0": {
+   "action": "unsure",
+   "note": "header says cost \"wired at resolution\", contradicts 702.4; stale prose"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R35#721dc250a1#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R35#23764f5125#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R35#6763738adf#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#f576f3134f#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#c5c0971212#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#3b583aeedb#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#fa8cf0dcd3#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#c7affea1b2#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#a7ac41d728#0": {
+   "action": "cite",
+   "nums": [
+    "702.4a"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R35#3028851664#0": {
+   "action": "cite",
+   "nums": [
+    "205.3"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R35#66b9aa50fa#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R35#f03e4df2af#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R35#a6244fcebd#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R35#e4c5a69688#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R35#c5c0971212#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R35#17ca88c37f#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/engine/test/69-damage-batch.test.ts##R35#71620a6a95#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/73-play-into-formation.test.ts##R35#90e342ad4f#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R35#82d9805292#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R35#6264614499#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R35#0f75f708b2#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R35#91fc9fbfd9#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R35#bfe9e871b9#0": {
+   "action": "cite",
+   "nums": [
+    "111.5"
+   ]
+  },
+  "client/ledgers/raq.ts##R35#e89393aeb2#0": {
+   "action": "cite",
+   "nums": [
+    "702.4d"
+   ]
+  },
+  "client/server/rooms.ts##R35#27d84bcbdf#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/ui/inspect.ts##R35#2499df5a7c#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ui/inspect.ts##R35#0e116a002a#0": {
+   "action": "cite",
+   "nums": [
+    "724.1"
+   ]
+  },
+  "client/ui/inspect.ts##R35#f54f961cda#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/ui/inspect.ts##R35#8a947b2cd9#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/ui/inspect.ts##R35#e69a1ba9b2#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/ui/inspect.ts##R35#5b016a87ed#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/ui/main.ts##R35#f4f9d0e157#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ui/reveal.ts##R35#52a8ae48b7#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ui/test/56-ui-flash.test.ts##R35#5ab0278eef#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/docs/08-light-and-dark.md##R51#481d54fdf1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "they are recorded in the Comprehensive Rules",
+   "note": "pointer to the retired register"
+  },
+  "client/engine/src/apply.ts##R99#193933c407#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/engine/src/apply.ts##R99#a961ded798#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/engine/src/types.ts##R99#7b6128151c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/engine/src/types.ts##R99#934775164f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "states serialized before the field existed simply lack it",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R99#d5ed39e147#0": {
+   "action": "reword",
+   "nums": [
+    "D6.6e"
+   ],
+   "suggest": "See CR D6.6e (still open); the one line to change is in server/view.ts",
+   "note": "register held the impl pointer"
+  },
+  "client/engine/test/34-constructed.test.ts##R99#f0b6aadcec#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R99#44480f2135#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "absent on every game saved before the field existed",
+   "note": "history"
+  },
+  "client/ledgers/backlog.ts##R99#913bc383b6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R99#2ffe744465#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/ui/inspect.ts##R99#6444da5e01#0": {
+   "action": "reword",
+   "nums": [
+    "105.9a"
+   ],
+   "suggest": "(`legalActions` was deliberately left alone when the menu was narrowed)",
+   "note": "history phrasing; legality = 105.9a"
+  },
+  "client/ui/inspect.ts##R99#61a5889069#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a game saved before the field existed, which simply lacks it",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R148#c5f848d6ba#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R148#aafa193199#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "since control changes were routed through one primitive",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R148#fcc5396d31#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R148#3764a5b301#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/src/engine.ts##R148#53f8ccf52a#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/src/engine.ts##R148#9531e6c4aa#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/src/types.ts##R148#f46d884915#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R148#c3e2d0b068#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R148#93cd2c90de#0": {
+   "action": "drop",
+   "note": "engine-sweep test title/label; rename consistently with its references"
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R148#11526aac95#0": {
+   "action": "drop",
+   "note": "engine-sweep test title/label; rename consistently with its references"
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R148#0d6f780247#0": {
+   "action": "drop",
+   "note": "engine-sweep test title/label; rename consistently with its references"
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R148#56a5bc3743#0": {
+   "action": "drop",
+   "note": "engine-sweep test title/label; rename consistently with its references"
+  },
+  "client/engine/test/24-wood-b.test.ts##R148#05587f80a1#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/24-wood-b.test.ts##R148#fd27bac5ce#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/24-wood-b.test.ts##R148#ac4ba08262#0": {
+   "action": "cite",
+   "nums": [
+    "711.2",
+    "711.3"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R148#fc6f594086#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "exactly as it did before the control-change choke point",
+   "note": "history"
+  },
+  "client/engine/test/26-metal-a.test.ts##R148#2a168aca03#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#96889561f6#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#0bc940426e#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#281c43f474#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#59a2786fe9#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#c3ff3a64a5#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#a2697d716f#0": {
+   "action": "drop",
+   "note": "engine-sweep test title/label; rename consistently with its references"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#37eb1787fd#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#5ca7129418#0": {
+   "action": "drop",
+   "note": "engine-sweep test title/label; rename consistently with its references"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#1816f53a99#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R148#d90f3e358e#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/engine/test/stripcode.ts##R148#f525276b5b#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R148#9ce9459280#0": {
+   "action": "drop",
+   "note": "closed-ledger history stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R148#daeb225aba#0": {
+   "action": "drop",
+   "note": "closed-ledger history stamp"
+  },
+  "client/ledgers/card-todo-helpers.ts##R148#6cea92dd57#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/ledgers/claims.ts##R148#a9b8468b55#0": {
+   "action": "drop",
+   "note": "engine architecture (one control primitive / event / sweep); no CR rule"
+  },
+  "client/docs/questions-round27.md##R238#0c45205d55#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "answered 2026-08-28; now CR 608.8a",
+   "note": "questions-round*.md is a test fixture"
+  },
+  "client/docs/questions-round31.md##R238#89117f178d#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "Q5 by the owner's 2026-08-28 ruling (now CR 608.8a)",
+   "note": "history; questions-round*.md / 238-question-sheets fixture"
+  },
+  "client/docs/questions-round32.md##R238#1670a5790e#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "Q5 by the owner's 2026-08-28 ruling (now CR 608.8a)",
+   "note": "history; questions-round*.md / 238-question-sheets fixture"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R238#7493d91e52#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "The face channel listens on the event that fires for a replaced hit too (CR 608.8a), not on lifeLost.",
+   "note": "history phrasing"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R238#487fe7867e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R238#4dc478e6b9#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R238#3d350f1b9b#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R238#f0d8ae839e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R238#4b91d1b1e3#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R238#3b7e026419#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R238#487fe7867e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R238#7e2a09eb1c#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R238#487fe7867e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#ce4588f063#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#7ea5b0ddd4#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#0836d0acca#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#15ccc4bb01#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#f830291f6e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#021bde36e5#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#0b6398c0c0#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R238#7952d3aa4a#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/types.ts##R238#f7598afba0#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#7149272bb9#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#1c58816cca#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "See CR 608.8a.",
+   "note": "pointer to a scratchpad ruling file"
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#2f2185bd12#0": {
+   "action": "drop",
+   "note": "test infrastructure (replacer class derivation), no rule"
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#f0184a477c#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#bad45f1120#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#52100f6240#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R238#a66dd77b8c#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ],
+   "note": "title contrasts prevention; the body is a blocked column (608.4)"
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#711ca441f4#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#02b062c49a#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "The owner ruled on 2026-08-28 (now CR 608.8a) that",
+   "note": "history phrasing"
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#4f22648e11#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#319bfcb2fd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Under the old `lifeLost` subscription",
+   "note": "history"
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#1bc4779770#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#be11f7a1a6#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#248628fcd7#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/test/238-question-sheets.test.ts##R238#cdf7ac3837#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "Q5 by the owner's 2026-08-28 ruling (now CR 608.8a)",
+   "note": "history; questions-round*.md / 238-question-sheets fixture"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R238#8c2dbb513b#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "Q5 by the owner's 2026-08-28 ruling (now CR 608.8a)",
+   "note": "history; questions-round*.md / 238-question-sheets fixture"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R238#68deaf1b09#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the two rulings each open by naming the round-27 question they answer",
+   "note": "history about the rulings themselves"
+  },
+  "client/ledgers/card-todo-closed.ts##R238#f6097b93d4#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "Q5 by the owner's 2026-08-28 ruling (now CR 608.8a)",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R238#bb91612275#0": {
+   "action": "reword",
+   "nums": [
+    "608.8a"
+   ],
+   "suggest": "Q5 by the owner's 2026-08-28 ruling (now CR 608.8a)",
+   "note": "closed-ledger history"
+  },
+  "client/server/stats.ts##R238#5f221c2b98#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R295#04e9f94b50#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R295#43fb7ef7d8#0": {
+   "action": "cite",
+   "nums": [
+    "608.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R295#586499b134#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R295#ac0e83d481#0": {
+   "action": "cite",
+   "nums": [
+    "608.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R295#aa296f3f2f#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/src/types.ts##R295#ed72100102#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when report #165 found it",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R295#974a2f0319#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/src/types.ts##R295#8fccd756b2#0": {
+   "action": "cite",
+   "nums": [
+    "608.3d"
+   ]
+  },
+  "client/engine/src/types.ts##R295#1c025238da#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Absent in states saved before split steps had windows",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R295#cc5b9c72a8#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/09-attrs.test.ts##R295#68596749af#0": {
+   "action": "cite",
+   "nums": [
+    "802.4e"
+   ]
+  },
+  "client/engine/test/115-literal-light.test.ts##R295#e9d4781a02#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "Split steps got the ordering claim back (CR 608.9c)",
+   "note": "history"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R295#3df35cecd4#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R295#a1b058eb15#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/21-fixes.test.ts##R295#e26e792fa0#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "AND THE OWNER (2026-09-16) PUT IT BACK (CR 608.3b)",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R295#c01a2135f9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/21-fixes.test.ts##R295#4e537840d9#0": {
+   "action": "cite",
+   "nums": [
+    "802.4e"
+   ]
+  },
+  "client/engine/test/21-fixes.test.ts##R295#4f84cb7e00#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/21-fixes.test.ts##R295#1416675e4d#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/21-fixes.test.ts##R295#2c3aa77ff4#0": {
+   "action": "cite",
+   "nums": [
+    "802.4e"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#75dc455021#0": {
+   "action": "reword",
+   "nums": [
+    "608.3a"
+   ],
+   "suggest": "THE CONDITION IS BACK (CR 608.3a)",
+   "note": "history"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#cd302c27af#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#85614d83d4#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#5e613039a4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#3e45aa458e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#824ac53375#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#a9251ca758#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#e8dd7da236#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#5740c7758f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#2af737c463#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#a210bb0049#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#7ca598fe11#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#3c92f9de7d#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "SPLIT-STEP WINDOWS (CR 608.9c) MOVED THE FIRST HALF OF THIS TEST",
+   "note": "history"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R295#8e9cb960d3#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#fb530383be#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#c1affb5744#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "The split-step rule (CR 608.3b) is not a new rule so much as the other half of an old one",
+   "note": "history"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#495da4562a#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#fba3ef2f03#0": {
+   "action": "cite",
+   "nums": [
+    "802.5b"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#7a1379d7d1#0": {
+   "action": "cite",
+   "nums": [
+    "608.3c"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#232fc2e571#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R295#ff9c1f1c71#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/310-zone-abilities.test.ts##R295#552dd2f17e#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/310-zone-abilities.test.ts##R295#9be8e7510e#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/410-enum-exports.test.ts##R295#e855d9767f#0": {
+   "action": "cite",
+   "nums": [
+    "608.3"
+   ]
+  },
+  "client/engine/test/411-cr-extract.test.ts##R295#f00df7001d#0": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: R-numbers are test data for the CR supersession extractor"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R295#a94f49dff1#0": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: R-numbers are test data for the CR supersession extractor"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R295#a94f49dff1#1": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: R-numbers are test data for the CR supersession extractor"
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R295#fc4ea2d215#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "and split-step windows (CR 608.3b) took that away",
+   "note": "history"
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R295#c0a45c2b0e#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/util.ts##R295#aa2afcb3f5#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/test/util.ts##R295#1c0999f14f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Before split steps had windows",
+   "note": "history"
+  },
+  "client/ledgers/backlog-closed.ts##R295#9cc05515be#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Room KAWJ (the split-step windows change)",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo.ts##R295#608df99912#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "A split damage step opens a priority window between sub-steps and the trigger queue resolves there (CR 608.3b, 608.9c)",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R295#1832c7ccdc#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/ledgers/raq.ts##R295#18ff668eec#0": {
+   "action": "cite",
+   "nums": [
+    "608.3d"
+   ]
+  },
+  "client/server/replay-room.ts##R295#dbd2987706#0": {
+   "action": "drop",
+   "note": "history pointer to the change, no rule needed"
+  },
+  "client/server/test/317-replay-fingerprints.test.ts##R295#a3b2c37f8e#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "the split-step window rule (CR 608.3b) had added a priority window",
+   "note": "history"
+  },
+  "client/server/test/317-replay-fingerprints.test.ts##R295#bb450e1d30#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "the split-step window rule (CR 608.3b) had added a priority window",
+   "note": "history"
+  },
+  "client/ui/main.ts##R295#ab7c786e0a#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/ui/main.ts##R295#b18fb04c85#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R295#d9121e485b#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R295#b18f277587#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#610dd3b626#0": {
+   "action": "cite",
+   "nums": [
+    "408.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#a772d527c6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an older state has neither",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R296#3d314fa210#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#ec766f5a38#0": {
+   "action": "reword",
+   "nums": [
+    "401.4"
+   ],
+   "suggest": "which was the behaviour before the mark and is still the rule (CR 401.4: there is no deck-out loss)",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R296#8d65e37c8a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that the same seed did not consume before the recycle mark existed",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R296#c33ac1c1fd#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#78f788fd22#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#18ce14b012#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#18ce14b012#0~1": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#cef35d8edb#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#d16d9bd1cf#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R296#062d29beb0#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R296#c92299f3b8#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/src/types.ts##R296#c7953024c1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "absent in every state serialized before the recycle pile existed ... what lets an older room file restore and replay",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R296#71f771cc80#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "absent in every state serialized before the recycle pile existed ... what lets an older room file restore and replay",
+   "note": "history"
+  },
+  "client/engine/test/01-planning.test.ts##R296#8bf76679a1#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R296#536a82b401#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R296#0f869ce54f#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R296#e157a945c7#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R296#7071319738#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/20-draft.test.ts##R296#fddf958e5d#0": {
+   "action": "cite",
+   "nums": [
+    "400.1"
+   ]
+  },
+  "client/engine/test/20-draft.test.ts##R296#7e8b12b98f#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/engine/test/20-draft.test.ts##R296#d1c5e2f45e#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/208-region-scoping-is-absolute.test.ts##R296#1c3efa48eb#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R296#6ae7593615#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R296#5ebf050f80#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#2fecdb60c2#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#bb2272f11c#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#cee28646e3#0": {
+   "action": "drop",
+   "note": "seeded shuffle is engine determinism, no CR rule"
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#4080b4a940#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#9e4fe1d474#0": {
+   "action": "cite",
+   "nums": [
+    "401.4"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#f854d5d5cb#0": {
+   "action": "cite",
+   "nums": [
+    "401.4"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#f268e9c52e#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#657697667d#0": {
+   "action": "reword",
+   "nums": [
+    "408.2b"
+   ],
+   "suggest": "and with the recycle pile shuffled before reuse (CR 408.2b) knowing it buys nothing",
+   "note": "history"
+  },
+  "client/engine/test/300-recycle-mark.test.ts##R296#de4f9fd8a5#0": {
+   "action": "drop",
+   "note": "card conservation is a test invariant, no CR rule"
+  },
+  "client/engine/test/34-constructed.test.ts##R296#fe01a152a7#0": {
+   "action": "cite",
+   "nums": [
+    "408.2e"
+   ]
+  },
+  "client/engine/test/34-constructed.test.ts##R296#ee0dd48178#0": {
+   "action": "reword",
+   "nums": [
+    "408.2e"
+   ],
+   "suggest": "The mark moved the destination, not the ownership (CR 408.2e):",
+   "note": "history"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R296#b16a5296c6#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R296#b913d644d7#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R296#43883c707a#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R296#431697776c#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R296#49b92b328f#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R296#dd91723317#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R296#41dfbe17ba#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R296#a32bd806b8#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R296#fad1a2d68d#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R296#85ebe709e5#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/engine/test/99-endofturn.test.ts##R296#ee74a021c9#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/server/e2e/test-constructed.ts##R296#d026cf4d46#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ]
+  },
+  "client/server/e2e/test-constructed.ts##R296#14e4c0bd01#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/server/e2e/test-drive.ts##R296#7edf151b07#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/server/e2e/test-hidden.ts##R296#837f96f9e3#0": {
+   "action": "reword",
+   "nums": [
+    "408.2"
+   ],
+   "suggest": "THE RECYCLE MARK (CR 408.2) MOVED WHICH ZONE THAT IS.",
+   "note": "history"
+  },
+  "client/server/e2e/test-new-features.ts##R296#7bd57b9e95#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ]
+  },
+  "client/server/e2e/test-new-features.ts##R296#ebe7e39e44#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/server/replay-probe.ts##R296#defe78e443#0": {
+   "action": "reword",
+   "nums": [
+    "408.2"
+   ],
+   "suggest": "THE RECYCLE MARK (CR 408.2) — CARDS LEFT, NOT DECK LENGTH",
+   "note": "history"
+  },
+  "client/server/replay-probe.ts##R296#8e297ddc98#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "every game from before the recycle mark",
+   "note": "history"
+  },
+  "client/server/replay-probe.ts##R296#0f080aecff#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the recycle mark moved where the cards sit, not how many there are",
+   "note": "history"
+  },
+  "client/server/stats.ts##R296#6be2ed23da#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R296#d1968687f3#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R296#3961f93958#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/server/view.ts##R296#500e636689#0": {
+   "action": "reword",
+   "nums": [
+    "408.2"
+   ],
+   "suggest": "THE RECYCLE MARK (CR 408.2) MOVED THIS ARITHMETIC",
+   "note": "history"
+  },
+  "client/server/view.ts##R296#12634620c8#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/server/view.ts##R296#4851037d27#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/server/view.ts##R296#4699894a50#0": {
+   "action": "reword",
+   "nums": [
+    "408.2b"
+   ],
+   "suggest": "THE RESHUFFLE (CR 408.2b) ADDED A SECOND 'recycle' EVENT",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R296#05fe157cda#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ],
+   "note": "glossary ruling[] array"
+  },
+  "client/ui/main.ts##R296#9223f1f5ce#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R296#b5b6a0f6c9#0": {
+   "action": "reword",
+   "nums": [
+    "408.2"
+   ],
+   "suggest": "THE RECYCLE MARK (CR 408.2) CHANGED WHERE",
+   "note": "history"
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R296#d94c36f975#0": {
+   "action": "reword",
+   "nums": [
+    "408.2"
+   ],
+   "suggest": "Since the recycle mark (CR 408.2), \"the bottom of your deck\" became \"past the mark, into the recycle pile\".",
+   "note": "history"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R296#6b6cff71c6#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R296#9ad6f3c5a3#0": {
+   "action": "reword",
+   "nums": [
+    "408.2",
+    "408.2b"
+   ],
+   "suggest": "Under CR 408.2 a recycled card goes past the MARK, into a pile shuffled back only when the deck runs out (408.2b).",
+   "note": "history"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R296#3e488c3e01#0": {
+   "action": "cite",
+   "nums": [
+    "408.2b"
+   ]
+  },
+  "client/ui/test/302-recycle-counter.test.ts##R296#6d5fa432d2#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/ui/test/302-recycle-counter.test.ts##R296#618b9ce525#0": {
+   "action": "drop",
+   "note": "UI presentation detail (no \"recycled 0\" line), no CR rule"
+  },
+  "client/ui/test/302-recycle-counter.test.ts##R296#8e6a3ffab7#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/ui/test/302-recycle-counter.test.ts##R296#98d76b66f9#0": {
+   "action": "cite",
+   "nums": [
+    "408.2"
+   ]
+  },
+  "client/ui/test/302-recycle-counter.test.ts##R296#4ed2ecd0df#0": {
+   "action": "drop",
+   "note": "UI hover text, no CR rule"
+  },
+  "client/ui/test/302-recycle-counter.test.ts##R296#7a2f114d21#0": {
+   "action": "cite",
+   "nums": [
+    "408.2c"
+   ]
+  },
+  "client/engine/src/engine.ts##R322#f322fbacc6#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R322#203a83cbbc#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/engine/src/types.ts##R322#1d298553d6#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R322#69862bfbd1#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R322#dd7da2ca8d#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R322#c8469dbc27#0": {
+   "action": "cite",
+   "nums": [
+    "608.4d"
+   ]
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R322#643a4c7350#0": {
+   "action": "cite",
+   "nums": [
+    "607.2c"
+   ]
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R322#e36b5ae19d#0": {
+   "action": "drop",
+   "note": "UI labelling of a defender spot, no CR rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R322#c3be23d8ae#0": {
+   "action": "reword",
+   "nums": [
+    "607.2"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/raq.ts##R322#019aaae6bb#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fixed 2026-10-09 (CT-203)",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R322#019aaae6bb#0~1": {
+   "action": "reword",
+   "nums": [
+    "607.2"
+   ],
+   "suggest": "fixed 2026-10-09 (CT-203); see CR 607.2",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R322#019aaae6bb#0~2": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fixed 2026-10-09 (CT-203)",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R322#019aaae6bb#0~3": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fixed 2026-10-09 (CT-203)",
+   "note": "history"
+  },
+  "client/ui/fslot.ts##R322#0b972e3637#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/ui/test/215-formation-click.test.ts##R322#081745e04a#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/ui/test/215-formation-click.test.ts##R322#432774f73e#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/ui/test/215-formation-click.test.ts##R322#554d9f25c0#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/ui/test/215-formation-click.test.ts##R322#29c2cc9ad8#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/ui/test/400-side-blocks.test.ts##R322#0c6e0af99c#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  },
+  "client/ui/test/400-side-blocks.test.ts##R322#3f662316b2#0": {
+   "action": "cite",
+   "nums": [
+    "607.2"
+   ]
+  }
+ }
+}

@@ -1,0 +1,2596 @@
+{
+ "unit": "M002",
+ "decisions": {
+  "client/engine/src/cards/sets/batch-wood-a.ts##R88#07fd61bf1d#0": {
+   "action": "cite",
+   "nums": [
+    "110.10a"
+   ],
+   "note": "Virus targets its host"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R88#a1ff8c71d5#0": {
+   "action": "cite",
+   "nums": [
+    "110.10a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R88#d70fdcae33#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R88#5249133e8f#0": {
+   "action": "cite",
+   "nums": [
+    "110.10a"
+   ],
+   "note": "Boon/Graxxlid can answer a Virus"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R88#cc7a82e98c#0": {
+   "action": "cite",
+   "nums": [
+    "704.5"
+   ],
+   "note": "targets re-checked at resolution"
+  },
+  "client/engine/test/23-wood-a.test.ts##R88#62efa13dc1#0": {
+   "action": "cite",
+   "nums": [
+    "110.10a"
+   ]
+  },
+  "client/engine/test/23-wood-a.test.ts##R88#3a7a8526cf#0": {
+   "action": "cite",
+   "nums": [
+    "110.10a"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R88#45805b02c1#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R88#9e4d80d466#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R88#e3cdbfcf24#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "The Graxxlid fix (report #70)",
+   "note": "cites the register line"
+  },
+  "client/ledgers/card-todo-closed.ts##R88#6980c9a361#0": {
+   "action": "reword",
+   "suggest": "Graxxlid in f15ed40 (08-23);",
+   "note": "commit history"
+  },
+  "client/ledgers/card-todo-closed.ts##R88#99a431cc95#0": {
+   "action": "cite",
+   "nums": [
+    "704.5"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R88#9453743e8e#0": {
+   "action": "cite",
+   "nums": [
+    "704.5"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R88#4fa8f94327#0": {
+   "action": "reword",
+   "nums": [
+    "110.10a"
+   ],
+   "suggest": "and the designer's Virus ruling names this card explicitly.",
+   "note": "about the ruling text"
+  },
+  "client/ledgers/card-todo-closed.ts##R88#b17cb8f38b#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "the literal historical code the targeting-restriction fixes were written to fix",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R88#7e5ed58428#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R88#afb8b3fa0d#0": {
+   "action": "reword",
+   "suggest": "Minor Kraken gained its restrict on 08-21 and Graxxlid on 08-23;",
+   "note": "commit history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R88#35784c4824#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "the break-test that convicts the code from before targeting restrictions were enforced at cast.",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R112#4666878568#0": {
+   "action": "cite",
+   "nums": [
+    "711.2",
+    "711.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R112#3c01fa7c65#0": {
+   "action": "cite",
+   "nums": [
+    "711"
+   ],
+   "note": "mods, formation, region: whole section"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R112#6efcc93373#0": {
+   "action": "cite",
+   "nums": [
+    "711.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R112#51754af6e3#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R112#9cfa4ec4e5#0": {
+   "action": "cite",
+   "nums": [
+    "711.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R112#a97cc4f222#0": {
+   "action": "reword",
+   "nums": [
+    "711.2"
+   ],
+   "suggest": "UN-PARKED (2026-08-23).",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R112#ba73e507c2#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R112#3772e58319#0": {
+   "action": "reword",
+   "nums": [
+    "711.1"
+   ],
+   "suggest": "UN-PARKED (2026-08-23)",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R112#dddd8427c8#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R112#497acdcb39#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R112#2cac8575b6#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/src/engine.ts##R112#4413c72e00#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ],
+   "note": "controller differs from owner"
+  },
+  "client/engine/src/engine.ts##R112#268539ee74#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R112#feb82c7b33#0": {
+   "action": "cite",
+   "nums": [
+    "711.2"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R112#3a90c9722a#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R112#8166fa4e43#0": {
+   "action": "cite",
+   "nums": [
+    "711.2"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R112#729ae5d364#0": {
+   "action": "cite",
+   "nums": [
+    "711.4"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R112#37eb1787fd#0": {
+   "action": "cite",
+   "nums": [
+    "711.4"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R112#1816f53a99#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R112#d90f3e358e#0": {
+   "action": "drop",
+   "note": "code-structure rule (one primitive)"
+  },
+  "client/server/e2e/test-scenario.ts##R112#39b4ec3c8b#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ]
+  },
+  "client/docs/13-assessment.md##R157#777e1e6199#0": {
+   "action": "reword",
+   "suggest": "It had also already been ruled by the owner, four days earlier.",
+   "note": "register history; 13-assessment is a test fixture"
+  },
+  "client/docs/13-assessment.md##R157#2ed61788b2#0": {
+   "action": "reword",
+   "suggest": "The owner ruled Torrential Reclamation \"Already correct\" on 2026-08-25.",
+   "note": "register history; test fixture file"
+  },
+  "client/docs/16-divergence-inventory.md##R157#3dc07d86ff#0": {
+   "action": "reword",
+   "suggest": "then triaged against the owner's 27 answers of 2026-08-25.",
+   "note": "register history"
+  },
+  "client/docs/16-divergence-inventory.md##R157#2ab6bc0707#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R157#f3e12356c3#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R157#1f16c2c701#0": {
+   "action": "cite",
+   "nums": [
+    "101.4",
+    "101.1"
+   ],
+   "note": "the standing steer"
+  },
+  "client/docs/16-divergence-inventory.md##R157#cbfce73f06#0": {
+   "action": "cite",
+   "nums": [
+    "302.3"
+   ],
+   "note": "tokens are spells"
+  },
+  "client/docs/16-divergence-inventory.md##R157#4db703a58e#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ],
+   "note": "describes a since-fixed divergence"
+  },
+  "client/docs/16-divergence-inventory.md##R157#2649a4917e#0": {
+   "action": "reword",
+   "suggest": "All from the owner's answers of 2026-08-25 unless noted:",
+   "note": "list of many sections"
+  },
+  "client/docs/16-divergence-inventory.md##R157#f8235f98d3#0": {
+   "action": "reword",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "suggest": "The multiplier ruling's second half.",
+   "note": "stale: both halves now ruled"
+  },
+  "client/docs/17-oracle-text-audit.md##R157#cf0b816485#0": {
+   "action": "reword",
+   "nums": [
+    "200.2"
+   ],
+   "suggest": "(Bena, 2026-08-25:",
+   "note": "attribution"
+  },
+  "client/docs/questions-round27.md##R157#411b3fdbce#0": {
+   "action": "reword",
+   "nums": [
+    "407.2"
+   ],
+   "suggest": "The exchange ruling arguably wants it there.",
+   "note": "stale: 407.2 now puts it there; fixture sheet"
+  },
+  "client/docs/questions-round27.md##R157#a2a80cc419#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "The two-Arbiter worked example is untouched:",
+   "note": "fixture sheet"
+  },
+  "client/docs/questions-round28.md##R157#886746f7fc#0": {
+   "action": "reword",
+   "suggest": "It was ALREADY RULED on 2026-08-25:",
+   "note": "register history; fixture sheet"
+  },
+  "client/docs/questions-round28.md##R157#4126989362#0": {
+   "action": "reword",
+   "suggest": "Read literally, the owner's \"sacrifice THAT MANY units\" gives zero here",
+   "note": "no CR rule for Torrential distribution; fixture sheet"
+  },
+  "client/docs/questions-round32.md##R157#2705b07061#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "Your 2026-08-25 answer has the formula, written while you were answering a question about two Arbiters:",
+   "note": "fixture sheet"
+  },
+  "client/docs/questions-round32.md##R157#437dba446f#0": {
+   "action": "reword",
+   "nums": [
+    "708.6a"
+   ],
+   "suggest": "the 2026-08-25 answer says so itself.",
+   "note": "stale: additive order now ruled; fixture sheet"
+  },
+  "client/engine/src/apply.ts##R157#8e038baade#0": {
+   "action": "cite",
+   "nums": [
+    "202.5"
+   ],
+   "note": "X paid is the cost"
+  },
+  "client/engine/src/cards/dsl.ts##R157#d57d072f32#0": {
+   "action": "reword",
+   "suggest": "It described the \"with cost N or less\" targeting reading and the X rule as though this were the code that implemented them.",
+   "note": "about a stale doc comment"
+  },
+  "client/engine/src/cards/dsl.ts##R157#eef0abafe2#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ],
+   "note": "uncast X card costs 0"
+  },
+  "client/engine/src/cards/dsl.ts##R157#dba51e6a8b#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ],
+   "note": "amount paid is X"
+  },
+  "client/engine/src/cards/dsl.ts##R157#830ceb191c#0": {
+   "action": "reword",
+   "nums": [
+    "109.9c"
+   ],
+   "suggest": "The X = 0 ruling narrowed that.",
+   "note": "history"
+  },
+  "client/engine/src/cards/dsl.ts##R157#49222b204d#0": {
+   "action": "cite",
+   "nums": [
+    "202.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R157#19154bf4c0#0": {
+   "action": "cite",
+   "nums": [
+    "302.3"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R157#8142826ab3#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "THE COMPOSITION RULE IS THE OWNER'S (first stated for two Arbiters, \"quadruple it!\", later made exponential):",
+   "note": "stale: formula amended to exponential"
+  },
+  "client/engine/src/cards/dsl.ts##R157#9ff5f7c856#0": {
+   "action": "cite",
+   "nums": [
+    "708.6a"
+   ],
+   "note": "additive first, then multiply"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#f24f52783a#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#20558fada0#0": {
+   "action": "cite",
+   "nums": [
+    "109.2b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#de3c870f20#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#8487ff929c#0": {
+   "action": "cite",
+   "nums": [
+    "111.12a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#c2465db68b#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#b8372d810d#0": {
+   "action": "reword",
+   "nums": [
+    "410.2a"
+   ],
+   "suggest": "The exchange ruling (a despawn, not a death) is what finally moved it out of this file.",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#33eb38f771#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R157#cba27f108d#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R157#72145d6096#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R157#63fe8cb8b9#0": {
+   "action": "cite",
+   "nums": [
+    "801.13a"
+   ],
+   "note": "Necromorph exchange"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R157#e14c8e3b7a#0": {
+   "action": "cite",
+   "nums": [
+    "801.13a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R157#84e4daae07#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R157#fac957c22c#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R157#fc48794850#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#dd906bf985#0": {
+   "action": "cite",
+   "nums": [
+    "300.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#1a5e3b6c38#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "reversing the earlier floor-of-3 price reading.",
+   "note": "names the reversal"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#f0292f35ea#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "(The earlier reading had Wildfire cast at X = 0 for [3], dealing 0;",
+   "note": "names the reversed reading"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#0fded53a61#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "reverses the earlier price for an X spell.",
+   "note": "names the reversal"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#11cb63a833#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#558b6471cc#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#338ca4a233#0": {
+   "action": "reword",
+   "suggest": "The owner settled the scaling question on 2026-08-25 —",
+   "note": "no CR rule for Torrential distribution"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#ef8cb5e90a#0": {
+   "action": "reword",
+   "suggest": "The later ruling agrees with the 2026-08-25 answer;",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#464afbbfa1#0": {
+   "action": "reword",
+   "suggest": "⚠ THE ONE PLACE THE TWO TORRENTIAL RECLAMATION ANSWERS GENUINELY PULL APART, recorded rather than smoothed over.",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#f5988b5c8f#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ],
+   "note": "erased as front face"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#e74c109fc4#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ],
+   "note": "erase is a despawn"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#e9c48ba0ee#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R157#51b6e75066#0": {
+   "action": "cite",
+   "nums": [
+    "112.3"
+   ],
+   "note": "formula part stale (now 2^n)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R157#ad14063b37#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R157#358e672c36#0": {
+   "action": "cite",
+   "nums": [
+    "708.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R157#1e8b278588#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R157#62697e99bc#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R157#899729351c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R157#7467e1490f#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R157#94a6eb1b76#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R157#3bd1206424#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R157#6ae5e3f43e#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R157#de0935132d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R157#0b4845d038#0": {
+   "action": "cite",
+   "nums": [
+    "107.2b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R157#93e30b7951#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R157#cda610833b#0": {
+   "action": "cite",
+   "nums": [
+    "801.8",
+    "101.1"
+   ],
+   "note": "Grob's printed controller"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R157#47ca8c8557#0": {
+   "action": "cite",
+   "nums": [
+    "101.1",
+    "801.8"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R157#0c3cd614b2#0": {
+   "action": "cite",
+   "nums": [
+    "304.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R157#83406f1c57#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R157#63eb39c3c5#0": {
+   "action": "cite",
+   "nums": [
+    "304.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R157#53fad3f364#0": {
+   "action": "cite",
+   "nums": [
+    "304.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R157#23826429b0#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R157#ef03097099#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R157#7dff53d391#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R157#7cf74f48c8#0": {
+   "action": "cite",
+   "nums": [
+    "202.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R157#c62c4008f4#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R157#f318bd998a#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R157#f3aa9cfdd7#0": {
+   "action": "cite",
+   "nums": [
+    "302.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R157#4e78cc6f6f#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R157#53cf8acaff#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-metal.ts##R157#2f5e887cec#0": {
+   "action": "cite",
+   "nums": [
+    "107.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R157#d3c0e6c0e3#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R157#2cab8b80f2#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R157#f4d8d244d0#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R157#fe6d586c73#0": {
+   "action": "cite",
+   "nums": [
+    "300.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R157#4e0dafcebc#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "\"if\" clause checked on resolution"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R157#83a9a4fbe0#0": {
+   "action": "cite",
+   "nums": [
+    "107.8"
+   ],
+   "note": "counted at resolution"
+  },
+  "client/engine/src/cards/sets/helpers.ts##R157#df38343cf4#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R157#fdeb75737a#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R157#d54fc1b772#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R157#55ce0aa4e5#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R157#53bafdaee2#0": {
+   "action": "cite",
+   "nums": [
+    "410.3",
+    "407.4"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R157#e92b57a0fe#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#cda0616ab8#0": {
+   "action": "cite",
+   "nums": [
+    "202.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#6b6b0aae81#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#ae4cf763a9#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "The question was re-asked precisely because the first answer's wording —",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R157#82c0ea763d#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "Two Arbiters quadruple, before and after — the two-Arbiter worked example is untouched and the bug it fixed (the trigger pair giving 3×) stays fixed.",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R157#65d2a93359#0": {
+   "action": "reword",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "suggest": "The multiplier ruling answers how multipliers compose with EACH OTHER; the additive order is its own rule.",
+   "note": "stale: additive order now ruled"
+  },
+  "client/engine/src/engine.ts##R157#8f8bdaec78#0": {
+   "action": "cite",
+   "nums": [
+    "202.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#edf326eb00#0": {
+   "action": "cite",
+   "nums": [
+    "107.5",
+    "111.10i"
+   ],
+   "note": "matches current raise-X rule"
+  },
+  "client/engine/src/engine.ts##R157#f061156931#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#775c87c74f#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ],
+   "note": "current rule also rejects flat +3"
+  },
+  "client/engine/src/engine.ts##R157#15c227cee4#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#b1afd76ca9#0": {
+   "action": "cite",
+   "nums": [
+    "710.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#4a57d67b60#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#3de57c74b8#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#f87efa0c0e#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#aa2b1f294c#0": {
+   "action": "cite",
+   "nums": [
+    "801.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#c75a277979#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#740e967703#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#b5f5929c6e#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#d58751d07c#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#4b5ea1eb41#0": {
+   "action": "cite",
+   "nums": [
+    "202.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#e0ba2c37d9#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#da71cc5589#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#9eeb2544e5#0": {
+   "action": "cite",
+   "nums": [
+    "101.1",
+    "101.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#c20ef27f17#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#0cb180b6c4#0": {
+   "action": "cite",
+   "nums": [
+    "702.7a"
+   ],
+   "note": "spell token cast counts as spell"
+  },
+  "client/engine/src/engine.ts##R157#8b5ae5bc0c#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#0c9714d258#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#c2b0e841d8#0": {
+   "action": "reword",
+   "nums": [
+    "407.2"
+   ],
+   "suggest": "the exchange ruling arguably wants it there",
+   "note": "stale: 407.2 settles it"
+  },
+  "client/engine/src/engine.ts##R157#fdf52f8a7a#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#cc664e7167#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#7c2071578f#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#7d02ccd4dd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R157#cf2524807d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ]
+  },
+  "client/engine/src/types.ts##R157#80430fa7c3#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/src/types.ts##R157#c30bc8c79d#0": {
+   "action": "reword",
+   "suggest": "which is the behaviour from before the transform ruling rather than a crash.",
+   "note": "save-format history"
+  },
+  "client/engine/src/types.ts##R157#4ebbc8c3e4#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R157#c07fdac694#0": {
+   "action": "cite",
+   "nums": [
+    "300.5a"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R157#6328f8c270#0": {
+   "action": "cite",
+   "nums": [
+    "302.3"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R157#20a8835be2#0": {
+   "action": "reword",
+   "nums": [
+    "410.2a"
+   ],
+   "suggest": "exchangeInPlace(): the exchange ruling moved it out of batch-dark-b.ts",
+   "note": "history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R157#3ac0f6347e#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R157#4b832dff56#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#c3e987d386#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ],
+   "note": "header; §20 half reversed"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#eb1f374e5e#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "(reversing the earlier price reading)",
+   "note": "names the reversal"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#d4f9f4974e#0": {
+   "action": "cite",
+   "nums": [
+    "107.2"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#a14a1e2029#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "(reversing the earlier price reading)",
+   "note": "names the reversal"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#245180afe9#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#e5b3730913#0": {
+   "action": "cite",
+   "nums": [
+    "107.2"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#54e40b3a92#0": {
+   "action": "reword",
+   "nums": [
+    "107.5",
+    "111.10i"
+   ],
+   "suggest": "(reversing the earlier price reading)",
+   "note": "names the reversal"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#c98362e2c7#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "(it used to be offered at a price of [3])",
+   "note": "history"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#c85295d5cd#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#e9188ea75e#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#c2dc0729e2#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#c62ce845d5#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#a75e9a13f7#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#8948ab24d7#0": {
+   "action": "cite",
+   "nums": [
+    "202.3"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R157#7ea5436fe7#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#97be6a603c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#3684e30a8d#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c",
+    "608.9a"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#e608142ac7#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#3ecef00f06#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#8b56784cd4#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#8b56784cd4#1": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#bbef13d7e6#0": {
+   "action": "reword",
+   "suggest": "THE OWNER'S ANSWERS OF 2026-08-25 ON WHAT LEAVES PLAY, AND WHERE IT LANDS.",
+   "note": "header listing four sections"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#c2d86ea77d#0": {
+   "action": "reword",
+   "nums": [
+    "410.2a"
+   ],
+   "suggest": "this is the layer the exchange ruling added.",
+   "note": "history"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#9bcaedfdbc#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#eb762e662a#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#4d02fb5169#0": {
+   "action": "cite",
+   "nums": [
+    "801.8",
+    "101.1"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#601c50105b#0": {
+   "action": "reword",
+   "nums": [
+    "801.8"
+   ],
+   "suggest": "…and the printed-text answer was read as the OTHER half of \"printed text wins\":",
+   "note": "stale: cache default since changed"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#0528b6dba8#0": {
+   "action": "reword",
+   "nums": [
+    "101.1"
+   ],
+   "suggest": "and the half that stands is the half the printed-text answer was actually about.",
+   "note": "history"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#74114301e1#0": {
+   "action": "reword",
+   "suggest": "The old expectation, kept here rather than deleted: 'printed-text control: Waxen Witness names no seat, so a stolen unit still caches to its OWNER'",
+   "note": "quoted superseded assertion"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#3c97ef8edc#0": {
+   "action": "cite",
+   "nums": [
+    "101.1"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#f614aa026c#0": {
+   "action": "reword",
+   "nums": [
+    "111.12a"
+   ],
+   "suggest": "The claim under the Dropslime answer was that",
+   "note": "history"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#f676c9cfe0#0": {
+   "action": "reword",
+   "nums": [
+    "111.12a"
+   ],
+   "suggest": "What the Dropslime answer does change is two comments in batch-dark-b.",
+   "note": "history"
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#4140a2b84f#0": {
+   "action": "reword",
+   "suggest": "six of the owner's answers of 2026-08-25, made real.",
+   "note": "register history"
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#d5227f2f58#0": {
+   "action": "reword",
+   "suggest": "The owner's 2026-08-25 pass over 27 card questions.",
+   "note": "register history"
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#16b125f446#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#e7dae68008#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#982dc59f6e#0": {
+   "action": "cite",
+   "nums": [
+    "107.8"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#d35ec6548f#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#ec88d585b8#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#c70e32e8ef#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#bf8de3ccb7#0": {
+   "action": "cite",
+   "nums": [
+    "109.3d"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#45416df143#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#844cfc148c#0": {
+   "action": "cite",
+   "nums": [
+    "304.14"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#af3f4825c3#0": {
+   "action": "cite",
+   "nums": [
+    "304.14"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R157#8a69e04fb6#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#1e4397b9ac#0": {
+   "action": "reword",
+   "suggest": "Three of the owner's answers of 2026-08-25 land here.",
+   "note": "register history"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#31fe585550#0": {
+   "action": "cite",
+   "nums": [
+    "708.6a"
+   ]
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#7cbff4578e#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "It pinned the first answer's formula *\"always n*2*v\"* AS WRITTEN",
+   "note": "history"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#168351a153#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "The two-Arbiter worked example is untouched.",
+   "note": "history"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#3ed6d71b28#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "If this ever moves, the exponential rule has been applied somewhere it does not reach: the two-Arbiter answer is the fixed point both formulas share.",
+   "note": "about which ruling reaches what"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#9f1cecc6dd#0": {
+   "action": "reword",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "suggest": "The multiplier rule answers how multipliers compose with EACH OTHER; how one composes with the additive family is its own rule.",
+   "note": "stale: additive order now ruled"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R157#c631110058#0": {
+   "action": "cite",
+   "nums": [
+    "107.2b"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#9c4b2ec543#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#7cbcfed81a#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#70f069722b#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#e6c17ae46c#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#a8a0bf2d2d#0": {
+   "action": "reword",
+   "nums": [
+    "407.4"
+   ],
+   "suggest": "The engine choke point has done this since the front-face rule shipped;",
+   "note": "history"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#19b1646043#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R157#ab5de8e42b#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R157#6fdc144ca7#0": {
+   "action": "reword",
+   "nums": [
+    "200.2"
+   ],
+   "suggest": "batch-light-a.ts's CLOSED note (the Armistice transcription fix)",
+   "note": "points at a note elsewhere"
+  },
+  "client/engine/test/158-silent-region-branches.test.ts##R157#788aa299a1#0": {
+   "action": "cite",
+   "nums": [
+    "107.8"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R157#429917de1a#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ],
+   "note": "seam now raises X"
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R157#4a167eeb07#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R157#23b78a39ec#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R157#0240193521#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R157#507a8eb790#0": {
+   "action": "cite",
+   "nums": [
+    "101.4",
+    "101.1"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R157#51a773eca6#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ],
+   "note": "still holds under raise-X rule"
+  },
+  "client/engine/test/19-hybrids.test.ts##R157#2dffc29c13#0": {
+   "action": "reword",
+   "nums": [
+    "111.10i"
+   ],
+   "suggest": "the smallest X is three, so the cheapest cast is [3]",
+   "note": "quotes the reversed reading"
+  },
+  "client/engine/test/19-hybrids.test.ts##R157#04c393adf7#0": {
+   "action": "reword",
+   "nums": [
+    "111.10i"
+   ],
+   "suggest": "X of three or more costs exactly X",
+   "note": "quotes the reversed reading"
+  },
+  "client/engine/test/19-hybrids.test.ts##R157#3120ae83f4#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "which under the earlier price reading made this an X = 1 cast paid at [3].",
+   "note": "history"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#9d0588386d#0": {
+   "action": "reword",
+   "suggest": "The owner ruled Torrential Reclamation \"Already correct\" on 2026-08-25.",
+   "note": "register history (test 202 reads the register)"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#d7f3355b15#0": {
+   "action": "reword",
+   "suggest": "Had he taken the recommendation he would have reversed that ruling and the suite would have stayed green.",
+   "note": "history"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#453b9125c8#0": {
+   "action": "unsure",
+   "note": "test 202 machinery parses register headings"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#266875f0bd#0": {
+   "action": "unsure",
+   "note": "test 202 machinery; register-bound"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#3421fdcfa2#0": {
+   "action": "unsure",
+   "note": "test 202 assertion about the register"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#7c4c22ace6#0": {
+   "action": "reword",
+   "nums": [
+    "102.6b"
+   ],
+   "suggest": "while the owner's 2026-08-25 answer settled an entirely different question about the same card (\"the deck\" ownership).",
+   "note": "history"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#744ffd9bed#0": {
+   "action": "reword",
+   "suggest": "re-asked the owner about Torrential Reclamation four days after he settled it, AND RECOMMENDED THE OPPOSITE ANSWER.",
+   "note": "history in assertion message"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R157#d1512d310e#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R157#cb06cfac90#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "whose earlier tax reading priced the X = 0 cast at [3].",
+   "note": "history"
+  },
+  "client/engine/test/39-light-b.test.ts##R157#73d91c860c#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R157#355503a4af#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/test/396-raq-timing.test.ts##R157#2d021e389c#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ]
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R157#d525d18165#0": {
+   "action": "reword",
+   "nums": [
+    "101.3"
+   ],
+   "suggest": "the ruling was reversed (the dead-source reading, the Stasis Sentry price).",
+   "note": "names reversed rulings"
+  },
+  "client/engine/test/43-dark-c.test.ts##R157#5f89f269a3#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R157#acfdbba79d#0": {
+   "action": "cite",
+   "nums": [
+    "108.3a"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R157#9a3c6c3d73#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R157#b9c5d5924c#0": {
+   "action": "cite",
+   "nums": [
+    "107.2a"
+   ]
+  },
+  "client/engine/test/71-card-ledger.test.ts##R157#fdba0885be#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ],
+   "note": "Arbiter multiplier"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R157#0f36a95c68#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "Stellarspore resolution check"
+  },
+  "client/engine/test/87-replacement-layer.test.ts##R157#1a7dbb5f03#0": {
+   "action": "cite",
+   "nums": [
+    "304.14"
+   ]
+  },
+  "client/engine/test/87-replacement-layer.test.ts##R157#e195d4bb1d#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/test/89-self-erase.test.ts##R157#8ef3765d12#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/89-self-erase.test.ts##R157#90a9917937#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/89-self-erase.test.ts##R157#9782d22da4#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/98-spawn-region.test.ts##R157#d270b5cd36#0": {
+   "action": "reword",
+   "nums": [
+    "410.2a"
+   ],
+   "suggest": "⚠ TWO ENTRIES DELETED once an exchange became a despawn and not a death (2026-08-25)",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R157#efe8927d83#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R157#8286011631#0": {
+   "action": "cite",
+   "nums": [
+    "101.1",
+    "101.4"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R157#a4aa124b41#0": {
+   "action": "reword",
+   "suggest": "The owner's 2026-08-25 ruling round fixed some;",
+   "note": "register history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#9d80ae3e7d#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R157#2b358cfaa2#0": {
+   "action": "reword",
+   "suggest": "carrying an 8-line doc comment that reads as a live description of the rules.",
+   "note": "labels a stale doc comment"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#6f1e868f8c#0": {
+   "action": "reword",
+   "nums": [
+    "407.2"
+   ],
+   "suggest": "The exchange ruling arguably wants it there.",
+   "note": "stale: 407.2 settles it"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#6c37574ed7#0": {
+   "action": "reword",
+   "suggest": "The owner's 2026-08-25 answer reads",
+   "note": "no CR rule for Torrential distribution"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#a9dec53680#0": {
+   "action": "reword",
+   "suggest": "⚠ WHERE THE TWO TORRENTIAL RECLAMATION ANSWERS PULL APART, recorded rather than smoothed over:",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#fe483628b1#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R157#b2ad78560b#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R157#081fa12355#0": {
+   "action": "reword",
+   "suggest": "The owner (2026-08-25) ruled Torrential Reclamation \"Already correct\".",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#c60e1557a5#0": {
+   "action": "reword",
+   "suggest": "Had he taken the recommendation, that ruling would have been silently reversed and the suite would have stayed green.",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#761c5ac29c#0": {
+   "action": "reword",
+   "suggest": "feed it the CT-91 / Torrential Reclamation pair and prove it convicts",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#036d14814b#0": {
+   "action": "unsure",
+   "note": "names test 202's title; rename in step"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#dd2be82972#0": {
+   "action": "unsure",
+   "note": "binding to test 202's title; rename in step"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#d00b33180d#0": {
+   "action": "reword",
+   "nums": [
+    "102.6b"
+   ],
+   "suggest": "against the owner's 2026-08-25 answer, which settled a completely different question about the same card.",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#9b84e658fe#0": {
+   "action": "unsure",
+   "note": "describes test 202's register-bound control"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#a9d33af8f4#0": {
+   "action": "reword",
+   "suggest": "which reopens the rulings built on it.",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#66c5b97d09#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "The sub-step trigger gate is kept and the ordering claim lost;",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#f33dae3b97#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R157#c65c127e1d#0": {
+   "action": "cite",
+   "nums": [
+    "608.2c"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R157#3ad170fef7#0": {
+   "action": "reword",
+   "nums": [
+    "608.2c"
+   ],
+   "suggest": "reverting to the lossy singular (combatSubStepOf instead of the full list)",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#d2c6da514b#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "The earlier reading raised only the COST to 3, so Wildfire cast at X=0 costs 3 and deals 0.",
+   "note": "names the reversed reading"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#d2c6da514b#1": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "so the earlier reading is reversed.",
+   "note": "names the reversal"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#a3cae6467f#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "New ruling reversing the earlier price reading.",
+   "note": "names the reversal"
+  },
+  "client/ledgers/card-todo.ts##R157#d20acfd531#0": {
+   "action": "unsure",
+   "note": "open CT entry about stale R157 §20 titles; its proof greps the literal"
+  },
+  "client/ledgers/card-todo.ts##R157#ab0cb5cf25#0": {
+   "action": "unsure",
+   "note": "quotes a test title literally; proof depends on it"
+  },
+  "client/ledgers/card-todo.ts##R157#f2d8f27e37#0": {
+   "action": "unsure",
+   "note": "proof greps literal 'R157 §20 —' in test 133"
+  },
+  "client/ledgers/card-todo.ts##R157#8bb1e47c51#0": {
+   "action": "reword",
+   "nums": [
+    "702.2a"
+   ],
+   "suggest": "The owner ruled it on 2026-08-25 (\"Already correct — Abyssal Evocation, Writhing Host.\")",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R157#9f305cba62#0": {
+   "action": "reword",
+   "nums": [
+    "108.3a"
+   ],
+   "suggest": "which the owner's 2026-08-25 answer OVERRULED:",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R157#5ff01eaab3#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ],
+   "note": "test-name binding: rename with 43-dark-c title"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R157#61212adc07#0": {
+   "action": "reword",
+   "suggest": "could not be built without reopening the damage-step rulings,",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R157#f6649c01e8#0": {
+   "action": "reword",
+   "suggest": "Giving her that window means overruling the no-window rule, which reopens the damage-step rulings.",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R157#adf5dc6c55#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R157#b03965fe06#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/server/scenarios-b.ts##R157#e032dedeea#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ]
+  },
+  "client/server/scenarios-b.ts##R157#e14bd99a73#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/server/scenarios-b.ts##R157#03be84f387#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/server/scenarios-d.ts##R157#234867c0d4#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R157#cc0389e076#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R157#e98e998615#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R157#ac6806793c#0": {
+   "action": "cite",
+   "nums": [
+    "723.2"
+   ],
+   "note": "Virus from hand onto any unit"
+  },
+  "client/ui/test/231-manual-text.test.ts##R157#bc267ab31d#0": {
+   "action": "cite",
+   "nums": [
+    "723.2"
+   ]
+  },
+  "client/ui/test/278-ally-misclick.test.ts##R157#84e6fa00a6#0": {
+   "action": "cite",
+   "nums": [
+    "101.1",
+    "101.4"
+   ]
+  },
+  "client/ui/test/365-stack-attribute-chips.test.ts##R157#4cad46b506#0": {
+   "action": "cite",
+   "nums": [
+    "707.7a"
+   ]
+  },
+  "client/docs/questions-round27.md##R237#ca24c1ad0e#0": {
+   "action": "reword",
+   "nums": [
+    "802.3e",
+    "802.18b"
+   ],
+   "suggest": "answered 2026-08-28 ({Deadly} reaches every damage site, and {Poisonous} is a form of dealing damage, not a replacement of it).",
+   "note": "register history; fixture sheet (238 reads ANSWER)"
+  },
+  "client/docs/questions-round31.md##R237#b3cce2b166#0": {
+   "action": "reword",
+   "suggest": "Four of the five round-27 questions listed above had ALREADY been answered when this line was written — Q2, Q5, Q6 and Q8, all on 2026-08-28 — and the rulings name the questions by number.",
+   "note": "register history; fixture sheet"
+  },
+  "client/docs/questions-round32.md##R237#1670a5790e#0": {
+   "action": "reword",
+   "suggest": "Four of them had already been answered — Q2, Q5, Q6 and Q8, all on 2026-08-28, and two of those rulings name the question by number in their own first line.",
+   "note": "register history; fixture sheet"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R237#66699900c3#0": {
+   "action": "reword",
+   "nums": [
+    "802.18b"
+   ],
+   "suggest": "⚠ THE THIRD CHANNEL WAS TAKEN AWAY once Poisonous damage counted as damage dealt, and this card is why it existed.",
+   "note": "engine-change history"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R237#7493d91e52#0": {
+   "action": "reword",
+   "nums": [
+    "802.18b"
+   ],
+   "suggest": "Poisonous-as-damage took 'countersChanged' away;",
+   "note": "engine-change history"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R237#9b0b6cb56d#0": {
+   "action": "reword",
+   "nums": [
+    "802.3e"
+   ],
+   "suggest": "and the owner's ruling of 2026-08-28 is what it was parked waiting for:",
+   "note": "parking history"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R237#70292598af#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a"
+   ],
+   "note": "Deadly kill on redirected damage"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R237#0792e22c23#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R237#101dcdaddc#0": {
+   "action": "cite",
+   "nums": [
+    "802.18a",
+    "802.18b"
+   ]
+  },
+  "client/engine/src/engine.ts##R237#9831886735#0": {
+   "action": "cite",
+   "nums": [
+    "802.3e",
+    "802.3g"
+   ]
+  },
+  "client/engine/src/engine.ts##R237#8318990242#0": {
+   "action": "reword",
+   "nums": [
+    "802.18b"
+   ],
+   "suggest": "The Poisonous-is-damage ruling struck that",
+   "note": "history of an older comment"
+  },
+  "client/engine/src/engine.ts##R237#f448fbdfe7#0": {
+   "action": "reword",
+   "nums": [
+    "802.18b"
+   ],
+   "suggest": "'poison' — RETIRED once Poisonous damage counted as damage dealt, and kept only as a no-op arm",
+   "note": "engine-change history"
+  },
+  "client/engine/src/engine.ts##R237#062b6e302d#0": {
+   "action": "cite",
+   "nums": [
+    "802.18b"
+   ]
+  },
+  "client/engine/src/engine.ts##R237#4716aeb993#0": {
+   "action": "cite",
+   "nums": [
+    "802.18a",
+    "802.18b"
+   ]
+  },
+  "client/engine/test/184-ruling-register.test.ts##R237#9394e0b412#0": {
+   "action": "unsure",
+   "note": "register-structure test (184); goes with the register"
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#e1e7cb3b9d#0": {
+   "action": "cite",
+   "nums": [
+    "802.3e"
+   ],
+   "note": "test header"
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#be85d69ec5#0": {
+   "action": "drop",
+   "note": "pointer to a scratchpad file"
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#3b7f3eaee2#0": {
+   "action": "cite",
+   "nums": [
+    "802.3g"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#d12e5d572a#0": {
+   "action": "cite",
+   "nums": [
+    "802.18a"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#06fdd67990#0": {
+   "action": "cite",
+   "nums": [
+    "802.3e",
+    "802.10c"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#07ad865eca#0": {
+   "action": "cite",
+   "nums": [
+    "802.18b"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#ca74da9612#0": {
+   "action": "cite",
+   "nums": [
+    "802.18b"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#973380d4f4#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a",
+    "608.8c"
+   ],
+   "note": "Oorblak redirect"
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#6cc2956daa#0": {
+   "action": "cite",
+   "nums": [
+    "802.3a",
+    "608.8c"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#309c72a260#0": {
+   "action": "cite",
+   "nums": [
+    "802.18b"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R237#89c3e6c3a3#0": {
+   "action": "cite",
+   "nums": [
+    "802.18b"
+   ],
+   "note": "lethal flag is engine; R237 part = damage event"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#cdf7ac3837#0": {
+   "action": "reword",
+   "suggest": "Four of those five were answered the day before — Q2, Q5, Q6 and Q8, all on 2026-08-28, all rulings the owner gave, and two of them name the question by number in their own first line.",
+   "note": "register history in test header (238)"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#8c2dbb513b#0": {
+   "action": "reword",
+   "suggest": "Four of those five were answered the day before — Q2, Q5, Q6 and Q8, all on 2026-08-28, all rulings the owner gave, and two of them name the question by number in their own first line.",
+   "note": "register history in test header (238)"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#68deaf1b09#0": {
+   "action": "reword",
+   "suggest": "the rulings for Q2 and Q5 each open by naming the round-27 question they answer",
+   "note": "register history in assertion message"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#e7ee68470c#0": {
+   "action": "unsure",
+   "note": "test 238 machinery reads the register; rework with deletion"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#e831f89450#0": {
+   "action": "unsure",
+   "note": "test 238 machinery reads the register"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#af33badaff#0": {
+   "action": "unsure",
+   "note": "synthetic register fixture in test 238"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#6710189eac#0": {
+   "action": "unsure",
+   "note": "test 238 assertion about register scan"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#c63b072196#0": {
+   "action": "unsure",
+   "note": "synthetic sheet fixture in test 238"
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R237#d5786aef64#0": {
+   "action": "cite",
+   "nums": [
+    "802.18f",
+    "802.3h"
+   ],
+   "note": "prevention stops both"
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R237#6b555f3fa2#0": {
+   "action": "cite",
+   "nums": [
+    "802.18b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R237#f6097b93d4#0": {
+   "action": "reword",
+   "suggest": "Q2, Q5, Q6 and Q8, all answered on 2026-08-28 — and two of those rulings name the question by number in their own first line.",
+   "note": "register history (closed ledger)"
+  },
+  "client/ledgers/card-todo-closed.ts##R237#bb91612275#0": {
+   "action": "reword",
+   "suggest": "and two of those rulings name the question by number in their own first line.",
+   "note": "register history (closed ledger)"
+  },
+  "client/ledgers/card-todo-closed.ts##R237#b729184211#0": {
+   "action": "reword",
+   "suggest": "quoting the ruling's own line back",
+   "note": "register history (closed ledger)"
+  },
+  "client/docs/questions-round27.md##R264#10269670f0#0": {
+   "action": "reword",
+   "nums": [
+    "708.6",
+    "112.3"
+   ],
+   "suggest": "answered 2026-08-30.",
+   "note": "register history; file is a test fixture (238)"
+  },
+  "client/docs/questions-round32.md##R264#48ab61f209#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "Recorded 2026-08-30.",
+   "note": "register history; file is a test fixture (238)"
+  },
+  "client/engine/src/engine.ts##R264#284f36ca97#0": {
+   "action": "cite",
+   "nums": [
+    "708.6",
+    "112.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R264#838f8ef139#0": {
+   "action": "reword",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "suggest": "The multiplier rule answers how multipliers compose with EACH OTHER; the additive order is a separate rule",
+   "note": "stale: additive order now ruled (708.6a)"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R264#c3288ab22a#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ]
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R264#56f6979386#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ]
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R264#32ae76886e#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "If this ever moves, the exponential rule has been applied somewhere it does not reach: the two-Arbiter answer is the fixed point both formulas share.",
+   "note": "about which ruling reaches what"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R264#aea4345cf8#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ]
+  },
+  "client/engine/src/apply.ts##R301#5e89e1d135#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/src/apply.ts##R301#52ac2fc5db#0": {
+   "action": "cite",
+   "nums": [
+    "803.7"
+   ]
+  },
+  "client/engine/src/apply.ts##R301#b34c4c5863#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "(Bena 2026-09-20)",
+   "note": "attribution to the ruling"
+  },
+  "client/engine/src/apply.ts##R301#0b4f02af1b#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/src/apply.ts##R301#648e979213#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R301#83d09c69a6#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "`cost` arrived on 2026-09-20, when the banner's affinity was found to be required, overturning the claim that a banner was \"plain mana, no affinity\"",
+   "note": "history of the overturned claim"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R301#cf8e76c00b#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R301#0142071824#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R301#2ec0757901#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R301#e414ecfbbb#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R301#2ec0757901#0~1": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/257-prophecy-release-timing.test.ts##R301#17bb0d1fd0#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#23a95a8fad#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ],
+   "note": "test header"
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#6dc3be1e17#0": {
+   "action": "drop",
+   "note": "data invariant (pips within card cost); no CR rule"
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#339433141e#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#2501d100d5#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#18ce9272ee#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d",
+    "111.1b"
+   ]
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#a6f53192e1#0": {
+   "action": "drop",
+   "note": "log wording test; no CR rule"
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#f5350a2cbe#0": {
+   "action": "cite",
+   "nums": [
+    "803.7h"
+   ]
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#946de016b4#0": {
+   "action": "reword",
+   "nums": [
+    "203.4"
+   ],
+   "suggest": "exactly as before the affinity fix",
+   "note": "history"
+  },
+  "client/engine/test/313-prophecy-affinity.test.ts##R301#84e7197c7a#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "The affinity requirement changed the way IN to the cache, nothing after it",
+   "note": "history"
+  },
+  "client/engine/test/314-prophecy-units-die.test.ts##R301#cd7e0d43fc#0": {
+   "action": "reword",
+   "suggest": "(2026-09-20, bot/pipeline/read_card_faces.py)",
+   "note": "data-correction history"
+  },
+  "client/engine/test/314-prophecy-units-die.test.ts##R301#f3d9cbd987#0": {
+   "action": "reword",
+   "suggest": "Vengeance prints a prophecy banner (restored 2026-09-20)",
+   "note": "data-correction history"
+  },
+  "client/engine/test/314-prophecy-units-die.test.ts##R301#846837c8bc#0": {
+   "action": "reword",
+   "suggest": "which is what Vengeance was between its banner's restoration and its condition getting a meter",
+   "note": "data history"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R301#b98c9407a0#0": {
+   "action": "cite",
+   "nums": [
+    "203.2"
+   ],
+   "note": "banner's own pips"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R301#87a081a8c0#0": {
+   "action": "cite",
+   "nums": [
+    "203.2"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R301#a6134105e4#0": {
+   "action": "cite",
+   "nums": [
+    "203.2"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R301#682920b081#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R301#edd625afb7#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "Before the banner's affinity was charged, this fixture needed no resources at all",
+   "note": "history"
+  },
+  "client/engine/test/39-light-b.test.ts##R301#0909e05f83#0": {
+   "action": "reword",
+   "nums": [
+    "803.7h"
+   ],
+   "suggest": "Since the banner's affinity has been charged, it holds the light resource the [0l] banner required",
+   "note": "history"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R301#f00df7001d#0": {
+   "action": "unsure",
+   "note": "cr-extract test: ruling ids are its data"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R301#5c576f041c#0": {
+   "action": "unsure",
+   "note": "cr-extract test: ruling ids are its data"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R301#5c576f041c#1": {
+   "action": "unsure",
+   "note": "cr-extract test: ruling ids are its data"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R301#86e9b84bc5#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R301#85e19e4577#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R301#40c94dc63c#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/server/scenarios-d.ts##R301#6c260df765#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/server/scenarios-e.ts##R301#82744b172f#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/ui/cardtext.ts##R301#18b71decf1#0": {
+   "action": "cite",
+   "nums": [
+    "203.1"
+   ],
+   "note": "banner shows its pips"
+  },
+  "client/ui/inspect.ts##R301#ae6937ac5d#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "(corrected 2026-09-20)",
+   "note": "history"
+  },
+  "client/ui/test/259-card-text-surface.test.ts##R301#05ea88e7c6#0": {
+   "action": "cite",
+   "nums": [
+    "203.1"
+   ]
+  },
+  "client/ui/test/259-card-text-surface.test.ts##R301#8219339a83#0": {
+   "action": "cite",
+   "nums": [
+    "203.1"
+   ]
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R301#e24285ca58#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "(corrected 2026-09-20)",
+   "note": "history"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R301#9c578e92d3#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R301#3f84233bb3#0": {
+   "action": "reword",
+   "nums": [
+    "803.7d"
+   ],
+   "suggest": "Charging the banner's affinity made that banner cost a light pip",
+   "note": "history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R301#3127254bd8#0": {
+   "action": "cite",
+   "nums": [
+    "803.7d"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R344#8e4d13e2be#0": {
+   "action": "cite",
+   "nums": [
+    "601.2a"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R344#12c43c98be#0": {
+   "action": "reword",
+   "nums": [
+    "601.2a"
+   ],
+   "suggest": "answered by the owner on the review page 2026-10-11.",
+   "note": "register history"
+  },
+  "client/ledgers/card-todo.ts##R344#12c43c98be#1": {
+   "action": "reword",
+   "nums": [
+    "601.2a"
+   ],
+   "suggest": "state print, Caleb and the owner (2026-10-11):",
+   "note": "names the ruling as a source"
+  },
+  "client/ledgers/card-todo.ts##R344#a3511df00c#0": {
+   "action": "reword",
+   "nums": [
+    "601.2a"
+   ],
+   "suggest": "The owner's ruling of 2026-10-11 amends it.",
+   "note": "amendment history"
+  }
+ }
+}

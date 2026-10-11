@@ -350,7 +350,7 @@ export function score({ threshold = DEFAULT_THRESHOLD } = {}) {
     if (ctx.inTitle) form = 'title';
     else if (ctx.binding) form = 'binding';
     const base = {
-      id: row.id, file: c.file, line: c.line, ...(row.isJson ? { jsonRow: c.jrow, field: c.field } : {}), area: c.area,
+      id: row.id, file: c.file, line: c.line, col: c.col, ...(row.isJson ? { jsonRow: c.jrow, field: c.field, leaf: c.leaf } : {}), area: c.area,
       ruling, form, class: c.cls, historical: !!c.hist, code: c.code ?? null,
       context: { text: normLine(row.lineText).slice(0, 400), sentence: ctx.sentence.slice(0, 500), block: ctx.block.slice(0, 1200), lines: ctx.lines,
         test: ctx.test, fn: ctx.fn, card: ctx.card, record: ctx.recordKey, binding: ctx.binding ?? null },

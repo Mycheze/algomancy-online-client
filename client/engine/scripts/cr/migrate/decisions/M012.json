@@ -1,0 +1,2448 @@
+{
+ "unit": "M012",
+ "decisions": {
+  "client/engine/src/cards/dsl.ts##R6#0d0833ec13#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R6#3ecbf8e10c#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R6#2d3191f450#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R6#48a1e1a9d3#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R6#c7cff43189#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R6#2c51d0c3bc#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R6#005ed8582c#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R6#7c505cabc8#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R6#db5e5160ba#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R6#a37337c866#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R6#4d868b9a9e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R6#303f03e887#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R6#2016905ca8#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R6#4d868b9a9e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R6#567162b009#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R6#4a943e8eaa#0": {
+   "action": "drop",
+   "note": "inside a quotation of superseded text"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R6#2392f2b60e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R6#b5642f0296#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R6#9d63e0eee1#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R6#fa85bf33d3#0": {
+   "action": "cite",
+   "nums": [
+    "111.9",
+    "704.1b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R6#fdf9e5bc47#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R6#63e5f7e94e#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#9d9ebc265e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#fcac363230#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#e456acc805#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#795e1b2c1a#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#1b32aacb3e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#cc2e5713e8#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R6#d958816e13#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R6#d10b9076b4#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R6#1ee6de534a#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R6#3e65fc2827#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R6#46fba79c4d#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R6#1ee6de534a#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R6#fa4603a63e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R6#fdf9e5bc47#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R6#425dca8ff1#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R6#c785e8affc#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R6#1ee6de534a#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R6#b20f733fdd#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R6#814035bb5d#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R6#7c5f08b7fc#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R6#7cd71a83ac#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a",
+    "704.1b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R6#814035bb5d#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R6#814035bb5d#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R6#814035bb5d#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R6#221425cf73#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R6#03ddf21895#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R6#5fc69da6cc#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R6#7473113f86#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R6#209bc3ecc5#0": {
+   "action": "drop",
+   "note": "plan-then-commit is an engine technique; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R6#4d868b9a9e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R6#c5ba7ca277#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R6#6c430b4f77#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R6#b51eac0a22#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R6#a891542644#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/types.ts##R6#ab9f5de58d#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/types.ts##R6#d033a8d1a5#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/src/types.ts##R6#aecef91243#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/src/types.ts##R6#3fe81e31ae#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R6#167dd471d1#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R6#d582d187f2#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R6#30b160b32a#0": {
+   "action": "cite",
+   "nums": [
+    "704.1b"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R6#61686db129#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R6#47212f23a7#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R6#1a433a9d85#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R6#ee660e9999#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R6#771a270224#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R6#50f9ce2e5e#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/152-hand-entry.test.ts##R6#b31dcb9958#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R6#ee4724962c#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R6#733f3a9c23#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R6#fb94638e8f#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R6#90a8b4c8bf#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R6#410abf604b#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R6#b1d90ecf77#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R6#95f68d4b23#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R6#0f4b9ad93d#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R6#1d3b5fe1af#0": {
+   "action": "reword",
+   "nums": [
+    "702.5a"
+   ],
+   "suggest": "miscategorising a caster's own mode as a resolution-time payment (CR 702.5a)",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R6#52975bd550#0": {
+   "action": "cite",
+   "nums": [
+    "702.5a"
+   ]
+  },
+  "client/docs/06-roadmap.md##R19#a8574a5e47#0": {
+   "action": "cite",
+   "nums": [
+    "802.1j"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R19#8277f5b979#0": {
+   "action": "cite",
+   "nums": [
+    "802.1j"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R19#d12963b2f4#0": {
+   "action": "cite",
+   "nums": [
+    "802.1j"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R19#888e4aacd0#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#00bbe6d307#0": {
+   "action": "cite",
+   "nums": [
+    "709.4b"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#f77ef87bdd#0": {
+   "action": "cite",
+   "nums": [
+    "709.4c"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#624897041b#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#0fbf83d0e5#0": {
+   "action": "cite",
+   "nums": [
+    "709.4b"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#73876b1f01#0": {
+   "action": "cite",
+   "nums": [
+    "802.1f"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#c77aadd4b4#0": {
+   "action": "drop",
+   "note": "inside a quotation of a since-corrected false comment"
+  },
+  "client/engine/src/engine.ts##R19#c716825ac7#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/src/engine.ts##R19#9da8640c27#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R19#df19297cd3#0": {
+   "action": "cite",
+   "nums": [
+    "802.1j"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R19#c66b3de402#0": {
+   "action": "cite",
+   "nums": [
+    "709.4b"
+   ]
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R19#7920f319bb#0": {
+   "action": "cite",
+   "nums": [
+    "802.6"
+   ]
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R19#369483ae4f#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R19#b958afff11#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R19#709c53b71f#0": {
+   "action": "drop",
+   "note": "inside a quotation of a since-corrected false comment"
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R19#5fadb89715#0": {
+   "action": "cite",
+   "nums": [
+    "802.7"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R19#b88e7baf6a#0": {
+   "action": "cite",
+   "nums": [
+    "802.7"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R19#71fa5fa381#0": {
+   "action": "cite",
+   "nums": [
+    "709.4c"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R19#9c77e35462#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/test/92-unaware.test.ts##R19#8114533e54#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R19#2f3e09f5cd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "restoring the dropped {Unaware} citation reddens §2",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo.ts##R19#e8569a4d31#0": {
+   "action": "reword",
+   "nums": [
+    "709.4b"
+   ],
+   "suggest": "The engine takes printed attributes before mod attributes (CR 709.4b, engine differs F-U16-4), so it balances first",
+   "note": "history"
+  },
+  "client/ledgers/card-todo.ts##R19#e8569a4d31#1": {
+   "action": "reword",
+   "nums": [
+    "709.4b"
+   ],
+   "suggest": "The old premise that the Manual is silent is wrong for this pair",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R19#0cbd37e11d#0": {
+   "action": "cite",
+   "nums": [
+    "802.6"
+   ],
+   "note": "glossary ruling[] for Tough"
+  },
+  "client/ui/glossary.ts##R19#09dfa26e2f#0": {
+   "action": "cite",
+   "nums": [
+    "802.7"
+   ],
+   "note": "glossary ruling[] for Balanced"
+  },
+  "client/ui/glossary.ts##R19#5c3a279a8d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "CT-171: the layer-order citation was dropped — it never names Unaware, is about application ORDER",
+   "note": "history"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R19#77055a8ae9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "removed two citations doing no work (on {Once} and {Unaware})",
+   "note": "history"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R19#dd818ebd99#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "{Unaware} cited the layer-order ruling, which is about application ORDER",
+   "note": "history"
+  },
+  "client/docs/06-roadmap.md##R20#698c5331ba#0": {
+   "action": "cite",
+   "nums": [
+    "802.14"
+   ]
+  },
+  "client/engine/src/apply.ts##R20#98f03971f9#0": {
+   "action": "cite",
+   "nums": [
+    "802.14a"
+   ]
+  },
+  "client/engine/src/apply.ts##R20#807b906a42#0": {
+   "action": "cite",
+   "nums": [
+    "802.14a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R20#64fcc17131#0": {
+   "action": "cite",
+   "nums": [
+    "604.3d"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R20#df19297cd3#0": {
+   "action": "cite",
+   "nums": [
+    "802.14"
+   ]
+  },
+  "client/ui/glossary.ts##R20#64f2304e8d#0": {
+   "action": "cite",
+   "nums": [
+    "802.14a"
+   ],
+   "note": "glossary ruling[]"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R20#932c2afedd#0": {
+   "action": "cite",
+   "nums": [
+    "802.14a"
+   ]
+  },
+  "client/engine/src/apply.ts##R53#338ce61a70#0": {
+   "action": "cite",
+   "nums": [
+    "110.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R53#d182fe092e#0": {
+   "action": "cite",
+   "nums": [
+    "110.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R53#441297d47b#0": {
+   "action": "cite",
+   "nums": [
+    "110.11"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R53#5ee7f7e6e0#0": {
+   "action": "reword",
+   "nums": [
+    "110.11"
+   ],
+   "suggest": "That was fixed (CR 110.11): commitItem calls",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R53#8c5f4d7d23#0": {
+   "action": "cite",
+   "nums": [
+    "110.11"
+   ]
+  },
+  "client/engine/src/apply.ts##R69#5226004817#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/src/cards/dsl.ts##R69#b8bd80f627#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R69#770164a546#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/src/cards/registry.ts##R69#5e38721715#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/src/cards/registry.ts##R69#8de7addbe1#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/src/cards/registry.ts##R69#57adc0ec3f#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R69#c5a832489b#0": {
+   "action": "cite",
+   "nums": [
+    "407.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R69#1a72f8ea52#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R69#2f430211fe#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R69#ad33c25f04#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R69#c929b313e0#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R69#4d131b2ab2#0": {
+   "action": "reword",
+   "nums": [
+    "803.8c"
+   ],
+   "suggest": "CR 803.8c names this card for the mechanism; the granting cards' reminder reads '(If they would enter a bin, erase them instead.)' — only the destination changes",
+   "note": "quotes the retired ruling"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R69#4d91155e1a#0": {
+   "action": "cite",
+   "nums": [
+    "407.2a"
+   ],
+   "note": "weak: rule says reclaimed mods enter play as cards of their own"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R69#e394341fef#0": {
+   "action": "reword",
+   "nums": [
+    "410.5b"
+   ],
+   "suggest": "(CR 410.5b, settled for the hand 2026-08-22)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R69#bdbd42fb28#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R69#c73d1e33c0#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R69#48b313f900#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R69#f6ae159477#0": {
+   "action": "reword",
+   "nums": [
+    "410.5b"
+   ],
+   "suggest": "CR 410.5b (2026-08-22): a recalled TOKEN visits the hand too",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#6d7572ce58#0": {
+   "action": "unsure",
+   "note": "prose says the token is trashed; 410.5a says it is not (reversed 2026-09-28) — stale text"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#4f7f5c10e1#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#81e9a0e2ed#0": {
+   "action": "unsure",
+   "note": "prose says the token is trashed; 410.5a says it is not (reversed 2026-09-28) — stale text"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#38c3aa6b6f#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#c2858f6e53#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#3bde673802#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/src/engine.ts##R69#53fd7be454#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#3e7f44c700#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#2e5c061ce9#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#447c54c678#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#427252921f#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#9d592931ae#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#d63985d556#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#c279fa6466#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#e02fb6eb68#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#c93152ebe9#0": {
+   "action": "reword",
+   "nums": [
+    "410.5c"
+   ],
+   "suggest": "CR 410.5c (settled for the cache 2026-08-22):",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R69#3c2d983063#0": {
+   "action": "cite",
+   "nums": [
+    "410.5c"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#ef412719d0#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#0fc4af3d40#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#845558e6f1#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#299ef9a5ef#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#ff6b4b21a7#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#aaed2e2f05#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#5589e94295#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#80b74c404b#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#16970b4f98#0": {
+   "action": "cite",
+   "nums": [
+    "407.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#2e0a25dfd9#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#da843383e1#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#cee4f31002#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#fed63d1142#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#c0f732a1c1#0": {
+   "action": "reword",
+   "nums": [
+    "410.5b"
+   ],
+   "suggest": "CR 410.5b (settled for the hand 2026-08-22):",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R69#1a19db1a52#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#0405f39f85#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/engine.ts##R69#f8bafed44f#0": {
+   "action": "cite",
+   "nums": [
+    "803.8i"
+   ]
+  },
+  "client/engine/src/types.ts##R69#fa26e5204b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/src/types.ts##R69#141ed3f843#0": {
+   "action": "cite",
+   "nums": [
+    "803.8f"
+   ]
+  },
+  "client/engine/src/types.ts##R69#3db3aa5254#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R69#b202cd9682#0": {
+   "action": "reword",
+   "nums": [
+    "803.8c"
+   ],
+   "suggest": "CR 803.8c names this card for the mechanism; the granting cards' reminder reads '(If they would enter a bin, erase them instead.)' — only the destination changes",
+   "note": "quotes the retired ruling"
+  },
+  "client/engine/test/125-active-zone.test.ts##R69#024e89c664#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R69#210ad8da67#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#443d53d045#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#eb9895e75b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#89e98e310b#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#62cf645118#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#ab137d7a21#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#ec4440df42#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#8e432a9fc1#0": {
+   "action": "cite",
+   "nums": [
+    "720.7c"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#aa68be87c9#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R69#cc17a5af76#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R69#6782decc84#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R69#3e4b3715ef#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R69#4d9512a321#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R69#4fc89abe7c#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R69#5e62db73d1#0": {
+   "action": "cite",
+   "nums": [
+    "407.3a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R69#dc5fae74c8#0": {
+   "action": "cite",
+   "nums": [
+    "407.3a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R69#c5dae89639#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R69#80093c2a7a#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R69#31051e1b2b#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R69#bd39f4bf83#0": {
+   "action": "reword",
+   "nums": [
+    "410.5b"
+   ],
+   "suggest": "A recalled token visits the hand (CR 410.5b, settled 2026-08-22)",
+   "note": "history"
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R69#56f3fe3845#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R69#6ed7f7e075#0": {
+   "action": "unsure",
+   "note": "claims regroup would erase Unstable Oorblak; no CR rule found for that"
+  },
+  "client/engine/test/17-earth-b.test.ts##R69#fccc0e61d5#0": {
+   "action": "cite",
+   "nums": [
+    "803.8i"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R69#3e35e30c7c#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R69#5747d36b8e#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R69#837f66247b#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R69#cb4c697d13#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R69#f40c236833#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R69#f4fa6aa4f6#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#f418b1945c#0": {
+   "action": "reword",
+   "nums": [
+    "410.5a"
+   ],
+   "suggest": "A dying token does enter the bin and is then erased by a state-based sweep (CR 410.5a)",
+   "note": "history"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#8156d0e03a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(the earlier token-trash reading, since reversed)",
+   "note": "history"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#a688278c01#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#2c88fec8c1#0": {
+   "action": "reword",
+   "nums": [
+    "410.5b",
+    "410.5c"
+   ],
+   "suggest": "TOKENS VISIT THE HAND AND THE CACHE TOO (CR 410.5b, 410.5c; Bena 2026-08-22)",
+   "note": "history"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#9e60cebbbf#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#64af67b6c0#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#a3e5288616#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#5c10535837#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#5db9641c63#0": {
+   "action": "reword",
+   "nums": [
+    "410.5a"
+   ],
+   "suggest": "The earlier carve-out was reversed, and its trash half reversed again on 2026-09-28 (CR 410.5a)",
+   "note": "history"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#00abd34fb8#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#c31a1dc0c8#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#2754ea738b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#1cc314d2b2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "which is a token and so was trashed under the earlier reading (since reversed: tokens are not trashed)",
+   "note": "stale prose, pre-2026-09-28"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#9680256b8d#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#7355d233cf#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#5114dcdf96#0": {
+   "action": "cite",
+   "nums": [
+    "720.7c"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R69#147034fab0#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/test/393-raq-mods.test.ts##R69#3e49678175#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#5a123d87e6#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#bbfcf62cf2#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#95e2718b9e#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#b4f482bdba#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#0b3e8e7330#0": {
+   "action": "cite",
+   "nums": [
+    "720.7c"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#ec4440df42#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#7cd9217a3b#0": {
+   "action": "reword",
+   "nums": [
+    "410.4c"
+   ],
+   "suggest": "THE ONE PLACE THE RULING AND THE TOKEN-MOD RULE (CR 410.4c) DO NOT MEET",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#b6049b032e#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#3b8b634935#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R69#ccf45da383#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R69#7e9c5689e1#0": {
+   "action": "reword",
+   "nums": [
+    "410.5"
+   ],
+   "suggest": "since tokens were ruled to really enter zones (CR 410.5)",
+   "note": "history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R69#907ed56c7e#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R69#aa4de58033#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R69#366b353bbf#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R69#f986c51bb5#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R69#bf9a62ba91#0": {
+   "action": "drop",
+   "note": "UI: erased-pile view omits tokens (owner 2026-09-28); no Annex D rule — coverage gap"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R69#888113cf0b#0": {
+   "action": "drop",
+   "note": "UI: erased-pile view omits tokens (owner 2026-09-28); no Annex D rule — coverage gap"
+  },
+  "client/engine/test/62-death-facts.test.ts##R69#9d008a6804#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/engine/test/62-death-facts.test.ts##R69#450486cf3d#0": {
+   "action": "reword",
+   "nums": [
+    "410.5b"
+   ],
+   "suggest": "A recalled token reaches the hand (CR 410.5b, 2026-08-22) ... that is the whole point of the rule",
+   "note": "history"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R69#c213e3becc#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R69#426014a20e#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R69#f16b3491ac#0": {
+   "action": "cite",
+   "nums": [
+    "406.4"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R69#67d8d5f907#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R69#af77f3fda9#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R69#b8f97c8dfc#0": {
+   "action": "cite",
+   "nums": [
+    "410.4"
+   ],
+   "note": "'OWNER's bin' is engine divergence F-U07-7 (CR 400.4 says controller)"
+  },
+  "client/engine/test/91-modular.test.ts##R69#0e93f58d1f#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R69#24d163da5d#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R69#a05e887458#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R69#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "410.5c"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R69#7571f6e6b6#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/ledgers/raq.ts##R69#a9d0bde744#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ],
+   "note": "guard strings name test titles; rename in lockstep (the 'R69 + R306' one is 410.5a)"
+  },
+  "client/ui/glossary.ts##R69#076529152b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8"
+   ],
+   "note": "glossary ruling[]"
+  },
+  "client/ui/inspect.ts##R69#9c408117a1#0": {
+   "action": "drop",
+   "note": "UI: erased-pile view omits tokens (owner 2026-09-28); no Annex D rule — coverage gap"
+  },
+  "client/ui/inspect.ts##R69#4b88070279#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/ui/inspect.ts##R69#d9b32b4731#0": {
+   "action": "drop",
+   "note": "UI: erased-pile view omits tokens (owner 2026-09-28); no Annex D rule — coverage gap"
+  },
+  "client/ui/inspect.ts##R69#7e57f689c8#0": {
+   "action": "reword",
+   "nums": [
+    "410.5a"
+   ],
+   "suggest": "and then every dying token was ruled to pass through a bin and be erased by the state-based sweep (CR 410.5a)",
+   "note": "history"
+  },
+  "client/ui/main.ts##R69#bb8d621f81#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/ui/main.ts##R69#95cfaf83d7#0": {
+   "action": "cite",
+   "nums": [
+    "410.5a"
+   ]
+  },
+  "client/ui/main.ts##R69#6eaca6dcae#0": {
+   "action": "drop",
+   "note": "engine registry/declaration (EffectDef.creates), no CR rule"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R69#aa463a3015#0": {
+   "action": "cite",
+   "nums": [
+    "803.8e"
+   ]
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R69#a25cbf8b19#0": {
+   "action": "cite",
+   "nums": [
+    "803.8i",
+    "803.8f"
+   ]
+  },
+  "client/engine/src/apply.ts##R78#bb4d993f8c#0": {
+   "action": "cite",
+   "nums": [
+    "703.6"
+   ]
+  },
+  "client/engine/src/apply.ts##R78#f035aca4a1#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R78#63c1437ab7#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/src/engine.ts##R78#e048534a8a#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/src/engine.ts##R78#3d724e6a56#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R78#a25aa29b56#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R78#adf145be12#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R78#65813afb62#0": {
+   "action": "drop",
+   "note": "log-line wording detail, no rule"
+  },
+  "client/engine/src/engine.ts##R78#5e561d67d2#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/src/engine.ts##R78#9473403853#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R78#2dff3924c8#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/src/types.ts##R78#76e1aaeb73#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/src/types.ts##R78#54e6a1bb5f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an older saved state reads as \"nothing is resolving\"",
+   "note": "history"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R78#4e56748bea#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R78#59539cac2d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R78#5963b6f5a6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R78#aced64755f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R78#601b4ad193#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#c3efd4fb72#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#31c98a9e2f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#e502f56e5e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#b91f32995d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#ba0af1fd35#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#4567d2b669#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#b8684095d4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#118ab1b4a1#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R78#037efeaca9#0": {
+   "action": "drop",
+   "note": "engine marker internals (object identity / replay / cleanup), no rule"
+  },
+  "client/engine/test/fuzz.ts##R78#c62671b174#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/server/e2e/test-concurrency.ts##R78#abb474024f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3a"
+   ]
+  },
+  "client/ui/effectface.ts##R78#8d2fb595fd#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/flash.ts##R78#a11c5696bd#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/flash.ts##R78#44a6ba377f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/flash.ts##R78#8d11ff7489#0": {
+   "action": "drop",
+   "note": "UI layout detail, no rule"
+  },
+  "client/ui/flash.ts##R78#46c3bb933b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "so an older saved state",
+   "note": "history"
+  },
+  "client/ui/flash.ts##R78#033d7a39d3#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/flash.ts##R78#c0ef25624a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/flash.ts##R78#0f7e14d91c#0": {
+   "action": "drop",
+   "note": "UI layout detail, no rule"
+  },
+  "client/ui/inspect.ts##R78#a6ca91ffce#0": {
+   "action": "drop",
+   "note": "client cast-watch heuristic; no Annex D rule"
+  },
+  "client/ui/inspect.ts##R78#689300ec9d#0": {
+   "action": "reword",
+   "nums": [
+    "D6.3"
+   ],
+   "suggest": "close the hole the resolving marker (CR D6.3) left one step earlier",
+   "note": "history"
+  },
+  "client/ui/inspect.ts##R78#5369094798#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/main.ts##R78#c06a90a851#0": {
+   "action": "drop",
+   "note": "client cast-watch heuristic; no Annex D rule"
+  },
+  "client/ui/main.ts##R78#e40da1a608#0": {
+   "action": "drop",
+   "note": "client cast-watch heuristic; no Annex D rule"
+  },
+  "client/ui/main.ts##R78#fb266a88b7#0": {
+   "action": "drop",
+   "note": "client cast-watch heuristic; no Annex D rule"
+  },
+  "client/ui/main.ts##R78#b26e0a5857#0": {
+   "action": "drop",
+   "note": "client cast-watch heuristic; no Annex D rule"
+  },
+  "client/ui/main.ts##R78#6030519665#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/main.ts##R78#fcc1b4c300#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/main.ts##R78#23ab344904#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/main.ts##R78#764640a56e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/main.ts##R78#325a6d2b57#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/main.ts##R78#96e2469da1#0": {
+   "action": "drop",
+   "note": "UI layout detail, no rule"
+  },
+  "client/ui/main.ts##R78#f1bd12ebaa#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/main.ts##R78#c4146d5d7a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/style.css##R78#11c880c754#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/style.css##R78#e0deacb98d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/style.css##R78#c47fe2f267#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/test/364-resolving-keeps-its-targets.test.ts##R78#152aff334d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/test/364-resolving-keeps-its-targets.test.ts##R78#407e7a5777#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/ui/test/56-ui-flash.test.ts##R78#19ca9114b6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ]
+  },
+  "client/ui/test/56-ui-flash.test.ts##R78#46d1082ebc#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the default keeps every older caller honest",
+   "note": "history"
+  },
+  "client/ui/test/56-ui-flash.test.ts##R78#1c514cb73b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "before the resolving state existed the item was off the stack",
+   "note": "history"
+  },
+  "client/ui/test/56-ui-flash.test.ts##R78#177ee53012#0": {
+   "action": "cite",
+   "nums": [
+    "D6.3"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R161#830ceb191c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R161#1e8b278588#0": {
+   "action": "reword",
+   "nums": [
+    "109.9c"
+   ],
+   "suggest": "Under CR 109.9c `xMin` was then removed: X = 0 is a legal activation",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R161#899729351c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R161#dffa9f35e3#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R161#ef03097099#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R161#d3c0e6c0e3#0": {
+   "action": "cite",
+   "nums": [
+    "706.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R161#2cab8b80f2#0": {
+   "action": "cite",
+   "nums": [
+    "706.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R161#a7bcd26d76#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "until the 'targeted' event was widened to carry seat and kind",
+   "note": "engine history"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R161#4e0dafcebc#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R161#83a9a4fbe0#0": {
+   "action": "cite",
+   "nums": [
+    "107.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R161#c20ef27f17#0": {
+   "action": "drop",
+   "note": "engine event payload, no rule"
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R161#4140a2b84f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Six of the owner's 2026-08-25 card answers, made real",
+   "note": "file header naming the implementing ruling"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R161#c631110058#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/test/158-silent-region-branches.test.ts##R161#788aa299a1#0": {
+   "action": "cite",
+   "nums": [
+    "107.8"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R161#23b78a39ec#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ]
+  },
+  "client/engine/test/71-card-ledger.test.ts##R161#0f36a95c68#0": {
+   "action": "drop",
+   "note": "history list of card conversions; rewrite list without ruling ids"
+  },
+  "client/ledgers/card-todo-closed.ts##R161#b2ad78560b#0": {
+   "action": "drop",
+   "note": "closed-ledger history list"
+  },
+  "client/server/scenarios-b.ts##R161#e14bd99a73#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "The owner ruled on it (now CR 110.3a), verbatim:",
+   "note": "history"
+  },
+  "client/ui/test/231-manual-text.test.ts##R161#3234c1da73#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The trailing list of ruling numbers was ui/cardpanel",
+   "note": "quotes old UI text that listed R-numbers"
+  },
+  "client/engine/src/apply.ts##R309#e8164f914d#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/apply.ts##R309#83b9d36656#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/apply.ts##R309#529fb78da2#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/apply.ts##R309#b521cd7927#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/types.ts##R309#46d9004717#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/types.ts##R309#a58975976a#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/types.ts##R309#74b66c7856#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/src/types.ts##R309#65a24a668f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Absent = the older fixed entity-id order",
+   "note": "history"
+  },
+  "client/engine/test/358-burst-order.test.ts##R309#583d698e5b#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/test/358-burst-order.test.ts##R309#fb65d9afb7#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/test/358-burst-order.test.ts##R309#966adae916#0": {
+   "action": "drop",
+   "note": "legacy unordered path kept for replay compatibility, no rule"
+  },
+  "client/engine/test/358-burst-order.test.ts##R309#a4db379a36#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/engine/test/358-burst-order.test.ts##R309#c39d46f62e#0": {
+   "action": "drop",
+   "note": "engine determinism, no rule"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R309#00f85b8366#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d",
+    "D1.2h"
+   ]
+  },
+  "client/server/rooms.ts##R309#00f10a1012#0": {
+   "action": "cite",
+   "nums": [
+    "D4.2"
+   ]
+  },
+  "client/ui/main.ts##R309#00f10a1012#0": {
+   "action": "cite",
+   "nums": [
+    "D4.2"
+   ]
+  },
+  "client/ui/main.ts##R309#082d1e64ce#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/ui/main.ts##R309#5efd662416#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2h"
+   ]
+  },
+  "client/ui/style.css##R309#4ece53ff48#0": {
+   "action": "cite",
+   "nums": [
+    "803.5d"
+   ]
+  },
+  "client/ui/test/358-burst-order-ui.test.ts##R309#520f13e9d4#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2h",
+    "D6.9d"
+   ]
+  },
+  "client/engine/scripts/cr/extract.mjs##R310#0da22a3699#0": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: example string in the CR extractor parser doc"
+  },
+  "client/engine/test/217-reveal-rows.test.ts##R310#030819dc6d#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "the owner's 2026-10-04 ruling (CR D6.2) moved them back to the recap",
+   "note": "history"
+  },
+  "client/engine/test/217-reveal-rows.test.ts##R310#09ffa1dd1b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R310#ca8fe96e7b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/server/main.ts##R310#ed86f657a9#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "Since glimpses are held too (CR D6.2) nothing of the actor's escapes the hold — a glimpse included, once sent out live and now held for the recap",
+   "note": "history"
+  },
+  "client/server/main.ts##R310#9123b3aad1#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "Since glimpses are held too (CR D6.2) nothing of the actor's escapes the hold — a glimpse included, once sent out live and now held for the recap",
+   "note": "history"
+  },
+  "client/server/rooms.ts##R310#bb1813df51#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/server/rooms.ts##R310#3d8fcae3c6#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "CR D6.2 leaves no exemption: it is removed outright",
+   "note": "history"
+  },
+  "client/server/rooms.ts##R310#6caf48aec5#0": {
+   "action": "reword",
+   "nums": [
+    "D6.1a"
+   ],
+   "suggest": "nothing of the other seat's escapes the hold (CR D6.1a)",
+   "note": "history"
+  },
+  "client/server/rooms.ts##R310#6195574391#0": {
+   "action": "cite",
+   "nums": [
+    "D6.1a",
+    "D6.2"
+   ]
+  },
+  "client/server/rooms.ts##R310#6195574391#0~1": {
+   "action": "cite",
+   "nums": [
+    "D6.1a",
+    "D6.2"
+   ]
+  },
+  "client/server/seen.ts##R310#7aa9fd2ccb#0": {
+   "action": "cite",
+   "nums": [
+    "D6.1a"
+   ]
+  },
+  "client/server/seen.ts##R310#2d02eedb4f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.1a"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#9fbe57843e#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "THE ONE PLACE IT WAS HELD, AND HOW THE RULING CHANGED (now CR D6.2)",
+   "note": "history"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#9af8a8e315#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "The owner (2026-10-04, report #192) REVERSED IT (now CR D6.2):",
+   "note": "history"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#24e636f275#0": {
+   "action": "drop",
+   "note": "test infrastructure"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#d5999a724f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#b64001bffa#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "and the 2026-10-04 ruling (CR D6.2) puts it back",
+   "note": "history"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#d318f890ac#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "view.ts exports no exemption from the hidden hold any more (CR D6.2)",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#b339017dc4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#34dfe1527b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Until 2026-10-04 this file was",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#a948e1f93d#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "CR D6.2 leaves no exemption",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#8933079706#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#003459578a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#bbf7e9cf2e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.1a"
+   ]
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#97a1786571#0": {
+   "action": "drop",
+   "note": "test positive control of the seat channel, no rule"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#b34e083fa6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2",
+    "D6.2d"
+   ]
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R310#2591fb2a68#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(the live-reveal exemption was reversed: CR D6.2)",
+   "note": "history"
+  },
+  "client/server/view.ts##R310#8120485dc1#0": {
+   "action": "cite",
+   "nums": [
+    "D6.1b"
+   ]
+  },
+  "client/server/view.ts##R310#1ff16c6ffb#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2",
+    "D6.2c"
+   ],
+   "suggest": "The 2026-10-04 ruling removed it (CR D6.2, D6.2c): a glimpse is not private",
+   "note": "history"
+  },
+  "client/server/view.ts##R310#bc3907ffa1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "History: the old live-reveal exemption (`escapesHold`) lived here too",
+   "note": "history"
+  },
+  "client/server/view.ts##R310#3611d6ccd2#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "rooms.ts's glimpse-hold block (CR D6.2) has the history",
+   "note": "history"
+  },
+  "client/ui/main.ts##R310#d34c74d0ec#0": {
+   "action": "cite",
+   "nums": [
+    "D5.2"
+   ]
+  },
+  "client/ui/main.ts##R310#a9320a16ea#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/ui/replayserver.ts##R310#2f1176c2d4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/ui/reveal.ts##R310#fe0bcba720#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "The owner reversed that on report #192 (now CR D6.2)",
+   "note": "history"
+  },
+  "client/ui/reveal.ts##R310#6cd9088e44#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/ui/reveal.ts##R310#7a1a690978#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2"
+   ]
+  },
+  "client/ui/solo.ts##R310#bfbcadc948#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2d"
+   ]
+  },
+  "client/ui/test/371-glimpse-in-the-recap.test.ts##R310#7a586eed81#0": {
+   "action": "cite",
+   "nums": [
+    "D5.2"
+   ]
+  },
+  "client/ui/test/371-glimpse-in-the-recap.test.ts##R310#a38f5e7bd3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Until 2026-10-04 the playback branch",
+   "note": "history"
+  },
+  "client/ui/test/371-glimpse-in-the-recap.test.ts##R310#9321bb3448#0": {
+   "action": "cite",
+   "nums": [
+    "D5.2"
+   ]
+  }
+ }
+}

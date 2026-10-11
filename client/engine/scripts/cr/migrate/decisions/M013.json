@@ -1,0 +1,2406 @@
+{
+ "unit": "M013",
+ "decisions": {
+  "client/docs/06-roadmap.md##R22#e47e040cda#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the provisional rulings of the time"
+  },
+  "client/engine/src/apply.ts##R22#0e37feff2d#0": {
+   "action": "cite",
+   "nums": [
+    "803.6f"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R22#260d75f4f4#0": {
+   "action": "cite",
+   "nums": [
+    "803.6h"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R22#de9c726283#0": {
+   "action": "cite",
+   "nums": [
+    "803.6h"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R22#b4826c5a95#0": {
+   "action": "cite",
+   "nums": [
+    "803.6h"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R22#02f165d36d#0": {
+   "action": "cite",
+   "nums": [
+    "803.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R22#09f9ba0fbe#0": {
+   "action": "cite",
+   "nums": [
+    "803.6"
+   ],
+   "note": "section-level list entry"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R22#4adaf1dda9#0": {
+   "action": "cite",
+   "nums": [
+    "803.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R22#452bf6c818#0": {
+   "action": "cite",
+   "nums": [
+    "803.6h"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R22#1648249938#0": {
+   "action": "cite",
+   "nums": [
+    "803.6"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R22#cb24b61586#0": {
+   "action": "cite",
+   "nums": [
+    "803.6"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R22#02ef00b210#0": {
+   "action": "cite",
+   "nums": [
+    "803.6a",
+    "107.10a"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R22#1f7b2af181#0": {
+   "action": "cite",
+   "nums": [
+    "803.6e"
+   ]
+  },
+  "client/ui/glossary.ts##R22#63c4b1cde8#0": {
+   "action": "reword",
+   "nums": [
+    "803.6"
+   ],
+   "suggest": "was [CR 803.6, 'Manual']",
+   "note": "glossary basis history"
+  },
+  "client/ui/glossary.ts##R22#8f7cc835e4#0": {
+   "action": "cite",
+   "nums": [
+    "803.6"
+   ],
+   "note": "glossary row basis field"
+  },
+  "client/docs/16-divergence-inventory.md##R110#6b67b28ee3#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ],
+   "note": "analogy: the multiplied-cost rule applied one scope up (111.6a is the scoped-up rule)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R110#2f03924c56#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "register-parser grammar example in extract.mjs; goes with register deletion"
+  },
+  "client/engine/scripts/cr/extract.mjs##R110#0da22a3699#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "register-parser grammar example in extract.mjs; goes with register deletion"
+  },
+  "client/engine/src/cards/dsl.ts##R110#ce561a0f27#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R110#c7f0164cdd#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R110#516f93fc44#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R110#6a1c76daa6#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R110#5ed499c4f5#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R110#4315671075#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R110#6a1c76daa6#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#127820ace5#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#757e3bcd07#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#e2b0b16d19#0": {
+   "action": "cite",
+   "nums": [
+    "722.7d"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#6bf2da56ab#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#a17c00d54a#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#7a968007e6#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R110#dc22358338#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ],
+   "note": "analogy one scope up; 111.6a is the compound-cost rule itself"
+  },
+  "client/engine/src/engine.ts##R110#880fbe6743#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ],
+   "note": "analogy one scope up; 111.6a states compound all-or-nothing"
+  },
+  "client/engine/src/engine.ts##R110#5703d8e834#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R110#a8ba354e13#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R110#7767fc2a7c#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ],
+   "note": "analogy one scope up"
+  },
+  "client/engine/test/17-earth-b.test.ts##R110#df4bfe51b1#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R110#d94fc5edbf#0": {
+   "action": "cite",
+   "nums": [
+    "722.7b"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R110#b282814d0d#0": {
+   "action": "cite",
+   "nums": [
+    "111.14"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R110#91911afaa5#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R110#b6bfbfb6af#0": {
+   "action": "cite",
+   "nums": [
+    "722.7c"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R110#b02726ed61#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "graft riding an end-of-turn cause; not the multiplier rule"
+  },
+  "client/engine/test/99-endofturn.test.ts##R110#04edf8f152#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "graft riding an end-of-turn cause; not the multiplier rule"
+  },
+  "client/ledgers/card-ledger.ts##R110#f2fb673aa2#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R110#779ca2f622#0": {
+   "action": "cite",
+   "nums": [
+    "109.9j"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R110#779ca2f622#0~1": {
+   "action": "cite",
+   "nums": [
+    "109.9j"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R110#e0d8197c18#0": {
+   "action": "reword",
+   "nums": [
+    "722.7d"
+   ],
+   "suggest": "narrows the earlier multiplied-cost reading",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R110#c60495b54b#0": {
+   "action": "cite",
+   "nums": [
+    "722.7c"
+   ]
+  },
+  "client/ui/glossary.ts##R110#ac6879dfc6#0": {
+   "action": "cite",
+   "nums": [
+    "109.9j"
+   ]
+  },
+  "client/ui/glossary.ts##R110#e5416322df#0": {
+   "action": "reword",
+   "nums": [
+    "111.15"
+   ],
+   "suggest": "Cites the mandatory-graft-cost rule in place of the multiplier rule, which it narrows",
+   "note": "glossary basis history"
+  },
+  "client/ui/glossary.ts##R110#756d8a9cb7#0": {
+   "action": "cite",
+   "nums": [
+    "722.7"
+   ]
+  },
+  "client/engine/src/apply.ts##R121#d739630f7d#0": {
+   "action": "cite",
+   "nums": [
+    "111.6",
+    "111.10f"
+   ]
+  },
+  "client/engine/src/apply.ts##R121#cf86894cf0#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/apply.ts##R121#22a2bd795a#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R121#63f2a60d31#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R121#213dc19598#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R121#5b77214689#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R121#467571c8dc#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "Every CostMod written before ability taxes existed"
+  },
+  "client/engine/src/cards/dsl.ts##R121#7673797e83#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R121#05b0297157#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f",
+    "111.10g"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R121#c1b863946f#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R121#a2e84dde13#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R121#78cfe568a0#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#3272e21f26#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "logging detail; no CR rule"
+  },
+  "client/engine/src/engine.ts##R121#d44ad24540#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#70d936bd9f#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#7b1bf7c2c8#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#86361176c5#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#ad33f815d2#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#1f77ff0adc#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f",
+    "111.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#1980097f5b#0": {
+   "action": "cite",
+   "nums": [
+    "505.1b"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#9b1c4c9f4d#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#0cc7fdb389#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#02636a88fd#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#198e7af604#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#4adba1c5d2#0": {
+   "action": "cite",
+   "nums": [
+    "111.10h"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#3f28296a2d#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#5d42f99862#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/engine.ts##R121#90c891883e#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/src/types.ts##R121#0b284a14c5#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g",
+    "111.10h"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R121#1054097fb7#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R121#ef246c3d8c#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#4d159b8531#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f",
+    "111.10g"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#84adb9d3e8#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f",
+    "111.10g"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#00d9fdeeb0#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f",
+    "111.6"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#9bb95b40d8#0": {
+   "action": "cite",
+   "nums": [
+    "505.1b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#4db09828e1#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#2d7a117fc9#0": {
+   "action": "cite",
+   "nums": [
+    "720.4a"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#6f735fdc09#0": {
+   "action": "cite",
+   "nums": [
+    "707.9"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R121#d8169205df#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R121#7164986d33#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R121#5b71a21835#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R121#8ebefe63ea#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ],
+   "note": "paired with the widening ruling (608.9d)"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R121#1b883d863d#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R121#dd8940c634#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ],
+   "note": "paired with the widening ruling (608.9d)"
+  },
+  "client/engine/test/25-wood-c.test.ts##R121#dedb396449#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R121#346805c9ae#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ],
+   "note": "paired with the widening ruling (608.9d)"
+  },
+  "client/engine/test/25-wood-c.test.ts##R121#c2d31435de#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R121#fd7296bb0d#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R121#9ebfbe48f5#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R121#a18c98bafd#0": {
+   "action": "cite",
+   "nums": [
+    "505.1b"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R121#22d7f29712#0": {
+   "action": "cite",
+   "nums": [
+    "505.1b"
+   ]
+  },
+  "client/engine/test/util.ts##R121#56977bc9b9#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/ledgers/card-ledger.ts##R121#8e4db881fc#0": {
+   "action": "reword",
+   "nums": [
+    "111.10f",
+    "111.10g"
+   ],
+   "suggest": "when the ability tax and the pay-to-trigger gate were built",
+   "note": "card-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R121#81e36cc3f2#0": {
+   "action": "cite",
+   "nums": [
+    "111.10f",
+    "111.10g"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#3585e72404#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#e39b66e2ad#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#bee38b7e13#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#4fe48b85f4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#69a89e85b0#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#d51ca74e4b#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R121#050339a1f1#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ],
+   "note": "quotes test 239's title; keep in step with it"
+  },
+  "client/ledgers/card-todo-closed.ts##R121#5de831bad2#0": {
+   "action": "cite",
+   "nums": [
+    "802.19h"
+   ],
+   "note": "fix note: check Resonant against the trigger tax"
+  },
+  "client/ledgers/card-todo-closed.ts##R121#2ccc5b01b7#0": {
+   "action": "cite",
+   "nums": [
+    "111.10g"
+   ]
+  },
+  "client/docs/03-mechanics-inventory.md##R137#b48c93f24c#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/docs/03-mechanics-inventory.md##R137#74c34f6fda#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/docs/questions-round31.md##R137#f92009d329#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the way earlier owner divergences were recorded"
+  },
+  "client/docs/questions-round31.md##R137#0aca9aa2a2#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "recorded like the earlier owner divergences, which also overruled Caleb on purpose"
+  },
+  "client/docs/questions-round32.md##R137#303a2f3190#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "recorded like the earlier owner divergences, which also overruled Caleb on purpose"
+  },
+  "client/engine/src/cards/dsl.ts##R137#b8bd80f627#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R137#b7be011b95#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R137#1a72f8ea52#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#2f430211fe#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#82298c7668#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#d423f03d39#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#32335ae3b7#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#a2edd2ec26#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#b4e211a8c5#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#08ff6469f0#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R137#4b66bd7714#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R137#862c6e4578#0": {
+   "action": "cite",
+   "nums": [
+    "803.8m"
+   ],
+   "note": "keepBinned implements an effect's own bin overriding Unstable"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R137#49f511528b#0": {
+   "action": "cite",
+   "nums": [
+    "803.8m"
+   ]
+  },
+  "client/engine/src/engine.ts##R137#d1e6759c09#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#e15cbf566b#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#68347fc672#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#e5d155ca67#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "design principle (same object, same treatment); no CR rule"
+  },
+  "client/engine/src/engine.ts##R137#de961c4056#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "design principle; no CR rule"
+  },
+  "client/engine/src/engine.ts##R137#86968093b0#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#98dae05f5b#0": {
+   "action": "cite",
+   "nums": [
+    "410.7"
+   ],
+   "note": "death announced before any trash"
+  },
+  "client/engine/src/engine.ts##R137#19525abfc6#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "mods to OWNERS' bins; CR 410.4a says host controller's bin \u2014 possible conflict"
+  },
+  "client/engine/src/engine.ts##R137#5e9284e74a#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#6760a59f31#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the half that overrules the earlier reading that the mods ride with it",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R137#d57bd28427#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#53de66d245#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#ff6b4b21a7#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#d0e33e0b4d#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#9740aa56c4#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#293c582a31#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#d20916baec#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#d2e25cf9f7#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "overruled the earlier reading that the mods ride with it",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R137#25aaa39902#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the earlier counter-argument",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R137#da69b18ab7#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "Before the trash-through-the-bin change"
+  },
+  "client/engine/src/engine.ts##R137#c479e7e677#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/engine.ts##R137#cee4f31002#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/src/types.ts##R137#391f9cb458#0": {
+   "action": "cite",
+   "nums": [
+    "803.8i"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R137#bfa82f3b2b#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#0357c4c85c#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#4a2d4f591a#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#e0ad2a05ef#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the owner overruled the earlier mods reading",
+   "note": "history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#be70df28a6#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "(this was 1 under the earlier reading)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#eb9895e75b#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#e6a58c5455#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#37cb1068e7#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the half that overruled the earlier mods reading",
+   "note": "history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#3e39cea573#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-history principle; no CR rule"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#147ccd2f6d#0": {
+   "action": "cite",
+   "nums": [
+    "410.4d"
+   ],
+   "note": "death and exchange of a modded host end the same for its mod"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#4a5f930349#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "design principle; no CR rule"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#f3b1a1b4e1#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "design principle; no CR rule"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#a224c5e9fc#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "mod to its own owner's bin; CR 410.4a says host controller's bin \u2014 possible conflict"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#b58765bd95#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#4d9512a321#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#3980da5a86#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "(this was 1 under the earlier reading)"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#5c917e1749#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#6f78ae6501#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#441da7a778#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#6d520ba9ad#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#312969f831#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#fb2d13d7e5#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#b3d8eb60e9#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#ef0ecdf034#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#1a9e9209f1#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#e606c8fa5a#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#9ff8f557e7#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#df0cafedd0#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/26-metal-a.test.ts##R137#05625ca1e1#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R137#f4fa6aa4f6#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#94e4c50408#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#3d1692fbcb#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#56a96dd9fc#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#8598a21d94#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#a13b97bf11#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#b8173e87d7#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R137#1536309858#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R137#6354fe116e#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#0f0a1477a2#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#46d0473e35#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#ccaa357c47#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#50f1f811f8#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#3020f6a9f4#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#011530be9c#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#a9dbb57c83#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#e9908ebe88#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#c39a50b45f#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#056a5054da#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#234aaccc03#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#2976b30803#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#7d78fc5c2b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "argument by analogy; exchange of a modded host is 410.4d (erased)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#5011811f6e#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#5267dd4ada#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#e0a6784fd2#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#9c21ac9b28#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#207edaa3d2#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#22c608df8d#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#e4d296f532#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#8308ee4fcf#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#c36f0ab892#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#6050c7fbb3#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#bfc9a782ca#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#025fe3c4e1#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#3b9a077606#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#83996cc8d8#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/62-death-facts.test.ts##R137#d88c067a75#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/62-death-facts.test.ts##R137#00001566e9#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/62-death-facts.test.ts##R137#6514572741#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R137#08c45f563c#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#af77f3fda9#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#4772c32819#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#b8f97c8dfc#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#a05e887458#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#8d7cc4a16c#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#82eb2eba37#0": {
+   "action": "cite",
+   "nums": [
+    "410.4d"
+   ],
+   "note": "same mod outcome for death and exchange"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#5d574035ad#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#f4cbe9fdc7#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#5f98f48645#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the earlier ruling is amended rather than left alone: its mods section is overruled",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#b1adc98542#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the earlier ruling is amended rather than left alone: its mods section is overruled",
+   "note": "history"
+  },
+  "client/ledgers/card-todo.ts##R137#1281f945e3#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The engine, by an owner ruling of 2026-08-24 still in force,",
+   "note": "open CT-246 ticket text; CR 801.2h is the printed reading"
+  },
+  "client/ledgers/card-todo.ts##R137#1281f945e3#1": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "outrank the engine's trash-through-the-bin reading",
+   "note": "open CT-246 ticket text"
+  },
+  "client/ledgers/card-todo.ts##R137#680a568a9e#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#aed3d56c5b#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the owner's trash-through-the-bin ruling reverses the old behaviour"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#e8f0fad8dc#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "under the trash-through-the-bin change"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#4fcceacfbd#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "after the trash-through-the-bin change"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#f9d17511d4#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the trash-through-the-bin ruling"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#ac29a1c791#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the trash-through-the-bin ruling"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#c5038c24f9#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the earlier ruling is not left wholly untouched: its mods section is overruled",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#7f43ebe4bd#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "the earlier ruling is not left wholly untouched: its mods section is overruled",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#f1bf96a48f#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the earlier ruling is amended in place with a pointer"
+  },
+  "client/ui/glossary.ts##R137#ffde6036d3#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ui/glossary.ts##R137#076529152b#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/ui/glossary.ts##R137#479e91dbdf#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CT-246 conflict: relies on Unstable death binned+trashed; CR 801.2h/405.5 say erased instead, not trashed"
+  },
+  "client/docs/16-divergence-inventory.md##R160#7603729478#0": {
+   "action": "cite",
+   "nums": [
+    "410.3"
+   ]
+  },
+  "client/docs/questions-round32.md##R250#12fee6a56a#0": {
+   "action": "reword",
+   "nums": [
+    "405.3"
+   ],
+   "suggest": "Yesterday's bin ruling (CR 405.3) is yours, and it is about BINS",
+   "note": "history; test-fixture doc"
+  },
+  "client/docs/questions-round32.md##R250#75cbbd747e#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "written down in that ruling rather than swept"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R250#29867e771b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "Cosmic Reversal board sweep is a card-text reading; no CR rule states it"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R250#6ac4a9c857#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "This half did not exist until the owner's 2026-08-29 ruling"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R250#cb1c07a17b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no castability restriction: card-text reading, no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R250#3487f58658#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "Cosmic Reversal board half: card-text reading, no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R250#ab3f1018aa#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#fd9fb0f4a4#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a",
+    "801.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#ae619fae62#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#4f9d8fb372#0": {
+   "action": "cite",
+   "nums": [
+    "400.4",
+    "410.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#4e336e635b#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a",
+    "801.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#e22b36b247#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "Zones following control (CR 400.4) supersedes that half of the earlier mod ruling",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R250#fd0aeaf770#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#999c892cfa#0": {
+   "action": "cite",
+   "nums": [
+    "405.3",
+    "801.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#f8f430afb2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "points at ruling rationale; stale now that mods follow host controller (410.4a)"
+  },
+  "client/engine/src/engine.ts##R250#a71c6ac95d#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#59f84175be#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#59f84175be#1": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#0c473c00a6#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R250#13e868d368#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "rationale (shared-pool format), not a rule"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R250#b73f87cf48#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R250#7bdbc22c1e#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R250#a69a7fbf06#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R250#ea770a2b78#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#8a95ffa907#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the owner ruled it"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#0b3a4665fc#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#320a966262#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#ec04b46412#0": {
+   "action": "reword",
+   "nums": [
+    "410.4a"
+   ],
+   "suggest": "zones following control reversed the earlier destination half",
+   "note": "history"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#a2a43238a3#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#97bfc8c4ad#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#c0544e4d0e#0": {
+   "action": "cite",
+   "nums": [
+    "801.2e"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#6e25962064#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "REPLACES THE EARLIER HAZARD WITH THE ZONES-FOLLOW-CONTROL ONE",
+   "note": "history"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#7825f66573#0": {
+   "action": "cite",
+   "nums": [
+    "801.2e"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#9504369291#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the owner's ruling"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#be45e4a031#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the owner's ruling"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#54d148687a#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ],
+   "note": "file header; board half is a card reading"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#09bc3e6cd2#0": {
+   "action": "reword",
+   "nums": [
+    "706.3a"
+   ],
+   "suggest": "an earlier reading concluded",
+   "note": "its combat/deployment halves since amended"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#fee01a94c8#0": {
+   "action": "cite",
+   "nums": [
+    "801.2e"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#c732a1d62c#0": {
+   "action": "reword",
+   "nums": [
+    "405.3"
+   ],
+   "suggest": "WHAT THE BIN RULING DOES NOT DECIDE",
+   "note": "stale: all four destinations now follow control (400.4)"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#80d244a248#0": {
+   "action": "cite",
+   "nums": [
+    "801.7a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#d3ca058986#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "Before the owner's 2026-08-29 ruling"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#14d2274826#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "Cosmic Reversal card reading; no CR rule"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#eefc35c38d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "Cosmic Reversal card reading; no CR rule"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#3b0a85b24c#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "Cosmic Reversal card reading; no CR rule"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#2fbbbb9ea5#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#74959b5fbb#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "a reader who knows only the Cosmic Reversal ruling"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#dfdd7928e5#0": {
+   "action": "cite",
+   "nums": [
+    "801.7a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#b0b078af7b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "log wording; no CR rule"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#ab5b647f19#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no castability restriction; card reading"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#a5494921ed#0": {
+   "action": "cite",
+   "nums": [
+    "706.3a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#789ed11580#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the earlier trigger reading"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#b0046b530e#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "the earlier reading took the no-priority rule one step too far",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#4b12b838a1#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "the earlier reading was re-read",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#020913a74f#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "the half the earlier reading got wrong",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#7ee0cf261e#0": {
+   "action": "cite",
+   "nums": [
+    "801.2e"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#92c938908c#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#fc1db0c7bf#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#160b84ae6a#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#33f6827be1#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#c5c1ac5238#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#07413063a7#0": {
+   "action": "cite",
+   "nums": [
+    "801.2e"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#863ee50f81#0": {
+   "action": "cite",
+   "nums": [
+    "801.2e"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#43258247b7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine consistency read; no CR rule"
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R250#f756d193ef#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ]
+  },
+  "client/engine/test/83-card-todo.test.ts##R250#df5fab1ed9#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "under the owner's Cosmic Reversal ruling"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R250#eb75f5df1b#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "reversed when zones began to follow control",
+   "note": "history"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R250#64f201dfc6#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/93-engine-defects.test.ts##R250#83c520edc2#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ]
+  },
+  "client/engine/test/93-engine-defects.test.ts##R250#e8d5f9352e#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "zones following control reversed the last assertion here",
+   "note": "history"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R250#1031468e2b#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R250#d6bc2d0803#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "under the owner's 2026-08-29 ruling"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#339fd1718d#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "RULED AND FIXED 2026-08-29."
+  },
+  "client/ledgers/card-todo-closed.ts##R250#6980c9a361#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the round-31 bin rulings"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#ef3d796c03#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "the zones-follow-control question"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#5d343f57ef#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "under the owner's Cosmic Reversal ruling"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#652f8abf2f#0": {
+   "action": "reword",
+   "nums": [
+    "405.3"
+   ],
+   "suggest": "The bin ruling (CR 405.3) sent a trashed stolen card to the CONTROLLER bin and deliberately left",
+   "note": "history; all four later followed control"
+  },
+  "client/ledgers/card-todo.ts##R250#12c43c98be#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine's single battle stack is a divergence (F-U01-2), not a CR rule"
+  },
+  "client/ledgers/card-todo.ts##R250#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "405.3"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R250#c89a150679#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "fixed under the owner's 2026-08-29 ruling"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R250#71e666c371#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "RULED AND FIXED 2026-08-29."
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R250#58126af867#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "round-31 bin work"
+  },
+  "client/docs/questions-round32.md##R262#aba279064c#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "Recorded 2026-08-30 as a ruling, now CR 400.4.",
+   "note": "history; test-fixture doc"
+  },
+  "client/engine/src/engine.ts##R262#1d07e19d1d#0": {
+   "action": "cite",
+   "nums": [
+    "801.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R262#9da6b5ccad#0": {
+   "action": "cite",
+   "nums": [
+    "801.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R262#16a454ef2c#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a",
+    "400.4c"
+   ]
+  },
+  "client/engine/src/engine.ts##R262#4b91e40508#0": {
+   "action": "cite",
+   "nums": [
+    "720.9"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R262#2d005ad99b#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "zones following control changed the default",
+   "note": "history"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R262#29283d3a2f#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R262#4fb07a7fb5#0": {
+   "action": "cite",
+   "nums": [
+    "801.8"
+   ]
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R262#e1816e48aa#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#afc5df037c#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#c0cd2dbc6b#0": {
+   "action": "cite",
+   "nums": [
+    "400.4c"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#72611b4911#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "before zones followed control"
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#eb76d6b93d#0": {
+   "action": "cite",
+   "nums": [
+    "801.7a"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#1bcbb2f8b9#0": {
+   "action": "reword",
+   "nums": [
+    "801.7a"
+   ],
+   "suggest": "this is the line CR 801.7a changed, overruling the Manual's sentence",
+   "note": "history"
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#f984477580#0": {
+   "action": "cite",
+   "nums": [
+    "400.4b"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#a83c5dc1a4#0": {
+   "action": "cite",
+   "nums": [
+    "400.4",
+    "400.4b"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#4d974db582#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#7e5447d768#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ]
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#01cc8f3a2d#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R262#85333ec0ec#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "FIXED 2026-08-30."
+  },
+  "client/ledgers/card-todo.ts##R262#624b72c5d5#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R262#33ca566b45#0": {
+   "action": "cite",
+   "nums": [
+    "801.7a"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R262#ace4804bb8#0": {
+   "action": "cite",
+   "nums": [
+    "720.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R278#c99a77b472#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/src/engine.ts##R278#76d86c9513#0": {
+   "action": "cite",
+   "nums": [
+    "713.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R278#589f15517a#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/src/engine.ts##R278#cabd8345d8#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R278#f3d0264438#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R278#1313798219#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R278#5ba7b76d97#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R278#3b440a75b7#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R278#eaea236ef4#0": {
+   "action": "cite",
+   "nums": [
+    "706.8c"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R278#e3e8085827#0": {
+   "action": "reword",
+   "nums": [
+    "706.8c"
+   ],
+   "suggest": "closed: 'RULED (CR 706.8c), AND MY FRAMING OF THE CLASS WAS WRONG.",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R278#50d0fd51e0#0": {
+   "action": "reword",
+   "nums": [
+    "706.8c"
+   ],
+   "suggest": "Routed to agent B as a ruling (now CR 706.8c).",
+   "note": "closed-ledger history"
+  },
+  "client/engine/scripts/cr/extract.mjs##R319#1d8dc57e51#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "register-parser grammar example in extract.mjs; goes with register deletion"
+  },
+  "client/engine/scripts/cr/extract.mjs##R319#a34f3d7856#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "register-parser grammar example in extract.mjs; goes with register deletion"
+  },
+  "client/engine/src/cards/dsl.ts##R319#3b714fabff#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#06c5a70852#0": {
+   "action": "reword",
+   "nums": [
+    "802.16c"
+   ],
+   "suggest": "The combat rule (CR 802.16c) had already made the combat strike elective",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R319#33af8e076b#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#59887f9e2c#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#b6ecfc9956#0": {
+   "action": "cite",
+   "nums": [
+    "802.16b"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#6c8d3ea5f5#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#9bcfce606a#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#281e84a48a#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/src/engine.ts##R319#2582b2d26e#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/02-combat.test.ts##R319#07ab3be633#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R319#6dc41cdb83#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/07-cards.test.ts##R319#2cf5a1cd37#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R319#fede430f0d#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/09-attrs.test.ts##R319#fede430f0d#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/09-attrs.test.ts##R319#bc58ba35a1#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/10-water-metal.test.ts##R319#7127a5fe45#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/100-elective-assign.test.ts##R319#601c6b592a#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/100-elective-assign.test.ts##R319#43b6be0714#0": {
+   "action": "reword",
+   "nums": [
+    "802.16c"
+   ],
+   "suggest": "The RAQ reversed that (CR 802.16c)",
+   "note": "history"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R319#ad729e9f87#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/100-elective-assign.test.ts##R319#701013720c#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R319#7127a5fe45#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R319#793be1e92e#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R319#b8c43c316d#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/299-formless-column.test.ts##R319#b8c43c316d#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/387-raq-combat.test.ts##R319#77c1c2f04f#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/387-raq-combat.test.ts##R319#29603229e4#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/387-raq-combat.test.ts##R319#a0129714de#0": {
+   "action": "cite",
+   "nums": [
+    "802.16g"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R319#25ee839503#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ],
+   "note": "list entry in test header"
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R319#35e0f8b639#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R319#5e2061d286#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R319#befab7be2d#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R319#9acffe9e3b#0": {
+   "action": "cite",
+   "nums": [
+    "802.16b"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R319#839f1b9a0b#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ],
+   "note": "no excess, so nothing to elect"
+  },
+  "client/engine/test/405-raq-noncombat-piercing.test.ts##R319#157613b5ce#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R319#7127a5fe45#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R319#7127a5fe45#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R319#696eb3354e#0": {
+   "action": "reword",
+   "nums": [
+    "802.16c"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), now CR 802.16c,",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/raq.ts##R319#62b75f7053#0": {
+   "action": "reword",
+   "nums": [
+    "802.16c"
+   ],
+   "suggest": "fixed 2026-10-09 (CR 802.16c).",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R319#62b75f7053#0~1": {
+   "action": "reword",
+   "nums": [
+    "802.16c"
+   ],
+   "suggest": "fixed 2026-10-09 (CR 802.16c).",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R319#fa30ed344a#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/ui/inspect.ts##R319#9e2ff6d622#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  },
+  "client/ui/main.ts##R319#720bd986b8#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ]
+  }
+ }
+}

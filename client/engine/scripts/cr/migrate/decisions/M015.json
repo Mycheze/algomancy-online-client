@@ -1,0 +1,2511 @@
+{
+ "unit": "M015",
+ "decisions": {
+  "client/docs/06-roadmap.md##R18#698c5331ba#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/docs/06-roadmap.md##R18#e47e040cda#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process: owner to confirm provisional rulings"
+  },
+  "client/engine/src/apply.ts##R18#01fe8b0ea1#0": {
+   "action": "cite",
+   "nums": [
+    "504.2",
+    "504.3"
+   ]
+  },
+  "client/engine/src/apply.ts##R18#8157667243#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ]
+  },
+  "client/engine/src/apply.ts##R18#f4a4770e03#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/src/apply.ts##R18#58bc490b9d#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/src/apply.ts##R18#ea5f7480bf#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/src/apply.ts##R18#31678a0028#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ]
+  },
+  "client/engine/src/apply.ts##R18#24e7923784#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R18#73f4c89bf8#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R18#085374492d#0": {
+   "action": "cite",
+   "nums": [
+    "803.2a"
+   ],
+   "note": "Courier mana step = haste step"
+  },
+  "client/engine/src/cards/dsl.ts##R18#9a32376482#0": {
+   "action": "cite",
+   "nums": [
+    "504.7a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R18#f25b6c0fd0#0": {
+   "action": "cite",
+   "nums": [
+    "504.7"
+   ]
+  },
+  "client/engine/src/cards/registry.ts##R18#76e0ea8c46#0": {
+   "action": "cite",
+   "nums": [
+    "803.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R18#84fbdb2d95#0": {
+   "action": "cite",
+   "nums": [
+    "504.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R18#c5b0052ab4#0": {
+   "action": "cite",
+   "nums": [
+    "803.2a"
+   ],
+   "note": "Courier mana step = haste step"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R18#2f65d5b05b#0": {
+   "action": "cite",
+   "nums": [
+    "803.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R18#f433c6febe#0": {
+   "action": "cite",
+   "nums": [
+    "803.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R18#8157667243#0": {
+   "action": "cite",
+   "nums": [
+    "504.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R18#b55428c927#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "the earlier optimisation, since reversed",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R18#35c883bc21#0": {
+   "action": "reword",
+   "nums": [
+    "504.6"
+   ],
+   "suggest": "It fires even in a turn when nobody had a card for the step",
+   "note": "history"
+  },
+  "client/engine/test/08-cards2.test.ts##R18#0cc3543a4b#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R18#72cffa6534#0": {
+   "action": "cite",
+   "nums": [
+    "504.1",
+    "504.2"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R18#55b9108851#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "Was \"skipped outright when nobody has a legal haste play\" (the original model)",
+   "note": "history"
+  },
+  "client/engine/test/12-fire-a.test.ts##R18#b79e5c2339#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R18#84dea2188a#0": {
+   "action": "cite",
+   "nums": [
+    "504.3",
+    "D1.4"
+   ]
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R18#96184e5055#0": {
+   "action": "cite",
+   "nums": [
+    "504.3"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R18#f403bdc2e9#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: the step no longer needs a payable haste card (504.5)"
+  },
+  "client/engine/test/369-cache-is-the-hand.test.ts##R18#03ef9ff97c#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R18#00b5e9d185#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R18#451b933efa#0": {
+   "action": "reword",
+   "nums": [
+    "504.6"
+   ],
+   "suggest": "even in a turn when nobody played anything in the step",
+   "note": "history"
+  },
+  "client/engine/test/util.ts##R18#704c0bd91e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/ledgers/card-todo-closed.ts##R18#779ca2f622#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "closed-ledger history about the register detector (frozen)"
+  },
+  "client/ledgers/card-todo-closed.ts##R18#779ca2f622#0~1": {
+   "action": "drop",
+   "nums": [],
+   "note": "closed-ledger history about the register detector (frozen)"
+  },
+  "client/ledgers/card-todo.ts##R18#1526283a2a#0": {
+   "action": "cite",
+   "nums": [
+    "500.2a",
+    "D1.4"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R18#54d1978732#0": {
+   "action": "cite",
+   "nums": [
+    "803.2a"
+   ],
+   "note": "Courier mana step = haste step"
+  },
+  "client/server/e2e/test-scenario.ts##R18#77b2215805#0": {
+   "action": "cite",
+   "nums": [
+    "803.2"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R18#249229deca#0": {
+   "action": "cite",
+   "nums": [
+    "504.2"
+   ]
+  },
+  "client/server/rooms.ts##R18#45e317d4ae#0": {
+   "action": "cite",
+   "nums": [
+    "504.3"
+   ]
+  },
+  "client/server/scenarios-a.ts##R18#1de2e68239#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-a.ts##R18#e94424421e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-a.ts##R18#d54ed70be6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-a.ts##R18#ddc8ef0e10#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-b.ts##R18#de052ee1fe#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-b.ts##R18#1407ee8197#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-c.ts##R18#e29df960b4#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/server/scenarios-c.ts##R18#3f7f0421d9#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-c.ts##R18#a538aaeec8#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-d.ts##R18#4d04216faa#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-d.ts##R18#0377d4e8b2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#42c7bb5bcc#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#d6d6e0df6a#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#1d74e652c8#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#d0da3da988#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#ecaf6714f7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#3dc67b1f39#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#a863e00078#0": {
+   "action": "cite",
+   "nums": [
+    "504.2"
+   ]
+  },
+  "client/server/scenarios-e.ts##R18#1c54e4e4b2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-e.ts##R18#dd1a29cbcb#0": {
+   "action": "cite",
+   "nums": [
+    "504.2"
+   ]
+  },
+  "client/server/scenarios-e.ts##R18#075749e18a#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios-i.ts##R18#dab8c4fe69#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/scenarios.ts##R18#40436d4a4b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "stale reversed reading: step opens only for a payable haste card; 504.5/504.5a say always"
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R18#7e403e15cc#0": {
+   "action": "reword",
+   "nums": [
+    "504.6"
+   ],
+   "suggest": "used to fire even on the skipped path, back when the step could be skipped",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R18#f028842797#0": {
+   "action": "cite",
+   "nums": [
+    "504"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#f9834f5787#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register retired-detector test data; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#9c54d652b5#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register retired-detector test data; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#31b9a4d779#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register retired-detector test data; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#31b9a4d779#1": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register retired-detector test data; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#dd68b8e635#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register retired-detector test data; goes with register deletion"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R18#98726e31e4#0": {
+   "action": "cite",
+   "nums": [
+    "504.5a"
+   ]
+  },
+  "client/engine/src/apply.ts##R39#4fda2254c2#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/apply.ts##R39#697ecc32e1#0": {
+   "action": "cite",
+   "nums": [
+    "502.4a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R39#68cbd1df5a#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R39#5009330efc#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R39#7ea8a9c64a#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R39#57c42d097a#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R39#de0b9e9301#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R39#8100a1575f#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R39#f502803bf8#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R39#d3042fc4cb#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R39#3a1224728b#0": {
+   "action": "cite",
+   "nums": [
+    "112.14",
+    "112.14b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R39#a6ec147fbb#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R39#e0f0ffe805#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R39#44be5d925e#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R39#68a878b02b#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R39#5768f1bf02#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R39#45e0b2d10a#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/engine.ts##R39#fe3377cd0f#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R39#c1ed03af95#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/engine.ts##R39#4975e4890f#0": {
+   "action": "cite",
+   "nums": [
+    "502.4",
+    "112.14b"
+   ]
+  },
+  "client/engine/src/engine.ts##R39#0bfa346573#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no CR rule says a debt cost is always payable (gap)"
+  },
+  "client/engine/src/types.ts##R39#138e6485ed#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/src/types.ts##R39#aba9438fb0#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#f991609a4d#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ],
+   "note": "rule family 112.14-112.14b"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#a9505ff480#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#9e19b0d1f7#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#12d377ce61#0": {
+   "action": "cite",
+   "nums": [
+    "112.14b"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#e996c6bff0#0": {
+   "action": "cite",
+   "nums": [
+    "112.14b"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#93df9bfb3b#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#0ff2e4dc9f#0": {
+   "action": "cite",
+   "nums": [
+    "502.4a"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#be4d4657e2#0": {
+   "action": "cite",
+   "nums": [
+    "502.4a"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R39#ad5b277b4b#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R39#fa80e96c47#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R39#2605d965ae#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R39#c39e46665a#0": {
+   "action": "cite",
+   "nums": [
+    "112.14c"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R39#54c116b281#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R39#8d5b46aca5#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R39#b1d90ecf77#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R39#95f68d4b23#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R39#0f4b9ad93d#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R39#032eedfdc6#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#1735307b05#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "header says the debt cast cost is wired at resolution; 112.14c says at payment — stale prose"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#03b31ce27c#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "header says the debt cast cost is wired at resolution; 112.14c says at payment — stale prose"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#c930fa7e9c#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#ee307d15ff#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#23764f5125#0": {
+   "action": "cite",
+   "nums": [
+    "112.14c"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#64664f5665#0": {
+   "action": "cite",
+   "nums": [
+    "112.14c"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R39#921d1feb49#0": {
+   "action": "cite",
+   "nums": [
+    "112.14c"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R39#95457a4d5e#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R39#9959bf9ea2#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/server/rooms.ts##R39#d9f648d65b#0": {
+   "action": "cite",
+   "nums": [
+    "502.4"
+   ]
+  },
+  "client/ui/glossary.ts##R39#ea74cae1a1#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/ui/main.ts##R39#f9a2f22774#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ]
+  },
+  "client/ui/style.css##R39#4146bfd511#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/docs/08-light-and-dark.md##R52#ab4ea3c791#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "An earlier ruling put created units in their controller's home region; since reversed (now CR 601.5)",
+   "note": "history"
+  },
+  "client/docs/08-light-and-dark.md##R52#0f3d0ec664#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region reading is WITHDRAWN (a created unit arrives where its SOURCE is, CR 601.5)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R52#ce4b1fde4b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "this withdrew the earlier home-region reading",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R52#2912632eb6#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "(CR 601.5 replaced the earlier home-region reading, which had moved this card to home",
+   "note": "history"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R52#b4f5369c7a#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region reading is withdrawn — they are NOT sent home",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#ecf0810635#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "It withdraws the earlier home-region reading",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#170325ab76#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the earlier ruling confirmed the home default and moved six Light & Dark cards to home",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#f8eaa9719d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that ruling's \"unfinished migration\" list",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#4930dfc65c#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the home-region reading is withdrawn: not one of them went home",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#f1983820da#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region reading",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#c3dd86658f#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the withdrawn home-region reading",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R52#5d907948da#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "two earlier rulings both ruled",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R52#662f74d071#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "both withdrawn",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R52#60b8c3cccd#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register retired-detector test data; goes with register deletion"
+  },
+  "client/docs/09-visual-clarification.md##R57#ba50a7b0cd#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R57#9669b613dc#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R57#0e9aee60a8#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/apply.ts##R57#8829bb425d#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/apply.ts##R57#37b9955344#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R57#17a30c2ac1#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R57#a37dd2eb26#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R57#a613b9eb4d#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R57#1dbc926acd#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R57#4255c69fa1#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R57#a9a36db4ed#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R57#5abc1e561d#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R57#719ec6485e#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R57#c709ad80e2#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R57#b1c2350207#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R57#f1521e03cc#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R57#c1c0ce9bbb#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R57#3ab9191a3c#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R57#02d2466cb1#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R57#2bc4132598#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R57#02d2466cb1#0~1": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R57#38dc29d808#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R57#02d2466cb1#0~2": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R57#4578324998#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R57#d2e30390cd#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R57#09abaf449c#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R57#02d2466cb1#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R57#41fc7ac57f#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R57#85daf757d2#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R57#4d6bc495e4#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R57#ec062cd2bf#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a",
+    "702.3f"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R57#5002bf845e#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R57#9aa55d1b3f#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R57#adf6e2b13f#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R57#502fe04298#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R57#d7ab4d7c7a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3d"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R57#34ac50acaf#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#a3593c20bf#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#cb60752dd1#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a",
+    "702.3f"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#5bdd00846a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#a2d9901b98#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#6eec4ff18b#0": {
+   "action": "cite",
+   "nums": [
+    "705.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#d9c8386d3f#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#7e5632cd95#0": {
+   "action": "cite",
+   "nums": [
+    "705.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#d5aa36ab5d#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#edc0129b61#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R57#12f79e972b#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/types.ts##R57#ac020391da#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/types.ts##R57#8219b13933#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/src/types.ts##R57#282b2cebfd#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/types.ts##R57#6cb2d62a59#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/src/types.ts##R57#41d2065951#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/src/types.ts##R57#f7a45115c3#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R57#e68e67c39c#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R57#ef1cf61683#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/136-triggers-and-modes.test.ts##R57#47b8e58d02#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R57#13d73aacf4#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R57#e430c9e51b#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R57#a3dfaa66c6#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R57#e8d0230a31#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R57#d0441d8ccb#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R57#5ef620a47d#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R57#3510e82ff5#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R57#8997acc12e#0": {
+   "action": "cite",
+   "nums": [
+    "111.7a"
+   ]
+  },
+  "client/engine/test/23-wood-a.test.ts##R57#a18a5f222d#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/23-wood-a.test.ts##R57#f4266e1f4f#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R57#5f7f0f94d0#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R57#74891f8bd0#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R57#32a3896f2f#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R57#fedc8a39f2#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R57#8254c3e3d4#0": {
+   "action": "cite",
+   "nums": [
+    "702.3d"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R57#a4b8e94d39#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R57#227fbe73bc#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R57#33f80528d4#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R57#4724537c10#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R57#3422783050#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R57#37c20d6d06#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R57#db547d2df7#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R57#65118084a5#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R57#48cfc9d87d#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R57#6dd5322d0e#0": {
+   "action": "cite",
+   "nums": [
+    "705.3d"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R57#fdfdfcaecd#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R57#795b1a84c0#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R57#0d50713021#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R57#d039737495#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R57#92496c286b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "miscite: R57 does not cover who gets priority after a trigger is pushed"
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#6264614499#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#4d25ba52ee#0": {
+   "action": "cite",
+   "nums": [
+    "205.3"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#c30894c565#0": {
+   "action": "cite",
+   "nums": [
+    "205.3c"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#be10d3d99a#0": {
+   "action": "cite",
+   "nums": [
+    "205.3"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#e41e0c740c#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#a6cb7a941d#0": {
+   "action": "cite",
+   "nums": [
+    "702.3d"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#452d59f3b3#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#1c74db92f9#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#ddbb98ef3b#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#50d098f308#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#f12c33d8c9#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#b4a6846e17#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#2eb0327913#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R57#d60e794396#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R57#6cf7f058fe#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R57#bfe9e871b9#0": {
+   "action": "cite",
+   "nums": [
+    "710.8a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R57#568e8c1c21#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R57#d2daab7c4e#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/cardtext.ts##R57#3e951693dd#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/inspect.ts##R57#61cbc275f7#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/ui/inspect.ts##R57#97ffa39e9c#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/inspect.ts##R57#9c5f3f0e41#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/main.ts##R57#6aa9871d12#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/main.ts##R57#8931193170#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/main.ts##R57#eb96a47b9c#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/ui/test/225-stack-readout.test.ts##R57#98ad6df617#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/test/295-soul-siphon-x-per-player.test.ts##R57#d74c317495#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/ui/test/354-imposed-cost-says-so.test.ts##R57#f8c1704f0f#0": {
+   "action": "cite",
+   "nums": [
+    "702.3f"
+   ]
+  },
+  "client/ui/test/56-ui-flash.test.ts##R57#e0b0558e0e#0": {
+   "action": "cite",
+   "nums": [
+    "702.3d"
+   ]
+  },
+  "client/ui/anim.ts##R189#0d19fd0be0#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R197#8429edbfff#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "ROUND 27 (2026-08-26) — THREE MORE §2b ROWS CLOSED (one of them by NOT fixing it)",
+   "note": "history"
+  },
+  "client/docs/16-divergence-inventory.md##R197#a4514bdb4b#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R197#20830de9e7#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R197#94c2c0b21e#0": {
+   "action": "cite",
+   "nums": [
+    "900.6"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R197#f3e12356c3#0": {
+   "action": "cite",
+   "nums": [
+    "107.9",
+    "702.2a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R197#1d005473de#0": {
+   "action": "cite",
+   "nums": [
+    "900.6"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R197#141fc6f39a#0": {
+   "action": "reword",
+   "nums": [
+    "405.9"
+   ],
+   "suggest": "That call site was later removed entirely, because",
+   "note": "history"
+  },
+  "client/docs/questions-round27.md##R197#af390054d5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Spell Excavation stopped being a mid-resolution play once it became a grant",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R197#9094150916#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/src/apply.ts##R197#19b7c8acc7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "card reading of \"target spell\" (singular grant spent on play); no CR rule"
+  },
+  "client/engine/src/apply.ts##R197#329b846664#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R197#e8070687fe#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R197#ff172d4152#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R197#eaacbe6d5e#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R197#2950514db1#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R197#3b5ed3864a#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R197#1c8c23b972#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R197#1c0773684a#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R197#d2bc7c9bf4#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R197#6766f687ed#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R197#f318bd998a#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R197#34c41cf886#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "this card used to call `playInline` here, and an earlier fix taught that call",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R197#f6f57b188e#0": {
+   "action": "reword",
+   "nums": [
+    "405.9"
+   ],
+   "suggest": "The call site was then removed altogether",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R197#d0e3940cde#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R197#583c4ec112#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R197#af63a5198c#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R197#cab803b004#0": {
+   "action": "cite",
+   "nums": [
+    "405.9",
+    "506.2d"
+   ]
+  },
+  "client/engine/src/engine.ts##R197#fed08a6202#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "card reading of \"target spell\" (singular grant spent on play); no CR rule"
+  },
+  "client/engine/src/engine.ts##R197#16482775ff#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R197#7b61328b90#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "An audit on 2026-08-26 measured this exact gap and filed it",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R197#99344c67c3#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R197#17fbbdaf40#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R197#5f8e35d199#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/test/101-deploy-seat-matrix.test.ts##R197#af77cc1674#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R197#7066b7bcac#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R197#f06ff7aca2#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R197#db65f4df8b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "TWO FIXES THE SAME DAY, AND THE CLAIM SURVIVED THE MECHANISM",
+   "note": "history"
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R197#7c6090b774#0": {
+   "action": "reword",
+   "nums": [
+    "405.9"
+   ],
+   "suggest": "Hours later a re-read established that",
+   "note": "history"
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R197#6fbe829a69#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R197#475b0ba7b8#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R197#34f1bfa628#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/engine/test/184-ruling-register.test.ts##R197#69b6079a7b#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: register-parser test (R197b sibling); goes with register deletion"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R197#26c92fdac6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "client/engine contract (empty legal list), no CR rule"
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R197#b78451418f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an audit measured the gap on 2026-08-26",
+   "note": "history"
+  },
+  "client/engine/test/40-light-c.test.ts##R197#690b0d41a0#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R197#534e68ff04#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R197#4a447ac1ad#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THE GRANT REWRITE RETIRED THE HAZARD THIS TEST WAS WRITTEN FOR",
+   "note": "history"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R197#bf9d4fc1e5#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/engine/test/drill.ts##R197#36a729e46d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/engine/test/fuzz.ts##R197#7285a532ee#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R197#893816cc2f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "PREDICTION CAP + UNTIL-REGROUP PLAY WINDOW",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R197#1b646fb02d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "TWO SAME-DAY FIXES COLLIDED ON SPELL EXCAVATION",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R197#a264141472#0": {
+   "action": "reword",
+   "nums": [
+    "405.9"
+   ],
+   "suggest": "the later fix removed the call site",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R197#3acb7a0484#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "stopped being a mid-resolution play once it became a GRANT",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R197#5cf7f91d2a#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2a"
+   ],
+   "suggest": "the numeric entry (CR D7.2a) already draws",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R197#e101e31e24#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2a"
+   ],
+   "suggest": "the numeric entry (CR D7.2a) already draws",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo.ts##R197#8bb1e47c51#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/ledgers/unreached.ts##R197#7783bfbf5b#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R197#372468805d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R197#350c060649#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/server/scenarios-c.ts##R197#dcbac80593#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/server/scenarios-c.ts##R197#52d049e596#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/server/scenarios-c.ts##R197#60181f0f51#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/ui/inspect.ts##R197#e1cbd2be51#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#dd44770d18#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#b8d49da7b4#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#375c7e9489#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#f1cc642340#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2a"
+   ],
+   "suggest": "the `NumberDecisionLike` the numeric entry (CR D7.2a) already knows how to draw",
+   "note": "history"
+  },
+  "client/ui/main.ts##R197#88d06eb024#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2a"
+   ],
+   "suggest": "are the numeric entry's (CR D7.2a), unchanged",
+   "note": "history"
+  },
+  "client/ui/main.ts##R197#9689dd7406#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2a"
+   ],
+   "suggest": "are the numeric entry's (CR D7.2a)",
+   "note": "history"
+  },
+  "client/ui/main.ts##R197#c56ba62326#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#f1b5ee201e#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#27dd4b6b7d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#616ce7f4c8#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#5b027e3fe2#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2",
+    "D7.2a"
+   ]
+  },
+  "client/ui/main.ts##R197#4c5803d9b5#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/style.css##R197#7a58a247ea#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R197#befd345257#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THREE ROWS OF THE DIVERGENCE INVENTORY (§2b), ONE CARD EACH",
+   "note": "history"
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R197#9950678b26#0": {
+   "action": "cite",
+   "nums": [
+    "107.9",
+    "D7.2a"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R197#7342a7289d#0": {
+   "action": "cite",
+   "nums": [
+    "107.9"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R197#0053112067#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R197#b98337f080#0": {
+   "action": "cite",
+   "nums": [
+    "506.2d"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R197#348cde39ff#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ]
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R197#0c2a1be3be#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ]
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R197#8eaee3e90d#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2a"
+   ],
+   "suggest": "are the numeric entry's (CR D7.2a)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R225#529181bec6#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ],
+   "note": "its FTUW dead-source example is the reversed half (602.6f)"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R225#8dcd4aa634#0": {
+   "action": "reword",
+   "nums": [
+    "602.6f"
+   ],
+   "suggest": "reverses the earlier dead-source reading",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R225#a1506999f4#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R225#569d9f4bc3#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R225#92348d18aa#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/src/engine.ts##R225#af6a05a1fe#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/src/engine.ts##R225#2aea2ae9d0#0": {
+   "action": "reword",
+   "nums": [
+    "602.6f"
+   ],
+   "suggest": "(reverses the earlier dead-source reading)",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R225#b4165873cb#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/src/engine.ts##R225#06fb2b8bb7#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/src/engine.ts##R225#d99b76da2d#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#fcf2a110c5#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#f52f55611a#0": {
+   "action": "reword",
+   "nums": [
+    "602.6f"
+   ],
+   "suggest": "REVERSES the earlier dead-source reading",
+   "note": "history"
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#d8807a6826#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "These four tests used to assert the earlier \"no token\" reading",
+   "note": "history"
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#abb7d03953#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#8cda04ddee#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#8be66b334e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#09ecdd4454#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#51f41c38ca#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#8645130e05#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#ed0de1d15e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#cffe956d7d#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#c038cd48c5#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/test/268-seen-hand-aid-stays.test.ts##R225#44d78b4f99#0": {
+   "action": "reword",
+   "nums": [
+    "602.6f"
+   ],
+   "suggest": "the earlier dead-source reading was reversed",
+   "note": "history"
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R225#d525d18165#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(the dead-source formation reading among them)",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R225#2d86b3a679#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R225#03d065340f#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R225#edbe6f95ab#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "as the source-formation fix",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R225#0e6c94eb94#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "which an earlier ruling ruled the other way — those claims were marked outdated pending the owner",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R225#3b4662137a#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R225#3ebd72eb78#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "as the source-formation fix",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ui/fslot.ts##R225#bb202826df#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/ui/test/215-formation-click.test.ts##R225#e36b6ee90f#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/ui/test/215-formation-click.test.ts##R225#9d96b5145e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6e"
+   ]
+  },
+  "client/engine/scripts/cr/extract.mjs##R235#0da22a3699#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "NOT-A-CITATION: example string in the CR supersession-extractor grammar comment"
+  },
+  "client/engine/test/204-relocated-work-has-a-home.test.ts##R235#8905e6a831#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process point (relocated work must be checkable); no rule"
+  },
+  "client/engine/test/217-reveal-rows.test.ts##R235#6b63a1e10a#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(rulings of 2026-08-28 made them arrive immediately inside a hidden segment; CR D6.2 moved them back to the recap",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R235#b29cb562c2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Implemented as a per-event hold (since reversed)",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R235#c179960815#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "i.e. before the exemption",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R235#623c1eaa08#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-28 rulings (since reversed) made the reveal public IMMEDIATELY",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R235#a0e311b32b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THE EXEMPTION DID NOT REMOVE IT",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R235#ab48becf3d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The exemption covered the EVENT channel only",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R235#d011b5050e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "and that was implemented",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R235#ca8fe96e7b#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "Not a bug at the time: the owner's 2026-08-28 ruling (since reversed, now CR D6.2) made",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/server/main.ts##R235#11b7c6e9c0#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "which the earlier live-reveal ruling had sent out live and CR D6.2 now holds for the recap",
+   "note": "history"
+  },
+  "client/server/rooms.ts##R235#106964d669#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "The earlier live-reveal ruling is reversed.",
+   "note": "history"
+  },
+  "client/server/rooms.ts##R235#2f44fe06cd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "An earlier ruling then made `glimpsed` a one-entry exemption",
+   "note": "history"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R235#9fbe57843e#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "THE ONE PLACE IT WAS HELD, AND THE RULINGS (now CR D6.2)",
+   "note": "history"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R235#be06eeb0ee#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The owner (2026-08-28) first answered",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#30fd84098a#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "It reverses the earlier live-reveal ruling.",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#0edaa96b2d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the guard on the earlier live-reveal ruling",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#d2d5bcb8cd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the guard on the earlier live-reveal ruling",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#2591fb2a68#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(CR D6.2: a glimpse in a hidden step waits for the reveal)",
+   "note": "history"
+  },
+  "client/server/view.ts##R235#39b448675c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old exemption from the hold for a `glimpsed` reveal",
+   "note": "history"
+  },
+  "client/server/view.ts##R235#bc3907ffa1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The old `escapesHold` lived here too",
+   "note": "history"
+  },
+  "client/ui/main.ts##R235#29c3635e20#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the residual the old live reveal left",
+   "note": "history"
+  },
+  "client/ui/main.ts##R235#594eb2cb88#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the same residual the old live reveal left on the glimpse",
+   "note": "history"
+  },
+  "client/ui/replayserver.ts##R235#2f1176c2d4#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(the old live reveal is reversed)",
+   "note": "history"
+  },
+  "client/ui/reveal.ts##R235#80166a3fcc#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(rulings of 2026-08-28, since reversed, then made them arrive IMMEDIATELY even inside a hidden segment;",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R318#397e5490cb#0": {
+   "action": "cite",
+   "nums": [
+    "801.11a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R318#31b08e8adc#0": {
+   "action": "cite",
+   "nums": [
+    "801.11a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R318#55a6f3d147#0": {
+   "action": "cite",
+   "nums": [
+    "112.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R318#a9462c7af9#0": {
+   "action": "cite",
+   "nums": [
+    "802.16k"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R318#6f9729a4a3#0": {
+   "action": "cite",
+   "nums": [
+    "112.6"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R318#f1549f37f9#0": {
+   "action": "cite",
+   "nums": [
+    "112.6"
+   ]
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R318#79f3ed9b90#0": {
+   "action": "cite",
+   "nums": [
+    "801.11a",
+    "802.10e"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R318#a5a9640be7#0": {
+   "action": "reword",
+   "nums": [
+    "112.6"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), now CR 112.6,",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/card-todo-closed.ts##R318#a5a9640be7#0~1": {
+   "action": "reword",
+   "nums": [
+    "112.6"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), now CR 112.6,",
+   "note": "closed ledger, likely frozen"
+  },
+  "client/ledgers/raq.ts##R318#a349af858d#0": {
+   "action": "reword",
+   "nums": [
+    "802.10e"
+   ],
+   "suggest": "fixed 2026-10-09 (CR 802.10e).",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R318#1d88c25297#0": {
+   "action": "reword",
+   "nums": [
+    "112.6",
+    "802.9c"
+   ],
+   "suggest": "fixed 2026-10-09 (CR 112.6, 802.9c).",
+   "note": "history"
+  }
+ }
+}

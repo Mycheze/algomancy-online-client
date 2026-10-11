@@ -1,0 +1,2634 @@
+{
+ "unit": "M001",
+ "decisions": {
+  "client/engine/src/apply.ts##R64#f8ae636448#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "legality by kind and restriction"
+  },
+  "client/engine/src/apply.ts##R64#32dc109d9c#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "110.9"
+   ],
+   "note": "restriction = legality; redirect same test"
+  },
+  "client/engine/src/apply.ts##R64#0e0dd51c5a#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ],
+   "note": "activation checks"
+  },
+  "client/engine/src/apply.ts##R64#ed7bd32102#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ],
+   "note": "unpayable cost blocks activation"
+  },
+  "client/engine/src/apply.ts##R64#498bb541ab#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ],
+   "note": "no legal target blocks activation"
+  },
+  "client/engine/src/apply.ts##R64#5f0b524948#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ],
+   "note": "abilityUnusable gate"
+  },
+  "client/engine/src/apply.ts##R64#1de18f7889#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ],
+   "note": "abilityUnusable gate"
+  },
+  "client/engine/src/cards/dsl.ts##R64#a5c4c490fb#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ],
+   "note": "bin card identified by name+copy"
+  },
+  "client/engine/src/cards/dsl.ts##R64#cf7d441256#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c"
+   ],
+   "note": "ally/enemy from effect's controller"
+  },
+  "client/engine/src/cards/dsl.ts##R64#1685198f2a#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "\"in your bin\" limits legal targets"
+  },
+  "client/engine/src/cards/dsl.ts##R64#0161739e8f#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ],
+   "note": "variable cost sets X"
+  },
+  "client/engine/src/cards/dsl.ts##R64#e9052a3e0d#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "restriction limits legal targets"
+  },
+  "client/engine/src/cards/dsl.ts##R64#4e7648b2f2#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "per-slot restriction"
+  },
+  "client/engine/src/cards/dsl.ts##R64#26219f040d#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c"
+   ],
+   "note": "ally measured from effect controller"
+  },
+  "client/engine/src/cards/dsl.ts##R64#968104d70a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a"
+   ],
+   "note": "X fixed at step 1 before targets"
+  },
+  "client/engine/src/cards/dsl.ts##R64#8b14df646a#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "clause on later target limits legality"
+  },
+  "client/engine/src/cards/dsl.ts##R64#d9aea46960#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R64#c36fb742ba#0": {
+   "action": "drop",
+   "note": "engine type guard"
+  },
+  "client/engine/src/cards/dsl.ts##R64#9062b48556#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R64#05522acfad#0": {
+   "action": "reword",
+   "suggest": "It described the \"with cost N or less\" targeting reading and the X rule as though this were the code that implemented them.",
+   "note": "about a stale doc comment"
+  },
+  "client/engine/src/cards/dsl.ts##R64#2b846f36f1#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ],
+   "note": "BinRef identity"
+  },
+  "client/engine/src/cards/dsl.ts##R64#6e1aa49a89#0": {
+   "action": "cite",
+   "nums": [
+    "110.4d"
+   ],
+   "note": "\"another\" excludes source"
+  },
+  "client/engine/src/cards/dsl.ts##R64#ad4ef8fbcd#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R64#9cf9790b66#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "slot restriction lookup"
+  },
+  "client/engine/src/cards/dsl.ts##R64#2b31a8718e#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R64#b69c546569#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ],
+   "note": "fixed vs variable cost"
+  },
+  "client/engine/src/cards/dsl.ts##R64#27c65001c9#0": {
+   "action": "drop",
+   "note": "engine floor field; no rule states a floor"
+  },
+  "client/engine/src/cards/dsl.ts##R64#5f5ce9bb32#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R64#6b0900e68f#0": {
+   "action": "cite",
+   "nums": [
+    "110.12"
+   ],
+   "note": "must be targeted if able"
+  },
+  "client/engine/src/cards/dsl.ts##R64#286c9d9392#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/registry.ts##R64#697264ea03#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "restriction narrows target"
+  },
+  "client/engine/src/cards/registry.ts##R64#fff7e69b4d#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/registry.ts##R64#7b2974dcb0#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R64#f52dcc49f1#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "no stat changes restriction"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R64#2d5ab6cea7#0": {
+   "action": "reword",
+   "nums": [
+    "702.4"
+   ],
+   "suggest": "the same complaint once raised about Discharge",
+   "note": "origin story of ruling"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R64#0395e9cf5f#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R64#5972ca8d9a#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R64#6a241c65bf#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": "bin targets declared at cast"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#0f3225d1fd#0": {
+   "action": "cite",
+   "nums": [
+    "702.4",
+    "702.6b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#3577cba950#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "target player"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#42728e970d#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#f7518e27c4#0": {
+   "action": "reword",
+   "nums": [
+    "110.3"
+   ],
+   "suggest": "expired once a card in a bin became a legal target",
+   "note": "history of an expired note"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#c1f1940fe4#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "bin card kind plus restriction"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#c17b7d1430#0": {
+   "action": "cite",
+   "nums": [
+    "702.4",
+    "702.6b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#0fb2092759#0": {
+   "action": "cite",
+   "nums": [
+    "702.5",
+    "702.6b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R64#e69b8b7029#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#b69fb366f0#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "card in a bin is a target kind"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#fa739730b6#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#875061b607#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#de4e35f2fa#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#7a721d505a#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#21045462e0#0": {
+   "action": "reword",
+   "nums": [
+    "111.7"
+   ],
+   "suggest": "UN-PARKED (its activation cost is now paid as it is activated).",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R64#ddeb259e17#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "two \"target\"s = two targets"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R64#fcf6f2afb1#0": {
+   "action": "cite",
+   "nums": [
+    "110.4d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R64#9aa6e953f6#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R64#715d8019dd#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R64#df767b2022#0": {
+   "action": "reword",
+   "nums": [
+    "704.5"
+   ],
+   "suggest": "a restriction can stop being met between activation and resolution, and it is checked again as the effect begins to resolve",
+   "note": "no-recheck statement since amended"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R64#35bbe7d9f7#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "\"targeting me\" clause"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R64#b122d64b06#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R64#d38d5091eb#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R64#6f97cd0548#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R64#3f9d6f325f#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ],
+   "note": "gate, not fizzle"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R64#4a943e8eaa#0": {
+   "action": "reword",
+   "nums": [
+    "110.3"
+   ],
+   "suggest": "made false once a card in a bin became a legal target",
+   "note": "note made false by history"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R64#7357ea25c2#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "bin card target kind"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R64#690ab3785f#0": {
+   "action": "reword",
+   "nums": [
+    "702.5"
+   ],
+   "suggest": "and the same complaint once raised about Discharge, one card over",
+   "note": "origin story"
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R64#dc58000762#0": {
+   "action": "cite",
+   "nums": [
+    "110.3",
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R64#ee26b8d6f1#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R64#bc0af7b2a9#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R64#56fbbb0036#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R64#f672e65edd#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": "X targets collected at cast"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R64#e7306abadb#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R64#bbe537d9b4#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R64#ba4bf574e5#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": "X-many targets declared"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R64#31def65d43#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R64#3b9e2079bc#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ],
+   "note": "\"Discard X cards\" variable activation cost"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R64#9aa440d2a7#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R64#3555f8add5#0": {
+   "action": "reword",
+   "nums": [
+    "705.3b"
+   ],
+   "suggest": "UN-PARKED (the variable activation cost is now paid as it is activated).",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R64#3bd1c42791#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b",
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R64#09becb047c#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R64#8147344602#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "710.8a"
+   ],
+   "note": "copy's new targets judged then"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R64#3703cea2f7#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R64#9db3b53fb0#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "710.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R64#beadb4c8f0#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b",
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R64#a82f797178#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "cost [x] restriction"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R64#738ec52367#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R64#e40092b4f8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a",
+    "110.4d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R64#186c8d3a16#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R64#c7f070c969#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ],
+   "note": "life costs paid at cast"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R64#a20fab06b7#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "target opponent"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R64#21aea2700f#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R64#3d3e228737#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R64#708933dbaf#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R64#57d7cdde9a#0": {
+   "action": "reword",
+   "nums": [
+    "110.12"
+   ],
+   "suggest": "UN-PARKED once targeting restrictions existed.",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R64#944efe6df7#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R64#4b28874d7b#0": {
+   "action": "reword",
+   "nums": [
+    "110.12"
+   ],
+   "suggest": "UN-PARKED once targeting restrictions existed:",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R64#ae183520fd#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R64#4f209257b0#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#bc9032b322#0": {
+   "action": "cite",
+   "nums": [
+    "300.5c",
+    "110.1a"
+   ],
+   "note": "\"token\" includes spell tokens"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#9f497f718e#0": {
+   "action": "reword",
+   "nums": [
+    "702.6b"
+   ],
+   "suggest": "Discharge stopped being one of them once variable costs were paid at cast.",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#55e6a4d8e3#0": {
+   "action": "cite",
+   "nums": [
+    "300.5c",
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#ed55b75b04#0": {
+   "action": "cite",
+   "nums": [
+    "702.4",
+    "702.6b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#1d0c669956#0": {
+   "action": "reword",
+   "nums": [
+    "110.1a"
+   ],
+   "suggest": "six lines above the spec that makes it a cast-time target",
+   "note": "stale-note history"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#b2b5bf1705#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R64#47db870d4c#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ],
+   "note": "costs paid before stack, any kind"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R64#b09bbcfae5#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R64#b832d13759#0": {
+   "action": "reword",
+   "nums": [
+    "111.7"
+   ],
+   "suggest": "Soul Reaver: UN-PARKED (its variable cost is now paid as it is activated).",
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R64#713a11b175#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "110.4d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R64#1706888316#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R64#3a9373cb60#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R64#2278cd6f9a#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R64#a20fab06b7#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "target opponent"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R64#e53c76a09b#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R64#356914f468#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "\"enemy effect\" clause"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R64#b355af5fe4#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R64#312101366b#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "target player includes self"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R64#0efbf4f5fb#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R64#2658d18a9f#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R64#623c8f136b#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R64#44de99da30#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R64#99ed5489a3#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R64#f031c9e20c#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R64#cd929a9cbc#0": {
+   "action": "reword",
+   "suggest": "(b) make it a targeting restriction;",
+   "note": "names a rejected reading"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R64#9dfe2f9215#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#e46e97f98a#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#33f54530b6#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "110.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#51301a1e6f#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#097592888e#0": {
+   "action": "cite",
+   "nums": [
+    "300.5c"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#595245ba8b#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#da3c94a6cc#0": {
+   "action": "cite",
+   "nums": [
+    "110.12"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#ea13f68be8#0": {
+   "action": "drop",
+   "note": "UI scan plumbing"
+  },
+  "client/engine/src/engine.ts##R64#bfab2f57ca#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#eda3833ec1#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ],
+   "note": "identity only; last-copy fallback is engine"
+  },
+  "client/engine/src/engine.ts##R64#3fb991c43a#0": {
+   "action": "cite",
+   "nums": [
+    "110.12"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#1facd04ea8#0": {
+   "action": "drop",
+   "note": "target label naming controller: no CR rule (gap)"
+  },
+  "client/engine/src/engine.ts##R64#cc3557a48f#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#e3493c9abe#0": {
+   "action": "cite",
+   "nums": [
+    "111.6"
+   ],
+   "note": "cost must be payable to play"
+  },
+  "client/engine/src/engine.ts##R64#fcc36398b3#0": {
+   "action": "cite",
+   "nums": [
+    "111.3a"
+   ],
+   "note": "counters from own allies in region"
+  },
+  "client/engine/src/engine.ts##R64#e05376d8d9#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#e058856345#0": {
+   "action": "drop",
+   "note": "engine bookkeeping"
+  },
+  "client/engine/src/engine.ts##R64#0e8be18e21#0": {
+   "action": "drop",
+   "note": "engine replay flag"
+  },
+  "client/engine/src/engine.ts##R64#5395109f46#0": {
+   "action": "reword",
+   "nums": [
+    "702.4"
+   ],
+   "suggest": "the point of the whole thing, and the playtest report that forced it:",
+   "note": "origin story"
+  },
+  "client/engine/src/engine.ts##R64#3eb8fcd523#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ],
+   "note": "pay until they stop"
+  },
+  "client/engine/src/engine.ts##R64#3d74d3dc1d#0": {
+   "action": "drop",
+   "note": "engine plumbing"
+  },
+  "client/engine/src/engine.ts##R64#efc7610747#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#36c424c80f#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b",
+    "111.6b"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#12b18b281d#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ],
+   "note": "variable part first"
+  },
+  "client/engine/src/engine.ts##R64#f857e94b3e#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#1f6a299b28#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#49f2ea01f7#0": {
+   "action": "unsure",
+   "note": "part with no legal target: 704.6b/6d/6g or 702.8b unclear"
+  },
+  "client/engine/src/engine.ts##R64#d8a2292ebf#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/src/engine.ts##R64#359013ec77#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2a"
+   ],
+   "note": "illegal options not offered"
+  },
+  "client/engine/src/types.ts##R64#9a92b004b0#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/types.ts##R64#54b383b56d#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/src/types.ts##R64#fe50cf92f2#0": {
+   "action": "drop",
+   "note": "engine replay guard"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R64#9f35e2981e#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2a"
+   ]
+  },
+  "client/engine/test/107-semantics-statics.test.ts##R64#c9d6d77d58#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R64#b20ab623d5#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R64#08079a9c73#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R64#c4b9bed31d#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R64#edc9542944#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R64#c249d08e68#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "710.8a"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R64#56581d0185#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R64#d261b2c12c#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "\"unit in your bin\" excludes spells"
+  },
+  "client/engine/test/14-water-a.test.ts##R64#bdf161b677#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R64#5da71bfe3f#0": {
+   "action": "cite",
+   "nums": [
+    "110.12"
+   ]
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R64#6ccc51e6c8#0": {
+   "action": "reword",
+   "nums": [
+    "111.2"
+   ],
+   "suggest": "look approximated for months after their costs became real cast-time costs",
+   "note": "history"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R64#44aa7566e4#0": {
+   "action": "reword",
+   "nums": [
+    "702.4"
+   ],
+   "suggest": "long after all three life-cost cards moved to real cast-time costs",
+   "note": "history"
+  },
+  "client/engine/test/15-water-b.test.ts##R64#36527aed55#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R64#14f293a099#0": {
+   "action": "cite",
+   "nums": [
+    "110.4d"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R64#190c4a59ee#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "705.3a"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R64#6352ff2430#0": {
+   "action": "reword",
+   "nums": [
+    "111.7"
+   ],
+   "suggest": "That is the founding complaint about Discharge, one card family over.",
+   "note": "origin story"
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R64#9f8091d5d8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R64#6453cea031#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R64#271b51d776#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R64#c8667c21a7#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R64#72f5d9cced#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R64#d8052c81ec#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R64#16b62c290f#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R64#7a93bc6a70#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R64#70e06d8f6a#0": {
+   "action": "cite",
+   "nums": [
+    "702.4",
+    "702.6b"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R64#495f794401#0": {
+   "action": "cite",
+   "nums": [
+    "702.3a"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R64#b2b5bf1705#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R64#8bdab860f1#0": {
+   "action": "cite",
+   "nums": [
+    "706.2"
+   ],
+   "note": "trigger costs paid as stacked"
+  },
+  "client/engine/test/26-metal-a.test.ts##R64#4ce33840f4#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R64#d5bbee614d#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2a"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R64#2cded16582#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R64#10e544cb6d#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R64#c93622f21e#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "710.8a"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R64#af9f748265#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b",
+    "110.1a"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R64#e8ba1158cd#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a",
+    "110.4d"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R64#f71de69552#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R64#6fb9d7b1aa#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R64#9c495ce5fc#0": {
+   "action": "reword",
+   "nums": [
+    "110.12"
+   ],
+   "suggest": "it was un-parked once targeting restrictions existed: a compulsion is the mirror of a restriction, narrowing OTHER effects' candidate lists.",
+   "note": "un-park history"
+  },
+  "client/engine/test/41-dark-a.test.ts##R64#1fd89d90cf#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R64#d9047411bf#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R64#2037443c36#0": {
+   "action": "cite",
+   "nums": [
+    "702.4",
+    "702.6b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#3c85152448#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#c162967c78#0": {
+   "action": "cite",
+   "nums": [
+    "110.4d"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#de989d201c#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#e2a4301b9a#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#008842f3fa#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ],
+   "note": "Grox activation cost"
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#4c25eba1dd#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#dcf691fd97#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R64#60fec8c763#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R64#4611c0722c#0": {
+   "action": "cite",
+   "nums": [
+    "110.7"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R64#33f80528d4#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ],
+   "note": "fixed cost after targets"
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R64#010037aa57#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R64#400a62d45e#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R64#551af84ea4#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R64#4c97fb5c77#0": {
+   "action": "drop",
+   "note": "per-part X of a grafted rider: no CR rule (gap)"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R64#646288b3a2#0": {
+   "action": "drop",
+   "note": "engine field note"
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#6dee0941b4#0": {
+   "action": "reword",
+   "nums": [
+    "702.4",
+    "110.3a"
+   ],
+   "suggest": "Playtest round 9 (game PEMC, 2026-08-21) — bracketed costs at cast, and targeting restrictions.",
+   "note": "test-file header naming rulings"
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#32138f7f33#0": {
+   "action": "cite",
+   "nums": [
+    "702.4"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#349ac1c621#0": {
+   "action": "cite",
+   "nums": [
+    "702.4",
+    "702.6b"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#7b7ee27cb1#0": {
+   "action": "cite",
+   "nums": [
+    "702.4b"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#67e8fdaea0#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ],
+   "note": "stop at zero"
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#1150e54c1d#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a",
+    "110.3"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#52476e3e66#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#c768ef5a7a#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#ff3ad8c979#0": {
+   "action": "drop",
+   "note": "menu names controller: no CR rule (gap)"
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#a84eceb029#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R64#9333d46bd4#0": {
+   "action": "cite",
+   "nums": [
+    "110.3",
+    "405.6"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R64#704b4bfa59#0": {
+   "action": "reword",
+   "suggest": "most of them written before the engine could express those targets",
+   "note": "history"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R64#e49fcfb3d6#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R64#45805b02c1#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R64#ec799c8979#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R64#cfe2fe8822#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R64#4b191bb00e#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R64#9e4d80d466#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R64#204f98582f#0": {
+   "action": "drop",
+   "note": "refers to a test"
+  },
+  "client/engine/test/68-target-conformance.test.ts##R64#521c2a7ce4#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/engine/test/71-card-ledger.test.ts##R64#2a97db3d65#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R64#48fccdf8f9#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/89-self-erase.test.ts##R64#9d898ec856#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/98-spawn-region.test.ts##R64#f861b6900a#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/util.ts##R64#dcd26e4e5c#0": {
+   "action": "drop",
+   "note": "test helper"
+  },
+  "client/engine/test/util.ts##R64#5694a730c0#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R64#b9316ca2e6#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "kind the text names"
+  },
+  "client/ledgers/card-todo-closed.ts##R64#2b358cfaa2#0": {
+   "action": "reword",
+   "suggest": "carrying an 8-line doc comment that reads as a live description of the rules.",
+   "note": "labels a stale doc comment"
+  },
+  "client/ledgers/card-todo-closed.ts##R64#43d74fd183#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R64#d85300c250#0": {
+   "action": "reword",
+   "suggest": "Minor Kraken gained restrict in 140de9b (08-21);",
+   "note": "commit history"
+  },
+  "client/ledgers/card-todo-closed.ts##R64#b17cb8f38b#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "the literal historical code the targeting-restriction fixes were written to fix",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R64#f75a1d59ef#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "which is the same case.",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R64#3879212000#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "110.9"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R64#9dd142e3f7#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b",
+    "111.6b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R64#43edbb875f#0": {
+   "action": "cite",
+   "nums": [
+    "110.2"
+   ],
+   "note": "a cost is not a target"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#14b690f3de#0": {
+   "action": "reword",
+   "nums": [
+    "110.3c"
+   ],
+   "suggest": "It has had one for a long time.",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#b63e910fdf#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#31c325a05c#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#d5152fd82c#0": {
+   "action": "cite",
+   "nums": [
+    "110.7"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#7f873d6009#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#afb8b3fa0d#0": {
+   "action": "reword",
+   "suggest": "Minor Kraken gained its restrict on 08-21",
+   "note": "commit history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#35784c4824#0": {
+   "action": "reword",
+   "nums": [
+    "110.3a"
+   ],
+   "suggest": "the break-test that convicts the code from before targeting restrictions were enforced at cast.",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#ae3df656a5#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ],
+   "note": "stop option of variable cost"
+  },
+  "client/ledgers/raq.ts##R64#e89393aeb2#0": {
+   "action": "cite",
+   "nums": [
+    "702.4d"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R64#85661e65f4#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/server/scenarios-b.ts##R64#2725d0993e#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/inspect.ts##R64#f9e4323c6a#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/inspect.ts##R64#94240ef2b8#0": {
+   "action": "cite",
+   "nums": [
+    "705.3a"
+   ]
+  },
+  "client/ui/inspect.ts##R64#f54f961cda#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/inspect.ts##R64#817f878bd3#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/inspect.ts##R64#a917d258b8#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/inspect.ts##R64#3a42efe348#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#150c513088#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#408e6a2882#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#001ab772ed#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#53f4283cb8#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#218e84d8b4#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#8d42cf147d#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/ui/main.ts##R64#fe30e3ac07#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/main.ts##R64#45c6325ff6#0": {
+   "action": "drop",
+   "note": "bin is public: no CR rule; UI"
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R64#4c279b76d5#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2a"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R64#af54f9b5c6#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c",
+    "110.5"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R64#ee75db4fea#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a",
+    "110.7"
+   ]
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R64#cb8c615998#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R64#dee811cf44#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R64#6a2acc3bcd#0": {
+   "action": "cite",
+   "nums": [
+    "702.6b"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R64#be63793591#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/apply.ts##R128#518a7a77eb#0": {
+   "action": "cite",
+   "nums": [
+    "700.1a"
+   ],
+   "note": "unit on stack: effect, not spell"
+  },
+  "client/engine/src/cards/dsl.ts##R128#62ea44b16a#0": {
+   "action": "cite",
+   "nums": [
+    "700.1",
+    "700.1a"
+   ],
+   "note": "quotes the owner sentence"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R128#16ec76df84#0": {
+   "action": "cite",
+   "nums": [
+    "700.1b"
+   ],
+   "note": "nonspell includes unit"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R128#e7b1708b0a#0": {
+   "action": "reword",
+   "nums": [
+    "700.1",
+    "700.1a"
+   ],
+   "suggest": "Owner, 2026-08-24, reversing the earlier reading:",
+   "note": "names the reversal"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R128#9fc92641de#0": {
+   "action": "cite",
+   "nums": [
+    "700.1b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R128#385c892024#0": {
+   "action": "reword",
+   "nums": [
+    "700.1a"
+   ],
+   "suggest": "(still good law: the effect half was widened later, the spell line did not move)",
+   "note": "history of the effect line"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R128#7dc935ef38#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ],
+   "note": "all effects = whole stack"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R128#80b8a37b0c#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R128#6199a6261a#0": {
+   "action": "cite",
+   "nums": [
+    "700.1",
+    "704.4b"
+   ]
+  },
+  "client/engine/src/engine.ts##R128#d4156ee3b9#0": {
+   "action": "cite",
+   "nums": [
+    "700.1",
+    "700.1a"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#7583eee47a#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ],
+   "note": "test header"
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#6410acfdf6#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#378ef39da8#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#184d1b234c#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#ad4e0dc500#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a",
+    "704.4b"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#f2edc9080b#0": {
+   "action": "cite",
+   "nums": [
+    "700.1b"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#a587851174#0": {
+   "action": "cite",
+   "nums": [
+    "700.1a"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#38e036e97d#0": {
+   "action": "cite",
+   "nums": [
+    "700.1a"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#dad4267386#0": {
+   "action": "cite",
+   "nums": [
+    "700.1a"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#2c64e360fb#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#a5ae779d21#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/engine/test/118-stack-effect.test.ts##R128#db6ed0848f#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ],
+   "note": "unit item is a targetable effect"
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R128#7a1710531e#0": {
+   "action": "cite",
+   "nums": [
+    "700.1"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R128#833adbee48#0": {
+   "action": "reword",
+   "nums": [
+    "700.1"
+   ],
+   "suggest": "and the unit-on-the-stack ruling (\"a unit has no parts to negate\" became \"a unit is not an effect\")",
+   "note": "ledger history"
+  },
+  "client/engine/src/engine.ts##R270#4710dcd688#0": {
+   "action": "cite",
+   "nums": [
+    "610.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R270#bd0102c7ff#0": {
+   "action": "cite",
+   "nums": [
+    "610.2e"
+   ]
+  },
+  "client/engine/test/250-ally-count-and-absence.test.ts##R270#6be223ab31#0": {
+   "action": "cite",
+   "nums": [
+    "610.2e"
+   ],
+   "note": "test header"
+  },
+  "client/engine/test/250-ally-count-and-absence.test.ts##R270#1c93633380#0": {
+   "action": "cite",
+   "nums": [
+    "610.2e"
+   ]
+  },
+  "client/engine/test/250-ally-count-and-absence.test.ts##R270#bd84440a07#0": {
+   "action": "reword",
+   "nums": [
+    "610.2e"
+   ],
+   "suggest": "alive at the send (red before this fix)",
+   "note": "\"red before R270\" is history"
+  },
+  "client/engine/test/250-ally-count-and-absence.test.ts##R270#e14a9245c8#0": {
+   "action": "cite",
+   "nums": [
+    "610.2e"
+   ]
+  },
+  "client/engine/test/250-ally-count-and-absence.test.ts##R270#61641e79e8#0": {
+   "action": "reword",
+   "nums": [
+    "610.2c"
+   ],
+   "suggest": "What the no-death-check rule does NOT change",
+   "note": "scope of the ruling"
+  },
+  "client/engine/test/250-ally-count-and-absence.test.ts##R270#d97f2c3dd9#0": {
+   "action": "reword",
+   "nums": [
+    "610.2c"
+   ],
+   "suggest": "It was the question put to the owner.",
+   "note": "was an open owner question"
+  },
+  "client/ledgers/card-todo-closed.ts##R270#5a1380e6c4#0": {
+   "action": "reword",
+   "nums": [
+    "610.2e"
+   ],
+   "suggest": "Fixed (a sent counterattacker is not death-checked), AND THE BRIEF HYPOTHESIS WAS WRONG:",
+   "note": "ledger closure label"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R270#4ce76447b1#0": {
+   "action": "reword",
+   "suggest": "Routed to agent C.",
+   "note": "routing history"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R300#656f76b5cf#0": {
+   "action": "cite",
+   "nums": [
+    "400.5"
+   ],
+   "note": "bin text not live from play"
+  },
+  "client/engine/src/engine.ts##R300#93e4f7ea4e#0": {
+   "action": "cite",
+   "nums": [
+    "400.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R320#68b7940adc#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ],
+   "note": "mark stays with column"
+  },
+  "client/engine/src/engine.ts##R320#96856f17d7#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R320#871180612b#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R320#ee33c28fea#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R320#bceb16a53c#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/src/engine.ts##R320#33ff4f35ac#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/src/types.ts##R320#205479ab00#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/src/types.ts##R320#7b5558661e#0": {
+   "action": "reword",
+   "suggest": "Absent in states saved before the struck mark existed: no column has struck, the old behaviour.",
+   "note": "save-format history"
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R320#8ab3465f3b#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/test/400-raq-fix-blocks.test.ts##R320#b1e4645a10#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/engine/test/410-enum-exports.test.ts##R320#e855d9767f#0": {
+   "action": "cite",
+   "nums": [
+    "608.2e"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R320#4101a75e31#0": {
+   "action": "reword",
+   "nums": [
+    "608.2e"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R320#7544c1f7e9#0": {
+   "action": "reword",
+   "nums": [
+    "608.2e"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R320#7544c1f7e9#0~1": {
+   "action": "reword",
+   "nums": [
+    "608.2e"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R320#7544c1f7e9#0~2": {
+   "action": "reword",
+   "nums": [
+    "608.2e"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R325#adbf4e1aa4#0": {
+   "action": "cite",
+   "nums": [
+    "714.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R325#8dcd4aa634#0": {
+   "action": "reword",
+   "nums": [
+    "714.4"
+   ],
+   "suggest": "Reversing the earlier dead-source reading: a Hooba-Lin killed under its own trigger \"remembers it was in formation\" (RAQ, Dead Unit Effect on Stack), so the formation is the one it last stood in.",
+   "note": "names the reversal"
+  },
+  "client/engine/src/cards/sets/batch-fire-wood.ts##R325#35a4b6d8e8#0": {
+   "action": "cite",
+   "nums": [
+    "714.5"
+   ],
+   "note": "adjacent count 0 once gone"
+  },
+  "client/engine/src/cards/sets/batch-fire-wood.ts##R325#958a9f3823#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R325#117638cda4#0": {
+   "action": "cite",
+   "nums": [
+    "704.7",
+    "714.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R325#a5613c7110#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R325#6040f2e18c#0": {
+   "action": "cite",
+   "nums": [
+    "714.6",
+    "714.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R325#e73bfdb339#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R325#c9965036d7#0": {
+   "action": "cite",
+   "nums": [
+    "714.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R325#f1f2246b4b#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R325#0f0e9ef16e#0": {
+   "action": "cite",
+   "nums": [
+    "714.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#cdd99c53c9#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ],
+   "note": "stamp before face reverts"
+  },
+  "client/engine/src/engine.ts##R325#eff0d7d898#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ],
+   "note": "stamp as unit leaves play"
+  },
+  "client/engine/src/engine.ts##R325#eff0d7d898#0~1": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ],
+   "note": "stamp as unit leaves play"
+  },
+  "client/engine/src/engine.ts##R325#2aea2ae9d0#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#b47ea65804#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#555b7a41db#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#eff0d7d898#0~2": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ],
+   "note": "stamp as unit leaves play"
+  },
+  "client/engine/src/engine.ts##R325#d1926ca8c4#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#920d90a1a4#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#6b37b5c7a9#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#842dae5f60#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#030d6313e1#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#8e7bc1126c#0": {
+   "action": "cite",
+   "nums": [
+    "714.2"
+   ],
+   "note": "attributes incl. column-shared"
+  },
+  "client/engine/src/engine.ts##R325#be9ef26816#0": {
+   "action": "cite",
+   "nums": [
+    "714.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R325#347c26dc68#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/src/types.ts##R325#f5b62b08e3#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ]
+  },
+  "client/engine/src/types.ts##R325#127e13612e#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ]
+  },
+  "client/engine/src/types.ts##R325#22246bb5b4#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R325#f52f55611a#0": {
+   "action": "reword",
+   "nums": [
+    "714.4"
+   ],
+   "suggest": "⚠ The dead-source reading was reversed on 2026-10-09 (RAQ).",
+   "note": "names the reversal"
+  },
+  "client/engine/test/108-formation-class.test.ts##R325#20fd4380f2#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R325#5530064720#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R325#73413bc611#0": {
+   "action": "cite",
+   "nums": [
+    "714.6",
+    "714.4"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R325#6b21a9a488#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/test/268-seen-hand-aid-stays.test.ts##R325#44d78b4f99#0": {
+   "action": "reword",
+   "nums": [
+    "714.4"
+   ],
+   "suggest": "Since 2026-10-09 (RAQ), a Hooba-Bot killed under its own trigger makes its Robot.",
+   "note": "names the reversal"
+  },
+  "client/engine/test/268-seen-hand-aid-stays.test.ts##R325#256e21862a#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ],
+   "note": "current last-known rules"
+  },
+  "client/engine/test/390-raq-stack.test.ts##R325#965535819a#0": {
+   "action": "cite",
+   "nums": [
+    "714.5"
+   ]
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R325#e6bdd1429e#0": {
+   "action": "cite",
+   "nums": [
+    "704.7a"
+   ]
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R325#f828246c42#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ]
+  },
+  "client/engine/test/98-spawn-region.test.ts##R325#6bb92d17cc#0": {
+   "action": "cite",
+   "nums": [
+    "714.1"
+   ],
+   "note": "region it left from"
+  },
+  "client/ledgers/card-todo-closed.ts##R325#c9e006afbd#0": {
+   "action": "reword",
+   "nums": [
+    "704.7a"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread",
+   "note": "closure history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R325#5c5b998c3f#0": {
+   "action": "reword",
+   "nums": [
+    "714.4"
+   ],
+   "suggest": "⚠ REVERSED 2026-10-09 (RAQ), for the dead-source half this report is about.",
+   "note": "names the reversal"
+  },
+  "client/ledgers/raq.ts##R325#f04d7f1621#0": {
+   "action": "reword",
+   "nums": [
+    "714.4"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R325#f04d7f1621#0~1": {
+   "action": "reword",
+   "nums": [
+    "714.5"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R325#f04d7f1621#0~2": {
+   "action": "reword",
+   "nums": [
+    "714.2"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/engine/src/apply.ts##R328#922b506f79#0": {
+   "action": "cite",
+   "nums": [
+    "113.2"
+   ],
+   "note": "printed text is oldest"
+  },
+  "client/engine/src/apply.ts##R328#bf34fb0c77#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a",
+    "712.2"
+   ]
+  },
+  "client/engine/src/apply.ts##R328#609b929701#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/apply.ts##R328#c9cf31d667#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#9f838f85aa#0": {
+   "action": "cite",
+   "nums": [
+    "712.7",
+    "113.2"
+   ],
+   "note": "copied mod text is card text"
+  },
+  "client/engine/src/engine.ts##R328#cebcb52f02#0": {
+   "action": "cite",
+   "nums": [
+    "712.2",
+    "113.3"
+   ],
+   "note": "section header"
+  },
+  "client/engine/src/engine.ts##R328#6e124fee54#0": {
+   "action": "reword",
+   "suggest": "a stamp with no time on it (a state saved before strips carried a time): later than everything",
+   "note": "save-format history"
+  },
+  "client/engine/src/engine.ts##R328#5e1b188e57#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#fb46c6c5fb#0": {
+   "action": "drop",
+   "note": "engine shortcut for static walks"
+  },
+  "client/engine/src/engine.ts##R328#65c1bdd1ec#0": {
+   "action": "cite",
+   "nums": [
+    "113.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#2071dafc7c#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#4ffc9a6064#0": {
+   "action": "cite",
+   "nums": [
+    "712.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#3eba713c6d#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ],
+   "note": "later grant not taken"
+  },
+  "client/engine/src/engine.ts##R328#a8fcb0711f#0": {
+   "action": "cite",
+   "nums": [
+    "113.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#953ec9ad8c#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R328#4aab573823#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a",
+    "712.2"
+   ]
+  },
+  "client/engine/src/types.ts##R328#4c41a99bea#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/types.ts##R328#c92ab903f3#0": {
+   "action": "reword",
+   "suggest": "Absent on a state saved before grants carried a time, which reads as \"oldest\": stripped, as before.",
+   "note": "save-format history"
+  },
+  "client/engine/src/types.ts##R328#77071e8f7a#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/types.ts##R328#a2bb3df1c3#0": {
+   "action": "reword",
+   "suggest": "Absent on a state saved before strips carried a time, which reads as \"latest\" — everything stripped, the old veto.",
+   "note": "save-format history"
+  },
+  "client/engine/src/types.ts##R328#35361482bb#0": {
+   "action": "cite",
+   "nums": [
+    "113.2"
+   ]
+  },
+  "client/engine/src/types.ts##R328#ffadf25f06#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/src/types.ts##R328#bf7fe2394c#0": {
+   "action": "cite",
+   "nums": [
+    "113.2"
+   ],
+   "note": "one-shot timestamp ordering"
+  },
+  "client/engine/test/266-until-regroup-in-the-box.test.ts##R328#dc568194c7#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ]
+  },
+  "client/engine/test/402-raq-fix-stripping.test.ts##R328#575b69afca#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ],
+   "note": "R328 half of header"
+  },
+  "client/engine/test/402-raq-fix-stripping.test.ts##R328#8b12437112#0": {
+   "action": "reword",
+   "suggest": "§6 a strip with no time on it (a state saved before strips carried a time) still takes everything, as the old veto did",
+   "note": "save-format history"
+  },
+  "client/engine/test/406-copied-augments.test.ts##R328#e994a4502d#0": {
+   "action": "cite",
+   "nums": [
+    "712.7"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R328#a73f2104b7#0": {
+   "action": "cite",
+   "nums": [
+    "712.7"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R328#0406a9c30d#0": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), following the RAQ thread",
+   "note": "closure history"
+  },
+  "client/ledgers/card-todo.ts##R328#d20acfd531#0": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "the timestamp rule for stripping reversed the veto.",
+   "note": "names the reversal"
+  },
+  "client/ledgers/raq.ts##R328#135878f3eb#0": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R328#135878f3eb#0~1": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R328#135878f3eb#0~2": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R328#135878f3eb#0~3": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  },
+  "client/ledgers/raq.ts##R328#135878f3eb#0~4": {
+   "action": "reword",
+   "nums": [
+    "712.2"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "closure history"
+  }
+ }
+}

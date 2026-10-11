@@ -1,0 +1,2521 @@
+{
+ "unit": "M020",
+ "decisions": {
+  "client/docs/08-light-and-dark.md##R41#adadf7cbd5#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/docs/09-visual-clarification.md##R41#e5e3a8ff3a#0": {
+   "action": "drop",
+   "note": "engine/UI identity handle (uid), not a rule"
+  },
+  "client/engine/src/apply.ts##R41#4fda2254c2#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/apply.ts##R41#aaa6523daf#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/src/apply.ts##R41#eb78e2aee8#0": {
+   "action": "cite",
+   "nums": [
+    "403.3"
+   ]
+  },
+  "client/engine/src/apply.ts##R41#e41d84d796#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/src/apply.ts##R41#ca1d73c8da#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/src/apply.ts##R41#57bec1b0d7#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R41#12cfbaa53e#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "'not region-scoped' is stale: 403.6 limits it to present players"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R41#d990bb7de7#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R41#989f6b69d9#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R41#7ea8a9c64a#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R41#c71456d006#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ],
+   "note": "range R41-R46: rewrite as a list"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R41#d3042fc4cb#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R41#73a422e46a#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R41#a6ec147fbb#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ],
+   "note": "range: rewrite as a list"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R41#97d6749ad6#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ],
+   "note": "range: rewrite as a list"
+  },
+  "client/engine/src/engine.ts##R41#df34036ec9#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R41#7fd4ca88f9#0": {
+   "action": "cite",
+   "nums": [
+    "801.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R41#f46d28860d#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ],
+   "note": "range R41-R46: rewrite as a list"
+  },
+  "client/engine/src/engine.ts##R41#ce02ba6097#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R41#fb1e58f638#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/engine.ts##R41#35a4f7ce8d#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R41#05176c5473#0": {
+   "action": "cite",
+   "nums": [
+    "403.3"
+   ]
+  },
+  "client/engine/src/types.ts##R41#15fe8895b3#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/types.ts##R41#3bc15c51ed#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/engine/src/types.ts##R41#f900e63169#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/src/types.ts##R41#0e39b37faf#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/src/types.ts##R41#425789b046#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ],
+   "note": "range R41-R46: rewrite as a list"
+  },
+  "client/engine/src/types.ts##R41#12ee9436f2#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/test/04-mods.test.ts##R41#f5d64f4597#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R41#66812a6b37#0": {
+   "action": "cite",
+   "nums": [
+    "801.2h"
+   ]
+  },
+  "client/engine/test/125-active-zone.test.ts##R41#597fcddf37#0": {
+   "action": "cite",
+   "nums": [
+    "801.2h"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R41#559ca8a4d2#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R41#a6507e3eac#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R41#a36202934b#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R41#559ca8a4d2#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/293-cached-targets-are-regional.test.ts##R41#cd2a4c55ba#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/293-cached-targets-are-regional.test.ts##R41#5710504d76#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/293-cached-targets-are-regional.test.ts##R41#0673500f4c#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R41#559ca8a4d2#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#8f46d1ec5e#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#9b0f0d9670#0": {
+   "action": "cite",
+   "nums": [
+    "403.3"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#673f97f6d7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#8772247194#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#abd6efe05f#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#6547da9f3c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#79c659a3e3#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#b19994bb4e#0": {
+   "action": "cite",
+   "nums": [
+    "801.2"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R41#60430d7ec8#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R41#c55e5c83bd#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R41#835756cf2e#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R41#b65fa6708e#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R41#4636bf9b6d#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R41#da78cf96c9#0": {
+   "action": "drop",
+   "note": "engine uid handle"
+  },
+  "client/engine/test/38-light-a.test.ts##R41#59b46141ec#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R41#69ecf3bfdd#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R41#f9645a5bd3#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R41#a3378b3962#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R41#a4f9d2fbf4#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R41#130a559409#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/test/444-no-self-hearing-play.test.ts##R41#ca4fa56c48#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R41#8548d9158b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R41#f14cd08467#0": {
+   "action": "cite",
+   "nums": [
+    "403.3"
+   ]
+  },
+  "client/engine/test/drill.ts##R41#4b5b5d9199#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/engine/test/drill.ts##R41#4530bd89ef#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/engine/test/fuzz.ts##R41#0eb393fc6e#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R41#9c17b080f5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R41#d9e9a9e1f4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R41#106490f527#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R41#2d70502bbc#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R41#4db0965386#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R41#ab48becf3d#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R41#b21cef6e08#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R41#6cf7611b72#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "closed ledger"
+  },
+  "client/server/scenarios-e.ts##R41#b5459d7004#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#77d7444ee9#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#b1fe9c70e5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#5804f639a8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#a0ee8d4d5d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#0df48c1194#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#5216ef4367#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#82f5d76716#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#cb3fc999d7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#d7d464bb35#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#263bf2f21c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.2c"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R41#5b3bd74ba9#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/ui/glossary.ts##R41#6c5d787415#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ],
+   "note": "glossary row ruling field"
+  },
+  "client/ui/main.ts##R41#9d0afeb35c#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/ui/main.ts##R41#6e3ab3ef61#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/main.ts##R41#af36cbfefe#0": {
+   "action": "cite",
+   "nums": [
+    "403.1"
+   ]
+  },
+  "client/ui/main.ts##R41#2846000f67#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/ui/main.ts##R41#cfb823a32f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/ui/main.ts##R41#1cecc2e303#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/ui/main.ts##R41#9939842eaa#0": {
+   "action": "drop",
+   "note": "engine uid handle"
+  },
+  "client/ui/main.ts##R41#e971f39c86#0": {
+   "action": "cite",
+   "nums": [
+    "403.5"
+   ]
+  },
+  "client/ui/main.ts##R41#778492ce5c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/main.ts##R41#1557e3e60b#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ]
+  },
+  "client/ui/main.ts##R41#488f6e9aba#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6"
+   ]
+  },
+  "client/ui/main.ts##R41#42a703bd91#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/ui/motion.ts##R41#b83c21e729#0": {
+   "action": "drop",
+   "note": "UI motion identity handle (uid)"
+  },
+  "client/ui/motion.ts##R41#c049ae348c#0": {
+   "action": "drop",
+   "note": "UI motion identity handle (uid)"
+  },
+  "client/ui/reveal.ts##R41#6cd9088e44#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/ui/style.css##R41#e3059d5db5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ]
+  },
+  "client/ui/test/163-cache-affordance-and-badges.test.ts##R41#709c98e0d9#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/ui/test/163-cache-affordance-and-badges.test.ts##R41#b787eb9b09#0": {
+   "action": "cite",
+   "nums": [
+    "403.2"
+   ]
+  },
+  "client/ui/test/294-prophecy-meter.test.ts##R41#c7bef74bbb#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6a"
+   ]
+  },
+  "client/ui/test/294-prophecy-meter.test.ts##R41#33d7bb65e0#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R41#2d4083914e#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R41#58091951a3#0": {
+   "action": "cite",
+   "nums": [
+    "507.2"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R41#aee1322bd3#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R41#3475945955#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/cards/registry.ts##R93#895cfc3181#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "Implementable now that {Inverted} works as stat layer 5 (802.8a)",
+   "note": "'as of R93' is history"
+  },
+  "client/engine/src/cards/registry.ts##R93#14d2ea8815#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R93#92ad92e547#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "WORKS since playtest report #73 (802.8a)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R93#e3067759ac#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "expired when stat layer 5 (802.8a) shipped",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R93#630cd4a8e3#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R93#08a279b9d5#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "Stat layer 5 (802.8a) shipped it",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R93#aace7c5e2a#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R93#48746a2b20#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "stat layer 5 (802.8a) shipped for playtest report #73",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R93#7f4f35dc85#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R93#8ec4a09543#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R93#dd076db1c0#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R93#b2d7d6a8d9#0": {
+   "action": "reword",
+   "nums": [
+    "709.4d"
+   ],
+   "suggest": "OPEN in the original ruling, since settled by 709.4d:",
+   "note": "709.4d puts Inverted after all of layer 4"
+  },
+  "client/engine/src/engine.ts##R93#0309da6b8c#0": {
+   "action": "cite",
+   "nums": [
+    "709.4d"
+   ]
+  },
+  "client/engine/src/engine.ts##R93#6af89c7a4e#0": {
+   "action": "cite",
+   "nums": [
+    "802.8c"
+   ]
+  },
+  "client/engine/src/engine.ts##R93#0fbf83d0e5#0": {
+   "action": "cite",
+   "nums": [
+    "709.4c"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R93#cf0ece1dd3#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R93#0640c3b651#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R93#dafb13e61c#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R93#c8e4342930#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#491e1edc29#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "since stat layer 5 (802.8a) shipped",
+   "note": "history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#2513e7f3d0#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#dc9569cc06#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#27ca888bb6#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#b8a950bf60#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#7a52987e9a#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#0c231c9145#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "Stat layer 5 (802.8a) is what made this clause implementable at all.",
+   "note": "history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#6c9b9901f0#0": {
+   "action": "reword",
+   "nums": [
+    "802.8c"
+   ],
+   "suggest": "because whether {Inverted} inverts from the printed base or a post-rewrite one was once open (802.8c now settles it)",
+   "note": "open question since settled"
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#2b54b3fd50#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R93#22d83b4e7d#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R93#63ec0e8a51#0": {
+   "action": "cite",
+   "nums": [
+    "709.4a"
+   ],
+   "note": "copy decides printed stats; Inverted works from them"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R93#36d70a1a67#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R93#d478f0a6a0#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R93#ba6b0efbd8#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R93#95b979a835#0": {
+   "action": "cite",
+   "nums": [
+    "802.1c"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R93#be8e92f68c#0": {
+   "action": "cite",
+   "nums": [
+    "802.1k"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R93#dc3c7861e0#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R93#447a89315d#0": {
+   "action": "reword",
+   "nums": [
+    "709.4d"
+   ],
+   "suggest": "{Inverted} shipped as a clean layer 5 (709.4d) over an OPEN note",
+   "note": "history"
+  },
+  "client/engine/test/92-unaware.test.ts##R93#35fab4a0e2#0": {
+   "action": "cite",
+   "nums": [
+    "802.8"
+   ]
+  },
+  "client/engine/test/92-unaware.test.ts##R93#35fab4a0e2#1": {
+   "action": "cite",
+   "nums": [
+    "802.8c"
+   ]
+  },
+  "client/ledgers/card-ledger.ts##R93#bcc59c995a#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "when stat layer 5 (802.8a) shipped",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R93#d8c773971c#0": {
+   "action": "reword",
+   "nums": [
+    "802.8d"
+   ],
+   "suggest": "A rule (now 802.8d) stating the law as −2·Δ",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R93#99bf66beb9#0": {
+   "action": "reword",
+   "nums": [
+    "802.8a"
+   ],
+   "suggest": "works only because stat layer 5 (802.8a) shipped the same day",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R93#43608c6fe8#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ],
+   "note": "closed ledger note"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R93#68209ef5f7#0": {
+   "action": "reword",
+   "nums": [
+    "709.4d"
+   ],
+   "suggest": "the nuance was recorded (now settled by 709.4d)",
+   "note": "closed ledger history"
+  },
+  "client/ui/glossary.ts##R93#7c715374a0#0": {
+   "action": "cite",
+   "nums": [
+    "802.8a"
+   ],
+   "note": "glossary row ruling field"
+  },
+  "client/docs/16-divergence-inventory.md##R178#9376a4721e#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R178#c5e52e38e4#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ],
+   "note": "the closed §2c item is the id lookup"
+  },
+  "client/docs/16-divergence-inventory.md##R178#2d3de669b4#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R178#d3ee0f0de3#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R178#4780877fc5#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R178#a42d135535#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R178#3d4ca8273e#0": {
+   "action": "reword",
+   "nums": [
+    "720.10"
+   ],
+   "suggest": "HAS a primitive (720.10)",
+   "note": "'as of R178' is history"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R178#dc765f909b#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R178#3ef11133bb#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R178#d6d54bb241#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#bc084e5a6e#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#de8d96a6b4#0": {
+   "action": "cite",
+   "nums": [
+    "706.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#ed3fa0d5da#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "found the half the first fix could not see",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#7ab21e67e9#0": {
+   "action": "cite",
+   "nums": [
+    "720.10b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#3e6c322878#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#21854f887a#0": {
+   "action": "cite",
+   "nums": [
+    "720.10c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#e14af2b8d7#0": {
+   "action": "cite",
+   "nums": [
+    "706.9",
+    "706.13"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#9ad4b860ea#0": {
+   "action": "cite",
+   "nums": [
+    "706.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#634e196c90#0": {
+   "action": "cite",
+   "nums": [
+    "706.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#30b3327ce9#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "the item id named nothing",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#5b655b3d0f#0": {
+   "action": "reword",
+   "suggest": "as the first fix left them",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R178#54b7547004#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R178#2cb3dacb2a#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R178#9946bb21d2#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R178#4495b2ad42#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R178#58fdd93b18#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#89412e6f50#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": "Ancient One carries the option's text"
+  },
+  "client/engine/src/engine.ts##R178#f55c91567f#0": {
+   "action": "cite",
+   "nums": [
+    "720.10a"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#1372c2a18c#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#568569f94e#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#54225588c7#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#03769d3632#0": {
+   "action": "cite",
+   "nums": [
+    "710.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#4e6d52a5dd#0": {
+   "action": "cite",
+   "nums": [
+    "701.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#52e3d33c11#0": {
+   "action": "drop",
+   "note": "code-shape reference"
+  },
+  "client/engine/src/engine.ts##R178#4567b85184#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#31d6dfd479#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#06ee201671#0": {
+   "action": "cite",
+   "nums": [
+    "706.13",
+    "706.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#98766f63a9#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#83db400a39#0": {
+   "action": "cite",
+   "nums": [
+    "710.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#c04a1c10c4#0": {
+   "action": "cite",
+   "nums": [
+    "710.8"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#0550150cf7#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/src/engine.ts##R178#cc0182070c#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/src/types.ts##R178#f05468295a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/src/types.ts##R178#480ba48907#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R178#eb08eb98c6#0": {
+   "action": "drop",
+   "note": "test helper label"
+  },
+  "client/engine/test/138-spell-copy.test.ts##R178#ebd0cd80a5#0": {
+   "action": "cite",
+   "nums": [
+    "706.9"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R178#31be72c166#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R178#1c8a967f5f#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/test/138-spell-copy.test.ts##R178#2ebabf48ca#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "The item's ID had been put on 'spellPlayed'",
+   "note": "history"
+  },
+  "client/engine/test/138-spell-copy.test.ts##R178#9c6de80844#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R178#04e4afca01#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "is part of that event (706.13)",
+   "note": "'since R178' is history"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R178#8ae02dbab1#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#4ce9a6f809#0": {
+   "action": "reword",
+   "nums": [
+    "706.9",
+    "109.6",
+    "720.10"
+   ],
+   "suggest": "THREE THINGS THE DESIGNER SAYS (706.9, 109.6, 720.10)",
+   "note": "file covers three rules"
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#8a6ac9bb41#0": {
+   "action": "cite",
+   "nums": [
+    "706.9"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#a19e658ff5#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#1c64eb567a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#0eea01219d#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#a8defc45f3#0": {
+   "action": "cite",
+   "nums": [
+    "720.7d"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#65568039a5#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#875c9c213b#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ]
+  },
+  "client/engine/test/162-item-identity-and-truthful-events.test.ts##R178#addda3b4e1#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "for some time, and Earthbound Replicator was converted first",
+   "note": "history"
+  },
+  "client/engine/test/162-item-identity-and-truthful-events.test.ts##R178#eefcf6395f#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R178#dcb714e180#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R178#4457d99e2c#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ]
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R178#55fc8800c7#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R178#990a3fe7d7#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "both play events carry `item` (706.13)",
+   "note": "history"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R178#b2271b2c3a#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R178#eb08eb98c6#0": {
+   "action": "drop",
+   "note": "test helper label"
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R178#17ef57d1b0#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R178#c9f16cb8fa#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R178#1c8a967f5f#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R178#08406175e2#0": {
+   "action": "reword",
+   "nums": [
+    "702.3g"
+   ],
+   "suggest": "The Charger's option is in the CAST WINDOW (702.3g)",
+   "note": "history"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R178#2b8bce0d0e#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/test/71-card-ledger.test.ts##R178#ec6ec3dc50#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ]
+  },
+  "client/engine/test/85-silent-branches.test.ts##R178#7a3f31206b#0": {
+   "action": "reword",
+   "nums": [
+    "109.6"
+   ],
+   "suggest": "Maelstrom Charger left this list when it stopped being an ability (109.6)",
+   "note": "history"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R178#f138b663d9#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ],
+   "note": "binding: quotes 151-copy-and-moved-mods.test.ts:309 title"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R178#c370fd26b9#0": {
+   "action": "reword",
+   "suggest": "(Maelstrom Charger's declined sacrifice used to be tested here",
+   "note": "history"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R178#92c378f732#0": {
+   "action": "cite",
+   "nums": [
+    "702.3g"
+   ],
+   "note": "binding: quotes 151-copy-and-moved-mods.test.ts:309 title"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R178#700f9647c3#0": {
+   "action": "reword",
+   "nums": [
+    "720.10"
+   ],
+   "suggest": "The move-a-mod primitive (720.10) DROPPED TWO ENTRIES",
+   "note": "history"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R178#49c264282c#0": {
+   "action": "cite",
+   "nums": [
+    "720.10a"
+   ],
+   "note": "allowlist reason string"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R178#1485f78e52#0": {
+   "action": "reword",
+   "nums": [
+    "720.10"
+   ],
+   "suggest": "The move-a-mod primitive collapsed both",
+   "note": "history"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R178#f1277f9b8d#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R178#bb416b29bb#0": {
+   "action": "reword",
+   "nums": [
+    "706.9"
+   ],
+   "suggest": "Fixed (706.9), both halves",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#2d5ad840d8#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "Fixed (706.13), and better than the ticket asked.",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#86d89dcf2f#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "The played item's ID is on the spellPlayed payload (706.13)",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#fd52f9ff3f#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "the way it is on spellPlayed",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#f0a510d99b#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "the way it is on spellPlayed",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#56b2a7e79c#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "(fixed first)",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#21ec967ce0#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#25f516b7f7#0": {
+   "action": "cite",
+   "nums": [
+    "720.10"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#636598c5a7#0": {
+   "action": "cite",
+   "nums": [
+    "109.6"
+   ],
+   "note": "closed ledger"
+  },
+  "client/ledgers/card-todo-closed.ts##R178#99a64323a4#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "the item id",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R178#ebfd72bb98#0": {
+   "action": "reword",
+   "nums": [
+    "706.13"
+   ],
+   "suggest": "the item id",
+   "note": "closed ledger history"
+  },
+  "client/docs/17-oracle-text-audit.md##R190#f1feba295e#0": {
+   "action": "reword",
+   "suggest": "the Glimpse-reminder class (report #106)",
+   "note": "process ruling; no CR rule"
+  },
+  "client/engine/src/engine.ts##R190#80ba219720#0": {
+   "action": "reword",
+   "suggest": "(report #106)",
+   "note": "process history"
+  },
+  "client/ledgers/card-todo-closed.ts##R190#5b201d951f#0": {
+   "action": "reword",
+   "suggest": "Fixed 2026-08-26 (report #106).",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R190#9b405ce35b#0": {
+   "action": "reword",
+   "suggest": "the Glimpse-reminder precedent (report #106)",
+   "note": "process precedent"
+  },
+  "client/ledgers/card-todo-closed.ts##R190#480cfe747f#0": {
+   "action": "reword",
+   "suggest": "the Glimpse glossary fix",
+   "note": "process history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R190#30f90945d8#0": {
+   "action": "reword",
+   "suggest": "Fixed (report #106), reworded off E.",
+   "note": "closed ledger history"
+  },
+  "client/ui/glossary.ts##R190#53a2288398#0": {
+   "action": "drop",
+   "note": "process history; report #106 already named"
+  },
+  "client/ui/glossary.ts##R190#3ea8dcf41a#0": {
+   "action": "reword",
+   "suggest": "2026-08-26, report #106",
+   "note": "process history"
+  },
+  "client/ui/glossary.ts##R190#66e5f5ea82#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ],
+   "note": "glossary Glimpse row ruling field"
+  },
+  "client/ui/glossary.ts##R190#10cf24f9bf#0": {
+   "action": "reword",
+   "nums": [
+    "801.10"
+   ],
+   "suggest": "Fixed alongside Glimpse (report #106)",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R190#05fe157cda#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ],
+   "note": "glossary Recycle row ruling field"
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R190#71d79c9230#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R190#01d53d420e#0": {
+   "action": "reword",
+   "suggest": "the Glimpse glossary fix",
+   "note": "process history"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R190#dd68b8e635#0": {
+   "action": "unsure",
+   "note": "register-staleness test token list; vanishes/reworked with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R190#6b6cff71c6#0": {
+   "action": "cite",
+   "nums": [
+    "801.10"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R190#e79e5562ba#0": {
+   "action": "reword",
+   "nums": [
+    "408.1"
+   ],
+   "suggest": "the old wording is back",
+   "note": "history in an assert message"
+  },
+  "client/docs/16-divergence-inventory.md##R197b#31e3566d13#0": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "the look-at-a-hand leak (D6.5a)",
+   "note": "history"
+  },
+  "client/engine/scripts/cr/extract.d.mts##R197b#073d32b258#0": {
+   "action": "unsure",
+   "note": "cr pipeline ruling-id grammar example; vanishes/reworked with register deletion"
+  },
+  "client/engine/scripts/cr/extract.d.mts##R197b#e158c7faf5#0": {
+   "action": "unsure",
+   "note": "cr pipeline ruling-id grammar example; vanishes/reworked with register deletion"
+  },
+  "client/engine/scripts/cr/schema.mjs##R197b#b85abbf392#0": {
+   "action": "unsure",
+   "note": "cr pipeline ruling-id grammar example; vanishes/reworked with register deletion"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R197b#fc9947e0c8#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R197b#b12e6db2f2#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R197b#140fc29955#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R197b#8c3ec961b4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5b"
+   ]
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#33c503019c#0": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "before the look-at-a-hand fix (D6.5a) and after",
+   "note": "history"
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#46d2942ef3#0": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "the three 'look at a hand' cards (D6.5a)",
+   "note": "history"
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#8f1e5ce3f5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#777b69c1a5#0": {
+   "action": "reword",
+   "suggest": "The look-at-a-hand ruling called this",
+   "note": "cites a section of the retired ruling"
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#1e6e94c838#0": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "the look-at-a-hand fix",
+   "note": "history"
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#d1dc9f390f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#975710a805#0": {
+   "action": "reword",
+   "suggest": "(the look-at-a-hand and handEntered leaks)",
+   "note": "history"
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#5b6a97a353#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R197b#4a19f2d555#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R197b#17ddd82b48#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/engine/test/184-ruling-register.test.ts##R197b#69b6079a7b#0": {
+   "action": "unsure",
+   "note": "register-parser test (b-suffix ruling id); vanishes/reworked with register deletion"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R197b#606bb3e1ec#0": {
+   "action": "unsure",
+   "note": "register-parser test (b-suffix ruling id); vanishes/reworked with register deletion"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R197b#80fa488ee8#0": {
+   "action": "unsure",
+   "note": "register-parser test (b-suffix ruling id); vanishes/reworked with register deletion"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R197b#80fa488ee8#1": {
+   "action": "unsure",
+   "note": "register-parser test (b-suffix ruling id); vanishes/reworked with register deletion"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R197b#f984f36f75#0": {
+   "action": "unsure",
+   "note": "register-parser test (b-suffix ruling id); vanishes/reworked with register deletion"
+  },
+  "client/engine/test/42-dark-b.test.ts##R197b#9243092143#0": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "before and after the fix stopped the card publishing",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R197b#baf22e6029#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/engine/test/util.ts##R197b#97c64a1cd3#0": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "after the fix",
+   "note": "history"
+  },
+  "client/engine/test/util.ts##R197b#97c64a1cd3#1": {
+   "action": "reword",
+   "nums": [
+    "D6.5a"
+   ],
+   "suggest": "the three 'look at a hand' cards",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R197b#3693bb92ef#0": {
+   "action": "reword",
+   "suggest": "(the handEntered and look-at-a-hand leaks)",
+   "note": "closed ledger history"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#2286c233eb#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#a696be6d1b#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#748354bf20#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#2941ea7138#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#bd4026b71a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5b"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#396c2e1d3f#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#f674e22f77#0": {
+   "action": "cite",
+   "nums": [
+    "402.2a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#c7c166da50#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#0b6732ec3d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#5b4494cd35#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R197b#919983fcfc#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5a"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#86f9df22e1#0": {
+   "action": "cite",
+   "nums": [
+    "803.6i"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#aff34e9eb4#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#91db57fd2f#0": {
+   "action": "cite",
+   "nums": [
+    "403.4"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#d4d55034ec#0": {
+   "action": "cite",
+   "nums": [
+    "402.6"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#5c4488f44f#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#37b080f4b4#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#683009323a#0": {
+   "action": "drop",
+   "note": "code detail (zoneTake vs splice)"
+  },
+  "client/engine/src/apply.ts##R311#4b03e3fd3d#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#3daa00ae1a#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#01505555f9#0": {
+   "action": "reword",
+   "nums": [
+    "403.3b"
+   ],
+   "suggest": "It was `modPrice` until the cache gained every hand mode (403.3b)",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R311#2bfe7618bf#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#9c066fcfb2#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#3d5d1f9df1#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#1009b24c0c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#5fdb336f75#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#c8a86ccc80#0": {
+   "action": "cite",
+   "nums": [
+    "723.5b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#b4c509a250#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#c2d20ed48c#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#88bd4ed9bd#0": {
+   "action": "reword",
+   "suggest": "a log from before that change replays byte for byte",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R311#b0f14cc83e#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#c49a005060#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#a9fc63cdda#0": {
+   "action": "cite",
+   "nums": [
+    "702.2d"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#9d3119e5da#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#a4facb649a#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#701d8da503#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#55dbbacc3d#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#17b53888df#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#755247b516#0": {
+   "action": "reword",
+   "suggest": "Before the change",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R311#fd688bd782#0": {
+   "action": "cite",
+   "nums": [
+    "403.4"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#3f4a650a59#0": {
+   "action": "cite",
+   "nums": [
+    "403.4"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#cc6983a2a9#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R311#3407597bf1#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R311#cfc3d38e01#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R311#e42e886249#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/src/types.ts##R311#6b4ebfbeec#0": {
+   "action": "reword",
+   "suggest": "every log written before the cache gained the hand's modes",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R311#53ded0f3c5#0": {
+   "action": "cite",
+   "nums": [
+    "403.4"
+   ]
+  },
+  "client/engine/test/369-cache-is-the-hand.test.ts##R311#c4cec3f418#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/test/369-cache-is-the-hand.test.ts##R311#91b40992ad#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/engine/test/369-cache-is-the-hand.test.ts##R311#33744ea265#0": {
+   "action": "cite",
+   "nums": [
+    "702.2d"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R311#7e6ca6b2b2#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R311#ea693dd1ef#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a",
+    "803.6i"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R311#9e4a8658f5#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R311#95515fc6a3#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R311#16f273de98#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R311#2b229f669d#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R311#5aae7657bd#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R311#9ee4c5b16b#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R311#0347dba7e7#0": {
+   "action": "cite",
+   "nums": [
+    "702.2d"
+   ]
+  },
+  "client/ledgers/raq.ts##R311#5d0e46d2fc#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/server/rooms.ts##R311#60cd45fa42#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/server/rooms.ts##R311#ac0e1da5bd#0": {
+   "action": "reword",
+   "suggest": "every older playCached",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R311#e8fd2dbe22#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ],
+   "note": "glossary row ruling field"
+  },
+  "client/ui/inspect.ts##R311#86fdba4ac8#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/inspect.ts##R311#0c40d52ff6#0": {
+   "action": "drop",
+   "note": "UI helper label"
+  },
+  "client/ui/inspect.ts##R311#16c5ccf96b#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/inspect.ts##R311#74d2c5070f#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/ui/inspect.ts##R311#652cb01aac#0": {
+   "action": "cite",
+   "nums": [
+    "702.2d"
+   ]
+  },
+  "client/ui/inspect.ts##R311#3a8a743d1d#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/inspect.ts##R311#064e389601#0": {
+   "action": "reword",
+   "suggest": "exactly as before",
+   "note": "history"
+  },
+  "client/ui/main.ts##R311#c8a35e0506#0": {
+   "action": "cite",
+   "nums": [
+    "702.2d"
+   ]
+  },
+  "client/ui/main.ts##R311#8cda28017e#0": {
+   "action": "cite",
+   "nums": [
+    "702.2d"
+   ]
+  },
+  "client/ui/main.ts##R311#c46f97f88e#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R311#188d571682#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R311#07ee1c1383#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R311#d46c70f766#0": {
+   "action": "reword",
+   "nums": [
+    "403.3b"
+   ],
+   "suggest": "211 → 215 when the cache gained the hand's modes (report #195)",
+   "note": "history"
+  },
+  "client/ui/test/384-touch-tap-reads.test.ts##R311#6d4e823832#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R311#1f84a9c923#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R311#9729f94faa#0": {
+   "action": "cite",
+   "nums": [
+    "803.6i"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R311#6958b476e9#0": {
+   "action": "cite",
+   "nums": [
+    "803.6i"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R333#20edbdbbf3#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R333#38d50ba1dc#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/src/engine.ts##R333#1486044c78#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/src/engine.ts##R333#2aa8afeb9d#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/test/393-raq-mods.test.ts##R333#80c85ac8ea#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/test/403-raq-fix-mods.test.ts##R333#f028eed5ff#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/test/403-raq-fix-mods.test.ts##R333#4acba73fbf#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/test/403-raq-fix-mods.test.ts##R333#33f0734b2a#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R333#d42c0d8c2f#0": {
+   "action": "cite",
+   "nums": [
+    "304.11d"
+   ],
+   "note": "allowlist reason string"
+  },
+  "client/ledgers/card-todo-closed.ts##R333#62f277b81f#0": {
+   "action": "reword",
+   "nums": [
+    "304.11d"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round; 304.11d)",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/raq.ts##R333#f34b3abd7f#0": {
+   "action": "reword",
+   "nums": [
+    "304.11d"
+   ],
+   "suggest": "fixed 2026-10-09 (304.11d).",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R341#5ef11921f7#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R341#a9d7bb1e7e#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R341#836ff5fb7c#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R341#8c12564426#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R341#ac3680cb37#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R341#b69fbbaf8f#0": {
+   "action": "drop",
+   "note": "engine fast-path constant"
+  },
+  "client/engine/src/engine.ts##R341#421d1a2f73#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R341#7ee63de871#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R341#8dcf71ad90#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R341#0e9ea6840c#0": {
+   "action": "cite",
+   "nums": [
+    "712.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R341#389684a5ab#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R341#08a3456266#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R341#471fb51b0b#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/src/types.ts##R341#087bfbaf50#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#010f16569c#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#e71dce00cf#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#5cac0758eb#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#55539468ec#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#5b972ef593#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#65befadaf7#0": {
+   "action": "cite",
+   "nums": [
+    "712.7"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R341#7f118a83ea#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a",
+    "710.7"
+   ]
+  },
+  "client/ui/cardtext.ts##R341#181390c0db#0": {
+   "action": "cite",
+   "nums": [
+    "710.2a"
+   ]
+  },
+  "client/README.md##R350#23c9b41ae3#0": {
+   "action": "unsure",
+   "note": "README row describing the register itself (R1–R350 count, checked by 184); rewrite in the register-deletion step"
+  }
+ }
+}

@@ -1,0 +1,2592 @@
+{
+ "unit": "M024",
+ "decisions": {
+  "client/docs/06-roadmap.md##R13#ce238006f1#0": {
+   "action": "reword",
+   "suggest": "provisional engine calls (since settled)",
+   "note": "roadmap history of provisional rulings"
+  },
+  "client/docs/06-roadmap.md##R13#e47e040cda#0": {
+   "action": "reword",
+   "suggest": "provisional engine calls (since settled)",
+   "note": "roadmap history of provisional rulings"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R13#5a9a488b2b#0": {
+   "action": "cite",
+   "nums": [
+    "608.4c"
+   ],
+   "note": "blocked column stays blocked"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R13#b255a378d1#0": {
+   "action": "cite",
+   "nums": [
+    "608.4c"
+   ],
+   "note": "blocked column stays blocked"
+  },
+  "client/engine/src/engine.ts##R13#61f32056cf#0": {
+   "action": "cite",
+   "nums": [
+    "802.16e"
+   ],
+   "note": "Piercing attacker through dead block"
+  },
+  "client/engine/src/engine.ts##R13#67249df76c#0": {
+   "action": "cite",
+   "nums": [
+    "608.4c"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R13#b02fd31b5b#0": {
+   "action": "cite",
+   "nums": [
+    "608.4c"
+   ]
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R13#b496175e89#0": {
+   "action": "cite",
+   "nums": [
+    "608.4c"
+   ]
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R13#f4190889f5#0": {
+   "action": "cite",
+   "nums": [
+    "802.16e"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R13#732544ee55#0": {
+   "action": "cite",
+   "nums": [
+    "608.4c"
+   ]
+  },
+  "client/ui/glossary.ts##R13#1f206304a7#0": {
+   "action": "cite",
+   "nums": [
+    "802.16"
+   ],
+   "note": "Piercing generalised beyond printed reminder"
+  },
+  "client/ui/glossary.ts##R13#fa30ed344a#0": {
+   "action": "cite",
+   "nums": [
+    "802.16e"
+   ],
+   "note": "glossary ruling field entry"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R13#1f5bc82365#0": {
+   "action": "reword",
+   "suggest": "its ruling numbers",
+   "note": "quotes the leaked string of report #118 (history)"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R13#e50e48ae12#0": {
+   "action": "cite",
+   "nums": [
+    "802.16"
+   ]
+  },
+  "client/ui/test/227-reminder-text.test.ts##R13#b0fe3ba5c8#0": {
+   "action": "reword",
+   "suggest": "its ruling numbers",
+   "note": "quotes the leaked string of report #118 (history)"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R13#31f6c27433#0": {
+   "action": "unsure",
+   "note": "code asserts glossary ruling field matches R_NUMBER regex; needs test rework, not a swap"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R13#43471d5d48#0": {
+   "action": "cite",
+   "nums": [
+    "802.16"
+   ]
+  },
+  "client/ui/test/286-rules-reference.test.ts##R13#71c80b88f8#0": {
+   "action": "unsure",
+   "note": "example of the R-number pattern the player-copy guard rejects; not a citation, keep literal"
+  },
+  "client/docs/16-divergence-inventory.md##R67#9669b613dc#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ],
+   "note": "play declares its target"
+  },
+  "client/engine/src/cards/dsl.ts##R67#9a1e91f7f8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": "trigger targets chosen as it goes on the stack"
+  },
+  "client/engine/src/cards/dsl.ts##R67#a07e8851a0#0": {
+   "action": "drop",
+   "note": "engine design: restriction reads firing event; no CR rule states it"
+  },
+  "client/engine/src/cards/registry.ts##R67#a170ee7390#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": "targets collected as the trigger goes on the stack"
+  },
+  "client/engine/src/cards/registry.ts##R67#37005fb2a4#0": {
+   "action": "cite",
+   "nums": [
+    "110.7"
+   ],
+   "note": "required target with no candidate: cannot be played"
+  },
+  "client/engine/src/cards/registry.ts##R67#f2cf9a9231#0": {
+   "action": "cite",
+   "nums": [
+    "110.2"
+   ],
+   "note": "no word target, no declared target"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R67#bc21fb7855#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R67#b8b8d3fdb6#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R67#339fe61d52#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R67#42728e970d#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R67#908fd53111#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R67#0a91e8f632#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "two printed targets are two targets"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R67#4a943e8eaa#0": {
+   "action": "reword",
+   "nums": [
+    "110.1a"
+   ],
+   "suggest": "was made false when bin cards became declared targets",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R67#acf7cb7a09#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R67#179c3e2de3#0": {
+   "action": "reword",
+   "suggest": "settling what the target-at-cast rule had left open",
+   "note": "history; R83 is the subject"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R67#07d521f451#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R67#c6f49b21b4#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R67#ba4bf574e5#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R67#0b32a83a67#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R67#fbc48ca450#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R67#47db870d4c#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ],
+   "note": "bracketed costs paid as item goes on stack"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R67#2b45b61931#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R67#85daf757d2#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R67#5e126af68f#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R67#4d6bc495e4#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ],
+   "note": "everything declared before the stack"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R67#21859ecad5#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R67#7d3f52f608#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R67#51c96fba98#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R67#4cb883c861#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R67#623c8f136b#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R67#ed6bbe1b21#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R67#be127f24f4#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R67#31a7505614#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R67#d45197b543#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "new target judged as first chosen"
+  },
+  "client/engine/src/engine.ts##R67#c9ef60641b#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R67#d3825cabbe#0": {
+   "action": "reword",
+   "nums": [
+    "110.1a"
+   ],
+   "suggest": "the same defect declaring targets at cast fixed",
+   "note": "history analogy"
+  },
+  "client/engine/src/engine.ts##R67#44dc26a54c#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ],
+   "note": "non-target choice made at resolution"
+  },
+  "client/engine/src/types.ts##R67#5b8df89f91#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ],
+   "note": "non-target choice made at resolution"
+  },
+  "client/engine/test/114-literal-dark.test.ts##R67#8a7e9cddac#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/119-play-and-token-events.test.ts##R67#8628dad0bf#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/119-play-and-token-events.test.ts##R67#266789c532#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R67#aa34137b7e#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R67#4efc3899f8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R67#1dc7284c7a#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R67#36527aed55#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R67#1dc7284c7a#0~1": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R67#7260dc57b5#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R67#21e006808c#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R67#8e3e6d5145#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R67#5ef620a47d#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R67#1dc7284c7a#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R67#9f8091d5d8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R67#5bc10dcca8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/208-region-scoping-is-absolute.test.ts##R67#a40b9a3789#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R67#8bdab860f1#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R67#4ce33840f4#0": {
+   "action": "cite",
+   "nums": [
+    "702.5"
+   ],
+   "note": "bracketed cost paid as it goes on stack"
+  },
+  "client/engine/test/27-metal-b.test.ts##R67#4909015597#0": {
+   "action": "reword",
+   "suggest": "so the target-at-cast round implemented it",
+   "note": "history"
+  },
+  "client/engine/test/27-metal-b.test.ts##R67#9452a645d1#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R67#0ea18aaa95#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R67#bfcc82127f#0": {
+   "action": "cite",
+   "nums": [
+    "110.2"
+   ],
+   "note": "no word target: not a target, chosen on resolution"
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R67#7a1e59d2a6#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R67#e21201aeab#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R67#dd08cb5403#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R67#2dc9f8c13c#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R67#f102dd2695#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R67#5b734b9d49#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R67#e39e68789a#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R67#5ba27b94d5#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R67#81ed8ecd4d#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R67#9bbc84299f#0": {
+   "action": "cite",
+   "nums": [
+    "110.7"
+   ],
+   "note": "required target with none legal: cannot be played"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R67#4611c0722c#0": {
+   "action": "cite",
+   "nums": [
+    "110.7"
+   ],
+   "note": "required target with none legal: cannot be played"
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R67#931619b74b#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ],
+   "note": "X fixed before targets declared"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R67#e4c5a69688#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R67#8237320756#0": {
+   "action": "cite",
+   "nums": [
+    "D4.2"
+   ],
+   "note": "cast may be cancelled before it goes on stack"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#f54168010f#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#089818faf6#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#edca9534ac#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#7f982ca376#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#0456c80d36#0": {
+   "action": "cite",
+   "nums": [
+    "110.7"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#7e77f6f61a#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "target player / target opponent"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#aa5fa9a138#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "target player / target opponent"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#7fb4af874c#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#cca21c7e1f#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#2c4c4c19b8#0": {
+   "action": "cite",
+   "nums": [
+    "702.3"
+   ],
+   "note": "X then targets"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#0c25d1af53#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R67#bf9d4fc1e5#0": {
+   "action": "drop",
+   "note": "R67 tag on a bin-target legality test; nothing R67-specific asserted"
+  },
+  "client/engine/test/68-target-conformance.test.ts##R67#3a3dbc716d#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "each printed target is a separate target"
+  },
+  "client/engine/test/68-target-conformance.test.ts##R67#7578e96876#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "each printed target is a separate target"
+  },
+  "client/engine/test/68-target-conformance.test.ts##R67#0fee190959#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "each printed target is a separate target"
+  },
+  "client/engine/test/68-target-conformance.test.ts##R67#ec799c8979#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R67#084b14d6f7#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R67#cddf33f24c#0": {
+   "action": "reword",
+   "nums": [
+    "110.1a"
+   ],
+   "suggest": "the same shape as the target-at-cast report",
+   "note": "history analogy"
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R67#e0ba2469fc#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R67#43edbb875f#0": {
+   "action": "cite",
+   "nums": [
+    "110.2"
+   ],
+   "note": "a cost choice is not a target"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R67#346ad2c22e#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R67#14b690f3de#0": {
+   "action": "reword",
+   "nums": [
+    "110.3c"
+   ],
+   "suggest": "since player targets were added",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R67#c8aceece96#0": {
+   "action": "cite",
+   "nums": [
+    "704.1a"
+   ]
+  },
+  "client/ui/inspect.ts##R67#5b016a87ed#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/ui/main.ts##R67#bad1c763db#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/ui/test/198-copy-art.test.ts##R67#a794607bd5#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R67#442331d1cf#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ]
+  },
+  "client/ui/test/74-ui-stack-mod-host.test.ts##R67#6cb0a07dd3#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R67#6cb0a07dd3#0": {
+   "action": "cite",
+   "nums": [
+    "702.3c"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R75#e110be7adc#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "effect places 'in my formation' at resolution"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R75#f11daa1c5c#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a",
+    "603.2b"
+   ],
+   "note": "orthogonal adjacency, only in formation"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R75#708725a97a#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "controller chooses position at resolution"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R75#184b71b709#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "controller chooses position at resolution"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R75#5b857d8254#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "controller chooses position at resolution"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R75#a28d41cf61#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "controller chooses position at resolution"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R75#91cd75f215#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "controller chooses position at resolution"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R75#93c6ce067a#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ],
+   "note": "controller chooses position at resolution"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R75#cb0a790871#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R75#ad91061499#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R75#af7ca8be06#0": {
+   "action": "reword",
+   "nums": [
+    "603.3"
+   ],
+   "suggest": "From 2026-08-21 until then",
+   "note": "history of edge reading"
+  },
+  "client/engine/src/engine.ts##R75#fea3838da0#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#52a3b7f1ee#0": {
+   "action": "cite",
+   "nums": [
+    "602.3"
+   ],
+   "note": "front row fills first"
+  },
+  "client/engine/src/engine.ts##R75#9e4f01265a#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ],
+   "note": "blocks and column effects move with column"
+  },
+  "client/engine/src/engine.ts##R75#6ae34480db#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#7f9d1d87c8#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ],
+   "note": "legal positions"
+  },
+  "client/engine/src/engine.ts##R75#371ba5c2d2#0": {
+   "action": "drop",
+   "note": "engine grid helper; no rule content"
+  },
+  "client/engine/src/engine.ts##R75#36a44164c1#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#560bcb556d#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#560bcb556d#1": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#b1ee0f5b3c#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#8faa8ce31b#0": {
+   "action": "reword",
+   "nums": [
+    "603.3"
+   ],
+   "suggest": "The earlier reading closed the edges from 2026-08-21 to 2026-09-25",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R75#5f8b6e9ab2#0": {
+   "action": "cite",
+   "nums": [
+    "602.6",
+    "602.6d"
+   ],
+   "note": "choose; auto when one legal"
+  },
+  "client/engine/src/engine.ts##R75#233dd3b493#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R75#8a610fee77#0": {
+   "action": "reword",
+   "nums": [
+    "602.6"
+   ],
+   "suggest": "was folded into the effect-placement table when that rule was written",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R75#859afc2807#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/types.ts##R75#60842d42ce#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/types.ts##R75#0b1f06cfed#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/src/types.ts##R75#6ada0cc361#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#90429dca28#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#872bf1335c#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#2be611de64#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#314101a79f#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#98d5be0191#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#1dd1ed1b2e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#fc4ac54b0e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#d0ca175de1#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/115-literal-light.test.ts##R75#e387d684a4#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R75#a40e3a269c#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R75#c9dfd0684b#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/22-playtest3.test.ts##R75#78f9607af0#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ],
+   "note": "both ends"
+  },
+  "client/engine/test/23-wood-a.test.ts##R75#55801d2379#0": {
+   "action": "reword",
+   "nums": [
+    "603.3"
+   ],
+   "suggest": "The edges were closed from 2026-08-21, and this made one 1/1",
+   "note": "history"
+  },
+  "client/engine/test/26-metal-a.test.ts##R75#0306845fa0#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R75#6c7fc60118#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R75#34bf4a5c65#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R75#fbc07ffd3c#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R75#c18be33de6#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R75#522c53a954#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ],
+   "note": "new column at either end"
+  },
+  "client/engine/test/38-light-a.test.ts##R75#c51507021e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ],
+   "note": "new column at either end"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R75#ea30dd7e61#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R75#7cbaea9d02#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ],
+   "note": "left insert moves column-keyed things"
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#beec47ed56#0": {
+   "action": "cite",
+   "nums": [
+    "602.6",
+    "603.2a"
+   ],
+   "note": "joining a formation; adjacency"
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#27e0bf0981#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#7c4adc097e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#da7be427c2#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#d0dda48485#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#aa29849635#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#0a1d3290a8#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#fbc15709f8#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#351f0d1617#0": {
+   "action": "cite",
+   "nums": [
+    "603.2a"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#f2b916cf11#0": {
+   "action": "reword",
+   "nums": [
+    "603.3"
+   ],
+   "suggest": "The earlier reading closed the edge",
+   "note": "history"
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#7b21c83c68#0": {
+   "action": "cite",
+   "nums": [
+    "603.2b"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#1326eb933a#0": {
+   "action": "cite",
+   "nums": [
+    "602.3"
+   ]
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#5dd30598c6#0": {
+   "action": "cite",
+   "nums": [
+    "603.5"
+   ],
+   "note": "grows without limit"
+  },
+  "client/engine/test/66-formation-placement.test.ts##R75#750350b127#0": {
+   "action": "cite",
+   "nums": [
+    "602.5d"
+   ],
+   "note": "defending empty columns never closed up"
+  },
+  "client/engine/test/73-play-into-formation.test.ts##R75#36a3bdf46c#0": {
+   "action": "reword",
+   "nums": [
+    "602.6"
+   ],
+   "suggest": "folding it into the effect-placement rule",
+   "note": "history"
+  },
+  "client/engine/test/73-play-into-formation.test.ts##R75#36a3bdf46c#1": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/73-play-into-formation.test.ts##R75#fc448d4f32#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/engine/test/73-play-into-formation.test.ts##R75#997d36a2f7#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R75#cde7897ba3#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R75#32f82ab92d#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R75#bafc20f181#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R75#75b88ee17c#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R75#24dc7ddea8#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R75#a005eea844#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R75#6620edbcad#0": {
+   "action": "cite",
+   "nums": [
+    "602.6a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R75#25223adf9e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R75#723e5ecfe5#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R75#8edcf55f6b#0": {
+   "action": "reword",
+   "nums": [
+    "603.3"
+   ],
+   "suggest": "the earlier adjacency reading doing what it said",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R75#8edcf55f6b#1": {
+   "action": "reword",
+   "nums": [
+    "603.3"
+   ],
+   "suggest": "The earlier reading took",
+   "note": "history"
+  },
+  "client/server/e2e/suite.test.ts##R75#6355cf8e42#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/server/e2e/test-formation-decision.ts##R75#1d2658ec9b#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/server/e2e/test-formation-decision.ts##R75#5407785776#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/server/e2e/test-formation-decision.ts##R75#420d46827e#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/server/e2e/test-formation-decision.ts##R75#5e954b09ac#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/formation.ts##R75#c73416c4bc#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/formation.ts##R75#35382edc55#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/formation.ts##R75#f3b0f466d4#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/inspect.ts##R75#ac7d16c810#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/inspect.ts##R75#6cdc295f19#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/inspect.ts##R75#6d274415f1#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/inspect.ts##R75#d43842f2ed#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/main.ts##R75#0224d1aea0#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/main.ts##R75#585e8574c3#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/main.ts##R75#a9c5a5ade3#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/main.ts##R75#522ebc4e4e#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/test/126-assign-split.test.ts##R75#d844e1e6d6#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/ui/test/55-ui-formation.test.ts##R75#57b7a8fcf6#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/test/55-ui-formation.test.ts##R75#b12e14be8f#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/test/55-ui-formation.test.ts##R75#c88a4282a6#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ]
+  },
+  "client/ui/test/55-ui-formation.test.ts##R75#4496228176#0": {
+   "action": "cite",
+   "nums": [
+    "602.6"
+   ]
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0": {
+   "action": "unsure",
+   "note": "owner's pasted UI text quoting leaked R-numbers (fixture doc); the R-list is the complaint, keep literal"
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0~1": {
+   "action": "unsure",
+   "note": "owner's pasted UI text quoting leaked R-numbers (fixture doc); the R-list is the complaint, keep literal"
+  },
+  "client/engine/src/apply.ts##R89#09e4f86337#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/apply.ts##R89#6b3bf2ca28#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/apply.ts##R89#b7e11870b6#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/apply.ts##R89#8abbd6f163#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/apply.ts##R89#f5f76c79be#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R89#7c6b2289bf#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R89#5514bef390#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ],
+   "note": "spell token augmentable in deployment, attributes only"
+  },
+  "client/engine/src/engine.ts##R89#e1eb01a4fc#0": {
+   "action": "reword",
+   "suggest": "in the spell-token regroup block below",
+   "note": "code-block pointer; no CR rule says token not on erased pile"
+  },
+  "client/engine/src/engine.ts##R89#ebc0d185a6#0": {
+   "action": "cite",
+   "nums": [
+    "506.2h"
+   ],
+   "note": "token erased at regroup takes its mods"
+  },
+  "client/engine/test/112-literal-wood.test.ts##R89#a4994ab6ee#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/112-literal-wood.test.ts##R89#723ff8e6a8#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R89#7325d9b158#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R89#b231101850#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R89#271052d490#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R89#15633d9ca6#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R89#257940c3b2#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R89#990302bfe5#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/glossary.ts##R89#9af0eb51b9#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/glossary.ts##R89#21131750ef#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/inspect.ts##R89#2d90a77152#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/inspect.ts##R89#f84b4c4a19#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/inspect.ts##R89#606cdc31ad#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/inspect.ts##R89#8bb4d8ccb7#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/main.ts##R89#6f944557cf#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/main.ts##R89#01ea5814ff#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/main.ts##R89#69ced8ceab#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/main.ts##R89#b3a9b92b69#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/style.css##R89#19d9f46cf2#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/165-token-loss-warning.test.ts##R89#b1b26e8032#0": {
+   "action": "reword",
+   "suggest": "in the spell-token regroup block",
+   "note": "code-block pointer"
+  },
+  "client/ui/test/165-token-loss-warning.test.ts##R89#2c1a4ad26e#0": {
+   "action": "reword",
+   "suggest": "the spell-token regroup block ten lines below startRegroup says so",
+   "note": "code-block pointer"
+  },
+  "client/ui/test/231-manual-text.test.ts##R89#c416ce19ad#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#dd6bcc9cff#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#b4f73e52aa#0": {
+   "action": "reword",
+   "nums": [
+    "721.4a"
+   ],
+   "suggest": "the answer from before spell-token hosts",
+   "note": "history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#dab86f6567#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#4ffe5e4a28#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#dfb4d49755#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#095ee94c82#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R89#7eb214f39e#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#1c1e6d1c1b#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#ae52dc643d#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#4573eb9104#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#da35fc831f#0": {
+   "action": "reword",
+   "nums": [
+    "721.4a"
+   ],
+   "suggest": "the answer from before spell-token hosts",
+   "note": "history"
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#46b7dd4bad#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#7f1af109e3#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/ui/test/77-playtest-round17.test.ts##R89#afcc2830e7#0": {
+   "action": "cite",
+   "nums": [
+    "721.4a"
+   ]
+  },
+  "client/engine/src/apply.ts##R100#8419ab4afd#0": {
+   "action": "cite",
+   "nums": [
+    "402.6"
+   ],
+   "note": "hand restriction does not reach other zones"
+  },
+  "client/engine/src/apply.ts##R100#3328bf71d3#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/src/apply.ts##R100#18fa0f6035#0": {
+   "action": "cite",
+   "nums": [
+    "402.6"
+   ]
+  },
+  "client/engine/src/apply.ts##R100#1478de0a3f#0": {
+   "action": "cite",
+   "nums": [
+    "402.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R100#83b7e0ab79#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R100#7b52481247#0": {
+   "action": "reword",
+   "nums": [
+    "702.2b"
+   ],
+   "suggest": "as of round 17",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R100#c49ae2ab0c#0": {
+   "action": "reword",
+   "nums": [
+    "702.2b"
+   ],
+   "suggest": "as of round 17",
+   "note": "history"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R100#264499e2f2#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R100#18a57dc85e#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/369-cache-is-the-hand.test.ts##R100#4cd8ba8ec3#0": {
+   "action": "cite",
+   "nums": [
+    "402.6"
+   ]
+  },
+  "client/engine/test/369-cache-is-the-hand.test.ts##R100#a65c01deae#0": {
+   "action": "cite",
+   "nums": [
+    "402.6"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R100#452ce768cd#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R100#0baa23cada#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/61-negation.test.ts##R100#c81890de11#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/61-negation.test.ts##R100#98a6f10123#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R100#b2287d70a5#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R100#24d69c4ca3#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R100#e5a4d06821#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/81-card-drill.test.ts##R100#bafb55154e#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/engine/test/84-card-semantics.test.ts##R100#4da1450936#0": {
+   "action": "cite",
+   "nums": [
+    "702.2b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R100#d73aa3739b#0": {
+   "action": "reword",
+   "nums": [
+    "702.2b"
+   ],
+   "suggest": "as of round 17",
+   "note": "history"
+  },
+  "client/engine/src/cards/registry.ts##R101#d08564c1c0#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ],
+   "note": "transform back face"
+  },
+  "client/engine/src/cards/registry.ts##R101#da2d942452#0": {
+   "action": "reword",
+   "suggest": "was parked in the transform round",
+   "note": "history"
+  },
+  "client/engine/src/cards/registry.ts##R101#d7a5f7108c#0": {
+   "action": "reword",
+   "suggest": "in the original transform note",
+   "note": "history"
+  },
+  "client/engine/src/cards/registry.ts##R101#a91ec8c8f7#0": {
+   "action": "cite",
+   "nums": [
+    "108.3b"
+   ],
+   "note": "transform only into its own back face"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R101#272a780a55#0": {
+   "action": "reword",
+   "nums": [
+    "108.3"
+   ],
+   "suggest": "as of the transform round",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R101#793fc5a068#0": {
+   "action": "reword",
+   "suggest": "the one clause the transform round left behind",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R101#0e46d1ffc8#0": {
+   "action": "reword",
+   "nums": [
+    "108.3"
+   ],
+   "suggest": "UNPARKED (playtest ledger #24)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R101#0d97556c0b#0": {
+   "action": "reword",
+   "nums": [
+    "108.3a"
+   ],
+   "suggest": "This reverses the original transform reading, which shipped",
+   "note": "reversed reading"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R101#f0b7b4adb5#0": {
+   "action": "reword",
+   "suggest": "The original transform reading's reasoning",
+   "note": "reversed reading"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R101#4c3fc29b09#0": {
+   "action": "reword",
+   "nums": [
+    "201.4"
+   ],
+   "suggest": "The consequence the original transform reading was avoiding",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R101#27de37edb7#0": {
+   "action": "reword",
+   "nums": [
+    "108.3"
+   ],
+   "suggest": "the transform's in-place rewrite",
+   "note": "engine mechanism name"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R101#1ce11237fa#0": {
+   "action": "reword",
+   "nums": [
+    "108.3"
+   ],
+   "suggest": "the transform's in-place rewrite",
+   "note": "engine mechanism name"
+  },
+  "client/engine/src/engine.ts##R101#b1afd76ca9#0": {
+   "action": "cite",
+   "nums": [
+    "710.9"
+   ],
+   "note": "turned over, other face up"
+  },
+  "client/engine/src/engine.ts##R101#e17beff664#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ],
+   "note": "same unit, counters and damage kept"
+  },
+  "client/engine/src/types.ts##R101#80430fa7c3#0": {
+   "action": "cite",
+   "nums": [
+    "710.9"
+   ]
+  },
+  "client/engine/src/types.ts##R101#074db0cd74#0": {
+   "action": "reword",
+   "nums": [
+    "201.4"
+   ],
+   "suggest": "the original transform reading assumed",
+   "note": "reversed reading"
+  },
+  "client/engine/src/types.ts##R101#8fcc5c4db1#0": {
+   "action": "reword",
+   "nums": [
+    "710.9"
+   ],
+   "suggest": "the one thing a transform could get away with mutating",
+   "note": "history; 'permanent' outdated"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R101#51d17baf95#0": {
+   "action": "reword",
+   "nums": [
+    "108.3a"
+   ],
+   "suggest": "The original transform reading shipped",
+   "note": "reversed reading"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R101#289f0e20ce#0": {
+   "action": "reword",
+   "nums": [
+    "201.4"
+   ],
+   "suggest": "under the original transform reading",
+   "note": "reversed reading"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R101#99fd54aec3#0": {
+   "action": "reword",
+   "nums": [
+    "201.4"
+   ],
+   "suggest": "under the original transform reading",
+   "note": "reversed reading"
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#7e0f044a4c#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#d78eed4014#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#3f5334f7dd#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#cea09af33a#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#a10e07de3f#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ],
+   "note": "transform test family label"
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#0df1a24a47#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#771a908508#0": {
+   "action": "reword",
+   "nums": [
+    "108.3a"
+   ],
+   "suggest": "The original transform reading shipped",
+   "note": "reversed reading"
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#699333d9ab#0": {
+   "action": "reword",
+   "suggest": "The original reading said as much",
+   "note": "history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#b79c59f87a#0": {
+   "action": "reword",
+   "nums": [
+    "201.4"
+   ],
+   "suggest": "The thing the original reading was protecting against",
+   "note": "history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#6a9b4de58c#0": {
+   "action": "cite",
+   "nums": [
+    "108.3b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#7963f73c4b#0": {
+   "action": "cite",
+   "nums": [
+    "108.3b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#742ee22a44#0": {
+   "action": "cite",
+   "nums": [
+    "201.4"
+   ],
+   "note": "back face exists only in play"
+  },
+  "client/engine/test/43-dark-c.test.ts##R101#1bdf8d0616#0": {
+   "action": "reword",
+   "suggest": "Parked in the transform round",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R101#f885e88d98#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ],
+   "note": "guard string = test title"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R101#9f305cba62#0": {
+   "action": "reword",
+   "nums": [
+    "108.3a"
+   ],
+   "suggest": "the original reading that a transformed Scholar is a token, since overruled",
+   "note": "reversed reading"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R101#d33044dc64#0": {
+   "action": "cite",
+   "nums": [
+    "108.3"
+   ]
+  },
+  "client/ui/inspect.ts##R101#4d725d603a#0": {
+   "action": "cite",
+   "nums": [
+    "108.3a"
+   ],
+   "note": "back face is not a token"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R101#93b3c1c2ac#0": {
+   "action": "unsure",
+   "note": "R101 here labels a resource-menu change (#63), not transform; likely a mis-cite"
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#ce35ebfeb0#0": {
+   "action": "cite",
+   "nums": [
+    "802.8d"
+   ],
+   "note": "Tough + Inverted defense"
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#4aba3674d8#0": {
+   "action": "cite",
+   "nums": [
+    "802.8d"
+   ],
+   "note": "Tough + Inverted defense"
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#6faa17a5f3#0": {
+   "action": "cite",
+   "nums": [
+    "713.4"
+   ],
+   "note": "state-check death from attribute combination"
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#0b995da790#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ],
+   "note": "Unaware reads printed stats"
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#dcc3568016#0": {
+   "action": "cite",
+   "nums": [
+    "709.4d"
+   ],
+   "note": "either grant order, same stats"
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#c40f8882c7#0": {
+   "action": "cite",
+   "nums": [
+    "802.8d"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R226#5fa1c26f45#0": {
+   "action": "cite",
+   "nums": [
+    "802.8d"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R226#8c688e22b8#0": {
+   "action": "cite",
+   "nums": [
+    "802.8d"
+   ]
+  },
+  "client/engine/test/184-ruling-register.test.ts##R245#9394e0b412#0": {
+   "action": "reword",
+   "suggest": "inside six of the write-ups",
+   "note": "about the retired register's own headings"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#87bb5d23f2#0": {
+   "action": "reword",
+   "nums": [
+    "D1.3"
+   ],
+   "suggest": "The no-second-opinion fix",
+   "note": "history"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#601966c9b1#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "(the earlier re-take, since replaced)",
+   "note": "reversed behaviour"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#0480b02815#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2b"
+   ],
+   "suggest": "keeps every clause derived from the engine",
+   "note": "history"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#f43c375843#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ],
+   "note": "automatic haste-step answer"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#bf8aa3a5ce#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ],
+   "note": "one definition shared with engine"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#9c3ce2f2cc#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2b"
+   ],
+   "suggest": "The no-second-opinion fix made the clause ask by id",
+   "note": "history"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#b7cf14c9fe#0": {
+   "action": "reword",
+   "suggest": "the older arm",
+   "note": "history"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R245#2cd943f30b#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "the earlier re-take behaviour this change removes",
+   "note": "reversed behaviour"
+  },
+  "client/ledgers/card-todo-closed.ts##R245#88d5674a05#0": {
+   "action": "reword",
+   "nums": [
+    "D2.4",
+    "D2.4a"
+   ],
+   "suggest": "FIXED 2026-08-29",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R245#d7b72c653a#0": {
+   "action": "reword",
+   "suggest": "the no-second-opinion fix",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R245#621afee98f#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "the earlier re-take",
+   "note": "reversed behaviour"
+  },
+  "client/ledgers/card-todo-closed.ts##R245#3ff75d75ae#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "the earlier re-take",
+   "note": "reversed behaviour"
+  },
+  "client/ledgers/card-todo-closed.ts##R245#c2996bc77c#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R245#516bbcae45#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3a"
+   ],
+   "note": "affordance claims legality"
+  },
+  "client/ledgers/card-todo.ts##R245#144b06c8f2#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R245#6c68a412d8#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4",
+    "D2.4a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R245#a0fdfa688e#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "the earlier re-take",
+   "note": "reversed behaviour"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R245#0da4957f02#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R245#ebd90b9820#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R245#66389cdda5#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/server/rooms.ts##R245#3816bc5a88#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/battle.ts##R245#9a88037ad3#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/battle.ts##R245#b2c0fc735f#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2f"
+   ],
+   "note": "snapshot measured at arming"
+  },
+  "client/ui/battle.ts##R245#4f5e89d907#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "The earlier version re-took it",
+   "note": "reversed behaviour"
+  },
+  "client/ui/battle.ts##R245#b1665f21b8#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3a"
+   ]
+  },
+  "client/ui/battle.ts##R245#48cb11d2db#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/inspect.ts##R245#9be0ed1f00#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/main.ts##R245#3d9ff71b12#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#b6205b042a#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#7afdc16e7e#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4a"
+   ]
+  },
+  "client/ui/main.ts##R245#88c2b2be20#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#b3072c6b52#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4a"
+   ]
+  },
+  "client/ui/main.ts##R245#0151ef5a69#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#e50e9b6ce8#0": {
+   "action": "reword",
+   "suggest": "older arm",
+   "note": "history"
+  },
+  "client/ui/main.ts##R245#4a151f9d5e#0": {
+   "action": "reword",
+   "suggest": "older arm",
+   "note": "history"
+  },
+  "client/ui/main.ts##R245#123378d39a#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2b"
+   ],
+   "note": "new stack item / new option"
+  },
+  "client/ui/main.ts##R245#71bdb08c40#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2b"
+   ],
+   "note": "new stack item / new option"
+  },
+  "client/ui/main.ts##R245#430bba5ea7#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#c9a4baf372#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#4f44f774b9#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/main.ts##R245#36d6550b30#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/main.ts##R245#89db5c64a2#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/main.ts##R245#ad2b0bd66f#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/main.ts##R245#e0d4a9c4bd#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3a"
+   ]
+  },
+  "client/ui/main.ts##R245#caec30ff02#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "The earlier version re-took it",
+   "note": "reversed behaviour"
+  },
+  "client/ui/main.ts##R245#8b5f379b7b#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#42618298a3#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ]
+  },
+  "client/ui/main.ts##R245#62e11d779b#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/main.ts##R245#e4bbd9eccc#0": {
+   "action": "reword",
+   "nums": [
+    "D2.2f"
+   ],
+   "suggest": "The earlier version re-took it",
+   "note": "reversed behaviour"
+  },
+  "client/ui/main.ts##R245#a1d7a848bd#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3a"
+   ]
+  },
+  "client/ui/main.ts##R245#e409cbb717#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3a"
+   ]
+  },
+  "client/ui/passrelease.ts##R245#f7c707071e#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ],
+   "note": "functions shared with server, one place"
+  },
+  "client/ui/passrelease.ts##R245#8f7b6e8414#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2b"
+   ]
+  },
+  "client/ui/passrelease.ts##R245#c35c0426fc#0": {
+   "action": "reword",
+   "suggest": "older arm",
+   "note": "history"
+  },
+  "client/ui/passrelease.ts##R245#eb8f937daa#0": {
+   "action": "reword",
+   "suggest": "older arm",
+   "note": "history"
+  },
+  "client/ui/passrelease.ts##R245#36d4685405#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2b"
+   ]
+  },
+  "client/ui/passrelease.ts##R245#7cac9558cb#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2b"
+   ]
+  },
+  "client/ui/passrelease.ts##R245#1c29c8708d#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2b"
+   ],
+   "note": "new option clause"
+  },
+  "client/ui/passrelease.ts##R245#6d2d5f2034#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2"
+   ],
+   "note": "standing pass acts in windows"
+  },
+  "client/ui/passrelease.ts##R245#a85df0752f#0": {
+   "action": "reword",
+   "suggest": "Before this fix",
+   "note": "history"
+  },
+  "client/ui/passrelease.ts##R245#e5fa9a8201#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/passrelease.ts##R245#faa489ab6d#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2d"
+   ],
+   "note": "phase end terminates the promise"
+  },
+  "client/ui/passrelease.ts##R245#98958770a6#0": {
+   "action": "cite",
+   "nums": [
+    "D2.2"
+   ]
+  },
+  "client/ui/passrelease.ts##R245#c2c2732d5a#0": {
+   "action": "reword",
+   "suggest": "older arm",
+   "note": "history"
+  },
+  "client/ui/passrelease.ts##R245#8828d541fa#0": {
+   "action": "reword",
+   "suggest": "older arm",
+   "note": "history"
+  },
+  "client/ui/test/223-client-legality.test.ts##R245#d8c475636a#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/ui/test/223-client-legality.test.ts##R245#7f219b02a8#0": {
+   "action": "reword",
+   "suggest": "the older arm",
+   "note": "history"
+  },
+  "client/ui/test/225-stack-readout.test.ts##R245#560d476a26#0": {
+   "action": "cite",
+   "nums": [
+    "D1.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R339#fdee9f54c2#0": {
+   "action": "cite",
+   "nums": [
+    "107.4a"
+   ],
+   "note": "X can't be zero: no free play"
+  },
+  "client/engine/test/404-raq-fix-tides.test.ts##R339#846210188e#0": {
+   "action": "reword",
+   "suggest": "Tides of the Cosmos and the other mid-resolution plays, fixed to the RAQ",
+   "note": "range heading pointer"
+  },
+  "client/ledgers/card-todo-closed.ts##R339#70cd363d92#0": {
+   "action": "reword",
+   "nums": [
+    "107.4a"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round)",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R339#4083b69ab2#0": {
+   "action": "reword",
+   "nums": [
+    "107.4a"
+   ],
+   "suggest": "fixed 2026-10-09.",
+   "note": "history note"
+  }
+ }
+}

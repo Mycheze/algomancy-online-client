@@ -1,0 +1,2414 @@
+{
+ "unit": "M004",
+ "decisions": {
+  "client/docs/07-visual-redesign.md##R9#ad29162996#0": {
+   "action": "cite",
+   "nums": [
+    "722.4b"
+   ],
+   "note": "cite is to composite negation, which 722.4b states"
+  },
+  "client/engine/src/apply.ts##R9#93bb32da9e#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/apply.ts##R9#d2583ec4dd#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/apply.ts##R9#5329cd373d#0": {
+   "action": "unsure",
+   "note": "claims two real same-name augment mods share one [once]; 109.9k says each mod has its own use"
+  },
+  "client/engine/src/cards/dsl.ts##R9#51722a29df#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R9#6207d0c867#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R9#70a93578cc#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R9#547617a9f0#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R9#8210a620ad#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R9#bfac816dc5#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R9#5d8c528afa#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R9#fba2795000#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R9#313aff3f65#0": {
+   "action": "cite",
+   "nums": [
+    "109.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R9#19d2ad2f28#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R9#0a18282c0e#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R9#a955a64d33#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R9#e0ab46b169#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R9#9a6ce66ab0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9g"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R9#cd5cc8cc29#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R9#4d868b9a9e#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R9#f624c49da6#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R9#d38d0ec3c4#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R9#37b99f7002#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R9#654bc051e6#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R9#743ab2b159#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R9#944d379cd8#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R9#ed53c185e1#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R9#95f4438e94#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R9#6d5b139b10#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R9#e79b77de1d#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R9#669f9a1939#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R9#4d868b9a9e#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R9#8622fcc07a#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R9#575af74188#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R9#9d63e0eee1#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R9#967a74910c#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R9#bfac816dc5#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R9#bfac816dc5#0~1": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R9#786df1dbb0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-wood.ts##R9#ebd4d6c6ab#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-wood.ts##R9#7cadae2210#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-wood.ts##R9#3b59308b58#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R9#fdf9e5bc47#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R9#bba4e2d703#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R9#fa357974a2#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R9#9b7dba2a07#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R9#5d8c528afa#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R9#ce21322d32#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R9#33408fba5a#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R9#615396795b#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R9#bfac816dc5#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R9#d958816e13#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#faa7164aca#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#e7f3ad26c1#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#5621a09a6c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#15a9fe4049#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#b087d51cfa#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#a004096836#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#fdb83e772e#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R9#66e9b41158#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R9#7837f5e783#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R9#8fa0dd464f#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R9#b7d25cc91f#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R9#73f6135403#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R9#47d76b6cb0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R9#ea164a3d89#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R9#001f446979#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R9#b3f5c05294#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R9#e79b77de1d#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R9#63b8f99046#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R9#fdf9e5bc47#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R9#3e5ad8cd5e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R9#466cd0db93#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R9#a3e55eb955#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R9#682c4c4959#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R9#0c2f5f9030#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R9#7c60cc7dcf#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R9#452d82191d#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R9#5fb16c7433#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R9#6d5b139b10#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R9#4c82fdb638#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R9#17e8fb4301#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R9#90df7039cd#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R9#d3e48a38c0#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R9#6862fc02bb#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R9#97b01de642#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R9#d4f8e58908#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R9#3a2fc19d67#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R9#3a79c1d734#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R9#5a4d147dda#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R9#7f1fcbe160#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R9#8dbd15a1b2#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R9#409979cb44#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R9#1e4c7c1092#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R9#842f7e8c16#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R9#dc67c01e28#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R9#88983a3863#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R9#95a7fcac1d#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R9#ea8e1558f2#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R9#2bd82a972f#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R9#aec7a8e87e#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R9#78fa3d1d5e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R9#5da7046def#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-metal.ts##R9#1eac6b1e2d#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-metal.ts##R9#8b676639f5#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R9#83600f1fa6#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R9#0053ca6314#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R9#c30eaa6789#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R9#728daa8aa2#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R9#8687876211#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R9#4d868b9a9e#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R9#59c41c3244#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R9#9f50f46428#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R9#da20b9920f#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R9#579c0cebec#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R9#5ef4bbc815#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R9#421229d9cd#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#bf3132555c#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/src/engine.ts##R9#4b5fd95074#0": {
+   "action": "cite",
+   "nums": [
+    "109.9n"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#0aba943657#0": {
+   "action": "cite",
+   "nums": [
+    "109.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#e210489ea7#0": {
+   "action": "unsure",
+   "note": "Reconfigure part = 109.9e, but per-name keying on a host may conflict with 109.9k"
+  },
+  "client/engine/src/engine.ts##R9#a7c6fe68c7#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#4254e26e21#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#4e0df3d84b#0": {
+   "action": "cite",
+   "nums": [
+    "109.9m"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#1691dd07aa#0": {
+   "action": "cite",
+   "nums": [
+    "109.9m"
+   ]
+  },
+  "client/engine/src/engine.ts##R9#6b504ee974#0": {
+   "action": "drop",
+   "note": "engine stand-in bookkeeping"
+  },
+  "client/engine/src/engine.ts##R9#03d6414db5#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/src/types.ts##R9#8fd7c53807#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/src/types.ts##R9#57797a7379#0": {
+   "action": "cite",
+   "nums": [
+    "109.9k"
+   ]
+  },
+  "client/engine/src/types.ts##R9#f118198a3d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9m"
+   ]
+  },
+  "client/engine/test/04-mods.test.ts##R9#735b9e0014#0": {
+   "action": "cite",
+   "nums": [
+    "722.5a"
+   ]
+  },
+  "client/engine/test/04-mods.test.ts##R9#3a13edd0b5#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/test/08-cards2.test.ts##R9#2aec20f5c2#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/104-semantics-lifecycle.test.ts##R9#546567494c#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/104-semantics-lifecycle.test.ts##R9#50fcff61ad#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/104-semantics-lifecycle.test.ts##R9#fe075f2f55#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/11-fire-wood.test.ts##R9#16880032a3#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R9#bba777405a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/120-counter-attribution.test.ts##R9#0420fcff5b#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R9#7033b5da12#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R9#019aaffa70#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R9#545f8e79ec#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R9#ea3cc086b4#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R9#a5e8181a97#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R9#5f2eac4596#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R9#c88ede941c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R9#427eab7e25#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R9#a5bcd3e302#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R9#e3ded3fe34#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R9#daa1107fdc#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/18-earth-c.test.ts##R9#3102fd7a4a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R9#602c08e725#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/23-wood-a.test.ts##R9#5e918c81ca#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R9#e5379c9dd8#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R9#4f3e31405e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9d"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R9#9b6381c0a4#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R9#0a697ad4d6#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/test/26-metal-a.test.ts##R9#9a8d5e687e#0": {
+   "action": "cite",
+   "nums": [
+    "803.4"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R9#a5ef843671#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R9#a871c10ce6#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R9#6a9ea11a58#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R9#673b354adf#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R9#387a6ce3a8#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R9#602c08e725#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R9#547bace6ab#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R9#f3c754964f#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R9#a520c93b48#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R9#486caeac2f#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R9#f356c46f61#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R9#b7c581c033#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/39-light-b.test.ts##R9#6534d5e416#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R9#9c6008a7b9#0": {
+   "action": "cite",
+   "nums": [
+    "722.5b"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R9#5187a68e32#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R9#2bf9e6e31e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/406-copied-augments.test.ts##R9#726500ae96#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/engine/test/41-dark-a.test.ts##R9#c19bd53f63#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R9#83c1fd92b5#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R9#ddabe55df8#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R9#313ad24b37#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R9#01ba5f22f0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R9#c67b47d9bc#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R9#c355e3dd8e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R9#952a20d95f#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R9#75bd363e3a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R9#b55b8e65fe#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R9#5c6fddaaef#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R9#293d0b93a9#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R9#265d0a4de0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/48-playtest-hotfix.test.ts##R9#8f39615eee#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/engine/test/48-playtest-hotfix.test.ts##R9#b4af9f3c63#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R9#eb4527f4fa#0": {
+   "action": "cite",
+   "nums": [
+    "109.9m"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R9#3d0eb5c95d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9k"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R9#f10ba47cac#0": {
+   "action": "cite",
+   "nums": [
+    "109.9k"
+   ]
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R9#b02726ed61#0": {
+   "action": "cite",
+   "nums": [
+    "722.1"
+   ]
+  },
+  "client/engine/test/99-endofturn.test.ts##R9#04edf8f152#0": {
+   "action": "cite",
+   "nums": [
+    "722.1"
+   ]
+  },
+  "client/engine/test/drill.ts##R9#af04293f8d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/ledgers/card-ledger.ts##R9#ace22cb964#0": {
+   "action": "drop",
+   "note": "engine budget-keying detail (face/copy/key); no CR rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R9#cb14d5aa72#0": {
+   "action": "cite",
+   "nums": [
+    "109.9m"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R9#2cdcd2b86b#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R9#779ca2f622#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a fixed-size body window marks two-line rulings retired",
+   "note": "frozen closed-ledger history (register tooling)"
+  },
+  "client/ledgers/card-todo-closed.ts##R9#779ca2f622#0~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a fixed-size body window marks two-line rulings retired",
+   "note": "frozen closed-ledger history (register tooling)"
+  },
+  "client/ledgers/card-todo-closed.ts##R9#ec7d46c6d2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "{Once} was cited to a ruling which says none of it"
+  },
+  "client/server/scenarios-e.ts##R9#2988ced14c#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/ui/cardtext.ts##R9#75e0f56db0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/ui/cardtext.ts##R9#c3fc36142b#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ]
+  },
+  "client/ui/cardtext.ts##R9#c3fc36142b#0~1": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/ui/glossary.ts##R9#3247d0d108#0": {
+   "action": "cite",
+   "nums": [
+    "109.9",
+    "109.9d"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#61820514ad#0": {
+   "action": "unsure",
+   "note": "177-glossary-conformance parses register bodies; retire with the register, not a citation"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#c2839c3552#0": {
+   "action": "unsure",
+   "note": "177-glossary-conformance parses register bodies; retire with the register, not a citation"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#c2839c3552#1": {
+   "action": "unsure",
+   "note": "177-glossary-conformance parses register bodies; retire with the register, not a citation"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#1df0333cf3#0": {
+   "action": "unsure",
+   "note": "177-glossary-conformance parses register bodies; retire with the register, not a citation"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#dd68b8e635#0": {
+   "action": "unsure",
+   "note": "literal R-token array in test code; changes with the register retirement"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#77055a8ae9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "{Once}→a control-change ruling"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R9#2361cce25e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "{Once} cited a ruling that is three lines about control change"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R9#187fe97bf8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the shape a control-change ruling had on {Once}"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R9#3b6b49b406#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "{Once} was cited to a ruling which says none of it"
+  },
+  "client/docs/05-hard-questions.md##R12#54ce49c928#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "as the first twelve rulings",
+   "note": "range R1-R12; history"
+  },
+  "client/docs/06-roadmap.md##R12#c6a120d77e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first twelve rulings encoded as tests",
+   "note": "range R1-R12; history"
+  },
+  "client/engine/test/05-rulings.test.ts##R12#ec662fc674#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first twelve rulings, encoded as tests",
+   "note": "range R1-R12; test header names the register"
+  },
+  "client/docs/08-light-and-dark.md##R50#2442fa289c#0": {
+   "action": "reword",
+   "nums": [
+    "507.4"
+   ],
+   "suggest": "by the turn-structure and zone-trigger primitives"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R50#13ce0917c4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "by the costs-and-events engine wave"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R50#54586265fc#0": {
+   "action": "reword",
+   "nums": [
+    "507.4"
+   ],
+   "suggest": "the engine gained the 'startOfDeployment' event"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R50#74d4035267#0": {
+   "action": "reword",
+   "nums": [
+    "507.4"
+   ],
+   "suggest": "UNPARKED once the start-of-deployment event existed"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R50#13ce0917c4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "by the costs-and-events engine wave"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R50#77d06ef704#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R50#5ff51e91cd#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R50#645e95bec2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "by the costs-and-events engine wave"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R50#ec8547d5c2#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R50#93efb31dd8#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R50#e0fe6a0bd5#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R50#8bd4f86c71#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/src/types.ts##R50#adc3d688dd#0": {
+   "action": "cite",
+   "nums": [
+    "504.6",
+    "507.4"
+   ]
+  },
+  "client/engine/src/types.ts##R50#691f5b4727#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/101-deploy-seat-matrix.test.ts##R50#08ee359f83#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/101-deploy-seat-matrix.test.ts##R50#537bd563bb#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R50#4599f27994#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R50#08652ff2ae#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R50#3a0027001a#0": {
+   "action": "reword",
+   "nums": [
+    "504.6"
+   ],
+   "suggest": "The 'endOfHaste' event landed"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R50#f48a5bcbb7#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R50#e08224e9ca#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R50#3970bbae20#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R50#56cac5f279#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R50#62d11a1069#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R50#990dd87265#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R50#4f4cc5db72#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R50#537bd563bb#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R50#79ae65af23#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R50#8f1c71fcae#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R50#fc227b8cc2#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#693f6a02ee#0": {
+   "action": "cite",
+   "nums": [
+    "504.6",
+    "507.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#a6b65662f8#0": {
+   "action": "cite",
+   "nums": [
+    "504.6",
+    "507.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#28224610ee#0": {
+   "action": "cite",
+   "nums": [
+    "504.6",
+    "507.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#451b933efa#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#f877b34dd8#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#4fe6c42d46#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#efc48084cc#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R50#0030a5ac31#0": {
+   "action": "drop",
+   "note": "replay determinism, engine"
+  },
+  "client/server/scenarios-b.ts##R50#b2ba7a051f#0": {
+   "action": "cite",
+   "nums": [
+    "507.3a"
+   ],
+   "note": "R50 was a wrong cite; simultaneous deployment is 507.3a"
+  },
+  "client/ui/glossary.ts##R50#f028842797#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/ui/test/168-three-card-divergences.test.ts##R50#0faa8edb0d#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/ui/test/259-card-text-surface.test.ts##R50#b351083265#0": {
+   "action": "cite",
+   "nums": [
+    "504.6"
+   ]
+  },
+  "client/docs/13-assessment.md##R131#e0a9e64703#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/docs/14-scenario-tester.md##R131#c111cb3217#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#0bb4976c96#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#3147a4a359#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#4b5f027fcd#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#d401740584#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#534ced4a0f#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#063be25065#0": {
+   "action": "cite",
+   "nums": [
+    "405.6a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#36121844d4#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R131#e81d88581b#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R131#bc98c9764d#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R131#e126cd1676#0": {
+   "action": "cite",
+   "nums": [
+    "405.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R131#ae6c66d8fb#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R131#fd4e2a1592#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R131#b64a669c88#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R131#b64a669c88#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R131#0a61eea7a1#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R131#b64a669c88#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#005ed78fa1#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#46d8086c51#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#41904d22c6#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#3854b836d7#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#b147493cb5#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#b9024ee057#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#2f47cb4994#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#29ede55d48#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/engine.ts##R131#1435c1bec9#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/types.ts##R131#c7a20385d5#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/src/types.ts##R131#b0877d64b4#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/src/types.ts##R131#a8f9afaba3#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R131#a8aac3aee0#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R131#440cddd70c#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R131#718d3ad89d#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R131#5e0966b2ec#0": {
+   "action": "cite",
+   "nums": [
+    "720.6d"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R131#23d83ff659#0": {
+   "action": "cite",
+   "nums": [
+    "201.2"
+   ]
+  },
+  "client/engine/test/121-another-identity.test.ts##R131#84fb23cc5d#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R131#ba3a9145fb#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R131#cf768b120f#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R131#b18325d1bd#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/engine/test/224-mod-trash.test.ts##R131#9116bff603#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R131#b2ee0970d2#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R131#cd54e3140b#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R131#b157ee0af2#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R131#2bc19ec7fe#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R131#a639aa8d78#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R131#def1dcb322#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R131#7118a78770#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R131#879af3aa27#0": {
+   "action": "cite",
+   "nums": [
+    "405.6a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R131#1fd758d383#0": {
+   "action": "reword",
+   "nums": [
+    "405.6"
+   ],
+   "suggest": "which is exactly why binNth is stamped on the event"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R131#13748502d2#0": {
+   "action": "reword",
+   "nums": [
+    "405.6"
+   ],
+   "suggest": "Identity in a bin is fixed as"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R131#7ca20461f5#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R131#096229d029#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R131#c941ad9203#0": {
+   "action": "reword",
+   "nums": [
+    "405.6"
+   ],
+   "suggest": "binNth is on the trashed event precisely because"
+  },
+  "client/ledgers/card-todo-closed.ts##R131#de34d92148#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R131#23b6170a9f#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R131#aee8a4bd7c#0": {
+   "action": "cite",
+   "nums": [
+    "405.6"
+   ]
+  },
+  "client/ledgers/scenario-queue.ts##R131#de447555c4#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R131#07cc749332#0": {
+   "action": "cite",
+   "nums": [
+    "720.6b"
+   ]
+  },
+  "client/server/scenarios-c.ts##R131#18b85d7a92#0": {
+   "action": "cite",
+   "nums": [
+    "720.6b"
+   ]
+  },
+  "client/server/scenarios.ts##R131#02f6a973bb#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/server/scenarios.ts##R131#d68fc42104#0": {
+   "action": "cite",
+   "nums": [
+    "720.6c",
+    "720.6b"
+   ]
+  },
+  "client/server/test/185-scenario-determinism.test.ts##R131#7ecf269f93#0": {
+   "action": "cite",
+   "nums": [
+    "720.6b"
+   ]
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R131#e9ddf43285#0": {
+   "action": "cite",
+   "nums": [
+    "405.6a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R167#e247630c26#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R167#03219427f8#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R167#2bb4ddce0f#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "A fix moved that deletion"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R167#664d19419d#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "that was fixed"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R167#112c4158fb#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "That was fixed exactly"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R167#30b67e42e1#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/src/engine.ts##R167#54bbee58d6#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/src/engine.ts##R167#193c39ec13#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/src/engine.ts##R167#3c4e25c289#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/src/engine.ts##R167#99f2228dd4#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/src/engine.ts##R167#e6d34b9854#0": {
+   "action": "reword",
+   "nums": [
+    "410.2"
+   ],
+   "suggest": "the same bug, one verb over"
+  },
+  "client/engine/src/engine.ts##R167#38bca67cb8#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "The same anchoring, repeated here"
+  },
+  "client/engine/src/engine.ts##R167#3e3cbfa64d#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#b0ea7f903b#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#854d97fbe8#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#99bd5ca36a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Before the fix"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#e8602d958c#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#491a36bb51#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "0 before the fix"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#ea1459d53e#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#3b8483c040#0": {
+   "action": "cite",
+   "nums": [
+    "801.2f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#36cb89cd66#0": {
+   "action": "cite",
+   "nums": [
+    "407.3a"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#71f143c470#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#e9bcc586fb#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Before the fix"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#5328074884#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R167#13385cfb04#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#7b9fe6a0c1#0": {
+   "action": "reword",
+   "nums": [
+    "410.2"
+   ],
+   "suggest": "the same bug, one verb over"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#066b2a968d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the same anchoring fix"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#71631fee7e#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "the donated-despawn case"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#0e226dfe4e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the probe the original fix used"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#002e3ef286#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "the earlier fix gave it recall and cache"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#774fdead5a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the route the earlier fix did not cover"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#6db07593d7#0": {
+   "action": "reword",
+   "nums": [
+    "721.1f"
+   ],
+   "suggest": "The same anchoring, repeated on this route"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R167#7f3ddb419c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the same mod invariants (iv)/(v)"
+  },
+  "client/engine/test/157-blocked-stays-blocked.test.ts##R167#fae15acbde#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(the donated-despawn bug was the same shape one verb over)"
+  },
+  "client/ledgers/card-todo-closed.ts##R167#8350680afd#0": {
+   "action": "cite",
+   "nums": [
+    "721.1f"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R167#08bf43ea3d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(this family was once silently dead on recalls and caches while working on deaths)"
+  },
+  "client/server/scenarios-e.ts##R167#b5f056f3bd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "This exact family has been silently half-dead once already"
+  },
+  "client/server/scenarios-e.ts##R167#822c05bc8e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "This exact family was once"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R187#33409f6bb6#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R187#6fc72a42bb#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R187#b652a61bf6#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R187#b7a0703aea#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R187#c490e60c30#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-metal.ts##R187#07470ac505#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R187#bc4677346e#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R187#c2c676cf93#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R187#61300d1225#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R187#bd657c24a7#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/test/158-silent-region-branches.test.ts##R187#bb20750d0e#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3b"
+   ]
+  },
+  "client/engine/test/158-silent-region-branches.test.ts##R187#911453552a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "ten from the CT-70 repair"
+  },
+  "client/engine/test/179-empty-collection-branches.test.ts##R187#b55d82f038#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the CT-70 repair gave it"
+  },
+  "client/engine/test/208-region-scoping-is-absolute.test.ts##R187#228924fff5#0": {
+   "action": "drop",
+   "note": "CT-70 carries the history"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R187#6a1a36c03b#0": {
+   "action": "drop",
+   "note": "CT-70 carries the history"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R187#6ee7e03673#0": {
+   "action": "reword",
+   "nums": [
+    "D7.3"
+   ],
+   "suggest": "went with them (in the CT-70 repair)"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R187#5110fcf9d5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The CT-70 repair then fixed the other ten"
+  },
+  "client/ledgers/card-todo-closed.ts##R187#025bbf7a5e#0": {
+   "action": "reword",
+   "nums": [
+    "D7.3b"
+   ],
+   "suggest": "CT-70 repair (2026-08-26)"
+  },
+  "client/ledgers/card-todo-closed.ts##R187#7adeefea6e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the CT-70 agent"
+  },
+  "client/ledgers/card-todo-closed.ts##R187#aeaf957541#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "landed by the CT-70 repair"
+  },
+  "client/ledgers/card-todo-closed.ts##R187#aeaf957541#0~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "landed by the CT-70 repair"
+  },
+  "client/engine/src/apply.ts##R299#f3c9f304d9#0": {
+   "action": "cite",
+   "nums": [
+    "106.6a"
+   ]
+  },
+  "client/engine/src/apply.ts##R299#34529f3a8e#0": {
+   "action": "drop",
+   "note": "engine option-index ordering"
+  },
+  "client/engine/test/308-recycle-for-prismite.test.ts##R299#2bcd2d62ab#0": {
+   "action": "cite",
+   "nums": [
+    "106.6a"
+   ]
+  },
+  "client/engine/test/308-recycle-for-prismite.test.ts##R299#39c20af9d1#0": {
+   "action": "cite",
+   "nums": [
+    "106.6a"
+   ]
+  },
+  "client/engine/test/308-recycle-for-prismite.test.ts##R299#c34dcbf325#0": {
+   "action": "cite",
+   "nums": [
+    "106.9",
+    "106.7d"
+   ]
+  },
+  "client/ledgers/backlog.ts##R299#913bc383b6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/ledgers/backlog.ts##R299#4e34f5041f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Found shipping the recycle-for-Prismite change"
+  },
+  "client/ledgers/card-todo.ts##R299#3883bb8b98#0": {
+   "action": "reword",
+   "nums": [
+    "106.8d"
+   ],
+   "suggest": "the rules exclude only the Prismite-into-Prismite case"
+  },
+  "client/ledgers/card-todo.ts##R299#8210a1f1d2#0": {
+   "action": "unsure",
+   "note": "inside a quoted 308 test title; that test calls Prismite->Shard illegal, 106.8d allows it (F-U02-3)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R299#a97dc6f4f1#0": {
+   "action": "cite",
+   "nums": [
+    "106.6a"
+   ]
+  },
+  "client/server/e2e/test-accounts.ts##R299#91a7cc55e9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "until the recycle-for-Shard option"
+  },
+  "client/server/test/143-replay-divergence.test.ts##R299#f2a7f77b74#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when two recycle options were added"
+  },
+  "client/server/test/171-engine-version-stamp.test.ts##R299#d0ec0c2f15#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "until the recycle options"
+  },
+  "client/ui/main.ts##R299#c08e95cccf#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R299#81b13431a5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when the recycle-for-Prismite option shifted them"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R299#fd7efee00b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R299#d5e10b24d4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when the recycle-for-Prismite option was added"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R299#1f2b0cb38b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ]
+  },
+  "client/engine/src/apply.ts##R313#e2550ec0bf#0": {
+   "action": "cite",
+   "nums": [
+    "713.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R313#9fbd9e21c9#0": {
+   "action": "cite",
+   "nums": [
+    "503.5b"
+   ]
+  },
+  "client/engine/test/380-no-action-ends-dead.test.ts##R313#aecf923b7b#0": {
+   "action": "cite",
+   "nums": [
+    "713.3"
+   ]
+  },
+  "client/engine/test/380-no-action-ends-dead.test.ts##R313#148c6467d8#0": {
+   "action": "cite",
+   "nums": [
+    "503.5"
+   ]
+  },
+  "client/engine/test/380-no-action-ends-dead.test.ts##R313#feb9503390#0": {
+   "action": "drop",
+   "note": "engine no-op guard, no rule"
+  },
+  "client/engine/test/380-no-action-ends-dead.test.ts##R313#d6bba2ee27#0": {
+   "action": "cite",
+   "nums": [
+    "503.5b"
+   ]
+  },
+  "client/engine/test/380-no-action-ends-dead.test.ts##R313#c9fc193a46#0": {
+   "action": "cite",
+   "nums": [
+    "503.5b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R313#2270501a68#0": {
+   "action": "cite",
+   "nums": [
+    "713.3"
+   ]
+  }
+ }
+}

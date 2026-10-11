@@ -1,0 +1,2566 @@
+{
+ "unit": "M007",
+ "decisions": {
+  "client/docs/08-light-and-dark.md##R33#dd6006c5ac#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the earlier open question about Ember of Life's created units",
+   "note": "history; created-unit region now 601.5"
+  },
+  "client/docs/08-light-and-dark.md##R33#994d9fc61d#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "which makes the Ember of Life carrier reading the general rule",
+   "note": "history of the absorption"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R33#ce4b1fde4b#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "and made the Ember of Life carrier reading the general rule",
+   "note": "history list"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R33#9fbb92333d#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "and made Ember of Life's carrier reading the general rule",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R33#4c725042c8#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R33#d6eedb90c3#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R33#f8cf4018c1#0": {
+   "action": "cite",
+   "nums": [
+    "112.5",
+    "102.6"
+   ],
+   "note": "damage to a player is damage; 'your' = effect controller"
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R33#2846b231f1#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R33#0856f7ef19#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R33#23e74d6d0d#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R33#d4660212c8#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R33#4f210c34f3#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R33#913faaa29e#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R33#12c2a27454#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine damage-event field provenance; assertion itself is 112.13b"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R33#90b6cd9bae#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "and makes the Ember of Life carrier reading the general rule",
+   "note": "history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R33#fd5aebfcaf#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "The Ember of Life carrier reading (1/1s arrive where the carrier is)",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R33#1335038155#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the carrier reading made the general rule",
+   "note": "frozen closed-ledger evidence?"
+  },
+  "client/docs/questions-round36.md##R74#3eab7c5d12#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ],
+   "note": "warned-but-legal precedent"
+  },
+  "client/engine/src/cards/dsl.ts##R74#9a73e2ff1d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R74#c0d56a6bc7#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R74#3dd94c9d55#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R74#1960beb926#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R74#480fb9b419#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R74#a97c747333#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/src/engine.ts##R74#99eb1037ae#0": {
+   "action": "cite",
+   "nums": [
+    "107.2b"
+   ]
+  },
+  "client/engine/src/engine.ts##R74#d7757dab59#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ],
+   "note": "warning on an X = 0 close; log placement itself is engine"
+  },
+  "client/engine/src/engine.ts##R74#2d91ef32b7#0": {
+   "action": "cite",
+   "nums": [
+    "107.2b"
+   ]
+  },
+  "client/engine/src/types.ts##R74#1d3d798124#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/engine/src/types.ts##R74#dbeb8f7cab#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/engine/src/types.ts##R74#1470d94795#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/engine/src/types.ts##R74#d89b0c84e0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the warning's label convention",
+   "note": "engine label convention, not a rule"
+  },
+  "client/engine/test/42-dark-b.test.ts##R74#1c7c03b6f3#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R74#49f99d053f#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#a20f944fff#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#66d30d4972#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#e80ca11e62#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#e1d9775719#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#e1d9775719#1": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#4f928a4594#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ledgers/backlog-closed.ts##R74#4f1640908f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the warning's label convention",
+   "note": "engine label convention, not a rule"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R74#65961997df#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1a"
+   ]
+  },
+  "client/ui/main.ts##R74#a882b0b2f7#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ui/main.ts##R74#f1a74a574c#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ui/main.ts##R74#a8f6c6067e#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ui/main.ts##R74#bff348e020#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ui/test/278-ally-misclick.test.ts##R74#d349e6849b#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/ui/test/278-ally-misclick.test.ts##R74#6a6a63da7f#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1"
+   ]
+  },
+  "client/docs/questions-round31.md##R106#f92009d329#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the way earlier owner rulings recorded theirs",
+   "note": "process precedent about recording divergences; no rule content"
+  },
+  "client/docs/questions-round31.md##R106#0aca9aa2a2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the way earlier owner rulings recorded theirs",
+   "note": "process precedent about recording divergences; no rule content"
+  },
+  "client/docs/questions-round32.md##R106#303a2f3190#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the way earlier owner rulings recorded theirs",
+   "note": "process precedent about recording divergences; no rule content"
+  },
+  "client/engine/scripts/cr/extract.mjs##R106#1e8094b19d#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "example string in the R-reference parser's doc comment, not a citation; retire with the parser"
+  },
+  "client/engine/scripts/cr/extract.mjs##R106#1e8094b19d#1": {
+   "action": "unsure",
+   "nums": [],
+   "note": "example string in the R-reference parser's doc comment, not a citation; retire with the parser"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R106#fb1fedde8e#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c"
+   ],
+   "note": "fight = deals/is dealt damage interaction"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R106#b05fa4a1d9#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R106#90fca8917c#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R106#d9a66b1926#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R106#0f27c21e89#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R106#965a79bf19#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R106#6a789d287a#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#470dca3981#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#8ec4a09543#0": {
+   "action": "cite",
+   "nums": [
+    "206.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#ebd0a32507#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a",
+    "802.9b"
+   ],
+   "note": "printed, not base"
+  },
+  "client/engine/src/engine.ts##R106#9473ba5583#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#9cbf35f3f3#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#b4a56d7ae4#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#d3e0a30cb8#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#feab352e03#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#e068b72c0c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Recorded as the Unaware rule's one open edge",
+   "note": "targeting-reads-stats edge; no CR rule (802.9f/h adjacent)"
+  },
+  "client/engine/src/engine.ts##R106#b002bf41c2#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#0fbf83d0e5#0": {
+   "action": "cite",
+   "nums": [
+    "802.1j"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#0b38d3ded6#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c",
+    "802.9g"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#0b1054c25b#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#cd3fb039bb#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#58e75055bd#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#0f09a09b06#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#b6bfdebb62#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#dae8d2e292#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#749a4674ad#0": {
+   "action": "cite",
+   "nums": [
+    "608.6e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#d18dc75e59#0": {
+   "action": "cite",
+   "nums": [
+    "608.6e"
+   ]
+  },
+  "client/engine/src/engine.ts##R106#a516dfda22#0": {
+   "action": "cite",
+   "nums": [
+    "802.9e"
+   ]
+  },
+  "client/engine/src/types.ts##R106#4dae42d92f#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R106#df8d8fe816#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R106#6eb047ea2c#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/test/05-rulings.test.ts##R106#ebbf1372f4#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R106#44adde625d#0": {
+   "action": "cite",
+   "nums": [
+    "206.4"
+   ],
+   "note": "label for the static-layer hook; 206.4 = the layers"
+  },
+  "client/engine/test/387-raq-combat.test.ts##R106#948e8b4117#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ],
+   "note": "'strips Deadly and Piercing' itself only partly stated (608.6e)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R106#4820d83ca6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "since stat layer 6 shipped",
+   "note": "engine history"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R106#1db25506a9#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R106#47de1e34af#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/test/71-card-ledger.test.ts##R106#63707baf44#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R106#33360de881#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R106#c958d72450#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R106#dbd1e89727#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c",
+    "802.9e"
+   ]
+  },
+  "client/engine/test/92-unaware.test.ts##R106#070faa112a#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/engine/test/92-unaware.test.ts##R106#ea06f08d04#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the Unaware rule's one open edge",
+   "note": "targeting edge; no CR rule"
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R106#fd4ce6ce08#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/ledgers/card-ledger.ts##R106#83418309d3#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R106#cfd4f000b5#0": {
+   "action": "reword",
+   "nums": [
+    "802.9"
+   ],
+   "suggest": "superseded by the later Unaware ruling",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R106#a6abad2b45#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "which the later Unaware ruling deliberately does not implement",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R106#3fc954e3ff#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "names a ruling that nothing reads",
+   "note": "register-machinery history"
+  },
+  "client/ledgers/card-todo-closed.ts##R106#cd3e5da375#0": {
+   "action": "cite",
+   "nums": [
+    "802.9c"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R106#ddce51f59c#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R106#452f8f8dad#0": {
+   "action": "reword",
+   "nums": [
+    "802.25f"
+   ],
+   "suggest": "the engine's Unaware reading keeps the combat collapse when Pure applies",
+   "note": "discrepancy note; CR 802.25f says otherwise (engine differs)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R106#91f6cfa5eb#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "as the owner's Unaware ruling did",
+   "note": "process precedent, no rule content"
+  },
+  "client/ledgers/raq.ts##R106#c464f3d47a#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ],
+   "note": "'strips Deadly and Piercing' only partly stated (608.6e)"
+  },
+  "client/ui/glossary.ts##R106#bbf368ef9e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "after its ruling was replaced",
+   "note": "register-check history; rewrite with test 177"
+  },
+  "client/ui/glossary.ts##R106#1092aeb02d#0": {
+   "action": "reword",
+   "nums": [
+    "802.9"
+   ],
+   "suggest": "which the Unaware ruling replaced on 2026-08-23",
+   "note": "glossary history"
+  },
+  "client/ui/glossary.ts##R106#b499f9c4b5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "which the Unaware ruling deliberately does NOT implement",
+   "note": "targeting edge; no CR rule"
+  },
+  "client/ui/glossary.ts##R106#5c3a279a8d#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ],
+   "note": "glossary row's ruling field literal; field format changes with register deletion"
+  },
+  "client/ui/inspect.ts##R106#2ab3731778#0": {
+   "action": "cite",
+   "nums": [
+    "608.6e"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#e5b8f12157#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "after its replacement",
+   "note": "register-machinery history; rewrite with test 177"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#c95814a4c7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "after its replacement",
+   "note": "register-machinery history; rewrite with test 177"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#c95814a4c7#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "after its replacement",
+   "note": "register-machinery history; rewrite with test 177"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#e48a22f614#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "code/string literals in register-conformance test; go away with its rewrite"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#860126e265#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "code/string literals in register-conformance test; go away with its rewrite"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#dd68b8e635#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "code/string literals in register-conformance test; go away with its rewrite"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#2e657a9e4a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "names a ruling that nothing here reads",
+   "note": "register-machinery history"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#670387b972#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#a812fac546#0": {
+   "action": "cite",
+   "nums": [
+    "802.9a"
+   ],
+   "note": "assertion message 're-read R106' -> 're-read CR 802.9a'"
+  },
+  "client/engine/src/cards/dsl.ts##R107#4cfb99cfc5#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ],
+   "note": "prose 'still goes to your bin' contradicts 400.4/405.3 (zones follow control)"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R107#6c6877b24d#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R107#4083e04962#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ],
+   "note": "prose 'still my/caster's bin' contradicts 400.4/405.3"
+  },
+  "client/engine/src/engine.ts##R107#1202d69ea3#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ],
+   "note": "prose 'still my/caster's bin' contradicts 400.4/405.3"
+  },
+  "client/engine/src/types.ts##R107#59a2d49234#0": {
+   "action": "cite",
+   "nums": [
+    "102.5"
+   ]
+  },
+  "client/engine/test/23-wood-a.test.ts##R107#e4b42fbc8e#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ]
+  },
+  "client/engine/test/23-wood-a.test.ts##R107#b3025a5857#0": {
+   "action": "cite",
+   "nums": [
+    "400.4a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R107#a122338470#0": {
+   "action": "cite",
+   "nums": [
+    "102.5"
+   ],
+   "note": "engine primitive owner != controller"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R107#0b244ab596#0": {
+   "action": "cite",
+   "nums": [
+    "102.5"
+   ],
+   "note": "engine primitive owner != controller"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R152#b7be011b95#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ],
+   "note": "exchange is a despawn that fires"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R152#c2465db68b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Four repair rounds",
+   "note": "process history"
+  },
+  "client/engine/src/engine.ts##R152#0c4da11ea4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "three separate repairs in two rounds",
+   "note": "process history"
+  },
+  "client/engine/src/engine.ts##R152#95cb37dac0#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine implementation detail (mod ids resolved before disposal)"
+  },
+  "client/engine/src/engine.ts##R152#a7d32f2763#0": {
+   "action": "reword",
+   "nums": [
+    "410.2"
+   ],
+   "suggest": "an earlier round repaired exactly this",
+   "note": "process history; rule is 410.2"
+  },
+  "client/engine/src/engine.ts##R152#57743f2402#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "three rounds of repairing a hand-copy",
+   "note": "process history"
+  },
+  "client/engine/src/engine.ts##R152#2aadd1aced#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine implementation detail"
+  },
+  "client/engine/src/engine.ts##R152#fb0f6e7557#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R152#ae8e1d3393#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the way a Hooba-Mon exchange once was",
+   "note": "process history"
+  },
+  "client/engine/src/engine.ts##R152#986a6da12c#0": {
+   "action": "reword",
+   "nums": [
+    "410.2a"
+   ],
+   "suggest": "and the earlier repair of the same omission on exchangeInPlace",
+   "note": "history; exchange-despawn rule is 410.2a"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#667adea264#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "two repair rounds",
+   "note": "process history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#4a2d4f591a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the Hooba-Mon rulings",
+   "note": "process; list of rulings pinned"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#c104181e89#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ],
+   "note": "token in a bin ceases to exist"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#062f1e4127#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#558e46b6fc#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#92af1d060d#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#befaebc381#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an earlier repair round",
+   "note": "process history"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R152#e557195729#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an earlier repair round",
+   "note": "process history"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R152#b6aea94867#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an earlier repair round",
+   "note": "process history"
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R152#c99d8a1691#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an earlier repair round",
+   "note": "process history"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R152#7e65389f60#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the way a Hooba-Mon exchange once was",
+   "note": "process history"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R152#75a07a62fb#0": {
+   "action": "reword",
+   "nums": [
+    "410.2a"
+   ],
+   "suggest": "an earlier repair fixed the same omission on exchangeInPlace",
+   "note": "history"
+  },
+  "client/engine/test/15-water-b.test.ts##R152#e47f3d15a3#0": {
+   "action": "cite",
+   "nums": [
+    "407.1"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R152#09b977f650#0": {
+   "action": "cite",
+   "nums": [
+    "407.1"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#65c90e7512#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#41d3c59910#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#8e8698a532#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#a40a68cb00#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#6bb0deb080#0": {
+   "action": "cite",
+   "nums": [
+    "410.2a"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#a40a68cb00#0~1": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#a40a68cb00#0~2": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#a40a68cb00#0~3": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#0b3e8e7330#0": {
+   "action": "cite",
+   "nums": [
+    "410.4c"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#a40a68cb00#0~4": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#b8f62110d9#0": {
+   "action": "cite",
+   "nums": [
+    "713.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#8de1425d26#0": {
+   "action": "cite",
+   "nums": [
+    "410.5"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#128951be47#0": {
+   "action": "cite",
+   "nums": [
+    "410.4d"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#2eb2699079#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "which this round did not touch",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R152#877efbf2fc#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "The exchange therefore follows destroy on both halves",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R152#781dad19e3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "surfaced by the exchange repair landing on top of the active-zone rule",
+   "note": "closed-ledger history"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R156#b607b4b34c#0": {
+   "action": "cite",
+   "nums": [
+    "407.1",
+    "407.1a"
+   ],
+   "note": "prose 'own owner's pile' is stale (seat corrected; 400.4/720.9 say controller)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R156#326d1b387d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "log message must agree with board; no CR rule states it"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R156#f3407f815c#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "log message must agree with board; no CR rule states it"
+  },
+  "client/docs/13-assessment.md##R261#90814fb172#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/docs/questions-round31.md##R261#3f9b1f8fa4#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "recorded as a ruling (now CR 608.9b)",
+   "note": "question-sheet history"
+  },
+  "client/docs/questions-round32.md##R261#504fa82c64#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "Recorded 2026-08-30 (now CR 608.9b)",
+   "note": "question-sheet history"
+  },
+  "client/engine/src/engine.ts##R261#fcfecd88da#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#04e9f94b50#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#d2b4a0a8d0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#9be2447895#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#bb5e66154f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#4646199d86#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#3350bd1d7e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#1f705b010c#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine code history label"
+  },
+  "client/engine/src/engine.ts##R261#44ddb634d0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#cfb079e3a3#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#e190f98742#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#842750b965#0": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "The owner's quote carried the condition and the implementation dropped it",
+   "note": "history of the narrowing"
+  },
+  "client/engine/src/engine.ts##R261#71dd0075db#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#4fac876515#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#c4ae405c81#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#af98abe7fd#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "Holding the queue to after combat only changed which wrong answer you get",
+   "note": "engine history"
+  },
+  "client/engine/src/engine.ts##R261#dd90aa0f57#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R261#55858cdddb#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/src/types.ts##R261#e8e7c9c8cf#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the engine before combat-damage triggers were held to after combat",
+   "note": "engine history"
+  },
+  "client/engine/src/types.ts##R261#7ac6207d07#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/105-semantics-playwatch.test.ts##R261#7be634d75a#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/115-literal-light.test.ts##R261#9ffc346c69#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/115-literal-light.test.ts##R261#273498f0d1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that holding triggers to after combat could not disturb",
+   "note": "history"
+  },
+  "client/engine/test/115-literal-light.test.ts##R261#f3ef1f0514#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/115-literal-light.test.ts##R261#8dc284727f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Holding triggers to after combat took the ordering claim and left the gate",
+   "note": "history"
+  },
+  "client/engine/test/115-literal-light.test.ts##R261#9e78491a30#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/115-literal-light.test.ts##R261#84279768b7#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R261#7b8b6ac15c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R261#7f481c3bee#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R261#7f481c3bee#0~1": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R261#e1434091bd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b",
+    "608.9"
+   ]
+  },
+  "client/engine/test/13-fire-b.test.ts##R261#bd9cad6b06#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R261#d1bc4a7361#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R261#f44ca8d17a#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R261#9cd5efc7a1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R261#9730f7d576#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R261#d90f1d4f57#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b",
+    "608.9"
+   ]
+  },
+  "client/engine/test/15-water-b.test.ts##R261#efb7e40d60#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b",
+    "608.9"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R261#ff8b72cfe7#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R261#9a669a030e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b",
+    "608.9"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R261#e0515e9d78#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#ae5e3402d1#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "Holding combat-damage triggers to after combat took this file's fixture",
+   "note": "test history"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#81b2344767#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#2255d62b36#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "before combat-damage triggers were held to after combat",
+   "note": "history"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#6b3cbfe913#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "pointer to the header note; prose stands without it"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#aa00d65380#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#a66e8c41ec#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "holding combat-damage triggers to after combat took the other two",
+   "note": "history"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R261#9c195d5756#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the property the after-combat hold left in exactly one segment",
+   "note": "history"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R261#ea92e36527#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process: which agent found it"
+  },
+  "client/engine/test/187-scenario-queue.test.ts##R261#4e1c74090d#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "until combat-damage triggers were held to after combat",
+   "note": "history"
+  },
+  "client/engine/test/187-scenario-queue.test.ts##R261#abbad34a8b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R261#d956bcc02b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/19-hybrids.test.ts##R261#70c31fc16f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/206-deadly-everywhere.test.ts##R261#c4f13f2f8f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R261#b9d18d2264#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/21-fixes.test.ts##R261#531aaebe2e#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "superseded in its ordering half, then restored for split steps",
+   "note": "history; split-step order is 608.9c"
+  },
+  "client/engine/test/21-fixes.test.ts##R261#5982c7ceef#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-08-30 owner ruling superseded exactly that sentence",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R261#bf951dfe67#0": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "The 2026-08-30 implementation dropped the condition its own source quote carried",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R261#95058a6b8d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the whole of what the after-combat hold was worth",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R261#2097e16424#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "the machinery built for the after-combat hold is what carries it",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R261#3c0629359d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/engine/test/22-playtest3.test.ts##R261#d0642cdbea#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#65e1107191#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "The owner's 2026-08-30 ruling (now CR 608.9b) supersedes the combat half",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#cab5bc6ff6#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#bd47b37cd5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#a7ac93b580#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "The owner's 2026-08-30 ruling put it there",
+   "note": "history"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#19668df989#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#97516b1817#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#7970c3dc5b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R261#c11957581c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#d0f285abdc#0": {
+   "action": "cite",
+   "nums": [
+    "608.9",
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#ef7cb28670#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#bc0027b631#0": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "The first implementation took the sentence after it and dropped that clause",
+   "note": "history"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#1b5c4f8ce4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#53a0236239#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#7fb7c63fb5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#4402946e25#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#7c00d62905#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#918ec02783#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#0db7c382f5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#5e613039a4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#a54c498c06#0": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "which was the after-combat hold read without its own first clause",
+   "note": "history"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#88d5a9d20e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#2fb17ca250#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#9490266ac6#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#b78f7c6307#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#29c1e925c8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#ee1fe9bcc4#0": {
+   "action": "reword",
+   "nums": [
+    "609.3c"
+   ],
+   "suggest": "holding combat-damage triggers to after combat only widened which triggers get here",
+   "note": "history"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#42052b0a19#0": {
+   "action": "cite",
+   "nums": [
+    "609.3c"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#4d4d0461db#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#19c34c55d8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#e2e876cb10#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "That was the old unconditional hold",
+   "note": "history"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#cedc79ea2f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#5f7d1238b8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R261#8fbb20802b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R261#0edf79691d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R261#23cf38754d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R261#dd8940c634#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R261#ea07d4c15d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R261#346805c9ae#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R261#f4fa6e6513#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b",
+    "608.9d"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R261#65ed6f5642#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R261#95e75c28dd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R261#11c6763b43#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R261#d6833982d6#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ],
+   "note": "'sacrifice paid as it goes on the stack' is 706.2"
+  },
+  "client/engine/test/26-metal-a.test.ts##R261#2ac5193457#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R261#0d7cb46320#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b",
+    "608.9"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R261#a0f36756cd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R261#8123ad4e25#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "Converted when combat-death triggers moved to after combat",
+   "note": "test history"
+  },
+  "client/engine/test/28-metal-c.test.ts##R261#a881a7a68a#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "which is the half the after-combat hold changed",
+   "note": "test history"
+  },
+  "client/engine/test/28-metal-c.test.ts##R261#370909c035#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R261#13b1068220#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R261#016bacdceb#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#408f4b1830#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ],
+   "note": "history of report #165: held under the unconditional hold (pre-narrowing)"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#59bbdc6c90#0": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "the condition was always in the owner's ruling and its first implementation dropped it",
+   "note": "history"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#59bbdc6c90#1": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "the condition was always in the owner's ruling and its first implementation dropped it",
+   "note": "history"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#c5992e58ee#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the engine before triggers were held to after combat",
+   "note": "history"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#94687593ac#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "the after-combat hold's machinery is what carries it",
+   "note": "history"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#e7bb4c2665#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R261#d858cca5df#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/310-zone-abilities.test.ts##R261#401fa45687#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/310-zone-abilities.test.ts##R261#552dd2f17e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R261#392624efd9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R261#392624efd9#0~1": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R261#14ad560412#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/408-raq-new-threads.test.ts##R261#921ceff3be#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "the after-combat ruling took this very write-up as its text",
+   "note": "history"
+  },
+  "client/engine/test/41-dark-a.test.ts##R261#9a887e833c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/411-cr-extract.test.ts##R261#f00df7001d#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "data literals in the CR-extract relation test (ruling ids are its subject); retire with the extractor"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R261#858c365471#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "data literals in the CR-extract relation test (ruling ids are its subject); retire with the extractor"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R261#858c365471#1": {
+   "action": "unsure",
+   "nums": [],
+   "note": "data literals in the CR-extract relation test (ruling ids are its subject); retire with the extractor"
+  },
+  "client/engine/test/43-dark-c.test.ts##R261#7bcca02ea1#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "Converted when combat-damage triggers moved to after combat",
+   "note": "test history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R261#ce0eefc921#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R261#438cd9a47f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R261#76ea71abdb#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R261#76ea71abdb#0~1": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/84-card-semantics.test.ts##R261#adcf39e4b2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Cinder Scuttler when combat-damage triggers moved to after combat",
+   "note": "ledger history"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R261#96b7b1492a#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/util.ts##R261#fe0660c73f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Holding combat-damage triggers to after combat generalised this",
+   "note": "test-helper history"
+  },
+  "client/engine/test/util.ts##R261#ae101a49e2#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/util.ts##R261#e0d8f7f728#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/engine/test/util.ts##R261#1316cae138#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Before combat-damage triggers were held to after combat",
+   "note": "history"
+  },
+  "client/engine/test/util.ts##R261#62a1cf659d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R261#8342452381#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "FIXED 2026-08-30 (now CR 608.9b)",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R261#ad9e4ff235#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R261#69a89e85b0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R261#050339a1f1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9d"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R261#ca75b6549b#0": {
+   "action": "reword",
+   "nums": [
+    "608.9d"
+   ],
+   "suggest": "the old exemption",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R261#a97aa88d3c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "because the after-combat hold made it reachable",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R261#104cf91843#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R261#88cfb80189#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the after-combat round deleted it",
+   "note": "process history"
+  },
+  "client/ledgers/card-todo-closed.ts##R261#9f8e690c84#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "for reasons the after-combat hold did not move",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R261#d05f253be7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Cinder Scuttler when combat-damage triggers moved to after combat",
+   "note": "ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R261#c956673807#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R261#78e029c441#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "CLOSED 2026-08-30 (now CR 608.9b)",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R261#ad6f9f7e49#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R261#1832c7ccdc#0": {
+   "action": "reword",
+   "nums": [
+    "608.3"
+   ],
+   "suggest": "The 2026-08-30 ruling quoted the owner's condition and then implemented",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R261#5e99f242a6#0": {
+   "action": "reword",
+   "nums": [
+    "608.3a"
+   ],
+   "suggest": "exactly the half of the after-combat ruling that did not change",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R261#cb8652172a#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "the RAQ the owner quoted for the after-combat ruling",
+   "note": "history"
+  },
+  "client/ledgers/unreached.ts##R261#965e743171#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Cinder Scuttler when combat-damage triggers moved to after combat",
+   "note": "ledger history"
+  },
+  "client/ledgers/unreached.ts##R261#117b8c904d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THE AFTER-COMBAT ROUND DELETED THE 'Cinder Scuttler' ENTRY",
+   "note": "history"
+  },
+  "client/ledgers/unreached.ts##R261#4e932bc3a7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "before combat-damage triggers were held to after combat",
+   "note": "history"
+  },
+  "client/ledgers/unreached.ts##R261#92a7140cb5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ledgers/unreached.ts##R261#cb703d7454#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process label"
+  },
+  "client/ledgers/unreached.ts##R261#a9cc3bd411#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the after-combat hold made Cinder Scuttler reachable",
+   "note": "history"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R261#a9e01f9dd5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R261#1d4f3502eb#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#65537450c2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The owner's 2026-08-30 after-combat ruling",
+   "note": "history"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#fda94aeb10#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "prose stale: 'whichever sub-step announced' is false for split steps (608.9c resolves at boundary)"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#4ce6ec6573#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "pointer to header note"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#95a636692c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ],
+   "note": "normal is the last sub-step here, so it joins the after-combat batch"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#fe92ff35c8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#799094ca28#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#89ecc849d0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9c"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#2b04fa077b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#c22bcd9bb9#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "Swift-column board = split step: trigger resolves at the boundary (608.9c), not 'after combat'; message stale"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#24b2d5e506#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the only one of these three numbers the after-combat hold left able to fail",
+   "note": "history"
+  },
+  "client/docs/08-light-and-dark.md##R303#f182419324#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a",
+    "720.4b"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#86f9df22e1#0": {
+   "action": "cite",
+   "nums": [
+    "803.6i"
+   ],
+   "note": "Ambush out of the cache, priced by permission"
+  },
+  "client/engine/src/apply.ts##R303#5d12bd3c61#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#066c907de8#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#41a1c4a4e3#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#4b03e3fd3d#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#3daa00ae1a#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b",
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#2bfe7618bf#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#78406bf177#0": {
+   "action": "cite",
+   "nums": [
+    "720.4b"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#9c066fcfb2#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#9388f3ec4e#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#c2d20ed48c#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#d525c00aac#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#80387288c6#0": {
+   "action": "cite",
+   "nums": [
+    "720.4b"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#cbe50a076f#0": {
+   "action": "cite",
+   "nums": [
+    "723.2a"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#88f1d319ac#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ],
+   "note": "the waiver itself; announcing it is UI"
+  },
+  "client/engine/src/apply.ts##R303#3377d9ad35#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#0fa9809f87#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#8fccedcfab#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R303#2f102bb3f7#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a",
+    "720.4b"
+   ]
+  },
+  "client/engine/src/engine.ts##R303#62a4c23c66#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#f6dce6bbe9#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#62700ea71f#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#cec668ba4f#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#98e96bc5ec#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#b1fd7bea12#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#b3aef5379c#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#658de604fd#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#f89cd70325#0": {
+   "action": "cite",
+   "nums": [
+    "803.7k"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#0572c222de#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/test/315-cache-mod-permission.test.ts##R303#df128bbb9c#0": {
+   "action": "cite",
+   "nums": [
+    "720.5"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R303#abd6efe05f#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R303#ea2e715c9b#0": {
+   "action": "reword",
+   "nums": [
+    "720.5a"
+   ],
+   "suggest": "Until 2026-09-20",
+   "note": "test history"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R303#a63721f720#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R303#39addb1304#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R303#6547da9f3c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R303#482b773fbf#0": {
+   "action": "cite",
+   "nums": [
+    "720.4b"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R303#419653bdfe#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/test/370-cached-virus-in-battle.test.ts##R303#ae975300dd#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R303#9ee4c5b16b#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R303#9ee4c5b16b#1": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R303#fb39988985#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R303#df51053a33#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g",
+    "720.5a"
+   ],
+   "note": "Glimpse row / Graft row"
+  },
+  "client/ledgers/raq.ts##R303#5d0e46d2fc#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/ui/glossary.ts##R303#6c5d787415#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b"
+   ],
+   "note": "glossary ruling-field literal"
+  },
+  "client/ui/inspect.ts##R303#e136913913#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/ui/main.ts##R303#6e3ab3ef61#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/ui/main.ts##R303#8aa538ee2c#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/ui/main.ts##R303#958fbd015b#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/ui/main.ts##R303#32aaa185eb#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/ui/main.ts##R303#24a7ee299a#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/ui/main.ts##R303#97cad4ae41#0": {
+   "action": "cite",
+   "nums": [
+    "403.3b",
+    "403.3c"
+   ]
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R303#838eba97af#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "with the cache-mod pair",
+   "note": "log-count history"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R303#0108d1aa3f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the same kind as the cache-mod pair",
+   "note": "log-count history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R303#c474aacdb9#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R303#3bb8aed8a8#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R303#fb03097b03#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that was the bug fixed on 2026-09-20",
+   "note": "history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R303#aee1322bd3#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a"
+   ]
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R303#3475945955#0": {
+   "action": "cite",
+   "nums": [
+    "720.5a",
+    "720.4b"
+   ]
+  }
+ }
+}

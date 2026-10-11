@@ -1,0 +1,2447 @@
+{
+ "unit": "M017",
+ "decisions": {
+  "client/docs/08-light-and-dark.md##R45#0c046788dd#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "the glimpse rule (CR 801.9) as corrected",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/engine/src/apply.ts##R45#066c907de8#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R45#8e5b2956f7#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/engine/src/apply.ts##R45#f88d0491b8#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R45#e3469d5baa#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/apply.ts##R45#ac48bb6ef7#0": {
+   "action": "cite",
+   "nums": [
+    "801.9g"
+   ]
+  },
+  "client/engine/src/apply.ts##R45#701d8da503#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/apply.ts##R45#1933320d55#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R45#86151568ce#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R45#b47f736fea#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R45#68261928d4#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R45#570f002f1c#0": {
+   "action": "cite",
+   "nums": [
+    "801.9c"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R45#6e72516a09#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R45#d990bb7de7#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R45#989f6b69d9#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R45#7ea8a9c64a#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R45#f6c81a0774#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R45#02097f98a3#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R45#617229de38#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R45#944ba055bb#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R45#f44e023313#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R45#1765aac8ec#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R45#d3042fc4cb#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R45#7e961f6026#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R45#97d6749ad6#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R45#e3ede0b5e0#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R45#496c8e201e#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R45#18178c8bea#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b",
+    "801.9f"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R45#c7d97ba4a9#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b",
+    "801.9e"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R45#ddcedd1cbb#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R45#f44e023313#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R45#0b1437bc61#0": {
+   "action": "cite",
+   "nums": [
+    "801.9d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R45#06cdb98ff5#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#862614601c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#d5713d51c9#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#774c235da6#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e",
+    "801.9i"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#433acc6119#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#f31fdd82a2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse rule was corrected on 2026-08-19.",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R45#50e5a5ce9c#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#910387b5e0#0": {
+   "action": "cite",
+   "nums": [
+    "801.9f"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#41b40e7724#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/src/engine.ts##R45#c870b3c071#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a"
+   ]
+  },
+  "client/engine/src/types.ts##R45#0655f6d326#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/engine/src/types.ts##R45#89c3d946d7#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R45#32dd9178ef#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R45#409550061c#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R45#9b5e29915c#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a",
+    "801.9d"
+   ]
+  },
+  "client/engine/test/14-water-a.test.ts##R45#e83533be73#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R45#d8d1022d69#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R45#f6ca208e68#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R45#f9998a27d6#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R45#6335511ee5#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a",
+    "801.9d"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R45#0444542c6e#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R45#caa990824b#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R45#66f9e5d4ff#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R45#ad87219598#0": {
+   "action": "cite",
+   "nums": [
+    "801.9f"
+   ]
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R45#98b0e8b1cf#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/38-light-a.test.ts##R45#ea5e43feb4#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R45#0b67b0b9c1#0": {
+   "action": "cite",
+   "nums": [
+    "801.8a"
+   ],
+   "note": "Delver: the caching effect grants the permission"
+  },
+  "client/engine/test/40-light-c.test.ts##R45#e17be37648#0": {
+   "action": "cite",
+   "nums": [
+    "801.8a"
+   ],
+   "note": "Delver: the caching effect grants the permission"
+  },
+  "client/engine/test/40-light-c.test.ts##R45#9bf1646162#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R45#bd4abdc9cc#0": {
+   "action": "cite",
+   "nums": [
+    "403.3c"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R45#1807f4a143#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R45#f6ca208e68#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R45#593ee5eba6#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R45#27d2cc8cfe#0": {
+   "action": "cite",
+   "nums": [
+    "801.8a"
+   ],
+   "note": "Murkdrop: the caching text grants the permission"
+  },
+  "client/engine/test/43-dark-c.test.ts##R45#a3378b3962#0": {
+   "action": "cite",
+   "nums": [
+    "801.8a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R45#a4f9d2fbf4#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R45#130a559409#0": {
+   "action": "cite",
+   "nums": [
+    "801.8a"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R45#1a56c9fc47#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R45#04b2fa5ee8#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R45#e808c1c9ea#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R45#297fdb5440#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R45#6d2c443577#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R45#1a6713a77d#0": {
+   "action": "cite",
+   "nums": [
+    "801.9f"
+   ]
+  },
+  "client/engine/test/61-negation.test.ts##R45#0a088a24df#0": {
+   "action": "cite",
+   "nums": [
+    "801.9f"
+   ]
+  },
+  "client/engine/test/99-endofturn.test.ts##R45#4726806762#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R45#eac566703b#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R45#c5e4ff9796#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "the glimpse rule as it read before its 2026-08-19 correction",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R45#c21108e8cb#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R45#395b2dcd5b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the glimpse rule's doc comment",
+   "note": "history of a misquote check"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R45#2907d893e2#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "the glimpse rule as it read before its 2026-08-19 correction",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R45#fe37ea3913#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the glimpse rule's correction",
+   "note": "history"
+  },
+  "client/server/e2e/test-scenario.ts##R45#0d98146fc3#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/server/scenarios-d.ts##R45#1e802d9417#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#77d7444ee9#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#5216ef4367#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#fd6e19f2f5#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a",
+    "801.9d"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#cb3fc999d7#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#5e8baadb48#0": {
+   "action": "cite",
+   "nums": [
+    "801.9a",
+    "801.9d"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#263bf2f21c#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ]
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R45#bea89b240f#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/ui/glossary.ts##R45#6c5d787415#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a"
+   ],
+   "note": "glossary Cache row"
+  },
+  "client/ui/glossary.ts##R45#4bef9b17e0#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "the glimpse rule as it read before its 2026-08-19 correction",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ui/glossary.ts##R45#82cfcba8b7#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "Reworded off the corrected glimpse rule (CR 801.9)",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R45#66e5f5ea82#0": {
+   "action": "cite",
+   "nums": [
+    "801.9"
+   ],
+   "note": "glossary Glimpse row"
+  },
+  "client/ui/glossary.ts##R45#5301f5e2b6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the glimpse rule's 2026-08-19 correction",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R45#05fe157cda#0": {
+   "action": "cite",
+   "nums": [
+    "408.2a"
+   ],
+   "note": "glossary Recycle row"
+  },
+  "client/ui/main.ts##R45#fa6e7ca9de#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/ui/main.ts##R45#1b83a7ff22#0": {
+   "action": "cite",
+   "nums": [
+    "403.3d"
+   ]
+  },
+  "client/ui/main.ts##R45#e971f39c86#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/ui/main.ts##R45#42a703bd91#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/ui/test/144-both-seats-decision-gate.test.ts##R45#9c34e44850#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e"
+   ]
+  },
+  "client/ui/test/155-hand-affordances.test.ts##R45#0138da8347#0": {
+   "action": "cite",
+   "nums": [
+    "801.9i"
+   ]
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R45#e58f08cad3#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "the glimpse rule as it read before its 2026-08-19 correction",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R45#4e2cc56352#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R45#780c6a1d3e#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "CR 801.9 as corrected 2026-08-19",
+   "note": "history"
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R45#84cf68c6a8#0": {
+   "action": "cite",
+   "nums": [
+    "801.9b"
+   ]
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R45#cac15fd0b0#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "CR 801.9 as corrected 2026-08-19 caches exactly one, not all N",
+   "note": "history"
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R45#b8bb22c86b#0": {
+   "action": "cite",
+   "nums": [
+    "801.9e",
+    "801.9f"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R45#68b7dc13e4#0": {
+   "action": "reword",
+   "nums": [
+    "801.9"
+   ],
+   "suggest": "the glimpse rule was corrected on 2026-08-19",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R45#dd68b8e635#0": {
+   "action": "unsure",
+   "note": "literal R-token list in the register-staleness test; retire with the register, not a citation"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R45#95c12e21dd#0": {
+   "action": "cite",
+   "nums": [
+    "403.3a",
+    "403.3c"
+   ]
+  },
+  "client/docs/13-assessment.md##R86#a484bae8c8#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/docs/questions-round28.md##R86#04f4210f27#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R86#11caedcf2e#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R86#559834174a#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/src/cards/registry.ts##R86#08cce37997#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "a later fizzle does nothing, so the replaced damage stays gone"
+  },
+  "client/engine/src/cards/registry.ts##R86#493a048244#0": {
+   "action": "cite",
+   "nums": [
+    "704.6g"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R86#ebb8b12847#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R86#6b4c4c01d1#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "a later fizzle does nothing, so the replaced damage stays gone"
+  },
+  "client/engine/src/engine.ts##R86#c90fa952f6#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R86#34f7bd387e#0": {
+   "action": "cite",
+   "nums": [
+    "704.6",
+    "704.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R86#7c8c8fd77b#0": {
+   "action": "cite",
+   "nums": [
+    "704.6d"
+   ]
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R86#568e32d462#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/test/196-empty-target-fizzle.test.ts##R86#9bdd2fff06#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R86#9e18f08e79#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R86#08602ace6f#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R86#f6cbb0fda8#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R86#c24fbd0787#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#eaf278cda8#0": {
+   "action": "cite",
+   "nums": [
+    "722.4f"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#f6e28c2d19#0": {
+   "action": "cite",
+   "nums": [
+    "704.6a"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#f8af45f442#0": {
+   "action": "cite",
+   "nums": [
+    "722.4f"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#fef49d20eb#0": {
+   "action": "cite",
+   "nums": [
+    "704.6b"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#0ec6d12245#0": {
+   "action": "cite",
+   "nums": [
+    "704.6d"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#be65c03ec7#0": {
+   "action": "cite",
+   "nums": [
+    "704.6g"
+   ]
+  },
+  "client/engine/test/78-round17-core.test.ts##R86#a522cb21b8#0": {
+   "action": "reword",
+   "nums": [
+    "704.6g"
+   ],
+   "suggest": "and fizzles, as it always did (CR 704.6g)",
+   "note": "\"before R86\" is history"
+  },
+  "client/ledgers/card-todo-closed.ts##R86#1a4e09f90c#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R86#ae8c79df33#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R86#ae8c79df33#0~1": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R86#6fdc72bb38#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R86#6ff3b8642b#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R86#e9197a05be#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R86#2982a0d0a1#0": {
+   "action": "cite",
+   "nums": [
+    "722.4f"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R86#95029b562f#0": {
+   "action": "cite",
+   "nums": [
+    "722.4f"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R86#490348fd85#0": {
+   "action": "cite",
+   "nums": [
+    "722.4f"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R86#3bf4387b38#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/raq.ts##R86#3b7a49d952#0": {
+   "action": "reword",
+   "nums": [
+    "704.6a"
+   ],
+   "suggest": "the fizzle rule (CR 704.6a) was built from this very thread",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R86#65cb54eece#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ]
+  },
+  "client/ledgers/raq.ts##R86#d03e98aa5d#0": {
+   "action": "cite",
+   "nums": [
+    "722.4f"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R151#1b6064c6c0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "CLOSED",
+   "note": "closure stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R151#0ad0178328#0": {
+   "action": "reword",
+   "nums": [
+    "D6.9a"
+   ],
+   "suggest": "CLOSED (now CR D6.9a)",
+   "note": "closure stamp"
+  },
+  "client/ledgers/card-todo-closed.ts##R151#c59ba6a3fa#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R151#1f74ced252#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "FIXED (2026-08-25)",
+   "note": "closure stamp"
+  },
+  "client/ui/cardtext.ts##R151#c15dd0aca2#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a"
+   ]
+  },
+  "client/ui/cardtext.ts##R151#bfcbfd0f09#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a"
+   ]
+  },
+  "client/ui/main.ts##R151#c35deab4b3#0": {
+   "action": "cite",
+   "nums": [
+    "106.3b"
+   ]
+  },
+  "client/ui/resources.ts##R151#f1e19040b6#0": {
+   "action": "drop",
+   "note": "dormant-resource dimming is a UI convention no Annex D rule states (gap)"
+  },
+  "client/ui/style.css##R151#42569bd476#0": {
+   "action": "cite",
+   "nums": [
+    "106.3b"
+   ]
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#9397f883c7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a",
+    "106.3b"
+   ]
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#e650f7013b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a"
+   ]
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#f57d935183#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a"
+   ]
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#7fdfa3e3eb#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9"
+   ]
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#2a0808265f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9a"
+   ]
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#25749368a0#0": {
+   "action": "drop",
+   "note": "dormant-resource dimming is a UI convention no Annex D rule states (gap)"
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R151#df74691c82#0": {
+   "action": "cite",
+   "nums": [
+    "106.3b"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R172#34e46e35ff#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/docs/16-divergence-inventory.md##R172#34e46e35ff#1": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R172#778d226eba#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/docs/16-divergence-inventory.md##R172#14f9ef964e#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R172#a82e64d4a9#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/docs/16-divergence-inventory.md##R172#c5e52e38e4#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R172#08bee8cc9f#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R172#80f714b352#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R172#761d2a0b37#0": {
+   "action": "reword",
+   "nums": [
+    "801.6a"
+   ],
+   "suggest": "the sentence CR 801.6a (an erase is a despawn) overturned",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R172#fb045a5af3#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R172#55ee090c6a#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#cae8560e6e#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#6e1882ba2d#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#f6d08647fd#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#6bc8267a87#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#3d14c40ae2#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#234a3c25ea#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R172#18574f948d#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R172#ebd11ad51a#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R172#61a5530c79#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The erase consolidation of 2026-08-25 retired the standing example of that.",
+   "note": "refactor history"
+  },
+  "client/engine/src/cards/sets/helpers.ts##R172#bac18121bd#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/helpers.ts##R172#cfc589018b#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/src/cards/sets/helpers.ts##R172#e92b57a0fe#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R172#15fa08f77f#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R172#591c1366a1#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R172#3c8e0674e8#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R172#bd8d6055f6#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R172#2c7c58a7fc#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/src/engine.ts##R172#b1235f31d2#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#ec2475d918#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#3f4dff81e9#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#8c0f79cbf8#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#63bc0f9e90#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#abb7d03953#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#8cda04ddee#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#8be66b334e#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/108-formation-class.test.ts##R172#09ecdd4454#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#3c0bf2f540#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#44b005f207#0": {
+   "action": "reword",
+   "nums": [
+    "801.6a"
+   ],
+   "suggest": "Before an erase fired a despawn (CR 801.6a), it fired only 'erased'",
+   "note": "history"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#f190aebb18#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#3bc10c763c#0": {
+   "action": "cite",
+   "nums": [
+    "410.2"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#34ac7efe1d#0": {
+   "action": "reword",
+   "nums": [
+    "410.2"
+   ],
+   "suggest": "Before an erase fired a despawn (CR 410.2), this was 0 twice over",
+   "note": "history"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#b014b5ee0b#0": {
+   "action": "drop",
+   "note": "engine mod-entity lifetime/anchoring; no CR rule"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#45e351eaa0#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#2ea7bb5a54#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#0f5f776ee5#0": {
+   "action": "cite",
+   "nums": [
+    "407.4"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#920fd6928a#0": {
+   "action": "cite",
+   "nums": [
+    "720.7"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#b732432d41#0": {
+   "action": "cite",
+   "nums": [
+    "407.3a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#e23d42839e#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a",
+    "407.1c"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#11977dc6c7#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#44d6ba562b#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#9f68edcfda#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#6b6bc57e8b#0": {
+   "action": "reword",
+   "nums": [
+    "711.3a"
+   ],
+   "suggest": "(CR 711.3a)",
+   "note": "\"unchanged by R172\" is history"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#f74d51f114#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/157-blocked-stays-blocked.test.ts##R172#66d62f24be#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/157-blocked-stays-blocked.test.ts##R172#6ade120aa1#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R172#e00c46867a#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R172#32dcdd18e6#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/engine/test/89-self-erase.test.ts##R172#4e47721c38#0": {
+   "action": "reword",
+   "nums": [
+    "801.6a"
+   ],
+   "suggest": "NARROWED 2026-08-25, when an erase became a despawn (CR 801.6a).",
+   "note": "history"
+  },
+  "client/engine/test/89-self-erase.test.ts##R172#9782d22da4#0": {
+   "action": "cite",
+   "nums": [
+    "801.6a"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R172#bf1f36e92c#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ],
+   "note": "the latch half of the parenthetical has no rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R172#aa471f0398#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R172#7ce17da3aa#0": {
+   "action": "drop",
+   "note": "engine refactor/architecture (erase choke point, reentrancy latch); no CR rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R172#e1eb8ec874#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "not something the mid-battle steal change introduced",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R172#55c6cb8ef3#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R172#4a4a279a99#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R172#8c0e778c1b#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R172#18bb878d59#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R172#60612a5f6a#0": {
+   "action": "cite",
+   "nums": [
+    "711.3"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R196#776da105ac#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R196#18642d50f9#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R196#979bae93da#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R196#899681b441#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/apply.ts##R196#8bc1cea32b#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/apply.ts##R196#cf86894cf0#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/src/apply.ts##R196#f648fa42da#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R196#35f1afd75e#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R196#40cf1cebdb#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R196#1fe300056a#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R196#e548c610a4#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R196#a434635d61#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R196#001b61ccf1#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R196#517cc7c91c#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R196#4df0c85b7e#0": {
+   "action": "cite",
+   "nums": [
+    "705.4"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R196#a4818d9108#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R196#52423aa134#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R196#89e13c8eda#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R196#eb49a1148c#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R196#e63f3ea530#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R196#59a0b9b6f7#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R196#efbde86da5#0": {
+   "action": "drop",
+   "note": "this R196 is the renumbered leak ruling (now R202); a design argument (denylists rot), no rule"
+  },
+  "client/engine/src/engine.ts##R196#5310002417#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#b517202b60#0": {
+   "action": "cite",
+   "nums": [
+    "102.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#9ae45841bf#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#3c634ddec3#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#741945b03d#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#fa450e185b#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#6638fc282d#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#9fb099e68e#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#01f5866876#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#e6378c86e9#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#ed84383b80#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#2ed8a9dc62#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#cb4ede9128#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#835ff0d3e7#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#0e6403e1f2#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#9c3d4191ad#0": {
+   "action": "cite",
+   "nums": [
+    "102.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#0ff6b5f06b#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#9b8ec3f8de#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#571bbabb2d#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#caf569ed21#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#6c3f737b00#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#c04eb75034#0": {
+   "action": "cite",
+   "nums": [
+    "111.6"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#2788a1abc4#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#29e15f0c36#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#7a92c9aa63#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#04cb4b0602#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#e912397f6c#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/src/engine.ts##R196#baffd90e07#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the agent who moved the erase into the cost left it rather than guess",
+   "note": "process history; NB CR 407.2 now says such a mod goes to the erased pile (stale \"open\")"
+  },
+  "client/engine/src/types.ts##R196#c43ae0bd5f#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/src/types.ts##R196#73d4f29080#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/types.ts##R196#ac818b6bf8#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/src/types.ts##R196#20182e4a4f#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R196#12fb931553#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R196#edddf08de1#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R196#76a8a070b2#0": {
+   "action": "cite",
+   "nums": [
+    "705.4"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R196#f3dfd10d09#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R196#e099cec128#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#27713f4adc#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#328acbd1f4#0": {
+   "action": "reword",
+   "nums": [
+    "111.7"
+   ],
+   "suggest": "Before activation costs were paid at activation (CR 111.7), they decided it",
+   "note": "history"
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#126529ae02#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#95f4c8e1f4#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#0017bc61ef#0": {
+   "action": "cite",
+   "nums": [
+    "705.4"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#5a0a16210f#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#96ce4846de#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#89436b0ac6#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#d1f5890e16#0": {
+   "action": "cite",
+   "nums": [
+    "705.3"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#d8169205df#0": {
+   "action": "cite",
+   "nums": [
+    "111.6a"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R196#6cdb233421#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R196#35bbc3afa1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the agent who moved the erase into the cost left it rather than guess",
+   "note": "process history; NB CR 407.2 now answers the question"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R196#ea3acd4ba2#0": {
+   "action": "unsure",
+   "note": "184-ruling-register test quoting a renumbering commit message; register machinery, retire with the register"
+  },
+  "client/engine/test/19-hybrids.test.ts##R196#e27ed04601#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R196#8b615f9ccf#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R196#22ef6adb24#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R196#e4ff74166f#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/engine/test/41-dark-a.test.ts##R196#13d265d2c4#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R196#3dc17d7abe#0": {
+   "action": "reword",
+   "nums": [
+    "705.4"
+   ],
+   "suggest": "Making these real costs (CR 705.4) moved the ground under both subjects",
+   "note": "history"
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R196#063d4d11ca#0": {
+   "action": "cite",
+   "nums": [
+    "705.4"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R196#e425efac3f#0": {
+   "action": "unsure",
+   "note": "guard binding \"::R196\" matches every R196-prefixed title in 167; needs one shared replacement token when titles are renamed"
+  },
+  "client/ledgers/card-todo-closed.ts##R196#6b27255ae4#0": {
+   "action": "cite",
+   "nums": [
+    "111.7"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R196#1f996b65ee#0": {
+   "action": "cite",
+   "nums": [
+    "111.2"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R196#671b9ef972#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the agent who made it a cost deliberately left it",
+   "note": "process history about who left an open question"
+  },
+  "client/ledgers/card-todo-closed.ts##R196#7986f11694#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(found by the same agent)",
+   "note": "process history about who left an open question"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R196#ef2e5a658f#0": {
+   "action": "drop",
+   "note": "this R196 is the renumbered leak ruling (now R202); a design argument (denylists rot), no rule"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R196#4749958185#0": {
+   "action": "drop",
+   "note": "this R196 is the renumbered leak ruling (now R202); a design argument (denylists rot), no rule"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R196#39c294a172#0": {
+   "action": "cite",
+   "nums": [
+    "D6.5"
+   ],
+   "note": "this R196 is the renumbered leak ruling (R202); its section 2 invariant = D6.5"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R196#5491f2c1fb#0": {
+   "action": "drop",
+   "note": "this R196 is the renumbered leak ruling (now R202); a design argument (denylists rot), no rule"
+  },
+  "client/ui/main.ts##R196#2fc6d4cc9f#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/ui/main.ts##R196#53f4283cb8#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/ui/test/59-base-stats.test.ts##R196#120c7c9a25#0": {
+   "action": "cite",
+   "nums": [
+    "705.3b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Closed 2026-08-26.",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "its pre-audit wording",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#0~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Closed 2026-08-26.",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#1~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "its pre-audit wording",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#0cba691611#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-08-26 glossary audit says of its own method",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#5f811ef8c8#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11"
+   ],
+   "suggest": "its first rule is \"printed text wins\" (CR D6.11)",
+   "note": "\"printed text wins\" = D6.11"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#5f811ef8c8#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "But the audit ALSO measured",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#3bbce2ca98#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the audit",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#584d95779d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the audit's METHOD",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#d37766b9b3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-26 audit",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/cardtext.ts##R206#4f5b831ee5#0": {
+   "action": "drop",
+   "note": "\"the glossary is a rules document\" is repo policy, not a CR rule"
+  },
+  "client/ui/glossary.ts##R206#6a3eda724e#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#da3c68cff2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when the 2026-08-26 audit read all of them",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#53a2288398#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the Piercing bug (CT-80)",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#ba98113352#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#59678389e2#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#4f94c6d4bd#0": {
+   "action": "cite",
+   "nums": [
+    "802.17a"
+   ],
+   "note": "Electric row: the recursion"
+  },
+  "client/ui/glossary.ts##R206#e04869badc#0": {
+   "action": "cite",
+   "nums": [
+    "802.12b"
+   ]
+  },
+  "client/ui/glossary.ts##R206#ea1a17c5aa#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#ef5bbcb9d0#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#0e6eec7ae5#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#9ebc9c7175#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The audit widened only the HOW",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#f9fc538f7d#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#590bdaffed#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#5551ef02d5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-26 audit rewrote this row",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#d244f45dbb#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "CT-80 named",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#ad09eb0713#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#f167b7e381#0": {
+   "action": "cite",
+   "nums": [
+    "720.2"
+   ],
+   "note": "Augment row: modding is a deployment action"
+  },
+  "client/ui/glossary.ts##R206#34dc185a69#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#1dae2e6de7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-08-26 audit checked this row",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#a32b7891b2#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#06abc922dc#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Audited 2026-08-26: per turn and per card confirmed",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/glossary.ts##R206#7586a58b61#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/glossary.ts##R206#ad95ba0e10#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-26 audit",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/manual-reminders.json##R206#9b670aef9c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "CT-80",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/manual-reminders.json##R206#7050c8d5fb#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R206#43401cd3ef#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R206#7531a9c28b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-08-26 audit",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R206#83e79ac656#0": {
+   "action": "unsure",
+   "note": "177 register-sweep history (exemption list); reworked with the register deletion"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R206#a58fbeaef5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "CT-80",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/test/231-manual-text.test.ts##R206#63e1a5088d#0": {
+   "action": "cite",
+   "nums": [
+    "720.2"
+   ]
+  },
+  "client/ui/test/231-manual-text.test.ts##R206#8108a0c820#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R206#9933f56d93#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-26 glossary audit says it in its own words",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R206#62f28a909e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The audit then states its own method in one line",
+   "note": "history of the 2026-08-26 glossary audit"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R206#aeb7e779cd#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11"
+   ],
+   "suggest": "its first rule is \"printed text wins\" (CR D6.11)",
+   "note": "\"printed text wins\" = D6.11"
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R206#41f73eb3ae#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R206#e34e457b6a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": "printed reminder shown, not a paraphrase"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R206#08792c75e5#0": {
+   "action": "drop",
+   "note": "audit label beside a CT-80 tag; the glossary-audit history has no CR rule"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R267#f1fdfb9a2b#0": {
+   "action": "unsure",
+   "note": "register-range sentence in 184-ruling-register test; register machinery, retire with the register"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R294#979d598dda#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R294#1963a21efd#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R294#f503751a8a#0": {
+   "action": "cite",
+   "nums": [
+    "802.25k"
+   ]
+  },
+  "client/engine/src/engine.ts##R294#803df2b1b9#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R294#839f01833c#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/src/types.ts##R294#9ab134f300#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#1ade6b3aec#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#2c5fa94f08#0": {
+   "action": "cite",
+   "nums": [
+    "712.8b"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#a09ce8cde0#0": {
+   "action": "cite",
+   "nums": [
+    "802.22e"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#a4daa6f952#0": {
+   "action": "cite",
+   "nums": [
+    "802.22e"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#e8a2955091#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#b583c1b08b#0": {
+   "action": "cite",
+   "nums": [
+    "712.8b"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#e648c9b53e#0": {
+   "action": "cite",
+   "nums": [
+    "712.8b"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#fef91cab80#0": {
+   "action": "cite",
+   "nums": [
+    "802.12a"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#0a3fe13fc0#0": {
+   "action": "cite",
+   "nums": [
+    "802.15d"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#bc990fd2e8#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ],
+   "note": "the column-sharing rule that would tempt the \"fix\""
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#4a02eeae12#0": {
+   "action": "cite",
+   "nums": [
+    "712.8e"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#eba78aaa35#0": {
+   "action": "cite",
+   "nums": [
+    "712.8e"
+   ]
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#7a16473f6d#0": {
+   "action": "cite",
+   "nums": [
+    "802.26h"
+   ]
+  },
+  "client/ledgers/card-todo.ts##R294#9da44b934a#0": {
+   "action": "cite",
+   "nums": [
+    "802.26h"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R294#b148effe7d#0": {
+   "action": "cite",
+   "nums": [
+    "802.22e"
+   ]
+  },
+  "client/ledgers/raq.ts##R294#ce94aabda9#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R326#3693018474#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R326#ba33536a14#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R326#9c5981b202#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ]
+  },
+  "client/engine/src/engine.ts##R326#ff380a3a1d#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ]
+  },
+  "client/engine/src/engine.ts##R326#99f3526f59#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R326#fd16b2c15f#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "§20 IS REVERSED (2026-10-09; now CR 107.5).",
+   "note": "history"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R326#54e40b3a92#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ]
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R326#4ac07d72d0#0": {
+   "action": "cite",
+   "nums": [
+    "111.10i"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R326#1a83f5c984#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "FIXED 2026-10-09 (RAQ fix round), now CR 107.5,",
+   "note": "closure history"
+  },
+  "client/ledgers/card-todo.ts##R326#d20acfd531#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "CR 107.5 reversed §20.",
+   "note": "history"
+  },
+  "client/ledgers/raq.ts##R326#e66c5a7273#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "fixed 2026-10-09 (now CR 107.5).",
+   "note": "closure history"
+  }
+ }
+}

@@ -1,0 +1,2803 @@
+{
+ "unit": "M021",
+ "decisions": {
+  "client/engine/src/cards/sets/batch-earth-b.ts##R26#9fe98e9864#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R26#a225467e6d#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R26#1ede840c69#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R26#5a4a33ccb9#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R26#c883aacffd#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R26#73e71bf0a9#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/test/17-earth-b.test.ts##R26#24a99b33b8#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/test/17-earth-b.test.ts##R26#d56c21617c#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R26#e6442621f2#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/ledgers/raq.ts##R26#57446ee891#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "own augment text live when played normally"
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R26#4b002d3fd1#0": {
+   "action": "cite",
+   "nums": [
+    "304.15"
+   ],
+   "note": "created unit token is not played"
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R26#93caf50212#0": {
+   "action": "cite",
+   "nums": [
+    "304.15"
+   ],
+   "note": "created unit token is not played"
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R26#427937da2e#0": {
+   "action": "drop",
+   "note": "engine event shape (token:true); printed 'token spell' gate"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R26#266e9baf7e#0": {
+   "action": "reword",
+   "nums": [
+    "304.15"
+   ],
+   "suggest": "the token-creation rule's \"played\" exclusion",
+   "note": "history of an old note"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R26#266e9baf7e#1": {
+   "action": "reword",
+   "nums": [
+    "304.15"
+   ],
+   "suggest": "the token-creation rule (CR 304.15) is about token CREATION"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R26#6681e3aa99#0": {
+   "action": "reword",
+   "nums": [
+    "304.15"
+   ],
+   "suggest": "the token-creation rule (CR 304.15)",
+   "note": "history: old wrong note"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R26#6b29762300#0": {
+   "action": "reword",
+   "nums": [
+    "304.15"
+   ],
+   "suggest": "the token-creation rule (CR 304.15)",
+   "note": "history: old wrong note"
+  },
+  "client/engine/test/11-fire-wood.test.ts##R26#2d0493ef27#0": {
+   "action": "reword",
+   "nums": [
+    "701.1e"
+   ],
+   "suggest": "reversing the earlier own-play reading"
+  },
+  "client/ledgers/card-todo-closed.ts##R26#4ac5592757#0": {
+   "action": "reword",
+   "nums": [
+    "701.1e"
+   ],
+   "suggest": "the earlier own-play reading (since reversed)",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R26#4ac5592757#1": {
+   "action": "reword",
+   "nums": [
+    "701.1e"
+   ],
+   "suggest": "or the own-play reading is stale"
+  },
+  "client/ledgers/card-todo-closed.ts##R26#9780fbf0dd#0": {
+   "action": "reword",
+   "nums": [
+    "701.1e"
+   ],
+   "suggest": "reversing the earlier own-play reading"
+  },
+  "client/docs/08-light-and-dark.md##R38#e2c49bc60a#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R38#ef309cd585#0": {
+   "action": "reword",
+   "suggest": "the Light & Dark rules in the Comprehensive Rules",
+   "note": "range pointer to the retired register"
+  },
+  "client/docs/08-light-and-dark.md##R38#bdbb16ddd3#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R38#134c62b574#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R38#605d2cc0a6#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/engine.ts##R38#3e89dd5a58#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/engine.ts##R38#5bdf504caf#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/types.ts##R38#1a868847d3#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/types.ts##R38#40b504d118#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ],
+   "note": "rot damage precedes start-of-deployment triggers"
+  },
+  "client/engine/src/apply.ts##R38#4fda2254c2#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#68cbd1df5a#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#5009330efc#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#8100a1575f#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#f502803bf8#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/engine.ts##R38#45e0b2d10a#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/types.ts##R38#aba9438fb0#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ],
+   "note": "rot and debt are player counters"
+  },
+  "client/engine/src/cards/dsl.ts##R38#8e00318eb9#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ],
+   "note": "rot damage can be replaced"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R38#1aa3836554#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ],
+   "note": "rot damage can be replaced"
+  },
+  "client/engine/src/engine.ts##R38#fd5144f6c5#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ],
+   "note": "rot damage can be replaced"
+  },
+  "client/engine/src/cards/dsl.ts##R38#3482051ece#0": {
+   "action": "cite",
+   "nums": [
+    "608.8"
+   ],
+   "note": "combat damage to player unless replaced"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#e00b7e41b1#0": {
+   "action": "cite",
+   "nums": [
+    "112.13a"
+   ],
+   "note": "never decreases on its own"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R38#5c8ce683b8#0": {
+   "action": "cite",
+   "nums": [
+    "112.13a"
+   ],
+   "note": "never decreases on its own"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#8291c7a4c5#0": {
+   "action": "cite",
+   "nums": [
+    "112.13e"
+   ],
+   "note": "gain rot goes to effect's controller"
+  },
+  "client/engine/src/engine.ts##R38#609aff1f3d#0": {
+   "action": "cite",
+   "nums": [
+    "112.13e"
+   ],
+   "note": "gain rot goes to effect's controller"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#653ca58ca8#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R38#be84b2a09e#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R38#21877ff1b5#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R38#7ea8a9c64a#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R38#d4b27fe0dc#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R38#3fa2a7c4cf#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#c71456d006#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#993b5d5053#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/engine.ts##R38#f6e0d5372b#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/engine.ts##R38#e8494f41db#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/types.ts##R38#c91d4f5cb3#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R38#937546daa4#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R38#068b899c38#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R38#4932512601#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/41-dark-a.test.ts##R38#2e4735afd4#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/41-dark-a.test.ts##R38#2b9c68ba66#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/41-dark-a.test.ts##R38#329316db2b#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/41-dark-a.test.ts##R38#99e8a2f487#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/42-dark-b.test.ts##R38#5afba7983c#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/42-dark-b.test.ts##R38#bf0969d4c0#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/42-dark-b.test.ts##R38#d7411f9fca#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/43-dark-c.test.ts##R38#6cc5eb49d4#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/43-dark-c.test.ts##R38#05d61f4c9b#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/43-dark-c.test.ts##R38#3fe9f56227#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R38#effe9ffcb1#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R38#5abba8af32#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R38#dd1843de7d#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R38#45ae78a557#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/ledgers/card-todo-closed.ts##R38#8b47f16664#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/ui/glossary.ts##R38#809bbe4802#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/ui/main.ts##R38#f9a2f22774#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/ui/style.css##R38#4146bfd511#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/ui/test/236-browser-glossary-reach.test.ts##R38#1a30e8c628#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/ui/test/236-browser-glossary-reach.test.ts##R38#014d413734#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/server/scenarios-c.ts##R38#fb30f5274b#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot counter, damage at deployment start"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R38#84e6d1c1ff#0": {
+   "action": "cite",
+   "nums": [
+    "112.13",
+    "112.13d"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R38#4ae73a1e91#0": {
+   "action": "reword",
+   "nums": [
+    "608.8"
+   ],
+   "suggest": "the rot work had already shipped them",
+   "note": "engine history"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R38#2e36b7e901#0": {
+   "action": "drop",
+   "note": "engine damage-hook seam"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#4c9b10a2c1#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R38#f8b2a4bc11#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/engine.ts##R38#caf0dd5d88#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/engine.ts##R38#3f15ded989#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/engine.ts##R38#6ec85de5ca#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/engine.ts##R38#28bac14d3b#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/engine.ts##R38#86c271437e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/types.ts##R38#d3a6316069#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R38#b928b5869a#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R38#ab2dc1e56c#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R38#ab4276aab8#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R38#046482ae68#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R38#eecec80120#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/server/stats.ts##R38#d5203276ac#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "replaced combat hit to player still dealt"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R38#78f39e9d7f#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ],
+   "note": "prevention vs replacement"
+  },
+  "client/engine/src/types.ts##R38#db133b16d7#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ],
+   "note": "prevention vs replacement"
+  },
+  "client/engine/test/24-wood-b.test.ts##R38#ca3bd1e7fd#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ],
+   "note": "prevention vs replacement"
+  },
+  "client/engine/src/engine.ts##R38#8e61d793cd#0": {
+   "action": "drop",
+   "note": "engine field semantics"
+  },
+  "client/engine/src/engine.ts##R38#087710d9b2#0": {
+   "action": "cite",
+   "nums": [
+    "112.12"
+   ],
+   "note": "replaced damage still dealt"
+  },
+  "client/engine/src/engine.ts##R38#1d810c4a28#0": {
+   "action": "cite",
+   "nums": [
+    "112.13c"
+   ],
+   "note": "rot not respondable, before triggers"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R38#bcb6a9fb00#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ],
+   "note": "label for replaceRotDamage"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R38#43c02892d6#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "label for replaceCombatDamageToPlayer"
+  },
+  "client/engine/test/17-earth-b.test.ts##R38#f421a45859#0": {
+   "action": "cite",
+   "nums": [
+    "608.8c"
+   ],
+   "note": "Oorblak redirect"
+  },
+  "client/engine/test/17-earth-b.test.ts##R38#86bf700e4c#0": {
+   "action": "cite",
+   "nums": [
+    "608.8c"
+   ],
+   "note": "Oorblak redirect"
+  },
+  "client/engine/test/207-replaced-hit-was-dealt.test.ts##R38#4c914dc44c#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ],
+   "note": "rot has its own damage schedule"
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R38#c8b2587da6#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "Blightsea hook region-scoped; best fit"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R38#b35a0b9277#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ]
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R38#1ff451b530#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R38#496555fecb#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ]
+  },
+  "client/server/e2e/test-scenario.ts##R38#9682047eef#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ]
+  },
+  "client/server/scenarios-c.ts##R38#d316e94632#0": {
+   "action": "cite",
+   "nums": [
+    "112.13d"
+   ]
+  },
+  "client/engine/test/42-dark-b.test.ts##R38#1ef3511f6a#0": {
+   "action": "cite",
+   "nums": [
+    "112.13",
+    "112.13d"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R38#35deec9da7#0": {
+   "action": "cite",
+   "nums": [
+    "112.13"
+   ]
+  },
+  "client/engine/test/47-costs-events.test.ts##R38#4e8af2677e#0": {
+   "action": "cite",
+   "nums": [
+    "507.4"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R38#e8a36ff26b#0": {
+   "action": "drop",
+   "note": "engine history list"
+  },
+  "client/ledgers/card-todo-closed.ts##R38#8e0170d7f5#0": {
+   "action": "cite",
+   "nums": [
+    "112.13c"
+   ],
+   "note": "rot paid inside the barrier; not respondable"
+  },
+  "client/server/rooms.ts##R38#c6e430663d#0": {
+   "action": "cite",
+   "nums": [
+    "112.13c"
+   ],
+   "note": "rot paid inside the barrier; not respondable"
+  },
+  "client/ledgers/card-todo.ts##R38#d20acfd531#0": {
+   "action": "reword",
+   "nums": [
+    "112.13c"
+   ],
+   "suggest": "the rot rule's priority half was later amended"
+  },
+  "client/ledgers/card-todo.ts##R38#ab0cb5cf25#0": {
+   "action": "cite",
+   "nums": [
+    "112.13c"
+   ],
+   "note": "verbatim quote of a test message; keep in sync with that test"
+  },
+  "client/server/e2e/test-accounts.ts##R38#e3bc822c9e#0": {
+   "action": "cite",
+   "nums": [
+    "112.13b"
+   ],
+   "note": "rot source is victim"
+  },
+  "client/server/stats.ts##R38#17df9353bd#0": {
+   "action": "cite",
+   "nums": [
+    "112.13b"
+   ],
+   "note": "rot source is victim"
+  },
+  "client/docs/03-mechanics-inventory.md##R84#d2b19b7940#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/engine/test/180-pool-sight.test.ts##R84#35749572c4#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/engine/test/63-card-art.test.ts##R84#9960602712#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R84#c6433ed6b7#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R84#119cc0bc3f#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/ui/cardtext.ts##R84#29bb909f06#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/ui/glossary.ts##R84#8617de38a4#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/ui/main.ts##R84#7a61bfc23f#0": {
+   "action": "cite",
+   "nums": [
+    "802.15"
+   ],
+   "note": "Alluring attribute"
+  },
+  "client/engine/src/apply.ts##R84#d3f8fcc490#0": {
+   "action": "cite",
+   "nums": [
+    "802.15j"
+   ],
+   "note": "lure outlives the allurer"
+  },
+  "client/ledgers/card-todo-closed.ts##R84#8c5272487c#0": {
+   "action": "cite",
+   "nums": [
+    "802.15j"
+   ],
+   "note": "lure outlives the allurer"
+  },
+  "client/ui/main.ts##R84#0f3d128dac#0": {
+   "action": "cite",
+   "nums": [
+    "802.15j"
+   ],
+   "note": "lure outlives the allurer"
+  },
+  "client/engine/src/apply.ts##R84#1c819db811#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a",
+    "802.15b"
+   ],
+   "note": "targeting trigger, one per column"
+  },
+  "client/engine/src/apply.ts##R84#47a840dcef#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/engine/src/apply.ts##R84#aa36e2e1db#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/engine/test/68-target-conformance.test.ts##R84#0e1b351c8f#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/server/e2e/test-pending-ask.ts##R84#03a60a83ab#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/ui/glossary.ts##R84#ab8e416287#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R84#5e214b9188#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R84#21ee19538f#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#8497813f45#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a"
+   ],
+   "note": "trigger targets one enemy unit"
+  },
+  "client/engine/src/apply.ts##R84#994c407c17#0": {
+   "action": "cite",
+   "nums": [
+    "802.15g"
+   ],
+   "note": "able on its own"
+  },
+  "client/engine/src/apply.ts##R84#6de18f832e#0": {
+   "action": "cite",
+   "nums": [
+    "802.15g"
+   ],
+   "note": "able on its own"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#1f666f071d#0": {
+   "action": "cite",
+   "nums": [
+    "802.15g"
+   ],
+   "note": "able on its own"
+  },
+  "client/engine/src/apply.ts##R84#b7c531bdf5#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ledgers/card-todo-closed.ts##R84#23ddf78f46#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R84#de5a702ff2#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/battle.ts##R84#0db7990e88#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/battle.ts##R84#d8b225facd#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/inspect.ts##R84#0989521edf#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/main.ts##R84#3cc9d7cdf8#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/main.ts##R84#4ab8385fa9#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/style.css##R84#4c0d735204#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#e25bb06a2c#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#93c5ca7df6#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#745e9d1d08#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#492cd78022#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#f6f8cb46b1#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#7704a67fec#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#85ed23deca#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e"
+   ],
+   "note": "compulsory block on lured unit"
+  },
+  "client/engine/src/apply.ts##R84#598286d0c8#0": {
+   "action": "cite",
+   "nums": [
+    "802.15k"
+   ],
+   "note": "only another Alluring duty excuses"
+  },
+  "client/engine/src/apply.ts##R84#1483cb3e43#0": {
+   "action": "cite",
+   "nums": [
+    "606.2f"
+   ],
+   "note": "always a legal block declaration"
+  },
+  "client/engine/src/apply.ts##R84#269b6c45ab#0": {
+   "action": "cite",
+   "nums": [
+    "606.2f"
+   ],
+   "note": "always a legal block declaration"
+  },
+  "client/ui/battle.ts##R84#9e676aafeb#0": {
+   "action": "cite",
+   "nums": [
+    "606.2f"
+   ],
+   "note": "always a legal block declaration"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#ab5797b0bd#0": {
+   "action": "cite",
+   "nums": [
+    "606.2f"
+   ],
+   "note": "always a legal block declaration"
+  },
+  "client/engine/src/apply.ts##R84#850a103006#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/engine/src/apply.ts##R84#1c066ee862#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R84#a9919fe6da#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R84#cd5cc03e89#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ledgers/card-todo-closed.ts##R84#f12d5ffa02#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/battle.ts##R84#f280bb4e32#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/battle.ts##R84#f280bb4e32#1": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/main.ts##R84#1e6e22e714#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#ef9e5a6ce6#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#d82b62a945#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R84#f72600036c#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#e023ebe87a#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#e023ebe87a#1": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#870cf58104#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#dad15ef1cb#0": {
+   "action": "drop",
+   "note": "UI/engine plumbing or history, no rule claim"
+  },
+  "client/engine/src/apply.ts##R84#d0352566cc#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/engine/src/apply.ts##R84#8abb868b4b#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/engine/src/engine.ts##R84#0ac9bd7bb5#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/ledgers/card-todo-closed.ts##R84#4b7e6b67f3#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/ui/battle.ts##R84#798b99c100#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/ui/main.ts##R84#454a037e51#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#4ae2c0d8c3#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e"
+   ],
+   "note": "cannot attack/counterattack rest of battle phase"
+  },
+  "client/engine/src/apply.ts##R84#26cca10596#0": {
+   "action": "cite",
+   "nums": [
+    "604.2e"
+   ],
+   "note": "lured unit not declared attacker/counterattacker"
+  },
+  "client/engine/src/apply.ts##R84#a181d8c23e#0": {
+   "action": "cite",
+   "nums": [
+    "604.2e"
+   ],
+   "note": "lured unit not declared attacker/counterattacker"
+  },
+  "client/ui/battle.ts##R84#ea5a6947f2#0": {
+   "action": "cite",
+   "nums": [
+    "604.2e"
+   ],
+   "note": "lured unit not declared attacker/counterattacker"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#030e9f427e#0": {
+   "action": "cite",
+   "nums": [
+    "604.2e"
+   ],
+   "note": "lured unit not declared attacker/counterattacker"
+  },
+  "client/engine/src/engine.ts##R84#254315d6b4#0": {
+   "action": "cite",
+   "nums": [
+    "802.15f"
+   ],
+   "note": "duty names the Alluring column; only target compelled"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#ed6dfb0f36#0": {
+   "action": "cite",
+   "nums": [
+    "802.15f"
+   ],
+   "note": "duty names the Alluring column; only target compelled"
+  },
+  "client/engine/src/engine.ts##R84#cfb8b2d699#0": {
+   "action": "cite",
+   "nums": [
+    "802.15d"
+   ],
+   "note": "trigger source is the unit with Alluring itself"
+  },
+  "client/engine/src/types.ts##R84#cf6704419c#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e",
+    "802.15f"
+   ],
+   "note": "both lure effects; 48 is a player-visible string"
+  },
+  "client/ui/main.ts##R84#7c4716bb88#0": {
+   "action": "cite",
+   "nums": [
+    "802.15e",
+    "802.15f"
+   ],
+   "note": "both lure effects; 48 is a player-visible string"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R84#6a4daf1dfa#0": {
+   "action": "reword",
+   "nums": [
+    "802.15a"
+   ],
+   "suggest": "the corrected Alluring rule (targets one enemy unit, from the stack) replaces it",
+   "note": "history"
+  },
+  "client/ui/battle.ts##R84#3fd435a2ea#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e",
+    "604.2e"
+   ]
+  },
+  "client/ui/test/381-counterattack-with-the-rest.test.ts##R84#99b23829dd#0": {
+   "action": "cite",
+   "nums": [
+    "606.2e",
+    "604.2e"
+   ]
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#b52aa2714d#0": {
+   "action": "unsure",
+   "note": "test parses the register itself; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#a377c7baf1#0": {
+   "action": "unsure",
+   "note": "test parses the register itself; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#f7428d1c27#0": {
+   "action": "unsure",
+   "note": "test parses the register itself; goes with register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#dd68b8e635#0": {
+   "action": "unsure",
+   "note": "test parses the register itself; goes with register deletion"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R84#6018bb4d48#0": {
+   "action": "reword",
+   "nums": [
+    "802.15a"
+   ],
+   "suggest": "a rule that had been replaced",
+   "note": "history"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#0f9a9fd134#0": {
+   "action": "reword",
+   "nums": [
+    "802.15a"
+   ],
+   "suggest": "rebuilt for the targeted model",
+   "note": "history"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#f01a735f42#0": {
+   "action": "reword",
+   "nums": [
+    "802.15"
+   ],
+   "suggest": "See CR 802.15 for the rule",
+   "note": "pointer to retired register"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#fc49d00e7c#0": {
+   "action": "cite",
+   "nums": [
+    "606.2b"
+   ],
+   "note": "cannot side-step by blocking others"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#035f41a0bb#0": {
+   "action": "cite",
+   "nums": [
+    "802.15h"
+   ],
+   "note": "Alluring + Evasive"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#bb36d8631c#0": {
+   "action": "cite",
+   "nums": [
+    "802.15h"
+   ],
+   "note": "Alluring + Evasive"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#442331d1cf#0": {
+   "action": "cite",
+   "nums": [
+    "802.15a",
+    "802.15q"
+   ],
+   "note": "on stack, targets, negatable"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#522e383269#0": {
+   "action": "cite",
+   "nums": [
+    "802.25d"
+   ],
+   "note": "Pure switches off Flying for block"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#e334dc295e#0": {
+   "action": "cite",
+   "nums": [
+    "802.13b"
+   ],
+   "note": "Pure blocker discharges Evasive alone"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#ea62ae9b77#0": {
+   "action": "cite",
+   "nums": [
+    "606.2f"
+   ],
+   "note": "defender always has a declaration"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R84#ae7219e564#0": {
+   "action": "cite",
+   "nums": [
+    "603.5a"
+   ],
+   "note": "column effects move with the column"
+  },
+  "client/ui/test/86-ui-block-refusal.test.ts##R84#52b72d1306#0": {
+   "action": "reword",
+   "suggest": "the Alluring section",
+   "note": "section name"
+  },
+  "client/docs/12-card-text.md##R91#a350e0f877#0": {
+   "action": "cite",
+   "nums": [
+    "712.6"
+   ],
+   "note": "The Everywhere names a card"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R91#b569bf4ef3#0": {
+   "action": "cite",
+   "nums": [
+    "712.6"
+   ],
+   "note": "The Everywhere names a card"
+  },
+  "client/engine/src/types.ts##R91#f07018f1bd#0": {
+   "action": "cite",
+   "nums": [
+    "712.6"
+   ],
+   "note": "The Everywhere names a card"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R91#90cab9a8bd#0": {
+   "action": "reword",
+   "nums": [
+    "712.6"
+   ],
+   "suggest": "and naming a card unparked it",
+   "note": "history"
+  },
+  "client/docs/questions-round36.md##R144#bc2fde8390#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/engine/src/engine.ts##R144#15fe96f064#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/engine/src/engine.ts##R144#e92c14dd4c#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/engine/test/276-deployment-stack.test.ts##R144#382ed7af2b#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#22d7f29712#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/ui/flash.ts##R144#e8d175ace8#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/ui/test/218-one-tempo.test.ts##R144#67af873989#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "note": "deployment uses the stack, resolves without action"
+  },
+  "client/docs/questions-round36.md##R144#d3147cdf56#0": {
+   "action": "reword",
+   "nums": [
+    "507.5"
+   ],
+   "suggest": "the deployment-stack rule",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R144#625fd7fac2#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/cards/dsl.ts##R144#47d304d5eb#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/cards/dsl.ts##R144#16b237c3b3#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/cards/registry.ts##R144#31c6629ad8#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/cards/registry.ts##R144#236ed6d4c5#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/engine.ts##R144#6a7194b99a#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/engine.ts##R144#c677185ff0#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/engine.ts##R144#a427307ba1#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/engine.ts##R144#bcec6e2d25#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/engine.ts##R144#4324e777f4#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/engine.ts##R144#633a2be5b0#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/types.ts##R144#232d5d619b#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/types.ts##R144#e98025efa4#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#09b9a4563b#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#d29fb62fbd#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#8eb6b574ad#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#8ba3a2ef90#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#987b58ceed#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#99098128a0#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#0b5e9e819f#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R144#d039737495#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/server/e2e/test-concurrency.ts##R144#9a4f5aa45d#0": {
+   "action": "cite",
+   "nums": [
+    "706.12"
+   ],
+   "note": "chosen unit declared on stacking, may over-aim, fizzles"
+  },
+  "client/engine/src/cards/dsl.ts##R144#ddeee479c9#0": {
+   "action": "cite",
+   "nums": [
+    "706.12a"
+   ],
+   "note": "subject is not a target"
+  },
+  "client/engine/src/cards/dsl.ts##R144#530d053758#0": {
+   "action": "cite",
+   "nums": [
+    "706.12a"
+   ],
+   "note": "subject is not a target"
+  },
+  "client/engine/src/cards/registry.ts##R144#043c92aa73#0": {
+   "action": "cite",
+   "nums": [
+    "706.12a"
+   ],
+   "note": "subject is not a target"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#c3d049d809#0": {
+   "action": "cite",
+   "nums": [
+    "706.12a"
+   ],
+   "note": "subject is not a target"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#6eb0afe548#0": {
+   "action": "cite",
+   "nums": [
+    "706.12a"
+   ],
+   "note": "subject is not a target"
+  },
+  "client/engine/src/cards/sets/batch-water-metal.ts##R144#da24653e0a#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "once deployment triggers moved onto the stack",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R144#47e962ff57#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "Putting deployment triggers on the real stack took their beat away",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R144#0d05ee2fb1#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R144#53c5bc6568#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#f02a858f5f#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R144#5023ed3e92#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/server/e2e/test-pending-ask.ts##R144#47758121c0#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/server/view.ts##R144#5603a9fb40#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/server/view.ts##R144#5498638fce#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/server/view.ts##R144#41b99f88e8#0": {
+   "action": "cite",
+   "nums": [
+    "703.7"
+   ],
+   "note": "deployment stack: own, private, no responses"
+  },
+  "client/engine/src/engine.ts##R144#918e842504#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/engine/src/engine.ts##R144#1cf3d2ecbf#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R144#2255d62b36#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#4f83d83ba2#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#d331a9b08c#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#c58e36abcb#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/ui/test/56-ui-flash.test.ts##R144#001ed7969d#0": {
+   "action": "cite",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "deployment triggers on controller's stack"
+  },
+  "client/engine/src/engine.ts##R144#f8bbdcd8e1#0": {
+   "action": "reword",
+   "nums": [
+    "706.12"
+   ],
+   "suggest": "Aiming the Wraith on the way to the stack reopened that hole",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R144#5b6dfbbd53#0": {
+   "action": "drop",
+   "note": "'deployment is not battle' needs no ruling"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#4f2defbc7b#0": {
+   "action": "cite",
+   "nums": [
+    "507.5",
+    "706.12"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#c4128edb9b#0": {
+   "action": "cite",
+   "nums": [
+    "507.4a"
+   ],
+   "note": "all start-of-deployment triggers stacked first"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R144#2df70d1bff#0": {
+   "action": "reword",
+   "nums": [
+    "706.12"
+   ],
+   "suggest": "Before triggers were aimed as they went on the stack",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#ead1bd6528#0": {
+   "action": "reword",
+   "nums": [
+    "507.4a"
+   ],
+   "suggest": "since start-of-deployment triggers went on the stack",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R144#c626234f71#0": {
+   "action": "reword",
+   "nums": [
+    "507.4a"
+   ],
+   "suggest": "since start-of-deployment triggers went on the stack",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#e3c1aa9291#0": {
+   "action": "cite",
+   "nums": [
+    "507.5a"
+   ],
+   "note": "one seat's decision doesn't make the other wait"
+  },
+  "client/server/rooms.ts##R144#35c4644df7#0": {
+   "action": "cite",
+   "nums": [
+    "507.5a"
+   ],
+   "note": "one seat's decision doesn't make the other wait"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#d791816602#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "the missing half of the deployment-trigger rule",
+   "note": "history; plays now use the stack too (507.5)"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#65dd70166e#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "the deployment-trigger rule was true of triggers and (then) false of plays",
+   "note": "stale since 507.5 puts plays on the stack"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#61447ab50c#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "putting deployment triggers on the stack",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R144#4fcceacfbd#0": {
+   "action": "reword",
+   "suggest": "putting deployment triggers on the stack added zero further drift",
+   "note": "history"
+  },
+  "client/server/view.ts##R144#e8a905a87c#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "Until deployment triggers went on the stack",
+   "note": "history"
+  },
+  "client/ui/flash.ts##R144#f4ebc5ab6b#0": {
+   "action": "reword",
+   "suggest": "the earlier objection to flashing a deployment trigger",
+   "note": "history; amended"
+  },
+  "client/ui/test/56-ui-flash.test.ts##R144#eedf702e35#0": {
+   "action": "reword",
+   "nums": [
+    "706.3c"
+   ],
+   "suggest": "Putting deployment triggers on the real stack",
+   "note": "history"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#23705e79d6#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#73b2041efb#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#aabb98488d#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ledgers/backlog-closed.ts##R236#a4aba68da1#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/server/view.ts##R236#de4e6a9e31#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/glossary.ts##R236#f028842797#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/inspect.ts##R236#e63426dcfb#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/inspect.ts##R236#deeb6c2c97#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/main.ts##R236#8731450712#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/main.ts##R236#9da8e221f4#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/main.ts##R236#889d651bbd#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/ui/main.ts##R236#b983935308#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5"
+   ],
+   "note": "automatic haste-step ready"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#58a15494ee#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5d"
+   ],
+   "note": "readiness hidden while haste step open"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#a25db453f9#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5d"
+   ],
+   "note": "readiness hidden while haste step open"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#1d096a7dd1#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5d"
+   ],
+   "note": "readiness hidden while haste step open"
+  },
+  "client/ledgers/card-todo-closed.ts##R236#00c59483a2#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5d"
+   ],
+   "note": "readiness hidden while haste step open"
+  },
+  "client/server/view.ts##R236#820bd58393#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5d"
+   ],
+   "note": "readiness hidden while haste step open"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#2491a5f6b0#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5b"
+   ],
+   "note": "bluff haste preference"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#50d67b67c9#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5b"
+   ],
+   "note": "bluff haste preference"
+  },
+  "client/ui/main.ts##R236#dfd0fd3778#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5b"
+   ],
+   "note": "bluff haste preference"
+  },
+  "client/ui/main.ts##R236#b2db649eff#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5b"
+   ],
+   "note": "bluff haste preference"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#db5d6e3950#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5a"
+   ],
+   "note": "any legal play keeps the seat in the step"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#b6f408df17#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5a"
+   ],
+   "note": "any legal play keeps the seat in the step"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#e791ec0fa0#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5a"
+   ],
+   "note": "any legal play keeps the seat in the step"
+  },
+  "client/engine/test/205-haste-auto-ready.test.ts##R236#47eecec08e#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ],
+   "note": "sent once per owed answer, latched by being unanswered"
+  },
+  "client/ui/main.ts##R236#430bba5ea7#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ],
+   "note": "sent once per owed answer, latched by being unanswered"
+  },
+  "client/ui/main.ts##R236#f9c5777267#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ],
+   "note": "sent once per owed answer, latched by being unanswered"
+  },
+  "client/ledgers/card-todo-closed.ts##R236#2e8ec4d635#0": {
+   "action": "reword",
+   "suggest": "predates the always-open haste step and its automatic ready",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R236#5363d2f144#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "carried ruling numbers in its own prose",
+   "note": "history of R-numbers in player prose; keep the point, not the numbers"
+  },
+  "client/ui/glossary.ts##R236#895a46840f#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "carried ruling numbers in its own prose",
+   "note": "history of R-numbers in player prose; keep the point, not the numbers"
+  },
+  "client/ui/glossary.ts##R236#8198d6cab2#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "carried ruling numbers in its own prose",
+   "note": "history of R-numbers in player prose; keep the point, not the numbers"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R236#4038f08d0c#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "carried ruling numbers in its own prose",
+   "note": "history of R-numbers in player prose; keep the point, not the numbers"
+  },
+  "client/ui/main.ts##R236#b50707f90c#0": {
+   "action": "cite",
+   "nums": [
+    "703.8"
+   ],
+   "note": "no priority in the haste step"
+  },
+  "client/ui/main.ts##R236#e6ac3b30d4#0": {
+   "action": "reword",
+   "nums": [
+    "D2.4"
+   ],
+   "suggest": "(`hasteAutoAt`)",
+   "note": "history of the old latch"
+  },
+  "client/ui/main.ts##R236#e9f59aecba#0": {
+   "action": "cite",
+   "nums": [
+    "D2.7"
+   ],
+   "note": "full control stands down the automatic ready"
+  },
+  "client/ui/test/272-full-control.test.ts##R236#b0b78cc7e4#0": {
+   "action": "cite",
+   "nums": [
+    "D2.7"
+   ],
+   "note": "full control stands down the automatic ready"
+  },
+  "client/ui/main.ts##R236#d605f8d9d7#0": {
+   "action": "cite",
+   "nums": [
+    "D2.5b"
+   ],
+   "note": "bluff toggle"
+  },
+  "client/docs/questions-round27.md##R243#734c69bfff#0": {
+   "action": "reword",
+   "nums": [
+    "601.1c",
+    "601.8"
+   ],
+   "suggest": "the region rules later added the other half",
+   "note": "history; questions-round27.md is a test fixture"
+  },
+  "client/engine/src/cards/dsl.ts##R243#5db08f5c90#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R243#d68eb733a0#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R243#3835bd84e2#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/test/221-preview-note.test.ts##R243#6adbecbab1#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R243#8ff3b6a91b#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R243#6ffa37eb0f#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R243#2fbbbb9ea5#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R243#65e78fcfa1#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/ledgers/card-todo-closed.ts##R243#f60d1f26f6#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R243#c6158106b2#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/server/test/219-region-scoped-all.test.ts##R243#c7f622b7e4#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/ui/main.ts##R243#6aae7f1506#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/ui/style.css##R243#25b0b2a87b#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c"
+   ],
+   "note": "all means all in this region"
+  },
+  "client/engine/src/cards/dsl.ts##R243#e5b8e96fb3#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R243#aec5ed2e15#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R243#44ef1620bc#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R243#1a87ea3841#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/src/engine.ts##R243#2efa87e70d#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/test/221-preview-note.test.ts##R243#1667469fde#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/test/221-preview-note.test.ts##R243#57a1450c3e#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/test/221-preview-note.test.ts##R243#07418cdb34#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R243#f886fba7b8#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "note": "players in other regions don't exist for effects"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R243#e5cea66387#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R243#aaf4d18a6d#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R243#a0f0280de3#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R243#0bff3b44d2#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R243#1958bc88c6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R243#1958bc88c6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R243#1958bc88c6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R243#1958bc88c6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R243#57c81653ac#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R243#07c50336ae#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R243#1958bc88c6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R243#74d7df10d3#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R243#d844063ee3#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R243#1958bc88c6#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/engine.ts##R243#60c988b607#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R243#0d813b3b99#0": {
+   "action": "cite",
+   "nums": [
+    "601.4c"
+   ],
+   "note": "only present players and their zones"
+  },
+  "client/engine/src/engine.ts##R243#949a5eab81#0": {
+   "action": "cite",
+   "nums": [
+    "601.8"
+   ],
+   "note": "regions don't scope information"
+  },
+  "client/server/test/219-region-scoped-all.test.ts##R243#d358b244a3#0": {
+   "action": "cite",
+   "nums": [
+    "601.8"
+   ],
+   "note": "regions don't scope information"
+  },
+  "client/engine/test/142-static-conformance.test.ts##R243#f1b107268e#0": {
+   "action": "reword",
+   "nums": [
+    "601.1c"
+   ],
+   "suggest": "added when \"all\" became region-scoped",
+   "note": "history in a label string"
+  },
+  "client/engine/test/221-preview-note.test.ts##R243#3974faafb8#0": {
+   "action": "reword",
+   "nums": [
+    "601.1c"
+   ],
+   "suggest": "after \"all\" became region-scoped",
+   "note": "history"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R243#847342dbc8#0": {
+   "action": "reword",
+   "nums": [
+    "101.6"
+   ],
+   "suggest": "THE REGION RULE CHANGED THIS",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R243#ed817220fc#0": {
+   "action": "reword",
+   "nums": [
+    "601.8"
+   ],
+   "suggest": "Registered as the information rule",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R243#6f6dc7dcb8#0": {
+   "action": "reword",
+   "nums": [
+    "601.1c"
+   ],
+   "suggest": "as the region-scoped \"all\" rule",
+   "note": "closed ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R243#084bf974fd#0": {
+   "action": "reword",
+   "nums": [
+    "601.1c"
+   ],
+   "suggest": "recorded with the ruling",
+   "note": "closed ledger history"
+  },
+  "client/server/test/219-region-scoped-all.test.ts##R243#5baa2c6a3e#0": {
+   "action": "cite",
+   "nums": [
+    "601.1c",
+    "601.8"
+   ],
+   "note": "header: both halves"
+  },
+  "client/ledgers/card-todo-closed.ts##R280#0d85d7d70e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/main.ts##R280#5449631ecd#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/main.ts##R280#3d477e23dc#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/main.ts##R280#dd5c869760#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/main.ts##R280#8f761595a9#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/main.ts##R280#8fe8e17e7b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/main.ts##R280#a4605c5fb3#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R280#094b3b172a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.6d"
+   ],
+   "note": "bin card targeted from the stack surfaced for both"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R280#e37095e636#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/main.ts##R280#70215e9450#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/main.ts##R280#e0ccdeaf51#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/main.ts##R280#a55c51df60#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/main.ts##R280#0e48f9bea2#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/main.ts##R280#0975e5e95c#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R280#ef3a658ebd#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R280#c6b4c90b23#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b"
+   ],
+   "note": "variable cost dial, nothing paid until confirm"
+  },
+  "client/ui/main.ts##R280#caa988056d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2c"
+   ],
+   "note": "That's enough drawn as a full commit button"
+  },
+  "client/ui/style.css##R280#e561e1f17a#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b",
+    "D6.6d"
+   ],
+   "note": "header covering both halves"
+  },
+  "client/ui/test/260-cost-ramp-and-bin-targets.test.ts##R280#0de47d7558#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2b",
+    "D6.6d"
+   ],
+   "note": "header covering both halves"
+  },
+  "client/engine/src/engine.ts##R291#e803bd2b18#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  },
+  "client/engine/test/293-cached-targets-are-regional.test.ts##R291#6566102df9#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  },
+  "client/engine/test/293-cached-targets-are-regional.test.ts##R291#9ca9af7f2b#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  },
+  "client/engine/test/38-light-a.test.ts##R291#a29056076b#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  },
+  "client/ledgers/card-todo.ts##R291#12c43c98be#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  },
+  "client/ledgers/card-todo.ts##R291#7cdb214ffe#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R291#b76676eb96#0": {
+   "action": "cite",
+   "nums": [
+    "403.6"
+   ],
+   "note": "cache targetable only where its owner is present"
+  }
+ }
+}

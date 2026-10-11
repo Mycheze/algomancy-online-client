@@ -1,0 +1,2454 @@
+{
+ "unit": "M018",
+ "decisions": {
+  "client/docs/06-roadmap.md##R31#ee03ff22e1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/scripts/cr/extract.mjs##R31#8eb09510a5#0": {
+   "action": "unsure",
+   "note": "register-parser grammar example in cr/extract.mjs; vanishes with the register"
+  },
+  "client/engine/scripts/cr/extract.mjs##R31#8eb09510a5#1": {
+   "action": "unsure",
+   "note": "register-parser grammar example in cr/extract.mjs; vanishes with the register"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R31#4fb1fc614e#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R31#17ffc5e2c9#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R31#6b6a9b2d3d#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "it triggers during a damage sub-step and goes on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R31#2fdd70c7f8#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R31#ed5a7a47cf#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "Triggers in a combat damage sub-step and goes on the stack after it (CR 608.9).",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R31#2fdd70c7f8#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R31#2835c34f36#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R31#916147ae34#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "A death during combat damage triggers then, and the counter lands when the trigger resolves (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R31#9903ecd889#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "A combat death triggers then and goes on the stack after its sub-step (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R31#2fdd70c7f8#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R31#39afd4560e#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers trigger in the sub-step and go on the stack after it (CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R31#dce56b30a0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/25-wood-c.test.ts##R31#ea07d4c15d#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "the combat death trigger is stacked after combat (CR 608.9b)",
+   "note": "names the superseded ruling"
+  },
+  "client/engine/test/26-metal-a.test.ts##R31#8779129793#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "combat-damage triggers, CR 608.9",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/test/26-metal-a.test.ts##R31#2ba4f5e6e2#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R31#15b5d7b675#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R31#ebb9b24e81#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R31#0d7cb46320#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R31#7de530d1f7#0": {
+   "action": "reword",
+   "nums": [
+    "608.9"
+   ],
+   "suggest": "a mid-combat death trigger (Unstable Singularity, CR 608.9)",
+   "note": "stale: \"resolve immediately\" was superseded; replace the whole clause"
+  },
+  "client/engine/test/28-metal-c.test.ts##R31#d67a36d0d8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old immediate-trigger ruling",
+   "note": "R-number inside a quoted old assertion; history"
+  },
+  "client/engine/test/28-metal-c.test.ts##R31#6cc6f90184#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old immediate-trigger ruling",
+   "note": "R-number inside a quoted old assertion; history"
+  },
+  "client/engine/test/28-metal-c.test.ts##R31#7aeca4c3f1#0": {
+   "action": "drop",
+   "note": "misattributed: the superseded ruling says nothing about deletion vs death"
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R31#f5206b79e6#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R31#3f59d9111d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R31#52e0884e5d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R31#21852b1f2b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R31#2247b78334#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old immediate-trigger ruling",
+   "note": "R-number inside a quoted old assertion; history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R31#294815ec52#0": {
+   "action": "cite",
+   "nums": [
+    "801.2a"
+   ],
+   "note": "a combat death into the bin is a trash; misattributed to R31"
+  },
+  "client/engine/test/43-dark-c.test.ts##R31#819ea6f9d0#0": {
+   "action": "cite",
+   "nums": [
+    "111.9"
+   ],
+   "note": "a payment asked while the trigger resolves; misattributed to R31"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R31#a6cf561674#0": {
+   "action": "cite",
+   "nums": [
+    "608.9"
+   ]
+  },
+  "client/engine/README.md##R66#8bd1e5fceb#0": {
+   "action": "cite",
+   "nums": [
+    "709.8"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R66#01d5ba221d#0": {
+   "action": "cite",
+   "nums": [
+    "206.5"
+   ]
+  },
+  "client/engine/test/26-metal-a.test.ts##R66#1489376ecb#0": {
+   "action": "cite",
+   "nums": [
+    "206.5"
+   ]
+  },
+  "client/engine/test/28-metal-c.test.ts##R66#d20ee35605#0": {
+   "action": "cite",
+   "nums": [
+    "206.5"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R66#3753a73691#0": {
+   "action": "cite",
+   "nums": [
+    "206.5"
+   ]
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts##R66#3f47f5c910#0": {
+   "action": "unsure",
+   "note": "NOT-A-CITATION: R65/R66 are test data in the CR demonstration-hash test"
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R66#e892136ca0#0": {
+   "action": "cite",
+   "nums": [
+    "206.5"
+   ]
+  },
+  "client/engine/test/79-round17-layers.test.ts##R66#28982bfa7d#0": {
+   "action": "cite",
+   "nums": [
+    "802.8c"
+   ]
+  },
+  "client/engine/src/apply.ts##R81#a99bb892fc#0": {
+   "action": "cite",
+   "nums": [
+    "304.11g"
+   ]
+  },
+  "client/engine/src/apply.ts##R81#aa32823aed#0": {
+   "action": "cite",
+   "nums": [
+    "304.11g"
+   ]
+  },
+  "client/engine/test/358-burst-order.test.ts##R81#ec9cd9e5a5#0": {
+   "action": "cite",
+   "nums": [
+    "304.11g"
+   ]
+  },
+  "client/engine/test/69-damage-batch.test.ts##R81#93f6fefc98#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/engine/test/69-damage-batch.test.ts##R81#a4930e050d#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/engine/test/69-damage-batch.test.ts##R81#d793bacd9c#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/engine/test/69-damage-batch.test.ts##R81#5f87557f37#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R81#15243a0973#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/ui/glossary.ts##R81#48fc5becb8#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/ui/glossary.ts##R81#bdb6af877c#0": {
+   "action": "cite",
+   "nums": [
+    "304.11g"
+   ],
+   "note": "glossary Burst row"
+  },
+  "client/ui/test/233-burst-count-and-size.test.ts##R81#7ad6cc3f14#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R81#236d4c003e#0": {
+   "action": "cite",
+   "nums": [
+    "803.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R92#adc7dfb9ad#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The old four-grant approximation (from before the copy layer existed)",
+   "note": "history of a superseded implementation"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R92#2c67baf6a4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The old four-grant approximation",
+   "note": "history of a superseded implementation"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R92#e35c5bd72f#0": {
+   "action": "cite",
+   "nums": [
+    "710.1"
+   ]
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R92#e4e482b0ac#0": {
+   "action": "cite",
+   "nums": [
+    "710.1"
+   ]
+  },
+  "client/engine/test/68-target-conformance.test.ts##R92#69cf90d991#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a 2026-08 audit found that three of the four layers already did",
+   "note": "history"
+  },
+  "client/docs/16-divergence-inventory.md##R98#63855b169d#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R98#b6b6f603c5#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/dsl.ts##R98#571ccddf62#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/registry.ts##R98#14f0a4a505#0": {
+   "action": "cite",
+   "nums": [
+    "112.12"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R98#608b87e5fc#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R98#6828be1a43#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R98#048e0b38a7#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R98#2ab933cfb1#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R98#492d305ca4#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R98#2e36b7e901#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R98#147c0107c5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Phytochemical Protection UNPARKED in round 17",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R98#91defef42f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "UNPARKED in round 17",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R98#7db7b066b0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Round 17 built the three things the park named",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R98#55c4c09154#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "flagged when the shield was built",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R98#a3dec0257c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "not the two first counted",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R98#a6c887412b#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#62fe54e05b#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#6b4c4c01d1#0": {
+   "action": "cite",
+   "nums": [
+    "112.12"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#2ac59fd3b6#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#50b333ce08#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#ffb66b9338#0": {
+   "action": "drop",
+   "note": "engine timing of the per-prevented-damage counter payout; card text, no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#8ef77e939b#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#6a1081b1e7#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#99848babf6#0": {
+   "action": "cite",
+   "nums": [
+    "608.6g"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#56a95f06b1#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#9271562f46#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#d91c32d89a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the engine's own prevention comment",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R98#bb58b93949#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#d45abba503#0": {
+   "action": "drop",
+   "note": "engine timing of the per-prevented-damage counter payout; card text, no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#81e51af31e#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#fd7c26785e#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#2fbed6b3fd#0": {
+   "action": "cite",
+   "nums": [
+    "608.7a"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#8902b95c26#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#904b86b4f1#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#4258e61896#0": {
+   "action": "cite",
+   "nums": [
+    "708.11b"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#fba23dbf6a#0": {
+   "action": "drop",
+   "note": "engine timing of the per-prevented-damage counter payout; card text, no CR rule"
+  },
+  "client/engine/src/engine.ts##R98#3751695316#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#9342bbdf89#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#55f463f9b7#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/engine/src/engine.ts##R98#11222fa477#0": {
+   "action": "cite",
+   "nums": [
+    "506.2d"
+   ]
+  },
+  "client/engine/src/types.ts##R98#94f5178c7d#0": {
+   "action": "drop",
+   "note": "engine field label quoting card text; no CR rule"
+  },
+  "client/engine/src/types.ts##R98#8afc4b0b5a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "states serialized before the field existed read as unshielded",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R98#7b5db15165#0": {
+   "action": "drop",
+   "note": "engine timing of the per-prevented-damage counter payout; card text, no CR rule"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R98#1a8cd5be93#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/test/17-earth-b.test.ts##R98#de8c17046f#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/test/24-wood-b.test.ts##R98#3bfc054eb8#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R98#43fe9e7bb4#0": {
+   "action": "drop",
+   "note": "test helper label"
+  },
+  "client/engine/test/24-wood-b.test.ts##R98#0cbe08d7b0#0": {
+   "action": "drop",
+   "note": "report label (report #72 stays); history"
+  },
+  "client/engine/test/24-wood-b.test.ts##R98#cbf2ca290d#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/test/24-wood-b.test.ts##R98#59005526e3#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R98#6afcf4fbf0#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R98#28267fe20d#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R98#0c9199ce40#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/engine/test/80-round17-permissions.test.ts##R98#03e0909650#0": {
+   "action": "drop",
+   "note": "card-text reading (shield is per unit); no CR rule"
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R98#871014bfa1#0": {
+   "action": "drop",
+   "note": "card-text payout; no CR rule"
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R98#ec6ce6b568#0": {
+   "action": "cite",
+   "nums": [
+    "802.3h"
+   ]
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R98#d9db54b53c#0": {
+   "action": "cite",
+   "nums": [
+    "608.6g"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R98#5cab0751a0#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R98#e8a36ff26b#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R98#4397df2a37#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/engine/test/93-engine-defects.test.ts##R98#686af87c92#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/ledgers/card-ledger.ts##R98#84cae90fb2#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R98#515385d900#0": {
+   "action": "cite",
+   "nums": [
+    "112.11"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R98#2472cd755e#0": {
+   "action": "drop",
+   "note": "engine logging"
+  },
+  "client/ledgers/card-todo-closed.ts##R98#fb1fc35fcd#0": {
+   "action": "cite",
+   "nums": [
+    "506.2d"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R98#fec95cb77b#0": {
+   "action": "cite",
+   "nums": [
+    "708.11"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R98#41d20f3b76#0": {
+   "action": "drop",
+   "note": "engine timing of the per-prevented-damage counter payout; card text, no CR rule"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R98#451a8cba2e#0": {
+   "action": "drop",
+   "note": "engine timing of the per-prevented-damage counter payout; card text, no CR rule"
+  },
+  "client/ui/cardtext.ts##R98#8d46a0e17f#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/ui/main.ts##R98#e2195f0ee0#0": {
+   "action": "drop",
+   "note": "engine hook/field/API detail (signature, attrs in info, choke point); no CR rule"
+  },
+  "client/docs/16-divergence-inventory.md##R104#fb02e20221#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R104#3f27926f8c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the replacement layer removed five others",
+   "note": "history"
+  },
+  "client/engine/src/cards/dsl.ts##R104#9718724cd9#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#df19c20c82#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#e44dcfd8c2#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "the one the replacement layer first left unbuilt",
+   "note": "history"
+  },
+  "client/engine/src/cards/dsl.ts##R104#e41cd04e47#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#634a0bb3ba#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#90d509ba17#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#42c1723893#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#2ed66eb7f3#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R104#323fca5198#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R104#f7537c2ccf#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R104#91a508cdae#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R104#4b10e12eb6#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#430259c478#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#9a990c2514#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "parked as not yet replaceable because it is a MULTIPLIER on a life change",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#f519604ca5#0": {
+   "action": "reword",
+   "nums": [
+    "708.6"
+   ],
+   "suggest": "the replacement layer's own list of what was still not replaceable named it",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#538751b7a0#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R104#502ccd929f#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R104#734ab9f41d#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R104#8236b6898d#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R104#b3fbf1c743#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R104#c462ca16dc#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R104#ae37ff03b6#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R104#f30d738c6e#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R104#5750a64222#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R104#6f353c8111#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R104#dfbd102ab8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(the replacement layer removed the other five)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R104#fce8ac47ac#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R104#0a991707aa#0": {
+   "action": "reword",
+   "nums": [
+    "708.9"
+   ],
+   "suggest": "the reading first flagged as the one place the uniqueness question had a choice",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R104#051d4f88da#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R104#995aeff984#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R104#559f0950cb#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R104#1f7b09d979#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R104#cb855ff675#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#befcff2151#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/src/engine.ts##R104#b94da1f6a1#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#5907c72daa#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/src/engine.ts##R104#8e96f26260#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/src/engine.ts##R104#897f52f831#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#8d994cbe73#0": {
+   "action": "cite",
+   "nums": [
+    "112.13",
+    "112.15"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#2700f14f6b#0": {
+   "action": "cite",
+   "nums": [
+    "112.14",
+    "112.15"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#855f5643bc#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#97f360e3d5#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#8e18384ecd#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#c37abe8d25#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#a23e0beac6#0": {
+   "action": "cite",
+   "nums": [
+    "708.7"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#a6521febc5#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#acacf43228#0": {
+   "action": "cite",
+   "nums": [
+    "707.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#9f2d7f38e7#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#fd88a0c8c7#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#17c0dc39b9#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#79c6dd1adc#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#cf0c3297a3#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#4aa8868d1b#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#84eddf3801#0": {
+   "action": "cite",
+   "nums": [
+    "708.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#03a5bd59e7#0": {
+   "action": "cite",
+   "nums": [
+    "708.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#f2092af790#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/src/engine.ts##R104#2810f3db85#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#7c510c4a10#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#f665a65287#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#8beb071551#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/src/engine.ts##R104#01d0c4829a#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#e90494f89b#0": {
+   "action": "reword",
+   "nums": [
+    "112.9"
+   ],
+   "suggest": "The first implementation had it the other way round (1x2+1 = 3)",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R104#ba940195f6#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/engine.ts##R104#16a6d3d978#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/test/117-copy-everything.test.ts##R104#3d84868cac#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R104#a0c6a66e9b#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/test/12-fire-a.test.ts##R104#fd393aca6a#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R104#16d941b96c#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R104#bd839c7d24#0": {
+   "action": "reword",
+   "nums": [
+    "708.6a"
+   ],
+   "suggest": "with the additive family (since settled: CR 708.6a)",
+   "note": "stale: composition now ruled"
+  },
+  "client/engine/test/139-spawn-and-play.test.ts##R104#f4f4f002fe#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R104#e0d2747f97#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R104#086be93170#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R104#c93c0d349d#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R104#b9f81813ae#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R104#b5b0b2be71#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/test/142-static-conformance.test.ts##R104#ee9ddb70a1#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/test/152-hand-entry.test.ts##R104#f3702c668c#0": {
+   "action": "cite",
+   "nums": [
+    "112.15"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R104#3e4ee70a00#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R104#c2845ee2a5#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/engine/test/40-light-c.test.ts##R104#fe2e05bf4c#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R104#42fa405b61#0": {
+   "action": "cite",
+   "nums": [
+    "708.4a"
+   ]
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R104#ef682f25dd#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R104#250c97969a#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R104#66b3502cac#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R104#b78a4b34d9#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R104#c4a15db98e#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R104#213a888868#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R104#2e0c53e821#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/83-card-todo.test.ts##R104#363bb98a61#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "before the replacement layer deleted five entries",
+   "note": "history"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R104#ec3e9291e0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the replacement layer took it out of this file's class",
+   "note": "history"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R104#446e554a06#0": {
+   "action": "reword",
+   "nums": [
+    "708.3"
+   ],
+   "suggest": "until it became a replacement (CR 708.3)",
+   "note": "history"
+  },
+  "client/engine/test/87-replacement-layer.test.ts##R104#183460400e#0": {
+   "action": "cite",
+   "nums": [
+    "708"
+   ],
+   "note": "header of the whole replacement-layer test file"
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R104#87d77b8318#0": {
+   "action": "cite",
+   "nums": [
+    "708.2"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R104#efec72443b#0": {
+   "action": "drop",
+   "note": "engine infrastructure (reentrancy latch, depth, hook list, token primitive, EffectDef attribution); no CR rule"
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R104#c0b5f65bb8#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R104#29ce22bd19#0": {
+   "action": "cite",
+   "nums": [
+    "708.5",
+    "708.4a"
+   ]
+  },
+  "client/engine/test/88-replacement-conformance.test.ts##R104#14977e4b39#0": {
+   "action": "drop",
+   "note": "engine design argument (one-off hooks); no CR rule"
+  },
+  "client/engine/test/89-self-erase.test.ts##R104#3b33ce653c#0": {
+   "action": "cite",
+   "nums": [
+    "708.10"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R104#46f8096f11#0": {
+   "action": "cite",
+   "nums": [
+    "708.1"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R104#0e9e7079b7#0": {
+   "action": "reword",
+   "nums": [
+    "708.5"
+   ],
+   "suggest": "BUILT 2026-08-23 in TWO families",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R104#3db864fb8f#0": {
+   "action": "reword",
+   "nums": [
+    "708"
+   ],
+   "suggest": "CR 708 records the layer",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R104#04fd9cdebe#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "FIXED 2026-08-23 by the replacement layer",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R104#0a0ea5d5ca#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The replacement layer has a conformance sweep for its replacement half and none for its STATIC half",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R104#20bab3937b#0": {
+   "action": "reword",
+   "nums": [
+    "707.3"
+   ],
+   "suggest": "The owner's ruling (CR 707.3) also covers \"and static effects\"",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R104#281977c3e8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the replacement path",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R104#3a63828654#0": {
+   "action": "cite",
+   "nums": [
+    "708.5",
+    "708.4a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R104#74b807f269#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R104#f9d96a839f#0": {
+   "action": "reword",
+   "nums": [
+    "707.3"
+   ],
+   "suggest": "FIXED 2026-08-23 (CR 707.3)",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R104#aba45e2096#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R104#c3fac82713#0": {
+   "action": "cite",
+   "nums": [
+    "708.5"
+   ]
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R104#6a7c9a5e7c#0": {
+   "action": "cite",
+   "nums": [
+    "708.9"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R105#51f6bd9c47#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R105#65ae5881d9#0": {
+   "action": "cite",
+   "nums": [
+    "724.2a"
+   ]
+  },
+  "client/engine/src/cards/dsl.ts##R105#cab26973b1#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R105#680eab372e#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#7e6244ae0b#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#e541e3a23f#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#45d82814bc#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#b281131940#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#7859429ba1#0": {
+   "action": "cite",
+   "nums": [
+    "724.4"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#0405f39f85#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#106361f8af#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#08a9d96f87#0": {
+   "action": "drop",
+   "note": "engine stamp/budget detail; no CR rule"
+  },
+  "client/engine/src/engine.ts##R105#1a19036bea#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#a16111b254#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#58445a06ad#0": {
+   "action": "drop",
+   "note": "engine stamp/budget detail; no CR rule"
+  },
+  "client/engine/src/engine.ts##R105#9ff3a86271#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#2f2b5c41d8#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#b0d33c324b#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#a3abacb1e8#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#4a09ddf268#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#f09d752ed0#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#5d598cfd98#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#6cf32977d1#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/engine.ts##R105#125c50f8f1#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/types.ts##R105#6a85fb818e#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ]
+  },
+  "client/engine/src/types.ts##R105#394c03d73b#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/src/types.ts##R105#55125dcfde#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R105#341e0c8aff#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R105#842534b6ef#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R105#ed1268ecbc#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#e44c671aed#0": {
+   "action": "cite",
+   "nums": [
+    "724.2",
+    "724.5"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#7e4b763b0c#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#dc69d2fe50#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#8973d2fb83#0": {
+   "action": "cite",
+   "nums": [
+    "724.4"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#769587a4fb#0": {
+   "action": "reword",
+   "nums": [
+    "724.4"
+   ],
+   "suggest": "(Manual p.33; CR 724.4)",
+   "note": "\"unchanged by R105\" is history"
+  },
+  "client/engine/test/91-modular.test.ts##R105#2e06edf14d#0": {
+   "action": "cite",
+   "nums": [
+    "724.4"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#22f40dd0d5#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#fceb68058d#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#75c737395b#0": {
+   "action": "cite",
+   "nums": [
+    "724.4b"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#686f27004c#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#d8eab72ce8#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#ce32dff7b7#0": {
+   "action": "cite",
+   "nums": [
+    "724.5a"
+   ]
+  },
+  "client/engine/test/91-modular.test.ts##R105#6d3093aff7#0": {
+   "action": "cite",
+   "nums": [
+    "803.8f"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R105#936eaa0221#0": {
+   "action": "reword",
+   "nums": [
+    "724.2"
+   ],
+   "suggest": "FIXED 2026-08-23 (now CR 724.2).",
+   "note": "closure history"
+  },
+  "client/ledgers/card-todo-closed.ts##R105#d70f73fff5#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ]
+  },
+  "client/ui/effectface.ts##R105#ec52f01427#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/ui/glossary.ts##R105#dccfd8ec21#0": {
+   "action": "cite",
+   "nums": [
+    "724.2"
+   ],
+   "note": "glossary Modular row"
+  },
+  "client/ui/inspect.ts##R105#2499df5a7c#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ui/main.ts##R105#f4f9d0e157#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ui/reveal.ts##R105#52a8ae48b7#0": {
+   "action": "cite",
+   "nums": [
+    "724.3"
+   ]
+  },
+  "client/ui/test/365-stack-attribute-chips.test.ts##R105#0ec174195e#0": {
+   "action": "cite",
+   "nums": [
+    "724.4a"
+   ]
+  },
+  "client/docs/16-divergence-inventory.md##R113#a6ef68d9e7#0": {
+   "action": "reword",
+   "nums": [
+    "109.9a"
+   ],
+   "suggest": "the spent-on-use rule (CR 109.9a) put that in the SPENDS family",
+   "note": "history"
+  },
+  "client/engine/src/cards/dsl.ts##R113#f4ba4fbd09#0": {
+   "action": "reword",
+   "nums": [
+    "109.9a"
+   ],
+   "suggest": "SUPERSEDED — read CR 109.9a first.",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R113#686258ec0c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R113#55c99e70eb#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R113#d5baed99cd#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R113#686258ec0c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R113#55c99e70eb#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R113#b062280f5f#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R113#686258ec0c#0~1": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R113#55c99e70eb#0~1": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R113#a0756c84a7#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R113#012310c4b9#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R113#686258ec0c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R113#55c99e70eb#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R113#76b2f9310d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The \"no mod to erase — no effect\" branch that used to spend the use is gone",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R113#92a43b482d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R113#dd8a42d799#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a",
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R113#9657685d59#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R113#c9443e7b18#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R113#246fae99e2#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R113#54acdf0563#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R113#7217ea1d5c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a branch that used to count as spending the use (you activated it and whiffed)",
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R113#92a43b482d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R113#9657685d59#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R113#3c263d82cf#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#0ced8081fc#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#58aae27114#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#b7d30f34e7#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#a093cc1c58#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#bf97e13ff8#0": {
+   "action": "reword",
+   "nums": [
+    "109.9a"
+   ],
+   "suggest": "and the designer's 2026-08-23 ruling (CR 109.9a) reverses it",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R113#9ce8431208#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when the spent-on-use ruling landed",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R113#882b4c316e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#dff6458e3b#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#fd6ef2ede9#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#3062d9987f#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#5dcde75e9d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/engine.ts##R113#4adba1c5d2#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/types.ts##R113#4eb88bd74c#0": {
+   "action": "reword",
+   "nums": [
+    "109.9b"
+   ],
+   "suggest": "NARROWED THE SAME DAY by the designer (CR 109.9b)",
+   "note": "history"
+  },
+  "client/engine/src/types.ts##R113#0987702f53#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/types.ts##R113#f74884ef6a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/src/types.ts##R113#e4cfd8f808#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/105-semantics-playwatch.test.ts##R113#4e09c1b58d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/105-semantics-playwatch.test.ts##R113#1dc8224d3c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/113-literal-metal.test.ts##R113#85957c0027#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R113#074f6239cf#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R113#b34988d55d#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R113#590c7543b5#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R113#12ee2ac32c#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/16-earth-a.test.ts##R113#ab05bcc09a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/167-variable-ability-costs.test.ts##R113#8beb92f64b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "and it used to count as spending the use: you activated it and whiffed",
+   "note": "history"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R113#5ed9e3591e#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R113#e1cd947d9a#0": {
+   "action": "reword",
+   "nums": [
+    "109.9a"
+   ],
+   "suggest": "⚠ The designer's ruling (CR 109.9a) beats the first reading",
+   "note": "history"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R113#e1cd947d9a#1": {
+   "action": "reword",
+   "nums": [
+    "109.9a"
+   ],
+   "suggest": "⚠ The designer's ruling (CR 109.9a) beats the first reading",
+   "note": "history"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R113#99098128a0#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R113#0a1d129be8#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R113#19f3a57b37#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R113#a419d99acb#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R113#7c1be94904#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R113#291aa0cccc#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R113#febe512b74#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/43-dark-c.test.ts##R113#8350ef1904#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R113#320e48eb18#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/90-coverage-census.test.ts##R113#9562bdf515#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/93-engine-defects.test.ts##R113#e598f7c85f#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#a769c482c7#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#9b47373018#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#4acadd36ed#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a",
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#fe90039d17#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "when the spent-on-use ruling landed",
+   "note": "history"
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#f88e06341b#0": {
+   "action": "cite",
+   "nums": [
+    "109.9h"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#41c601cf80#0": {
+   "action": "cite",
+   "nums": [
+    "109.9i"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#661deabd15#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a",
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#adfe947b08#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#1a2ce98869#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#ee9d7e78ba#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#8aa09c157a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#73e76d96f7#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#172893e599#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a",
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#e140c09f41#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a",
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#1a5e0a7dcc#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#a976cc94fc#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R113#47292e739a#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ]
+  },
+  "client/ledgers/card-ledger.ts##R113#af44492449#0": {
+   "action": "cite",
+   "nums": [
+    "109.9b"
+   ]
+  },
+  "client/ledgers/card-todo-closed.ts##R113#a8551bf7ac#0": {
+   "action": "reword",
+   "nums": [
+    "109.9a"
+   ],
+   "suggest": "Now CR 109.9a, which draws the line for the whole family",
+   "note": "history"
+  },
+  "client/ui/glossary.ts##R113#2d3b02f099#0": {
+   "action": "cite",
+   "nums": [
+    "722.5"
+   ],
+   "note": "glossary Graft row"
+  },
+  "client/ui/glossary.ts##R113#02b998d5ff#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a",
+    "109.9b"
+   ]
+  },
+  "client/ui/glossary.ts##R113#3247d0d108#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ],
+   "note": "glossary Once row"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R113#ffd3dd7ab7#0": {
+   "action": "unsure",
+   "note": "177 register-staleness test data (header strings / token list / expected message); retire with the register"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R113#dd68b8e635#0": {
+   "action": "unsure",
+   "note": "177 register-staleness test data (header strings / token list / expected message); retire with the register"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R113#2abe06fb45#0": {
+   "action": "unsure",
+   "note": "177 register-staleness test data (header strings / token list / expected message); retire with the register"
+  },
+  "client/engine/src/cards/dsl.ts##R130#e8231bf281#0": {
+   "action": "cite",
+   "nums": [
+    "206.6a",
+    "206.6b"
+   ],
+   "note": "signed net total: counters cancel, and all count"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R130#0532792335#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R130#7ab8a1f65b#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R130#1821e3fc0b#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R130#1a5004278b#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R130#3a5ae8f618#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R130#632221c963#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R130#ed7cb5fd35#0": {
+   "action": "cite",
+   "nums": [
+    "708.8a",
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R130#d16603373d#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R130#bf9856b661#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b",
+    "708.8b"
+   ]
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R130#1821e3fc0b#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#9f0483fe52#0": {
+   "action": "cite",
+   "nums": [
+    "707.5a"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#ed34b274aa#0": {
+   "action": "cite",
+   "nums": [
+    "708.8a"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#b04fea19ba#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#028a017b8d#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#1a24a8e492#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#a4f174c942#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#c77b91ad7a#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#1075f1483f#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/src/engine.ts##R130#8507673312#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/test/117-copy-everything.test.ts##R130#711adf1446#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/test/117-copy-everything.test.ts##R130#d1f71fdf66#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "exactly as the counter-attribution change's own updates to",
+   "note": "history"
+  },
+  "client/engine/test/120-counter-attribution.test.ts##R130#90110defbe#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b",
+    "708.8b"
+   ]
+  },
+  "client/engine/test/27-metal-b.test.ts##R130#bc24b5f71c#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R130#dca4d4a0a8#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/engine/test/87-replacement-layer.test.ts##R130#0148d80fae#0": {
+   "action": "cite",
+   "nums": [
+    "708.8b"
+   ]
+  },
+  "client/ui/inspect.ts##R130#c4229bd0a0#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b"
+   ]
+  },
+  "client/ui/test/124-counter-stepper.test.ts##R130#cdf4aabb3b#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b"
+   ]
+  },
+  "client/ui/test/124-counter-stepper.test.ts##R130#44ef227c29#0": {
+   "action": "cite",
+   "nums": [
+    "206.6b"
+   ]
+  }
+ }
+}
