@@ -86,7 +86,7 @@ import { armsIdle, audibleLife, diffSfx, lifeChanges, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
 import {
   beatCensus, combatStages, deferredKeys, dueBeats, flashBatches, heldLines, nextBeatWake, nextFlashWake,
-  flushBeats, flushFlashes, pendingFlashes,
+  flushBeats, flushFlashes, heldLife, pendingFlashes, shownLife,
   pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash, StackCaption } from './flash.ts';
@@ -857,7 +857,7 @@ class NetBackend implements Backend {
       noteCardsSeen(evs);
       // the stack beats, with what each one made held back until its card
       // gets there — the same one trip a play of your own makes (round 1)
-      absorbFlashes(evs, prev ? bornSince(prev, m.view) : []);
+      absorbFlashes(evs, prev ? bornSince(prev, m.view) : null);
       // R310 (report #192): an opponent's glimpse inside the hidden step is
       // held for the recap, so THIS is the moment it happens on your screen —
       // the frame of the action that made it — and its card notice pops here,
@@ -925,7 +925,7 @@ class NetBackend implements Backend {
     // (BL-21's third complaint — the reveal's events replayed as beats after
     // the modal — has no modal left to follow: each event is played once, in
     // the frame it belongs to.)
-    absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : []);
+    absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : null);
     // CT-78: it is a moment on YOUR screen, so it is noted from the batch that
     // carries it: a battle glimpse live, a resource-step one in the reveal half
     // of that step's close. R310: a haste or deployment glimpse arrives in a
@@ -1721,10 +1721,21 @@ function paintLive(): void {
  * motionOn(): a beat is the only chance to SEE an unrespondable effect, so
  * prefers-reduced-motion must not silently delete it — an explicit
  * "motion: off" does. */
-function absorbFlashes(events: readonly EngineEvent[], born: readonly Slot[] = []): void {
+function absorbFlashes(events: readonly EngineEvent[], born: readonly Slot[] | null): void {
   if (!clarityOn()) return;
-  flashQueue = queueFlashes(flashQueue, events, Date.now(), seenStack, born);
+  // `born` null: not one step on from the board on screen (a resync), so
+  // nothing — no unit, no life change (report #203) — is held back
+  flashQueue = queueFlashes(flashQueue, events, Date.now(), seenStack, born ?? [], born !== null);
 }
+
+/**
+ * Report #203: the life each seat's total is still holding back for a beat
+ * that has not ended (ui/flash.ts `heldLife`), read ONCE per paint in
+ * renderNow so the number drawn and the number soundPass diffs are the same
+ * reading — a split would leave a stale total on screen with no repaint
+ * booked to fix it. Empty once the game is over: the result is the result.
+ */
+let lifeHeldNow: ReadonlyMap<number, number> = new Map();
 
 /** the census slots `next` has and `prev` did not — what one update put on
  * the table, which is all a beat may hold back (ui/flash.ts resultKeys) */
@@ -4015,7 +4026,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
       s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
     life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
-        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span>${playerPickNote(p)}</span>`,
+        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life - (lifeHeldNow.get(p) ?? 0)}</span>${playerPickNote(p)}</span>`,
     counters,
     resGrouped: resGroupedHtml(e, p),
     resrow: `<span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
@@ -7313,6 +7324,7 @@ function renderNow(): boolean {
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
   refreshActCache();               // UZRG: units with a legal activated ability
   noteCardsSeen();                 // UFAB: the log links only cards in the game
+  lifeHeldNow = h.state?.winner != null ? new Map() : heldLife(flashQueue, Date.now());   // #203
   // CT-124: the log itself is built by logPanelHtml(), and only when the modal
   // that now holds it is open. Nothing here computes it any more.
   // in network mode keep MY seat at the bottom (opponent on top)
@@ -7393,13 +7405,14 @@ function renderNow(): boolean {
                scrunched down" — the three the table uses most are ICONS (their
                words come back while "more" is open); rules, judge and every
                toggle live behind "more". The markup is always there, so every
-               button keeps its data-btn and its test. -->
+               button keeps its data-btn and its test. On a computer only the
+               toggles hide (owner, 2026-10-10; style.css § THE RAIL'S BUTTONS). -->
           ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰<span class="lbl"> table</span></button>' : ''}
           ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝<span class="lbl"> report</span></button>' : ''}
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶<span class="lbl"> undo</span></button>' : ''}
           ${watchAgainHtml()}
           <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
-            title="rules, the judge, full control, auto-pass, bluff haste, motion, board layout, sound">⋯ more</button>
+            title="settings: full control, auto-pass, bluff haste, motion, board layout, sound — and, on a small screen, rules and the judge">⋯ more</button>
           ${fullPref && !settingsOpen ? '<span class="fcnote" title="Ctrl is held: nothing acts for you">🔒 full control</span>' : ''}
           <div class="setgroup${settingsOpen ? ' open' : ''}">
           <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
@@ -7688,6 +7701,9 @@ function soundPass(): void {
   // "opponent", so the listener is simply whoever the game is waiting on.
   const seat: Seat = NET ? NET.seat : (s.decision?.seat ?? s.priority ?? 0);
   const snap = sfxSnap(s, seat, legalFor(seat).length > 0);
+  // report #203: the life the board SHOWS — a total a stack beat is still
+  // holding back moves (and flashes, and is heard) when the beat ends
+  snap.life = shownLife(snap.life, lifeHeldNow);
   const before = lastSfx;
   const cue = diffSfx(before, snap);
   lastSfx = snap;

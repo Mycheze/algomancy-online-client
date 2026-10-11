@@ -4169,4 +4169,43 @@ export const CLOSED: LedgerEntry[] = [
     note:
       "Real. A tap went through offer(), which fires a lone legal action without a menu, so in battle 'look' was 'play'. Owner's choice: on touch a tap only reads, and drag plays. tapOnlyReads (main.ts click delegator, hand + cache, keyed on the last pointer's type, not the device) opens the zoom and holds it until the next tap or Escape; a card the prompt is asking for still takes a tap. Desktop clicks unchanged. Learn to Play and the client tutorial now say drag. Left: bin-dialog plays still fire on a tap (there is no drag route out of the bin).",
   },
+  {
+    id: 202, room: "HPTR", date: "2026-10-10",
+    report: "Owner, at [64]: \"The dice and counters on units, which are slightly skewed, actually still get their corners cut off. I think their visual space is just a straightly aligned square.\"",
+    status: 'fixed',
+    guards: [
+      "446-zoom-dice-not-clipped.test.ts::a tilted die and its shadow fit inside the clip on every side",
+      "446-zoom-dice-not-clipped.test.ts::the dice box still clips and the dice still sit where they did",
+    ],
+    note:
+      "Real. The card zoom's dice sit in .zoomdice, a straight box with overflow:hidden (a long list stops above the type line) and no padding, so a chip's tilt and its drop shadow were cut on every edge. The box is now padded by that reach and grown outward by the same amount: the chips do not move, the clip edge does. 446 derives the reach from style.css's own tilts, shadow and chip sizes; mutation-checked (old rule: 'reaches 2.97cqw past the top, the box pads 0cqw'). Measured over CDP on HPTR at [64]: the +1/+1 die clears the clip.",
+  },
+  {
+    id: 203, room: "HPTR", date: "2026-10-10",
+    report: "Owner, at [70] (the play at [66]): \"The lifegain and sound effect from Iyngstra happen before the effect visually hits the stack, which just feels a bit weird.\"",
+    status: 'fixed',
+    guards: [
+      "445-life-waits-for-the-beat.test.ts::§1a the Iyngstra trigger beat carries the life it gained",
+      "445-life-waits-for-the-beat.test.ts::§1b the life is held while the beat waits or shows",
+      "445-life-waits-for-the-beat.test.ts::§1b2 the identity row pulse reads the shown life",
+      "445-life-waits-for-the-beat.test.ts::§1c a life change after the window closes",
+      "445-life-waits-for-the-beat.test.ts::§1d a resync holds no life back",
+      "445-life-waits-for-the-beat.test.ts::§2a the Iyngstra life gain, its number and its sound",
+      "445-life-waits-for-the-beat.test.ts::§2b a life change with no beat behind it",
+      "445-life-waits-for-the-beat.test.ts::§2c with motion switched off there are no beats",
+    ],
+    note:
+      "Real. The trigger went on the stack and resolved inside one update; the stack beat replays it on the client, and since 2026-10-03 a beat held the UNIT it made off the board, but not the life: the number, its flash, its cue and the identity-row pulse all moved at the click. Life inside a beat's resolution window is now that beat's result (flash.ts lifeResults/heldLife): the pill, soundPass and beatCensus read the SHOWN life and it lands at the beat's end on the beat's own wake. A cost or combat damage (no beat) shows at once; a resync holds nothing; motion off holds nothing. Mutation-checked six ways. Measured over CDP on HPTR at [66]: ♥33 through both beats, ♥36 as Iyngstra's leaves the strip. Left: the window's closing events are a hand list (phase, turn, combat damage, afterCombat, negated, fizzled, another push).",
+  },
+  {
+    id: 205, room: "HPTR", date: "2026-10-10",
+    report: "Owner, at [184]: \"We really should hide many of the top right settings toggles in a deeper settings menu. The stuff that usually doesn't need to be touched during a game can just be hidden.\"",
+    status: 'fixed',
+    guards: [
+      "447-desktop-toggles-behind-more.test.ts::on a computer every toggle in the rail waits behind more",
+      "447-desktop-toggles-behind-more.test.ts::on a computer rules and the judge stay on the rail and opening more moves nothing",
+    ],
+    note:
+      "Real on a computer: the ⋯ more menu (2026-09-27) existed only on touch and under 900px, because the owner then asked for 'the same, normal view for computers'. Now a computer hides the six toggles (full control, auto-pass, bluff haste, motion, board, sound) behind more too; rules and the judge stay out as tools, the words stay, and the toggles open AFTER more so nothing shifts under the pointer. Touch unchanged. Mutation-checked; measured at 1440px over CDP on HPTR.",
+  },
 ];

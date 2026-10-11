@@ -127,7 +127,24 @@ export interface Flash {
    * board, which is the owner's choice for a play nobody can respond to.
    */
   results?: string[];
+  /**
+   * Report #203 (HPTR): what this item's resolution did to life totals — the
+   * other kind of result. See `lifeResults`. Held off the life meter, the
+   * life flash and the life cue until the beat ends, exactly as `results` are
+   * held off the board.
+   */
+  life?: LifeResult[];
 }
+
+/** one seat's life moving as part of a beat's resolution */
+export interface LifeResult { seat: number; delta: number }
+
+/** the stack id a `resolved` heading or a `stackFlash` snapshot is about —
+ * where one item's resolution window opens (and the previous one's closes) */
+const windowIdOf = (ev: EngineEvent): unknown =>
+  ev.type === 'resolved' ? ev.data?.['id']
+    : ev.type === 'stackFlash' ? (ev.data?.['item'] as StackItem | undefined)?.id
+      : undefined;
 
 /** a census slot as far as `resultKeys` needs one */
 export interface BornSlot { key: string; zone: string; seat: number; card: string }
@@ -159,13 +176,9 @@ export function resultKeys(
   // the item's own window opens at its snapshot or its `resolved` heading and
   // closes at the next item's. (A UNIT has no heading: engine.ts goes straight
   // from its `stackFlash` to the `spawned` that is the unit.)
-  const idOf = (ev: EngineEvent): unknown =>
-    ev.type === 'resolved' ? ev.data?.['id']
-      : ev.type === 'stackFlash' ? (ev.data?.['item'] as StackItem | undefined)?.id
-        : undefined;
   let open = false;
   for (const ev of events) {
-    if (ev.type === 'resolved' || ev.type === 'stackFlash') { open = idOf(ev) === item.id; continue; }
+    if (ev.type === 'resolved' || ev.type === 'stackFlash') { open = windowIdOf(ev) === item.id; continue; }
     if (!open) continue;
     // a unit is `spawned {unit}`; a spell token is `tokenCreated {id}`
     const made = ev.type === 'spawned' ? ev.data?.['unit'] : ev.type === 'tokenCreated' ? ev.data?.['id'] : undefined;
@@ -209,6 +222,65 @@ export function landedResults(list: readonly Flash[], now: number): Map<string, 
   for (const f of list) if (now >= f.until) for (const k of f.results ?? []) out.set(k, `s${f.item.id}`);
   return out;
 }
+
+/**
+ * Report #203 (HPTR, 2026-10-11), owner: *"The lifegain and sound effect from
+ * Iyngstra happen before the effect visually hits the stack, which just feels
+ * a bit weird."*
+ *
+ * The same bug `results` fixed for units, on the life meter: the beat replays
+ * a trigger the state has already finished with, and the total (and its flash
+ * and its cue, ui/main.ts soundPass) moved at the click. So a life change
+ * inside a beat's resolution is that beat's result too, and waits for it.
+ *
+ * The window is `resultKeys`'s — from the item's own `stackFlash` / `resolved`
+ * to the next item's — and it ALSO closes at anything a resolution never
+ * spans: a phase or turn line, a combat damage step, another item pushed onto
+ * the real stack, a negation or a fizzle. A change outside every window — a
+ * cost, combat damage, rot at the start of deployment — belongs to no beat and
+ * is shown at once, as before. When in doubt the window closes: a change shown
+ * a beat early is the old behaviour, one held that no beat caused would be new
+ * and wrong.
+ */
+const LIFE_WINDOW_ENDS: ReadonlySet<EventType> = new Set<EventType>([
+  'phase', 'turn', 'combatDamage', 'afterCombat', 'negated', 'fizzled',
+]);
+
+/** the life totals item `id`'s resolution moved, net per seat, read off the
+ * batch that carried it */
+export function lifeResults(events: readonly EngineEvent[], item: StackItem): LifeResult[] {
+  const by = new Map<number, number>();
+  let open = false;
+  for (const ev of events) {
+    if (ev.type === 'resolved' || ev.type === 'stackFlash') { open = windowIdOf(ev) === item.id; continue; }
+    if (!open) continue;
+    // an unrespondable item announces its own push between its snapshot and
+    // its heading (engine.ts commitItem); anybody else's push is a new act
+    if (ev.type === 'stackPushed') { if (ev.data?.['id'] !== item.id) open = false; continue; }
+    if (LIFE_WINDOW_ENDS.has(ev.type)) { open = false; continue; }
+    if (ev.type !== 'lifeGained' && ev.type !== 'lifeLost') continue;
+    const seat = ev.data?.['seat'], n = ev.data?.['n'];
+    if (typeof seat !== 'number' || typeof n !== 'number' || !n) continue;
+    by.set(seat, (by.get(seat) ?? 0) + (ev.type === 'lifeGained' ? n : -n));
+  }
+  return [...by].filter(([, d]) => d !== 0).map(([seat, delta]) => ({ seat, delta }));
+}
+
+/** how much of each seat's life total is still held back at `now`: the net
+ * change of every beat waiting or showing. A beat's change comes back the
+ * moment it ends — the same moment its unit lands (`deferredKeys`). */
+export function heldLife(list: readonly Flash[], now: number): Map<number, number> {
+  const out = new Map<number, number>();
+  for (const f of list) {
+    if (now >= f.until) continue;
+    for (const r of f.life ?? []) out.set(r.seat, (out.get(r.seat) ?? 0) + r.delta);
+  }
+  return out;
+}
+
+/** the life totals the table SHOWS: the state's, less what a beat still holds */
+export const shownLife = (life: readonly number[], held: ReadonlyMap<number, number>): number[] =>
+  life.map((v, seat) => v - (held.get(seat) ?? 0));
 
 /**
  * R68: the stack ids a batch of events removed from the stack WITHOUT
@@ -433,6 +505,11 @@ export function queueFlashes(
    * a beat replayed later, behind the reveal — means no beat holds anything
    * off the board: what is on screen already stays there. */
   born: readonly BornSlot[] = [],
+  /** this batch is one step on from the board on screen (report #203). False
+   * — a resync, a wholesale arrival — holds no life change back: the total
+   * on screen was never the one before this batch, and holding would move
+   * it backwards. */
+  step: boolean = born.length > 0,
 ): Flash[] {
   // two sources, one queue: items that never reached the stack (the engine's
   // own snapshots) and items R68 took OFF it without resolving (ours)
@@ -498,11 +575,13 @@ export function queueFlashes(
       // a beat whose card is really travelling (R271) already makes its own
       // journey off the strip — nothing of it waits for the beat to end
       const results = detached || !born.length ? [] : resultKeys(events, item, born, taken);
+      const life = detached || !step ? [] : lifeResults(events, item);
       out.push({
         item, at, until: at + HOLD_MS + off,
         fizzled: fizz,
         detached,
         ...(results.length ? { results } : {}),
+        ...(life.length ? { life } : {}),
       });
     });
     // …and the next group starts once this one has finished draining, or the
@@ -813,9 +892,20 @@ export function beatCensus(
 ): Census {
   const held = hold ? deferredKeys(flashes, now) : new Set<string>();
   const landed = landedResults(flashes, now);
+  // report #203: the player slot's signature is what pulses the identity row
+  // (ui/motion.ts diffCensus) — it reads the life the table SHOWS, or the row
+  // would pulse at the click while the number waits for the beat
+  const lifeHeld = heldLife(flashes, now);
   const slots = base.slots
     .filter(sl => !held.has(sl.key))
-    .map(sl => (landed.has(sl.key) ? { ...sl, origin: landed.get(sl.key)! } : sl));
+    .map(sl => (landed.has(sl.key) ? { ...sl, origin: landed.get(sl.key)! } : sl))
+    .map(sl => {
+      const d = sl.zone === 'player' ? lifeHeld.get(sl.seat) ?? 0 : 0;
+      if (!d || sl.sig === undefined) return sl;
+      const [life, ...rest] = sl.sig.split(':');
+      return { ...sl, sig: [Number(life) - d, ...rest].join(':'),
+        ...(sl.vitality !== undefined ? { vitality: sl.vitality - d } : {}) };
+    });
   const phantom: Slot[] = censusFlashes(rows).map(r => ({
     key: `s${r.item.id}`, zone: 'stack', seat: r.item.controller,
     // same fallback ui/motion.ts census() uses for a real stack slot: an

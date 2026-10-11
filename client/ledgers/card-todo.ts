@@ -297,6 +297,26 @@ const OPEN: TodoEntry[] = [
     status: "open",
   },
   {
+    id: 278, area: 'client', severity: 'major',
+    title: 'the battle board wastes space: the units and the important area are scrunched to one side',
+    detail:
+      'Playtest report #204 (HPTR, 2026-10-10, owner, at [122]): "We should rework the whole UI, '
+      + 'especially during battle, to better use the available space and be more dynamic. There are '
+      + 'so many moments where there is an absolute ton of unused space on screen, but the units and '
+      + 'the important area is all scrunched into the side of the screen." A layout project for the '
+      + 'regions board, not one defect. Parked by the owner on 2026-10-11 as bigger than the round '
+      + 'that took the other three HPTR reports.',
+    evidence: 'playtest report #204; HPTR replays faithfully (198/198) at f50c8ed.',
+    fix: 'Its own round. Start by measuring: slice HPTR at [122] (tools/slice-game.py), screenshot '
+      + 'the battle at 1440x900 and 1280x720, and map which zones hold what share of the screen '
+      + 'before proposing a layout to the owner.',
+    proof: null,
+    verify: 'Open HPTR sliced at [122] on the regions board and look at how much of the screen the '
+      + 'battle uses.',
+    reportId: 204,
+    status: 'open',
+  },
+  {
     id: 186, area: 'client', severity: 'minor',
     title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
     detail:

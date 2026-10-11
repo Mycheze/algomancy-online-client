@@ -109,6 +109,16 @@ import { CLOSED } from './playtest-ledger-closed.ts';
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
   {
+    id: 204, room: 'HPTR', date: '2026-10-10',
+    report: 'Owner, at [122]: "We should rework the whole UI, especially during battle, to better use the available space and be more dynamic. There are so many moments where there is an absolute ton of unused space on screen, but the units and the important area is all scrunched into the side of the screen."',
+    status: 'live',
+    note:
+      'Real, and a project rather than a fix: the battle layout of the regions board, not one defect. '
+      + 'Parked by the owner on 2026-10-11 ("skip #45 for now, it is quite a bit bigger" — #45 is this '
+      + 'row\'s line on the box, whose journal restarted at zero). Needs its own round, starting from '
+      + 'a measured screenshot of the battle at [122] (slice HPTR there with slice-game.py).',
+  },
+  {
     id: 164, room: '', date: '2026-09-14',
     report: 'Feature request from the home page (signed out): "Constructed draft mode would be great"',
     status: 'live',

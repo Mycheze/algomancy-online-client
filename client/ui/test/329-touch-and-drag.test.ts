@@ -140,16 +140,17 @@ test('§7 the rail: three icons and "more"; the reminders can be hidden; a narro
   // just to be for the iPad and show the same, normal view for computers"):
   // by default the group dissolves and the words show, and the compact look
   // is written under html.touch and under 900px, nowhere else
-  assert.match(CSS, /^\.setbtn, \.fcnote \{ display: none; \}\n\.setgroup \{ display: contents; \}/m, 'the desktop default');
+  // (since 2026-10-10 the desktop hides the TOGGLES behind "more" too — ui/test/447)
+  assert.match(CSS, /^\.setgroup \{ display: contents; \}/m, 'the desktop default');
   assert.match(CSS, /^html\.touch \.setgroup \{ display: none;/m);
   assert.match(CSS, /^html\.touch \.sidebtns \.lbl \{ display: none; \}\nhtml\.touch \.sidebtns\.moreopen \.lbl \{ display: inline; \}/m);
   assert.match(CSS, /@media \(max-width: 900px\) \{\n  \.setbtn \{ display: inline-block;[\s\S]*?  \.sidebtns \.lbl \{ display: none; \}/);
   // no bare rule outside those two hides a word or the group
   for (const m of CSS.matchAll(/^(\.sidebtns \.lbl|\.setgroup) \{ display: none; \}/gm)) assert.fail(`a desktop-wide ${m[1]} rule hides the rail`);
-  // the desktop order is the rail's old one
+  // the desktop order is the rail's old one, the toggles moved after "more" (2026-10-10, ui/test/447)
   const order = [...CSS.matchAll(/^\.sidebtns \[data-(?:btn|chip)="(\w+)"\] \{ order: (\d+); \}/gm)].map(m => m[1]);
-  assert.deepEqual(order, ['tablemenu', 'helpopen', 'judgeopen', 'reportopen', 'fullcontrol', 'autopasstoggle',
-    'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle', 'undo', 'restart']);
+  assert.deepEqual(order, ['tablemenu', 'helpopen', 'judgeopen', 'reportopen', 'undo', 'restart', 'fullcontrol',
+    'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']);
   assert.match(CSS, /html\.touch \.remind, html\.touch \.remindrow:not\(:has\(b\)\) \{ display: none; \}/);
   // the owner (2026-09-28) cut most of the how-to sentences outright; the
   // short ones left (haste, planning, the attack builder, the draft) are marked

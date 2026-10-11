@@ -3629,30 +3629,37 @@ html.touch .handdock.tucked .zonelabel { padding: 6px 0; cursor: pointer; }
   .handdock .card { width: 86px; }
 }
 /* THE RAIL'S BUTTONS, TWO WAYS (owner, 2026-09-27). One markup, two looks:
-   - a COMPUTER keeps the rail it always had — every button out, in its old
-     order, with its words, and the full identity lines (owner: "show the
-     same, normal view for computers");
+   - a COMPUTER keeps its rail — the buttons with their words, and the full
+     identity lines (owner: "show the same, normal view for computers") —
+     EXCEPT the toggles, which wait behind "⋯ more" (owner, 2026-10-10: "hide
+     many of the top right settings toggles in a deeper settings menu. The
+     stuff that usually doesn't need to be touched during a game"). Rules and
+     the judge are tools you reach for mid-game, not settings: they stay out.
    - a TOUCH screen or a narrow window gets the compact one the owner asked
      for on the iPad: ☰ 📝 ↶ as icons, "⋯ more" opening rules, the judge and
      every toggle (their words back while it is open), and the room / name /
      presence line as small print.
    The desktop look is built from the same markup by letting the group's box
-   dissolve (`display: contents`) and putting every button back in its old
-   place with `order`. */
-.setbtn, .fcnote { display: none; }
+   dissolve (`display: contents`), hiding its toggles until "more" is open,
+   and ordering every button with `order` — the toggles AFTER "more", so
+   opening it adds a row's end and moves nothing you were about to click. */
+.setbtn { order: 7; }
+.setbtn.on { border-color: var(--accent); color: var(--accent); }
+.fcnote { display: inline; order: 8; align-self: center; color: var(--glow); font-size: 12px; }
 .setgroup { display: contents; }
+.sidebtns:not(.moreopen) .setgroup > .aptoggle { display: none; }
 .sidebtns [data-btn="tablemenu"] { order: 1; }
 .sidebtns [data-btn="helpopen"] { order: 2; }
 .sidebtns [data-btn="judgeopen"] { order: 3; }
 .sidebtns [data-btn="reportopen"] { order: 4; }
-.sidebtns [data-chip="fullcontrol"] { order: 5; }
-.sidebtns [data-btn="autopasstoggle"] { order: 6; }
-.sidebtns [data-btn="bluffhastetoggle"] { order: 7; }
-.sidebtns [data-btn="motiontoggle"] { order: 8; }
-.sidebtns [data-btn="layouttoggle"] { order: 9; }
-.sidebtns [data-btn="soundtoggle"] { order: 10; }
-.sidebtns [data-btn="undo"] { order: 11; }
-.sidebtns [data-btn="restart"] { order: 12; }
+.sidebtns [data-btn="undo"] { order: 5; }
+.sidebtns [data-btn="restart"] { order: 6; }
+.sidebtns [data-chip="fullcontrol"] { order: 9; }
+.sidebtns [data-btn="autopasstoggle"] { order: 10; }
+.sidebtns [data-btn="bluffhastetoggle"] { order: 11; }
+.sidebtns [data-btn="motiontoggle"] { order: 12; }
+.sidebtns [data-btn="layouttoggle"] { order: 13; }
+.sidebtns [data-btn="soundtoggle"] { order: 14; }
 html.touch .setbtn { display: inline-block; order: 13; }
 html.touch .fcnote { display: inline; order: 14; align-self: center; color: var(--glow); font-size: 12px; }
 html.touch .setgroup { display: none; order: 20; }
@@ -4246,8 +4253,16 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    as chunky tiles with a bevel, a shadow and a slight tumble. Each keeps the
    colours its kind already has on the table (.mod, .act, .ctr, .offer…):
    only the shape changes, so the gradient is a background-IMAGE over the
-   kind's own colour. */
-#cardzoom .zoomdice { position: absolute; top: 21cqw; left: 5cqw; right: 5cqw; max-height: 60cqw;
+   kind's own colour.
+   The box clips (a long list stops above the type line), and a straight box
+   clipped the tumble: a tilted chip's corners and its drop shadow reach past
+   its own square (owner, 2026-10-10: "still get their corners cut off"). So
+   the box is PADDED by that reach and grown outward by the same amount — the
+   chips sit exactly where they did, at 21/5/5cqw with 60cqw of room, and the
+   clip edge is out past anything they paint. ui/test/446 derives the reach
+   from the numbers below; change a tilt or the shadow and it re-checks. */
+#cardzoom .zoomdice { position: absolute; top: 17.8cqw; left: 2cqw; right: 2cqw; max-height: 68.4cqw;
+  padding: 3.2cqw 3cqw 5.2cqw;
   display: flex; flex-wrap: wrap; gap: 2.4cqw; align-items: center; align-content: flex-start; overflow: hidden; }
 #cardzoom .zoomdice .badge { position: static; flex: none; max-width: 100%;
   font-size: 4.6cqw; line-height: 1.2; font-weight: 600; padding: 1.3cqw 2.4cqw;
