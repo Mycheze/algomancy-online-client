@@ -40,6 +40,7 @@ const HAND = join(HERE, 'hand');
 const MANIFEST = join(HAND, 'manifest.json');
 const STEPS = ['score', 'absorb', 'recite', 'repin', 'hand', 'render'];
 const MIGRATE_REL = relative(REPO_ROOT, HERE);
+const RECITE_COMMIT = 'migration dry run: recite output';
 /** what the delete step removes outright (beyond its manifest entries) */
 export const DELETE_PATHS = ['client/docs/digital-rules.md', 'data/comprehensive-rules/classification.json', 'data/comprehensive-rules/supersession.json'];
 /** links a scratch worktree needs to run the scripts and tests */
@@ -60,7 +61,8 @@ export function applyHand(root, step) {
     const theirs = join(HAND, 'files', `${path}.hand`);
     if (e.op === 'add' || !e.base) { mkdirSync(dirname(abs), { recursive: true }); copyFileSync(theirs, abs); out.merged.push(path); continue; }
     let base;
-    try { base = git(['cat-file', 'blob', e.base], root); } catch { out.missingBase.push(path); continue; }
+    if (e.baseFile) base = readFileSync(join(HAND, 'files', `${path}.base`), 'utf8');
+    else { try { base = git(['cat-file', 'blob', e.base], root); } catch { out.missingBase.push(path); continue; } }
     if (!existsSync(abs)) { out.conflicts.push(`${path}: the file is gone`); continue; }
     const tmp = join(root, CR_BUILD_DIR.slice(REPO_ROOT.length + 1), 'migrate', 'merge');
     mkdirSync(tmp, { recursive: true });
@@ -83,15 +85,28 @@ function capture() {
   const paths = [];
   const av = process.argv.slice(3);
   for (let i = 0; i < av.length; i++) { if (['--from', '--step-of'].includes(av[i])) i++; else if (!av[i].startsWith('--')) paths.push(av[i]); }
+  // a dry tree made by --dry-run --keep has two commits: the recite output, then the hand output.
+  // A NON-owned file's edit is stored against the recite output, so the hand step re-applies only
+  // what was written by hand, on top of whatever recite produces next time.
+  const fromRecite = (p) => {
+    try {
+      if (!from || git(['log', '-1', '--format=%s', 'HEAD~1'], resolve(from)).trim() !== RECITE_COMMIT) return null;
+      return git(['show', `HEAD~1:${p}`], resolve(from));
+    } catch { return null; }
+  };
   for (const p of paths) {
     let base = null;
     try { base = git(['rev-parse', `HEAD:${p}`]).trim(); } catch { base = null; }
     if (del) { man.files[p] = { op: 'delete', step, base }; continue; }
+    const owned = process.argv.includes('--owned');
+    const rb = owned ? null : fromRecite(p);
+    if (!owned && rb === null && base) throw new Error(`${p}: not owned, and ${from} is not a --keep dry tree with a recite commit to take its base from`);
+    if (rb !== null) { mkdirSync(dirname(join(HAND, 'files', p)), { recursive: true }); writeFileSync(join(HAND, 'files', `${p}.base`), rb); }
     const src = join(resolve(from), p);
     const dst = join(HAND, 'files', `${p}.hand`); // a suffix no compiler, test runner or scanner picks up
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(src, dst);
-    man.files[p] = { op: base ? 'merge' : 'add', step, base, ...(process.argv.includes('--owned') ? { owned: true } : {}) };
+    man.files[p] = { op: base ? 'merge' : 'add', step, base, ...(owned ? { owned: true } : {}), ...(rb !== null ? { baseFile: true } : {}) };
   }
   man._doc = 'Hand-written edits the migration applies (run.mjs step hand / delete). base = the blob each edit was written against; the edit is 3-way merged onto the current file.';
   mkdirSync(HAND, { recursive: true });
@@ -174,19 +189,29 @@ async function dryRun() {
     mkdirSync(dirname(dst), { recursive: true });
     symlinkSync(realpathSync(src), dst);
   }
-  const args = [join(dir, MIGRATE_REL, 'run.mjs'), '--in-place'];
-  if (arg('--step')) args.push('--step', arg('--step'));
-  if (arg('--decisions')) args.push('--decisions', resolve(arg('--decisions')));
-  const r = spawnSync(process.execPath, args, { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8', maxBuffer: 1 << 30 });
+  const steps = stepsOf();
+  const first = steps.filter((x) => ['score', 'absorb', 'recite', 'repin'].includes(x));
+  const second = steps.filter((x) => !first.includes(x));
+  const child = (st) => {
+    const a = [join(dir, MIGRATE_REL, 'run.mjs'), '--in-place', '--step', st.join(',')];
+    if (arg('--decisions')) a.push('--decisions', resolve(arg('--decisions')));
+    const res = spawnSync(process.execPath, a, { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8', maxBuffer: 1 << 30 });
+    const logPath = join(dir, 'data/comprehensive-rules/build/migrate/run-log.json');
+    return { res, log: existsSync(logPath) ? JSON.parse(readFileSync(logPath, 'utf8')) : {} };
+  };
+  const commit = (msg) => { git(['add', '-A', '.'], dir); git(['-c', 'user.name=migration', '-c', 'user.email=migration@localhost', 'commit', '-q', '--allow-empty', '--no-verify', '-m', msg], dir); };
   const outDir = join(CR_BUILD_DIR, 'migrate');
   mkdirSync(outDir, { recursive: true });
-  const logPath = join(dir, 'data/comprehensive-rules/build/migrate/run-log.json');
-  if (existsSync(logPath)) copyFileSync(logPath, join(outDir, 'dry-log.json'));
-  git(['add', '-A', '.'], dir);
-  const diff = git(['diff', '--cached', 'HEAD'], dir);
+  const a = first.length ? child(first) : { res: { status: 0, stdout: '' }, log: {} };
+  commit(RECITE_COMMIT);
+  const b = second.length && a.res.status !== null ? child(second) : { res: { status: 0, stdout: '' }, log: {} };
+  commit('migration dry run: hand output');
+  const r = { status: a.res.status || b.res.status, stdout: `${a.res.stdout}\n${b.res.stdout}` };
+  writeFileSync(join(outDir, 'dry-log.json'), JSON.stringify({ ...a.log, ...b.log, failures: [...(a.log.failures ?? []), ...(b.log.failures ?? [])] }, null, 1) + '\n');
+  const base = git(['rev-parse', 'HEAD~2'], dir).trim();
+  const diff = git(['diff', base, 'HEAD'], dir);
   writeFileSync(join(outDir, 'dry.diff'), diff);
-  const stat = git(['diff', '--cached', '--shortstat', 'HEAD'], dir).trim();
-  git(['reset', '-q'], dir);
+  const stat = git(['diff', '--shortstat', base, 'HEAD'], dir).trim();
   const summary = { status: r.status, stat, dir, diff: join(outDir, 'dry.diff'), log: join(outDir, 'dry-log.json') };
   writeFileSync(join(outDir, 'dry-summary.json'), JSON.stringify(summary, null, 1) + '\n');
   console.log(r.stdout.trim());

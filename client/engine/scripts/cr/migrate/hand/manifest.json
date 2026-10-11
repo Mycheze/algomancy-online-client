@@ -79,11 +79,6 @@
    "base": "2a64ab318e46315d365664c64d1554fa6f2b234d",
    "owned": true
   },
-  "client/ledgers/scenario-queue.ts": {
-   "op": "merge",
-   "step": "hand",
-   "base": "4aeafc1869428a1acde9eec28d914e3d4a267c1e"
-  },
   "client/engine/test/238-question-sheets.test.ts": {
    "op": "merge",
    "step": "hand",
@@ -120,25 +115,10 @@
    "base": "25eb310393366634e0600d648c9db38161f7cc43",
    "owned": true
   },
-  "client/ui/test/231-manual-text.test.ts": {
-   "op": "merge",
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts": {
+   "op": "delete",
    "step": "hand",
-   "base": "94a57a2985870957892b4d13923aeb168b7e6495"
-  },
-  "client/engine/test/70-playtest-ledger.test.ts": {
-   "op": "merge",
-   "step": "hand",
-   "base": "48f11d62ea1c90f9b8f53b6699f1bbce353fe0d4"
-  },
-  "client/engine/test/443-cr-demonstrations.test.ts": {
-   "op": "merge",
-   "step": "hand",
-   "base": "b93ad85b4882bbfbd7c6abff69337d18f065b754"
-  },
-  "client/ui/glossary.ts": {
-   "op": "merge",
-   "step": "hand",
-   "base": "a3b22a1a0be6f92a836da09d95fab4ea66978e28"
+   "base": "a137cb903e73f75a830a1d3632ab106dd071eb78"
   }
  }
 }
