@@ -28,6 +28,7 @@
  * verdicts/*.json is FROZEN (owner decision 2026-10-11): never touched here.
  * Idempotent: a second run finds no `sources.rulings` and changes nothing. */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CR_RULES_DIR, CR_DISCREPANCIES_DIR, CR_FINDINGS_DIR, CR_SOURCE_CLASSIFICATION, REPO_ROOT } from '../../paths.mjs';
@@ -83,15 +84,18 @@ export function ownerWording(s, A, unknown = new Set()) {
     const ids = [`R${Number(n)}${b}`, ...[...(rest ?? '').matchAll(/R(\d{1,3})(b?)/g)].map((m) => `R${Number(m[1])}${m[2]}`)];
     const known = ids.filter((id) => A[id] || A[id.replace(/b$/, '')]);
     if (known.length !== ids.length) { for (const id of ids) if (!A[id]) unknown.add(id); return all; }
-    const ds = [...new Set(ids.map((id) => (A[id] ?? A[id.replace(/b$/, '')]).adopted))].sort();
-    const many = ids.length > 1;
+    const rs = [...new Map(ids.map((id) => { const a = A[id] ?? A[id.replace(/b$/, '')]; return [id, a]; })).values()];
+    // a date alone would make two same-day rulings read as one: each keeps its first words
+    const named = (a) => (a.title ? `${a.adopted} (“${a.title}”)` : a.adopted);
+    const ds = rs.map(named);
+    const many = rs.length > 1;
     const before = s.slice(0, off);
     const startOfSentence = /(^|[.!?:]\s+|\n\s*(?:[-*]\s+)?|^\s*[-*]\s+)$/.test(before) && !open;
     const cap = (w) => (startOfSentence || /^[TA]/.test(art ?? '') ? w[0].toUpperCase() + w.slice(1) : w);
     // the whole parenthesis is the citation: "(R74)" / "(R25/R239)"
-    if (open && close && !poss) return `(owner ${many ? 'rulings' : 'ruling'}, adopted ${datesList(ds)})`;
+    if (open && close && !poss) return `(owner ${many ? 'rulings' : 'ruling'} of ${datesList(rs.map((a) => (a.title ? `${a.adopted}, “${a.title}”` : a.adopted)))})`;
     let phrase = poss
-      ? (many ? `the ${datesList(ds)} owner rulings'` : `the ${ds[0]} owner ruling's`)
+      ? (many ? `the owner rulings of ${datesList(ds)}’` : `the owner ruling of ${ds[0]}’s`)
       : (many ? `the owner rulings of ${datesList(ds)}` : `the owner ruling of ${ds[0]}`);
     phrase = cap(phrase);
     return `${open ?? ''}${phrase}${close ?? ''}`;
@@ -117,8 +121,27 @@ function replaceKey(obj, key, pairs) {
   Object.assign(obj, out);
 }
 
+/** where an absorbed quote can be checked: `register@<sha>`, the commit whose register holds it
+ *  (the archive ref when it has the same register as this tree, else HEAD) */
+export function registerMarker() {
+  const git = (args) => execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
+  const rel = 'client/docs/digital-rules.md';
+  let sha = null;
+  try {
+    const head = git(['rev-parse', `HEAD:${rel}`]);
+    try { if (git(['rev-parse', `refs/archive/r-register-final:${rel}`]) === head) sha = git(['rev-parse', '--short=7', 'refs/archive/r-register-final']); } catch { /* no archive ref */ }
+    sha ??= git(['rev-parse', '--short=7', 'HEAD']);
+  } catch { throw new Error('absorb needs the register (a register-era checkout) to say where its quotes come from'); }
+  return `register@${sha}`;
+}
+
+/** prose that tells a reader to change the register: the register is gone, so say so once */
+const REGISTER_NOTE = ' [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]';
+const mentionsRegister = (s) => /\b(?:docs\/)?digital-rules(?:\.md)?\b|\b[Tt]he register\b|\bin the register\b|\bregister (?:mark|entry|text|should|says)\b/.test(s);
+
 export function absorb({ dryRun = false } = {}) {
   const A = readAdopted();
+  const registerAt = registerMarker();
   const scope = JSON.parse(readFileSync(SCOPE_JSON, 'utf8'));
   const unknown = new Set();
   const report = {
@@ -152,7 +175,7 @@ export function absorb({ dryRun = false } = {}) {
             const k = `${x.quote}|${a.adopted}`;
             if (seen.has(k)) continue;
             seen.add(k);
-            owner.push({ quote: x.quote, adopted: a.adopted, from: a.from ?? '' });
+            owner.push({ quote: x.quote, adopted: a.adopted, from: a.from ? `${a.from}; ${registerAt}` : registerAt });
           }
           if ((s.rulings ?? []).length) report.recordsWithRulings++;
           report.ownerEntries += owner.length;
@@ -196,6 +219,7 @@ export function absorb({ dryRun = false } = {}) {
       const set = (o, k, bucket) => { if (typeof o?.[k] === 'string') { const t = word(o[k], bucket); if (t !== o[k]) { o[k] = t; changed = true; } } };
       for (const d of rows) {
         set(d, 'summary', 'discrepancies'); set(d, 'resolution', 'discrepancies');
+        if (typeof d.resolution === 'string' && mentionsRegister(d.resolution) && !d.resolution.includes(REGISTER_NOTE.trim())) { d.resolution += REGISTER_NOTE; changed = true; report.registerNotes = (report.registerNotes ?? 0) + 1; }
         for (const sd of d.sides ?? []) {
           const ref = ownerRef(sd.source, A);
           if (ref) { sd.source = ref; report.sidesRef++; changed = true; }

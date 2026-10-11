@@ -32,10 +32,10 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CR_BUILD_DIR } from '../../paths.mjs';
-import { parseRulings } from '../extract.mjs';
+import { parseRulings, parseRulingCite, readReviewed } from './register.mjs';
 import { loadInputs } from '../render.mjs';
 import { compareNums, indexLedger, parseNum } from '../ledger.mjs';
-import { parseRulingCite } from '../schema.mjs';
+
 
 export const RMAP_JSON = join(CR_BUILD_DIR, 'rmap.json');
 const LIVE = new Set(['current', 'partly-superseded', 'narrowed']);
@@ -89,8 +89,8 @@ const pick = (c) => ({ class: c.class, target: c.target, family: c.family ?? fal
 export function buildRmap() {
   const inputs = loadInputs();
   const I = indexLedger(inputs.ledger);
-  const C = inputs.classification;
-  const edges = inputs.supersession.edges.filter(SUPERSEDING);
+  const C = inputs.classification ?? readReviewed('classification');
+  const edges = (inputs.supersession ?? readReviewed('supersession')).edges.filter(SUPERSEDING);
   const rulings = parseRulings();
 
   const cur = new Map(), hist = new Map(), secMap = new Map();

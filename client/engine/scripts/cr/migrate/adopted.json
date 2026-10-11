@@ -3,1354 +3,1691 @@
  "rulings": {
   "R1": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Trigger conditions vs effect values"
   },
   "R2": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Ordering of simultaneous triggers"
   },
   "R3": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Formation changes during combat its reach…"
   },
   "R4": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Electric damage pathing its path amended…"
   },
   "R5": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Fizzle vs partial resolution per-card guideline"
   },
   "R6": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "\"Unless its controller pays x\" payments"
   },
   "R7": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Combat damage splitting its Piercing half…"
   },
   "R8": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Control change narrowed by"
   },
   "R9": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Once-per-turn budgets under control change"
   },
   "R10": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Unaware's \"interacting with\" replaced by"
   },
   "R11": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Regroup order"
   },
   "R12": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Regions are exclusive"
   },
   "R13": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Piercing through a fully-dead blocked column…"
   },
   "R14": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "\"In this battle\" counters are per…"
   },
   "R15": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Round-2 attackers when round 1 had…"
   },
   "R16": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Burst casting order its group amended…"
   },
   "R17": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Prismites give no affinity; active ones…"
   },
   "R18": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Haste step engine model its skip…"
   },
   "R19": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Stat layer 4 application order"
   },
   "R20": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Sneaky's \"attacking alone\""
   },
   "R21": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Deadly specifics its Piercing pass-through amended…"
   },
   "R22": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Ambush details"
   },
   "R23": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Vulnerable's doubling vs assignment and Powerful's…"
   },
   "R24": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Thieving draws once per connecting column…"
   },
   "R25": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "\"Each opponent\" is region-scoped resolved by"
   },
   "R26": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "\"Whenever you play a unit\" includes…"
   },
   "R27": {
    "adopted": "2026-08-18",
-   "commit": "757eeaa"
+   "commit": "757eeaa",
+   "title": "Formation-counting amounts are live at resolution"
   },
   "R28": {
    "adopted": "2026-08-18",
-   "commit": "0501851"
+   "commit": "0501851",
+   "title": "WITHDRAWN 2026-08-23 — superseded by"
   },
   "R29": {
    "adopted": "2026-08-18",
-   "commit": "0501851"
+   "commit": "0501851",
+   "title": "\"An open spot in your formation\"…"
   },
   "R30": {
    "adopted": "2026-08-18",
-   "commit": "0501851"
+   "commit": "0501851",
+   "title": "\"Each player recalls a unit and…"
   },
   "R31": {
    "adopted": "2026-08-18",
-   "commit": "0501851"
+   "commit": "0501851",
+   "title": "Triggers between combat damage sub-steps superseded…"
   },
   "R32": {
    "adopted": "2026-08-18",
-   "commit": "0501851"
+   "commit": "0501851",
+   "title": "Sent counterattackers don't exist anywhere Manual…"
   },
   "R33": {
    "adopted": "2026-08-18",
-   "commit": "5540d04"
+   "commit": "5540d04",
+   "title": "ABSORBED INTO 2026-08-23 — it was…"
   },
   "R34": {
    "adopted": "2026-08-18",
-   "commit": "5540d04"
+   "commit": "5540d04",
+   "title": "Identical simultaneous triggers are not ordered"
   },
   "R35": {
    "adopted": "2026-08-18",
-   "commit": "5540d04"
+   "commit": "5540d04",
+   "title": "Bracketed costs and X on spells…"
   },
   "R36": {
    "adopted": "2026-08-18",
-   "commit": "5540d04"
+   "commit": "5540d04",
+   "title": "A lone sent counterattacker auto-forms in…"
   },
   "R37": {
    "adopted": "2026-08-19",
-   "commit": "7c21d71"
+   "commit": "7c21d71",
+   "title": "\"Playing\" a card means units and…"
   },
   "R38": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Rot: start of deployment, damage equal…"
   },
   "R39": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Debt: mandatory, automatic, paid at the…"
   },
   "R40": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Trashing: a card entering a bin…"
   },
   "R41": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Cache is public information"
   },
   "R42": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Prophecy: cache during deployment for the…"
   },
   "R43": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Prophecy conditions count forward from the…"
   },
   "R44": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "A fulfilled prophecy latches"
   },
   "R45": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Glimpse N: reveal N, cache ONE…"
   },
   "R46": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Mods do not follow a card…"
   },
   "R47": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "RETIRED 2026-08-21 the card was redesigned…"
   },
   "R48": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Blessed is simultaneous; Afflicting fires on…"
   },
   "R49": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "Non-mana costs are paid when you…"
   },
   "R50": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "The haste step ends, and deployment…"
   },
   "R51": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "A card in a bin or…"
   },
   "R52": {
    "adopted": "2026-08-19",
-   "commit": "3771e1f"
+   "commit": "3771e1f",
+   "title": "WITHDRAWN 2026-08-23 — superseded by"
   },
   "R53": {
    "adopted": "2026-08-19",
-   "commit": "c7555c6"
+   "commit": "c7555c6",
+   "title": "\"When I become targeted\" fires on…"
   },
   "R54": {
    "adopted": "2026-08-19",
-   "commit": "c7555c6"
+   "commit": "c7555c6",
+   "title": "A Shard is not a Prismite"
   },
   "R55": {
    "adopted": "2026-08-19",
-   "commit": "c7555c6"
+   "commit": "c7555c6",
+   "title": "Printed Augment is a permission, not…"
   },
   "R56": {
    "adopted": "2026-08-19",
-   "commit": "c7555c6"
+   "commit": "c7555c6",
+   "title": "\"Another target\" is re-checked at resolution…"
   },
   "R57": {
    "adopted": "2026-08-19",
-   "commit": "dc47c63"
+   "commit": "dc47c63",
+   "title": "Targets are chosen before costs are…"
   },
   "R58": {
    "adopted": "2026-08-19",
-   "commit": "dc47c63"
+   "commit": "dc47c63",
+   "title": "Per-slot target legality, re-checked at resolution"
   },
   "R59": {
    "adopted": "2026-08-19",
-   "commit": "dc47c63"
+   "commit": "dc47c63",
+   "title": "Cost modifiers its spell-token carve-out amended…"
   },
   "R60": {
    "adopted": "2026-08-20",
-   "commit": "c187dca"
+   "commit": "c187dca",
+   "title": "\"Target effect\" vs \"target spell effect\"…"
   },
   "R61": {
    "adopted": "2026-08-20",
-   "commit": "c187dca"
+   "commit": "c187dca",
+   "title": "{Pure}: the attribute layer, switched off…"
   },
   "R62": {
    "adopted": "2026-08-21",
-   "commit": "909e409"
+   "commit": "909e409",
+   "title": "The suppression layer: \"loses all attributes…"
   },
   "R63": {
    "adopted": "2026-08-21",
-   "commit": "909e409"
+   "commit": "909e409",
+   "title": "Granting rules text"
   },
   "R64": {
    "adopted": "2026-08-21",
-   "commit": "140de9b"
+   "commit": "140de9b",
+   "title": "A bracketed cost is paid at…"
   },
   "R65": {
    "adopted": "2026-08-21",
-   "commit": "140de9b"
+   "commit": "140de9b",
+   "title": "Discarding is not playing; conceding; the…"
   },
   "R66": {
    "adopted": "2026-08-21",
-   "commit": "5ba5f44"
+   "commit": "5ba5f44",
+   "title": "Base stats are REPLACED, not adjusted…"
   },
   "R67": {
    "adopted": "2026-08-21",
-   "commit": "5ba5f44"
+   "commit": "5ba5f44",
+   "title": "\"Target\" is chosen when the effect…"
   },
   "R68": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "Negating an effect REMOVES it from…"
   },
   "R69": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "A token entering a ZONE is…"
   },
   "R70": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "Facts about a leaving unit ride…"
   },
   "R71": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "The Wraith token, redesigned; and \"an…"
   },
   "R72": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "Formation gravity: the back row always…"
   },
   "R73": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "\"Sacrifice me\" is a CAST COST…"
   },
   "R74": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "A variable cost may WARN that…"
   },
   "R75": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "Joining a formation is a CHOICE…"
   },
   "R76": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "Alluring duties are discharged TOGETHER, and…"
   },
   "R77": {
    "adopted": "2026-08-22",
-   "commit": "ac84ab0"
+   "commit": "ac84ab0",
+   "title": "\"Activate this ability only if …\"…"
   },
   "R78": {
    "adopted": "2026-08-22",
-   "commit": "37753aa"
+   "commit": "37753aa",
+   "title": "An item stays on the stack…"
   },
   "R79": {
    "adopted": "2026-08-22",
-   "commit": "37753aa"
+   "commit": "37753aa",
+   "title": "A Virus may be augmented onto…"
   },
   "R80": {
    "adopted": "2026-08-22",
-   "commit": "2aa6f71"
+   "commit": "2aa6f71",
+   "title": "ALL of one effect's damage is…"
   },
   "R81": {
    "adopted": "2026-08-22",
-   "commit": "2aa6f71"
+   "commit": "2aa6f71",
+   "title": "Burst groups by NAME its entity-id…"
   },
   "R82": {
    "adopted": "2026-08-22",
-   "commit": "2aa6f71"
+   "commit": "2aa6f71",
+   "title": "Two printed targets, two cast-time slots…"
   },
   "R83": {
    "adopted": "2026-08-22",
-   "commit": "87f3ccd"
+   "commit": "87f3ccd",
+   "title": "A spec may mix a VARIABLE…"
   },
   "R84": {
    "adopted": "2026-08-22",
-   "commit": "cac3c30"
+   "commit": "cac3c30",
+   "title": "{Alluring} TARGETS one enemy unit, from…"
   },
   "R85": {
    "adopted": "2026-08-22",
-   "commit": "cac3c30"
+   "commit": "cac3c30",
+   "title": "A suspended resolution rolls back on…"
   },
   "R86": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "An effect fizzles when it loses…"
   },
   "R87": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "A counterattacker may bring spell tokens…"
   },
   "R88": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "\"Target effect targeting me\" is a…"
   },
   "R89": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "'s missing half: a SPELL TOKEN…"
   },
   "R90": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "A park note is a CLAIM…"
   },
   "R91": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "\"Name a card\" is a Decision…"
   },
   "R92": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "Three of the four COPY layers…"
   },
   "R93": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "Stat layer 5: {Inverted} negates the…"
   },
   "R94": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "The static → effect-attribute channel EffectAttrMod…"
   },
   "R95": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "ModPermission: an opt-in permission to apply…"
   },
   "R96": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "Playing a spell from your BIN…"
   },
   "R97": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "A card may be granted permission…"
   },
   "R98": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "PREVENTED damage was never dealt and…"
   },
   "R99": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "A constructed deck's ELEMENT IDENTITY is…"
   },
   "R100": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "\"I can't be played from your…"
   },
   "R101": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "TRANSFORM: turning a card over is…"
   },
   "R102": {
    "adopted": "2026-08-23",
-   "commit": "f15ed40"
+   "commit": "f15ed40",
+   "title": "a REPLACEMENT may put a triggered…"
   },
   "R103": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "{Piercing} pierces on NON-COMBAT damage too…"
   },
   "R104": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "the REPLACEMENT-EFFECT LAYER: two families, and…"
   },
   "R105": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "{Modular} takes ANY mod you can…"
   },
   "R106": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "STAT LAYER 6, {Unaware}: everything in…"
   },
   "R107": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "OWNER is not CONTROLLER, and putting…"
   },
   "R108": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "a bounded once is not spent…"
   },
   "R109": {
    "adopted": "2026-08-23",
-   "commit": "f082ceb"
+   "commit": "f082ceb",
+   "title": "an empty damage batch says so"
   },
   "R110": {
    "adopted": "2026-08-23",
-   "commit": "a27a47a"
+   "commit": "a27a47a",
+   "title": "\"Trigger two/three copies of this graft…"
   },
   "R111": {
    "adopted": "2026-08-23",
-   "commit": "a27a47a"
+   "commit": "a27a47a",
+   "title": "a FREE prophecy release casts an…"
   },
   "R112": {
    "adopted": "2026-08-23",
-   "commit": "ae1bc4d"
+   "commit": "ae1bc4d",
+   "title": "a stolen unit's mods change controller…"
   },
   "R113": {
    "adopted": "2026-08-23",
-   "commit": "c1002ff"
+   "commit": "c1002ff",
+   "title": "a bounded use is spent by…"
   },
   "R114": {
    "adopted": "2026-08-23",
-   "commit": "fdbf4a6"
+   "commit": "fdbf4a6",
+   "title": "combat damage is DEALT in full…"
   },
   "R115": {
    "adopted": "2026-08-23",
-   "commit": "fdbf4a6"
+   "commit": "fdbf4a6",
+   "title": "a created unit arrives where its…"
   },
   "R116": {
    "adopted": "2026-08-23",
-   "commit": "ffd5863"
+   "commit": "ffd5863",
+   "title": "An EXCHANGE is not an ACTIVATION…"
   },
   "R117": {
    "adopted": "2026-08-23",
-   "commit": "ffd5863"
+   "commit": "ffd5863",
+   "title": "\"when my column deals combat damage\"…"
   },
   "R118": {
    "adopted": "2026-08-23",
-   "commit": "39aa805"
+   "commit": "39aa805",
+   "title": "the COPY LAYER: a face in…"
   },
   "R119": {
    "adopted": "2026-08-24",
-   "commit": "170ad67"
+   "commit": "170ad67",
+   "title": "a paid-for cost reduction OUTLIVES its…"
   },
   "R120": {
    "adopted": "2026-08-24",
-   "commit": "4ee6fd5"
+   "commit": "4ee6fd5",
+   "title": "the ELECTIVE combat-damage split: the dealing…"
   },
   "R121": {
    "adopted": "2026-08-24",
-   "commit": "964bb4d"
+   "commit": "964bb4d",
+   "title": "the ability-cost tax and the pay-to-trigger…"
   },
   "R122": {
    "adopted": "2026-08-24",
-   "commit": "1013dd4"
+   "commit": "1013dd4",
+   "title": "an IMPOSED additional cast cost on…"
   },
   "R123": {
    "adopted": "2026-08-24",
-   "commit": "e3b4dfb"
+   "commit": "e3b4dfb",
+   "title": "playing cards out of a BIN…"
   },
   "R124": {
    "adopted": "2026-08-24",
-   "commit": "b9fa0c2"
+   "commit": "b9fa0c2",
+   "title": "'leftBin': every bin removal goes through…"
   },
   "R125": {
    "adopted": "2026-08-24",
-   "commit": "b3eab42"
+   "commit": "b3eab42",
+   "title": "\"Everything\" is literal: Rotspore Herald reaches…"
   },
   "R126": {
    "adopted": "2026-08-24",
-   "commit": "f6d1d02"
+   "commit": "f6d1d02",
+   "title": "\"up to N\" means you may…"
   },
   "R127": {
    "adopted": "2026-08-24",
-   "commit": "b6d11fd"
+   "commit": "b6d11fd",
+   "title": "Ancient One copies the whole text…"
   },
   "R128": {
    "adopted": "2026-08-24",
-   "commit": "4872272"
+   "commit": "4872272",
+   "title": "anything on the stack is an…"
   },
   "R129": {
    "adopted": "2026-08-24",
-   "commit": "8a36461"
+   "commit": "8a36461",
+   "title": "a spell token is a token…"
   },
   "R130": {
    "adopted": "2026-08-24",
-   "commit": "3bc2500"
+   "commit": "3bc2500",
+   "title": "every counter is a counter, and…"
   },
   "R131": {
    "adopted": "2026-08-24",
-   "commit": "eecb18c"
+   "commit": "eecb18c",
+   "title": "\"another\" is a different ENTITY, not…"
   },
   "R132": {
    "adopted": "2026-08-24",
-   "commit": "842447c"
+   "commit": "842447c",
+   "title": "a Prismite DOES activate its new…"
   },
   "R133": {
    "adopted": "2026-08-24",
-   "commit": "58f231a"
+   "commit": "58f231a",
+   "title": "tokens are NOT cards, and trashing…"
   },
   "R137": {
    "adopted": "2026-08-24",
-   "commit": "c871b64"
+   "commit": "c871b64",
+   "title": "an {Unstable} unit that dies IS…"
   },
   "R139": {
    "adopted": "2026-08-24",
-   "commit": "40d4ebe"
+   "commit": "40d4ebe",
+   "title": "an amount rides INSIDE one decision…"
   },
   "R140": {
    "adopted": "2026-08-24",
-   "commit": "4f7c522"
+   "commit": "4f7c522",
+   "title": "a responder that reaches back into…"
   },
   "R143": {
    "adopted": "2026-08-24",
-   "commit": "7413535"
+   "commit": "7413535",
+   "title": "\"…gains control of me\" on a…"
   },
   "R144": {
    "adopted": "2026-08-24",
-   "commit": "103be2c"
+   "commit": "103be2c",
+   "title": "deployment uses the stack, and a…"
   },
   "R145": {
    "adopted": "2026-08-25",
-   "commit": "d2b9a65"
+   "commit": "d2b9a65",
+   "title": "the ACTIVE ZONE: in play and…"
   },
   "R146": {
    "adopted": "2026-08-25",
-   "commit": "8377b26"
+   "commit": "8377b26",
+   "title": "a card entering a bin goes…"
   },
   "R147": {
    "adopted": "2026-08-25",
-   "commit": "34f365a"
+   "commit": "34f365a",
+   "title": "a spell unit that becomes a…"
   },
   "R148": {
    "adopted": "2026-08-25",
-   "commit": "1cdfaf0"
+   "commit": "1cdfaf0",
+   "title": "a control change is E.giveControl or…"
   },
   "R149": {
    "adopted": "2026-08-25",
-   "commit": "48519bd"
+   "commit": "48519bd",
+   "title": "the elective damage split gets a…"
   },
   "R150": {
    "adopted": "2026-08-25",
-   "commit": "59b5334"
+   "commit": "59b5334",
+   "title": "a readable ceiling on the client…"
   },
   "R151": {
    "adopted": "2026-08-25",
-   "commit": "2942487"
+   "commit": "2942487",
+   "title": "a token prints the X it…"
   },
   "R152": {
    "adopted": "2026-08-25",
-   "commit": "a31ba35"
+   "commit": "a31ba35",
+   "title": "the other three ways an exchange…"
   },
   "R153": {
    "adopted": "2026-08-25",
-   "commit": "b4f787d"
+   "commit": "b4f787d",
+   "title": "the disposal tail is one primitive…"
   },
   "R154": {
    "adopted": "2026-08-25",
-   "commit": "5d9a4a2"
+   "commit": "5d9a4a2",
+   "title": "the decision gate learns whose question…"
   },
   "R155": {
    "adopted": "2026-08-25",
-   "commit": "8b92357"
+   "commit": "8b92357",
+   "title": "a { todo: true } test…"
   },
   "R156": {
    "adopted": "2026-08-25",
-   "commit": "52023f1"
+   "commit": "52023f1",
+   "title": "is about the ERASE, not about…"
   },
   "R157": {
    "adopted": "2026-08-25",
-   "commit": "d75d5cc"
+   "commit": "d75d5cc",
+   "title": "the owner's answers to the 27…"
   },
   "R158": {
    "adopted": "2026-08-25",
-   "commit": "18a2116"
+   "commit": "18a2116",
+   "title": "the three cost contexts of an…"
   },
   "R160": {
    "adopted": "2026-08-25",
-   "commit": "23e8099"
+   "commit": "23e8099",
+   "title": "WHEN a transformed card turns back…"
   },
   "R161": {
    "adopted": "2026-08-25",
-   "commit": "c01b361"
+   "commit": "c01b361",
+   "title": "six of 's answers, and the…"
   },
   "R162": {
    "adopted": "2026-08-25",
-   "commit": "6db083b"
+   "commit": "6db083b",
+   "title": "the MULTIPLICATIVE amount layer, and 'shared'…"
   },
   "R164": {
    "adopted": "2026-08-25",
-   "commit": "68c19bc"
+   "commit": "68c19bc",
+   "title": "a COPY of a spell is…"
   },
   "R165": {
    "adopted": "2026-08-25",
-   "commit": "40550eb"
+   "commit": "40550eb",
+   "title": "\"I spawn with N counters\" is…"
   },
   "R166": {
    "adopted": "2026-08-25",
-   "commit": "0ec2c98"
+   "commit": "0ec2c98",
+   "title": "four cards answered a layer, an…"
   },
   "R167": {
    "adopted": "2026-08-25",
-   "commit": "45342e9"
+   "commit": "45342e9",
+   "title": "a printed \"when I despawn\" means…"
   },
   "R168": {
    "adopted": "2026-08-25",
-   "commit": "96c9d5c"
+   "commit": "96c9d5c",
+   "title": "the STATIC half of 75 gets…"
   },
   "R169": {
    "adopted": "2026-08-25",
-   "commit": "3e47fc0"
+   "commit": "3e47fc0",
+   "title": "A replay that misreports is a…"
   },
   "R170": {
    "adopted": "2026-08-25",
-   "commit": "91ab1c9"
+   "commit": "91ab1c9",
+   "title": "the hotseat screen learns whose question…"
   },
   "R171": {
    "adopted": "2026-08-25",
-   "commit": "b0efd67"
+   "commit": "b0efd67",
+   "title": "a gated promise needs evidence from…"
   },
   "R172": {
    "adopted": "2026-08-25",
-   "commit": "15a589b"
+   "commit": "15a589b",
+   "title": "an ERASE is a despawn; the…"
   },
   "R173": {
    "adopted": "2026-08-25",
-   "commit": "4e9dea2"
+   "commit": "4e9dea2",
+   "title": "a guard that cannot reach the…"
   },
   "R174": {
    "adopted": "2026-08-25",
-   "commit": "762adcc"
+   "commit": "762adcc",
+   "title": "a park note is a claim…"
   },
   "R178": {
    "adopted": "2026-08-25",
-   "commit": "cb2b073"
+   "commit": "cb2b073",
+   "title": "a condition belongs at the event…"
   },
   "R179": {
    "adopted": "2026-08-25",
-   "commit": "84aef3d"
+   "commit": "84aef3d",
+   "title": "one hand-entry point, one event per…"
   },
   "R180": {
    "adopted": "2026-08-25",
-   "commit": "fa662c4"
+   "commit": "fa662c4",
+   "title": "the Augment box and the trigger…"
   },
   "R181": {
    "adopted": "2026-08-25",
-   "commit": "8509c55"
+   "commit": "8509c55",
+   "title": "a check that never ran is…"
   },
   "R182": {
    "adopted": "2026-08-25",
-   "commit": "519bb63"
+   "commit": "519bb63",
+   "title": "a conformance drive must not depend…"
   },
   "R183": {
    "adopted": "2026-08-25",
-   "commit": "76840c2"
+   "commit": "76840c2",
+   "title": "the hand's ring said \"something\", not…"
   },
   "R184": {
    "adopted": "2026-08-25",
-   "commit": "bd15577"
+   "commit": "bd15577",
+   "title": "{Reaping} is a kill rider, and…"
   },
   "R185": {
    "adopted": "2026-08-25",
-   "commit": "612d858"
+   "commit": "612d858",
+   "title": "a blocked column stays blocked, however…"
   },
   "R187": {
    "adopted": "2026-08-26",
-   "commit": "00a9599"
+   "commit": "00a9599",
+   "title": "\"each opponent\" in a region that…"
   },
   "R188": {
    "adopted": "2026-08-26",
-   "commit": "084bd8a"
+   "commit": "084bd8a",
+   "title": "OPEN QUESTION — a Glimpse reveal…"
   },
   "R189": {
    "adopted": "2026-08-26",
-   "commit": "73b20ba"
+   "commit": "73b20ba",
+   "title": "a batch that is simultaneous in…"
   },
   "R190": {
    "adopted": "2026-08-26",
-   "commit": "177819f"
+   "commit": "177819f",
+   "title": "Reminder text: the printed card, the…"
   },
   "R191": {
    "adopted": "2026-08-26",
-   "commit": "27336b8"
+   "commit": "27336b8",
+   "title": "the item the event NAMES, and…"
   },
   "R192": {
    "adopted": "2026-08-26",
-   "commit": "2c37986"
+   "commit": "2c37986",
+   "title": "a cache thumb's first click, and…"
   },
   "R193": {
    "adopted": "2026-08-26",
-   "commit": "c4579f2"
+   "commit": "c4579f2",
+   "title": "an exemption list that nothing checks…"
   },
   "R194": {
    "adopted": "2026-08-26",
-   "commit": "0c06f79"
+   "commit": "0c06f79",
+   "title": "a warning is not worth a…"
   },
   "R195": {
    "adopted": "2026-08-26",
-   "commit": "150892a"
+   "commit": "150892a",
+   "title": "a combat life loss says WHICH…"
   },
   "R196": {
    "adopted": "2026-08-26",
-   "commit": "4da5852"
+   "commit": "4da5852",
+   "title": "an activation cost is a COST…"
   },
   "R197": {
    "adopted": "2026-08-26",
-   "commit": "5a2eee9"
+   "commit": "5a2eee9",
+   "title": "an option list is not \"any…"
   },
   "R197b": {
    "adopted": "2026-08-26",
-   "commit": "faeadec"
+   "commit": "faeadec",
+   "title": "\"look at\" is a PRIVATE look…"
   },
   "R198": {
    "adopted": "2026-08-26",
-   "commit": "8d8d928"
+   "commit": "8d8d928",
+   "title": "a card played mid-resolution is PLAYED…"
   },
   "R199": {
    "adopted": "2026-08-26",
-   "commit": "aa15414"
+   "commit": "aa15414",
+   "title": "The card was already in the…"
   },
   "R200": {
    "adopted": "2026-08-26",
-   "commit": "326bb28"
+   "commit": "326bb28",
+   "title": "a saved game names the engine…"
   },
   "R201": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "${ … } inside a template…"
   },
   "R202": {
    "adopted": "2026-08-26",
-   "commit": "61d97f6"
+   "commit": "61d97f6",
+   "title": "the event channel leaked what the…"
   },
   "R203": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "a secrecy assertion must be able…"
   },
   "R204": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "A test may not hold a…"
   },
   "R205": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "a checker that cannot see a…"
   },
   "R206": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "the glossary is a rules document…"
   },
   "R207": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "the WIDE play event learns which…"
   },
   "R208": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "E.eraseMod: one door for taking a…"
   },
   "R209": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "a clause that delivers nothing must…"
   },
   "R210": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "CT-83 — an exemption list is…"
   },
   "R211": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "an evidence window that never closed…"
   },
   "R212": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "\"for each\" binds to the clause…"
   },
   "R213": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "four paths end a battle, and…"
   },
   "R214": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "the card pool is 495, and…"
   },
   "R215": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "a ruling number cited in the…"
   },
   "R216": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "a scenario is a DEAL, not…"
   },
   "R217": {
    "adopted": "2026-08-26",
-   "commit": "489dc49"
+   "commit": "489dc49",
+   "title": "two readings of the same text…"
   },
   "R218": {
    "adopted": "2026-08-26",
-   "commit": "ca91df7"
+   "commit": "ca91df7",
+   "title": "twenty-four scenarios, four authors, one keyspace…"
   },
   "R219": {
    "adopted": "2026-08-26",
-   "commit": "7864bb8"
+   "commit": "7864bb8",
+   "title": "an erased card goes to the…"
   },
   "R220": {
    "adopted": "2026-08-27",
-   "commit": "71b532d"
+   "commit": "71b532d",
+   "title": "rank scenarios by how RARE the…"
   },
   "R221": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "Torrential Reclamation: the \"for each\" distributes…"
   },
   "R222": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "a reveal inside a hidden simultaneous…"
   },
   "R223": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "a spell that resolves with no…"
   },
   "R224": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the haste step is ALWAYS offered…"
   },
   "R225": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "\"in my formation\" is a REFERENT…"
   },
   "R226": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "{Tough} + {Inverted}: the owner's own…"
   },
   "R227": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "\"fizzle, and say so\" is a…"
   },
   "R228": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the haste step opens unconditionally, and…"
   },
   "R229": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "a copy is DRAWN as the…"
   },
   "R230": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the hover tooltip cancelled itself: a…"
   },
   "R231": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the absorb rule lives in one…"
   },
   "R232": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the drill refuses a second activation…"
   },
   "R233": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "a warning box is not a…"
   },
   "R234": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the register is checked in BOTH…"
   },
   "R235": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "A reveal inside a hidden simultaneous…"
   },
   "R236": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "the haste step readies itself, and…"
   },
   "R237": {
    "adopted": "2026-08-28",
    "commit": "7540e40",
+   "title": "{Deadly} reaches every damage site, and…",
    "from": "questions-round27 Q2"
   },
   "R238": {
    "adopted": "2026-08-28",
    "commit": "7540e40",
+   "title": "a REPLACED combat hit was still…",
    "from": "questions-round27 Q5"
   },
   "R239": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "Region scoping is absolute narrowed by"
   },
   "R240": {
    "adopted": "2026-08-28",
-   "commit": "7540e40"
+   "commit": "7540e40",
+   "title": "Interdiction Rift has no AI, and…"
   },
   "R241": {
    "adopted": "2026-08-29",
-   "commit": "9ccc2f0"
+   "commit": "9ccc2f0",
+   "title": "a card menu carries card things…"
   },
   "R242": {
    "adopted": "2026-08-29",
-   "commit": "19ef5d4"
+   "commit": "19ef5d4",
+   "title": "one tempo for the whole client…"
   },
   "R243": {
    "adopted": "2026-08-29",
-   "commit": "59977ac"
+   "commit": "59977ac",
+   "title": "regions scope \"all\", and they do…"
   },
   "R244": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "a mod is PART of the…"
   },
   "R245": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "THE CLIENT MAY NOT HOLD A…"
   },
   "R246": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "A FORECAST IS NOT A COMMITMENT…"
   },
   "R247": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "THAT A CHOICE IS PENDING IS…"
   },
   "R248": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "the reminder a player reads is…"
   },
   "R249": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "THE SPENT-BUDGET MARKER IS THE ONE…"
   },
   "R250": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "Cosmic Reversal reaches the board; every…"
   },
   "R251": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "A STANDING PASS IS A PROMISE…"
   },
   "R252": {
    "adopted": "2026-08-29",
-   "commit": "704253f"
+   "commit": "704253f",
+   "title": "the manual is the second reminder…"
   },
   "R253": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "moving a surface: what a panel…"
   },
   "R254": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "HOW MANY, AND OF WHAT SIZE…"
   },
   "R255": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "an arrow points at the middle…"
   },
   "R256": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "A RESTRICTIVE CLAUSE ON THE TARGET…"
   },
   "R257": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "a card explains what its TEXT…"
   },
   "R258": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "the affordances that must stay live…"
   },
   "R259": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "A BLANK ANSWER LINE IS NOT…"
   },
   "R260": {
    "adopted": "2026-08-29",
-   "commit": "2a715bf"
+   "commit": "2a715bf",
+   "title": "partial IS NOT live, AND FOLDING…"
   },
   "R261": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "Combat-damage triggers resolve AFTER combat, on…"
   },
   "R262": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "zones follow control, in all four…"
   },
   "R263": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "A CARD PLAYED MID-RESOLUTION STILL CAME…"
   },
   "R264": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "multipliers are exponential round-32 Q4"
   },
   "R265": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "An ally includes itself, \"another\" is…"
   },
   "R266": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "nothing may exist only in the…"
   },
   "R267": {
    "adopted": "2026-08-30",
-   "commit": "d6f63b4"
+   "commit": "d6f63b4",
+   "title": "the repository could only see the…"
   },
   "R268": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "an augment radiates its Augment box…"
   },
   "R269": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "suppression is exactly as wide as…"
   },
   "R270": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "A sent counterattacker is not death-checked"
   },
   "R271": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "a fizzle is not a resolution…"
   },
   "R272": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "A repaint may not throw away…"
   },
   "R273": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "A live view of a declaration…"
   },
   "R274": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "A refusal the player earns before…"
   },
   "R275": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "a recovery command names its paths…"
   },
   "R276": {
    "adopted": "2026-08-30",
-   "commit": "e8aed52"
+   "commit": "e8aed52",
+   "title": "the shared cost-toast tier: what CT-142…"
   },
   "R277": {
    "adopted": "2026-08-30",
-   "commit": "062d68f"
+   "commit": "062d68f",
+   "title": "the Haste on a prophecy banner…"
   },
   "R278": {
    "adopted": "2026-08-30",
-   "commit": "062d68f"
+   "commit": "062d68f",
+   "title": "a body that dies in a…"
   },
   "R279": {
    "adopted": "2026-08-30",
-   "commit": "062d68f"
+   "commit": "062d68f",
+   "title": "What a card says about itself…"
   },
   "R280": {
    "adopted": "2026-08-30",
-   "commit": "062d68f"
+   "commit": "062d68f",
+   "title": "a repeated question gets a dial…"
   },
   "R281": {
    "adopted": "2026-08-30",
-   "commit": "8c935b3"
+   "commit": "8c935b3",
+   "title": "a document validated against the code…"
   },
   "R282": {
    "adopted": "2026-08-30",
-   "commit": "8c935b3"
+   "commit": "8c935b3",
+   "title": "A type-line attribute is rules text…"
   },
   "R283": {
    "adopted": "2026-08-30",
-   "commit": "5e78833"
+   "commit": "5e78833",
+   "title": "{Reaping} draws one card for the…"
   },
   "R284": {
    "adopted": "2026-09-01",
-   "commit": "4bec81f"
+   "commit": "4bec81f",
+   "title": "a printed square bracket belongs to…"
   },
   "R285": {
    "adopted": "2026-09-01",
-   "commit": "e224b3f"
+   "commit": "e224b3f",
+   "title": "a verdict is a report, and…"
   },
   "R286": {
    "adopted": "2026-09-01",
-   "commit": "d9addd8"
+   "commit": "d9addd8",
+   "title": "deployment DOES use the stack, and…"
   },
   "R287": {
    "adopted": "2026-09-01",
    "commit": "b1f2158",
+   "title": "full control is a KEY YOU…",
    "from": "questions-round36 Q5"
   },
   "R288": {
    "adopted": "2026-09-01",
-   "commit": "b1f2158"
+   "commit": "b1f2158",
+   "title": "warn on a misclicked ally, never…"
   },
   "R289": {
    "adopted": "2026-09-05",
-   "commit": "279cc03"
+   "commit": "279cc03",
+   "title": "{Pure} outside combat: the same switch…"
   },
   "R290": {
    "adopted": "2026-09-05",
-   "commit": "6d6d412"
+   "commit": "6d6d412",
+   "title": "a conceded game weighs by the…"
   },
   "R291": {
    "adopted": "2026-09-05",
-   "commit": "f62c4af"
+   "commit": "f62c4af",
+   "title": "A cached card is a target…"
   },
   "R292": {
    "adopted": "2026-09-14",
-   "commit": "54c4fbc"
+   "commit": "54c4fbc",
+   "title": "Custom rules on a live draft…"
   },
   "R293": {
    "adopted": "2026-09-16",
-   "commit": "9fa938c"
+   "commit": "9fa938c",
+   "title": "Formless removes attributes from the COLUMN…"
   },
   "R294": {
    "adopted": "2026-09-16",
-   "commit": "9fa938c"
+   "commit": "9fa938c",
+   "title": "A unit in a column HAS…"
   },
   "R295": {
    "adopted": "2026-09-16",
-   "commit": "9fa938c"
+   "commit": "9fa938c",
+   "title": "A split damage step is several…"
   },
   "R296": {
    "adopted": "2026-09-16",
-   "commit": "9fa938c"
+   "commit": "9fa938c",
+   "title": "Recycling puts a card past the…"
   },
   "R297": {
    "adopted": "2026-09-18",
-   "commit": "ca3488f"
+   "commit": "ca3488f",
+   "title": "Learn to Play: the lesson deal…"
   },
   "R298": {
    "adopted": "2026-09-18",
-   "commit": "2518068"
+   "commit": "2518068",
+   "title": "Single Card Duel: thirty copies of…"
   },
   "R299": {
    "adopted": "2026-09-19",
-   "commit": "5ed68cd"
+   "commit": "5ed68cd",
+   "title": "Recycling can make a Prismite"
   },
   "R300": {
    "adopted": "2026-09-20",
-   "commit": "8dd31f0"
+   "commit": "8dd31f0",
+   "title": "Bin and cache text is not…"
   },
   "R301": {
    "adopted": "2026-09-20",
-   "commit": "006a909"
+   "commit": "006a909",
+   "title": "The prophecy banner costs affinity, and…"
   },
   "R302": {
    "adopted": "2026-09-20",
-   "commit": "006a909"
+   "commit": "006a909",
+   "title": "\"13 Units Die\" counts the deaths…"
   },
   "R303": {
    "adopted": "2026-09-20",
-   "commit": "334627c"
+   "commit": "334627c",
+   "title": "The cache's mod verbs are gated…"
   },
   "R304": {
    "adopted": "2026-09-25",
-   "commit": "b523384"
+   "commit": "b523384",
+   "title": "The empty column past each end…"
   },
   "R305": {
    "adopted": "2026-09-28",
-   "commit": "fc52a09"
+   "commit": "fc52a09",
+   "title": "Spell tokens ARE played: a token…"
   },
   "R306": {
    "adopted": "2026-09-28",
-   "commit": "fc52a09"
+   "commit": "fc52a09",
+   "title": "Tokens are NOT trashed: the owner…"
   },
   "R307": {
    "adopted": "2026-09-30",
-   "commit": "6b2126e"
+   "commit": "6b2126e",
+   "title": "A retarget fills each slot legally…"
   },
   "R308": {
    "adopted": "2026-10-01",
-   "commit": "66f5fb3"
+   "commit": "66f5fb3",
+   "title": "A glimpsed card may be prophesied…"
   },
   "R309": {
    "adopted": "2026-10-01",
-   "commit": "efb7454"
+   "commit": "efb7454",
+   "title": "The caster orders a Burst, one…"
   },
   "R310": {
    "adopted": "2026-10-04",
-   "commit": "d5e36b6"
+   "commit": "d5e36b6",
+   "title": "A glimpse inside a hidden step…"
   },
   "R311": {
    "adopted": "2026-10-04",
-   "commit": "d5e36b6"
+   "commit": "d5e36b6",
+   "title": "The cache plays like the hand…"
   },
   "R312": {
    "adopted": "2026-10-04",
-   "commit": "d5e36b6"
+   "commit": "d5e36b6",
+   "title": "Seeing hidden cards ends your undo"
   },
   "R313": {
    "adopted": "2026-10-06",
-   "commit": "7ff0c07"
+   "commit": "7ff0c07",
+   "title": "No action ends with a dead…"
   },
   "R314": {
    "adopted": "2026-10-09",
-   "commit": "fb37ad3"
+   "commit": "fb37ad3",
+   "title": "\"I must be targeted if able\"…"
   },
   "R315": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "{Resonant} is its source's trigger: damage…"
   },
   "R316": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Additive damage modifiers apply before {Powerful}…"
   },
   "R317": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "{Electric}'s jump is optional, and excess…"
   },
   "R318": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Squish, Fight and Battle: the unit…"
   },
   "R319": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "{Piercing} is elective in combat reverses…"
   },
   "R320": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A column remembers the damage sub-step…"
   },
   "R321": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Side-blocks: a defender may block where…"
   },
   "R322": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A blocker put in after blocks…"
   },
   "R323": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A card is castable only if…"
   },
   "R324": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Every target is re-checked against its…"
   },
   "R325": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "An effect whose source has left…"
   },
   "R326": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Stasis Sentry raises an X spell's…"
   },
   "R328": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Stripping is a layer applied in…"
   },
   "R329": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Suppression Field strips the attributes of…"
   },
   "R331": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A moved mod keeps its spent…"
   },
   "R332": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Reconfigure applies every moved mod to…"
   },
   "R333": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A spell token already cast is…"
   },
   "R334": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A grafted cost is mandatory, and…"
   },
   "R335": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A recalled spell token passes through…"
   },
   "R336": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A copy is read by its…"
   },
   "R337": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "Tides of the Cosmos plays a…"
   },
   "R338": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A card played mid-resolution pays its…"
   },
   "R339": {
    "adopted": "2026-10-09",
-   "commit": "a44718a"
+   "commit": "a44718a",
+   "title": "A card whose X can't be…"
   },
   "R340": {
    "adopted": "2026-10-10",
-   "commit": "ea14583"
+   "commit": "ea14583",
+   "title": "{Piercing} is elective outside combat too…"
   },
   "R341": {
    "adopted": "2026-10-10",
-   "commit": "ea14583"
+   "commit": "ea14583",
+   "title": "A copy's copied augments work: it…"
   },
   "R342": {
    "adopted": "2026-10-10",
-   "commit": "9aaa751"
+   "commit": "9aaa751",
+   "title": "A spell token is cast from…"
   },
   "R343": {
    "adopted": "2026-10-10",
-   "commit": "7f2a744"
+   "commit": "7f2a744",
+   "title": "The comprehensive rules export: what it…"
   },
   "R344": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "The stack, the bins and the…"
   },
   "R345": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "An attribute is a quality of…"
   },
   "R346": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "A token is not a card…"
   },
   "R347": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "\"Whenever you play a unit\" does…"
   },
   "R348": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "A deleted unit dies: deletion is…"
   },
   "R349": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "Abilities that trigger during \"Rockfall N…"
   },
   "R350": {
    "adopted": "2026-10-11",
-   "commit": "0cf67ee"
+   "commit": "0cf67ee",
+   "title": "The fully global turn is a…"
   }
  }
 }

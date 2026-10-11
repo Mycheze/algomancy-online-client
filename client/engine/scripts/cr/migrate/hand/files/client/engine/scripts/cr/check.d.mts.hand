@@ -13,9 +13,11 @@ export function indexExtract(ex: Extract): any;
 export function glossaryTags(ex: Extract, ledger?: { entries: { num: string; key: string; kind?: string; removed?: string }[] } | null): Map<string, string>;
 export function testFilesFor(X: any, file: string): any[];
 export function titleMatches(X: any, binding: string): { files: number; n: number };
-export function check(inputs: CrInputs, ex: Extract, opts?: { repoRoot?: string }): {
+export function check(inputs: CrInputs, ex: Extract, opts?: { repoRoot?: string; registers?: Record<string, string> }): {
   problems: CheckProblem[];
   stale: { kind: string; where: string; msg: string }[];
+  /** what could not be checked here (an archived register this clone lacks) */
+  notices: string[];
 };
 /** which drafting unit a problem / stale row belongs to (`U12`); null = global */
 export function unitIndex(inputs: CrInputs): (p: { where: string }) => string | null;

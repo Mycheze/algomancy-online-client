@@ -26,6 +26,7 @@
  *   node client/engine/scripts/cr/check.mjs --unit U12     (one unit's files only)
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, basename, isAbsolute } from 'node:path';
 import { parseArgs } from 'node:util';
 import { REPO_ROOT } from '../paths.mjs';
@@ -160,6 +161,20 @@ export function check(inputs, ex, opts = {}) {
   const P = (code, where, msg) => problems.push({ code, where, msg });
   const S = (kind, where, msg) => stale.push({ kind, where, msg });
   const fileCache = new Map();
+  /* an owner call absorbed from the retired register (`from: "register@<sha>"`) is checked, verbatim,
+   * against the register at that commit — read from git, since the file is gone. `opts.registers`
+   * ({sha: text}) stands in for git (the fixtures); a commit git cannot show is a notice, not a pass */
+  const notices = [];
+  const regCache = new Map();
+  const registerText = (sha) => {
+    if (regCache.has(sha)) return regCache.get(sha);
+    let raw = null;
+    if (opts.registers) raw = opts.registers[sha] ?? null;
+    else { try { raw = execFileSync('git', ['show', `${sha}:client/docs/digital-rules.md`], { cwd: repo, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] }); } catch { raw = null; } }
+    if (raw === null) notices.push(`register@${sha} is not in this clone (git fetch origin refs/archive/r-register-final:refs/archive/r-register-final): its absorbed owner quotes were not checked`);
+    regCache.set(sha, raw === null ? null : norm(raw));
+    return regCache.get(sha);
+  };
   const repoFile = (rel) => {
     if (!fileCache.has(rel)) {
       const abs = join(repo, rel);
@@ -273,6 +288,12 @@ export function check(inputs, ex, opts = {}) {
     for (const [i, x] of arr('printed').entries()) quoteIn(`${w} printed[${i}]`, x.ref, x.quote);
     for (const [i, x] of arr('designer').entries()) quoteIn(`${w} designer[${i}]`, x.ref, x.quote);
     for (const [i, x] of arr('ours').entries()) quoteIn(`${w} ours[${i}]`, x.ref, x.quote);
+    for (const [i, x] of arr('owner').entries()) {
+      const m = /\bregister@([0-9a-f]{7,40})\b/.exec(String(x?.from ?? ''));
+      if (!m) continue;
+      const t = registerText(m[1]);
+      if (t !== null && !t.includes(norm(x.quote ?? ''))) P('owner-quote-not-in-register', `${w} owner[${i}]`, `not verbatim in the retired register at ${m[1]}: "${String(x.quote).slice(0, 90)}"`);
+    }
     for (const e of arr('engine')) {
       for (const tok of String(e).split(/\s*[/,]\s*/).filter(Boolean)) {
         let sym = tok;
@@ -420,7 +441,7 @@ export function check(inputs, ex, opts = {}) {
     }
   }
 
-  return { problems, stale };
+  return { problems, stale, notices: [...new Set(notices)] };
 }
 
 /**
@@ -464,6 +485,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   for (const p of problems) console.log(`PROBLEM ${p.code}  ${p.where}: ${p.msg}`);
   for (const s of stale) console.log(`stale   ${s.kind}  ${s.where}: ${s.msg}`);
+  for (const n of r.notices ?? []) console.log(`notice  ${n}`);
   if (values.unit) {
     console.log(`${values.unit}: ${problems.length} problem(s); ${stale.length} stale; ${notes.length} record(s) not numbered yet (numbered at wave end by cr:render — not a problem); ${elsewhere} problem(s) outside this unit, not listed`);
   } else console.log(`${problems.length} problem(s); ${stale.length} stale`);

@@ -8,11 +8,11 @@
  * Three separate things were true when that was written, and only the middle
  * one was in the brief:
  *
- *   · ui/cardpanel.ts printed the `ruling` FIELD — "its ruling numbers, R103, R114, printed"
+ *   · ui/cardpanel.ts printed the `ruling` FIELD — "R13, R103, R114, printed"
  *     — under every pinned card in the browser.
  *   · the rows really are edited, {Piercing} deliberately so (CR 802.16, 802.16j, 802.16f
  *     generalise the attribute off the combat column onto all damage).
- *   · AND the {Haste} row carried ruling numbers in its own prose
+ *   · AND the {Haste} row carried "(R224)" and "(R236)" IN ITS OWN PROSE.
  *     That is the one the report actually names, because {Haste} is a
  *     MECHANICS row: ui/main.ts renders it under units through `glossaryHits`,
  *     and no field-level fix reaches a number a human typed into a sentence.
@@ -39,7 +39,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
-import '../../engine/src/index.ts';   // the rule in 150-registration-order: the WHOLE pool — registry.ts alone is 494 of 495
+import '../../engine/src/index.ts';   // the WHOLE pool (see 150-registration-order) — registry.ts alone is 494 of 495
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
   type GlossEntry,
@@ -159,7 +159,7 @@ test('CR D6.11: no module that imports the glossary touches its citation field',
     + 'broken, not the client');
   const bad = consumers.filter(f => RENDERS_CITATIONS.test(f.src)).map(f => f.file);
   assert.deepEqual(bad, [],
-    'ui/cardpanel.ts printed `g.ruling.join(", ")` under every pinned card — "its ruling numbers, R103, the ruling list, '
+    'ui/cardpanel.ts printed `g.ruling.join(", ")` under every pinned card — "R13, R103, R114, '
     + 'printed" — which is report #118. The field is how 177 proves a citation still resolves; '
     + 'it is not copy, and nothing that draws a screen may read it.');
   assert.ok(consumers.some(f => f.file === 'main.ts'), 'main.ts must be in scope — it draws the ? overlay');

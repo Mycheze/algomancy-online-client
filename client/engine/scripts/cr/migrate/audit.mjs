@@ -25,11 +25,11 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CR_BUILD_DIR, REPO_ROOT, DIGITAL_RULES } from '../../paths.mjs';
-import { parseRulings } from '../extract.mjs';
+import { CR_BUILD_DIR, REPO_ROOT } from '../../paths.mjs';
+import { parseRulings, parseRulingCite, readReviewed, REGISTER_REL } from './register.mjs';
 import { loadInputs } from '../render.mjs';
 import { indexLedger, compareNums } from '../ledger.mjs';
-import { parseRulingCite, norm } from '../schema.mjs';
+import { norm } from '../schema.mjs';
 import { RMAP_JSON } from './rmap.mjs';
 import { CENSUS_JSON } from './census.mjs';
 
@@ -40,7 +40,7 @@ const OLD_REGISTER = 'digital-client/docs/digital-rules.md';
 
 /** ruling id → {date, commit} of the first commit adding its heading line */
 export function headingDates() {
-  const rel = DIGITAL_RULES.slice(REPO_ROOT.length + 1);
+  const rel = REGISTER_REL;
   const log = execFileSync('git', ['log', '--reverse', '-p', '--format=@@C %as %h', '--', OLD_REGISTER, rel],
     { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 1 << 30 });
   const first = {};
@@ -60,7 +60,7 @@ export function runAudit() {
   const R = rmap.rulings;
   const inputs = loadInputs();
   const I = indexLedger(inputs.ledger);
-  const C = inputs.classification;
+  const C = inputs.classification ?? readReviewed('classification');
   const rulings = Object.fromEntries(parseRulings().map((r) => [r.id, r]));
 
   // client citations per ruling (excluding the register and the CR data)

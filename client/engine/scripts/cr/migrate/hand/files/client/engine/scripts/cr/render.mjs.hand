@@ -253,8 +253,22 @@ function viewOf(M, e) {
 export function ownerDates(rec) {
   return [...new Set((rec.sources?.owner ?? []).map((o) => o.adopted).filter(Boolean))].sort();
 }
-/** "Owner call · adopted 2026-08-18" (several dates: "adopted 2026-08-18, 2026-08-24") */
-const ownerMeta = (rec) => { const ds = ownerDates(rec); return ds.length ? `Owner call · adopted ${ds.join(', ')}` : null; };
+/** an owner entry absorbed from the retired ruling register (`from` names `register@<sha>`): its quote
+ *  is the register's write-up of his decision, not necessarily his own words, and says so */
+export const fromRegister = (o) => /register@[0-9a-f]{7,40}/.test(String(o?.from ?? ''));
+const REGISTER_LABEL = 'quoted from the retired ruling register';
+/** "Owner call · adopted 2026-09-02", or for absorbed calls "Owner ruling, adopted 2026-08-18 (quoted from the
+ *  retired ruling register)"; several dates are listed */
+const ownerMeta = (rec) => {
+  const os = rec.sources?.owner ?? [];
+  const ds = ownerDates(rec);
+  if (!ds.length) return null;
+  const reg = os.filter(fromRegister).map((o) => o.adopted), own = os.filter((o) => !fromRegister(o)).map((o) => o.adopted);
+  const part = [];
+  if (own.length) part.push(`Owner call · adopted ${[...new Set(own)].sort().join(', ')}`);
+  if (reg.length) part.push(`Owner ruling, adopted ${[...new Set(reg)].sort().join(', ')} (${REGISTER_LABEL})`);
+  return part.join('; ');
+};
 /** a main-document rule whose scope is the digital client (an Annex D rule is digital by its place) */
 export const isDigitalTagged = (rec) => rec.scope === 'digital' && !/^annexd(\.|$)/.test(String(rec.key ?? ''));
 const DIGITAL_TAG = 'Digital client';
@@ -271,7 +285,7 @@ function scopedText(rec, text, mark) {
 
 const BASIS_LABEL = { printed: 'Printed', designer: 'Designer', mixed: 'Mixed', owner: 'Owner call', engine: 'Engine only' };
 const VERDICT_LABEL = { confirmed: 'Confirmed', partial: 'Partial', contradicted: 'Contradicted', unsupported: 'Unsupported', untested: 'Untested' };
-const KIND_LABEL = { a: 'Sources disagree', b: 'Engine only', c: 'Owner call only', d: 'RAQ open', f: 'Register chain wrong', g: 'Other' };
+const KIND_LABEL = { a: 'Sources disagree', b: 'Engine only', c: 'Owner call only', d: 'RAQ open', f: 'Ruling chain wrong', g: 'Other' };
 
 function seeNums(M, rec) {
   return (rec.see ?? []).map((s) => M.numOfRef(s) ?? `${s}(?)`);
@@ -736,7 +750,12 @@ function htmlSources(M, rec) {
   for (const [k, label] of [['printed', 'Printed'], ['designer', 'Designer'], ['ours', 'Our glossary (not a source)']]) {
     for (const x of s[k] ?? []) rows.push(`<li><span class="sk">${label}</span> ${E(x.ref)}: <q>${E(x.quote)}</q></li>`);
   }
-  for (const x of s.owner ?? []) rows.push(`<li><span class="sk">Owner call</span> adopted ${E(x.adopted)}${x.from ? ` (${E(x.from)})` : ''}: <q>${E(x.quote)}</q></li>`);
+  for (const x of s.owner ?? []) {
+    const sheet = String(x.from ?? '').split(';').map((t) => t.trim()).filter((t) => t && !/^register@/.test(t)).join('; ');
+    rows.push(fromRegister(x)
+      ? `<li><span class="sk">Owner ruling</span> adopted ${E(x.adopted)} — ${REGISTER_LABEL}${sheet ? ` (${E(sheet)})` : ''}: <q>${E(x.quote)}</q></li>`
+      : `<li><span class="sk">Owner call</span> adopted ${E(x.adopted)}${x.from ? ` (${E(x.from)})` : ''}: <q>${E(x.quote)}</q></li>`);
+  }
   if (s.engine?.length) rows.push(`<li><span class="sk">Engine</span> ${s.engine.map((e) => `<code>${E(e)}</code>`).join(', ')}</li>`);
   if (s.tests?.length) rows.push(`<li><span class="sk">Tests</span> ${s.tests.map((t) => `<code>${E(t)}</code>`).join(', ')}</li>`);
   const ex = exampleTests(rec);

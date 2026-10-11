@@ -36,7 +36,7 @@
  * score.mjs never emits them), the provenance rows absorb.mjs already worded,
  * a ruling's own quotes (`sources.owner[].quote`, the owner's words). */
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
-import { join, resolve, basename, relative } from 'node:path';
+import { join, resolve, basename, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { REPO_ROOT, CR_RULES_DIR, CR_FINDINGS_DIR, CR_DISCREPANCIES_DIR } from '../../paths.mjs';
@@ -450,7 +450,9 @@ export function mapRange(edits, a, b) {
 }
 
 /* ── the main pass ── */
-export function recite({ cites, decisions = loadDecisions(), dryRun = false, root = REPO_ROOT, skipFiles = [] } = {}) {
+export function recite({ cites, decisions = loadDecisions(), dryRun = false, root = REPO_ROOT, skipFiles = [], handFiles: handList = null } = {}) {
+  // every file the hand step edits (any op): the mention pass leaves them to it
+  const handFiles = new Set(handList ?? (() => { try { return Object.keys(JSON.parse(readFileSync(join(HERE, 'hand', 'manifest.json'), 'utf8')).files); } catch { return []; } })());
   // a file the hand step owns whole is written there, citations included: never rewritten here
   const skip = new Set(skipFiles);
   const rows = cites.rows.filter((r) => !skip.has(r.file));
@@ -508,6 +510,49 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     }
   }
 
+  /* 1b. QUOTES ARE FROZEN (audit 2026-10-11): a citation inside a quotation — a ledger's `evidence:`
+   *     string, a "double-quoted" or “curly-quoted” span in a comment, a string or a doc, a question
+   *     sheet (the owner's own Q&A) — is left verbatim: rewriting it would make the quote say what its
+   *     source never said. Only a polish-* decision (the line-level review) may still touch one. */
+  const frozenSpans = new Map(); // rel → [[a, b]]
+  report.frozenQuotes = 0;
+  const addFrozen = (rel, a, b) => (frozenSpans.get(rel) ?? frozenSpans.set(rel, []).get(rel)).push([a, b]);
+  const filesWithRows = [...new Set(rows.filter((r) => r.line).map((r) => r.file))];
+  for (const rel of filesWithRows) {
+    if (!existsSync(join(root, rel))) continue;
+    const m = model(rel);
+    if (/^client\/docs\/questions-round\d+\.md$/.test(rel)) { addFrozen(rel, 0, m.text.length); continue; }
+    if (/^client\/ledgers\/.*\.ts$/.test(rel)) {
+      let toks = null; try { toks = tokenize(m.text); } catch { toks = null; }
+      for (let k = 0; toks && k < toks.length; k++) {
+        if (toks[k].t === 'id' && toks[k].v === 'evidence' && toks[k + 1]?.v === ':' && toks[k - 1]?.v !== '.') {
+          let j = k + 2;
+          while (toks[j] && (toks[j].t === 'str' || toks[j].t === 'tmpl')) { addFrozen(rel, toks[j].s, toks[j].e); j += toks[j + 1]?.v === '+' ? 2 : 1; }
+        }
+      }
+    }
+    // quoted spans, line by line; a JS string's own delimiters are not quotation marks
+    const delim = new Set(m.strs.flatMap((x) => [x.s, x.e - 1]));
+    for (let li = 0; li < m.lines.length; li++) {
+      const L = m.lines[li];
+      if (!/\bR\d/.test(L)) continue;
+      const off = m.offs[li];
+      const straight = [];
+      for (let c = 0; c < L.length; c++) {
+        if (L[c] === '"' && !delim.has(off + c) && !rel.endsWith('.json')) straight.push(c);
+        else if (L[c] === '“') { const e = L.indexOf('”', c + 1); if (e > c) { addFrozen(rel, off + c, off + e + 1); c = e; } }
+      }
+      for (let q = 0; q + 1 < straight.length; q += 2) addFrozen(rel, off + straight[q], off + straight[q + 1] + 1);
+    }
+  }
+  const polishDecided = (id) => /^polish/.test(String(decisions.get(id)?.unit ?? ''));
+  const inFrozen = (rel, o) => (frozenSpans.get(rel) ?? []).some(([a, b]) => a <= o && o < b);
+  for (const r of rows) {
+    if (!r.line || consumed.has(r.id) || polishDecided(r.id) || !existsSync(join(root, r.file))) continue;
+    const m = model(r.file);
+    if (inFrozen(r.file, m.offs[r.line - 1] + r.col)) { consumed.add(r.id); report.frozenQuotes++; }
+  }
+
   /* 2. text files: rows → groups → edits */
   const byLine = new Map();
   for (const r of rows) {
@@ -542,13 +587,16 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       G.push({ rel, m, idx, ln: Number(ln), line, g, acts, exact: acts.find((x) => x.act.kind === 'exact') ?? null, reword: acts.find((x) => x.act.kind === 'reword' && x.act.suggest) ?? null });
     }
   }
-  const overlaps = (rel, A, B) => (editsOf.get(rel) ?? []).some((e) => A < e.b && e.a < B);
+  // an edit may not cross another edit, nor reach into a frozen quotation
+  const overlaps = (rel, A, B, polish = false) => (editsOf.get(rel) ?? []).some((e) => A < e.b && e.a < B)
+    || (!polish && (frozenSpans.get(rel) ?? []).some(([a, b]) => A < b && a < B));
   // phase A: rewords (they can span lines and cover other citations), then phase B: the rest
   for (const phase of ['exact', 'reword', 'rest']) {
     for (const it of G) {
       const ph = it.exact ? 'exact' : it.reword ? 'reword' : 'rest';
       if (ph !== phase) continue;
       const { rel, m, idx, ln, line, g, acts } = it;
+      const pol = acts.some((x) => polishDecided(x.row.id));
       if (acts.some((x) => consumed.has(x.row.id))) continue;
       if (it.exact) {
         // an exact find/replace from a fix-up decision: `find` must hold the citation, once, within ±12 lines
@@ -558,7 +606,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         while ((k = win.indexOf(it.exact.act.find, k + 1)) >= 0) hits.push(lo + k);
         const h = hits.filter((x) => x <= at && at < x + it.exact.act.find.length);
         const lit = strAt(m, at);
-        if (h.length !== 1 || overlaps(rel, h[0], h[0] + it.exact.act.find.length)) { report.rewordUnapplied.push({ id: it.exact.row.id, file: rel, line: ln, suggest: it.exact.act.replace, text: normLine(line).slice(0, 200), why: `exact find ${h.length ? 'overlaps' : 'not found around the citation'}` }); continue; }
+        if (h.length !== 1 || overlaps(rel, h[0], h[0] + it.exact.act.find.length, pol)) { report.rewordUnapplied.push({ id: it.exact.row.id, file: rel, line: ln, suggest: it.exact.act.replace, text: normLine(line).slice(0, 200), why: `exact find ${h.length ? 'overlaps' : 'not found around the citation'}` }); continue; }
         addEdit(rel, { a: h[0], b: h[0] + it.exact.act.find.length, text: it.exact.act.replace, why: `exact ${it.exact.row.id}` });
         for (const r2 of rows) if (r2.file === rel && r2.line) { const o = m.offs[r2.line - 1] + r2.col; if (o >= h[0] && o < h[0] + it.exact.act.find.length) consumed.add(r2.id); }
         void lit;
@@ -582,7 +630,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         if (r) {
           const A = blk.map[r.a], B = r.b >= blk.map.length ? blk.map.at(-1) : (r.b === 0 ? blk.map[0] : blk.map[r.b - 1] + 1);
           const outside = lit && (A <= lit.s || B >= lit.e);
-          if (!outside && !overlaps(rel, A, B)) {
+          if (!outside && !overlaps(rel, A, B, pol)) {
             e = { a: A, b: B, text: lit ? esc(r.text, lit.q) : r.text, why: `reword ${rw.row.id}` };
             for (const r2 of rows) if (r2.file === rel && r2.line && r2.id !== rw.row.id && !acts.some((x) => x.row.id === r2.id)) {
               const o = m.offs[r2.line - 1] + r2.col;
@@ -605,7 +653,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         }
         if (!le) { for (const x of acts) report.dropUnapplied.push({ id: x.row.id, file: rel, line: ln, kind: x.act.kind, text: normLine(line).slice(0, 200) }); continue; }
         e = { a: abs + le.a, b: abs + le.b, text: lit ? esc(le.text, lit.q) : le.text, why: acts.map((x) => x.act.kind).join('+') };
-        if (overlaps(rel, e.a, e.b)) { for (const x of acts) report.dropUnapplied.push({ id: x.row.id, file: rel, line: ln, kind: `${x.act.kind} (overlaps another edit)`, text: normLine(line).slice(0, 200) }); continue; }
+        if (overlaps(rel, e.a, e.b, pol)) { for (const x of acts) report.dropUnapplied.push({ id: x.row.id, file: rel, line: ln, kind: `${x.act.kind} (overlaps another edit)`, text: normLine(line).slice(0, 200) }); continue; }
       }
       for (const x of acts) consumed.add(x.row.id);
       addEdit(rel, e);
@@ -724,7 +772,10 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     const t0 = after.get(rel) ?? readFileSync(join(root, rel), 'utf8');
     if (!/\.test\.ts::/.test(t0)) continue;
     let changed = false;
-    const t1 = t0.replace(BIND, (all, q, file, raw) => {
+    // a binding quoted inside frozen evidence is part of the quotation: it stays as it was
+    const fz = (frozenSpans.get(rel) ?? []).map(([a, b]) => mapRange(editsOf.get(rel) ?? [], a, b));
+    const t1 = t0.replace(BIND, (all, q, file, raw, at) => {
+      if (fz.some(([a, b]) => a <= at && at < b)) return all;
       const needle = unescapeJs(raw);
       if (!/\bR\d{1,3}b?\b/.test(needle) && !titleMap.has(file)) return all;
       const neu = recut(file, needle);
@@ -866,6 +917,64 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
 
   /* 9. self-check (orchestrator 2026-10-11): no rewrite may leave a doubled word, a CR number
    *    stated as reversed/superseded, or "CR x = CR x" on a line it changed */
+  /* 8a. the deleted file is named nowhere as if it were still there: a markdown link to it becomes a
+   *     link into the comprehensive rules (when its text cites a CR number) or plain words; a bare
+   *     mention becomes "the retired ruling register". Not in the ledgers (their evidence is quoted
+   *     history), the question sheets, files the hand step owns, or a quotation. */
+  const CR_DOC_REL = 'data/comprehensive-rules/Algomancy-Comprehensive-Rules.md';
+  report.registerMentions = 0;
+  const mentionFiles = listFiles(root, 'client').filter((f) => /\.(ts|mts|mjs|md)$/.test(f) && !f.includes('/node_modules/')
+    && !f.startsWith('client/ledgers/') && !f.startsWith('client/engine/scripts/cr/migrate/') && !skip.has(f) && !handFiles.has(f)
+    && f !== 'client/docs/digital-rules.md' && !/^client\/docs\/questions-round\d+\.md$/.test(f));
+  for (const rel of mentionFiles) {
+    const t0 = after.get(rel) ?? readFileSync(join(root, rel), 'utf8');
+    if (!t0.includes('digital-rules')) continue;
+    const crRel = relative(dirname(join(root, rel)), join(root, CR_DOC_REL)).split('\\').join('/');
+    const lines = t0.split('\n');
+    let ch = false;
+    for (let k = 0; k < lines.length; k++) {
+      let l = lines[k];
+      if (!l.includes('digital-rules')) continue;
+      const q = [...l.matchAll(/"[^"]*"|“[^”]*”/g)].map((x) => [x.index, x.index + x[0].length]);
+      const quoted = (i) => q.some(([a, b]) => a < i && i < b);
+      const n0 = l;
+      l = l.replace(/\[([^\]]*)\]\((?:\.\.\/)*(?:docs\/)?digital-rules\.md(?:#[^)]*)?\)/g, (all, text, i) => {
+        if (quoted(i)) return all;
+        const c = /\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)/.exec(text);
+        if (c) return `[${text}](${crRel}#r${c[1]})`;
+        if (/digital-rules/.test(text)) return 'the retired ruling register';
+        return `${text} (in the retired ruling register)`;
+      });
+      l = l.replace(/(\b(?:a|an|the|A|An|The)\s+)?`?(?:\.\.\/)?(?:client\/)?(?:docs\/)?digital-rules(?:\.md)?(?::\d+(?:-\d+)?)?`?/g, (all, art, i) => (quoted(i) ? all : `${art && /^[AT]/.test(art) ? 'The' : 'the'} retired ruling register`));
+      l = l.replace(/the the retired ruling register/g, 'the retired ruling register');
+      if (l !== n0) { lines[k] = l; ch = true; report.registerMentions++; }
+    }
+    if (ch) { after.set(rel, lines.join('\n')); if (!before.has(rel)) before.set(rel, t0); }
+  }
+
+  /* 8b. tidy, on the lines this pass changed: two retired numbers that now read as ONE rule collapse
+   *     ("CR 723.5a / CR 723.5a" → "CR 723.5a", "CR X (CR X)" → "CR X"). The same transform runs on
+   *     test titles and on the bindings that name them, so a binding still finds its title. */
+  const NUM = String.raw`(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?`;
+  const SAME_LIST = new RegExp(String.raw`\bCR (${NUM})(?:\s*(?:\/|,|\band\b|&|\+)\s*CR \1(?![\d.a-z]))+`, 'g');
+  const SAME_PAREN = new RegExp(String.raw`\bCR (${NUM}) \(CR \1\)`, 'g');
+  const tidy = (l) => l.replace(SAME_PAREN, 'CR $1').replace(SAME_LIST, 'CR $1');
+  report.tidied = 0;
+  for (const [rel, t] of [...after]) {
+    const old = new Set((before.get(rel) ?? '').split('\n'));
+    const lines = t.split('\n');
+    let ch = false;
+    for (let k = 0; k < lines.length; k++) { if (old.has(lines[k])) continue; const n = tidy(lines[k]); if (n !== lines[k]) { lines[k] = n; ch = true; report.tidied++; } }
+    if (ch) after.set(rel, lines.join('\n'));
+  }
+  for (const [abs, t] of [...jsonOut]) {
+    const j = JSON.parse(t);
+    let ch = false;
+    const walk = (o) => { if (!o || typeof o !== 'object') return; for (const [k, v] of Object.entries(o)) { if (typeof v === 'string') { const n = tidy(v); if (n !== v) { o[k] = n; ch = true; report.tidied++; } } else walk(v); } };
+    walk(j);
+    if (ch) jsonOut.set(abs, JSON.stringify(j, null, indentOf(t)) + (t.endsWith('\n') ? '\n' : ''));
+  }
+
   report.selfCheck = [];
   const BADLINE = [/\bCR [\dD][\d.a-z]* (?:is|was) (?:REVERSED|reversed|narrowed|superseded|NARROWED|SUPERSEDED)\b/, /\b(CR [\dD][\d.a-z]*) = \1(?![\d.a-z])/, /\b(?:test|it)\(\s*['"`](?:test|it)\(/];
   const doubles = (l) => [...l.matchAll(/\b([A-Za-z]{2,})\s+\1\b/gi)].map((x) => x[1].toLowerCase()).filter((w) => !['that', 'had', 'is', 'very', 'no'].includes(w) || true);
@@ -874,8 +983,14 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     const oldText = before.get(rel) ?? '';
     for (const [k, l] of t.split('\n').entries()) {
       if (old.has(l)) continue;
+      const phrase = /\b([A-Za-z][\w'-]*(?:\s+[\w'-]+){1,3})\s+\1\b/i.exec(l);
+      const sameNum = new RegExp(String.raw`\bCR (${NUM})\b[^.;:\n]{0,60}?\bCR \1(?![\d.a-z])`).exec(l);
       const why = BADLINE.find((re) => re.test(l)) ? 'states a CR number as reversed / equal to itself, or pastes code into a title'
-        : doubles(l).filter((w) => !new RegExp(`\\b${w}\\s+${w}\\b`, 'i').test(oldText)).length ? `doubled word: ${doubles(l).join(', ')}` : null;
+        : doubles(l).filter((w) => !new RegExp(`\\b${w}\\s+${w}\\b`, 'i').test(oldText)).length ? `doubled word: ${doubles(l).join(', ')}`
+        : l.includes('((') && !oldText.includes(l.slice(Math.max(0, l.indexOf('((') - 10), l.indexOf('((') + 12)) && !/\(\(\s*$|=>|\(\([a-z_]/.test(l) ? 'a "((" garble'
+        : phrase && !oldText.toLowerCase().includes(phrase[0].toLowerCase()) ? `doubled phrase: "${phrase[1]}"`
+        : sameNum && !oldText.includes(sameNum[0]) ? `the same rule cited twice in one phrase: CR ${sameNum[1]}`
+        : /\bthe rule in\b/.test(l) && !/\bthe rule in\b/.test(oldText) ? '"the rule in" pointer phrasing' : null;
       if (why) report.selfCheck.push({ file: rel, line: k + 1, why, text: l.trim().slice(0, 200) });
     }
   }

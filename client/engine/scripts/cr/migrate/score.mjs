@@ -73,7 +73,8 @@ import { CR_BUILD_DIR, REPO_ROOT, ORACLE_JSON } from '../../paths.mjs';
 import { tokenize } from '../extract-test-titles.mjs';
 import { loadInputs } from '../render.mjs';
 import { indexLedger, parseNum, compareNums } from '../ledger.mjs';
-import { parseRulingCite, parseRef } from '../schema.mjs';
+import { parseRef } from '../schema.mjs';
+import { parseRulingCite } from './register.mjs';
 import { buildRmap, counts as rmapCounts, RMAP_JSON } from './rmap.mjs';
 import { runCensus } from './census.mjs';
 

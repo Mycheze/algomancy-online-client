@@ -69,7 +69,7 @@ Each `discrepancies/<unit>.json` row carries a `tier`:
    support two readings and no higher source decides. Such a row carries a
    `question` (`topic`, `ask`, `readings[{label, text, table}]`, `follows`,
    `recommend`), and `owner-questions.md` is rendered from those rows alone.
-2. **Register and test fixes**: settled by the authority order, with a fix on
+2. **Record and test fixes**: settled by the authority order, with a fix on
    our side (a record's owner call, a test title, a glossary row, an engine CT ticket,
    or a rule to redraft).
 3. **Engine-only and owner-only rules**: no printed or designer source; the
@@ -91,11 +91,16 @@ From strongest to weakest:
 2. Printed text, read literally. Where Caleb states an intent that differs from
    print, follow Caleb.
 3. The owner's calls, recorded in the record they settle (`sources.owner`:
-   his words, the date he adopted them, where he said them). Where no printed
-   or designer source speaks, an owner call is the engine's law, basis = owner.
-   (Until 2026-10 these lived in a separate register of numbered rulings,
-   `R1`–`R350`; it was retired, its calls absorbed into the records, and its
-   final state archived at `refs/archive/r-register-final`.)
+   the quote, the date he adopted the call, and where it is written). Where no
+   printed or designer source speaks, an owner call is the engine's law, basis
+   = owner. Until 2026-10 these lived in a separate register of numbered
+   rulings, `R1`–`R350`; it was retired and its final state archived at
+   `refs/archive/r-register-final`. The calls absorbed from it carry
+   `from: "register@<sha>"`, and their quotes are the REGISTER'S write-up of
+   his decision — often not his own words, sometimes a fragment of a longer
+   sentence. The editions say so ("Owner ruling, adopted … — quoted from the
+   retired ruling register"), and `cr:check` verifies each one, verbatim,
+   against the register at that commit (when the archive ref is present).
 
 Other players are not authority. A thread that is still open is not a ruling.
 `client/ui/glossary.ts` is OUR text (typed `ours`) and never counts as
@@ -110,8 +115,10 @@ law under this order) and carries an inline marker "engine differs, see
 1. **No claim without checkable evidence.** Every rule record carries at least one evidence item that a script can
    check:
    - (a) a verbatim quote (≤200 chars, from one line) from a printed or designer source, or an owner call in
-     his own words (`sources.owner`: the quote IS the call, so it is its own evidence — `cr:check` checks
-     its shape and that an owner-basis rule carries one, and there is no register left for it to drift from); or
+     the words that record it (`sources.owner`). A call made since 2026-10 is quoted in his own words and is
+     its own evidence (`cr:check` checks its shape, and that an owner-basis rule carries one); a call absorbed
+     from the retired register (`from: "register@<sha>"`) is checked verbatim against the register at that
+     commit, read from git (`refs/archive/r-register-final`; a clone without it gets a notice, not a pass); or
    - (b) an engine code quote PLUS a test that was executed and asserts the claim. For an Annex D rule
      (key `annexd.*`, the digital conventions) the code quote may also come from `client/ui/` or
      `client/server/` source, never their tests; a game rule's still has to be engine source.
@@ -146,7 +153,7 @@ One JSON object per rule, in `rules/<section>.json`:
 | `sources.printed[]` | `{ ref, quote }`; `ref` is `Manual p.N`, `Rulebook 2023 p.N` or `card: <Name>` |
 | `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }` |
 | `sources.ours[]` | `{ ref, quote }` from our own text (the glossary) — never authority |
-| `sources.owner[]` | `{ quote, adopted, from }` — the owner's call in his words, the date he adopted it (YYYY-MM-DD), and where he said it: `comment <id>` (a review comment), `questions-round27 Q2` (a question sheet), or `''` for a call absorbed from the retired register |
+| `sources.owner[]` | `{ quote, adopted, from }` — the owner's call, the date he adopted it (YYYY-MM-DD), and where it is written: `comment <id>` (a review comment, his own words), `questions-round27 Q2` (a question sheet), or `register@<sha>` for a call absorbed from the retired register (the register's write-up, verified against it; a sheet pointer may precede it: `questions-round27 Q2; register@72de434`) |
 | `sources.engine[]` | engine symbols (the verifier's citations) |
 | `sources.tests[]` | test files that demonstrate the rule |
 | `basis` | `printed` \| `designer` \| `owner` \| `engine` \| `mixed` |

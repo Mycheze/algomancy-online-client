@@ -175,6 +175,14 @@
     {
      "find": "  ruling\\?: readonly GlossSource\\[\\];",
      "replace": "  cites?: readonly GlossSource[];"
+    },
+    {
+     "find": "\\(digital-rules\\.md:5645-5656\\)",
+     "replace": "(the retired ruling register)"
+    },
+    {
+     "find": "(  // its ruling, so an )R-number( can change engine\\.ts, apply\\.ts, a test and\\n  // )digital-rules\\.md( and leave this file confidently wrong\\.)",
+     "replace": "$1owner call$2the comprehensive rules$3"
     }
    ]
   },

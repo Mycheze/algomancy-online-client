@@ -43,7 +43,7 @@ export const DISC_KINDS = [
 /** the discrepancy report's four tiers, in the order a reader takes them */
 export const TIERS = {
   1: 'Questions for the owner',
-  2: 'Register and test fixes',
+  2: 'Record and test fixes',
   3: 'Engine-only and owner-only rules',
   4: 'Everything else',
 };

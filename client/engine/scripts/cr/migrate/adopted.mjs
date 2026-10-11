@@ -18,12 +18,17 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseRulings } from '../extract.mjs';
+import { parseRulings } from './register.mjs';
 import { headingDates } from './audit.mjs';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 export const ADOPTED_JSON = join(HERE, 'adopted.json');
 const SHEET_RE = /questions-round(\d+)(?:\.md)? Q(\d+)/g;
+/** the first words of a ruling's heading, markup and R-numbers out: what tells two same-day rulings apart in prose */
+export function shortTitle(t) {
+  const w = String(t ?? '').replace(/\bR\d{1,3}b?\b/g, '').replace(/[*`_⚠❌✅#>\[\]()]/g, '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  return w.slice(0, 6).join(' ').replace(/[,;:—–-]+$/, '') + (w.length > 6 ? '…' : '');
+}
 
 export function buildAdopted() {
   const dates = headingDates();
@@ -33,7 +38,7 @@ export function buildAdopted() {
     const d = dates[r.id];
     if (!d) { missing.push(r.id); continue; }
     const sheets = [...new Set([...`${r.heading}\n${r.body}`.matchAll(SHEET_RE)].map((m) => `questions-round${m[1]} Q${m[2]}`))];
-    out[r.id] = { adopted: d.date, commit: d.commit, ...(sheets.length ? { from: sheets.join(', ') } : {}) };
+    out[r.id] = { adopted: d.date, commit: d.commit, title: shortTitle(r.title), ...(sheets.length ? { from: sheets.join(', ') } : {}) };
   }
   return { rulings: out, missing };
 }
