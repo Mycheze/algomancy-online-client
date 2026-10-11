@@ -4,7 +4,7 @@
   "client/engine/scripts/cr/check.mjs": {
    "op": "merge",
    "step": "hand",
-   "base": "b78b3309b86e394ac9d174c6086857c8c91108d5",
+   "base": "cead8f7f33aa9953c15de22452401fa70c477473",
    "owned": true
   },
   "client/engine/scripts/cr/check.d.mts": {
@@ -46,7 +46,7 @@
   "client/engine/scripts/cr/render.d.mts": {
    "op": "merge",
    "step": "hand",
-   "base": "6d6de85581453c6ac1ed6dc971290b1ae1a50228",
+   "base": "d40933a4ad8e1ba23152a676a99acd9409cab3b3",
    "owned": true
   },
   "client/engine/scripts/cr/harness.mjs": {
@@ -209,7 +209,7 @@
   "data/comprehensive-rules/README.md": {
    "op": "merge",
    "step": "hand",
-   "base": "90eafca0dd6af78bdc2bcbef0d5e5ea90ea22737",
+   "base": "acb0e799bc14e354914cd0fcef04820177448ef2",
    "owned": true
   },
   "client/engine/scripts/cr/briefs/C-verify.md": {

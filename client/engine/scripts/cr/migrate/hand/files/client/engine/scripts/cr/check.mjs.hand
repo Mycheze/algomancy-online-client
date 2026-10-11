@@ -36,6 +36,20 @@ import {
 import { buildModel, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
 
 /**
+ * A verdict span quoted from a GENERATED file goes stale when that file is
+ * rebuilt, not when a rule changes. The RAG corpus is rebuilt from the Discord
+ * export, so a RAQ write-up edited upstream stales every span quoted from it
+ * (2026-10-11: Passer's Tides of the Cosmos edit). The stale line says where
+ * to go instead of leaving the reader to rediscover it. README: "When a quoted
+ * source changes upstream".
+ */
+const GENERATED_SPAN_HINT = {
+  'data/corpus/algomancy_corpus.jsonl': ' (the corpus is generated from the Discord export: the RAQ write-up was edited upstream. '
+    + 'Update the claim\'s source in client/ledgers/raq.ts and every record quoting it, run harness.mjs stamp --refresh, '
+    + 're-verify, and quote spans from ledgers/raq.ts, not the corpus)',
+};
+
+/**
  * Where a verifier's quoted code can stand as a rule's evidence (with an
  * executed test). A game rule is what the ENGINE does, so only engine source
  * counts. An Annex D rule (key `annexd.*`: the digital conventions — clocks,
@@ -401,7 +415,7 @@ export function check(inputs, ex, opts = {}) {
         // citing a retired R-number quoted a comment or a message too: code never cited one.
         const commentOnly = String(q.text ?? '').split('\n').every((l) => /^\s*(?:\/\/|\/?\*)/.test(l))
           || /\bR\d{1,3}b?\b/.test(String(q.text ?? ''));
-        S(commentOnly ? 'verdict-comment' : 'verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"`);
+        S(commentOnly ? 'verdict-comment' : 'verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"${GENERATED_SPAN_HINT[q.file] ?? ''}`);
       }
     }
   }

@@ -310,6 +310,34 @@ real rule goes unverified in its round. A batch that misses any mutant or
 decoy is discarded whole; a fresh verifier re-runs it as the next attempt.
 
 
+## When a quoted source changes upstream
+
+A RAQ write-up can be edited after a record quotes it (`_passer` edited the
+Tides of the Cosmos write-up on 2026-08-14; it surfaced on 2026-10-11). Two
+things go stale then, and 409 §6 pins both:
+
+- `client/ledgers/raq.ts` still holds the OLD wording, so every record that
+  quotes the claim still passes `cr:check`: nothing notices until the export is
+  re-read.
+- A verdict span quoted from `data/corpus/algomancy_corpus.jsonl` goes stale the
+  moment the corpus is rebuilt (`bot/pipeline/build_corpus.py`) from the newer
+  export. The corpus is GENERATED; a verifier should quote a RAQ span from
+  `client/ledgers/raq.ts` instead (9 keys still quote the corpus).
+
+So a corpus rebuild that changes a quoted thread needs, in one commit:
+
+1. the claim's `source` in `client/ledgers/raq.ts` set to the new words, verbatim;
+2. every record quoting that claim (`grep -rl "<thread id>" rules/`) updated to
+   a quote still verbatim in it;
+3. `harness.mjs stamp --unit <U> --refresh` for each unit touched;
+4. a polish round (`plant --round 4 --keys …`, decoys, a fresh verifier,
+   `judge`, `finalize --round 4 --keys …`) for every key whose verdict span is
+   now stale — `cr:check` lists them, and a span quoted from `ledgers/raq.ts`
+   goes stale too when step 1 changes it;
+5. then `cr:render`, `cr:check`, 409. If the new wording says something the
+   rule does not (the Tides edit added "Having Rook would allow you to use
+   Augments"), that is a new claim for `raq.ts` and the engine, not a re-stamp.
+
 ## The CR is the engine's spec
 
 This document is the rulebook the client implements: where it and the engine
