@@ -26,7 +26,7 @@ export const ADOPTED_JSON = join(HERE, 'adopted.json');
 const SHEET_RE = /questions-round(\d+)(?:\.md)? Q(\d+)/g;
 /** the first words of a ruling's heading, markup and R-numbers out: what tells two same-day rulings apart in prose */
 export function shortTitle(t) {
-  const w = String(t ?? '').replace(/\bR\d{1,3}b?\b/g, '').replace(/[*`_⚠❌✅#>\[\]()]/g, '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const w = String(t ?? '').replace(/\bR\d{1,3}b?(?:['’]s)?\b/g, '').replace(/^\W*['’]s\b/, '').replace(/[*`_⚠❌✅#>\[\]()]/g, '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
   return w.slice(0, 6).join(' ').replace(/[,;:—–-]+$/, '') + (w.length > 6 ? '…' : '');
 }
 
