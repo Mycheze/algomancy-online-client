@@ -36,6 +36,17 @@
    "find": "LIVE as of R123 (it was PARKED here through R97): the",
    "replace": "LIVE (it was PARKED here earlier): the",
    "note": "keep 147's history-phrase ratchet"
+  },
+  "client/ui/glossary.ts##R133#479e91dbdf#0": {
+   "action": "drop",
+   "note": "261: types.tokens.not-cards never names Trash; the token half is cited as keywords.actions.trash.tokens"
+  },
+  "client/ui/glossary.ts##R9#3247d0d108#0": {
+   "action": "cite",
+   "nums": [
+    "109.9"
+   ],
+   "note": "261: 109.9d (per card) never names Once; 109.9 does"
   }
  }
 }
